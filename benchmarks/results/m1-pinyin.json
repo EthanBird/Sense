@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "stage": "M1",
+  "generatedAt": "2026-07-21T15:59:25.397260928Z",
+  "lexicon": {
+    "bytes": 1010655,
+    "sha256": "cdcadaa5d217759763a1c9465d51859c54656c51f78e3f9d8de610aa3a2c58ce",
+    "loadMs": 21.81
+  },
+  "lookup": {
+    "samples": 7,
+    "lookupsPerSample": 20000,
+    "medianNs": 284.33,
+    "p95Ns": 1067.81
+  },
+  "deviceMetrics": {
+    "status": "pending-real-device"
+  }
+}

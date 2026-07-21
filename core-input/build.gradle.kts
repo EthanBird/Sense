@@ -28,3 +28,14 @@ tasks.register<JavaExec>("m0HostBenchmark") {
     args(rootProject.layout.projectDirectory.file("benchmarks/results/m0-host.json").asFile.absolutePath)
 }
 
+tasks.register<JavaExec>("m1PinyinBenchmark") {
+    group = "verification"
+    description = "Measures production pinyin lexicon load and lookup latency."
+    dependsOn(tasks.named("classes"))
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("io.github.ethanbird.senseime.core.M1PinyinBenchmark")
+    args(
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/pinyin_lexicon.bin").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("benchmarks/results/m1-pinyin.json").asFile.absolutePath,
+    )
+}

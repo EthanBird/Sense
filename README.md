@@ -2,11 +2,11 @@
 
 > Android 原生高性能中文输入法：普通输入完全本地运行，AI、记忆与工具能力通过可配置的长按方向 Skill 显式触发。
 
-**项目状态：** M0 工程预览已构建；等待 Android 真机启用与 Macrobenchmark 验收
+**项目状态：** M1 中文输入与键盘布局预览已构建；等待 Android 真机交互验收
 
-**最新预览：** `v0.1.0-m0`
+**最新预览：** `v0.1.0-m1`
 
-**更新日期：** 2026-07-21
+**更新日期：** 2026-07-22
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
 
 本文基于《GlassIME Android AI 中文输入法产品与技术设计文档 v0.1》重新整理，并统一改名为：
@@ -22,19 +22,20 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：M0 工程预览
+## 0. 当前迭代：M1 中文输入与布局预览
 
-首个可安装工程预览已经实现：设置入口、独立 `:ime` 进程、单 Canvas QWERTY、composing、FakeDecoder 候选、上屏/删除/空格/回车、亮暗 Arctic Glass 拟态、Macrobenchmark 模块和 GitHub Actions。APK 不声明网络权限。
+M1 按参考截图重做了输入界面：候选栏、功能栏、四行主键盘和底部系统功能栏分层绘制；左下角打开系统输入法选择器，右下角打开本地剪贴板面板。中文模式默认开启，连续全拼通过 39,002 键的本地词典生成候选，支持未收录整句的动态分词组合。APK 不声明网络权限。
 
 | 本地门禁 | 结果 |
 |---|---|
-| `core-input` 单元测试 | 8/8 通过 |
+| `core-input` 单元测试 | 13/13 通过 |
 | Android Lint | 0 errors，0 warnings |
 | Kotlin/JVM 与 Android DEX 编译 | 通过 |
 | APK 对齐、签名与校验 | 通过，v3 签名 |
 | APK 清单 | `minSdk 29`、`targetSdk 36`、包含 IME 组件 |
 | 网络权限 | 未声明 |
 | Host Reducer 基线 | 已写入 `benchmarks/results/m0-host.json` |
+| 拼音基线 | 已写入 `benchmarks/results/m1-pinyin.json` |
 
 标准工程验证命令：
 
@@ -42,21 +43,22 @@ Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 A
 ./gradlew \
   :core-input:test \
   :core-input:m0HostBenchmark \
+  :core-input:m1PinyinBenchmark \
   :app:lintDebug \
   :app:assembleDebug \
   :app:assembleBenchmark \
   :benchmark:assembleBenchmark
 ```
 
-在 Maven 仓库不可达、但已安装 API 36 SDK 与 Gradle 8.13 的环境，可运行同等的离线 M0 门禁并产出真实签名 APK：
+在 Maven 仓库不可达、但已安装 API 36 SDK 与 Gradle 8.13 的环境，可运行同等的离线门禁并产出真实签名 APK：
 
 ```bash
 ANDROID_SDK_ROOT=/path/to/android-sdk \
 SENSE_GRADLE_HOME=/path/to/gradle-8.13 \
-tools/m0_offline_verify.sh
+tools/offline_verify.sh
 ```
 
-本次发布是工程预览，不代表 M0 真机验收完成：当前环境没有连接 Android 设备，因此安装、启用、真实 InputConnection 输入、冷/热启动和帧时间 Macrobenchmark 仍标为待测。FakeDecoder 也只是 M0/M1 接口桩，不是生产中文引擎。
+本次发布仍是工程预览：当前环境没有连接 Android 设备，因此安装、启用、输入法切换、系统剪贴板、真实 InputConnection 输入、横竖屏和帧时间 Macrobenchmark 仍标为待测。M1 的紧凑词典解码器用于先交付可靠的全拼输入闭环，成熟 librime 内核仍按后续阶段评估接入。
 
 ## 1. 项目结论
 

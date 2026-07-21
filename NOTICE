@@ -1,0 +1,11 @@
+Sense includes a compiled form of the Rime “pinyin-simp” dictionary.
+
+Source: https://github.com/rime/rime-pinyin-simp
+Dictionary: pinyin_simp.dict.yaml
+Authors: Gong Chen and Android Open Source Project contributors
+License: Apache License 2.0
+License copy: licenses/rime-pinyin-simp-LICENSE
+
+The binary file at ime-service/src/main/assets/pinyin_lexicon.bin is generated
+by tools/build_pinyin_lexicon.py. The upstream dictionary is not modified except
+for whitespace normalization, duplicate removal, ranking, and binary encoding.
