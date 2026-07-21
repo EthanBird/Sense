@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="sense_background">#F4F7FC</color>
+    <color name="sense_surface">#EFFFFFFF</color>
+    <color name="sense_primary">#101828</color>
+    <color name="sense_secondary">#667085</color>
+    <color name="sense_accent">#4F7CF5</color>
+    <color name="sense_success">#12A66A</color>
+</resources>
+

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "stage": "M0",
+  "generatedAt": "2026-07-21T15:14:34.238511444Z",
+  "runtime": {
+    "java": "17.0.19",
+    "os": "Linux",
+    "arch": "amd64"
+  },
+  "reducer": {
+    "samples": 7,
+    "operationsPerSample": 100000,
+    "medianNsPerOperation": 42.71,
+    "p95NsPerOperation": 61.02
+  },
+  "deviceMetrics": {
+    "status": "pending-real-device",
+    "reason": "M0 release compiles Macrobenchmark; startup and frame metrics require an Android device."
+  }
+}

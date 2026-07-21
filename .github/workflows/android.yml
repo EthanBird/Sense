@@ -1,0 +1,86 @@
+name: Android CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Verify M0
+        run: >-
+          ./gradlew
+          :core-input:test
+          :core-input:m0HostBenchmark
+          :app:lintDebug
+          :app:assembleDebug
+          :app:assembleBenchmark
+          :benchmark:assembleBenchmark
+
+      - name: Upload debug APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: sense-m0-debug-apks
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/benchmark/*.apk
+            benchmark/build/outputs/apk/benchmark/*.apk
+          if-no-files-found: error
+
+  release-m0:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: sense-m0-debug-apks
+          path: artifacts
+
+      - name: Prepare release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir release
+          apk=$(find artifacts -type f -path '*/app/build/outputs/apk/benchmark/*.apk' -print -quit)
+          test -n "$apk"
+          cp "$apk" release/Sense-v0.1.0-m0.apk
+          cd release
+          sha256sum Sense-v0.1.0-m0.apk > SHA256SUMS.txt
+
+      - name: Create M0 prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.1.0-m0 >/dev/null 2>&1; then
+            echo "v0.1.0-m0 already exists; leaving it unchanged."
+          else
+            gh release create v0.1.0-m0 \
+              --target "$GITHUB_SHA" \
+              --title "Sense v0.1.0-m0 · M0 工程预览" \
+              --notes-file docs/releases/v0.1.0-m0.md \
+              --prerelease \
+              release/Sense-v0.1.0-m0.apk \
+              release/SHA256SUMS.txt
+          fi

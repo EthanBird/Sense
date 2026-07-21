@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">先思输入法</string>
+    <string name="brand_english">SENSE</string>
+    <string name="brand_chinese">先思输入法</string>
+    <string name="brand_tagline">先输入，再思考；需要时，让 AI 接住下一步。</string>
+    <string name="stage_badge">M0 · 工程与性能基线</string>
+    <string name="ime_status_title">输入法状态</string>
+    <string name="ime_enabled">Sense 已在系统输入法列表中启用</string>
+    <string name="ime_disabled">Sense 尚未启用，先完成系统设置</string>
+    <string name="enable_ime">启用 Sense</string>
+    <string name="switch_ime">切换到 Sense</string>
+    <string name="m0_title">当前构建能力</string>
+    <string name="m0_body">本地 QWERTY、拼音 composing、假候选、上屏/删除以及 Arctic Glass 拟态背景。M2 将接入 librime。</string>
+    <string name="offline_title">输入热路径</string>
+    <string name="offline_body">此版本不声明网络权限。IME 进程只处理触摸、绘制、候选和 InputConnection。</string>
+    <string name="version_label">版本 0.1.0-m0 · Android 10+</string>
+</resources>
+
