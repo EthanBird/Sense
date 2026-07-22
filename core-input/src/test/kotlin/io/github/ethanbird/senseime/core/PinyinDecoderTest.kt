@@ -160,7 +160,7 @@ class PinyinDecoderTest {
         val candidate = decoder.decode("w").first()
         assertEquals("我", candidate.text)
         assertEquals(CandidateMatchKind.BASE_PREFIX, candidate.matchKind)
-        assertNull(candidate.canonicalPinyin)
+        assertEquals("wo", candidate.canonicalPinyin)
     }
 
     @Test
@@ -191,6 +191,83 @@ class PinyinDecoderTest {
         val values = decoder.decode("xian")
         assertEquals(listOf("先", "西安"), values.map { it.text })
         assertEquals(listOf("x", "xa"), values.map { it.canonicalInitials })
+    }
+
+    @Test
+    fun exactPhraseAlsoExposesDeepSegmentedAlternatives() {
+        val qualityDecoder = PinyinDecoder.fromBytes(
+            lexicon(
+                "hua" to listOf(
+                    item("话", 58000, "h"),
+                    item("花", 24000, "h"),
+                    item("化", 12000, "h"),
+                    item("画", 8000, "h"),
+                    item("华", 7000, "h"),
+                    item("划", 1600, "h"),
+                    item("滑", 1400, "h"),
+                ),
+                "shang" to listOf(
+                    item("上", 285000, "s"),
+                    item("商", 5600, "s"),
+                    item("伤", 5500, "s"),
+                    item("尚", 3900, "s"),
+                    item("赏", 950, "s"),
+                ),
+                "shanghua" to listOf(item("赏花", 117, "sh"), item("上画", 116, "sh")),
+            ),
+        )
+
+        val values = qualityDecoder.decode("shanghua", 64)
+
+        assertEquals("赏花", values.first().text)
+        assertTrue("full pinyin must retain segmented alternatives", values.any { it.text == "上滑" })
+        assertEquals(CandidateMatchKind.BASE_COMPOSED, values.first { it.text == "上滑" }.matchKind)
+    }
+
+    @Test
+    fun exactSingleCharacterRecordDoesNotTerminateAValidMultiSegmentPath() {
+        val qualityDecoder = PinyinDecoder.fromBytes(
+            lexicon(
+                "an" to listOf(item("安", 1000, "a")),
+                "xi" to listOf(item("西", 1000, "x")),
+                "xian" to listOf(item("先", 2000, "x")),
+            ),
+        )
+
+        val values = qualityDecoder.decode("xian", 16)
+
+        assertEquals("先", values.first().text)
+        assertTrue(values.any { it.text == "西安" && it.matchKind == CandidateMatchKind.BASE_COMPOSED })
+    }
+
+    @Test
+    fun exactCandidateRecordCanBeReadPastTheFirstThirtyTwoEntries() {
+        val candidates = (1..39).map { index ->
+            item(text = ('\u4E00'.code + index).toChar().toString(), weight = 1000 - index, initials = "h")
+        } + item("滑", 1, "h")
+        val qualityDecoder = PinyinDecoder.fromBytes(lexicon("hua" to candidates))
+
+        val values = qualityDecoder.decode("hua", 255)
+
+        assertEquals(40, values.size)
+        assertEquals("滑", values[39].text)
+    }
+
+    @Test
+    fun statisticalPrefixRetainsAFullPinyinSourceWhenOneIsKnown() {
+        val qualityDecoder = PinyinDecoder.fromBytes(
+            lexicon(
+                "de" to listOf(item("的", 1000, "d"), item("得", 900, "d")),
+                "{d" to listOf(item("的", 2000, "d"), item("地", 1800, "d")),
+            ),
+        )
+
+        val candidate = qualityDecoder.decode("d", 64).first()
+
+        assertEquals("的", candidate.text)
+        assertEquals(CandidateMatchKind.BASE_PREFIX, candidate.matchKind)
+        assertEquals("de", candidate.canonicalPinyin)
+        assertEquals("d", candidate.canonicalInitials)
     }
 
     @Test

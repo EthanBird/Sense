@@ -13,8 +13,8 @@ permissions:
   contents: read
 
 env:
-  RELEASE_TAG: v0.4.0-m4
-  RELEASE_APK: Sense-v0.4.0-m4.apk
+  RELEASE_TAG: v0.3.1-m4
+  RELEASE_APK: Sense-v0.3.1-m4.apk
   LEXICON_SHA256: d8d6ad58a462a0c00abd9300bd7f58930e0cff5a3bbf0089ff7128d805dab80c
   BIGRAM_SHA256: c8a7c4b9fe7b4b17b73fc29073c4c55943720e8203d42ca5f467c54f8aa12e28
 
@@ -65,7 +65,7 @@ jobs:
           cmp licenses/CC-CEDICT-NOTICE.md ime-service/src/main/assets/CC-CEDICT-NOTICE.txt
           cmp licenses/CC-BY-SA-4.0.txt ime-service/src/main/assets/CC-BY-SA-4.0.txt
 
-      - name: Verify M4 correctness and assemble
+      - name: Verify 0.3.1 candidate, gesture and learning correctness
         run: >-
           ./gradlew
           :core-input:test
@@ -86,7 +86,7 @@ jobs:
           :core-input:m3SentenceBenchmark
           :core-input:m4CoreBenchmark
 
-      - name: Verify assembled M4 APK
+      - name: Verify assembled 0.3.1 APK
         shell: bash
         run: |
           set -euo pipefail
@@ -102,7 +102,7 @@ jobs:
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" > /tmp/apk-badging.txt
           "$build_tools/aapt2" dump permissions "$apk" > /tmp/apk-permissions.txt
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='6' versionName='0.4.0-m4'" /tmp/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='7' versionName='0.3.1-m4'" /tmp/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" /tmp/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" /tmp/apk-badging.txt
           if grep -Fq 'android.permission.INTERNET' /tmp/apk-permissions.txt; then
@@ -120,7 +120,7 @@ jobs:
       - name: Upload debug APKs
         uses: actions/upload-artifact@v4
         with:
-          name: sense-m4-debug-apks
+          name: sense-v0.3.1-m4-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -128,7 +128,7 @@ jobs:
             benchmarks/results/m4-core.json
           if-no-files-found: error
 
-  release-m4:
+  release-0-3-1:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -140,7 +140,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: sense-m4-debug-apks
+          name: sense-v0.3.1-m4-apks
           path: artifacts
 
       - name: Prepare release assets
@@ -160,7 +160,7 @@ jobs:
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" | tee release/apk-badging.txt
           "$build_tools/aapt2" dump permissions "$apk" | tee release/apk-permissions.txt
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='6' versionName='0.4.0-m4'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='7' versionName='0.3.1-m4'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           if grep -Fq 'android.permission.INTERNET' release/apk-permissions.txt; then
@@ -178,7 +178,7 @@ jobs:
           cd release
           sha256sum "$RELEASE_APK" > SHA256SUMS.txt
 
-      - name: Create M4 prerelease
+      - name: Create 0.3.1 prerelease
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -205,8 +205,8 @@ jobs:
             fi
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
-              --title "Sense v0.4.0-m4 · 渐进式中文输入与高速键盘" \
-              --notes-file docs/releases/v0.4.0-m4.md \
+              --title "Sense v0.3.1-m4 · 候选、手势与学习修复" \
+              --notes-file docs/releases/v0.3.1-m4.md \
               --prerelease \
               "release/$RELEASE_APK" \
               release/SHA256SUMS.txt

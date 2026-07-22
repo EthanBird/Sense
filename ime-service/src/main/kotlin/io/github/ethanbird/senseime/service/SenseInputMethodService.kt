@@ -37,8 +37,7 @@ class SenseInputMethodService : InputMethodService() {
     private var decoder: InputDecoder = FakeDecoder()
     private var adaptiveDecoder: AdaptivePinyinDecoder? = null
     private var userLexicon: UserLexicon? = null
-    private var renderedSnapshot = ProgressiveCandidateSnapshot.EMPTY
-    private var renderedDecoding: ProgressivePinyinDecoding? = null
+    private val candidateSession = CandidateDecodeSession()
     private var composition = PinyinComposition()
     private var shifted = false
     private var chineseMode = true
@@ -79,11 +78,14 @@ class SenseInputMethodService : InputMethodService() {
             work = { request ->
                 (activeDecoder as? ProgressivePinyinDecoder)?.decodeProgressively(
                     request.composition,
-                    CANDIDATE_LIMIT,
+                    DECODE_CANDIDATE_LIMIT,
                 ) ?: ProgressivePinyinDecoding(
                     revision = request.composition.revision,
                     remainingPinyin = request.composition.remainingPinyin,
-                    wholeCandidates = activeDecoder.decode(request.composition.remainingPinyin, CANDIDATE_LIMIT),
+                    wholeCandidates = activeDecoder.decode(
+                        request.composition.remainingPinyin,
+                        DECODE_CANDIDATE_LIMIT,
+                    ),
                     prefixCandidates = emptyList(),
                 )
             },
@@ -241,7 +243,7 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun commitCandidate(revision: Long, sourceIndex: Int) {
         if (composition.visibleText.isEmpty()) return
-        when (val choice = renderedSnapshot.select(composition.revision, revision, sourceIndex)) {
+        when (val choice = candidateSession.select(composition, revision, sourceIndex)) {
             is ProgressiveCandidateChoice.Whole -> commitPrimary(choice.candidate)
             is ProgressiveCandidateChoice.Prefix -> {
                 val next = composition.acceptPrefix(revision, choice.value)
@@ -360,15 +362,14 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun render() {
         val request = CandidateDecodeRequest(composition)
-        mainHandler.removeCallbacksAndMessages(candidateResultToken)
-        renderedSnapshot = ProgressiveCandidateSnapshot.EMPTY
-        renderedDecoding = null
+        val launch = candidateSession.begin(request.composition)
+        if (launch.stateChanged) mainHandler.removeCallbacksAndMessages(candidateResultToken)
         keyboardView?.updateComposing(
             request.composition.revision,
             request.composition.visibleText,
-            emptyList(),
+            launch.presentation.snapshot.candidates.map { it.text },
         )
-        if (chineseMode && request.composition.remainingPinyin.isNotEmpty()) {
+        if (chineseMode && launch.shouldDecode) {
             if (candidateRunner?.submit(request) == -1L) candidateRunner = null
         }
     }
@@ -377,6 +378,10 @@ class SenseInputMethodService : InputMethodService() {
         request: CandidateDecodeRequest,
         decoding: ProgressivePinyinDecoding,
     ) {
+        // Deliveries originate from one serial runner, so a later delivery can
+        // safely coalesce an earlier callback before crossing to the main loop.
+        // A same-revision view re-render does not remove this callback (see
+        // CandidateDecodeLaunch.stateChanged), avoiding the old lost-result race.
         mainHandler.removeCallbacksAndMessages(candidateResultToken)
         mainHandler.postAtTime(
             { applyDecodedCandidates(request, decoding) },
@@ -389,17 +394,12 @@ class SenseInputMethodService : InputMethodService() {
         request: CandidateDecodeRequest,
         decoding: ProgressivePinyinDecoding,
     ) {
-        if (
-            destroyed ||
-            !chineseMode ||
-            request.composition != composition ||
-            decoding.revision != composition.revision ||
-            decoding.remainingPinyin != composition.remainingPinyin
-        ) {
-            return
-        }
-        renderedDecoding = decoding
-        renderedSnapshot = ProgressiveCandidateSnapshot.from(decoding, CANDIDATE_LIMIT)
+        if (destroyed || !chineseMode || request.composition != composition) return
+        val presentation = candidateSession.complete(
+            requestedComposition = request.composition,
+            decoding = decoding,
+            limit = PRESENTATION_CANDIDATE_LIMIT,
+        ) ?: return
 
         if (pendingSpaceRevision == composition.revision) {
             pendingSpaceRevision = null
@@ -410,13 +410,11 @@ class SenseInputMethodService : InputMethodService() {
         keyboardView?.updateComposing(
             composition.revision,
             composition.visibleText,
-            renderedSnapshot.candidates.map { it.text },
+            presentation.snapshot.candidates.map { it.text },
         )
     }
 
-    private fun currentDecoding(): ProgressivePinyinDecoding? = renderedDecoding?.takeIf {
-        it.revision == composition.revision && it.remainingPinyin == composition.remainingPinyin
-    }
+    private fun currentDecoding(): ProgressivePinyinDecoding? = candidateSession.currentDecoding(composition)
 
     private fun commitPrimary(candidate: Candidate?): Boolean {
         if (composition.visibleText.isEmpty()) return false
@@ -516,7 +514,9 @@ class SenseInputMethodService : InputMethodService() {
         const val PINYIN_ASSET = "pinyin_lexicon.bin"
         const val PINYIN_BIGRAM_ASSET = "pinyin_bigrams.bin"
         const val PINYIN_SYLLABLES_ASSET = "pinyin_syllables.txt"
-        const val CANDIDATE_LIMIT = 32
+        const val DECODE_CANDIDATE_LIMIT = 255
+        const val MAX_PROGRESSIVE_PREFIX_CANDIDATES = DECODE_CANDIDATE_LIMIT
+        const val PRESENTATION_CANDIDATE_LIMIT = DECODE_CANDIDATE_LIMIT + MAX_PROGRESSIVE_PREFIX_CANDIDATES
         const val CLIPBOARD_HISTORY_LIMIT = 30
         const val MAX_CLIPBOARD_TEXT_LENGTH = 4096
         const val MAX_DEFERRED_INPUT_EVENTS = 512

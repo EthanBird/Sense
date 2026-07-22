@@ -7,7 +7,7 @@ import org.junit.Test
 
 class AdaptivePinyinDecoderTest {
     private val segmenter = PinyinSyllableSegmenter(
-        setOf("an", "fan", "fang", "gan", "ge", "hao", "ni", "ren", "shi", "wo", "xi", "xian", "yi"),
+        setOf("an", "de", "di", "fan", "fang", "gan", "ge", "hao", "ni", "ren", "shi", "wo", "xi", "xian", "yi"),
     )
 
     @Test
@@ -78,6 +78,55 @@ class AdaptivePinyinDecoderTest {
         assertNull(decoder.learn("nh", Candidate("你好", matchKind = CandidateMatchKind.BASE_INITIALS)))
         assertNull(decoder.learn("hello", Candidate("hello")))
         assertTrue(lexicon.lookup("nh", 5).isEmpty())
+    }
+
+    @Test
+    fun sourcedPrefixCanBeLearnedButStatisticalOnlyPrefixCannot() {
+        val lexicon = MemoryUserLexicon(clock = { 1000L })
+        val decoder = AdaptivePinyinDecoder(emptyBase(), lexicon, segmenter)
+
+        val learned = decoder.learn(
+            "d",
+            Candidate(
+                text = "的",
+                canonicalPinyin = "de",
+                canonicalInitials = "d",
+                matchKind = CandidateMatchKind.BASE_PREFIX,
+            ),
+        )
+
+        assertEquals("de", learned?.fullPinyin)
+        assertEquals("的", decoder.decode("d").first().text)
+        assertEquals(CandidateMatchKind.USER_INITIALS, decoder.decode("d").first().matchKind)
+        assertNull(decoder.learn("d", Candidate("的", matchKind = CandidateMatchKind.BASE_PREFIX)))
+        assertNull(
+            decoder.learn(
+                "d",
+                Candidate("你", canonicalPinyin = "ni", canonicalInitials = "n", matchKind = CandidateMatchKind.BASE_PREFIX),
+            ),
+        )
+    }
+
+    @Test
+    fun latestExplicitSelectionBeatsAnOlderMoreFrequentHomophone() {
+        var now = 1000L
+        val lexicon = MemoryUserLexicon(clock = { now })
+        repeat(20) { lexicon.record("di", "d", "地") }
+        now = 1001L
+
+        lexicon.record("de", "d", "的")
+
+        assertEquals(listOf("的", "地"), lexicon.lookup("d", 2).map { it.text })
+    }
+
+    @Test
+    fun selectionsInTheSameClockMillisecondStillHaveStableRecencyOrder() {
+        val lexicon = MemoryUserLexicon(clock = { 1000L })
+        lexicon.record("di", "d", "地")
+        lexicon.record("de", "d", "的")
+
+        assertEquals(listOf("的", "地"), lexicon.lookup("d", 2).map { it.text })
+        assertTrue(lexicon.lookup("d", 2)[0].lastUsedAtMillis > lexicon.lookup("d", 2)[1].lastUsedAtMillis)
     }
 
     private fun emptyBase(): InputDecoder = object : InputDecoder {

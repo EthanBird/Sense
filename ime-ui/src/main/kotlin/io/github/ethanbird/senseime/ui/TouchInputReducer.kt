@@ -1,6 +1,15 @@
 package io.github.ethanbird.senseime.ui
 
 import kotlin.math.abs
+import kotlin.math.max
+
+object KeyboardGestureThresholds {
+    fun upwardFlickDistance(minimumDistance: Float, keyHeight: Float): Float {
+        require(minimumDistance > 0f)
+        require(keyHeight > 0f)
+        return max(minimumDistance, keyHeight * 0.18f)
+    }
+}
 
 /**
  * Allocation-light, pointer-aware reducer for keyboard gestures.
@@ -24,12 +33,76 @@ class TouchInputReducer<T>(
         val gesture: Gesture,
     )
 
+    /**
+     * Target-specific gesture rules. A key flick and a scroll deliberately do
+     * not share thresholds: flicks resolve from their final displacement,
+     * while scrolling latches as soon as a directional drag clears touch slop.
+     */
+    class GesturePolicy private constructor(
+        internal val kind: Kind,
+        internal val threshold: Float,
+        internal val verticalDominanceRatio: Float,
+    ) {
+        internal enum class Kind {
+            TAP_ONLY,
+            UPWARD_FLICK,
+            VERTICAL_SCROLL,
+        }
+
+        companion object {
+            fun tapOnly(): GesturePolicy = GesturePolicy(
+                kind = Kind.TAP_ONLY,
+                threshold = 0f,
+                verticalDominanceRatio = 1f,
+            )
+
+            fun upwardFlick(
+                minimumDistance: Float,
+                verticalDominanceRatio: Float,
+            ): GesturePolicy {
+                require(minimumDistance > 0f)
+                require(verticalDominanceRatio >= 1f)
+                return GesturePolicy(
+                    kind = Kind.UPWARD_FLICK,
+                    threshold = minimumDistance,
+                    verticalDominanceRatio = verticalDominanceRatio,
+                )
+            }
+
+            fun verticalScroll(
+                touchSlop: Float,
+                verticalDominanceRatio: Float,
+            ): GesturePolicy {
+                require(touchSlop > 0f)
+                require(verticalDominanceRatio >= 1f)
+                return GesturePolicy(
+                    kind = Kind.VERTICAL_SCROLL,
+                    threshold = touchSlop,
+                    verticalDominanceRatio = verticalDominanceRatio,
+                )
+            }
+        }
+    }
+
+    data class MoveResult(
+        val canceled: Boolean,
+        val tapSuppressed: Boolean,
+    )
+
     private var pointerIds = IntArray(10) { NONE }
     private var targets = arrayOfNulls<Any>(10)
     private var downXs = FloatArray(10)
     private var downYs = FloatArray(10)
     private var canceled = BooleanArray(10)
+    private var tapSuppressed = BooleanArray(10)
+    private var latchedGestures = ByteArray(10)
     private var pointerCount = 0
+
+    /** Starts a new MotionEvent stream, discarding pointers orphaned by a missing terminal event. */
+    fun onPrimaryDown(pointerId: Int, target: T, x: Float, y: Float) {
+        cancelAll()
+        onDown(pointerId, target, x, y)
+    }
 
     fun onDown(pointerId: Int, target: T, x: Float, y: Float) {
         var slot = findSlot(pointerId)
@@ -46,6 +119,8 @@ class TouchInputReducer<T>(
         downXs[slot] = x
         downYs[slot] = y
         canceled[slot] = false
+        tapSuppressed[slot] = false
+        latchedGestures[slot] = NO_GESTURE
     }
 
     /** Returns true only when this MOVE newly canceled the pointer. */
@@ -57,6 +132,31 @@ class TouchInputReducer<T>(
             return true
         }
         return false
+    }
+
+    /**
+     * Records a policy-aware MOVE without retargeting the pointer. Scroll
+     * policies suppress taps permanently after touch slop, even if the finger
+     * later returns to its origin. Flick policies stay alive outside the key so
+     * a short upward release can still resolve against the frozen DOWN target.
+     */
+    fun onMove(
+        pointerId: Int,
+        x: Float,
+        y: Float,
+        insideTapTarget: Boolean,
+        policy: GesturePolicy,
+    ): MoveResult {
+        val slot = findSlot(pointerId)
+        if (slot < 0) return MoveResult(canceled = false, tapSuppressed = false)
+        updateGestureTrace(slot, x, y, policy)
+        if (policy.kind == GesturePolicy.Kind.TAP_ONLY && !insideTapTarget && !canceled[slot]) {
+            canceled[slot] = true
+        }
+        return MoveResult(
+            canceled = canceled[slot],
+            tapSuppressed = tapSuppressed[slot],
+        )
     }
 
     fun onUp(pointerId: Int, x: Float, y: Float, insideFrozenTarget: Boolean): Activation<T>? {
@@ -77,6 +177,56 @@ class TouchInputReducer<T>(
         return Activation(target, gesture)
     }
 
+    fun onUp(
+        pointerId: Int,
+        x: Float,
+        y: Float,
+        insideTapTarget: Boolean,
+        policy: GesturePolicy,
+    ): Activation<T>? {
+        val slot = findSlot(pointerId)
+        if (slot < 0) return null
+        @Suppress("UNCHECKED_CAST")
+        val target = targets[slot] as T
+        updateGestureTrace(slot, x, y, policy)
+        val wasCanceled = canceled[slot]
+        val wasTapSuppressed = tapSuppressed[slot]
+        val latchedGesture = latchedGestures[slot]
+        val deltaX = x - downXs[slot]
+        val deltaY = y - downYs[slot]
+        release(slot)
+        if (wasCanceled) return null
+
+        val gesture = when (policy.kind) {
+            GesturePolicy.Kind.TAP_ONLY -> {
+                if (!insideTapTarget) return null
+                Gesture.TAP
+            }
+
+            GesturePolicy.Kind.UPWARD_FLICK -> {
+                if (
+                    deltaY <= -policy.threshold &&
+                    -deltaY > abs(deltaX) * policy.verticalDominanceRatio
+                ) {
+                    Gesture.SWIPE_UP
+                } else {
+                    if (!insideTapTarget) return null
+                    Gesture.TAP
+                }
+            }
+
+            GesturePolicy.Kind.VERTICAL_SCROLL -> when (latchedGesture) {
+                SWIPE_UP_GESTURE -> Gesture.SWIPE_UP
+                SWIPE_DOWN_GESTURE -> Gesture.SWIPE_DOWN
+                else -> {
+                    if (wasTapSuppressed || !insideTapTarget) return null
+                    Gesture.TAP
+                }
+            }
+        }
+        return Activation(target, gesture)
+    }
+
     fun cancel(pointerId: Int): T? {
         val slot = findSlot(pointerId)
         if (slot < 0) return null
@@ -91,6 +241,8 @@ class TouchInputReducer<T>(
             pointerIds[index] = NONE
             targets[index] = null
             canceled[index] = false
+            tapSuppressed[index] = false
+            latchedGestures[index] = NO_GESTURE
         }
         pointerCount = 0
     }
@@ -104,7 +256,7 @@ class TouchInputReducer<T>(
 
     fun isPressed(pointerId: Int): Boolean {
         val slot = findSlot(pointerId)
-        return slot >= 0 && !canceled[slot]
+        return slot >= 0 && !canceled[slot] && !tapSuppressed[slot]
     }
 
     val activePointerCount: Int
@@ -124,6 +276,8 @@ class TouchInputReducer<T>(
         pointerIds[slot] = NONE
         targets[slot] = null
         canceled[slot] = false
+        tapSuppressed[slot] = false
+        latchedGestures[slot] = NO_GESTURE
         pointerCount--
     }
 
@@ -136,10 +290,32 @@ class TouchInputReducer<T>(
         downXs = downXs.copyOf(oldSize * 2)
         downYs = downYs.copyOf(oldSize * 2)
         canceled = canceled.copyOf(oldSize * 2)
+        tapSuppressed = tapSuppressed.copyOf(oldSize * 2)
+        latchedGestures = latchedGestures.copyOf(oldSize * 2)
+    }
+
+    private fun updateGestureTrace(slot: Int, x: Float, y: Float, policy: GesturePolicy) {
+        if (policy.kind != GesturePolicy.Kind.VERTICAL_SCROLL) return
+        val deltaX = x - downXs[slot]
+        val deltaY = y - downYs[slot]
+        val threshold = policy.threshold
+        if (deltaX * deltaX + deltaY * deltaY >= threshold * threshold) {
+            tapSuppressed[slot] = true
+        }
+        if (
+            latchedGestures[slot] == NO_GESTURE &&
+            abs(deltaY) >= threshold &&
+            abs(deltaY) > abs(deltaX) * policy.verticalDominanceRatio
+        ) {
+            latchedGestures[slot] = if (deltaY < 0f) SWIPE_UP_GESTURE else SWIPE_DOWN_GESTURE
+        }
     }
 
     private companion object {
         const val NONE = -1
+        const val NO_GESTURE: Byte = 0
+        const val SWIPE_UP_GESTURE: Byte = -1
+        const val SWIPE_DOWN_GESTURE: Byte = 1
     }
 }
 
