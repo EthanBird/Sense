@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
   "stage": "M1",
-  "generatedAt": "2026-07-21T15:59:25.397260928Z",
+  "generatedAt": "2026-07-22T01:26:32.113960148Z",
   "lexicon": {
-    "bytes": 1010655,
-    "sha256": "cdcadaa5d217759763a1c9465d51859c54656c51f78e3f9d8de610aa3a2c58ce",
-    "loadMs": 21.81
+    "bytes": 4278416,
+    "sha256": "704603d370ba6e0b9b5b935fc5aa48219f5b63beac3716133fe6c82ca6c25935",
+    "loadMs": 49.57
   },
   "lookup": {
     "samples": 7,
     "lookupsPerSample": 20000,
-    "medianNs": 284.33,
-    "p95Ns": 1067.81
+    "medianNs": 393.99,
+    "p95Ns": 1230.60
   },
   "deviceMetrics": {
     "status": "pending-real-device"

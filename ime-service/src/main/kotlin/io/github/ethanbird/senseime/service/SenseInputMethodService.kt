@@ -11,12 +11,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import io.github.ethanbird.senseime.core.AdaptivePinyinDecoder
+import io.github.ethanbird.senseime.core.Candidate
+import io.github.ethanbird.senseime.core.CandidateMatchKind
 import io.github.ethanbird.senseime.core.FakeDecoder
 import io.github.ethanbird.senseime.core.InputAction
 import io.github.ethanbird.senseime.core.InputDecoder
 import io.github.ethanbird.senseime.core.InputReducer
 import io.github.ethanbird.senseime.core.InputState
+import io.github.ethanbird.senseime.core.MemoryUserLexicon
 import io.github.ethanbird.senseime.core.PinyinDecoder
+import io.github.ethanbird.senseime.core.PinyinSyllableSegmenter
+import io.github.ethanbird.senseime.core.UserLexicon
 import io.github.ethanbird.senseime.ui.KeyCodes
 import io.github.ethanbird.senseime.ui.SenseKeyboardView
 import java.util.ArrayDeque
@@ -24,6 +30,9 @@ import java.util.ArrayDeque
 class SenseInputMethodService : InputMethodService() {
     private val reducer = InputReducer()
     private var decoder: InputDecoder = FakeDecoder()
+    private var adaptiveDecoder: AdaptivePinyinDecoder? = null
+    private var userLexicon: UserLexicon? = null
+    private var renderedCandidates: List<Candidate> = emptyList()
     private var state = InputState()
     private var shifted = false
     private var chineseMode = true
@@ -37,9 +46,16 @@ class SenseInputMethodService : InputMethodService() {
 
     override fun onCreate() {
         super.onCreate()
-        decoder = runCatching {
+        val baseDecoder = runCatching {
             assets.open(PINYIN_ASSET).use(PinyinDecoder::load)
         }.getOrElse { FakeDecoder() }
+        val syllables = runCatching {
+            assets.open(PINYIN_SYLLABLES_ASSET).bufferedReader().useLines { lines -> lines.toSet() }
+        }.getOrElse { FALLBACK_SYLLABLES }
+        val learned = runCatching<UserLexicon> { PersistentUserLexicon(this) }.getOrElse { MemoryUserLexicon() }
+        userLexicon = learned
+        adaptiveDecoder = AdaptivePinyinDecoder(baseDecoder, learned, PinyinSyllableSegmenter(syllables))
+        decoder = adaptiveDecoder ?: baseDecoder
         clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboardManager.addPrimaryClipChangedListener(clipboardListener)
         capturePrimaryClipboard()
@@ -69,6 +85,9 @@ class SenseInputMethodService : InputMethodService() {
 
     override fun onDestroy() {
         clipboardManager.removePrimaryClipChangedListener(clipboardListener)
+        userLexicon?.close()
+        userLexicon = null
+        adaptiveDecoder = null
         keyboardView = null
         super.onDestroy()
     }
@@ -135,9 +154,16 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun commitCandidate(index: Int) {
         if (state.composing.isEmpty()) return
-        val candidate = decoder.decode(state.composing, CANDIDATE_LIMIT).getOrNull(index)?.text ?: state.composing
-        state = reducer.reduce(state, InputAction.Commit(candidate))
-        currentInputConnection?.commitText(candidate, 1)
+        val rawInput = state.composing
+        val candidate = renderedCandidates.getOrNull(index) ?: Candidate(
+            text = rawInput,
+            canonicalPinyin = rawInput,
+            matchKind = CandidateMatchKind.BASE_EXACT,
+        )
+        val committed = currentInputConnection?.commitText(candidate.text, 1) == true
+        if (!committed) return
+        state = reducer.reduce(state, InputAction.Commit(candidate.text))
+        adaptiveDecoder?.learn(rawInput, candidate)
         shifted = false
         keyboardView?.setShifted(false)
         render()
@@ -205,15 +231,17 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun render() {
-        val candidates = if (chineseMode) decoder.decode(state.composing, CANDIDATE_LIMIT).map { it.text } else emptyList()
-        keyboardView?.updateComposing(state.composing, candidates)
+        renderedCandidates = if (chineseMode) decoder.decode(state.composing, CANDIDATE_LIMIT) else emptyList()
+        keyboardView?.updateComposing(state.composing, renderedCandidates.map { it.text })
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private companion object {
         const val PINYIN_ASSET = "pinyin_lexicon.bin"
+        const val PINYIN_SYLLABLES_ASSET = "pinyin_syllables.txt"
         const val CANDIDATE_LIMIT = 6
         const val CLIPBOARD_HISTORY_LIMIT = 8
+        val FALLBACK_SYLLABLES = setOf("a", "ai", "an", "ang", "ao", "ba", "de", "ge", "hao", "ni", "ren", "shi", "wo", "xian", "yi")
     }
 }

@@ -8,6 +8,12 @@ package io.github.ethanbird.senseime.ui
  * edge actions so its centre remains reserved.
  */
 object KeyboardLayoutContract {
+    data class CandidateSlot(
+        val left: Float,
+        val right: Float,
+        val textAnchor: Float,
+    )
+
     data class WeightedKey(
         val label: String,
         val code: Int,
@@ -47,4 +53,24 @@ object KeyboardLayoutContract {
         SystemKey(KeyCodes.SWITCH_INPUT_METHOD, Side.LEFT),
         SystemKey(KeyCodes.CLIPBOARD, Side.RIGHT),
     )
+
+    fun leftAlignedCandidateSlots(
+        viewWidth: Float,
+        measuredTextWidths: List<Float>,
+        padding: Float,
+        textInset: Float,
+        gap: Float,
+        minimumWidth: Float,
+    ): List<CandidateSlot> {
+        val result = ArrayList<CandidateSlot>(measuredTextWidths.size)
+        var left = padding
+        for (textWidth in measuredTextWidths) {
+            if (viewWidth - padding - left < minimumWidth) break
+            val width = maxOf(minimumWidth, textWidth + textInset * 2)
+            val right = minOf(viewWidth - padding, left + width)
+            result += CandidateSlot(left, right, left + textInset)
+            left = right + gap
+        }
+        return result
+    }
 }

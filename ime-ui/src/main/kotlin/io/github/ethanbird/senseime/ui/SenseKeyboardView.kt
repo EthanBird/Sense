@@ -57,6 +57,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val keys = mutableListOf<Key>()
     private val candidateBounds = mutableListOf<RectF>()
+    private val candidateTextAnchors = mutableListOf<Float>()
     private var candidates: List<String> = emptyList()
     private var clipboardItems: List<String> = emptyList()
     private var composing: String = ""
@@ -186,8 +187,8 @@ class SenseKeyboardView @JvmOverloads constructor(
             }
             paint.color = color(0xFF172033.toInt(), 0xFFF3F4F7.toInt())
             paint.textSize = sp(17f)
-            paint.textAlign = Paint.Align.CENTER
-            drawCenteredText(canvas, text, bounds.centerX(), bounds.centerY() + dp(2f))
+            paint.textAlign = Paint.Align.LEFT
+            drawCenteredText(canvas, text, candidateTextAnchors[index], bounds.centerY() + dp(2f))
         }
     }
 
@@ -328,15 +329,24 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private fun rebuildCandidateBounds(viewWidth: Int) {
         candidateBounds.clear()
+        candidateTextAnchors.clear()
         if (viewWidth <= 0 || candidates.isEmpty()) return
-        val compositionWidth = if (composing.isBlank()) 0f else minOf(dp(48f), viewWidth * 0.14f)
-        val usable = viewWidth - horizontalPadding * 2 - compositionWidth
-        val slotWidth = usable / candidates.size
-        candidates.indices.forEach { index ->
+        paint.textSize = sp(17f)
+        val top = if (composing.isBlank()) dp(3f) else dp(13f)
+        val slots = KeyboardLayoutContract.leftAlignedCandidateSlots(
+            viewWidth = viewWidth.toFloat(),
+            measuredTextWidths = candidates.map(paint::measureText),
+            padding = horizontalPadding,
+            textInset = dp(9f),
+            gap = dp(3f),
+            minimumWidth = dp(44f),
+        )
+        slots.forEach { slot ->
+            candidateTextAnchors += slot.textAnchor
             candidateBounds += RectF(
-                horizontalPadding + compositionWidth + slotWidth * index,
-                dp(3f),
-                horizontalPadding + compositionWidth + slotWidth * (index + 1),
+                slot.left,
+                top,
+                slot.right,
                 candidateHeight - dp(3f),
             )
         }

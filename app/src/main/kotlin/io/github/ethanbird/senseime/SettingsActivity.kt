@@ -1,6 +1,7 @@
 package io.github.ethanbird.senseime
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -73,6 +74,16 @@ class SettingsActivity : Activity() {
                 text(R.string.offline_body, 15f, R.color.sense_secondary),
             ).withTop(dp(12)),
         )
+        content.addView(
+            card(
+                R.string.dictionary_notice_title,
+                text(R.string.dictionary_notice_body, 13f, R.color.sense_secondary),
+            ).apply {
+                isClickable = true
+                isFocusable = true
+                setOnClickListener { showDictionaryNotice() }
+            }.withTop(dp(12)),
+        )
         content.addView(text(R.string.version_label, 12f, R.color.sense_secondary).withTop(dp(24)))
 
         val scroll = ScrollView(this).apply {
@@ -96,6 +107,39 @@ class SettingsActivity : Activity() {
         statusText.setText(if (enabled) R.string.ime_enabled else R.string.ime_disabled)
         statusText.setTextColor(getColor(if (enabled) R.color.sense_success else R.color.sense_primary))
     }
+
+    private fun showDictionaryNotice() {
+        val notice = runCatching {
+            listOf(
+                "NOTICE" to "NOTICE.txt",
+                "CC-CEDICT NOTICE" to "CC-CEDICT-NOTICE.txt",
+                "CC BY-SA 4.0" to "CC-BY-SA-4.0.txt",
+            ).joinToString("\n\n") { (heading, fileName) ->
+                "$heading\n${"=".repeat(heading.length)}\n${readAsset(fileName).trimEnd()}"
+            }
+        }.getOrElse {
+            getString(R.string.dictionary_notice_load_error)
+        }
+        val body = TextView(this).apply {
+            text = notice
+            textSize = 12f
+            setTextColor(getColor(R.color.sense_primary))
+            setTextIsSelectable(true)
+            setLineSpacing(0f, 1.15f)
+            setPadding(dp(20), dp(12), dp(20), dp(12))
+        }
+        val scroll = ScrollView(this).apply {
+            addView(body)
+        }
+        AlertDialog.Builder(this)
+            .setTitle(R.string.dictionary_notice_title)
+            .setView(scroll)
+            .setPositiveButton(R.string.close, null)
+            .show()
+    }
+
+    private fun readAsset(fileName: String): String =
+        assets.open(fileName).bufferedReader(Charsets.UTF_8).use { it.readText() }
 
     private fun badge(): TextView = text(R.string.stage_badge, 12f, R.color.sense_accent, Typeface.BOLD).apply {
         gravity = Gravity.CENTER

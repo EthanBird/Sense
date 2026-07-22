@@ -5,7 +5,7 @@ import java.time.Instant
 import java.util.Locale
 import kotlin.system.measureNanoTime
 
-/** Host-side regression baseline for the production 39k-key pinyin lexicon. */
+/** Host-side regression baseline for the production pinyin lexicon. */
 object M1PinyinBenchmark {
     @JvmStatic
     fun main(args: Array<String>) {
@@ -20,8 +20,9 @@ object M1PinyinBenchmark {
         }
         val queries = listOf("ni", "nihao", "zhongwen", "shurufa", "xiansi", "gongzuo", "jintian", "women")
         check(decoder.decode("nihao").firstOrNull()?.text == "你好") { "Production lexicon smoke test failed" }
-        check(decoder.decode("woshiyigeren").firstOrNull()?.text == "我是一个人") {
-            "Production sentence composition smoke test failed"
+        val sentenceCandidates = decoder.decode("woshiyigeren")
+        check(sentenceCandidates.firstOrNull()?.text == "我是一个人") {
+            "Production sentence composition smoke test failed: $sentenceCandidates"
         }
 
         val lookupsPerSample = 20_000

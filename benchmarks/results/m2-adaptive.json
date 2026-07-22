@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "stage": "M2",
+  "generatedAt": "2026-07-22T01:26:35.271790573Z",
+  "lexicon": {
+    "keys": 104893,
+    "bytes": 4278416,
+    "loadMs": 48.16
+  },
+  "exactLookup": {
+    "medianNs": 3153.30,
+    "p95Ns": 7188.34
+  },
+  "typoLookup": {
+    "medianMs": 0.84,
+    "p95Ms": 1.22
+  },
+  "longSentenceTypoLookup": {
+    "medianMs": 17.90,
+    "p95Ms": 18.89
+  },
+  "userLexicon10kLookup": {
+    "medianNs": 350.79,
+    "p95Ns": 1741.58
+  },
+  "deviceMetrics": { "status": "pending-real-device" }
+}

@@ -23,12 +23,22 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Verify M1.1
+      - name: Verify lexicon builder
+        run: python3 tools/test_build_pinyin_lexicon.py
+
+      - name: Verify attributed assets
+        run: |
+          cmp NOTICE ime-service/src/main/assets/NOTICE.txt
+          cmp licenses/CC-CEDICT-NOTICE.md ime-service/src/main/assets/CC-CEDICT-NOTICE.txt
+          cmp licenses/CC-BY-SA-4.0.txt ime-service/src/main/assets/CC-BY-SA-4.0.txt
+
+      - name: Verify M2
         run: >-
           ./gradlew
           :core-input:test
           :core-input:m0HostBenchmark
           :core-input:m1PinyinBenchmark
+          :core-input:m2AdaptiveBenchmark
           :ime-ui:testDebugUnitTest
           :app:lintDebug
           :app:assembleDebug
@@ -38,14 +48,14 @@ jobs:
       - name: Upload debug APKs
         uses: actions/upload-artifact@v4
         with:
-          name: sense-m1-1-debug-apks
+          name: sense-m2-debug-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
             benchmark/build/outputs/apk/benchmark/*.apk
           if-no-files-found: error
 
-  release-m1-1:
+  release-m2:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -57,7 +67,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: sense-m1-1-debug-apks
+          name: sense-m2-debug-apks
           path: artifacts
 
       - name: Prepare release assets
@@ -67,22 +77,25 @@ jobs:
           mkdir release
           apk=$(find artifacts -type f -path '*/app/build/outputs/apk/benchmark/*.apk' -print -quit)
           test -n "$apk"
-          cp "$apk" release/Sense-v0.1.1-m1.apk
+          unzip -p "$apk" assets/NOTICE.txt | cmp - NOTICE
+          unzip -p "$apk" assets/CC-CEDICT-NOTICE.txt | cmp - ime-service/src/main/assets/CC-CEDICT-NOTICE.txt
+          unzip -p "$apk" assets/CC-BY-SA-4.0.txt | cmp - ime-service/src/main/assets/CC-BY-SA-4.0.txt
+          cp "$apk" release/Sense-v0.2.0-m2.apk
           cd release
-          sha256sum Sense-v0.1.1-m1.apk > SHA256SUMS.txt
+          sha256sum Sense-v0.2.0-m2.apk > SHA256SUMS.txt
 
-      - name: Create M1.1 prerelease
+      - name: Create M2 prerelease
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view v0.1.1-m1 >/dev/null 2>&1; then
-            echo "v0.1.1-m1 already exists; leaving it unchanged."
+          if gh release view v0.2.0-m2 >/dev/null 2>&1; then
+            echo "v0.2.0-m2 already exists; leaving it unchanged."
           else
-            gh release create v0.1.1-m1 \
+            gh release create v0.2.0-m2 \
               --target "$GITHUB_SHA" \
-              --title "Sense v0.1.1-m1 · 手机键盘布局校正版" \
-              --notes-file docs/releases/v0.1.1-m1.md \
+              --title "Sense v0.2.0-m2 · 自适应中文输入" \
+              --notes-file docs/releases/v0.2.0-m2.md \
               --prerelease \
-              release/Sense-v0.1.1-m1.apk \
+              release/Sense-v0.2.0-m2.apk \
               release/SHA256SUMS.txt
           fi

@@ -2,6 +2,7 @@ package io.github.ethanbird.senseime.ui
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class KeyboardLayoutContractTest {
@@ -54,5 +55,38 @@ class KeyboardLayoutContractTest {
         assertEquals(KeyCodes.CLIPBOARD, keys.last().code)
         assertEquals(KeyboardLayoutContract.Side.RIGHT, keys.last().side)
         assertFalse(keys.any { it.code == KeyCodes.SPACE })
+    }
+
+    @Test
+    fun candidatesFlowFromTheLeftUsingMeasuredWidths() {
+        val slots = KeyboardLayoutContract.leftAlignedCandidateSlots(
+            viewWidth = 360f,
+            measuredTextWidths = listOf(34f, 52f, 20f),
+            padding = 6f,
+            textInset = 9f,
+            gap = 3f,
+            minimumWidth = 44f,
+        )
+
+        assertEquals(6f, slots.first().left)
+        assertEquals(15f, slots.first().textAnchor)
+        assertTrue(slots.zipWithNext().all { (left, right) -> right.left > left.right })
+        assertEquals(listOf(52f, 70f, 44f), slots.map { it.right - it.left })
+    }
+
+    @Test
+    fun candidateFlowDoesNotCreateAnUntappableSliverAtTheRightEdge() {
+        val slots = KeyboardLayoutContract.leftAlignedCandidateSlots(
+            viewWidth = 120f,
+            measuredTextWidths = listOf(30f, 30f, 30f),
+            padding = 6f,
+            textInset = 9f,
+            gap = 3f,
+            minimumWidth = 44f,
+        )
+
+        assertEquals(2, slots.size)
+        assertTrue(slots.all { it.right - it.left >= 44f })
+        assertTrue(slots.all { it.textAnchor <= it.right })
     }
 }

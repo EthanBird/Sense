@@ -3,7 +3,19 @@ package io.github.ethanbird.senseime.core
 data class Candidate(
     val text: String,
     val score: Float = 0f,
+    val canonicalPinyin: String? = null,
+    val matchKind: CandidateMatchKind = CandidateMatchKind.BASE_EXACT,
+    val canonicalInitials: String? = null,
 )
+
+enum class CandidateMatchKind {
+    BASE_EXACT,
+    BASE_COMPOSED,
+    BASE_PREFIX,
+    CORRECTED,
+    USER_FULL,
+    USER_INITIALS,
+}
 
 data class InputState(
     val composing: String = "",
@@ -33,4 +45,3 @@ data class EditorTransaction(
 interface InputDecoder {
     fun decode(composing: String, limit: Int = 5): List<Candidate>
 }
-

@@ -39,3 +39,16 @@ tasks.register<JavaExec>("m1PinyinBenchmark") {
         rootProject.layout.projectDirectory.file("benchmarks/results/m1-pinyin.json").asFile.absolutePath,
     )
 }
+
+tasks.register<JavaExec>("m2AdaptiveBenchmark") {
+    group = "verification"
+    description = "Measures statistical short codes, typo correction and initials learning."
+    dependsOn(tasks.named("classes"))
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("io.github.ethanbird.senseime.core.M2AdaptiveBenchmark")
+    args(
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/pinyin_lexicon.bin").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/pinyin_syllables.txt").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("benchmarks/results/m2-adaptive.json").asFile.absolutePath,
+    )
+}

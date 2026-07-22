@@ -20,10 +20,20 @@ class PinyinDecoder private constructor(
         if (query.isEmpty()) return emptyList()
 
         val exact = findExact(query)
-        if (exact >= 0) return readCandidates(exact, limit)
+        if (exact >= 0) return readCandidates(exact, limit, CandidateMatchKind.BASE_EXACT, query)
 
         val composed = composeCandidates(query, limit)
-        return if (composed.isNotEmpty()) composed else readPrefixCandidates(query, limit)
+        val statisticalPrefix = readStatisticalPrefixCandidates(query, limit)
+        val dynamicPrefix = readPrefixCandidates(query, limit)
+        val corrected = readCorrectedCandidates(query, limit)
+        val bestByText = LinkedHashMap<String, Candidate>()
+        (composed + statisticalPrefix + dynamicPrefix + corrected).forEach { candidate ->
+            val previous = bestByText[candidate.text]
+            if (previous == null || candidate.score > previous.score) bestByText[candidate.text] = candidate
+        }
+        return bestByText.values
+            .sortedWith(compareByDescending<Candidate> { it.score }.thenBy { matchPriority(it.matchKind) }.thenBy { it.text.length })
+            .take(limit)
     }
 
     private fun findExact(query: String): Int {
@@ -52,14 +62,15 @@ class PinyinDecoder private constructor(
 
     private data class CompositionPath(
         val text: String,
+        val initials: String,
         val segments: Int,
         val score: Float,
     )
 
-    /** Builds a sentence from the longest available words when no exact phrase exists. */
+    /** Builds a sentence by balancing word likelihood with a penalty for each split. */
     private fun composeCandidates(query: String, limit: Int): List<Candidate> {
         val beams = arrayOfNulls<MutableList<CompositionPath>>(query.length + 1)
-        beams[0] = mutableListOf(CompositionPath("", 0, 0f))
+        beams[0] = mutableListOf(CompositionPath("", "", 0, 0f))
         query.indices.forEach { start ->
             val paths = beams[start] ?: return@forEach
             val maxEnd = minOf(query.length, start + MAX_SEGMENT_CODE_LENGTH)
@@ -72,7 +83,12 @@ class PinyinDecoder private constructor(
                     options.forEach { option ->
                         addToBeam(
                             target,
-                            CompositionPath(path.text + option.text, path.segments + 1, path.score + option.score),
+                            CompositionPath(
+                                text = path.text + option.text,
+                                initials = path.initials + option.canonicalInitials.orEmpty(),
+                                segments = path.segments + 1,
+                                score = path.score + option.score,
+                            ),
                         )
                     }
                 }
@@ -84,7 +100,15 @@ class PinyinDecoder private constructor(
             .distinctBy { it.text }
             .sortedWith(compositionComparator)
             .take(limit)
-            .map { Candidate(it.text, it.score - it.segments * SEGMENT_SCORE_PENALTY) }
+            .map {
+                Candidate(
+                    text = it.text,
+                    score = compositionScore(it),
+                    canonicalPinyin = query,
+                    matchKind = CandidateMatchKind.BASE_COMPOSED,
+                    canonicalInitials = it.initials.ifEmpty { null },
+                )
+            }
     }
 
     private fun addToBeam(beam: MutableList<CompositionPath>, value: CompositionPath) {
@@ -98,8 +122,20 @@ class PinyinDecoder private constructor(
         while (beam.size > SEGMENT_BEAM_WIDTH) beam.removeAt(beam.lastIndex)
     }
 
+    private fun compositionScore(path: CompositionPath): Float =
+        path.score - path.segments * SEGMENT_SCORE_PENALTY
+
     private val compositionComparator =
-        compareBy<CompositionPath> { it.segments }.thenByDescending { it.score }.thenBy { it.text }
+        compareByDescending<CompositionPath>(::compositionScore)
+            .thenBy { it.segments }
+            .thenBy { it.text }
+
+    private fun matchPriority(kind: CandidateMatchKind): Int = when (kind) {
+        CandidateMatchKind.BASE_COMPOSED -> 0
+        CandidateMatchKind.BASE_PREFIX -> 1
+        CandidateMatchKind.CORRECTED -> 2
+        else -> 3
+    }
 
     private fun findExact(query: String, start: Int, end: Int): Int {
         var low = 0
@@ -115,8 +151,15 @@ class PinyinDecoder private constructor(
         return -1
     }
 
+    private fun readStatisticalPrefixCandidates(query: String, limit: Int): List<Candidate> {
+        val record = findExact(PREFIX_NAMESPACE + query)
+        if (record < 0) return emptyList()
+        return readCandidates(record, limit, CandidateMatchKind.BASE_PREFIX)
+            .map { it.copy(canonicalPinyin = null, matchKind = CandidateMatchKind.BASE_PREFIX) }
+    }
+
     private fun readPrefixCandidates(query: String, limit: Int): List<Candidate> {
-        val values = HashMap<String, Float>()
+        val values = HashMap<String, Candidate>()
         var index = lowerBound(query)
         var scanned = 0
         while (index < recordOffsets.size && scanned < PREFIX_SCAN_LIMIT && codeStartsWith(index, query)) {
@@ -124,20 +167,146 @@ class PinyinDecoder private constructor(
             val completionPenalty = (codeLength - query.length).coerceAtLeast(0) * 0.08f
             readCandidates(index, PREFIX_CANDIDATES_PER_KEY).forEach { candidate ->
                 val score = candidate.score - completionPenalty
-                if (score > (values[candidate.text] ?: Float.NEGATIVE_INFINITY)) {
-                    values[candidate.text] = score
+                if (score > (values[candidate.text]?.score ?: Float.NEGATIVE_INFINITY)) {
+                    values[candidate.text] = candidate.copy(
+                        score = score,
+                        canonicalPinyin = null,
+                        matchKind = CandidateMatchKind.BASE_PREFIX,
+                    )
                 }
             }
             index += 1
             scanned += 1
         }
-        return values.entries
-            .sortedWith(compareByDescending<Map.Entry<String, Float>> { it.value }.thenBy { it.key.length })
+        return values.values
+            .sortedWith(compareByDescending<Candidate> { it.score }.thenBy { it.text.length })
             .take(limit)
-            .map { Candidate(it.key, it.value) }
     }
 
-    private fun readCandidates(index: Int, limit: Int): List<Candidate> {
+    private data class CorrectionHit(
+        val text: String,
+        val score: Float,
+        val cost: Float,
+        val canonical: String,
+        val initials: String?,
+    )
+
+    private data class CorrectionQuery(
+        val code: String,
+        val cost: Float,
+    )
+
+    private fun readCorrectedCandidates(query: String, limit: Int): List<Candidate> {
+        if (query.length !in 2..MAX_CORRECTION_QUERY_LENGTH) return emptyList()
+        val values = HashMap<String, CorrectionHit>()
+        correctionQueries(query).forEach { correction ->
+            val exact = findExact(correction.code)
+            val candidates = when {
+                exact >= 0 -> readCandidates(
+                    exact,
+                    limit,
+                    CandidateMatchKind.CORRECTED,
+                    correction.code,
+                )
+
+                hasCompleteComposition(correction.code) -> composeCandidates(correction.code, limit).map {
+                    it.copy(matchKind = CandidateMatchKind.CORRECTED, canonicalPinyin = correction.code)
+                }
+
+                else -> emptyList()
+            }
+            candidates.forEach { candidate ->
+                val value = CorrectionHit(
+                    candidate.text,
+                    candidate.score - correction.cost * CORRECTION_PENALTY,
+                    correction.cost,
+                    correction.code,
+                    candidate.canonicalInitials,
+                )
+                val previous = values[candidate.text]
+                if (previous == null || value.score > previous.score || value.score == previous.score && value.cost < previous.cost) {
+                    values[candidate.text] = value
+                }
+            }
+        }
+        return values.values
+            .sortedWith(compareByDescending<CorrectionHit> { it.score }.thenBy { it.cost }.thenBy { it.text.length })
+            .take(limit)
+            .map { Candidate(it.text, it.score, it.canonical, CandidateMatchKind.CORRECTED, it.initials) }
+    }
+
+    /** Generates all one-edit spellings and ranks mobile-keyboard/fuzzy variants first. */
+    private fun correctionQueries(query: String): List<CorrectionQuery> {
+        val values = HashMap<String, Float>()
+        fun offer(code: String, cost: Float) {
+            if (code != query && code.length <= MAX_CORRECTION_QUERY_LENGTH + 1) {
+                values[code] = minOf(values[code] ?: Float.POSITIVE_INFINITY, cost)
+            }
+        }
+
+        query.indices.forEach { index ->
+            val repeatedKey = query.getOrNull(index - 1) == query[index] || query.getOrNull(index + 1) == query[index]
+            val deletionCost = if (repeatedKey) REPEATED_KEY_COST else {
+                insertionDeletionCost(query[index], query.getOrNull(index - 1))
+            }
+            offer(query.removeRange(index, index + 1), deletionCost)
+            if (index < query.lastIndex && query[index] != query[index + 1]) {
+                val swapped = query.toCharArray().also {
+                    val first = it[index]
+                    it[index] = it[index + 1]
+                    it[index + 1] = first
+                }
+                offer(swapped.concatToString(), TRANSPOSITION_COST)
+            }
+            SUBSTITUTION_CANDIDATES[query[index]].orEmpty().forEach { expected ->
+                offer(query.replaceRange(index, index + 1, expected.toString()), substitutionCost(expected, query[index]))
+            }
+        }
+        for (index in 0..query.length) {
+            ('a'..'z').forEach { expected ->
+                offer(
+                    query.substring(0, index) + expected + query.substring(index),
+                    insertionDeletionCost(expected, query.getOrNull(index - 1)),
+                )
+            }
+        }
+        return values.entries
+            .map { CorrectionQuery(it.key, it.value) }
+            .sortedWith(compareBy<CorrectionQuery> { it.cost }.thenBy { it.code })
+    }
+
+    private fun hasCompleteComposition(query: String): Boolean {
+        val reachable = BooleanArray(query.length + 1)
+        reachable[0] = true
+        query.indices.forEach { start ->
+            if (!reachable[start]) return@forEach
+            val maxEnd = minOf(query.length, start + MAX_SEGMENT_CODE_LENGTH)
+            for (end in (start + 1)..maxEnd) {
+                if (findExact(query, start, end) >= 0) reachable[end] = true
+            }
+        }
+        return reachable.last()
+    }
+
+    private fun substitutionCost(expected: Char, typed: Char): Float = when {
+        expected == typed -> 0f
+        expected to typed in FUZZY_SUBSTITUTIONS || typed to expected in FUZZY_SUBSTITUTIONS -> FUZZY_COST
+        typed in KEY_NEIGHBORS[expected].orEmpty() -> NEIGHBOR_COST
+        else -> SUBSTITUTION_COST
+    }
+
+    private fun insertionDeletionCost(character: Char, previous: Char?): Float = when {
+        character == 'h' && previous != null && previous in "zcs" -> FUZZY_COST
+        character == 'g' && previous == 'n' -> FUZZY_COST
+        else -> INSERTION_DELETION_COST
+    }
+
+    private fun readCandidates(
+        index: Int,
+        limit: Int,
+        matchKind: CandidateMatchKind = CandidateMatchKind.BASE_EXACT,
+        canonicalPinyin: String? = null,
+    ): List<Candidate> {
         var cursor = recordOffsets[index]
         val codeLength = unsigned(data[cursor++])
         cursor += codeLength
@@ -153,8 +322,23 @@ class PinyinDecoder private constructor(
             cursor += textLength
             val weight = readInt(cursor).toLong() and 0xFFFFFFFFL
             cursor += Int.SIZE_BYTES
+            val initialsLength = unsigned(data[cursor++])
+            val initials = if (candidateIndex < limit && initialsLength > 0) {
+                data.decodeToString(cursor, cursor + initialsLength)
+            } else {
+                null
+            }
+            cursor += initialsLength
+            val sourceTier = unsigned(data[cursor++])
             if (candidateIndex < limit) {
-                result += Candidate(text, ln(weight.toDouble() + 1.0).toFloat())
+                result += Candidate(
+                    text,
+                    ln(weight.toDouble() + 1.0).toFloat() -
+                        if (sourceTier == FALLBACK_SOURCE_TIER) FALLBACK_SOURCE_PENALTY else 0f,
+                    canonicalPinyin,
+                    matchKind,
+                    initials,
+                )
             }
         }
         return result
@@ -200,13 +384,47 @@ class PinyinDecoder private constructor(
 
     companion object {
         private const val HEADER_SIZE = 10
-        private const val VERSION = 1
+        private const val VERSION = 3
         private const val PREFIX_SCAN_LIMIT = 96
         private const val PREFIX_CANDIDATES_PER_KEY = 2
         private const val MAX_SEGMENT_CODE_LENGTH = 24
         private const val SEGMENT_CANDIDATES_PER_KEY = 2
         private const val SEGMENT_BEAM_WIDTH = 10
         private const val SEGMENT_SCORE_PENALTY = 20f
+        private const val MAX_CORRECTION_QUERY_LENGTH = 48
+        private const val CORRECTION_PENALTY = 4f
+        private const val FUZZY_COST = 0.25f
+        private const val NEIGHBOR_COST = 0.35f
+        private const val REPEATED_KEY_COST = 0.3f
+        private const val TRANSPOSITION_COST = 0.45f
+        private const val SUBSTITUTION_COST = 0.9f
+        private const val INSERTION_DELETION_COST = 1f
+        private const val FALLBACK_SOURCE_TIER = 1
+        // CC-CEDICT fallback entries use weight 1. Penalizing only fallback
+        // entries keeps a zero-weight primary entry ahead without rewarding
+        // sentences merely for splitting into more primary-source segments.
+        private const val FALLBACK_SOURCE_PENALTY = 1f
+        private val FUZZY_SUBSTITUTIONS = setOf('n' to 'l', 'f' to 'h')
+        private const val PREFIX_NAMESPACE = "{"
+        private val KEY_NEIGHBORS = mapOf(
+            'q' to "wa", 'w' to "qeas", 'e' to "wrsd", 'r' to "etdf", 't' to "ryfg",
+            'y' to "tugh", 'u' to "yihj", 'i' to "uojk", 'o' to "ipkl", 'p' to "ol",
+            'a' to "qwsz", 's' to "awedxz", 'd' to "serfcx", 'f' to "drtgcv", 'g' to "ftyhbv",
+            'h' to "gyujbn", 'j' to "huiknm", 'k' to "jiolm", 'l' to "kop",
+            'z' to "asx", 'x' to "zsdc", 'c' to "xdfv", 'v' to "cfgb", 'b' to "vghn",
+            'n' to "bhjm", 'm' to "njk",
+        )
+        private val SUBSTITUTION_CANDIDATES: Map<Char, Set<Char>> = ('a'..'z').associateWith { typed ->
+            buildSet {
+                addAll(KEY_NEIGHBORS[typed].orEmpty().asIterable())
+                KEY_NEIGHBORS.forEach { (expected, neighbors) -> if (typed in neighbors) add(expected) }
+                FUZZY_SUBSTITUTIONS.forEach { (left, right) ->
+                    if (typed == left) add(right)
+                    if (typed == right) add(left)
+                }
+                remove(typed)
+            }
+        }
         private val MAGIC = byteArrayOf('S'.code.toByte(), 'P'.code.toByte(), 'L'.code.toByte(), 'X'.code.toByte())
 
         fun load(input: InputStream): PinyinDecoder = fromBytes(input.readBytes())
@@ -239,6 +457,15 @@ class PinyinDecoder private constructor(
                         "Pinyin candidate is truncated"
                     }
                     cursor += textLength + Int.SIZE_BYTES
+                    require(cursor < data.size) { "Pinyin initials length is missing" }
+                    val initialsLength = data[cursor++].toInt() and 0xFF
+                    require(initialsLength > 0 && cursor + initialsLength <= data.size) {
+                        "Pinyin candidate initials are truncated"
+                    }
+                    cursor += initialsLength
+                    require(cursor < data.size) { "Pinyin candidate source tier is missing" }
+                    val sourceTier = data[cursor++].toInt() and 0xFF
+                    require(sourceTier in 0..1) { "Pinyin candidate source tier is invalid" }
                 }
             }
             require(cursor == data.size) { "Pinyin lexicon has trailing bytes" }
