@@ -1,4 +1,7 @@
 # kind<TAB>input<TAB>expected fields
 decode	w	我
 decode	ygz	一个字
+coverage	hua	滑	64
+composition	shanghua	上滑
+learn	d	的	de
 progressive	pipei	匹配	pi	匹	批	pei	匹pei	匹配

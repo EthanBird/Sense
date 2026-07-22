@@ -70,7 +70,7 @@ class ProgressivePinyinTest {
         val many = object : InputDecoder {
             override fun decode(composing: String, limit: Int): List<Candidate> =
                 if (composing == "pi") {
-                    List(100) { Candidate(text = ('一'.code + it).toChar().toString(), canonicalInitials = "p") }
+                    List(300) { Candidate(text = ('一'.code + it).toChar().toString(), canonicalInitials = "p") }
                 } else {
                     emptyList()
                 }
@@ -78,7 +78,34 @@ class ProgressivePinyinTest {
         val decoder = AdaptivePinyinDecoder(many, MemoryUserLexicon(), segmenter)
         val state = "pipei".fold(PinyinComposition()) { value, character -> value.type(character) }
 
-        assertEquals(32, decoder.decodeProgressively(state, 100).prefixCandidates.size)
+        assertEquals(100, decoder.decodeProgressively(state, 100).prefixCandidates.size)
+        assertEquals(255, decoder.decodeProgressively(state, 1000).prefixCandidates.size)
+    }
+
+    @Test
+    fun progressiveCandidatesCanExposeCharactersPastTheFirstPage() {
+        val many = object : InputDecoder {
+            override fun decode(composing: String, limit: Int): List<Candidate> = when (composing) {
+                "pipei" -> listOf(Candidate("匹配", canonicalPinyin = "pipei", canonicalInitials = "pp"))
+                "pi" -> List(80) { index ->
+                    Candidate(
+                        text = ('\u4E00'.code + index).toChar().toString(),
+                        score = (80 - index).toFloat(),
+                        canonicalPinyin = "pi",
+                        canonicalInitials = "p",
+                    )
+                }
+                else -> emptyList()
+            }.take(limit)
+        }
+        val decoder = AdaptivePinyinDecoder(many, MemoryUserLexicon(), segmenter)
+        val state = "pipei".fold(PinyinComposition()) { value, character -> value.type(character) }
+
+        val values = decoder.decodeProgressively(state, 255).prefixCandidates
+
+        assertEquals(80, values.size)
+        assertTrue(values.any { it.candidate.text == ('\u4E00'.code + 79).toChar().toString() })
+        assertTrue(values.none { it.remainingPinyin.isEmpty() })
     }
 
     private fun fixtureDecoder(): InputDecoder = object : ContextualInputDecoder {

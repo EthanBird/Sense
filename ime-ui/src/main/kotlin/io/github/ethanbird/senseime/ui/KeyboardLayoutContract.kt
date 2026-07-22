@@ -67,6 +67,18 @@ object KeyboardLayoutContract {
         val bottom: Float,
     )
 
+    data class EmojiLayoutGeometry(
+        val categoryTop: Float,
+        val categoryBottom: Float,
+        val gridTop: Float,
+        val gridBottom: Float,
+        val indicatorTop: Float,
+        val indicatorY: Float,
+        val indicatorBottom: Float,
+        val actionTop: Float,
+        val actionBottom: Float,
+    )
+
     fun thirdLetterRow(shifted: Boolean): List<WeightedKey> = buildList {
         add(WeightedKey("⇧", KeyCodes.SHIFT, 1.25f, action = true))
         "zxcvbnm".forEach { character ->
@@ -154,6 +166,37 @@ object KeyboardLayoutContract {
         }
     }
 
+    fun emojiLayoutGeometry(
+        contentTop: Float,
+        contentBottom: Float,
+        categoryHeight: Float,
+        actionHeight: Float,
+        gridGap: Float,
+        indicatorBandHeight: Float,
+    ): EmojiLayoutGeometry {
+        require(categoryHeight > 0f)
+        require(actionHeight > 0f)
+        require(gridGap >= 0f)
+        require(indicatorBandHeight > 0f)
+        val categoryBottom = contentTop + categoryHeight
+        val actionTop = contentBottom - actionHeight
+        val indicatorTop = actionTop - indicatorBandHeight
+        val gridTop = categoryBottom + gridGap
+        val gridBottom = indicatorTop - gridGap
+        require(gridBottom > gridTop)
+        return EmojiLayoutGeometry(
+            categoryTop = contentTop,
+            categoryBottom = categoryBottom,
+            gridTop = gridTop,
+            gridBottom = gridBottom,
+            indicatorTop = indicatorTop,
+            indicatorY = (indicatorTop + actionTop) / 2f,
+            indicatorBottom = actionTop,
+            actionTop = actionTop,
+            actionBottom = contentBottom,
+        )
+    }
+
     fun leftAlignedCandidateSlots(
         viewWidth: Float,
         measuredTextWidths: List<Float>,
@@ -161,11 +204,30 @@ object KeyboardLayoutContract {
         textInset: Float,
         gap: Float,
         minimumWidth: Float,
+    ): List<CandidateSlot> = leftAlignedCandidateSlots(
+        viewWidth = viewWidth,
+        candidateCount = measuredTextWidths.size,
+        measuredTextWidth = measuredTextWidths::get,
+        padding = padding,
+        textInset = textInset,
+        gap = gap,
+        minimumWidth = minimumWidth,
+    )
+
+    private fun leftAlignedCandidateSlots(
+        viewWidth: Float,
+        candidateCount: Int,
+        measuredTextWidth: (Int) -> Float,
+        padding: Float,
+        textInset: Float,
+        gap: Float,
+        minimumWidth: Float,
     ): List<CandidateSlot> {
-        val result = ArrayList<CandidateSlot>(measuredTextWidths.size)
+        val result = ArrayList<CandidateSlot>(minOf(candidateCount, 8))
         var left = padding
-        for (textWidth in measuredTextWidths) {
+        for (sourceIndex in 0 until candidateCount) {
             if (viewWidth - padding - left < minimumWidth) break
+            val textWidth = measuredTextWidth(sourceIndex)
             val width = maxOf(minimumWidth, textWidth + textInset * 2)
             val right = minOf(viewWidth - padding, left + width)
             result += CandidateSlot(left, right, left + textInset)
@@ -182,21 +244,51 @@ object KeyboardLayoutContract {
         gap: Float,
         minimumWidth: Float,
         overflowControlWidth: Float,
+    ): CandidateStripLayout = collapsedCandidateStrip(
+        viewWidth = viewWidth,
+        candidateCount = measuredTextWidths.size,
+        measuredTextWidth = measuredTextWidths::get,
+        padding = padding,
+        textInset = textInset,
+        gap = gap,
+        minimumWidth = minimumWidth,
+        overflowControlWidth = overflowControlWidth,
+    )
+
+    fun collapsedCandidateStrip(
+        viewWidth: Float,
+        candidateCount: Int,
+        measuredTextWidth: (Int) -> Float,
+        padding: Float,
+        textInset: Float,
+        gap: Float,
+        minimumWidth: Float,
+        overflowControlWidth: Float,
     ): CandidateStripLayout {
+        require(candidateCount >= 0)
+        val measuredPrefix = ArrayList<Float>(minOf(candidateCount, 8))
+        val cachedTextWidth: (Int) -> Float = { sourceIndex ->
+            while (measuredPrefix.size <= sourceIndex) {
+                measuredPrefix += measuredTextWidth(measuredPrefix.size)
+            }
+            measuredPrefix[sourceIndex]
+        }
         val fullWidth = leftAlignedCandidateSlots(
             viewWidth,
-            measuredTextWidths,
+            candidateCount,
+            cachedTextWidth,
             padding,
             textInset,
             gap,
             minimumWidth,
         )
-        if (fullWidth.size == measuredTextWidths.size) return CandidateStripLayout(fullWidth, false)
+        if (fullWidth.size == candidateCount) return CandidateStripLayout(fullWidth, false)
         val reservedWidth = (viewWidth - overflowControlWidth - gap).coerceAtLeast(padding * 2 + minimumWidth)
         return CandidateStripLayout(
             leftAlignedCandidateSlots(
                 reservedWidth,
-                measuredTextWidths,
+                candidateCount,
+                cachedTextWidth,
                 padding,
                 textInset,
                 gap,
@@ -204,6 +296,11 @@ object KeyboardLayoutContract {
             ),
             true,
         )
+    }
+
+    fun adjacentCandidatePage(currentPage: Int, pageCount: Int, delta: Int): Int {
+        if (pageCount <= 0) return 0
+        return (currentPage.coerceIn(0, pageCount - 1) + delta).coerceIn(0, pageCount - 1)
     }
 
     fun pagedCandidateGrid(

@@ -49,18 +49,21 @@ internal class ProgressiveCandidateSnapshot private constructor(
             val choices = ArrayList<ProgressiveCandidateChoice>(limit)
             val displayedTexts = HashSet<String>()
 
-            // Keep the sentence-level primary first for Space and discoverability,
-            // then expose first-syllable choices before the long whole-candidate tail.
-            decoding.wholeCandidates.firstOrNull()?.let { candidate ->
-                choices += ProgressiveCandidateChoice.Whole(candidate)
-                displayedTexts += candidate.text
+            // Full-pinyin phrases must not be displaced by the much larger set of
+            // first-syllable characters. Keep a useful whole-candidate head, then
+            // expose segmentation choices, followed by every remaining whole
+            // candidate that fits in the caller's bounded presentation budget.
+            decoding.wholeCandidates.take(WHOLE_CANDIDATE_HEAD_SIZE).forEach { candidate ->
+                if (choices.size < limit && displayedTexts.add(candidate.text)) {
+                    choices += ProgressiveCandidateChoice.Whole(candidate)
+                }
             }
             decoding.prefixCandidates.forEach { prefix ->
                 if (choices.size < limit && displayedTexts.add(prefix.candidate.text)) {
                     choices += ProgressiveCandidateChoice.Prefix(prefix)
                 }
             }
-            decoding.wholeCandidates.drop(1).forEach { candidate ->
+            decoding.wholeCandidates.drop(WHOLE_CANDIDATE_HEAD_SIZE).forEach { candidate ->
                 if (choices.size < limit && displayedTexts.add(candidate.text)) {
                     choices += ProgressiveCandidateChoice.Whole(candidate)
                 }
@@ -70,5 +73,7 @@ internal class ProgressiveCandidateSnapshot private constructor(
                 choices = choices,
             )
         }
+
+        private const val WHOLE_CANDIDATE_HEAD_SIZE = 12
     }
 }

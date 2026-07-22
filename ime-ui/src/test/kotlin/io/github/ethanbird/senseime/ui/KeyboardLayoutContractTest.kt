@@ -118,6 +118,28 @@ class KeyboardLayoutContractTest {
     }
 
     @Test
+    fun collapsedStripMeasuresOnlyTheVisiblePrefixOfALargeSnapshot() {
+        var measurementCount = 0
+        val layout = KeyboardLayoutContract.collapsedCandidateStrip(
+            viewWidth = 360f,
+            candidateCount = 510,
+            measuredTextWidth = {
+                measurementCount++
+                34f
+            },
+            padding = 6f,
+            textInset = 9f,
+            gap = 3f,
+            minimumWidth = 44f,
+            overflowControlWidth = 44f,
+        )
+
+        assertTrue(layout.hasOverflow)
+        assertTrue(layout.slots.isNotEmpty())
+        assertTrue("measured $measurementCount of 510", measurementCount < 12)
+    }
+
+    @Test
     fun expandedGridPagesEveryCandidateWithGlobalIndices() {
         val pages = KeyboardLayoutContract.pagedCandidateGrid(
             viewWidth = 220f,
@@ -138,6 +160,49 @@ class KeyboardLayoutContractTest {
             val rows = page.slots.groupBy { it.top }
             rows.values.forEach { row -> assertEquals(6f, row.first().left) }
             assertTrue(page.slots.all { it.right <= 214f && it.bottom <= 150f })
+        }
+    }
+
+    @Test
+    fun expandedGridKeeps120And255CandidatesReachableInBothDirections() {
+        listOf(120, 255).forEach { candidateCount ->
+            val pages = KeyboardLayoutContract.pagedCandidateGrid(
+                viewWidth = 360f,
+                contentTop = 50f,
+                contentBottom = 270f,
+                measuredTextWidths = List(candidateCount) { index -> 24f + index % 7 * 6f },
+                horizontalPadding = 6f,
+                textInset = 9f,
+                horizontalGap = 3f,
+                verticalGap = 4f,
+                minimumWidth = 44f,
+                rowHeight = 40f,
+            )
+
+            assertTrue(pages.size > 2)
+            assertEquals(
+                (0 until candidateCount).toList(),
+                pages.flatMap { page -> page.slots.map { it.sourceIndex } },
+            )
+
+            var pageIndex = 0
+            val forward = mutableListOf<Int>()
+            while (true) {
+                forward += pages[pageIndex].slots.map { it.sourceIndex }
+                val next = KeyboardLayoutContract.adjacentCandidatePage(pageIndex, pages.size, delta = 1)
+                if (next == pageIndex) break
+                pageIndex = next
+            }
+            assertEquals((0 until candidateCount).toList(), forward)
+
+            val backward = mutableListOf<Int>()
+            while (true) {
+                backward += pages[pageIndex].slots.asReversed().map { it.sourceIndex }
+                val previous = KeyboardLayoutContract.adjacentCandidatePage(pageIndex, pages.size, delta = -1)
+                if (previous == pageIndex) break
+                pageIndex = previous
+            }
+            assertEquals((0 until candidateCount).reversed().toList(), backward)
         }
     }
 
@@ -202,5 +267,24 @@ class KeyboardLayoutContractTest {
         val bottomRow = slots.filter { it.key.row == 4 }
         assertEquals(5, bottomRow.size)
         assertEquals(300f, bottomRow.maxOf { it.bottom })
+    }
+
+    @Test
+    fun emojiPageIndicatorHasItsOwnBandBetweenGridAndActionRow() {
+        val geometry = KeyboardLayoutContract.emojiLayoutGeometry(
+            contentTop = 91f,
+            contentBottom = 302f,
+            categoryHeight = 29f,
+            actionHeight = 40f,
+            gridGap = 3f,
+            indicatorBandHeight = 14f,
+        )
+
+        assertTrue(geometry.gridBottom < geometry.indicatorY)
+        assertTrue(geometry.indicatorY < geometry.actionTop)
+        assertTrue(geometry.gridBottom <= geometry.indicatorTop)
+        assertTrue(geometry.indicatorBottom <= geometry.actionTop)
+        assertTrue(geometry.gridBottom <= geometry.indicatorY - 2f)
+        assertTrue(geometry.indicatorY + 2f <= geometry.actionTop)
     }
 }

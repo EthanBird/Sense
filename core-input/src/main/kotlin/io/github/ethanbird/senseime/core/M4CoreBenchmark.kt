@@ -23,6 +23,13 @@ object M4CoreBenchmark {
             .map { it.split('\t') }
         val wExpectation = replay.single { it[0] == "decode" && it[1] == "w" }[2]
         val initialsExpectation = replay.single { it[0] == "decode" && it[1] == "ygz" }[2]
+        val coverage = replay.single { it[0] == "coverage" }
+        require(coverage.size == 4) { "M4 coverage replay row is invalid" }
+        val coverageLimit = coverage[3].toInt()
+        val composition = replay.single { it[0] == "composition" }
+        require(composition.size == 3) { "M4 composition replay row is invalid" }
+        val learning = replay.single { it[0] == "learn" }
+        require(learning.size == 4) { "M4 learning replay row is invalid" }
         val progressive = replay.single { it[0] == "progressive" && it[1] == "pipei" }
         require(progressive.size == 9) { "M4 progressive replay row is invalid" }
 
@@ -38,6 +45,23 @@ object M4CoreBenchmark {
         val initials = base.decode("ygz", 8).firstOrNull()
         check(initials?.text == initialsExpectation && initials.matchKind == CandidateMatchKind.BASE_INITIALS) {
             "ygz initials regression: $initials"
+        }
+        val coverageCandidates = base.decode(coverage[1], coverageLimit)
+        val coverageRank = rankOf(coverageCandidates, coverage[2])
+            ?: error("${coverage[1]} must expose ${coverage[2]} within $coverageLimit candidates")
+        val compositionCandidates = base.decode(composition[1], PRODUCTION_CANDIDATE_LIMIT)
+        val compositionRank = rankOf(compositionCandidates, composition[2])
+            ?: error("${composition[1]} must expose ${composition[2]} as a segmented alternative")
+        val learnable = base.decode(learning[1], PRODUCTION_CANDIDATE_LIMIT)
+            .firstOrNull { it.text == learning[2] }
+            ?: error("${learning[1]} must expose ${learning[2]}")
+        check(learnable.canonicalPinyin == learning[3]) {
+            "${learning[1]} candidate must retain canonical source ${learning[3]}: $learnable"
+        }
+        check(adaptive.learn(learning[1], learnable) != null) { "${learning[1]} selection must be learnable" }
+        val recalled = adaptive.decode(learning[1], 8).firstOrNull()
+        check(recalled?.text == learning[2] && recalled.matchKind == CandidateMatchKind.USER_INITIALS) {
+            "one explicit selection must immediately rerank ${learning[2]}: $recalled"
         }
 
         val typed = "pipei".fold(PinyinComposition()) { state, character -> state.type(character) }
@@ -62,6 +86,10 @@ object M4CoreBenchmark {
             base.decode("ygz", 8)
             adaptive.decodeProgressively(typed, 16)
         }
+        repeat(PRODUCTION_WARMUP_LOOKUPS) {
+            check(base.decode(composition[1], PRODUCTION_CANDIDATE_LIMIT).any { it.text == composition[2] })
+            check(adaptive.decodeProgressively(typed, PRODUCTION_CANDIDATE_LIMIT).prefixCandidates.isNotEmpty())
+        }
         val initialsSamples = LongArray(SAMPLE_COUNT) {
             measureNanoTime {
                 repeat(INITIALS_LOOKUPS) { check(base.decode("ygz", 8).first().text == "一个字") }
@@ -74,10 +102,47 @@ object M4CoreBenchmark {
                 }
             }
         }
+        val productionProgressiveSamples = LongArray(SAMPLE_COUNT) {
+            measureNanoTime {
+                repeat(PRODUCTION_PROGRESSIVE_LOOKUPS) {
+                    check(
+                        adaptive.decodeProgressively(typed, PRODUCTION_CANDIDATE_LIMIT)
+                            .prefixCandidates
+                            .isNotEmpty(),
+                    )
+                }
+            }
+        }
+        val compositionSamples = LongArray(SAMPLE_COUNT) {
+            measureNanoTime {
+                repeat(COMPOSITION_LOOKUPS) {
+                    check(
+                        base.decode(composition[1], PRODUCTION_CANDIDATE_LIMIT)
+                            .any { it.text == composition[2] },
+                    )
+                }
+            }
+        }
         val initialsP95 = perLookup(initialsSamples, INITIALS_LOOKUPS, 0.95)
         val progressiveP95 = perLookup(progressiveSamples, PROGRESSIVE_LOOKUPS, 0.95)
+        val productionProgressiveP95 = perLookup(
+            productionProgressiveSamples,
+            PRODUCTION_PROGRESSIVE_LOOKUPS,
+            0.95,
+        )
+        val compositionP95 = perLookup(compositionSamples, COMPOSITION_LOOKUPS, 0.95)
         check(initialsP95 <= INITIALS_P95_GATE_NS) { "ygz p95 latency regression: $initialsP95 ns" }
         check(progressiveP95 <= PROGRESSIVE_P95_GATE_NS) { "progressive p95 latency regression: $progressiveP95 ns" }
+        check(productionProgressiveP95 <= PRODUCTION_PROGRESSIVE_P95_GATE_NS) {
+            "255-candidate progressive p95 latency regression: $productionProgressiveP95 ns"
+        }
+        check(compositionP95 <= COMPOSITION_P95_GATE_NS) {
+            "segmented composition p95 latency regression: $compositionP95 ns"
+        }
+        val productionProgressiveCount = adaptive
+            .decodeProgressively(typed, PRODUCTION_CANDIDATE_LIMIT)
+            .prefixCandidates
+            .size
 
         report.writeText(
             """
@@ -102,6 +167,18 @@ object M4CoreBenchmark {
                 "enter": "匹pei",
                 "space": "匹配"
               },
+              "candidateCoverage": {
+                "maximumCandidateLimit": $PRODUCTION_CANDIDATE_LIMIT,
+                "huaRequestedLimit": $coverageLimit,
+                "huaCountAtLimit": ${coverageCandidates.size},
+                "huaTarget": "${coverage[2]}",
+                "huaTargetRank": $coverageRank,
+                "shanghuaCount": ${compositionCandidates.size},
+                "shanghuaTarget": "${composition[2]}",
+                "shanghuaTargetRank": $compositionRank,
+                "learnedShortCode": "${learning[1]}",
+                "learnedTopCandidate": "${recalled.text}"
+              },
               "initialsLookup": {
                 "lookupsPerSample": $INITIALS_LOOKUPS,
                 "p95Ns": ${format(initialsP95)},
@@ -111,6 +188,19 @@ object M4CoreBenchmark {
                 "lookupsPerSample": $PROGRESSIVE_LOOKUPS,
                 "p95Ns": ${format(progressiveP95)},
                 "gateNs": ${format(PROGRESSIVE_P95_GATE_NS)}
+              },
+              "productionLimitProgressiveDecode": {
+                "candidateLimit": $PRODUCTION_CANDIDATE_LIMIT,
+                "prefixCandidateCount": $productionProgressiveCount,
+                "lookupsPerSample": $PRODUCTION_PROGRESSIVE_LOOKUPS,
+                "p95Ns": ${format(productionProgressiveP95)},
+                "gateNs": ${format(PRODUCTION_PROGRESSIVE_P95_GATE_NS)}
+              },
+              "segmentedComposition": {
+                "candidateLimit": $PRODUCTION_CANDIDATE_LIMIT,
+                "lookupsPerSample": $COMPOSITION_LOOKUPS,
+                "p95Ns": ${format(compositionP95)},
+                "gateNs": ${format(COMPOSITION_P95_GATE_NS)}
               }
             }
             """.trimIndent() + "\n",
@@ -157,10 +247,21 @@ object M4CoreBenchmark {
 
     private fun format(value: Double): String = "%.2f".format(Locale.US, value)
 
+    internal fun rankOf(candidates: List<Candidate>, expected: String): Int? =
+        candidates.indexOfFirst { it.text == expected }
+            .takeIf { it >= 0 }
+            ?.plus(1)
+
     private const val SAMPLE_COUNT = 7
     private const val WARMUP_LOOKUPS = 500
+    private const val PRODUCTION_WARMUP_LOOKUPS = 20
     private const val INITIALS_LOOKUPS = 20_000
     private const val PROGRESSIVE_LOOKUPS = 5_000
+    private const val PRODUCTION_PROGRESSIVE_LOOKUPS = 100
+    private const val COMPOSITION_LOOKUPS = 100
+    private const val PRODUCTION_CANDIDATE_LIMIT = 255
     private const val INITIALS_P95_GATE_NS = 250_000.0
     private const val PROGRESSIVE_P95_GATE_NS = 500_000.0
+    private const val PRODUCTION_PROGRESSIVE_P95_GATE_NS = 5_000_000.0
+    private const val COMPOSITION_P95_GATE_NS = 5_000_000.0
 }

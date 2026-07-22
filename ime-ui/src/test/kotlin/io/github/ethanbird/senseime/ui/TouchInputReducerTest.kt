@@ -69,6 +69,104 @@ class TouchInputReducerTest {
     }
 
     @Test
+    fun shortUpwardFlickCanLeaveTheKeyAndCrossTowardItsNeighbour() {
+        val reducer = TouchInputReducer<String>(24f, 30f)
+        val policy = TouchInputReducer.GesturePolicy.upwardFlick(
+            minimumDistance = 12f,
+            verticalDominanceRatio = 1.15f,
+        )
+        reducer.onDown(1, "q", 20f, 60f)
+
+        val move = reducer.onMove(
+            pointerId = 1,
+            x = 44f,
+            y = 30f,
+            insideTapTarget = false,
+            policy = policy,
+        )
+        val activation = reducer.onUp(
+            pointerId = 1,
+            x = 44f,
+            y = 30f,
+            insideTapTarget = false,
+            policy = policy,
+        )
+
+        assertFalse(move.canceled)
+        assertEquals("q", activation?.target)
+        assertEquals(TouchInputReducer.Gesture.SWIPE_UP, activation?.gesture)
+    }
+
+    @Test
+    fun flickDistanceUsesTwelveDpFloorAndEighteenPercentOfTallKeys() {
+        assertEquals(12f, KeyboardGestureThresholds.upwardFlickDistance(12f, 50f))
+        assertEquals(18f, KeyboardGestureThresholds.upwardFlickDistance(12f, 100f))
+    }
+
+    @Test
+    fun upwardFlickRequiresVerticalDominanceButTapStillRequiresHitTarget() {
+        val reducer = TouchInputReducer<String>(24f, 30f)
+        val policy = TouchInputReducer.GesturePolicy.upwardFlick(
+            minimumDistance = 12f,
+            verticalDominanceRatio = 1.15f,
+        )
+        reducer.onDown(1, "q", 20f, 60f)
+
+        assertNull(
+            reducer.onUp(
+                pointerId = 1,
+                x = 50f,
+                y = 30f,
+                insideTapTarget = false,
+                policy = policy,
+            ),
+        )
+    }
+
+    @Test
+    fun verticalScrollLatchesAfterTouchSlopAndCannotBecomeAnEmojiTap() {
+        val reducer = TouchInputReducer<String>(24f, 30f)
+        val policy = TouchInputReducer.GesturePolicy.verticalScroll(
+            touchSlop = 8f,
+            verticalDominanceRatio = 1.15f,
+        )
+        reducer.onDown(1, "emoji", 50f, 60f)
+
+        val move = reducer.onMove(1, 51f, 43f, insideTapTarget = true, policy = policy)
+        reducer.onMove(1, 50f, 60f, insideTapTarget = true, policy = policy)
+        val activation = reducer.onUp(1, 50f, 60f, insideTapTarget = true, policy = policy)
+
+        assertTrue(move.tapSuppressed)
+        assertEquals("emoji", activation?.target)
+        assertEquals(TouchInputReducer.Gesture.SWIPE_UP, activation?.gesture)
+    }
+
+    @Test
+    fun horizontalMovementBeyondTouchSlopSuppressesTapWithoutPaging() {
+        val reducer = TouchInputReducer<String>(24f, 30f)
+        val policy = TouchInputReducer.GesturePolicy.verticalScroll(8f, 1.15f)
+        reducer.onDown(1, "emoji", 50f, 60f)
+
+        val move = reducer.onMove(1, 63f, 60f, insideTapTarget = true, policy = policy)
+        val activation = reducer.onUp(1, 50f, 60f, insideTapTarget = true, policy = policy)
+
+        assertTrue(move.tapSuppressed)
+        assertNull(activation)
+    }
+
+    @Test
+    fun movementBelowTouchSlopRemainsATap() {
+        val reducer = TouchInputReducer<String>(24f, 30f)
+        val policy = TouchInputReducer.GesturePolicy.verticalScroll(8f, 1.15f)
+        reducer.onDown(1, "emoji", 50f, 60f)
+
+        reducer.onMove(1, 53f, 57f, insideTapTarget = true, policy = policy)
+        val activation = reducer.onUp(1, 53f, 57f, insideTapTarget = true, policy = policy)
+
+        assertEquals(TouchInputReducer.Gesture.TAP, activation?.gesture)
+    }
+
+    @Test
     fun cancelRemovesOnlyRequestedPointerAndCancelAllClearsRest() {
         val reducer = TouchInputReducer<String>(24f, 30f)
         reducer.onDown(1, "q", 0f, 0f)
@@ -78,6 +176,18 @@ class TouchInputReducerTest {
         assertEquals(1, reducer.activePointerCount)
         reducer.cancelAll()
         assertEquals(0, reducer.activePointerCount)
+    }
+
+    @Test
+    fun aFreshPrimaryDownClearsAnyOrphanedPreviousStream() {
+        val reducer = TouchInputReducer<String>(24f, 30f)
+        reducer.onDown(4, "delete", 0f, 0f)
+
+        reducer.onPrimaryDown(7, "q", 20f, 30f)
+
+        assertNull(reducer.target(4))
+        assertEquals("q", reducer.target(7))
+        assertEquals(1, reducer.activePointerCount)
     }
 
     @Test

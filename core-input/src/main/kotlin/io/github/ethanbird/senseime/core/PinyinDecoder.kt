@@ -13,36 +13,44 @@ class PinyinDecoder private constructor(
     private val data: ByteArray,
     private val recordOffsets: IntArray,
     private val bigramModel: CharacterBigramModel,
+    private val syllableRecordIndicesByInitial: Array<IntArray>,
 ) : ContextualInputDecoder {
 
     override fun decode(composing: String, limit: Int): List<Candidate> {
         if (limit <= 0) return emptyList()
         val query = normalize(composing)
         if (query.isEmpty()) return emptyList()
+        val outputLimit = minOf(limit, MAX_DECODE_CANDIDATES)
 
         val exact = findExact(query)
-        if (exact >= 0) return readCandidates(exact, limit, CandidateMatchKind.BASE_EXACT, query)
+        if (exact >= 0) {
+            val exactCandidates = readCandidates(exact, outputLimit, CandidateMatchKind.BASE_EXACT, query)
+            val composedCandidates = if (hasCompleteMultiSegmentComposition(query)) {
+                composeCandidates(
+                    query,
+                    outputLimit,
+                    segmentCandidatesPerKey = segmentCandidateLimit(outputLimit),
+                    beamWidth = segmentBeamWidth(outputLimit),
+                )
+            } else {
+                emptyList()
+            }
+            return mergeCandidates(exactCandidates + composedCandidates, outputLimit)
+        }
 
-        val initials = readInitialsCandidates(query, limit)
+        val initials = readInitialsCandidates(query, outputLimit)
         if (initials.isNotEmpty()) return initials
 
         val composed = composeCandidates(
             query,
-            limit,
-            segmentCandidatesPerKey = SEGMENT_CANDIDATES_PER_KEY,
-            beamWidth = SEGMENT_BEAM_WIDTH,
+            outputLimit,
+            segmentCandidatesPerKey = segmentCandidateLimit(outputLimit),
+            beamWidth = segmentBeamWidth(outputLimit),
         )
-        val statisticalPrefix = readStatisticalPrefixCandidates(query, limit)
-        val dynamicPrefix = readPrefixCandidates(query, limit)
-        val corrected = readCorrectedCandidates(query, limit)
-        val bestByText = LinkedHashMap<String, Candidate>()
-        (composed + statisticalPrefix + dynamicPrefix + corrected).forEach { candidate ->
-            val previous = bestByText[candidate.text]
-            if (previous == null || candidate.score > previous.score) bestByText[candidate.text] = candidate
-        }
-        return bestByText.values
-            .sortedWith(compareByDescending<Candidate> { it.score }.thenBy { matchPriority(it.matchKind) }.thenBy { it.text.length })
-            .take(limit)
+        val statisticalPrefix = readStatisticalPrefixCandidates(query, outputLimit)
+        val dynamicPrefix = readPrefixCandidates(query, outputLimit)
+        val corrected = readCorrectedCandidates(query, outputLimit)
+        return mergeCandidates(composed + statisticalPrefix + dynamicPrefix + corrected, outputLimit)
     }
 
     override fun decodeAfter(previousCodePoint: Int, composing: String, limit: Int): List<Candidate> {
@@ -89,6 +97,12 @@ class PinyinDecoder private constructor(
         val lastSegmentWasSingleCodePoint: Boolean,
     )
 
+    private data class CompositionIdentity(
+        val text: String,
+        val segments: Int,
+        val lastSegmentWasSingleCodePoint: Boolean,
+    )
+
     /** Builds a sentence by balancing word likelihood with a penalty for each split. */
     private fun composeCandidates(
         query: String,
@@ -99,7 +113,7 @@ class PinyinDecoder private constructor(
         val beams = arrayOfNulls<MutableList<CompositionPath>>(query.length + 1)
         beams[0] = mutableListOf(CompositionPath("", "", 0, 0f, NO_CODE_POINT, false))
         query.indices.forEach { start ->
-            val paths = beams[start] ?: return@forEach
+            val paths = beams[start]?.also { pruneBeam(it, beamWidth) } ?: return@forEach
             val maxEnd = minOf(query.length, start + MAX_SEGMENT_CODE_LENGTH)
             for (end in (start + 1)..maxEnd) {
                 val record = findExact(query, start, end)
@@ -135,8 +149,10 @@ class PinyinDecoder private constructor(
             }
         }
 
-        return beams[query.length]
-            .orEmpty()
+        val completed = beams[query.length] ?: mutableListOf()
+        pruneBeam(completed, beamWidth)
+        return completed
+            .filter { it.segments > 1 }
             .distinctBy { it.text }
             .sortedWith(compositionComparator)
             .take(limit)
@@ -156,18 +172,23 @@ class PinyinDecoder private constructor(
         value: CompositionPath,
         beamWidth: Int,
     ) {
-        val existing = beam.indexOfFirst {
-            it.text == value.text &&
-                it.segments == value.segments &&
-                it.lastSegmentWasSingleCodePoint == value.lastSegmentWasSingleCodePoint
-        }
-        if (existing >= 0) {
-            if (beam[existing].score >= value.score) return
-            beam.removeAt(existing)
-        }
         beam += value
-        beam.sortWith(compositionComparator)
-        while (beam.size > beamWidth) beam.removeAt(beam.lastIndex)
+        if (beam.size >= beamWidth * BEAM_PRUNE_MULTIPLIER) pruneBeam(beam, beamWidth)
+    }
+
+    /** Batch pruning avoids sorting a several-hundred-entry beam for every path expansion. */
+    private fun pruneBeam(beam: MutableList<CompositionPath>, beamWidth: Int) {
+        if (beam.isEmpty()) return
+        val best = HashMap<CompositionIdentity, CompositionPath>(beam.size)
+        beam.forEach { path ->
+            val key = CompositionIdentity(path.text, path.segments, path.lastSegmentWasSingleCodePoint)
+            val previous = best[key]
+            if (previous == null || path.score > previous.score) best[key] = path
+        }
+        if (best.size == beam.size && beam.size <= beamWidth) return
+        val retained = best.values.sortedWith(compositionComparator).take(beamWidth)
+        beam.clear()
+        beam.addAll(retained)
     }
 
     private fun compositionScore(path: CompositionPath): Float =
@@ -179,11 +200,73 @@ class PinyinDecoder private constructor(
             .thenBy { it.text }
 
     private fun matchPriority(kind: CandidateMatchKind): Int = when (kind) {
-        CandidateMatchKind.BASE_COMPOSED -> 0
-        CandidateMatchKind.BASE_PREFIX -> 1
-        CandidateMatchKind.BASE_INITIALS -> 2
-        CandidateMatchKind.CORRECTED -> 3
-        else -> 3
+        CandidateMatchKind.BASE_EXACT -> 0
+        CandidateMatchKind.BASE_COMPOSED -> 1
+        CandidateMatchKind.BASE_PREFIX -> 2
+        CandidateMatchKind.BASE_INITIALS -> 3
+        CandidateMatchKind.CORRECTED -> 4
+        CandidateMatchKind.USER_FULL,
+        CandidateMatchKind.USER_INITIALS
+        -> 0
+    }
+
+    /**
+     * Small UI/benchmark requests keep a compact search budget. The IME's
+     * 255-candidate production decode receives the wider budget needed for
+     * deep alternatives such as `hua -> 滑` inside a composed phrase.
+     */
+    private fun segmentCandidateLimit(limit: Int): Int =
+        if (limit >= WIDE_COMPOSITION_LIMIT) MAX_SEGMENT_CANDIDATES_PER_KEY else MIN_SEGMENT_CANDIDATES_PER_KEY
+
+    private fun segmentBeamWidth(limit: Int): Int =
+        if (limit >= WIDE_COMPOSITION_LIMIT) {
+            MAX_SEGMENT_BEAM_WIDTH
+        } else {
+            maxOf(MIN_SEGMENT_BEAM_WIDTH, limit)
+        }
+
+    private fun mergeCandidates(candidates: List<Candidate>, limit: Int): List<Candidate> {
+        val bestByText = LinkedHashMap<String, Candidate>()
+        candidates.forEach { candidate ->
+            val previous = bestByText[candidate.text]
+            bestByText[candidate.text] = if (previous == null) {
+                candidate
+            } else {
+                mergeDuplicate(previous, candidate)
+            }
+        }
+        return bestByText.values
+            .sortedWith(
+                compareByDescending<Candidate> { it.score }
+                    .thenBy { matchPriority(it.matchKind) }
+                    .thenBy { it.text.length }
+                    .thenBy { it.text },
+            )
+            .take(limit)
+    }
+
+    /**
+     * Statistical prefix records do not encode their originating full pinyin.
+     * If the same result is found by the normal prefix scan, retain that safe
+     * source metadata even when the statistical score wins the display rank.
+     */
+    private fun mergeDuplicate(previous: Candidate, candidate: Candidate): Candidate {
+        val best = if (
+            candidate.score > previous.score ||
+            candidate.score == previous.score && matchPriority(candidate.matchKind) < matchPriority(previous.matchKind)
+        ) {
+            candidate
+        } else {
+            previous
+        }
+        if (best.matchKind != CandidateMatchKind.BASE_PREFIX || best.canonicalPinyin != null) return best
+        val sourcedPrefix = sequenceOf(previous, candidate).firstOrNull {
+            it.matchKind == CandidateMatchKind.BASE_PREFIX && it.canonicalPinyin != null
+        } ?: return best
+        return best.copy(
+            canonicalPinyin = sourcedPrefix.canonicalPinyin,
+            canonicalInitials = best.canonicalInitials ?: sourcedPrefix.canonicalInitials,
+        )
     }
 
     private fun findExact(query: String, start: Int, end: Int): Int {
@@ -223,21 +306,29 @@ class PinyinDecoder private constructor(
 
     private fun readPrefixCandidates(query: String, limit: Int): List<Candidate> {
         val values = HashMap<String, Candidate>()
-        var index = lowerBound(query)
-        var scanned = 0
-        while (index < recordOffsets.size && scanned < PREFIX_SCAN_LIMIT && codeStartsWith(index, query)) {
+        fun readRecord(index: Int) {
             val codeLength = unsigned(data[recordOffsets[index]])
+            val canonicalPinyin = readCode(index)
             val completionPenalty = (codeLength - query.length).coerceAtLeast(0) * 0.08f
             readCandidates(index, PREFIX_CANDIDATES_PER_KEY).forEach { candidate ->
                 val score = candidate.score - completionPenalty
                 if (score > (values[candidate.text]?.score ?: Float.NEGATIVE_INFINITY)) {
                     values[candidate.text] = candidate.copy(
                         score = score,
-                        canonicalPinyin = null,
+                        canonicalPinyin = canonicalPinyin,
                         matchKind = CandidateMatchKind.BASE_PREFIX,
                     )
                 }
             }
+        }
+
+        syllableRecordIndicesByInitial[query.first() - 'a'].forEach { index ->
+            if (codeStartsWith(index, query)) readRecord(index)
+        }
+        var index = lowerBound(query)
+        var scanned = 0
+        while (index < recordOffsets.size && scanned < PREFIX_SCAN_LIMIT && codeStartsWith(index, query)) {
+            readRecord(index)
             index += 1
             scanned += 1
         }
@@ -356,6 +447,22 @@ class PinyinDecoder private constructor(
         return reachable.last()
     }
 
+    /** True when the whole query has an exact path containing at least two records. */
+    private fun hasCompleteMultiSegmentComposition(query: String): Boolean {
+        val maximumSegments = IntArray(query.length + 1) { -1 }
+        maximumSegments[0] = 0
+        query.indices.forEach { start ->
+            if (maximumSegments[start] < 0) return@forEach
+            val maxEnd = minOf(query.length, start + MAX_SEGMENT_CODE_LENGTH)
+            for (end in (start + 1)..maxEnd) {
+                if (findExact(query, start, end) >= 0) {
+                    maximumSegments[end] = maxOf(maximumSegments[end], maximumSegments[start] + 1)
+                }
+            }
+        }
+        return maximumSegments.last() >= 2
+    }
+
     private fun substitutionCost(expected: Char, typed: Char): Float = when {
         expected == typed -> 0f
         expected to typed in FUZZY_SUBSTITUTIONS || typed to expected in FUZZY_SUBSTITUTIONS -> FUZZY_COST
@@ -435,6 +542,12 @@ class PinyinDecoder private constructor(
         return query.indices.all { unsigned(data[offset + 1 + it]) == query[it].code }
     }
 
+    private fun readCode(index: Int): String {
+        val offset = recordOffsets[index]
+        val codeLength = unsigned(data[offset])
+        return data.decodeToString(offset + 1, offset + 1 + codeLength)
+    }
+
     private fun readInt(offset: Int): Int =
         (unsigned(data[offset]) shl 24) or
             (unsigned(data[offset + 1]) shl 16) or
@@ -453,11 +566,17 @@ class PinyinDecoder private constructor(
     companion object {
         private const val HEADER_SIZE = 10
         private const val VERSION = 3
+        private const val MAX_DECODE_CANDIDATES = 255
         private const val PREFIX_SCAN_LIMIT = 96
         private const val PREFIX_CANDIDATES_PER_KEY = 2
         private const val MAX_SEGMENT_CODE_LENGTH = 24
-        private const val SEGMENT_CANDIDATES_PER_KEY = 4
-        private const val SEGMENT_BEAM_WIDTH = 24
+        private const val MIN_SEGMENT_CANDIDATES_PER_KEY = 8
+        private const val MAX_SEGMENT_CANDIDATES_PER_KEY = 16
+        private const val MIN_SEGMENT_BEAM_WIDTH = 24
+        private const val MAX_SEGMENT_BEAM_WIDTH = 96
+        private const val WIDE_COMPOSITION_LIMIT = 64
+        private const val BEAM_PRUNE_MULTIPLIER = 4
+        private const val MAX_PINYIN_SYLLABLE_CODE_LENGTH = 6
         private const val CORRECTION_SEGMENT_CANDIDATES_PER_KEY = 2
         private const val CORRECTION_BEAM_WIDTH = 10
         private const val SEGMENT_SCORE_PENALTY = 20f
@@ -520,15 +639,18 @@ class PinyinDecoder private constructor(
             require(count in 1..1_000_000) { "Pinyin lexicon record count is invalid: $count" }
 
             val offsets = IntArray(count)
+            val syllableRecords = Array(26) { ArrayList<Int>() }
             var cursor = HEADER_SIZE
             repeat(count) { index ->
                 require(cursor < data.size) { "Pinyin lexicon record $index is truncated" }
                 offsets[index] = cursor
                 val codeLength = data[cursor++].toInt() and 0xFF
                 require(codeLength > 0 && cursor + codeLength < data.size) { "Pinyin code $index is invalid" }
+                val firstCodeByte = data[cursor].toInt() and 0xFF
                 cursor += codeLength
                 val candidateCount = data[cursor++].toInt() and 0xFF
                 require(candidateCount > 0) { "Pinyin code $index has no candidates" }
+                var hasSingleSyllableCandidate = false
                 repeat(candidateCount) {
                     require(cursor < data.size) { "Pinyin candidate length is missing" }
                     val textLength = data[cursor++].toInt() and 0xFF
@@ -541,14 +663,27 @@ class PinyinDecoder private constructor(
                     require(initialsLength > 0 && cursor + initialsLength <= data.size) {
                         "Pinyin candidate initials are truncated"
                     }
+                    if (initialsLength == 1) hasSingleSyllableCandidate = true
                     cursor += initialsLength
                     require(cursor < data.size) { "Pinyin candidate source tier is missing" }
                     val sourceTier = data[cursor++].toInt() and 0xFF
                     require(sourceTier in 0..1) { "Pinyin candidate source tier is invalid" }
                 }
+                if (
+                    codeLength <= MAX_PINYIN_SYLLABLE_CODE_LENGTH &&
+                    firstCodeByte in 'a'.code..'z'.code &&
+                    hasSingleSyllableCandidate
+                ) {
+                    syllableRecords[firstCodeByte - 'a'.code] += index
+                }
             }
             require(cursor == data.size) { "Pinyin lexicon has trailing bytes" }
-            return PinyinDecoder(data, offsets, bigramModel)
+            return PinyinDecoder(
+                data,
+                offsets,
+                bigramModel,
+                Array(syllableRecords.size) { syllableRecords[it].toIntArray() },
+            )
         }
     }
 }

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "stage": "M4-core",
-  "generatedAt": "2026-07-22T15:18:46.717919296Z",
+  "generatedAt": "2026-07-22T17:03:14.381635807Z",
   "lexicon": {
     "keys": 137265,
     "bytes": 5940672,
@@ -19,14 +19,39 @@
     "enter": "匹pei",
     "space": "匹配"
   },
+  "candidateCoverage": {
+    "maximumCandidateLimit": 255,
+    "huaRequestedLimit": 64,
+    "huaCountAtLimit": 64,
+    "huaTarget": "滑",
+    "huaTargetRank": 7,
+    "shanghuaCount": 94,
+    "shanghuaTarget": "上滑",
+    "shanghuaTargetRank": 8,
+    "learnedShortCode": "d",
+    "learnedTopCandidate": "的"
+  },
   "initialsLookup": {
     "lookupsPerSample": 20000,
-    "p95Ns": 3064.01,
+    "p95Ns": 3313.76,
     "gateNs": 250000.00
   },
   "progressiveDecode": {
     "lookupsPerSample": 5000,
-    "p95Ns": 12333.26,
+    "p95Ns": 90802.97,
     "gateNs": 500000.00
+  },
+  "productionLimitProgressiveDecode": {
+    "candidateLimit": 255,
+    "prefixCandidateCount": 94,
+    "lookupsPerSample": 100,
+    "p95Ns": 127155.92,
+    "gateNs": 5000000.00
+  },
+  "segmentedComposition": {
+    "candidateLimit": 255,
+    "lookupsPerSample": 100,
+    "p95Ns": 2155621.97,
+    "gateNs": 5000000.00
   }
 }
