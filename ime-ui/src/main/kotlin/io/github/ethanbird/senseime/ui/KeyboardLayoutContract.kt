@@ -127,7 +127,7 @@ object KeyboardLayoutContract {
         val bottomTop = contentBottom - bottomRowHeight
         val mainBottom = bottomTop - gap
         val centreRowHeight = (mainBottom - contentTop - gap * 2) / 3f
-        val railRowHeight = (mainBottom - contentTop) / 4f
+        val railRowHeight = (mainBottom - contentTop - gap * 3) / 4f
         val weights = floatArrayOf(0.82f, 1.08f, 1.08f, 1.08f, 0.9f)
         val usableWidth = viewWidth - horizontalPadding * 2 - gap * 4
         val totalWeight = weights.sum()
@@ -142,7 +142,7 @@ object KeyboardLayoutContract {
         return numericPad(chineseMode).map { key ->
             val top = when {
                 key.row == 4 -> bottomTop
-                key.column == 0 -> contentTop + key.row * railRowHeight
+                key.column == 0 -> contentTop + key.row * (railRowHeight + gap)
                 else -> contentTop + key.row * (centreRowHeight + gap)
             }
             val height = when {
