@@ -181,10 +181,11 @@ jobs:
             (cd existing-release && sha256sum -c SHA256SUMS.txt)
             echo "$RELEASE_TAG already exists at the expected commit and its checksum is valid."
           else
-            existing_tag=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq .object.sha 2>/dev/null || true)
-            if [[ -n "$existing_tag" && "$existing_tag" != "$GITHUB_SHA" ]]; then
-              echo "$RELEASE_TAG already points to $existing_tag instead of $GITHUB_SHA" >&2
-              exit 1
+            if existing_tag=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq .object.sha 2>/dev/null); then
+              if [[ "$existing_tag" != "$GITHUB_SHA" ]]; then
+                echo "$RELEASE_TAG already points to $existing_tag instead of $GITHUB_SHA" >&2
+                exit 1
+              fi
             fi
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
