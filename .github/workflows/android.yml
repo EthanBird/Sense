@@ -54,19 +54,24 @@ jobs:
           cmp licenses/CC-CEDICT-NOTICE.md ime-service/src/main/assets/CC-CEDICT-NOTICE.txt
           cmp licenses/CC-BY-SA-4.0.txt ime-service/src/main/assets/CC-BY-SA-4.0.txt
 
-      - name: Verify M3
+      - name: Verify M3 correctness and assemble
         run: >-
           ./gradlew
           :core-input:test
-          :core-input:m0HostBenchmark
-          :core-input:m1PinyinBenchmark
-          :core-input:m2AdaptiveBenchmark
-          :core-input:m3SentenceBenchmark
           :ime-ui:testDebugUnitTest
           :app:lintDebug
           :app:assembleDebug
           :app:assembleBenchmark
           :benchmark:assembleBenchmark
+
+      - name: Verify M3 host benchmarks
+        run: >-
+          ./gradlew
+          --no-parallel
+          :core-input:m0HostBenchmark
+          :core-input:m1PinyinBenchmark
+          :core-input:m2AdaptiveBenchmark
+          :core-input:m3SentenceBenchmark
 
       - name: Verify assembled M3 APK
         shell: bash
