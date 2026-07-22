@@ -31,9 +31,9 @@ M4 优先关闭真实输入反馈中的可用性和性能缺口。词典新增 3
 | 本地门禁 | 结果 |
 |---|---|
 | 拼音词库、Bigram 与生产资产测试 | 11/11 通过 |
-| `core-input` 单元测试 | 46 项，CI 阻断门禁 |
-| `ime-service` 异步/快照测试 | 4 项，CI 阻断门禁 |
-| `ime-ui` 触控、布局与字符表测试 | 20 项，CI 阻断门禁 |
+| `core-input` 单元测试 | 46/46 通过 |
+| `ime-service` 异步/快照测试 | 4/4 通过 |
+| `ime-ui` 触控、布局与字符表测试 | 20/20 通过 |
 | Android Lint | 0 errors，0 warnings |
 | Kotlin/JVM 与 Android DEX 编译 | 通过 |
 | APK 对齐、签名与校验 | 工程 debug 签名；发布门禁校验签名完整性 |
@@ -44,7 +44,7 @@ M4 优先关闭真实输入反馈中的可用性和性能缺口。词典新增 3
 | 拼音基线 | 已写入 `benchmarks/results/m1-pinyin.json` |
 | M2 自适应基线 | 已写入 `benchmarks/results/m2-adaptive.json` |
 | M3 句级排序基线 | 8/8 Top-1；1 条位次改善、0 条退化；写入 `benchmarks/results/m3-sentence.json` |
-| M4 中文核心门禁 | `w / ygz / pipei / Enter / Space` 回放；简拼 p95 ≤ 250 µs，渐进解析 p95 ≤ 500 µs |
+| M4 中文核心门禁 | 全部回放通过；简拼 p95 3.06 µs，渐进解析 p95 12.33 µs |
 
 标准工程验证命令：
 
