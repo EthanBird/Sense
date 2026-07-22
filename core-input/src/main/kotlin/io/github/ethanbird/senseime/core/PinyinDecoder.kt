@@ -210,11 +210,20 @@ class PinyinDecoder private constructor(
         -> 0
     }
 
+    /**
+     * Small UI/benchmark requests keep a compact search budget. The IME's
+     * 255-candidate production decode receives the wider budget needed for
+     * deep alternatives such as `hua -> 滑` inside a composed phrase.
+     */
     private fun segmentCandidateLimit(limit: Int): Int =
-        minOf(MAX_SEGMENT_CANDIDATES_PER_KEY, maxOf(MIN_SEGMENT_CANDIDATES_PER_KEY, limit))
+        if (limit >= WIDE_COMPOSITION_LIMIT) MAX_SEGMENT_CANDIDATES_PER_KEY else MIN_SEGMENT_CANDIDATES_PER_KEY
 
     private fun segmentBeamWidth(limit: Int): Int =
-        minOf(MAX_SEGMENT_BEAM_WIDTH, maxOf(MIN_SEGMENT_BEAM_WIDTH, limit * 2))
+        if (limit >= WIDE_COMPOSITION_LIMIT) {
+            MAX_SEGMENT_BEAM_WIDTH
+        } else {
+            maxOf(MIN_SEGMENT_BEAM_WIDTH, limit)
+        }
 
     private fun mergeCandidates(candidates: List<Candidate>, limit: Int): List<Candidate> {
         val bestByText = LinkedHashMap<String, Candidate>()
@@ -565,6 +574,7 @@ class PinyinDecoder private constructor(
         private const val MAX_SEGMENT_CANDIDATES_PER_KEY = 16
         private const val MIN_SEGMENT_BEAM_WIDTH = 24
         private const val MAX_SEGMENT_BEAM_WIDTH = 96
+        private const val WIDE_COMPOSITION_LIMIT = 64
         private const val BEAM_PRUNE_MULTIPLIER = 4
         private const val MAX_PINYIN_SYLLABLE_CODE_LENGTH = 6
         private const val CORRECTION_SEGMENT_CANDIDATES_PER_KEY = 2
