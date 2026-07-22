@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "stage": "M4-core",
+  "generatedAt": "2026-07-22T15:18:46.717919296Z",
+  "lexicon": {
+    "keys": 137265,
+    "bytes": 5940672,
+    "sha256": "d8d6ad58a462a0c00abd9300bd7f58930e0cff5a3bbf0089ff7128d805dab80c"
+  },
+  "bigrams": {
+    "records": 46651,
+    "bytes": 559822,
+    "sha256": "c8a7c4b9fe7b4b17b73fc29073c4c55943720e8203d42ca5f467c54f8aa12e28"
+  },
+  "correctness": {
+    "w": "我",
+    "ygz": "一个字",
+    "pipeiPrefix": "匹|pei",
+    "enter": "匹pei",
+    "space": "匹配"
+  },
+  "initialsLookup": {
+    "lookupsPerSample": 20000,
+    "p95Ns": 3064.01,
+    "gateNs": 250000.00
+  },
+  "progressiveDecode": {
+    "lookupsPerSample": 5000,
+    "p95Ns": 12333.26,
+    "gateNs": 500000.00
+  }
+}

@@ -160,4 +160,47 @@ class KeyboardLayoutContractTest {
         assertEquals(108f, pages.first().slots.single().right - pages.first().slots.single().left)
         assertEquals(listOf(0, 1), pages.flatMap { it.slots }.map { it.sourceIndex })
     }
+
+    @Test
+    fun numericPadUsesThreeByThreeDigitsAndScreenshotSideRails() {
+        val pad = KeyboardLayoutContract.numericPad(chineseMode = true)
+
+        assertEquals(
+            (1..9).map { it.toString() },
+            pad.filter { it.row in 0..2 && it.column in 1..3 }.map { it.label },
+        )
+        assertEquals(listOf(".", "/", "+", "−"), pad.filter { it.column == 0 && it.row < 4 }.map { it.label })
+        assertEquals(
+            listOf(KeyCodes.DELETE, 0, 0),
+            pad.filter { it.column == 4 && it.row < 3 }.map { it.code },
+        )
+        assertEquals(
+            listOf(KeyCodes.SYMBOLS, KeyCodes.LETTERS, '0'.code, KeyCodes.SPACE, KeyCodes.ENTER),
+            pad.filter { it.row == 4 }.map { it.code },
+        )
+    }
+
+    @Test
+    fun numericPadGeometryHasNoOverlapsAndKeepsBottomRowSeparate() {
+        val slots = KeyboardLayoutContract.numericPadLayout(
+            viewWidth = 360f,
+            contentTop = 92f,
+            contentBottom = 300f,
+            horizontalPadding = 6f,
+            gap = 5f,
+            chineseMode = true,
+        )
+
+        assertTrue(slots.all { it.right > it.left && it.bottom > it.top })
+        slots.forEachIndexed { leftIndex, left ->
+            slots.drop(leftIndex + 1).forEach { right ->
+                val overlaps = left.left < right.right && left.right > right.left &&
+                    left.top < right.bottom && left.bottom > right.top
+                assertFalse("${left.key.label} overlaps ${right.key.label}", overlaps)
+            }
+        }
+        val bottomRow = slots.filter { it.key.row == 4 }
+        assertEquals(5, bottomRow.size)
+        assertEquals(300f, bottomRow.maxOf { it.bottom })
+    }
 }

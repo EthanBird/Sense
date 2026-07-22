@@ -18,20 +18,30 @@ fi
 BUILD_TOOLS="$SDK/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK/platforms/android-36/android.jar"
 KOTLIN_LIB="$GRADLE_DIST/lib"
-OUT="$ROOT/build/offline-m3"
+OUT="$ROOT/build/offline-m4"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
-APK="$APK_DIR/Sense-v0.3.0-m3-debug.apk"
+APK="$APK_DIR/Sense-v0.4.0-m4-debug.apk"
+LEXICON_ASSET="$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin"
+LEXICON_SHA256="d8d6ad58a462a0c00abd9300bd7f58930e0cff5a3bbf0089ff7128d805dab80c"
 BIGRAM_ASSET="$ROOT/ime-service/src/main/assets/pinyin_bigrams.bin"
-BIGRAM_SHA256="b45c9fcf271b67c46d7d4d34eccac2bad8805837bbc9b2ad0ce2c719ab922c2a"
+BIGRAM_SHA256="c8a7c4b9fe7b4b17b73fc29073c4c55943720e8203d42ca5f467c54f8aa12e28"
 export ANDROID_USER_HOME=${ANDROID_USER_HOME:-$OUT/android-user-home}
 
 find "$OUT" -mindepth 1 -delete 2>/dev/null || true
-mkdir -p "$OUT/core-main" "$OUT/core-test" "$OUT/ui-main" "$OUT/ui-test" "$OUT/generated" "$OUT/app-classes" "$OUT/dex" "$ANDROID_USER_HOME" "$APK_DIR"
+mkdir -p "$OUT/core-main" "$OUT/core-test" "$OUT/ui-main" "$OUT/ui-test" "$OUT/service-main" "$OUT/service-test" "$OUT/generated" "$OUT/app-classes" "$OUT/dex" "$ANDROID_USER_HOME" "$APK_DIR"
 
 python3 "$ROOT/tools/test_build_pinyin_lexicon.py" 2>&1 | tee "$OUT/lexicon-builder-tests.txt"
 python3 "$ROOT/tools/test_build_bigram_model.py" 2>&1 | tee "$OUT/bigram-builder-tests.txt"
+python3 "$ROOT/tools/test_m4_core_assets.py" 2>&1 | tee "$OUT/m4-core-assets-tests.txt"
+python3 "$ROOT/tools/build_pinyin_lexicon.py" \
+    "$LEXICON_ASSET" \
+    "$OUT/pinyin_lexicon.bin" \
+    --base-binary \
+    --custom "$ROOT/ime-service/src/main/lexicon/sense_custom.dict.tsv"
+cmp "$LEXICON_ASSET" "$OUT/pinyin_lexicon.bin"
+printf '%s  %s\n' "$LEXICON_SHA256" "$LEXICON_ASSET" | sha256sum -c -
 python3 "$ROOT/tools/build_bigram_model.py" \
-    "$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin" \
+    "$LEXICON_ASSET" \
     "$OUT/pinyin_bigrams.bin" \
     --max-pairs 65536
 cmp "$BIGRAM_ASSET" "$OUT/pinyin_bigrams.bin"
@@ -52,8 +62,14 @@ mapfile -t CORE_SOURCES < <(find "$ROOT/core-input/src/main/kotlin" -name '*.kt'
 mapfile -t TEST_SOURCES < <(find "$ROOT/core-input/src/test/kotlin" -name '*.kt' -print | sort)
 mapfile -t UI_LAYOUT_SOURCES < <(printf '%s\n' \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyCodes.kt" \
-    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardLayoutContract.kt")
+    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardLayoutContract.kt" \
+    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/SwipeCharacterMap.kt" \
+    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/TouchInputReducer.kt")
 mapfile -t UI_TEST_SOURCES < <(find "$ROOT/ime-ui/src/test/kotlin" -name '*.kt' -print | sort)
+mapfile -t SERVICE_PURE_SOURCES < <(printf '%s\n' \
+    "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/LatestOnlyTaskRunner.kt" \
+    "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ProgressiveCandidateSnapshot.kt")
+mapfile -t SERVICE_TEST_SOURCES < <(find "$ROOT/ime-service/src/test/kotlin" -name '*.kt' -print | sort)
 
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect -classpath "$STDLIB" \
@@ -88,27 +104,50 @@ done
 java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/ui-main:$OUT/ui-test" \
     org.junit.runner.JUnitCore "${UI_TEST_CLASSES[@]}" | tee "$OUT/ui-unit-tests.txt"
 
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect -classpath "$STDLIB:$OUT/core-main" \
+    -d "$OUT/service-main" "${SERVICE_PURE_SOURCES[@]}"
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath "$STDLIB:$JUNIT:$HAMCREST:$OUT/core-main:$OUT/service-main" \
+    -d "$OUT/service-test" "${SERVICE_TEST_SOURCES[@]}"
+SERVICE_TEST_CLASSES=()
+for source in "${SERVICE_TEST_SOURCES[@]}"; do
+    [[ "$source" == *Test.kt ]] || continue
+    file_name=${source##*/}
+    SERVICE_TEST_CLASSES+=("io.github.ethanbird.senseime.service.${file_name%.kt}")
+done
+java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/core-main:$OUT/service-main:$OUT/service-test" \
+    org.junit.runner.JUnitCore "${SERVICE_TEST_CLASSES[@]}" | tee "$OUT/service-unit-tests.txt"
+
 java -cp "$STDLIB:$OUT/core-main" \
     io.github.ethanbird.senseime.core.M0HostBenchmark \
     "$ROOT/benchmarks/results/m0-host.json"
 
 java -cp "$STDLIB:$OUT/core-main" \
     io.github.ethanbird.senseime.core.M1PinyinBenchmark \
-    "$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin" \
+    "$LEXICON_ASSET" \
     "$ROOT/benchmarks/results/m1-pinyin.json"
 
 java -cp "$STDLIB:$OUT/core-main" \
     io.github.ethanbird.senseime.core.M2AdaptiveBenchmark \
-    "$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin" \
+    "$LEXICON_ASSET" \
     "$ROOT/ime-service/src/main/assets/pinyin_syllables.txt" \
     "$ROOT/benchmarks/results/m2-adaptive.json"
 
 java -cp "$STDLIB:$OUT/core-main" \
     io.github.ethanbird.senseime.core.M3SentenceBenchmark \
-    "$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin" \
+    "$LEXICON_ASSET" \
     "$BIGRAM_ASSET" \
     "$ROOT/benchmarks/replay/m3-sentences.tsv" \
     "$ROOT/benchmarks/results/m3-sentence.json"
+
+java -cp "$STDLIB:$OUT/core-main" \
+    io.github.ethanbird.senseime.core.M4CoreBenchmark \
+    "$LEXICON_ASSET" \
+    "$BIGRAM_ASSET" \
+    "$ROOT/ime-service/src/main/assets/pinyin_syllables.txt" \
+    "$ROOT/benchmarks/results/m4-core.json"
 
 "$BUILD_TOOLS/aapt2" compile --dir "$ROOT/app/src/main/res" -o "$OUT/app-res.zip"
 "$BUILD_TOOLS/aapt2" compile --dir "$ROOT/ime-service/src/main/res" -o "$OUT/ime-service-res.zip"
@@ -117,8 +156,8 @@ java -cp "$STDLIB:$OUT/core-main" \
     --manifest "$ROOT/tools/offline/AndroidManifest.xml" \
     --min-sdk-version 29 \
     --target-sdk-version 36 \
-    --version-code 5 \
-    --version-name 0.3.0-m3 \
+    --version-code 6 \
+    --version-name 0.4.0-m4 \
     --auto-add-overlay \
     --output-text-symbols "$OUT/R.txt" \
     -A "$ROOT/ime-service/src/main/assets" \
@@ -187,7 +226,7 @@ keytool -genkeypair \
 "$BUILD_TOOLS/zipalign" -c -P 16 4 "$APK"
 "$BUILD_TOOLS/aapt2" dump badging "$APK" | tee "$OUT/apk-badging.txt"
 "$BUILD_TOOLS/aapt2" dump permissions "$APK" | tee "$OUT/apk-permissions.txt"
-grep -F "package: name='io.github.ethanbird.senseime' versionCode='5' versionName='0.3.0-m3'" "$OUT/apk-badging.txt"
+grep -F "package: name='io.github.ethanbird.senseime' versionCode='6' versionName='0.4.0-m4'" "$OUT/apk-badging.txt"
 grep -Fx "minSdkVersion:'29'" "$OUT/apk-badging.txt"
 grep -Fx "targetSdkVersion:'36'" "$OUT/apk-badging.txt"
 if grep -Fq "android.permission.INTERNET" "$OUT/apk-permissions.txt"; then
@@ -199,6 +238,7 @@ unzip -p "$APK" assets/LICENSE.txt | cmp - "$ROOT/LICENSE"
 unzip -p "$APK" assets/RIME-PINYIN-SIMP-LICENSE.txt | cmp - "$ROOT/licenses/rime-pinyin-simp-LICENSE"
 unzip -p "$APK" assets/CC-CEDICT-NOTICE.txt | cmp - "$ROOT/licenses/CC-CEDICT-NOTICE.md"
 unzip -p "$APK" assets/CC-BY-SA-4.0.txt | cmp - "$ROOT/licenses/CC-BY-SA-4.0.txt"
+unzip -p "$APK" assets/pinyin_lexicon.bin | sha256sum | awk '{print $1}' | grep -Fx "$LEXICON_SHA256"
 unzip -p "$APK" assets/pinyin_bigrams.bin | sha256sum | awk '{print $1}' | grep -Fx "$BIGRAM_SHA256"
 unzip -l "$APK" \
     assets/NOTICE.txt \
@@ -206,6 +246,7 @@ unzip -l "$APK" \
     assets/RIME-PINYIN-SIMP-LICENSE.txt \
     assets/CC-CEDICT-NOTICE.txt \
     assets/CC-BY-SA-4.0.txt \
+    assets/pinyin_lexicon.bin \
     assets/pinyin_bigrams.bin | tee "$OUT/apk-attributed-assets.txt"
 sha256sum "$APK" | tee "$APK.sha256"
 
@@ -225,4 +266,4 @@ HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --text "$OUT/lint.txt" \
     "$ROOT/tools/offline"
 
-echo "M3 verification complete: $APK"
+echo "M4 verification complete: $APK"

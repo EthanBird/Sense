@@ -4,19 +4,19 @@
     <string name="brand_english">SENSE</string>
     <string name="brand_chinese">先思输入法</string>
     <string name="brand_tagline">先输入，再思考；需要时，让 AI 接住下一步。</string>
-    <string name="stage_badge">M3 · 句级排序与候选分页</string>
+    <string name="stage_badge">M4 · 渐进式中文输入与高速键盘</string>
     <string name="ime_status_title">输入法状态</string>
     <string name="ime_enabled">Sense 已在系统输入法列表中启用</string>
     <string name="ime_disabled">Sense 尚未启用，先完成系统设置</string>
     <string name="enable_ime">启用 Sense</string>
     <string name="switch_ime">切换到 Sense</string>
     <string name="m0_title">当前构建能力</string>
-    <string name="m0_body">在 M2 自适应输入基础上加入词典派生字符 bigram 句级排序，并为超过首屏的候选提供左对齐分页浏览。</string>
+    <string name="m0_body">支持简拼、自动分词与可逆的分段选词；候选异步解码，多指高速触控、加速退格、九宫格数字页和完整剪贴板同步交付。</string>
     <string name="offline_title">输入热路径</string>
     <string name="offline_body">此版本不声明网络权限。候选热查询使用内存索引，确认上屏后异步写入设备本地 SQLite 用户词库。</string>
     <string name="dictionary_notice_title">词典来源与许可</string>
     <string name="dictionary_notice_body">基础词频来自 Rime pinyin-simp（Apache-2.0）；补充词条来自 MDBG 发布的 CC-CEDICT。合并词典及派生句级模型按 CC BY-SA 4.0 资产边界提供。点击离线查看完整署名与许可。</string>
     <string name="dictionary_notice_load_error">无法读取随应用打包的许可文件。</string>
     <string name="close">关闭</string>
-    <string name="version_label">版本 0.3.0-m3 · Android 10+</string>
+    <string name="version_label">版本 0.4.0-m4 · Android 10+</string>
 </resources>

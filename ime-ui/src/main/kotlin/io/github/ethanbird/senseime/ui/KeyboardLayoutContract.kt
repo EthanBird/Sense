@@ -49,6 +49,24 @@ object KeyboardLayoutContract {
         val side: Side,
     )
 
+    data class NumericKey(
+        val label: String,
+        val code: Int = 0,
+        val text: String? = null,
+        val column: Int,
+        val row: Int,
+        val columnSpan: Int = 1,
+        val rowSpan: Int = 1,
+    )
+
+    data class NumericSlot(
+        val key: NumericKey,
+        val left: Float,
+        val top: Float,
+        val right: Float,
+        val bottom: Float,
+    )
+
     fun thirdLetterRow(shifted: Boolean): List<WeightedKey> = buildList {
         add(WeightedKey("⇧", KeyCodes.SHIFT, 1.25f, action = true))
         "zxcvbnm".forEach { character ->
@@ -71,6 +89,70 @@ object KeyboardLayoutContract {
         SystemKey(KeyCodes.SWITCH_INPUT_METHOD, Side.LEFT),
         SystemKey(KeyCodes.CLIPBOARD, Side.RIGHT),
     )
+
+    /**
+     * Five-column numeric pad matching the compact mobile 3x3 convention.
+     * Column 0 is the operator rail, 1..3 are the number grid, and 4 is the
+     * editing rail. The last row contains mode/back/zero/space/enter.
+     */
+    fun numericPad(chineseMode: Boolean): List<NumericKey> = buildList {
+        listOf(".", "/", "+", "−").forEachIndexed { row, text ->
+            add(NumericKey(text, text = if (text == "−") "-" else text, column = 0, row = row))
+        }
+        (1..9).forEach { value ->
+            val index = value - 1
+            add(NumericKey(value.toString(), value.toString().single().code, text = value.toString(), column = 1 + index % 3, row = index / 3))
+        }
+        add(NumericKey("", KeyCodes.DELETE, column = 4, row = 0))
+        add(NumericKey(".", text = if (chineseMode) "。" else ".", column = 4, row = 1))
+        add(NumericKey("@", text = "@", column = 4, row = 2))
+        add(NumericKey("符", KeyCodes.SYMBOLS, column = 0, row = 4))
+        add(NumericKey("返回", KeyCodes.LETTERS, column = 1, row = 4))
+        add(NumericKey("0", '0'.code, text = "0", column = 2, row = 4))
+        add(NumericKey("", KeyCodes.SPACE, column = 3, row = 4))
+        add(NumericKey("", KeyCodes.ENTER, column = 4, row = 4))
+    }
+
+    fun numericPadLayout(
+        viewWidth: Float,
+        contentTop: Float,
+        contentBottom: Float,
+        horizontalPadding: Float,
+        gap: Float,
+        chineseMode: Boolean,
+    ): List<NumericSlot> {
+        require(viewWidth > horizontalPadding * 2 + gap * 4)
+        require(contentBottom > contentTop)
+        val bottomRowHeight = (contentBottom - contentTop) * 0.245f
+        val bottomTop = contentBottom - bottomRowHeight
+        val mainBottom = bottomTop - gap
+        val centreRowHeight = (mainBottom - contentTop - gap * 2) / 3f
+        val railRowHeight = (mainBottom - contentTop - gap * 3) / 4f
+        val weights = floatArrayOf(0.82f, 1.08f, 1.08f, 1.08f, 0.9f)
+        val usableWidth = viewWidth - horizontalPadding * 2 - gap * 4
+        val totalWeight = weights.sum()
+        val lefts = FloatArray(5)
+        val rights = FloatArray(5)
+        var x = horizontalPadding
+        repeat(5) { column ->
+            lefts[column] = x
+            rights[column] = x + usableWidth * weights[column] / totalWeight
+            x = rights[column] + gap
+        }
+        return numericPad(chineseMode).map { key ->
+            val top = when {
+                key.row == 4 -> bottomTop
+                key.column == 0 -> contentTop + key.row * (railRowHeight + gap)
+                else -> contentTop + key.row * (centreRowHeight + gap)
+            }
+            val height = when {
+                key.row == 4 -> bottomRowHeight
+                key.column == 0 -> railRowHeight
+                else -> centreRowHeight
+            }
+            NumericSlot(key, lefts[key.column], top, rights[key.column], top + height)
+        }
+    }
 
     fun leftAlignedCandidateSlots(
         viewWidth: Float,

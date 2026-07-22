@@ -16,6 +16,7 @@ MAGIC = b"SBGM"
 VERSION = 1
 DEFAULT_MAX_PAIRS = 65536
 MAX_SCORE = 3.0
+INDEX_NAMESPACES = ("{", "~")
 
 
 def is_han(character: str) -> bool:
@@ -55,7 +56,7 @@ def read_pair_mass(path: Path) -> dict[tuple[int, int], float]:
             cursor += 1 + initials_length
             source_tier = data[cursor]
             cursor += 1
-            if code.startswith("{") or source_tier != 0 or len(text) < 2:
+            if code.startswith(INDEX_NAMESPACES) or source_tier != 0 or len(text) < 2:
                 continue
             primary_text_weights[text] = max(weight, primary_text_weights.get(text, 0))
     if cursor != len(data):

@@ -66,3 +66,18 @@ tasks.register<JavaExec>("m3SentenceBenchmark") {
         rootProject.layout.projectDirectory.file("benchmarks/results/m3-sentence.json").asFile.absolutePath,
     )
 }
+
+tasks.register<JavaExec>("m4CoreBenchmark") {
+    group = "verification"
+    description = "Gates M4 initials lookup and progressive segmentation correctness/latency."
+    dependsOn(tasks.named("classes"))
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("io.github.ethanbird.senseime.core.M4CoreBenchmark")
+    args(
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/pinyin_lexicon.bin").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/pinyin_bigrams.bin").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/pinyin_syllables.txt").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("benchmarks/replay/m4-core.tsv").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("benchmarks/results/m4-core.json").asFile.absolutePath,
+    )
+}

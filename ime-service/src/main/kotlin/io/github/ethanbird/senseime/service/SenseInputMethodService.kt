@@ -5,6 +5,9 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.inputmethodservice.InputMethodService
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
 import android.speech.RecognizerIntent
 import android.view.KeyEvent
 import android.view.View
@@ -15,31 +18,38 @@ import io.github.ethanbird.senseime.core.AdaptivePinyinDecoder
 import io.github.ethanbird.senseime.core.BinaryCharacterBigramModel
 import io.github.ethanbird.senseime.core.Candidate
 import io.github.ethanbird.senseime.core.CandidateMatchKind
-import io.github.ethanbird.senseime.core.CandidateSnapshot
 import io.github.ethanbird.senseime.core.CharacterBigramModel
 import io.github.ethanbird.senseime.core.FakeDecoder
-import io.github.ethanbird.senseime.core.InputAction
 import io.github.ethanbird.senseime.core.InputDecoder
-import io.github.ethanbird.senseime.core.InputReducer
-import io.github.ethanbird.senseime.core.InputState
 import io.github.ethanbird.senseime.core.MemoryUserLexicon
+import io.github.ethanbird.senseime.core.PinyinComposition
 import io.github.ethanbird.senseime.core.PinyinDecoder
+import io.github.ethanbird.senseime.core.ProgressivePinyinDecoder
+import io.github.ethanbird.senseime.core.ProgressivePinyinDecoding
 import io.github.ethanbird.senseime.core.PinyinSyllableSegmenter
 import io.github.ethanbird.senseime.core.UserLexicon
 import io.github.ethanbird.senseime.ui.KeyCodes
 import io.github.ethanbird.senseime.ui.SenseKeyboardView
 import java.util.ArrayDeque
+import org.json.JSONArray
 
 class SenseInputMethodService : InputMethodService() {
-    private val reducer = InputReducer()
     private var decoder: InputDecoder = FakeDecoder()
     private var adaptiveDecoder: AdaptivePinyinDecoder? = null
     private var userLexicon: UserLexicon? = null
-    private var renderedSnapshot = CandidateSnapshot.EMPTY
-    private var state = InputState()
+    private var renderedSnapshot = ProgressiveCandidateSnapshot.EMPTY
+    private var renderedDecoding: ProgressivePinyinDecoding? = null
+    private var composition = PinyinComposition()
     private var shifted = false
     private var chineseMode = true
     private var keyboardView: SenseKeyboardView? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val candidateResultToken = Any()
+    private var candidateRunner: LatestOnlyTaskRunner<CandidateDecodeRequest, ProgressivePinyinDecoding>? = null
+    private var pendingSpaceRevision: Long? = null
+    private val deferredInputs = ArrayDeque<DeferredInput>()
+    private var drainingDeferredInputs = false
+    private var destroyed = false
     private lateinit var clipboardManager: ClipboardManager
     private val clipboardHistory = ArrayDeque<String>()
 
@@ -49,6 +59,7 @@ class SenseInputMethodService : InputMethodService() {
 
     override fun onCreate() {
         super.onCreate()
+        destroyed = false
         val bigramModel = runCatching<CharacterBigramModel> {
             assets.open(PINYIN_BIGRAM_ASSET).use(BinaryCharacterBigramModel::load)
         }.getOrElse { CharacterBigramModel.EMPTY }
@@ -62,7 +73,37 @@ class SenseInputMethodService : InputMethodService() {
         userLexicon = learned
         adaptiveDecoder = AdaptivePinyinDecoder(baseDecoder, learned, PinyinSyllableSegmenter(syllables))
         decoder = adaptiveDecoder ?: baseDecoder
+        val activeDecoder = decoder
+        candidateRunner = LatestOnlyTaskRunner(
+            threadName = "sense-candidate-decoder",
+            work = { request ->
+                (activeDecoder as? ProgressivePinyinDecoder)?.decodeProgressively(
+                    request.composition,
+                    CANDIDATE_LIMIT,
+                ) ?: ProgressivePinyinDecoding(
+                    revision = request.composition.revision,
+                    remainingPinyin = request.composition.remainingPinyin,
+                    wholeCandidates = activeDecoder.decode(request.composition.remainingPinyin, CANDIDATE_LIMIT),
+                    prefixCandidates = emptyList(),
+                )
+            },
+            deliver = { _, request, decoding ->
+                postDecodedCandidates(request, decoding)
+            },
+            fail = { _, request, _ ->
+                postDecodedCandidates(
+                    request,
+                    ProgressivePinyinDecoding(
+                        revision = request.composition.revision,
+                        remainingPinyin = request.composition.remainingPinyin,
+                        wholeCandidates = emptyList(),
+                        prefixCandidates = emptyList(),
+                    ),
+                )
+            },
+        )
         clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        loadClipboardHistory()
         clipboardManager.addPrimaryClipChangedListener(clipboardListener)
         capturePrimaryClipboard()
     }
@@ -72,6 +113,7 @@ class SenseInputMethodService : InputMethodService() {
         view.keyListener = SenseKeyboardView.KeyListener(::handleKey)
         view.candidateListener = ::commitCandidate
         view.textListener = ::commitText
+        view.clipboardActionListener = ::handleClipboardAction
         view.setChineseMode(chineseMode)
         keyboardView = view
         render()
@@ -84,12 +126,25 @@ class SenseInputMethodService : InputMethodService() {
         capturePrimaryClipboard()
     }
 
+    override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
+        super.onStartInputView(info, restarting)
+        keyboardView?.setChineseMode(chineseMode)
+        keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
+        render()
+    }
+
     override fun onFinishInput() {
         resetComposition(finishConnection = true)
         super.onFinishInput()
     }
 
     override fun onDestroy() {
+        destroyed = true
+        pendingSpaceRevision = null
+        deferredInputs.clear()
+        mainHandler.removeCallbacksAndMessages(candidateResultToken)
+        candidateRunner?.close()
+        candidateRunner = null
         clipboardManager.removePrimaryClipChangedListener(clipboardListener)
         userLexicon?.close()
         userLexicon = null
@@ -99,6 +154,7 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun handleKey(code: Int) {
+        if (deferIfSpacePending(DeferredInput.Key(code))) return
         when (code) {
             KeyCodes.SHIFT -> {
                 shifted = !shifted
@@ -115,10 +171,7 @@ class SenseInputMethodService : InputMethodService() {
             KeyCodes.HIDE -> requestHideSelf(0)
             KeyCodes.EDITOR -> sendCursorLeft()
             KeyCodes.VOICE -> openVoiceInput()
-            KeyCodes.ENTER -> {
-                if (state.composing.isNotEmpty()) commitPrimaryOrRaw()
-                currentInputConnection?.commitText("\n", 1)
-            }
+            KeyCodes.ENTER -> handleEnter()
 
             else -> if (code > 0) handleCharacter(code.toChar())
         }
@@ -135,19 +188,20 @@ class SenseInputMethodService : InputMethodService() {
             return
         }
 
-        state = reducer.reduce(state, InputAction.Type(character.lowercaseChar()))
-        currentInputConnection?.setComposingText(state.composing, 1)
+        if (character.lowercaseChar() !in 'a'..'z') {
+            commitText(character.toString())
+            return
+        }
+
+        composition = composition.type(character)
+        updateConnectionComposition()
         render()
     }
 
     private fun handleBackspace() {
-        if (state.composing.isNotEmpty()) {
-            state = reducer.reduce(state, InputAction.Backspace)
-            if (state.composing.isEmpty()) {
-                currentInputConnection?.finishComposingText()
-            } else {
-                currentInputConnection?.setComposingText(state.composing, 1)
-            }
+        if (composition.visibleText.isNotEmpty()) {
+            composition = composition.backspace()
+            updateConnectionComposition()
             render()
         } else {
             currentInputConnection?.deleteSurroundingText(1, 0)
@@ -155,48 +209,62 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun handleSpace() {
-        if (state.composing.isNotEmpty()) commitPrimaryOrRaw() else currentInputConnection?.commitText(" ", 1)
+        if (composition.visibleText.isEmpty()) {
+            currentInputConnection?.commitText(" ", 1)
+            return
+        }
+        if (composition.remainingPinyin.isEmpty()) {
+            commitRawComposition()
+            return
+        }
+        val decoding = currentDecoding()
+        if (decoding == null) {
+            pendingSpaceRevision = composition.revision
+            if (candidateRunner == null) {
+                pendingSpaceRevision = null
+                commitRawComposition()
+            }
+            return
+        }
+        commitPrimary(decoding.wholeCandidates.firstOrNull())
+    }
+
+    private fun handleEnter() {
+        if (composition.visibleText.isNotEmpty()) {
+            // Enter confirms exactly what the user can see. It never auto-selects
+            // a Chinese candidate and does not append a newline in this branch.
+            commitRawComposition()
+        } else {
+            currentInputConnection?.commitText("\n", 1)
+        }
     }
 
     private fun commitCandidate(revision: Long, sourceIndex: Int) {
-        if (state.composing.isEmpty()) return
-        val candidate = renderedSnapshot.select(state.revision, revision, sourceIndex) ?: return
-        commitCandidate(candidate)
-    }
+        if (composition.visibleText.isEmpty()) return
+        when (val choice = renderedSnapshot.select(composition.revision, revision, sourceIndex)) {
+            is ProgressiveCandidateChoice.Whole -> commitPrimary(choice.candidate)
+            is ProgressiveCandidateChoice.Prefix -> {
+                val next = composition.acceptPrefix(revision, choice.value)
+                if (next == composition) return
+                composition = next
+                updateConnectionComposition()
+                render()
+            }
 
-    private fun commitPrimaryOrRaw() {
-        if (state.composing.isEmpty()) return
-        val rawInput = state.composing
-        val candidate = renderedSnapshot
-            .takeIf { it.revision == state.revision }
-            ?.candidates
-            ?.firstOrNull()
-            ?: Candidate(
-            text = rawInput,
-            canonicalPinyin = rawInput,
-            matchKind = CandidateMatchKind.BASE_EXACT,
-        )
-        commitCandidate(candidate)
-    }
-
-    private fun commitCandidate(candidate: Candidate) {
-        val rawInput = state.composing
-        val committed = currentInputConnection?.commitText(candidate.text, 1) == true
-        if (!committed) return
-        state = reducer.reduce(state, InputAction.Commit(candidate.text))
-        adaptiveDecoder?.learn(rawInput, candidate)
-        shifted = false
-        keyboardView?.setShifted(false)
-        render()
+            null -> Unit
+        }
     }
 
     private fun commitText(text: String) {
-        if (state.composing.isNotEmpty()) commitPrimaryOrRaw()
+        if (deferIfSpacePending(DeferredInput.Text(text))) return
+        if (composition.visibleText.isNotEmpty()) {
+            commitPrimary(currentDecoding()?.wholeCandidates?.firstOrNull())
+        }
         currentInputConnection?.commitText(text, 1)
     }
 
     private fun toggleLanguage() {
-        if (state.composing.isNotEmpty()) commitPrimaryOrRaw()
+        if (composition.visibleText.isNotEmpty()) commitRawComposition()
         chineseMode = !chineseMode
         shifted = false
         keyboardView?.setShifted(false)
@@ -206,7 +274,7 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun switchInputMethod() {
-        if (state.composing.isNotEmpty()) commitPrimaryOrRaw()
+        if (composition.visibleText.isNotEmpty()) commitRawComposition()
         (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).showInputMethodPicker()
     }
 
@@ -215,14 +283,51 @@ class SenseInputMethodService : InputMethodService() {
         keyboardView?.showClipboard(clipboardHistory.toList())
     }
 
+    private fun handleClipboardAction(action: SenseKeyboardView.ClipboardAction, index: Int) {
+        when (action) {
+            SenseKeyboardView.ClipboardAction.CLEAR -> clipboardHistory.clear()
+            SenseKeyboardView.ClipboardAction.DELETE -> {
+                clipboardHistory.elementAtOrNull(index)?.let(clipboardHistory::remove)
+            }
+
+            SenseKeyboardView.ClipboardAction.REFRESH -> capturePrimaryClipboard()
+        }
+        persistClipboardHistory()
+        keyboardView?.showClipboard(clipboardHistory.toList())
+    }
+
     private fun capturePrimaryClipboard() {
         val clip = clipboardManager.primaryClip ?: return
         if (clip.itemCount == 0) return
-        val text = clip.getItemAt(0).coerceToText(this)?.toString()?.trim().orEmpty()
-        if (text.isEmpty()) return
+        val raw = clip.getItemAt(0).coerceToText(this)?.toString().orEmpty()
+        if (raw.isBlank()) return
+        val text = raw.take(MAX_CLIPBOARD_TEXT_LENGTH)
         clipboardHistory.remove(text)
         clipboardHistory.addFirst(text)
         while (clipboardHistory.size > CLIPBOARD_HISTORY_LIMIT) clipboardHistory.removeLast()
+        persistClipboardHistory()
+    }
+
+    private fun loadClipboardHistory() {
+        val serialized = getSharedPreferences(CLIPBOARD_PREFERENCES, Context.MODE_PRIVATE)
+            .getString(CLIPBOARD_HISTORY_KEY, null)
+            ?: return
+        runCatching {
+            val values = JSONArray(serialized)
+            for (index in 0 until minOf(values.length(), CLIPBOARD_HISTORY_LIMIT)) {
+                val text = values.optString(index).take(MAX_CLIPBOARD_TEXT_LENGTH)
+                if (text.isNotBlank() && !clipboardHistory.contains(text)) clipboardHistory.addLast(text)
+            }
+        }
+    }
+
+    private fun persistClipboardHistory() {
+        val values = JSONArray()
+        clipboardHistory.forEach { values.put(it) }
+        getSharedPreferences(CLIPBOARD_PREFERENCES, Context.MODE_PRIVATE)
+            .edit()
+            .putString(CLIPBOARD_HISTORY_KEY, values.toString())
+            .apply()
     }
 
     private fun sendCursorLeft() {
@@ -244,7 +349,9 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun resetComposition(finishConnection: Boolean) {
-        state = reducer.reduce(state, InputAction.Reset)
+        composition = composition.reset()
+        pendingSpaceRevision = null
+        deferredInputs.clear()
         shifted = false
         keyboardView?.setShifted(false)
         if (finishConnection) currentInputConnection?.finishComposingText()
@@ -252,9 +359,155 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun render() {
-        val candidates = if (chineseMode) decoder.decode(state.composing, CANDIDATE_LIMIT) else emptyList()
-        renderedSnapshot = CandidateSnapshot(state.revision, candidates)
-        keyboardView?.updateComposing(state.revision, state.composing, candidates.map { it.text })
+        val request = CandidateDecodeRequest(composition)
+        mainHandler.removeCallbacksAndMessages(candidateResultToken)
+        renderedSnapshot = ProgressiveCandidateSnapshot.EMPTY
+        renderedDecoding = null
+        keyboardView?.updateComposing(
+            request.composition.revision,
+            request.composition.visibleText,
+            emptyList(),
+        )
+        if (chineseMode && request.composition.remainingPinyin.isNotEmpty()) {
+            if (candidateRunner?.submit(request) == -1L) candidateRunner = null
+        }
+    }
+
+    private fun postDecodedCandidates(
+        request: CandidateDecodeRequest,
+        decoding: ProgressivePinyinDecoding,
+    ) {
+        mainHandler.removeCallbacksAndMessages(candidateResultToken)
+        mainHandler.postAtTime(
+            { applyDecodedCandidates(request, decoding) },
+            candidateResultToken,
+            SystemClock.uptimeMillis(),
+        )
+    }
+
+    private fun applyDecodedCandidates(
+        request: CandidateDecodeRequest,
+        decoding: ProgressivePinyinDecoding,
+    ) {
+        if (
+            destroyed ||
+            !chineseMode ||
+            request.composition != composition ||
+            decoding.revision != composition.revision ||
+            decoding.remainingPinyin != composition.remainingPinyin
+        ) {
+            return
+        }
+        renderedDecoding = decoding
+        renderedSnapshot = ProgressiveCandidateSnapshot.from(decoding, CANDIDATE_LIMIT)
+
+        if (pendingSpaceRevision == composition.revision) {
+            pendingSpaceRevision = null
+            commitPrimary(decoding.wholeCandidates.firstOrNull())
+            drainDeferredInputs()
+            return
+        }
+        keyboardView?.updateComposing(
+            composition.revision,
+            composition.visibleText,
+            renderedSnapshot.candidates.map { it.text },
+        )
+    }
+
+    private fun currentDecoding(): ProgressivePinyinDecoding? = renderedDecoding?.takeIf {
+        it.revision == composition.revision && it.remainingPinyin == composition.remainingPinyin
+    }
+
+    private fun commitPrimary(candidate: Candidate?): Boolean {
+        if (composition.visibleText.isEmpty()) return false
+        val rawInput = buildString {
+            composition.acceptedSegments.forEach { append(it.consumedPinyin) }
+            append(composition.remainingPinyin)
+        }
+        val output = composition.confirmPrimary(candidate)
+        val learnable = candidate?.let { selected ->
+            if (composition.acceptedSegments.isEmpty()) {
+                selected
+            } else if (
+                selected.matchKind != CandidateMatchKind.BASE_PREFIX &&
+                selected.matchKind != CandidateMatchKind.BASE_INITIALS
+            ) {
+                Candidate(
+                    text = output,
+                    score = selected.score,
+                    canonicalPinyin = rawInput,
+                    matchKind = CandidateMatchKind.BASE_COMPOSED,
+                )
+            } else {
+                null
+            }
+        }
+        return commitComposition(output, rawInput, learnable)
+    }
+
+    private fun commitRawComposition(): Boolean {
+        if (composition.visibleText.isEmpty()) return false
+        return commitComposition(composition.confirmRaw(), rawInput = null, learnable = null)
+    }
+
+    private fun commitComposition(
+        output: String,
+        rawInput: String?,
+        learnable: Candidate?,
+    ): Boolean {
+        val committed = currentInputConnection?.commitText(output, 1) == true
+        if (!committed) {
+            pendingSpaceRevision = null
+            return false
+        }
+        if (rawInput != null && learnable != null) adaptiveDecoder?.learn(rawInput, learnable)
+        composition = composition.reset()
+        pendingSpaceRevision = null
+        shifted = false
+        keyboardView?.setShifted(false)
+        render()
+        return true
+    }
+
+    private fun updateConnectionComposition() {
+        if (composition.visibleText.isEmpty()) {
+            currentInputConnection?.finishComposingText()
+        } else {
+            currentInputConnection?.setComposingText(composition.visibleText, 1)
+        }
+    }
+
+    private fun deferIfSpacePending(input: DeferredInput): Boolean {
+        if (pendingSpaceRevision == null) return false
+        if (deferredInputs.size < MAX_DEFERRED_INPUT_EVENTS) {
+            deferredInputs.addLast(input)
+            return true
+        }
+
+        // A failed/very slow decoder must never make the keyboard stop accepting input.
+        pendingSpaceRevision = null
+        commitRawComposition()
+        drainDeferredInputs()
+        if (pendingSpaceRevision != null) {
+            deferredInputs.addLast(input)
+            return true
+        }
+        return false
+    }
+
+    private fun drainDeferredInputs() {
+        if (drainingDeferredInputs || pendingSpaceRevision != null) return
+        drainingDeferredInputs = true
+        try {
+            while (deferredInputs.isNotEmpty() && pendingSpaceRevision == null) {
+                when (val input = deferredInputs.removeFirst()) {
+                    is DeferredInput.Key -> handleKey(input.code)
+                    is DeferredInput.Text -> commitText(input.text)
+                }
+            }
+        } finally {
+            drainingDeferredInputs = false
+        }
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
@@ -264,7 +517,20 @@ class SenseInputMethodService : InputMethodService() {
         const val PINYIN_BIGRAM_ASSET = "pinyin_bigrams.bin"
         const val PINYIN_SYLLABLES_ASSET = "pinyin_syllables.txt"
         const val CANDIDATE_LIMIT = 32
-        const val CLIPBOARD_HISTORY_LIMIT = 8
+        const val CLIPBOARD_HISTORY_LIMIT = 30
+        const val MAX_CLIPBOARD_TEXT_LENGTH = 4096
+        const val MAX_DEFERRED_INPUT_EVENTS = 512
+        const val CLIPBOARD_PREFERENCES = "sense_clipboard_history"
+        const val CLIPBOARD_HISTORY_KEY = "items"
         val FALLBACK_SYLLABLES = setOf("a", "ai", "an", "ang", "ao", "ba", "de", "ge", "hao", "ni", "ren", "shi", "wo", "xian", "yi")
     }
+}
+
+private data class CandidateDecodeRequest(
+    val composition: PinyinComposition,
+)
+
+private sealed interface DeferredInput {
+    data class Key(val code: Int) : DeferredInput
+    data class Text(val text: String) : DeferredInput
 }

@@ -19,6 +19,10 @@ MAX_PREFIX_LENGTH = 4
 MAX_PREFIX_CANDIDATES = 16
 PREFIX_COMPLETION_DECAY = 0.72
 PREFIX_NAMESPACE = "{"
+INITIALS_NAMESPACE = "~"
+MIN_INITIALS_LENGTH = 2
+MAX_INITIALS_LENGTH = 12
+MAX_INITIALS_CANDIDATES = 32
 
 
 @dataclass(frozen=True)
@@ -164,7 +168,8 @@ def read_dictionary(
             f"retained={cedict_retained}, "
             f"duplicates={cedict_duplicate}, skipped={cedict_skipped}"
         )
-    return add_statistical_prefixes(ranked, prefix_ranked), syllables
+    prefixed = add_statistical_prefixes(ranked, prefix_ranked)
+    return add_initials_index(prefixed, ranked), syllables
 
 
 def add_statistical_prefixes(
@@ -194,6 +199,41 @@ def add_statistical_prefixes(
     return result
 
 
+def add_initials_index(
+    entries: dict[str, list[LexiconCandidate]],
+    full_pinyin_source: dict[str, list[LexiconCandidate]],
+) -> dict[str, list[LexiconCandidate]]:
+    """Index exact syllable initials without changing full-pinyin records."""
+    aggregate: defaultdict[str, dict[str, LexiconCandidate]] = defaultdict(dict)
+    for candidates in full_pinyin_source.values():
+        for candidate in candidates:
+            initials = candidate.initials
+            if len(initials) not in range(MIN_INITIALS_LENGTH, MAX_INITIALS_LENGTH + 1):
+                continue
+            previous = aggregate[initials].get(candidate.text)
+            if previous is None or _candidate_is_better(candidate, previous):
+                aggregate[initials][candidate.text] = candidate
+
+    result = {code: values for code, values in entries.items() if not code.startswith(INITIALS_NAMESPACE)}
+    for initials, values in aggregate.items():
+        result[INITIALS_NAMESPACE + initials] = sorted(
+            values.values(),
+            key=lambda item: (item.source_tier, -item.weight, len(item.text), item.text, item.initials),
+        )[:MAX_INITIALS_CANDIDATES]
+    return result
+
+
+def _candidate_is_better(candidate: LexiconCandidate, previous: LexiconCandidate) -> bool:
+    return (
+        candidate.source_tier < previous.source_tier
+        or candidate.source_tier == previous.source_tier
+        and (
+            candidate.weight > previous.weight
+            or candidate.weight == previous.weight and candidate.initials < previous.initials
+        )
+    )
+
+
 def write_binary(entries: dict[str, list[LexiconCandidate]], output: Path) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("wb") as stream:
@@ -216,6 +256,96 @@ def write_binary(entries: dict[str, list[LexiconCandidate]], output: Path) -> No
                 stream.write(struct.pack("B", candidate.source_tier))
 
 
+def read_binary(path: Path) -> dict[str, list[LexiconCandidate]]:
+    """Read a v3 SPLX asset so a pinned release asset can be enhanced deterministically."""
+    data = path.read_bytes()
+    if len(data) < 10 or data[:4] != MAGIC:
+        raise ValueError("Pinyin lexicon header is invalid")
+    version, record_count = struct.unpack_from(">HI", data, 4)
+    if version != VERSION or record_count <= 0:
+        raise ValueError(f"Unsupported pinyin lexicon version: {version}")
+    offset = 10
+    result: dict[str, list[LexiconCandidate]] = {}
+    for _ in range(record_count):
+        if offset >= len(data):
+            raise ValueError("Pinyin lexicon record is truncated")
+        code_length = data[offset]
+        offset += 1
+        code_end = offset + code_length
+        if code_length == 0 or code_end >= len(data):
+            raise ValueError("Pinyin code is truncated")
+        code = data[offset:code_end].decode("ascii")
+        offset = code_end
+        candidate_count = data[offset]
+        offset += 1
+        candidates: list[LexiconCandidate] = []
+        for _ in range(candidate_count):
+            if offset >= len(data):
+                raise ValueError("Pinyin candidate is truncated")
+            text_length = data[offset]
+            offset += 1
+            text_end = offset + text_length
+            if text_length == 0 or text_end + 6 > len(data):
+                raise ValueError("Pinyin candidate text is truncated")
+            text = data[offset:text_end].decode("utf-8")
+            offset = text_end
+            weight = struct.unpack_from(">I", data, offset)[0]
+            offset += 4
+            initials_length = data[offset]
+            offset += 1
+            initials_end = offset + initials_length
+            if initials_length == 0 or initials_end >= len(data):
+                raise ValueError("Pinyin candidate initials are truncated")
+            initials = data[offset:initials_end].decode("ascii")
+            offset = initials_end
+            source_tier = data[offset]
+            offset += 1
+            if source_tier not in (0, 1):
+                raise ValueError("Pinyin candidate source tier is invalid")
+            candidates.append(LexiconCandidate(text, weight, initials, source_tier))
+        result[code] = candidates
+    if offset != len(data):
+        raise ValueError("Pinyin lexicon has trailing bytes")
+    return result
+
+
+def augment_binary(
+    base: Path,
+    custom_paths: list[Path],
+) -> tuple[dict[str, list[LexiconCandidate]], set[str]]:
+    """Overlay project phrases and rebuild the exact-initials index on a pinned SPLX asset."""
+    existing = read_binary(base)
+    full: defaultdict[str, dict[str, LexiconCandidate]] = defaultdict(dict)
+    for code, candidates in existing.items():
+        if code.startswith((PREFIX_NAMESPACE, INITIALS_NAMESPACE)):
+            continue
+        for candidate in candidates:
+            full[code][candidate.text] = candidate
+
+    syllables: set[str] = set()
+    for path in custom_paths:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not line or line.startswith("#") or "\t" not in line:
+                continue
+            fields = line.split("\t")
+            try:
+                weight = max(0, int(fields[2])) if len(fields) > 2 else 0
+            except ValueError:
+                weight = 0
+            add_entry(full, fields[0].strip(), fields[1], weight, syllables)
+
+    ranked = {
+        code: sorted(
+            values.values(),
+            key=lambda item: (item.source_tier, -item.weight, len(item.text), item.text, item.initials),
+        )[:MAX_CANDIDATES]
+        for code, values in full.items()
+    }
+    preserved = {code: values for code, values in existing.items() if not code.startswith(INITIALS_NAMESPACE)}
+    preserved.update(ranked)
+    return add_initials_index(preserved, ranked), syllables
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("source", type=Path)
@@ -223,9 +353,19 @@ def main() -> None:
     parser.add_argument("--custom", action="append", type=Path, default=[])
     parser.add_argument("--cedict", action="append", type=Path, default=[])
     parser.add_argument("--syllables-output", type=Path)
+    parser.add_argument(
+        "--base-binary",
+        action="store_true",
+        help="Treat source as a pinned v3 SPLX asset, overlay --custom files, and rebuild initials.",
+    )
     args = parser.parse_args()
 
-    entries, syllables = read_dictionary([args.source, *args.custom], args.cedict)
+    if args.base_binary:
+        if args.cedict:
+            parser.error("--cedict cannot be combined with --base-binary")
+        entries, syllables = augment_binary(args.source, args.custom)
+    else:
+        entries, syllables = read_dictionary([args.source, *args.custom], args.cedict)
     if not entries:
         raise SystemExit("No pinyin entries were read")
     write_binary(entries, args.output)

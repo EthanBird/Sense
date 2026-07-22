@@ -24,6 +24,7 @@ class PinyinDecoderTest {
             "zhongguo" to listOf(item("中国", 2000, "zg")),
             "{w" to listOf(item("我", 850, "w"), item("为", 300, "w")),
             "{xian" to listOf(item("先思", 500, "xs")),
+            "~ygz" to listOf(item("一个字", 840000, "ygz"), item("应该做", 353, "ygz")),
             "zhu" to listOf(item("主", 0, "z"), item("株", 1, "z", sourceTier = 1)),
         ),
     )
@@ -160,6 +161,29 @@ class PinyinDecoderTest {
         assertEquals("我", candidate.text)
         assertEquals(CandidateMatchKind.BASE_PREFIX, candidate.matchKind)
         assertNull(candidate.canonicalPinyin)
+    }
+
+    @Test
+    fun exactInitialsIndexReturnsDefaultPhraseWithoutBreakingSingleLetterFrequency() {
+        val initials = decoder.decode("ygz")
+        assertEquals("一个字", initials.first().text)
+        assertEquals(CandidateMatchKind.BASE_INITIALS, initials.first().matchKind)
+        assertEquals("我", decoder.decode("w").first().text)
+    }
+
+    @Test
+    fun selectedCharacterContextCanRerankAnExactTail() {
+        val contextual = PinyinDecoder.fromBytes(
+            lexicon(
+                "pei" to listOf(item("陪", 1000, "p"), item("配", 900, "p")),
+            ),
+            CharacterBigramModel { previous, next ->
+                if (previous == '匹'.code && next == '配'.code) 2f else 0f
+            },
+        )
+
+        assertEquals("陪", contextual.decode("pei").first().text)
+        assertEquals("配", contextual.decodeAfter('匹'.code, "pei").first().text)
     }
 
     @Test
