@@ -1,0 +1,51 @@
+        {
+          "schemaVersion": 1,
+          "stage": "M3",
+          "generatedAt": "2026-07-22T11:33:50.605788472Z",
+          "bigramModel": {
+            "records": 46651,
+            "bytes": 559822,
+            "sha256": "b45c9fcf271b67c46d7d4d34eccac2bad8805837bbc9b2ad0ce2c719ab922c2a",
+            "loadMs": 27.84
+          },
+          "syntheticContextGate": {
+            "query": "woshiren",
+            "expected": "我是人",
+            "baselineTop1": "我时人",
+            "contextualTop1": "我是人",
+            "status": "pass"
+          },
+          "replay": {
+            "cases": 8,
+            "contextualTop1Passes": 8,
+            "improvedExpectedRanks": 1,
+            "degradedExpectedRanks": 0,
+            "results": [
+            {"query":"jintiantianqihenhao","expected":"今天天气很好","baselineTop1":"今天天气很好","contextualTop1":"今天天气很好","baselineRank":1,"contextualRank":1},
+{"query":"womenshizhongguoren","expected":"我们是中国人","baselineTop1":"我们是中国人","contextualTop1":"我们是中国人","baselineRank":1,"contextualRank":1},
+{"query":"womenshiyijiaren","expected":"我们是一家人","baselineTop1":"我们之一家人","contextualTop1":"我们是一家人","baselineRank":5,"contextualRank":1},
+{"query":"tamenshizhongguoren","expected":"他们是中国人","baselineTop1":"他们是中国人","contextualTop1":"他们是中国人","baselineRank":1,"contextualRank":1},
+{"query":"woxihuanzhongguo","expected":"我喜欢中国","baselineTop1":"我喜欢中国","contextualTop1":"我喜欢中国","baselineRank":1,"contextualRank":1},
+{"query":"wozaibeijinggongzuo","expected":"我在北京工作","baselineTop1":"我在北京工作","contextualTop1":"我在北京工作","baselineRank":1,"contextualRank":1},
+{"query":"zhegeshurufahenhaoyong","expected":"这个输入法很好用","baselineTop1":"这个输入法很好用","contextualTop1":"这个输入法很好用","baselineRank":1,"contextualRank":1},
+{"query":"worenweizhegeshuofabudui","expected":"我认为这个说法不对","baselineTop1":"我认为这个说法不对","contextualTop1":"我认为这个说法不对","baselineRank":1,"contextualRank":1}
+            ]
+          },
+          "cleanSentenceLookup": {
+            "samples": 7,
+            "lookupsPerSample": 40,
+            "baselineMedianMs": 22.75,
+            "baselineP95Ms": 22.97,
+            "contextualMedianMs": 23.75,
+            "contextualP95Ms": 24.45,
+            "p95GateMultiplier": 1.2,
+            "p95GateSlackMs": 0.25,
+            "absoluteP95LimitMs": 35.00
+          },
+          "longSentenceTypoLookup": {
+            "medianMs": 19.03,
+            "p95Ms": 19.18,
+            "absoluteP95LimitMs": 30.00
+          },
+          "deviceMetrics": {"status": "pending-real-device"}
+        }

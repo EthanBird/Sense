@@ -89,4 +89,75 @@ class KeyboardLayoutContractTest {
         assertTrue(slots.all { it.right - it.left >= 44f })
         assertTrue(slots.all { it.textAnchor <= it.right })
     }
+
+    @Test
+    fun collapsedStripReservesAnOverflowControlOnlyWhenNeeded() {
+        val overflowing = KeyboardLayoutContract.collapsedCandidateStrip(
+            viewWidth = 180f,
+            measuredTextWidths = List(6) { 34f },
+            padding = 6f,
+            textInset = 8f,
+            gap = 3f,
+            minimumWidth = 44f,
+            overflowControlWidth = 40f,
+        )
+        assertTrue(overflowing.hasOverflow)
+        assertTrue(overflowing.slots.all { it.right <= 131f })
+        assertEquals(6f, overflowing.slots.first().left)
+
+        val fitting = KeyboardLayoutContract.collapsedCandidateStrip(
+            viewWidth = 180f,
+            measuredTextWidths = listOf(20f, 20f),
+            padding = 6f,
+            textInset = 8f,
+            gap = 3f,
+            minimumWidth = 44f,
+            overflowControlWidth = 40f,
+        )
+        assertFalse(fitting.hasOverflow)
+    }
+
+    @Test
+    fun expandedGridPagesEveryCandidateWithGlobalIndices() {
+        val pages = KeyboardLayoutContract.pagedCandidateGrid(
+            viewWidth = 220f,
+            contentTop = 50f,
+            contentBottom = 150f,
+            measuredTextWidths = listOf(40f, 70f, 30f, 180f, 45f, 45f, 45f),
+            horizontalPadding = 6f,
+            textInset = 9f,
+            horizontalGap = 4f,
+            verticalGap = 4f,
+            minimumWidth = 48f,
+            rowHeight = 40f,
+        )
+
+        assertTrue(pages.size > 1)
+        assertEquals((0..6).toList(), pages.flatMap { page -> page.slots.map { it.sourceIndex } })
+        pages.forEach { page ->
+            val rows = page.slots.groupBy { it.top }
+            rows.values.forEach { row -> assertEquals(6f, row.first().left) }
+            assertTrue(page.slots.all { it.right <= 214f && it.bottom <= 150f })
+        }
+    }
+
+    @Test
+    fun oversizedCandidateIsClampedAndDoesNotStallPaging() {
+        val pages = KeyboardLayoutContract.pagedCandidateGrid(
+            viewWidth = 120f,
+            contentTop = 45f,
+            contentBottom = 90f,
+            measuredTextWidths = listOf(500f, 20f),
+            horizontalPadding = 6f,
+            textInset = 9f,
+            horizontalGap = 3f,
+            verticalGap = 3f,
+            minimumWidth = 44f,
+            rowHeight = 40f,
+        )
+
+        assertEquals(2, pages.size)
+        assertEquals(108f, pages.first().slots.single().right - pages.first().slots.single().left)
+        assertEquals(listOf(0, 1), pages.flatMap { it.slots }.map { it.sourceIndex })
+    }
 }

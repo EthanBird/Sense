@@ -49,20 +49,59 @@ class SenseKeyboardView @JvmOverloads constructor(
         val text: String? = null,
     )
 
+    private data class VisibleCandidate(
+        val sourceIndex: Int,
+        val bounds: RectF,
+        val textAnchor: Float,
+    )
+
+    private enum class CandidateControl {
+        EXPAND,
+        COLLAPSE,
+        PREVIOUS_PAGE,
+        NEXT_PAGE,
+    }
+
+    private data class CandidateControlSlot(
+        val control: CandidateControl,
+        val bounds: RectF,
+        val enabled: Boolean = true,
+    )
+
+    private sealed interface FrozenCandidateTarget {
+        val bounds: RectF
+
+        data class Value(
+            val revision: Long,
+            val sourceIndex: Int,
+            override val bounds: RectF,
+        ) : FrozenCandidateTarget
+
+        data class Control(
+            val value: CandidateControl,
+            override val bounds: RectF,
+        ) : FrozenCandidateTarget
+    }
+
     var keyListener: KeyListener? = null
-    var candidateListener: ((index: Int) -> Unit)? = null
+    var candidateListener: ((revision: Long, sourceIndex: Int) -> Unit)? = null
     var textListener: ((text: String) -> Unit)? = null
 
     private val density = resources.displayMetrics.density
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val keys = mutableListOf<Key>()
-    private val candidateBounds = mutableListOf<RectF>()
-    private val candidateTextAnchors = mutableListOf<Float>()
+    private val visibleCandidates = mutableListOf<VisibleCandidate>()
+    private val candidateControls = mutableListOf<CandidateControlSlot>()
+    private var candidatePages: List<KeyboardLayoutContract.CandidatePage> = emptyList()
     private var candidates: List<String> = emptyList()
     private var clipboardItems: List<String> = emptyList()
     private var composing: String = ""
+    private var candidateRevision: Long = 0L
+    private var candidatePageIndex = 0
+    private var candidatesExpanded = false
+    private var activeCandidateTarget: FrozenCandidateTarget? = null
+    private var activeCandidateTargetInside = false
     private var activeKeyIndex = -1
-    private var activeCandidateIndex = -1
     private var shifted = false
     private var chineseMode = true
     private var panel = Panel.LETTERS
@@ -74,6 +113,12 @@ class SenseKeyboardView @JvmOverloads constructor(
     private val keyGap = dp(5f)
     private val horizontalPadding = dp(6f)
     private val keyRadius = dp(8f)
+    private val candidateTextInset = dp(9f)
+    private val candidateGap = dp(3f)
+    private val candidateMinimumWidth = dp(44f)
+    private val candidateControlWidth = dp(44f)
+    private val expandedCandidateRowHeight = dp(42f)
+    private val expandedCandidatePagerHeight = dp(38f)
 
     init {
         isFocusable = true
@@ -81,10 +126,20 @@ class SenseKeyboardView @JvmOverloads constructor(
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
     }
 
-    fun updateComposing(text: String, values: List<String>) {
+    fun updateComposing(revision: Long, text: String, values: List<String>) {
+        val nextCandidates = values.toList()
+        val shouldReset = revision != candidateRevision || text != composing || nextCandidates != candidates
+        val wasExpanded = candidatesExpanded
+        if (shouldReset) {
+            candidatesExpanded = false
+            candidatePageIndex = 0
+            clearActiveTouch()
+        }
+        candidateRevision = revision
         composing = text
-        candidates = values.take(6)
-        rebuildCandidateBounds(width)
+        candidates = nextCandidates
+        rebuildCandidateLayout(width, height)
+        if (wasExpanded != candidatesExpanded) rebuildKeys(width, height)
         invalidate()
     }
 
@@ -98,12 +153,15 @@ class SenseKeyboardView @JvmOverloads constructor(
     fun setChineseMode(value: Boolean) {
         if (chineseMode == value) return
         chineseMode = value
+        collapseCandidates()
         rebuildKeys(width, height)
         invalidate()
     }
 
     fun setPanel(value: Panel) {
-        if (panel == value) return
+        val wasExpanded = candidatesExpanded
+        collapseCandidates()
+        if (panel == value && !wasExpanded) return
         panel = value
         rebuildKeys(width, height)
         invalidate()
@@ -112,6 +170,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     fun showClipboard(values: List<String>) {
         clipboardItems = values
         panel = Panel.CLIPBOARD
+        collapseCandidates()
         rebuildKeys(width, height)
         invalidate()
     }
@@ -123,6 +182,7 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
+        clearActiveTouch()
         backgroundShader = LinearGradient(
             0f,
             0f,
@@ -132,7 +192,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             color(0xFFE6EDF6.toInt(), 0xFF111213.toInt()),
             Shader.TileMode.CLAMP,
         )
-        rebuildCandidateBounds(w)
+        rebuildCandidateLayout(w, h)
         rebuildKeys(w, h)
     }
 
@@ -140,8 +200,10 @@ class SenseKeyboardView @JvmOverloads constructor(
         super.onDraw(canvas)
         drawBackground(canvas)
         drawCandidates(canvas)
-        drawToolbar(canvas)
-        if (panel == Panel.CLIPBOARD) drawClipboardHeader(canvas)
+        if (!candidatesExpanded) {
+            drawToolbar(canvas)
+            if (panel == Panel.CLIPBOARD) drawClipboardHeader(canvas)
+        }
         drawKeys(canvas)
     }
 
@@ -155,6 +217,10 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun drawCandidates(canvas: Canvas) {
+        if (candidatesExpanded) {
+            drawExpandedCandidates(canvas)
+            return
+        }
         paint.style = Paint.Style.FILL
         paint.color = color(0x22FFFFFF, 0x0FFFFFFF)
         canvas.drawRect(0f, 0f, width.toFloat(), candidateHeight, paint)
@@ -179,17 +245,91 @@ class SenseKeyboardView @JvmOverloads constructor(
             canvas.drawText(composing.take(12), dp(10f), dp(14f), paint)
         }
 
-        candidateBounds.forEachIndexed { index, bounds ->
-            val text = candidates.getOrNull(index) ?: return@forEachIndexed
-            if (index == activeCandidateIndex) {
+        drawVisibleCandidates(canvas)
+        candidateControls.forEach { drawCandidateControl(canvas, it) }
+    }
+
+    private fun drawExpandedCandidates(canvas: Canvas) {
+        val systemBarTop = height - systemBarHeight
+        paint.style = Paint.Style.FILL
+        paint.color = color(0xF2EDF3FA.toInt(), 0xF2161718.toInt())
+        canvas.drawRect(0f, 0f, width.toFloat(), systemBarTop, paint)
+
+        paint.color = color(0x16000000, 0x24FFFFFF)
+        canvas.drawRect(0f, candidateHeight - max(1f, density), width.toFloat(), candidateHeight, paint)
+
+        paint.color = color(0xFF596579.toInt(), 0xFFB8BBC2.toInt())
+        paint.textSize = sp(13f)
+        paint.textAlign = Paint.Align.LEFT
+        val headerRight = width - candidateControlWidth
+        val saveCount = canvas.save()
+        canvas.clipRect(dp(14f), 0f, headerRight, candidateHeight)
+        drawCenteredText(
+            canvas,
+            if (composing.isBlank()) "候选" else composing,
+            dp(14f),
+            candidateHeight / 2f,
+        )
+        canvas.restoreToCount(saveCount)
+
+        drawVisibleCandidates(canvas)
+
+        val pagerTop = systemBarTop - expandedCandidatePagerHeight
+        paint.color = color(0x16000000, 0x24FFFFFF)
+        canvas.drawRect(0f, pagerTop, width.toFloat(), pagerTop + max(1f, density), paint)
+        paint.color = color(0xFF667085.toInt(), 0xFF9B9EA5.toInt())
+        paint.textSize = sp(12f)
+        paint.textAlign = Paint.Align.CENTER
+        drawCenteredText(
+            canvas,
+            "${candidatePageIndex + 1} / ${candidatePages.size.coerceAtLeast(1)}",
+            width / 2f,
+            pagerTop + expandedCandidatePagerHeight / 2f,
+        )
+        candidateControls.forEach { drawCandidateControl(canvas, it) }
+    }
+
+    private fun drawVisibleCandidates(canvas: Canvas) {
+        visibleCandidates.forEach { candidate ->
+            val text = candidates.getOrNull(candidate.sourceIndex) ?: return@forEach
+            if (isCandidatePressed(candidate)) {
+                paint.style = Paint.Style.FILL
                 paint.color = color(0x294F7CF5, 0x505E63D8)
-                canvas.drawRoundRect(bounds, dp(7f), dp(7f), paint)
+                canvas.drawRoundRect(candidate.bounds, dp(7f), dp(7f), paint)
             }
+            paint.style = Paint.Style.FILL
             paint.color = color(0xFF172033.toInt(), 0xFFF3F4F7.toInt())
             paint.textSize = sp(17f)
             paint.textAlign = Paint.Align.LEFT
-            drawCenteredText(canvas, text, candidateTextAnchors[index], bounds.centerY() + dp(2f))
+            val saveCount = canvas.save()
+            canvas.clipRect(candidate.bounds)
+            drawCenteredText(canvas, text, candidate.textAnchor, candidate.bounds.centerY() + dp(2f))
+            canvas.restoreToCount(saveCount)
         }
+    }
+
+    private fun drawCandidateControl(canvas: Canvas, slot: CandidateControlSlot) {
+        val pressed = isCandidateControlPressed(slot)
+        if (pressed) {
+            paint.style = Paint.Style.FILL
+            paint.color = color(0x254F7CF5, 0x405E63D8)
+            canvas.drawRoundRect(slot.bounds, dp(9f), dp(9f), paint)
+        }
+        paint.style = Paint.Style.FILL
+        paint.color = if (slot.enabled) {
+            color(0xFF586477.toInt(), 0xFFAAAEB6.toInt())
+        } else {
+            color(0x55586477, 0x55AAAEB6)
+        }
+        paint.textSize = sp(20f)
+        paint.textAlign = Paint.Align.CENTER
+        val label = when (slot.control) {
+            CandidateControl.EXPAND -> "⌄"
+            CandidateControl.COLLAPSE -> "⌃"
+            CandidateControl.PREVIOUS_PAGE -> "‹"
+            CandidateControl.NEXT_PAGE -> "›"
+        }
+        drawCenteredText(canvas, label, slot.bounds.centerX(), slot.bounds.centerY())
     }
 
     private fun drawToolbar(canvas: Canvas) {
@@ -327,27 +467,99 @@ class SenseKeyboardView @JvmOverloads constructor(
         canvas.drawText(text, x, baseline, paint)
     }
 
-    private fun rebuildCandidateBounds(viewWidth: Int) {
-        candidateBounds.clear()
-        candidateTextAnchors.clear()
-        if (viewWidth <= 0 || candidates.isEmpty()) return
+    private fun rebuildCandidateLayout(viewWidth: Int, viewHeight: Int) {
+        visibleCandidates.clear()
+        candidateControls.clear()
+        candidatePages = emptyList()
+        if (viewWidth <= 0 || candidates.isEmpty()) {
+            candidatesExpanded = false
+            candidatePageIndex = 0
+            return
+        }
         paint.textSize = sp(17f)
-        val top = if (composing.isBlank()) dp(3f) else dp(13f)
-        val slots = KeyboardLayoutContract.leftAlignedCandidateSlots(
+        val measuredWidths = candidates.map(paint::measureText)
+        val collapsed = KeyboardLayoutContract.collapsedCandidateStrip(
             viewWidth = viewWidth.toFloat(),
-            measuredTextWidths = candidates.map(paint::measureText),
+            measuredTextWidths = measuredWidths,
             padding = horizontalPadding,
-            textInset = dp(9f),
-            gap = dp(3f),
-            minimumWidth = dp(44f),
+            textInset = candidateTextInset,
+            gap = candidateGap,
+            minimumWidth = candidateMinimumWidth,
+            overflowControlWidth = candidateControlWidth,
         )
-        slots.forEach { slot ->
-            candidateTextAnchors += slot.textAnchor
-            candidateBounds += RectF(
-                slot.left,
-                top,
-                slot.right,
-                candidateHeight - dp(3f),
+
+        if (!collapsed.hasOverflow) {
+            candidatesExpanded = false
+            candidatePageIndex = 0
+        }
+
+        val systemBarTop = viewHeight - systemBarHeight
+        val gridTop = candidateHeight + dp(5f)
+        val pagerTop = systemBarTop - expandedCandidatePagerHeight
+        val gridBottom = pagerTop - dp(4f)
+        val canExpand = collapsed.hasOverflow &&
+            viewHeight > 0 &&
+            gridBottom - gridTop >= expandedCandidateRowHeight
+
+        if (candidatesExpanded && canExpand) {
+            candidatePages = KeyboardLayoutContract.pagedCandidateGrid(
+                viewWidth = viewWidth.toFloat(),
+                contentTop = gridTop,
+                contentBottom = gridBottom,
+                measuredTextWidths = measuredWidths,
+                horizontalPadding = horizontalPadding,
+                textInset = candidateTextInset,
+                horizontalGap = candidateGap,
+                verticalGap = dp(4f),
+                minimumWidth = candidateMinimumWidth,
+                rowHeight = expandedCandidateRowHeight,
+            )
+            if (candidatePages.isEmpty()) {
+                candidatesExpanded = false
+                candidatePageIndex = 0
+            } else {
+                candidatePageIndex = candidatePageIndex.coerceIn(0, candidatePages.lastIndex)
+                candidatePages[candidatePageIndex].slots.forEach { slot ->
+                    visibleCandidates += VisibleCandidate(
+                        sourceIndex = slot.sourceIndex,
+                        bounds = RectF(slot.left, slot.top, slot.right, slot.bottom),
+                        textAnchor = slot.textAnchor,
+                    )
+                }
+                candidateControls += CandidateControlSlot(
+                    CandidateControl.COLLAPSE,
+                    RectF(viewWidth - candidateControlWidth, 0f, viewWidth.toFloat(), candidateHeight),
+                )
+                val pagerButtonWidth = dp(68f)
+                candidateControls += CandidateControlSlot(
+                    CandidateControl.PREVIOUS_PAGE,
+                    RectF(horizontalPadding, pagerTop, horizontalPadding + pagerButtonWidth, systemBarTop),
+                    enabled = candidatePageIndex > 0,
+                )
+                candidateControls += CandidateControlSlot(
+                    CandidateControl.NEXT_PAGE,
+                    RectF(viewWidth - horizontalPadding - pagerButtonWidth, pagerTop, viewWidth - horizontalPadding, systemBarTop),
+                    enabled = candidatePageIndex < candidatePages.lastIndex,
+                )
+                return
+            }
+        } else if (candidatesExpanded) {
+            candidatesExpanded = false
+            candidatePageIndex = 0
+        }
+
+        val top = if (composing.isBlank()) dp(3f) else dp(13f)
+        collapsed.slots.forEachIndexed { sourceIndex, slot ->
+            visibleCandidates += VisibleCandidate(
+                sourceIndex = sourceIndex,
+                bounds = RectF(slot.left, top, slot.right, candidateHeight - dp(3f)),
+                textAnchor = slot.textAnchor,
+            )
+        }
+        if (collapsed.hasOverflow && canExpand) {
+            candidateControls += CandidateControlSlot(
+                CandidateControl.EXPAND,
+                RectF(viewWidth - candidateControlWidth, 0f, viewWidth.toFloat(), candidateHeight),
             )
         }
     }
@@ -355,13 +567,15 @@ class SenseKeyboardView @JvmOverloads constructor(
     private fun rebuildKeys(viewWidth: Int, viewHeight: Int) {
         keys.clear()
         if (viewWidth <= 0 || viewHeight <= 0) return
-        layoutToolbar(viewWidth)
-        when (panel) {
-            Panel.LETTERS -> layoutLetters(viewWidth, viewHeight)
-            Panel.NUMBERS -> layoutNumbers(viewWidth, viewHeight)
-            Panel.SYMBOLS -> layoutSymbols(viewWidth, viewHeight)
-            Panel.EMOJI -> layoutEmoji(viewWidth, viewHeight)
-            Panel.CLIPBOARD -> layoutClipboard(viewWidth, viewHeight)
+        if (!candidatesExpanded) {
+            layoutToolbar(viewWidth)
+            when (panel) {
+                Panel.LETTERS -> layoutLetters(viewWidth, viewHeight)
+                Panel.NUMBERS -> layoutNumbers(viewWidth, viewHeight)
+                Panel.SYMBOLS -> layoutSymbols(viewWidth, viewHeight)
+                Panel.EMOJI -> layoutEmoji(viewWidth, viewHeight)
+                Panel.CLIPBOARD -> layoutClipboard(viewWidth, viewHeight)
+            }
         }
         layoutSystemBar(viewWidth, viewHeight)
     }
@@ -587,9 +801,14 @@ class SenseKeyboardView @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                activeCandidateIndex = candidateBounds.indexOfFirst { it.contains(event.x, event.y) }
-                activeKeyIndex = if (activeCandidateIndex < 0) keys.indexOfFirst { it.bounds.contains(event.x, event.y) } else -1
-                if (activeCandidateIndex >= 0 || activeKeyIndex >= 0) {
+                activeCandidateTarget = candidateTargetAt(event.x, event.y)
+                activeCandidateTargetInside = activeCandidateTarget != null
+                activeKeyIndex = if (activeCandidateTarget == null) {
+                    keys.indexOfFirst { it.bounds.contains(event.x, event.y) }
+                } else {
+                    -1
+                }
+                if (activeCandidateTarget != null || activeKeyIndex >= 0) {
                     performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                     invalidate()
                     return true
@@ -597,24 +816,39 @@ class SenseKeyboardView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_MOVE -> {
-                val nextCandidate = candidateBounds.indexOfFirst { it.contains(event.x, event.y) }
-                val nextKey = if (nextCandidate < 0) keys.indexOfFirst { it.bounds.contains(event.x, event.y) } else -1
-                if (nextCandidate != activeCandidateIndex || nextKey != activeKeyIndex) {
-                    activeCandidateIndex = nextCandidate
-                    activeKeyIndex = nextKey
-                    invalidate()
+                val frozenTarget = activeCandidateTarget
+                if (frozenTarget != null) {
+                    if (activeCandidateTargetInside && !frozenTarget.bounds.contains(event.x, event.y)) {
+                        activeCandidateTargetInside = false
+                        invalidate()
+                    }
+                } else {
+                    val nextKey = keys.indexOfFirst { it.bounds.contains(event.x, event.y) }
+                    if (nextKey != activeKeyIndex) {
+                        activeKeyIndex = nextKey
+                        invalidate()
+                    }
                 }
                 return true
             }
 
             MotionEvent.ACTION_UP -> {
-                val candidate = activeCandidateIndex
+                val frozenTarget = activeCandidateTarget
+                val activateCandidateTarget = frozenTarget != null &&
+                    activeCandidateTargetInside &&
+                    frozenTarget.bounds.contains(event.x, event.y)
                 val keyIndex = activeKeyIndex
-                activeCandidateIndex = -1
-                activeKeyIndex = -1
+                clearActiveTouch()
                 invalidate()
-                if (candidate >= 0 && candidateBounds.getOrNull(candidate)?.contains(event.x, event.y) == true) {
-                    candidateListener?.invoke(candidate)
+                if (activateCandidateTarget) {
+                    when (frozenTarget) {
+                        is FrozenCandidateTarget.Value -> candidateListener?.invoke(
+                            frozenTarget.revision,
+                            frozenTarget.sourceIndex,
+                        )
+
+                        is FrozenCandidateTarget.Control -> activateCandidateControl(frozenTarget.value)
+                    }
                     performClick()
                 } else if (keyIndex >= 0 && keys.getOrNull(keyIndex)?.bounds?.contains(event.x, event.y) == true) {
                     activateKey(keys[keyIndex])
@@ -624,13 +858,80 @@ class SenseKeyboardView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_CANCEL -> {
-                activeCandidateIndex = -1
-                activeKeyIndex = -1
+                clearActiveTouch()
                 invalidate()
                 return true
             }
         }
         return true
+    }
+
+    private fun candidateTargetAt(x: Float, y: Float): FrozenCandidateTarget? {
+        candidateControls.firstOrNull { it.enabled && it.bounds.contains(x, y) }?.let { slot ->
+            return FrozenCandidateTarget.Control(slot.control, RectF(slot.bounds))
+        }
+        visibleCandidates.firstOrNull { it.bounds.contains(x, y) }?.let { candidate ->
+            return FrozenCandidateTarget.Value(
+                revision = candidateRevision,
+                sourceIndex = candidate.sourceIndex,
+                bounds = RectF(candidate.bounds),
+            )
+        }
+        return null
+    }
+
+    private fun activateCandidateControl(control: CandidateControl) {
+        val expansionChanged = when (control) {
+            CandidateControl.EXPAND -> {
+                candidatesExpanded = true
+                candidatePageIndex = 0
+                true
+            }
+
+            CandidateControl.COLLAPSE -> {
+                candidatesExpanded = false
+                candidatePageIndex = 0
+                true
+            }
+
+            CandidateControl.PREVIOUS_PAGE -> {
+                candidatePageIndex = (candidatePageIndex - 1).coerceAtLeast(0)
+                false
+            }
+
+            CandidateControl.NEXT_PAGE -> {
+                candidatePageIndex = (candidatePageIndex + 1).coerceAtMost(candidatePages.lastIndex)
+                false
+            }
+        }
+        rebuildCandidateLayout(width, height)
+        if (expansionChanged) rebuildKeys(width, height)
+        invalidate()
+    }
+
+    private fun isCandidatePressed(candidate: VisibleCandidate): Boolean {
+        val target = activeCandidateTarget as? FrozenCandidateTarget.Value ?: return false
+        return activeCandidateTargetInside &&
+            target.revision == candidateRevision &&
+            target.sourceIndex == candidate.sourceIndex
+    }
+
+    private fun isCandidateControlPressed(slot: CandidateControlSlot): Boolean {
+        val target = activeCandidateTarget as? FrozenCandidateTarget.Control ?: return false
+        return activeCandidateTargetInside && target.value == slot.control
+    }
+
+    private fun clearActiveTouch() {
+        activeCandidateTarget = null
+        activeCandidateTargetInside = false
+        activeKeyIndex = -1
+    }
+
+    private fun collapseCandidates() {
+        candidatesExpanded = false
+        candidatePageIndex = 0
+        clearActiveTouch()
+        rebuildCandidateLayout(width, height)
     }
 
     private fun activateKey(key: Key) {

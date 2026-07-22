@@ -12,6 +12,7 @@ import kotlin.math.ln
 class PinyinDecoder private constructor(
     private val data: ByteArray,
     private val recordOffsets: IntArray,
+    private val bigramModel: CharacterBigramModel,
 ) : InputDecoder {
 
     override fun decode(composing: String, limit: Int): List<Candidate> {
@@ -22,7 +23,12 @@ class PinyinDecoder private constructor(
         val exact = findExact(query)
         if (exact >= 0) return readCandidates(exact, limit, CandidateMatchKind.BASE_EXACT, query)
 
-        val composed = composeCandidates(query, limit)
+        val composed = composeCandidates(
+            query,
+            limit,
+            segmentCandidatesPerKey = SEGMENT_CANDIDATES_PER_KEY,
+            beamWidth = SEGMENT_BEAM_WIDTH,
+        )
         val statisticalPrefix = readStatisticalPrefixCandidates(query, limit)
         val dynamicPrefix = readPrefixCandidates(query, limit)
         val corrected = readCorrectedCandidates(query, limit)
@@ -65,30 +71,50 @@ class PinyinDecoder private constructor(
         val initials: String,
         val segments: Int,
         val score: Float,
+        val lastCodePoint: Int,
+        val lastSegmentWasSingleCodePoint: Boolean,
     )
 
     /** Builds a sentence by balancing word likelihood with a penalty for each split. */
-    private fun composeCandidates(query: String, limit: Int): List<Candidate> {
+    private fun composeCandidates(
+        query: String,
+        limit: Int,
+        segmentCandidatesPerKey: Int,
+        beamWidth: Int,
+    ): List<Candidate> {
         val beams = arrayOfNulls<MutableList<CompositionPath>>(query.length + 1)
-        beams[0] = mutableListOf(CompositionPath("", "", 0, 0f))
+        beams[0] = mutableListOf(CompositionPath("", "", 0, 0f, NO_CODE_POINT, false))
         query.indices.forEach { start ->
             val paths = beams[start] ?: return@forEach
             val maxEnd = minOf(query.length, start + MAX_SEGMENT_CODE_LENGTH)
             for (end in (start + 1)..maxEnd) {
                 val record = findExact(query, start, end)
                 if (record < 0) continue
-                val options = readCandidates(record, SEGMENT_CANDIDATES_PER_KEY)
+                val options = readCandidates(record, segmentCandidatesPerKey)
                 val target = beams[end] ?: mutableListOf<CompositionPath>().also { beams[end] = it }
                 paths.forEach { path ->
                     options.forEach { option ->
+                        val firstCodePoint = option.text.codePointAt(0)
+                        val optionIsSingleCodePoint = option.text.codePointCount(0, option.text.length) == 1
+                        val boundaryScore = if (
+                            path.lastCodePoint == NO_CODE_POINT ||
+                            !path.lastSegmentWasSingleCodePoint && !optionIsSingleCodePoint
+                        ) {
+                            0f
+                        } else {
+                            bigramModel.score(path.lastCodePoint, firstCodePoint)
+                        }
                         addToBeam(
                             target,
                             CompositionPath(
                                 text = path.text + option.text,
                                 initials = path.initials + option.canonicalInitials.orEmpty(),
                                 segments = path.segments + 1,
-                                score = path.score + option.score,
+                                score = path.score + option.score + boundaryScore,
+                                lastCodePoint = option.text.codePointBefore(option.text.length),
+                                lastSegmentWasSingleCodePoint = optionIsSingleCodePoint,
                             ),
+                            beamWidth,
                         )
                     }
                 }
@@ -111,15 +137,23 @@ class PinyinDecoder private constructor(
             }
     }
 
-    private fun addToBeam(beam: MutableList<CompositionPath>, value: CompositionPath) {
-        val existing = beam.indexOfFirst { it.text == value.text && it.segments == value.segments }
+    private fun addToBeam(
+        beam: MutableList<CompositionPath>,
+        value: CompositionPath,
+        beamWidth: Int,
+    ) {
+        val existing = beam.indexOfFirst {
+            it.text == value.text &&
+                it.segments == value.segments &&
+                it.lastSegmentWasSingleCodePoint == value.lastSegmentWasSingleCodePoint
+        }
         if (existing >= 0) {
             if (beam[existing].score >= value.score) return
             beam.removeAt(existing)
         }
         beam += value
         beam.sortWith(compositionComparator)
-        while (beam.size > SEGMENT_BEAM_WIDTH) beam.removeAt(beam.lastIndex)
+        while (beam.size > beamWidth) beam.removeAt(beam.lastIndex)
     }
 
     private fun compositionScore(path: CompositionPath): Float =
@@ -209,7 +243,12 @@ class PinyinDecoder private constructor(
                     correction.code,
                 )
 
-                hasCompleteComposition(correction.code) -> composeCandidates(correction.code, limit).map {
+                hasCompleteComposition(correction.code) -> composeCandidates(
+                    correction.code,
+                    limit,
+                    segmentCandidatesPerKey = CORRECTION_SEGMENT_CANDIDATES_PER_KEY,
+                    beamWidth = CORRECTION_BEAM_WIDTH,
+                ).map {
                     it.copy(matchKind = CandidateMatchKind.CORRECTED, canonicalPinyin = correction.code)
                 }
 
@@ -388,8 +427,10 @@ class PinyinDecoder private constructor(
         private const val PREFIX_SCAN_LIMIT = 96
         private const val PREFIX_CANDIDATES_PER_KEY = 2
         private const val MAX_SEGMENT_CODE_LENGTH = 24
-        private const val SEGMENT_CANDIDATES_PER_KEY = 2
-        private const val SEGMENT_BEAM_WIDTH = 10
+        private const val SEGMENT_CANDIDATES_PER_KEY = 4
+        private const val SEGMENT_BEAM_WIDTH = 24
+        private const val CORRECTION_SEGMENT_CANDIDATES_PER_KEY = 2
+        private const val CORRECTION_BEAM_WIDTH = 10
         private const val SEGMENT_SCORE_PENALTY = 20f
         private const val MAX_CORRECTION_QUERY_LENGTH = 48
         private const val CORRECTION_PENALTY = 4f
@@ -399,6 +440,7 @@ class PinyinDecoder private constructor(
         private const val TRANSPOSITION_COST = 0.45f
         private const val SUBSTITUTION_COST = 0.9f
         private const val INSERTION_DELETION_COST = 1f
+        private const val NO_CODE_POINT = -1
         private const val FALLBACK_SOURCE_TIER = 1
         // CC-CEDICT fallback entries use weight 1. Penalizing only fallback
         // entries keeps a zero-weight primary entry ahead without rewarding
@@ -427,9 +469,15 @@ class PinyinDecoder private constructor(
         }
         private val MAGIC = byteArrayOf('S'.code.toByte(), 'P'.code.toByte(), 'L'.code.toByte(), 'X'.code.toByte())
 
-        fun load(input: InputStream): PinyinDecoder = fromBytes(input.readBytes())
+        fun load(
+            input: InputStream,
+            bigramModel: CharacterBigramModel = CharacterBigramModel.EMPTY,
+        ): PinyinDecoder = fromBytes(input.readBytes(), bigramModel)
 
-        fun fromBytes(data: ByteArray): PinyinDecoder {
+        fun fromBytes(
+            data: ByteArray,
+            bigramModel: CharacterBigramModel = CharacterBigramModel.EMPTY,
+        ): PinyinDecoder {
             require(data.size >= HEADER_SIZE) { "Pinyin lexicon header is truncated" }
             require(MAGIC.indices.all { data[it] == MAGIC[it] }) { "Pinyin lexicon magic is invalid" }
             val version = ((data[4].toInt() and 0xFF) shl 8) or (data[5].toInt() and 0xFF)
@@ -469,7 +517,7 @@ class PinyinDecoder private constructor(
                 }
             }
             require(cursor == data.size) { "Pinyin lexicon has trailing bytes" }
-            return PinyinDecoder(data, offsets)
+            return PinyinDecoder(data, offsets, bigramModel)
         }
     }
 }

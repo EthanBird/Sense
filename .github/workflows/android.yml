@@ -5,8 +5,17 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
+
+env:
+  RELEASE_TAG: v0.3.0-m3
+  RELEASE_APK: Sense-v0.3.0-m3.apk
+  BIGRAM_SHA256: b45c9fcf271b67c46d7d4d34eccac2bad8805837bbc9b2ad0ce2c719ab922c2a
 
 jobs:
   verify:
@@ -26,36 +35,80 @@ jobs:
       - name: Verify lexicon builder
         run: python3 tools/test_build_pinyin_lexicon.py
 
+      - name: Verify M3 bigram model
+        run: |
+          set -euo pipefail
+          python3 tools/test_build_bigram_model.py
+          python3 tools/build_bigram_model.py \
+            ime-service/src/main/assets/pinyin_lexicon.bin \
+            /tmp/pinyin_bigrams.bin \
+            --max-pairs 65536
+          cmp ime-service/src/main/assets/pinyin_bigrams.bin /tmp/pinyin_bigrams.bin
+          echo "$BIGRAM_SHA256  ime-service/src/main/assets/pinyin_bigrams.bin" | sha256sum -c -
+
       - name: Verify attributed assets
         run: |
           cmp NOTICE ime-service/src/main/assets/NOTICE.txt
+          cmp LICENSE ime-service/src/main/assets/LICENSE.txt
+          cmp licenses/rime-pinyin-simp-LICENSE ime-service/src/main/assets/RIME-PINYIN-SIMP-LICENSE.txt
           cmp licenses/CC-CEDICT-NOTICE.md ime-service/src/main/assets/CC-CEDICT-NOTICE.txt
           cmp licenses/CC-BY-SA-4.0.txt ime-service/src/main/assets/CC-BY-SA-4.0.txt
 
-      - name: Verify M2
+      - name: Verify M3
         run: >-
           ./gradlew
           :core-input:test
           :core-input:m0HostBenchmark
           :core-input:m1PinyinBenchmark
           :core-input:m2AdaptiveBenchmark
+          :core-input:m3SentenceBenchmark
           :ime-ui:testDebugUnitTest
           :app:lintDebug
           :app:assembleDebug
           :app:assembleBenchmark
           :benchmark:assembleBenchmark
 
+      - name: Verify assembled M3 APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk=$(find app/build/outputs/apk/benchmark -type f -name '*.apk' -print -quit)
+          test -n "$apk"
+          sdk=${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}
+          test -n "$sdk"
+          build_tools=$(find "$sdk/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+          test -x "$build_tools/apksigner"
+          test -x "$build_tools/aapt2"
+          test -x "$build_tools/zipalign"
+          "$build_tools/apksigner" verify --verbose --print-certs "$apk"
+          "$build_tools/zipalign" -c -P 16 4 "$apk"
+          "$build_tools/aapt2" dump badging "$apk" > /tmp/apk-badging.txt
+          "$build_tools/aapt2" dump permissions "$apk" > /tmp/apk-permissions.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='5' versionName='0.3.0-m3'" /tmp/apk-badging.txt
+          grep -Fx "minSdkVersion:'29'" /tmp/apk-badging.txt
+          grep -Fx "targetSdkVersion:'36'" /tmp/apk-badging.txt
+          if grep -Fq 'android.permission.INTERNET' /tmp/apk-permissions.txt; then
+            echo 'Release gate failed: APK declares android.permission.INTERNET.' >&2
+            exit 1
+          fi
+          unzip -p "$apk" assets/NOTICE.txt | cmp - NOTICE
+          unzip -p "$apk" assets/LICENSE.txt | cmp - LICENSE
+          unzip -p "$apk" assets/RIME-PINYIN-SIMP-LICENSE.txt | cmp - licenses/rime-pinyin-simp-LICENSE
+          unzip -p "$apk" assets/CC-CEDICT-NOTICE.txt | cmp - licenses/CC-CEDICT-NOTICE.md
+          unzip -p "$apk" assets/CC-BY-SA-4.0.txt | cmp - licenses/CC-BY-SA-4.0.txt
+          unzip -p "$apk" assets/pinyin_bigrams.bin | sha256sum | awk '{print $1}' | grep -Fx "$BIGRAM_SHA256"
+
       - name: Upload debug APKs
         uses: actions/upload-artifact@v4
         with:
-          name: sense-m2-debug-apks
+          name: sense-m3-debug-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
             benchmark/build/outputs/apk/benchmark/*.apk
           if-no-files-found: error
 
-  release-m2:
+  release-m3:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -67,35 +120,72 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: sense-m2-debug-apks
+          name: sense-m3-debug-apks
           path: artifacts
 
       - name: Prepare release assets
         shell: bash
         run: |
           set -euo pipefail
-          mkdir release
+          mkdir -p release
           apk=$(find artifacts -type f -path '*/app/build/outputs/apk/benchmark/*.apk' -print -quit)
           test -n "$apk"
+          sdk=${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}
+          test -n "$sdk"
+          build_tools=$(find "$sdk/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+          test -x "$build_tools/apksigner"
+          test -x "$build_tools/aapt2"
+          test -x "$build_tools/zipalign"
+          "$build_tools/apksigner" verify --verbose --print-certs "$apk" | tee release/apksigner.txt
+          "$build_tools/zipalign" -c -P 16 4 "$apk"
+          "$build_tools/aapt2" dump badging "$apk" | tee release/apk-badging.txt
+          "$build_tools/aapt2" dump permissions "$apk" | tee release/apk-permissions.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='5' versionName='0.3.0-m3'" release/apk-badging.txt
+          grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
+          grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
+          if grep -Fq 'android.permission.INTERNET' release/apk-permissions.txt; then
+            echo 'Release gate failed: APK declares android.permission.INTERNET.' >&2
+            exit 1
+          fi
           unzip -p "$apk" assets/NOTICE.txt | cmp - NOTICE
-          unzip -p "$apk" assets/CC-CEDICT-NOTICE.txt | cmp - ime-service/src/main/assets/CC-CEDICT-NOTICE.txt
-          unzip -p "$apk" assets/CC-BY-SA-4.0.txt | cmp - ime-service/src/main/assets/CC-BY-SA-4.0.txt
-          cp "$apk" release/Sense-v0.2.0-m2.apk
+          unzip -p "$apk" assets/LICENSE.txt | cmp - LICENSE
+          unzip -p "$apk" assets/RIME-PINYIN-SIMP-LICENSE.txt | cmp - licenses/rime-pinyin-simp-LICENSE
+          unzip -p "$apk" assets/CC-CEDICT-NOTICE.txt | cmp - licenses/CC-CEDICT-NOTICE.md
+          unzip -p "$apk" assets/CC-BY-SA-4.0.txt | cmp - licenses/CC-BY-SA-4.0.txt
+          unzip -p "$apk" assets/pinyin_bigrams.bin | sha256sum | awk '{print $1}' | grep -Fx "$BIGRAM_SHA256"
+          cp "$apk" "release/$RELEASE_APK"
           cd release
-          sha256sum Sense-v0.2.0-m2.apk > SHA256SUMS.txt
+          sha256sum "$RELEASE_APK" > SHA256SUMS.txt
 
-      - name: Create M2 prerelease
+      - name: Create M3 prerelease
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view v0.2.0-m2 >/dev/null 2>&1; then
-            echo "v0.2.0-m2 already exists; leaving it unchanged."
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            target=$(gh release view "$RELEASE_TAG" --json targetCommitish --jq .targetCommitish)
+            if [[ "$target" != "$GITHUB_SHA" ]]; then
+              echo "$RELEASE_TAG already targets $target instead of $GITHUB_SHA" >&2
+              exit 1
+            fi
+            mkdir -p existing-release
+            gh release download "$RELEASE_TAG" \
+              --pattern "$RELEASE_APK" \
+              --pattern SHA256SUMS.txt \
+              --dir existing-release
+            (cd existing-release && sha256sum -c SHA256SUMS.txt)
+            echo "$RELEASE_TAG already exists at the expected commit and its checksum is valid."
           else
-            gh release create v0.2.0-m2 \
+            existing_tag=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq .object.sha 2>/dev/null || true)
+            if [[ -n "$existing_tag" && "$existing_tag" != "$GITHUB_SHA" ]]; then
+              echo "$RELEASE_TAG already points to $existing_tag instead of $GITHUB_SHA" >&2
+              exit 1
+            fi
+            gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
-              --title "Sense v0.2.0-m2 · 自适应中文输入" \
-              --notes-file docs/releases/v0.2.0-m2.md \
+              --title "Sense v0.3.0-m3 · 句级排序与候选分页" \
+              --notes-file docs/releases/v0.3.0-m3.md \
               --prerelease \
-              release/Sense-v0.2.0-m2.apk \
+              "release/$RELEASE_APK" \
               release/SHA256SUMS.txt
           fi

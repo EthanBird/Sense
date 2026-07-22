@@ -14,6 +14,24 @@ object KeyboardLayoutContract {
         val textAnchor: Float,
     )
 
+    data class IndexedCandidateSlot(
+        val sourceIndex: Int,
+        val left: Float,
+        val top: Float,
+        val right: Float,
+        val bottom: Float,
+        val textAnchor: Float,
+    )
+
+    data class CandidateStripLayout(
+        val slots: List<CandidateSlot>,
+        val hasOverflow: Boolean,
+    )
+
+    data class CandidatePage(
+        val slots: List<IndexedCandidateSlot>,
+    )
+
     data class WeightedKey(
         val label: String,
         val code: Int,
@@ -72,5 +90,85 @@ object KeyboardLayoutContract {
             left = right + gap
         }
         return result
+    }
+
+    fun collapsedCandidateStrip(
+        viewWidth: Float,
+        measuredTextWidths: List<Float>,
+        padding: Float,
+        textInset: Float,
+        gap: Float,
+        minimumWidth: Float,
+        overflowControlWidth: Float,
+    ): CandidateStripLayout {
+        val fullWidth = leftAlignedCandidateSlots(
+            viewWidth,
+            measuredTextWidths,
+            padding,
+            textInset,
+            gap,
+            minimumWidth,
+        )
+        if (fullWidth.size == measuredTextWidths.size) return CandidateStripLayout(fullWidth, false)
+        val reservedWidth = (viewWidth - overflowControlWidth - gap).coerceAtLeast(padding * 2 + minimumWidth)
+        return CandidateStripLayout(
+            leftAlignedCandidateSlots(
+                reservedWidth,
+                measuredTextWidths,
+                padding,
+                textInset,
+                gap,
+                minimumWidth,
+            ),
+            true,
+        )
+    }
+
+    fun pagedCandidateGrid(
+        viewWidth: Float,
+        contentTop: Float,
+        contentBottom: Float,
+        measuredTextWidths: List<Float>,
+        horizontalPadding: Float,
+        textInset: Float,
+        horizontalGap: Float,
+        verticalGap: Float,
+        minimumWidth: Float,
+        rowHeight: Float,
+    ): List<CandidatePage> {
+        if (measuredTextWidths.isEmpty()) return emptyList()
+        require(viewWidth > horizontalPadding * 2)
+        require(contentBottom - contentTop >= rowHeight)
+        val rightLimit = viewWidth - horizontalPadding
+        val maximumWidth = rightLimit - horizontalPadding
+        val pages = mutableListOf<CandidatePage>()
+        var slots = mutableListOf<IndexedCandidateSlot>()
+        var left = horizontalPadding
+        var top = contentTop
+
+        measuredTextWidths.forEachIndexed { sourceIndex, textWidth ->
+            val width = maxOf(minimumWidth, textWidth + textInset * 2).coerceAtMost(maximumWidth)
+            if (left > horizontalPadding && left + width > rightLimit) {
+                left = horizontalPadding
+                top += rowHeight + verticalGap
+            }
+            if (top + rowHeight > contentBottom) {
+                pages += CandidatePage(slots)
+                slots = mutableListOf()
+                left = horizontalPadding
+                top = contentTop
+            }
+            slots += IndexedCandidateSlot(
+                sourceIndex = sourceIndex,
+                left = left,
+                top = top,
+                right = left + width,
+                bottom = top + rowHeight,
+                textAnchor = left + textInset,
+            )
+            left += width + horizontalGap
+        }
+        if (slots.isNotEmpty()) pages += CandidatePage(slots)
+        return pages
     }
 }

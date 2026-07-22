@@ -12,8 +12,11 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import io.github.ethanbird.senseime.core.AdaptivePinyinDecoder
+import io.github.ethanbird.senseime.core.BinaryCharacterBigramModel
 import io.github.ethanbird.senseime.core.Candidate
 import io.github.ethanbird.senseime.core.CandidateMatchKind
+import io.github.ethanbird.senseime.core.CandidateSnapshot
+import io.github.ethanbird.senseime.core.CharacterBigramModel
 import io.github.ethanbird.senseime.core.FakeDecoder
 import io.github.ethanbird.senseime.core.InputAction
 import io.github.ethanbird.senseime.core.InputDecoder
@@ -32,7 +35,7 @@ class SenseInputMethodService : InputMethodService() {
     private var decoder: InputDecoder = FakeDecoder()
     private var adaptiveDecoder: AdaptivePinyinDecoder? = null
     private var userLexicon: UserLexicon? = null
-    private var renderedCandidates: List<Candidate> = emptyList()
+    private var renderedSnapshot = CandidateSnapshot.EMPTY
     private var state = InputState()
     private var shifted = false
     private var chineseMode = true
@@ -46,8 +49,11 @@ class SenseInputMethodService : InputMethodService() {
 
     override fun onCreate() {
         super.onCreate()
+        val bigramModel = runCatching<CharacterBigramModel> {
+            assets.open(PINYIN_BIGRAM_ASSET).use(BinaryCharacterBigramModel::load)
+        }.getOrElse { CharacterBigramModel.EMPTY }
         val baseDecoder = runCatching {
-            assets.open(PINYIN_ASSET).use(PinyinDecoder::load)
+            assets.open(PINYIN_ASSET).use { PinyinDecoder.load(it, bigramModel) }
         }.getOrElse { FakeDecoder() }
         val syllables = runCatching {
             assets.open(PINYIN_SYLLABLES_ASSET).bufferedReader().useLines { lines -> lines.toSet() }
@@ -110,7 +116,7 @@ class SenseInputMethodService : InputMethodService() {
             KeyCodes.EDITOR -> sendCursorLeft()
             KeyCodes.VOICE -> openVoiceInput()
             KeyCodes.ENTER -> {
-                if (state.composing.isNotEmpty()) commitCandidate(0)
+                if (state.composing.isNotEmpty()) commitPrimaryOrRaw()
                 currentInputConnection?.commitText("\n", 1)
             }
 
@@ -149,17 +155,32 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun handleSpace() {
-        if (state.composing.isNotEmpty()) commitCandidate(0) else currentInputConnection?.commitText(" ", 1)
+        if (state.composing.isNotEmpty()) commitPrimaryOrRaw() else currentInputConnection?.commitText(" ", 1)
     }
 
-    private fun commitCandidate(index: Int) {
+    private fun commitCandidate(revision: Long, sourceIndex: Int) {
+        if (state.composing.isEmpty()) return
+        val candidate = renderedSnapshot.select(state.revision, revision, sourceIndex) ?: return
+        commitCandidate(candidate)
+    }
+
+    private fun commitPrimaryOrRaw() {
         if (state.composing.isEmpty()) return
         val rawInput = state.composing
-        val candidate = renderedCandidates.getOrNull(index) ?: Candidate(
+        val candidate = renderedSnapshot
+            .takeIf { it.revision == state.revision }
+            ?.candidates
+            ?.firstOrNull()
+            ?: Candidate(
             text = rawInput,
             canonicalPinyin = rawInput,
             matchKind = CandidateMatchKind.BASE_EXACT,
         )
+        commitCandidate(candidate)
+    }
+
+    private fun commitCandidate(candidate: Candidate) {
+        val rawInput = state.composing
         val committed = currentInputConnection?.commitText(candidate.text, 1) == true
         if (!committed) return
         state = reducer.reduce(state, InputAction.Commit(candidate.text))
@@ -170,12 +191,12 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun commitText(text: String) {
-        if (state.composing.isNotEmpty()) commitCandidate(0)
+        if (state.composing.isNotEmpty()) commitPrimaryOrRaw()
         currentInputConnection?.commitText(text, 1)
     }
 
     private fun toggleLanguage() {
-        if (state.composing.isNotEmpty()) commitCandidate(0)
+        if (state.composing.isNotEmpty()) commitPrimaryOrRaw()
         chineseMode = !chineseMode
         shifted = false
         keyboardView?.setShifted(false)
@@ -185,7 +206,7 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun switchInputMethod() {
-        if (state.composing.isNotEmpty()) commitCandidate(0)
+        if (state.composing.isNotEmpty()) commitPrimaryOrRaw()
         (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).showInputMethodPicker()
     }
 
@@ -231,16 +252,18 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun render() {
-        renderedCandidates = if (chineseMode) decoder.decode(state.composing, CANDIDATE_LIMIT) else emptyList()
-        keyboardView?.updateComposing(state.composing, renderedCandidates.map { it.text })
+        val candidates = if (chineseMode) decoder.decode(state.composing, CANDIDATE_LIMIT) else emptyList()
+        renderedSnapshot = CandidateSnapshot(state.revision, candidates)
+        keyboardView?.updateComposing(state.revision, state.composing, candidates.map { it.text })
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private companion object {
         const val PINYIN_ASSET = "pinyin_lexicon.bin"
+        const val PINYIN_BIGRAM_ASSET = "pinyin_bigrams.bin"
         const val PINYIN_SYLLABLES_ASSET = "pinyin_syllables.txt"
-        const val CANDIDATE_LIMIT = 6
+        const val CANDIDATE_LIMIT = 32
         const val CLIPBOARD_HISTORY_LIMIT = 8
         val FALLBACK_SYLLABLES = setOf("a", "ai", "an", "ang", "ao", "ba", "de", "ge", "hao", "ni", "ren", "shi", "wo", "xian", "yi")
     }

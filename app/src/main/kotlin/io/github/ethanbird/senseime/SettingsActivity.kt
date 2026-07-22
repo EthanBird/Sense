@@ -112,6 +112,8 @@ class SettingsActivity : Activity() {
         val notice = runCatching {
             listOf(
                 "NOTICE" to "NOTICE.txt",
+                "Sense MIT LICENSE" to "LICENSE.txt",
+                "Rime Apache 2.0" to "RIME-PINYIN-SIMP-LICENSE.txt",
                 "CC-CEDICT NOTICE" to "CC-CEDICT-NOTICE.txt",
                 "CC BY-SA 4.0" to "CC-BY-SA-4.0.txt",
             ).joinToString("\n\n") { (heading, fileName) ->

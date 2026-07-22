@@ -52,3 +52,17 @@ tasks.register<JavaExec>("m2AdaptiveBenchmark") {
         rootProject.layout.projectDirectory.file("benchmarks/results/m2-adaptive.json").asFile.absolutePath,
     )
 }
+
+tasks.register<JavaExec>("m3SentenceBenchmark") {
+    group = "verification"
+    description = "Runs the M3 context-ranking sentence replay and latency gate."
+    dependsOn(tasks.named("classes"))
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("io.github.ethanbird.senseime.core.M3SentenceBenchmark")
+    args(
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/pinyin_lexicon.bin").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/pinyin_bigrams.bin").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("benchmarks/replay/m3-sentences.tsv").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("benchmarks/results/m3-sentence.json").asFile.absolutePath,
+    )
+}

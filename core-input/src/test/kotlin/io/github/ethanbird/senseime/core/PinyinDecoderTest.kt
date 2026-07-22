@@ -49,6 +49,98 @@ class PinyinDecoderTest {
     }
 
     @Test
+    fun bigramViterbiScoreResolvesAnAmbiguousSentenceBoundary() {
+        val model = CharacterBigramModel { previous, next ->
+            if (previous == '我'.code && next == '是'.code) 2f else 0f
+        }
+        val contextual = PinyinDecoder.fromBytes(
+            lexicon(
+                "ren" to listOf(item("人", 1000, "r")),
+                "shi" to listOf(item("时", 1200, "s"), item("是", 1000, "s")),
+                "wo" to listOf(item("我", 1000, "w")),
+            ),
+            model,
+        )
+
+        assertEquals("我是人", contextual.decode("woshiren").first().text)
+    }
+
+    @Test
+    fun bigramScoreDoesNotDoubleCountPairsInsideEachCandidate() {
+        val model = CharacterBigramModel { previous, next ->
+            if (previous == '世'.code && next == '界'.code) 2f else 0f
+        }
+        val contextual = PinyinDecoder.fromBytes(
+            lexicon(
+                "ren" to listOf(item("人", 1000, "r")),
+                "shi" to listOf(item("时节", 1200, "sj"), item("世界", 1000, "sj")),
+            ),
+            model,
+        )
+
+        assertEquals("时节人", contextual.decode("shiren").first().text)
+    }
+
+    @Test
+    fun widerSegmentBeamLetsContextRecoverTheThirdLocalCandidate() {
+        val model = CharacterBigramModel { previous, next ->
+            if (previous == '世'.code && next == '人'.code) 3f else 0f
+        }
+        val contextual = PinyinDecoder.fromBytes(
+            lexicon(
+                "ren" to listOf(item("人", 1000, "r")),
+                "shi" to listOf(
+                    item("时", 1400, "s"),
+                    item("事", 1300, "s"),
+                    item("世", 1000, "s"),
+                    item("市", 900, "s"),
+                ),
+            ),
+            model,
+        )
+
+        assertEquals("世人", contextual.decode("shiren").first().text)
+    }
+
+    @Test
+    fun bigramSkipsACompoundBoundaryWhenBothSegmentsHaveMultipleCharacters() {
+        val model = CharacterBigramModel { previous, next ->
+            if (previous == '法'.code && next == '部'.code) 3f else 0f
+        }
+        val contextual = PinyinDecoder.fromBytes(
+            lexicon(
+                "budui" to listOf(item("不对", 1200, "bd"), item("部队", 1000, "bd")),
+                "shuofa" to listOf(item("说法", 1000, "sf")),
+            ),
+            model,
+        )
+
+        assertEquals("说法不对", contextual.decode("shuofabudui").first().text)
+    }
+
+    @Test
+    fun beamKeepsSingleAndMultiCharacterBoundaryStatesForTheSameText() {
+        val model = CharacterBigramModel { previous, next ->
+            if (previous == '丙'.code && next == '丁'.code) 3f else 0f
+        }
+        val contextual = PinyinDecoder.fromBytes(
+            lexicon(
+                "a" to listOf(item("甲", 2_000_000_000, "j")),
+                "ab" to listOf(item("甲乙", 2_000_000_000, "jy")),
+                "bcd" to listOf(item("乙丙", 2000, "yb")),
+                "cd" to listOf(item("丙", 1000, "b")),
+                "e" to listOf(
+                    item("己庚", 2_000_000_000, "jg"),
+                    item("丁戊", 700_000_000, "dw"),
+                ),
+            ),
+            model,
+        )
+
+        assertEquals("甲乙丙丁戊", contextual.decode("abcde").first().text)
+    }
+
+    @Test
     fun compositionKeepsTheBestScoringPathForDuplicateText() {
         val candidate = decoder.decode("woshiyigeren").first()
         assertEquals("我是一个人", candidate.text)
