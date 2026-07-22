@@ -396,13 +396,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             dp(18f),
         )
         layoutWeightedRow(
-            buildList {
-                add(WeightedSpec("⇧", KeyCodes.SHIFT, 1.25f, KeyStyle.ACTION))
-                "zxcvbnm".forEach { character ->
-                    add(WeightedSpec(if (shifted) character.uppercase() else character.toString(), character.code, 1f))
-                }
-                add(WeightedSpec("⌫", KeyCodes.DELETE, 1.25f, KeyStyle.ACTION))
-            },
+            KeyboardLayoutContract.thirdLetterRow(shifted).map { it.toWeightedSpec() },
             top + 2 * (rowHeight + keyGap),
             rowHeight,
         )
@@ -506,18 +500,8 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun layoutBottomRow(y: Float, rowHeight: Float, returnLabel: String? = null) {
-        val firstCode = if (returnLabel == null) KeyCodes.SYMBOLS else KeyCodes.LETTERS
-        val firstLabel = returnLabel ?: "符"
         layoutWeightedRow(
-            listOf(
-                WeightedSpec(firstLabel, firstCode, 0.9f, KeyStyle.ACTION),
-                WeightedSpec("123", KeyCodes.NUMBERS, 1.05f, KeyStyle.ACTION),
-                WeightedSpec(if (chineseMode) "，" else ",", KeyCodes.COMMA, 0.8f),
-                WeightedSpec("空格", KeyCodes.SPACE, 2.7f),
-                WeightedSpec(if (chineseMode) "。" else ".", KeyCodes.PERIOD, 0.8f),
-                WeightedSpec("中/英", KeyCodes.LANGUAGE, 1f, KeyStyle.ACTION),
-                WeightedSpec("↵", KeyCodes.ENTER, 1.2f, KeyStyle.ACTION),
-            ),
+            KeyboardLayoutContract.functionRow(chineseMode, returnToLetters = returnLabel != null).map { it.toWeightedSpec() },
             y,
             rowHeight,
         )
@@ -525,18 +509,13 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private fun layoutSystemBar(viewWidth: Int, viewHeight: Int) {
         val top = viewHeight - systemBarHeight
-        keys += Key(
-            "",
-            KeyCodes.SWITCH_INPUT_METHOD,
-            RectF(dp(13f), top + dp(5f), dp(73f), viewHeight - dp(5f)),
-            style = KeyStyle.SYSTEM,
-        )
-        keys += Key(
-            "",
-            KeyCodes.CLIPBOARD,
-            RectF(viewWidth - dp(73f), top + dp(5f), viewWidth - dp(13f), viewHeight - dp(5f)),
-            style = KeyStyle.SYSTEM,
-        )
+        KeyboardLayoutContract.systemBar.forEach { item ->
+            val bounds = when (item.side) {
+                KeyboardLayoutContract.Side.LEFT -> RectF(dp(13f), top + dp(5f), dp(73f), viewHeight - dp(5f))
+                KeyboardLayoutContract.Side.RIGHT -> RectF(viewWidth - dp(73f), top + dp(5f), viewWidth - dp(13f), viewHeight - dp(5f))
+            }
+            keys += Key("", item.code, bounds, style = KeyStyle.SYSTEM)
+        }
     }
 
     private fun keyboardGrid(viewHeight: Int): Pair<Float, Float> {
@@ -559,6 +538,13 @@ class SenseKeyboardView @JvmOverloads constructor(
         val weight: Float,
         val style: KeyStyle = KeyStyle.LETTER,
         val text: String? = null,
+    )
+
+    private fun KeyboardLayoutContract.WeightedKey.toWeightedSpec(): WeightedSpec = WeightedSpec(
+        label = label,
+        code = code,
+        weight = weight,
+        style = if (action) KeyStyle.ACTION else KeyStyle.LETTER,
     )
 
     private fun layoutEqualRow(

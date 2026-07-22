@@ -18,13 +18,13 @@ fi
 BUILD_TOOLS="$SDK/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK/platforms/android-36/android.jar"
 KOTLIN_LIB="$GRADLE_DIST/lib"
-OUT="$ROOT/build/offline-m1"
+OUT="$ROOT/build/offline-m1-1"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
-APK="$APK_DIR/Sense-v0.1.0-m1-debug.apk"
+APK="$APK_DIR/Sense-v0.1.1-m1-debug.apk"
 export ANDROID_USER_HOME=${ANDROID_USER_HOME:-$OUT/android-user-home}
 
 find "$OUT" -mindepth 1 -delete 2>/dev/null || true
-mkdir -p "$OUT/core-main" "$OUT/core-test" "$OUT/generated" "$OUT/app-classes" "$OUT/dex" "$ANDROID_USER_HOME" "$APK_DIR"
+mkdir -p "$OUT/core-main" "$OUT/core-test" "$OUT/ui-main" "$OUT/ui-test" "$OUT/generated" "$OUT/app-classes" "$OUT/dex" "$ANDROID_USER_HOME" "$APK_DIR"
 
 COMPILER_CP=$(find "$KOTLIN_LIB" -maxdepth 1 -name '*.jar' -print | paste -sd: -)
 STDLIB="$KOTLIN_LIB/kotlin-stdlib-2.0.21.jar"
@@ -33,6 +33,10 @@ HAMCREST="$KOTLIN_LIB/hamcrest-core-1.3.jar"
 
 mapfile -t CORE_SOURCES < <(find "$ROOT/core-input/src/main/kotlin" -name '*.kt' -print | sort)
 mapfile -t TEST_SOURCES < <(find "$ROOT/core-input/src/test/kotlin" -name '*.kt' -print | sort)
+mapfile -t UI_LAYOUT_SOURCES < <(printf '%s\n' \
+    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyCodes.kt" \
+    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardLayoutContract.kt")
+mapfile -t UI_TEST_SOURCES < <(find "$ROOT/ime-ui/src/test/kotlin" -name '*.kt' -print | sort)
 
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect -classpath "$STDLIB" \
@@ -47,6 +51,17 @@ java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/core-main:$OUT/core-test" \
     io.github.ethanbird.senseime.core.InputReducerTest \
     io.github.ethanbird.senseime.core.FakeDecoderTest \
     io.github.ethanbird.senseime.core.PinyinDecoderTest | tee "$OUT/unit-tests.txt"
+
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect -classpath "$STDLIB" \
+    -d "$OUT/ui-main" "${UI_LAYOUT_SOURCES[@]}"
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath "$STDLIB:$JUNIT:$HAMCREST:$OUT/ui-main" \
+    -d "$OUT/ui-test" "${UI_TEST_SOURCES[@]}"
+java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/ui-main:$OUT/ui-test" \
+    org.junit.runner.JUnitCore \
+    io.github.ethanbird.senseime.ui.KeyboardLayoutContractTest | tee "$OUT/ui-unit-tests.txt"
 
 java -cp "$STDLIB:$OUT/core-main" \
     io.github.ethanbird.senseime.core.M0HostBenchmark \
@@ -64,8 +79,8 @@ java -cp "$STDLIB:$OUT/core-main" \
     --manifest "$ROOT/tools/offline/AndroidManifest.xml" \
     --min-sdk-version 29 \
     --target-sdk-version 36 \
-    --version-code 2 \
-    --version-name 0.1.0-m1 \
+    --version-code 3 \
+    --version-name 0.1.1-m1 \
     --auto-add-overlay \
     --output-text-symbols "$OUT/R.txt" \
     -A "$ROOT/ime-service/src/main/assets" \
@@ -151,4 +166,4 @@ HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --text "$OUT/lint.txt" \
     "$ROOT/tools/offline"
 
-echo "M1 verification complete: $APK"
+echo "M1.1 verification complete: $APK"
