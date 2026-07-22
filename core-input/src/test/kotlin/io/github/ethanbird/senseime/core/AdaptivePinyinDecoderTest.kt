@@ -75,6 +75,7 @@ class AdaptivePinyinDecoderTest {
         val decoder = AdaptivePinyinDecoder(emptyBase(), lexicon, segmenter)
 
         assertNull(decoder.learn("niha", Candidate("你好", matchKind = CandidateMatchKind.BASE_PREFIX)))
+        assertNull(decoder.learn("nh", Candidate("你好", matchKind = CandidateMatchKind.BASE_INITIALS)))
         assertNull(decoder.learn("hello", Candidate("hello")))
         assertTrue(lexicon.lookup("nh", 5).isEmpty())
     }

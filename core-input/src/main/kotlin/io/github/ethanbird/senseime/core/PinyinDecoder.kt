@@ -13,7 +13,7 @@ class PinyinDecoder private constructor(
     private val data: ByteArray,
     private val recordOffsets: IntArray,
     private val bigramModel: CharacterBigramModel,
-) : InputDecoder {
+) : ContextualInputDecoder {
 
     override fun decode(composing: String, limit: Int): List<Candidate> {
         if (limit <= 0) return emptyList()
@@ -22,6 +22,9 @@ class PinyinDecoder private constructor(
 
         val exact = findExact(query)
         if (exact >= 0) return readCandidates(exact, limit, CandidateMatchKind.BASE_EXACT, query)
+
+        val initials = readInitialsCandidates(query, limit)
+        if (initials.isNotEmpty()) return initials
 
         val composed = composeCandidates(
             query,
@@ -40,6 +43,17 @@ class PinyinDecoder private constructor(
         return bestByText.values
             .sortedWith(compareByDescending<Candidate> { it.score }.thenBy { matchPriority(it.matchKind) }.thenBy { it.text.length })
             .take(limit)
+    }
+
+    override fun decodeAfter(previousCodePoint: Int, composing: String, limit: Int): List<Candidate> {
+        if (limit <= 0 || !Character.isValidCodePoint(previousCodePoint)) return emptyList()
+        return decode(composing, limit)
+            .map { candidate ->
+                candidate.copy(
+                    score = candidate.score + bigramModel.score(previousCodePoint, candidate.text.codePointAt(0)),
+                )
+            }
+            .sortedWith(compareByDescending<Candidate> { it.score }.thenBy { matchPriority(it.matchKind) }.thenBy { it.text.length })
     }
 
     private fun findExact(query: String): Int {
@@ -167,7 +181,8 @@ class PinyinDecoder private constructor(
     private fun matchPriority(kind: CandidateMatchKind): Int = when (kind) {
         CandidateMatchKind.BASE_COMPOSED -> 0
         CandidateMatchKind.BASE_PREFIX -> 1
-        CandidateMatchKind.CORRECTED -> 2
+        CandidateMatchKind.BASE_INITIALS -> 2
+        CandidateMatchKind.CORRECTED -> 3
         else -> 3
     }
 
@@ -190,6 +205,20 @@ class PinyinDecoder private constructor(
         if (record < 0) return emptyList()
         return readCandidates(record, limit, CandidateMatchKind.BASE_PREFIX)
             .map { it.copy(canonicalPinyin = null, matchKind = CandidateMatchKind.BASE_PREFIX) }
+    }
+
+    private fun readInitialsCandidates(query: String, limit: Int): List<Candidate> {
+        if (query.length < MIN_INITIALS_LENGTH) return emptyList()
+        val record = findExact(INITIALS_NAMESPACE + query)
+        if (record < 0) return emptyList()
+        return readCandidates(record, limit, CandidateMatchKind.BASE_INITIALS)
+            .map {
+                it.copy(
+                    canonicalPinyin = null,
+                    canonicalInitials = query,
+                    matchKind = CandidateMatchKind.BASE_INITIALS,
+                )
+            }
     }
 
     private fun readPrefixCandidates(query: String, limit: Int): List<Candidate> {
@@ -448,6 +477,8 @@ class PinyinDecoder private constructor(
         private const val FALLBACK_SOURCE_PENALTY = 1f
         private val FUZZY_SUBSTITUTIONS = setOf('n' to 'l', 'f' to 'h')
         private const val PREFIX_NAMESPACE = "{"
+        private const val INITIALS_NAMESPACE = "~"
+        private const val MIN_INITIALS_LENGTH = 2
         private val KEY_NEIGHBORS = mapOf(
             'q' to "wa", 'w' to "qeas", 'e' to "wrsd", 'r' to "etdf", 't' to "ryfg",
             'y' to "tugh", 'u' to "yihj", 'i' to "uojk", 'o' to "ipkl", 'p' to "ol",

@@ -24,4 +24,5 @@ android {
 dependencies {
     implementation(project(":core-input"))
     implementation(project(":ime-ui"))
+    testImplementation(libs.junit)
 }

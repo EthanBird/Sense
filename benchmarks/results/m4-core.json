@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "stage": "M4-core",
+  "status": "pending-gradle-execution",
+  "lexicon": {
+    "keys": 137265,
+    "bytes": 5940672,
+    "sha256": "d8d6ad58a462a0c00abd9300bd7f58930e0cff5a3bbf0089ff7128d805dab80c"
+  },
+  "bigrams": {
+    "records": 46651,
+    "bytes": 559822,
+    "sha256": "c8a7c4b9fe7b4b17b73fc29073c4c55943720e8203d42ca5f467c54f8aa12e28"
+  },
+  "correctness": {
+    "assetValidated": true,
+    "w": "我",
+    "ygz": "一个字",
+    "pipeiPrefix": "pending-kotlin-gate",
+    "enter": "pending-kotlin-gate",
+    "space": "pending-kotlin-gate"
+  },
+  "initialsLookup": {
+    "p95Ns": null,
+    "gateNs": 250000.0
+  },
+  "progressiveDecode": {
+    "p95Ns": null,
+    "gateNs": 500000.0
+  },
+  "note": "M4CoreBenchmark overwrites this bootstrap record during the verified Gradle run."
+}

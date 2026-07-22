@@ -12,6 +12,7 @@ enum class CandidateMatchKind {
     BASE_EXACT,
     BASE_COMPOSED,
     BASE_PREFIX,
+    BASE_INITIALS,
     CORRECTED,
     USER_FULL,
     USER_INITIALS,
@@ -44,4 +45,9 @@ data class EditorTransaction(
 
 interface InputDecoder {
     fun decode(composing: String, limit: Int = 5): List<Candidate>
+}
+
+/** Optional boundary-aware ranking for a previously selected composing segment. */
+interface ContextualInputDecoder : InputDecoder {
+    fun decodeAfter(previousCodePoint: Int, composing: String, limit: Int = 5): List<Candidate>
 }
