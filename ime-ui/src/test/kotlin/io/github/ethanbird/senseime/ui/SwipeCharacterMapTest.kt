@@ -19,6 +19,16 @@ class SwipeCharacterMapTest {
         assertEquals("2", SwipeCharacterMap.forKey('w'.code))
         assertEquals("、", SwipeCharacterMap.forKey('m'.code))
         assertEquals("、", SwipeCharacterMap.forKey('M'.code))
+        assertEquals("！", SwipeCharacterMap.forKey('s'.code))
+        assertEquals("？", SwipeCharacterMap.forKey('l'.code))
+        assertEquals(
+            "!",
+            SwipeCharacterMap.forKey('s'.code, SwipeCharacterMode.ENGLISH),
+        )
+        assertEquals(
+            "?",
+            SwipeCharacterMap.forKey('l'.code, SwipeCharacterMode.ENGLISH),
+        )
         assertNull(SwipeCharacterMap.forKey(KeyCodes.DELETE))
     }
 }

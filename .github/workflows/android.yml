@@ -7,14 +7,16 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # PRs may supersede an older verification run. Main must finish once it has
+  # started publishing, otherwise a canceled upload can leave a partial tag.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 env:
-  RELEASE_TAG: v0.3.2-m5
-  RELEASE_APK: Sense-v0.3.2-m5.apk
+  RELEASE_TAG: v0.3.3-m6
+  RELEASE_APK: Sense-v0.3.3-m6.apk
   LEXICON_SHA256: eda69e1ff2a972f0a4ba30f4f2699ca744d1f8d62118d3fb696fe956f0b35ef6
   BIGRAM_SHA256: c3d806b2baeac31aaa2859607ab7c01399229332c3bf77758216ec62713e9220
   ENGLISH_SHA256: 1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624
@@ -26,14 +28,14 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Verify M4 regressions and M5 mixed assets
         run: |
@@ -72,7 +74,7 @@ jobs:
           cmp licenses/CC-BY-SA-4.0.txt ime-service/src/main/assets/CC-BY-SA-4.0.txt
           cmp licenses/popular-english-words-ISC.txt ime-service/src/main/assets/POPULAR-ENGLISH-WORDS-ISC.txt
 
-      - name: Verify 0.3.2 mixed-input and keyboard correctness
+      - name: Verify 0.3.3 input-polish correctness
         run: >-
           ./gradlew
           :core-input:test
@@ -83,7 +85,7 @@ jobs:
           :app:assembleBenchmark
           :benchmark:assembleBenchmark
 
-      - name: Verify M0 through M5 host benchmarks
+      - name: Verify M0 through M6 host benchmarks
         run: >-
           ./gradlew
           --no-parallel
@@ -93,8 +95,9 @@ jobs:
           :core-input:m3SentenceBenchmark
           :core-input:m4CoreBenchmark
           :core-input:m5MixedInputBenchmark
+          :core-input:m6InputPolishBenchmark
 
-      - name: Verify assembled 0.3.2 APK
+      - name: Verify assembled 0.3.3 APK
         shell: bash
         run: |
           set -euo pipefail
@@ -110,7 +113,7 @@ jobs:
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" > /tmp/apk-badging.txt
           "$build_tools/aapt2" dump permissions "$apk" > /tmp/apk-permissions.txt
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='8' versionName='0.3.2-m5'" /tmp/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='9' versionName='0.3.3-m6'" /tmp/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" /tmp/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" /tmp/apk-badging.txt
           if grep -Fq 'android.permission.INTERNET' /tmp/apk-permissions.txt; then
@@ -131,18 +134,19 @@ jobs:
             grep -Fx "$ENGLISH_WORD_COUNT"
 
       - name: Upload debug APKs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.3.2-m5-apks
+          name: sense-v0.3.3-m6-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
             benchmark/build/outputs/apk/benchmark/*.apk
             benchmarks/results/m4-core.json
             benchmarks/results/m5-mixed-input.json
+            benchmarks/results/m6-input-polish.json
           if-no-files-found: error
 
-  release-0-3-2:
+  release-0-3-3:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -150,11 +154,11 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
-          name: sense-v0.3.2-m5-apks
+          name: sense-v0.3.3-m6-apks
           path: artifacts
 
       - name: Prepare release assets
@@ -174,7 +178,7 @@ jobs:
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" | tee release/apk-badging.txt
           "$build_tools/aapt2" dump permissions "$apk" | tee release/apk-permissions.txt
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='8' versionName='0.3.2-m5'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='9' versionName='0.3.3-m6'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           if grep -Fq 'android.permission.INTERNET' release/apk-permissions.txt; then
@@ -197,7 +201,7 @@ jobs:
           cd release
           sha256sum "$RELEASE_APK" > SHA256SUMS.txt
 
-      - name: Create 0.3.2 prerelease
+      - name: Create 0.3.3 prerelease
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -208,6 +212,13 @@ jobs:
               echo "$RELEASE_TAG already targets $target instead of $GITHUB_SHA" >&2
               exit 1
             fi
+            # Heal an earlier interrupted upload at the same commit before
+            # validating it. This keeps reruns idempotent even if GitHub had
+            # created the release/tag but not every asset.
+            gh release upload "$RELEASE_TAG" \
+              "release/$RELEASE_APK" \
+              release/SHA256SUMS.txt \
+              --clobber
             mkdir -p existing-release
             gh release download "$RELEASE_TAG" \
               --pattern "$RELEASE_APK" \
@@ -224,8 +235,8 @@ jobs:
             fi
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
-              --title "Sense v0.3.2-m5 · 中英混输与键盘交互收敛" \
-              --notes-file docs/releases/v0.3.2-m5.md \
+              --title "Sense v0.3.3-m6 · 输入精修与候选交互" \
+              --notes-file docs/releases/v0.3.3-m6.md \
               --prerelease \
               "release/$RELEASE_APK" \
               release/SHA256SUMS.txt

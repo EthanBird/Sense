@@ -135,6 +135,21 @@ object KeyboardLayoutContract {
         return candidateHeight + if (takesToolbar) toolbarHeight else 0f
     }
 
+    fun topChromeBottom(
+        candidateHeight: Float,
+        toolbarHeight: Float,
+        candidatesTakeToolbar: Boolean,
+        editorPanelVisible: Boolean,
+    ): Float {
+        require(candidateHeight > 0f)
+        require(toolbarHeight > 0f)
+        return when {
+            editorPanelVisible -> candidateHeight
+            candidatesTakeToolbar -> candidateHeight + toolbarHeight
+            else -> toolbarHeight
+        }
+    }
+
     fun letterLabel(character: Char, chineseMode: Boolean, shifted: Boolean): String =
         if (chineseMode || shifted) character.uppercase() else character.toString()
 

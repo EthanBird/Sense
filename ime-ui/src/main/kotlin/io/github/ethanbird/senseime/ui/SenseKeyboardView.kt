@@ -15,8 +15,10 @@ import android.util.AttributeSet
 import android.util.SparseArray
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
+import android.view.VelocityTracker
 import android.view.View
 import android.view.ViewConfiguration
+import android.widget.OverScroller
 import kotlin.math.max
 
 class SenseKeyboardView @JvmOverloads constructor(
@@ -67,9 +69,17 @@ class SenseKeyboardView @JvmOverloads constructor(
         CARD,
         EMOJI,
         CATEGORY,
+        SYMBOL,
+        SYMBOL_CATEGORY,
         RAIL,
         EDITOR_DIRECTION,
         EDITOR_PRIMARY,
+    }
+
+    private enum class ScrollPanel {
+        EMOJI,
+        SYMBOL_CATEGORIES,
+        SYMBOL_VALUES,
     }
 
     private enum class Icon {
@@ -106,17 +116,13 @@ class SenseKeyboardView @JvmOverloads constructor(
         val clipboardIndex: Int = -1,
         val secondaryLabel: String? = null,
         val editorAction: EditorAction? = null,
+        val scrollPanel: ScrollPanel? = null,
     )
 
     private data class VisibleCandidate(
         val sourceIndex: Int,
         val bounds: RectF,
         val textAnchor: Float,
-    )
-
-    private data class EmojiGroup(
-        val icon: String,
-        val values: List<String>,
     )
 
     private enum class CandidateControl {
@@ -160,7 +166,13 @@ class SenseKeyboardView @JvmOverloads constructor(
             override val gesturePolicy: TouchInputReducer.GesturePolicy,
         ) : FrozenTouchTarget
 
-        data class EmojiGridArea(
+        data class CandidateStripArea(
+            override val bounds: RectF,
+            override val gesturePolicy: TouchInputReducer.GesturePolicy,
+        ) : FrozenTouchTarget
+
+        data class PanelScrollArea(
+            val panel: ScrollPanel,
             override val bounds: RectF,
             override val gesturePolicy: TouchInputReducer.GesturePolicy,
         ) : FrozenTouchTarget
@@ -191,7 +203,11 @@ class SenseKeyboardView @JvmOverloads constructor(
     private var candidateMeasuredWidths = FloatArray(0)
     private var candidateGeneration = 0L
     private var candidatePageCacheKey: CandidatePageCacheKey? = null
+    private val candidateStripLayoutCache = CandidateStripLayoutCache()
     private var expandedCandidateGridBounds: RectF? = null
+    private var collapsedCandidateViewportBounds: RectF? = null
+    private var collapsedCandidateLayout: CandidateStripGeometry.Layout? = null
+    private var candidateStripConfiguredLayout: CandidateStripGeometry.Layout? = null
     private var clipboardItems: List<String> = emptyList()
     private var composing: String = ""
     private var compositionRevision: Long = 0L
@@ -199,18 +215,34 @@ class SenseKeyboardView @JvmOverloads constructor(
     private var candidatePageIndex = 0
     private var candidatePageLabel = "1 / 1"
     private var candidatesExpanded = false
+    private val candidateStripScrollState = CandidateStripScrollState(
+        touchSlop = scaledTouchSlop,
+    )
     private val touchReducer = TouchInputReducer<FrozenTouchTarget>(
         swipeThreshold = dp(22f),
         maximumHorizontalDrift = dp(34f),
     )
     private val keyEventQueue = KeyEventQueue(initialCapacity = 64)
     private val pressedTargets = SparseArray<FrozenTouchTarget>(4)
-    private val emojiPointerYs = SparseArray<Float>(2)
+    private val panelPointerYs = SparseArray<Float>(2)
+    private var activePanelPointerId = NO_POINTER
+    private var activePanelScroll: ScrollPanel? = null
+    private var activePanelScrollLatched = false
+    private var panelVelocityTracker: VelocityTracker? = null
+    private val panelScroller = OverScroller(context)
+    private var flingingPanel: ScrollPanel? = null
+    private val minimumFlingVelocity = ViewConfiguration.get(context).scaledMinimumFlingVelocity.toFloat()
+    private val maximumFlingVelocity = ViewConfiguration.get(context).scaledMaximumFlingVelocity.toFloat()
     private var keyDispatchPosted = false
     private val backspaceRepeatSession = BackspaceRepeatSession()
     private var emojiGroupIndex = 0
     private val emojiScrollState = ContinuousVerticalScrollState()
     private var emojiGridBounds: RectF? = null
+    private var symbolCategoryIndex = 0
+    private val symbolCategoryScrollState = ContinuousVerticalScrollState()
+    private val symbolGridScrollState = ContinuousVerticalScrollState()
+    private var symbolCategoryBounds: RectF? = null
+    private var symbolGridBounds: RectF? = null
     private var clipboardPageIndex = 0
     private var clipboardPageLabel = ""
     private var editorSelectionActive = false
@@ -239,6 +271,25 @@ class SenseKeyboardView @JvmOverloads constructor(
         touchSlop = scaledTouchSlop,
         verticalDominanceRatio = VERTICAL_GESTURE_DOMINANCE,
     )
+    private var candidateSettleStartedAtMillis = 0L
+    private var candidateSettleStartOffset = 0f
+    private var candidateSettleTargetOffset = 0f
+    private val candidateSettleRunnable = object : Runnable {
+        override fun run() {
+            val elapsed = SystemClock.uptimeMillis() - candidateSettleStartedAtMillis
+            val fraction = elapsed.toFloat() / CANDIDATE_SETTLE_DURATION_MILLIS.toFloat()
+            val next = CandidateStripScrollPhysics.easeOutCubic(
+                start = candidateSettleStartOffset,
+                target = candidateSettleTargetOffset,
+                fraction = fraction,
+            )
+            if (candidateStripScrollState.moveTo(next)) {
+                rebuildCandidateLayout(width, height)
+                invalidate()
+            }
+            if (fraction < 1f) postOnAnimation(this)
+        }
+    }
     private val keyDispatchRunnable = Runnable {
         keyDispatchPosted = false
         while (true) {
@@ -288,6 +339,8 @@ class SenseKeyboardView @JvmOverloads constructor(
         )
         val wasExpanded = candidatesExpanded
         if (shouldReset) {
+            stopCandidateSettle()
+            candidateStripScrollState.reset()
             candidatesExpanded = false
             candidatePageIndex = 0
         }
@@ -301,6 +354,9 @@ class SenseKeyboardView @JvmOverloads constructor(
             candidateGeneration++
             candidatePages = emptyList()
             candidatePageCacheKey = null
+            collapsedCandidateLayout = null
+            candidateStripConfiguredLayout = null
+            candidateStripLayoutCache.invalidate()
         }
         compositionRevision = revision
         composing = text
@@ -324,6 +380,7 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     fun setChineseMode(value: Boolean) {
         if (chineseMode == value) return
+        cancelAllTouches()
         chineseMode = value
         collapseCandidates()
         rebuildKeys(width, height)
@@ -332,15 +389,22 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     fun setPanel(value: Panel) {
         val wasExpanded = candidatesExpanded
-        collapseCandidates()
         if (panel == value && !wasExpanded) return
+        cancelAllTouches()
+        collapseCandidates()
         panel = value
         if (value == Panel.EMOJI) emojiScrollState.reset()
+        if (value == Panel.SYMBOLS) {
+            symbolCategoryIndex = 0
+            symbolCategoryScrollState.reset()
+            symbolGridScrollState.reset()
+        }
         rebuildKeys(width, height)
         invalidate()
     }
 
     fun showClipboard(values: List<String>) {
+        cancelAllTouches()
         clipboardItems = values
         clipboardPageIndex = 0
         panel = Panel.CLIPBOARD
@@ -403,8 +467,8 @@ class SenseKeyboardView @JvmOverloads constructor(
         } else {
             drawCandidates(canvas)
             if (!candidatesExpanded) {
-                if (!candidateTakesToolbar()) drawToolbar(canvas)
                 if (panel == Panel.CLIPBOARD) drawClipboardHeader(canvas)
+                if (panel == Panel.SYMBOLS) drawSymbolPanelBackground(canvas)
             }
         }
         drawKeys(canvas)
@@ -424,6 +488,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             drawExpandedCandidates(canvas)
             return
         }
+        if (composing.isBlank() && candidates.isEmpty()) return
         paint.style = Paint.Style.FILL
         paint.color = color(0x22FFFFFF, 0x0FFFFFFF)
         canvas.drawRect(0f, 0f, width.toFloat(), collapsedCandidateBottom(), paint)
@@ -446,18 +511,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             )
         }
 
-        if (candidates.isEmpty()) {
-            if (headerSpec?.role != CandidatePresentationPolicy.HeaderRole.BRANDING) return
-            paint.color = color(0xFF596579.toInt(), 0xFFB8BBC2.toInt())
-            paint.textSize = sp(headerSpec.textSizeSp)
-            paint.textAlign = Paint.Align.LEFT
-            val label = when {
-                chineseMode -> "中 · 先思输入法"
-                else -> "英 · Sense"
-            }
-            drawCenteredText(canvas, label, dp(headerSpec.xDp), dp(headerSpec.yDp))
-            return
-        }
+        if (candidates.isEmpty()) return
 
         drawVisibleCandidates(canvas)
         candidateControls.forEach { drawCandidateControl(canvas, it) }
@@ -504,6 +558,13 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun drawVisibleCandidates(canvas: Canvas) {
+        val viewportSave = if (!candidatesExpanded) {
+            collapsedCandidateViewportBounds?.let { bounds ->
+                canvas.save().also { canvas.clipRect(bounds) }
+            }
+        } else {
+            null
+        }
         visibleCandidates.forEach { candidate ->
             val text = candidates.getOrNull(candidate.sourceIndex) ?: return@forEach
             if (isCandidatePressed(candidate)) {
@@ -520,6 +581,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             drawCenteredText(canvas, text, candidate.textAnchor, candidate.bounds.centerY() + dp(2f))
             canvas.restoreToCount(saveCount)
         }
+        viewportSave?.let(canvas::restoreToCount)
     }
 
     private fun drawCandidateControl(canvas: Canvas, slot: CandidateControlSlot) {
@@ -546,23 +608,16 @@ class SenseKeyboardView @JvmOverloads constructor(
         drawCenteredText(canvas, label, slot.bounds.centerX(), slot.bounds.centerY())
     }
 
-    private fun drawToolbar(canvas: Canvas) {
-        paint.style = Paint.Style.FILL
-        paint.color = color(0x14000000, 0x20000000)
-        canvas.drawRect(0f, candidateHeight, width.toFloat(), candidateHeight + toolbarHeight, paint)
-        paint.color = color(0x1F172033, 0x35FFFFFF)
-        canvas.drawRect(0f, candidateHeight + toolbarHeight - max(1f, density), width.toFloat(), candidateHeight + toolbarHeight, paint)
-    }
-
     private fun drawClipboardHeader(canvas: Canvas) {
+        val headerTop = keyboardChromeBottom()
         paint.color = color(0xFF172033.toInt(), 0xFFF3F4F7.toInt())
         paint.textSize = sp(13.5f)
         paint.textAlign = Paint.Align.LEFT
-        drawCenteredText(canvas, "剪贴板", dp(14f), candidateHeight + toolbarHeight + dp(19f))
+        drawCenteredText(canvas, "剪贴板", dp(14f), headerTop + dp(19f))
         if (clipboardPageLabel.isNotEmpty()) {
             paint.color = color(0xFF748094.toInt(), 0xFF92969E.toInt())
             paint.textSize = sp(10f)
-            drawCenteredText(canvas, clipboardPageLabel, dp(62f), candidateHeight + toolbarHeight + dp(19f))
+            drawCenteredText(canvas, clipboardPageLabel, dp(62f), headerTop + dp(19f))
         }
     }
 
@@ -600,6 +655,8 @@ class SenseKeyboardView @JvmOverloads constructor(
                 KeyStyle.CARD -> drawCardKey(canvas, key, pressed)
                 KeyStyle.EMOJI -> drawEmojiKey(canvas, key, pressed)
                 KeyStyle.CATEGORY -> drawCategoryKey(canvas, key, pressed)
+                KeyStyle.SYMBOL -> drawSymbolKey(canvas, key, pressed)
+                KeyStyle.SYMBOL_CATEGORY -> drawSymbolCategoryKey(canvas, key, pressed)
                 KeyStyle.RAIL -> drawRailKey(canvas, key, pressed)
                 KeyStyle.EDITOR_DIRECTION -> drawEditorDirectionKey(canvas, key, pressed)
                 KeyStyle.EDITOR_PRIMARY -> drawEditorPrimaryKey(canvas, key, pressed)
@@ -723,6 +780,75 @@ class SenseKeyboardView @JvmOverloads constructor(
         paint.textSize = sp(16f)
         paint.textAlign = Paint.Align.CENTER
         drawCenteredText(canvas, key.label, key.bounds.centerX(), key.bounds.centerY())
+    }
+
+    private fun drawSymbolPanelBackground(canvas: Canvas) {
+        paint.style = Paint.Style.FILL
+        paint.color = color(0xB8FFFFFF.toInt(), 0xFF252627.toInt())
+        symbolCategoryBounds?.let { canvas.drawRoundRect(it, dp(8f), dp(8f), paint) }
+        symbolGridBounds?.let { canvas.drawRoundRect(it, dp(8f), dp(8f), paint) }
+    }
+
+    private fun drawSymbolCategoryKey(canvas: Canvas, key: Key, pressed: Boolean) {
+        val bounds = symbolCategoryBounds ?: return
+        val saveCount = canvas.save()
+        canvas.clipRect(bounds)
+        val selected = key.clipboardIndex == symbolCategoryIndex
+        if (selected || pressed) {
+            paint.style = Paint.Style.FILL
+            paint.color = if (selected) {
+                color(0xFFCFD8E6.toInt(), 0xFF3B3D40.toInt())
+            } else {
+                color(0x804F7CF5.toInt(), 0x705E63D8)
+            }
+            canvas.drawRoundRect(key.bounds, dp(6f), dp(6f), paint)
+        }
+        paint.color = if (selected) {
+            color(0xFF152033.toInt(), 0xFFF4F4F6.toInt())
+        } else {
+            color(0xFF5B6678.toInt(), 0xFFB8BBC2.toInt())
+        }
+        paint.textSize = sp(13.5f)
+        paint.textAlign = Paint.Align.CENTER
+        drawCenteredText(canvas, key.label, key.bounds.centerX(), key.bounds.centerY())
+        canvas.restoreToCount(saveCount)
+    }
+
+    private fun drawSymbolKey(canvas: Canvas, key: Key, pressed: Boolean) {
+        val bounds = symbolGridBounds ?: return
+        val saveCount = canvas.save()
+        canvas.clipRect(bounds)
+        paint.style = Paint.Style.FILL
+        paint.color = if (pressed) {
+            color(0x405B7DF0, 0x556D61D8)
+        } else {
+            color(0x66FFFFFF, 0x10FFFFFF)
+        }
+        canvas.drawRect(key.bounds, paint)
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = max(1f, density)
+        paint.color = color(0x18172033, 0x24FFFFFF)
+        canvas.drawRect(key.bounds, paint)
+        paint.style = Paint.Style.FILL
+        paint.color = color(0xFF172033.toInt(), 0xFFF5F5F7.toInt())
+        paint.textSize = sp(
+            when {
+                key.label.length <= 2 -> 20f
+                key.label.length <= 5 -> 15f
+                else -> 10.5f
+            },
+        )
+        paint.textAlign = Paint.Align.CENTER
+        val textSave = canvas.save()
+        canvas.clipRect(
+            key.bounds.left + dp(2f),
+            key.bounds.top,
+            key.bounds.right - dp(2f),
+            key.bounds.bottom,
+        )
+        drawCenteredText(canvas, key.label, key.bounds.centerX(), key.bounds.centerY())
+        canvas.restoreToCount(textSave)
+        canvas.restoreToCount(saveCount)
     }
 
     private fun drawRailKey(canvas: Canvas, key: Key, pressed: Boolean) {
@@ -999,6 +1125,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         visibleCandidates.clear()
         candidateControls.clear()
         expandedCandidateGridBounds = null
+        collapsedCandidateViewportBounds = null
         if (viewWidth <= 0) return
 
         val systemBarTop = viewHeight - systemBarHeight
@@ -1008,6 +1135,14 @@ class SenseKeyboardView @JvmOverloads constructor(
         val hasExpandedGridRoom = viewHeight > 0 && gridBottom - gridTop >= expandedCandidateRowHeight
 
         if (candidates.isEmpty()) {
+            collapsedCandidateLayout = null
+            candidateStripConfiguredLayout = null
+            candidateStripLayoutCache.invalidate()
+            candidateStripScrollState.configure(
+                maximumOffset = 0f,
+                viewportExtent = 0f,
+                snapOffsets = listOf(0f),
+            )
             if (candidatesExpanded && composing.isNotBlank() && hasExpandedGridRoom) {
                 expandedCandidateGridBounds = RectF(0f, gridTop, viewWidth.toFloat(), gridBottom)
                 candidatePageLabel = "…"
@@ -1026,16 +1161,31 @@ class SenseKeyboardView @JvmOverloads constructor(
             return
         }
         paint.textSize = sp(if (candidateTakesToolbar()) 19f else 17f)
-        val collapsed = KeyboardLayoutContract.collapsedCandidateStrip(
-            viewWidth = viewWidth.toFloat(),
-            candidateCount = candidates.size,
-            measuredTextWidth = ::measureCandidateWidth,
-            padding = horizontalPadding,
-            textInset = candidateTextInset,
-            gap = candidateGap,
-            minimumWidth = candidateMinimumWidth,
-            overflowControlWidth = candidateControlWidth,
+        val stripCacheKey = CandidateStripLayoutCache.Key(
+            generation = candidateGeneration,
+            viewWidth = viewWidth,
+            takesToolbar = candidateTakesToolbar(),
         )
+        collapsedCandidateLayout = candidateStripLayoutCache.getOrBuild(stripCacheKey) {
+            CandidateStripGeometry.layout(
+                viewWidth = viewWidth.toFloat(),
+                measuredTextWidths = List(candidates.size) { measureCandidateWidth(it) },
+                padding = horizontalPadding,
+                textInset = candidateTextInset,
+                gap = candidateGap,
+                minimumWidth = candidateMinimumWidth,
+                overflowControlWidth = candidateControlWidth,
+            )
+        }
+        val collapsed = checkNotNull(collapsedCandidateLayout)
+        if (candidateStripConfiguredLayout !== collapsed) {
+            candidateStripScrollState.configure(
+                maximumOffset = collapsed.maximumOffset,
+                viewportExtent = collapsed.viewportExtent,
+                snapOffsets = collapsed.snapOffsets,
+            )
+            candidateStripConfiguredLayout = collapsed
+        }
 
         if (!collapsed.hasOverflow) {
             candidatesExpanded = false
@@ -1092,11 +1242,27 @@ class SenseKeyboardView @JvmOverloads constructor(
 
         val collapsedBottom = collapsedCandidateBottom()
         val top = if (composing.isBlank()) dp(3f) else dp(18f)
+        collapsedCandidateViewportBounds = RectF(
+            collapsed.viewportLeft,
+            0f,
+            collapsed.viewportRight,
+            collapsedBottom,
+        )
         collapsed.slots.forEachIndexed { sourceIndex, slot ->
+            val shiftedLeft = slot.left - candidateStripScrollState.offset
+            val shiftedRight = slot.right - candidateStripScrollState.offset
+            if (shiftedRight <= collapsed.viewportLeft || shiftedLeft >= collapsed.viewportRight) {
+                return@forEachIndexed
+            }
             visibleCandidates += VisibleCandidate(
                 sourceIndex = sourceIndex,
-                bounds = RectF(slot.left, top, slot.right, collapsedBottom - dp(3f)),
-                textAnchor = slot.textAnchor,
+                bounds = RectF(
+                    maxOf(shiftedLeft, collapsed.viewportLeft),
+                    top,
+                    minOf(shiftedRight, collapsed.viewportRight),
+                    collapsedBottom - dp(3f),
+                ),
+                textAnchor = slot.textAnchor - candidateStripScrollState.offset,
             )
         }
         if (collapsed.hasOverflow && canExpand) {
@@ -1143,6 +1309,8 @@ class SenseKeyboardView @JvmOverloads constructor(
     private fun rebuildKeys(viewWidth: Int, viewHeight: Int) {
         keys.clear()
         emojiGridBounds = null
+        symbolCategoryBounds = null
+        symbolGridBounds = null
         editorMainBounds = null
         editorBottomSeparators = FloatArray(0)
         if (viewWidth <= 0 || viewHeight <= 0) return
@@ -1174,7 +1342,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             keys += Key(
                 "",
                 code,
-                RectF(index * slot + dp(5f), candidateHeight + dp(3f), (index + 1) * slot - dp(5f), candidateHeight + toolbarHeight - dp(3f)),
+                RectF(index * slot + dp(5f), dp(3f), (index + 1) * slot - dp(5f), toolbarHeight - dp(3f)),
                 style = KeyStyle.TOOL,
                 icon = icon,
             )
@@ -1188,7 +1356,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 KeySpec(
                     KeyboardLayoutContract.letterLabel(character, chineseMode, shifted),
                     character.code,
-                    SwipeCharacterMap.forKey(character.code),
+                    SwipeCharacterMap.forKey(character.code, swipeCharacterMode()),
                 )
             },
             top,
@@ -1199,7 +1367,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 KeySpec(
                     KeyboardLayoutContract.letterLabel(character, chineseMode, shifted),
                     character.code,
-                    SwipeCharacterMap.forKey(character.code),
+                    SwipeCharacterMap.forKey(character.code, swipeCharacterMode()),
                 )
             },
             top + rowHeight + keyGap,
@@ -1215,8 +1383,14 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun layoutNumbers(viewWidth: Int, viewHeight: Int) {
-        val top = candidateHeight + toolbarHeight + dp(7f)
+        val top = keyboardChromeBottom() + dp(7f)
         val bottom = viewHeight - systemBarHeight - dp(7f)
+        if (
+            bottom - top <= keyGap * 4f ||
+            viewWidth.toFloat() <= horizontalPadding * 2f + keyGap * 4f
+        ) {
+            return
+        }
         KeyboardLayoutContract.numericPadLayout(
             viewWidth = viewWidth.toFloat(),
             contentTop = top,
@@ -1248,39 +1422,118 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun layoutSymbols(viewWidth: Int, viewHeight: Int) {
-        val (top, rowHeight) = keyboardGrid(viewHeight)
-        val rows = listOf(
-            listOf("【", "】", "「", "」", "《", "》", "〈", "〉", "…", "—"),
-            listOf("±", "×", "÷", "=", "≠", "≈", "≤", "≥", "℃", "‰"),
-        )
-        rows.forEachIndexed { index, values ->
-            layoutEqualRow(values.map { KeySpec(it, 0, text = it) }, top + index * (rowHeight + keyGap), rowHeight)
+        val top = keyboardChromeBottom() + dp(4f)
+        val bottom = viewHeight - systemBarHeight - dp(6f)
+        val railWidth = minOf(dp(82f), viewWidth * 0.23f)
+        val actionHeight = dp(42f)
+        val railRight = horizontalPadding + railWidth
+        if (bottom <= top) return
+        if (bottom - top <= actionHeight + keyGap) {
+            keys += Key(
+                label = "返回",
+                code = KeyCodes.LETTERS,
+                bounds = RectF(horizontalPadding, top, viewWidth - horizontalPadding, bottom),
+                style = KeyStyle.RAIL,
+            )
+            return
         }
-        layoutWeightedRow(
-            buildList {
-                add(WeightedSpec("123", KeyCodes.NUMBERS, 1.25f, KeyStyle.ACTION))
-                listOf("·", "©", "®", "™", "✓", "→", "←").forEach { add(WeightedSpec(it, 0, 1f, text = it)) }
-                add(WeightedSpec("", KeyCodes.DELETE, 1.25f, KeyStyle.ACTION, icon = Icon.DELETE))
-            },
-            top + 2 * (rowHeight + keyGap),
-            rowHeight,
+        val categoryBottom = bottom - actionHeight - keyGap
+        symbolCategoryBounds = RectF(horizontalPadding, top, railRight, categoryBottom)
+        symbolGridBounds = RectF(
+            railRight + keyGap,
+            top,
+            viewWidth - horizontalPadding,
+            bottom,
         )
-        layoutBottomRow(top + 3 * (rowHeight + keyGap), rowHeight, returnLabel = "ABC")
+
+        val categoryViewport = categoryBottom - top
+        val categoryHeight = dp(43f)
+        symbolCategoryScrollState.configure(
+            contentExtent = SymbolCatalog.categories.size * categoryHeight,
+            viewportExtent = categoryViewport,
+        )
+        SymbolCatalog.categories.forEachIndexed { index, category ->
+            val itemTop = top + index * categoryHeight - symbolCategoryScrollState.offset
+            val itemBottom = itemTop + categoryHeight
+            if (itemBottom <= top || itemTop >= categoryBottom) return@forEachIndexed
+            keys += Key(
+                label = category.label,
+                code = 0,
+                bounds = RectF(horizontalPadding, itemTop, railRight, itemBottom),
+                style = KeyStyle.SYMBOL_CATEGORY,
+                clipboardIndex = index,
+                scrollPanel = ScrollPanel.SYMBOL_CATEGORIES,
+            )
+        }
+        keys += Key(
+            label = "返回",
+            code = KeyCodes.LETTERS,
+            bounds = RectF(horizontalPadding, categoryBottom + keyGap, railRight, bottom),
+            style = KeyStyle.RAIL,
+        )
+
+        symbolCategoryIndex = symbolCategoryIndex.coerceIn(0, SymbolCatalog.categories.lastIndex)
+        val values = SymbolCatalog.categories[symbolCategoryIndex].values
+        val grid = checkNotNull(symbolGridBounds)
+        val columns = 4
+        val itemWidth = grid.width() / columns
+        val itemHeight = max(dp(49f), grid.height() / 5f)
+        val contentRows = (values.size + columns - 1) / columns
+        symbolGridScrollState.configure(
+            contentExtent = contentRows * itemHeight,
+            viewportExtent = grid.height(),
+        )
+        values.forEachIndexed { index, text ->
+            val row = index / columns
+            val column = index % columns
+            val itemTop = grid.top + row * itemHeight - symbolGridScrollState.offset
+            val itemBottom = itemTop + itemHeight
+            if (itemBottom <= grid.top || itemTop >= grid.bottom) return@forEachIndexed
+            keys += Key(
+                label = text,
+                code = 0,
+                bounds = RectF(
+                    grid.left + column * itemWidth,
+                    itemTop,
+                    grid.left + (column + 1) * itemWidth,
+                    itemBottom,
+                ),
+                style = KeyStyle.SYMBOL,
+                text = text,
+                scrollPanel = ScrollPanel.SYMBOL_VALUES,
+            )
+        }
     }
 
     private fun layoutEmoji(viewWidth: Int, viewHeight: Int) {
-        val top = candidateHeight + toolbarHeight + dp(4f)
+        val top = keyboardChromeBottom() + dp(4f)
         val bottom = viewHeight - systemBarHeight - dp(6f)
         val categoryHeight = dp(29f)
+        val actionHeight = dp(40f)
+        val gridGap = dp(3f)
+        if (bottom <= top) return
+        if (bottom - top <= categoryHeight + actionHeight + gridGap * 2f) {
+            layoutWeightedRow(
+                listOf(
+                    WeightedSpec("", KeyCodes.LETTERS, 1.05f, KeyStyle.ACTION, icon = Icon.BACK),
+                    WeightedSpec("", KeyCodes.SPACE, 3.3f, KeyStyle.LETTER, icon = Icon.SPACE),
+                    WeightedSpec("", KeyCodes.DELETE, 1.05f, KeyStyle.ACTION, icon = Icon.DELETE),
+                    WeightedSpec("", KeyCodes.ENTER, 1.05f, KeyStyle.ACTION, icon = Icon.ENTER),
+                ),
+                top,
+                bottom - top,
+            )
+            return
+        }
         val geometry = KeyboardLayoutContract.scrollableEmojiLayoutGeometry(
             contentTop = top,
             contentBottom = bottom,
             categoryHeight = categoryHeight,
-            actionHeight = dp(40f),
-            gridGap = dp(3f),
+            actionHeight = actionHeight,
+            gridGap = gridGap,
         )
-        val categorySlot = (viewWidth - horizontalPadding * 2) / EMOJI_GROUPS.size
-        EMOJI_GROUPS.forEachIndexed { index, group ->
+        val categorySlot = (viewWidth - horizontalPadding * 2) / EmojiCatalog.categories.size
+        EmojiCatalog.categories.forEachIndexed { index, group ->
             keys += Key(
                 group.icon,
                 0,
@@ -1298,7 +1551,8 @@ class SenseKeyboardView @JvmOverloads constructor(
         val itemWidth = (viewWidth - horizontalPadding * 2) / columns
         val viewportHeight = geometry.gridBottom - geometry.gridTop
         val itemHeight = max(dp(46f), viewportHeight / 3f)
-        val values = EMOJI_GROUPS[emojiGroupIndex].values
+        emojiGroupIndex = emojiGroupIndex.coerceIn(0, EmojiCatalog.categories.lastIndex)
+        val values = EmojiCatalog.categories[emojiGroupIndex].values
         val contentRows = (values.size + columns - 1) / columns
         emojiScrollState.configure(contentRows * itemHeight, viewportHeight)
         emojiGridBounds = RectF(
@@ -1324,6 +1578,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 ),
                 style = KeyStyle.EMOJI,
                 text = text,
+                scrollPanel = ScrollPanel.EMOJI,
             )
         }
         layoutWeightedRow(
@@ -1339,7 +1594,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun layoutClipboard(viewWidth: Int, viewHeight: Int) {
-        val headerTop = candidateHeight + toolbarHeight
+        val headerTop = keyboardChromeBottom()
         val headerHeight = dp(36f)
         val headerIconWidth = dp(39f)
         keys += Key("", 0, RectF(viewWidth - headerIconWidth * 3, headerTop, viewWidth - headerIconWidth * 2, headerTop + headerHeight), style = KeyStyle.TOOL, icon = Icon.REFRESH, clipboardAction = ClipboardAction.REFRESH)
@@ -1347,6 +1602,13 @@ class SenseKeyboardView @JvmOverloads constructor(
         keys += Key("", KeyCodes.LETTERS, RectF(viewWidth - headerIconWidth, headerTop, viewWidth.toFloat(), headerTop + headerHeight), style = KeyStyle.TOOL, icon = Icon.BACK)
         val top = headerTop + headerHeight
         val bottom = viewHeight - systemBarHeight - dp(8f)
+        if (
+            bottom - top <= keyGap * (CLIPBOARD_ITEMS_PER_PAGE - 1) ||
+            viewWidth.toFloat() <= horizontalPadding * 2f
+        ) {
+            clipboardPageLabel = ""
+            return
+        }
         if (clipboardItems.isEmpty()) {
             clipboardPageLabel = ""
             keys += Key(
@@ -1414,10 +1676,18 @@ class SenseKeyboardView @JvmOverloads constructor(
             icon = Icon.BACK,
             editorAction = EditorAction.BACK,
         )
+        val contentTop = candidateHeight + dp(7f)
+        val contentBottom = viewHeight - systemBarHeight - dp(8f)
+        if (
+            contentBottom - contentTop <= keyGap * 5f ||
+            viewWidth.toFloat() <= horizontalPadding * 2f + keyGap * 4f
+        ) {
+            return
+        }
         val slots = KeyboardLayoutContract.editorLayout(
             viewWidth = viewWidth.toFloat(),
-            contentTop = candidateHeight + dp(7f),
-            contentBottom = viewHeight - systemBarHeight - dp(8f),
+            contentTop = contentTop,
+            contentBottom = contentBottom,
             horizontalPadding = horizontalPadding,
             gap = keyGap,
         )
@@ -1519,7 +1789,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun keyboardGrid(viewHeight: Int): Pair<Float, Float> {
-        val top = candidateHeight + toolbarHeight + dp(7f)
+        val top = keyboardChromeBottom() + dp(7f)
         val bottom = viewHeight - systemBarHeight - dp(7f)
         return top to (bottom - top - keyGap * 3) / 4f
     }
@@ -1548,7 +1818,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         code = code,
         weight = weight,
         style = if (action) KeyStyle.ACTION else KeyStyle.LETTER,
-        hint = if (code > 0) SwipeCharacterMap.forKey(code) else null,
+        hint = if (code > 0) SwipeCharacterMap.forKey(code, swipeCharacterMode()) else null,
         icon = when (code) {
             KeyCodes.SHIFT -> Icon.SHIFT
             KeyCodes.DELETE -> Icon.DELETE
@@ -1586,6 +1856,9 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (activePanelPointerId != NO_POINTER) {
+            panelVelocityTracker?.addMovement(event)
+        }
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> handlePointerDown(event, event.actionIndex, isPrimary = true)
             MotionEvent.ACTION_POINTER_DOWN -> handlePointerDown(event, event.actionIndex, isPrimary = false)
@@ -1593,24 +1866,68 @@ class SenseKeyboardView @JvmOverloads constructor(
             MotionEvent.ACTION_MOVE -> {
                 repeat(event.pointerCount) { pointerIndex ->
                     val pointerId = event.getPointerId(pointerIndex)
+                    val x = event.getX(pointerIndex)
+                    val y = event.getY(pointerIndex)
+                    if (candidateStripScrollState.owns(pointerId)) {
+                        val candidateMove = candidateStripScrollState.move(
+                            pointerId = pointerId,
+                            x = x,
+                            y = y,
+                            eventTimeMillis = event.eventTime,
+                        )
+                        if (candidateMove.dragLatched) {
+                            touchReducer.cancel(pointerId)
+                            pressedTargets.remove(pointerId)
+                            cancelOtherCandidateStripTouches(pointerId)
+                            if (candidateMove.changed) rebuildCandidateLayout(width, height)
+                            return@repeat
+                        }
+                    }
                     val target = touchReducer.target(pointerId) ?: return@repeat
                     val move = touchReducer.onMove(
                         pointerId = pointerId,
-                        x = event.getX(pointerIndex),
-                        y = event.getY(pointerIndex),
-                        insideTapTarget = isInsideTapTarget(target, event.getX(pointerIndex), event.getY(pointerIndex)),
+                        x = x,
+                        y = y,
+                        insideTapTarget = isInsideTapTarget(target, x, y),
                         policy = target.gesturePolicy,
                     )
-                    if (isEmojiScrollTarget(target)) {
-                        val currentY = event.getY(pointerIndex)
-                        val previousY = emojiPointerYs[pointerId] ?: currentY
-                        if (
-                            move.verticalScrollLatched &&
-                            emojiScrollState.scrollBy(previousY - currentY)
-                        ) {
+                    val scrollPanel = scrollPanelFor(target)
+                    if (move.verticalScrollLatched && scrollPanel != null) {
+                        acquirePanelScrollForLatchedPointer(
+                            pointerId = pointerId,
+                            panel = scrollPanel,
+                            y = y,
+                            event = event,
+                        )
+                    }
+                    if (
+                        move.verticalScrollLatched &&
+                        scrollPanel != null &&
+                        pointerId == activePanelPointerId &&
+                        scrollPanel == activePanelScroll
+                    ) {
+                        val newlyLatched = !activePanelScrollLatched
+                        val currentY = y
+                        val previousY = panelPointerYs[pointerId] ?: currentY
+                        if (scrollStateFor(scrollPanel).scrollBy(previousY - currentY)) {
                             rebuildKeys(width, height)
                         }
-                        emojiPointerYs.put(pointerId, currentY)
+                        activePanelScrollLatched = true
+                        panelPointerYs.put(pointerId, currentY)
+                        if (newlyLatched) {
+                            cancelOtherPanelTouches(
+                                ownerPointerId = pointerId,
+                                panel = scrollPanel,
+                            )
+                        }
+                    } else if (
+                        move.verticalScrollLatched &&
+                        activePanelScrollLatched &&
+                        pointerId != activePanelPointerId
+                    ) {
+                        // A secondary pointer can continue smoothly if the
+                        // current owner lifts before it does.
+                        panelPointerYs.put(pointerId, y)
                     }
                     if (move.canceled || move.tapSuppressed) {
                         pressedTargets.remove(pointerId)
@@ -1648,8 +1965,17 @@ class SenseKeyboardView @JvmOverloads constructor(
             touchReducer.onDown(pointerId, target, x, y)
         }
         pressedTargets.put(pointerId, target)
-        if (isEmojiScrollTarget(target)) {
-            emojiPointerYs.put(pointerId, y)
+        if (isCollapsedCandidateScrollTarget(target)) {
+            stopCandidateSettle()
+            candidateStripScrollState.begin(
+                pointerId = pointerId,
+                x = x,
+                y = y,
+                eventTimeMillis = event.eventTime,
+            )
+        }
+        scrollPanelFor(target)?.let { scrollPanel ->
+            startPanelScroll(pointerId, scrollPanel, y, event)
         }
         val key = (target as? FrozenTouchTarget.KeyValue)?.key
         if (key?.code == KeyCodes.DELETE) {
@@ -1658,7 +1984,8 @@ class SenseKeyboardView @JvmOverloads constructor(
         }
         if (
             target !is FrozenTouchTarget.CandidatePageArea &&
-            target !is FrozenTouchTarget.EmojiGridArea
+            target !is FrozenTouchTarget.CandidateStripArea &&
+            target !is FrozenTouchTarget.PanelScrollArea
         ) {
             performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
         }
@@ -1670,26 +1997,51 @@ class SenseKeyboardView @JvmOverloads constructor(
         val pointerId = event.getPointerId(pointerIndex)
         val x = event.getX(pointerIndex)
         val y = event.getY(pointerIndex)
-        val target = touchReducer.target(pointerId)
-        val activation = target?.let {
-            touchReducer.onUp(
-                pointerId = pointerId,
-                x = x,
-                y = y,
-                insideTapTarget = isInsideTapTarget(it, x, y),
-                policy = it.gesturePolicy,
-            )
+        val originalTarget = touchReducer.target(pointerId)
+        val candidateSettle = candidateStripScrollState.finish(
+            pointerId = pointerId,
+            x = x,
+            y = y,
+            eventTimeMillis = event.eventTime,
+            fastFlingVelocity = dp(CANDIDATE_FAST_FLING_VELOCITY_DP_PER_SECOND),
+        )
+        val activation = if (candidateSettle?.dragged == true) {
+            touchReducer.cancel(pointerId)
+            null
+        } else {
+            val target = touchReducer.target(pointerId)
+            target?.let {
+                touchReducer.onUp(
+                    pointerId = pointerId,
+                    x = x,
+                    y = y,
+                    insideTapTarget = isInsideTapTarget(it, x, y),
+                    policy = it.gesturePolicy,
+                )
+            }
         }
+        candidateSettle?.let { settle ->
+            if (settle.dragged || settle.animate) {
+                startCandidateSettle(settle)
+            }
+        }
+        finishPanelScroll(
+            pointerId = pointerId,
+            panel = originalTarget?.let(::scrollPanelFor),
+            shouldFling = activation?.gesture != null &&
+                activation.gesture != TouchInputReducer.Gesture.TAP,
+        )
         pressedTargets.remove(pointerId)
         stopBackspaceRepeat(pointerId)
-        emojiPointerYs.remove(pointerId)
+        panelPointerYs.remove(pointerId)
         invalidate()
         if (activation != null) {
             activateTouchTarget(activation)
             if (
                 activation.gesture == TouchInputReducer.Gesture.TAP &&
                 activation.target !is FrozenTouchTarget.CandidatePageArea &&
-                activation.target !is FrozenTouchTarget.EmojiGridArea
+                activation.target !is FrozenTouchTarget.CandidateStripArea &&
+                activation.target !is FrozenTouchTarget.PanelScrollArea
             ) {
                 performClick()
             }
@@ -1723,6 +2075,19 @@ class SenseKeyboardView @JvmOverloads constructor(
                 }
             }
         }
+        if (!candidatesExpanded && panel != Panel.EDITOR) {
+            collapsedCandidateViewportBounds?.let { bounds ->
+                if (
+                    collapsedCandidateLayout?.hasOverflow == true &&
+                    bounds.contains(x, y)
+                ) {
+                    return FrozenTouchTarget.CandidateStripArea(
+                        bounds = RectF(bounds),
+                        gesturePolicy = tapGesturePolicy,
+                    )
+                }
+            }
+        }
         if (panel != Panel.EDITOR) {
             expandedCandidateGridBounds?.let { bounds ->
                 if (bounds.contains(x, y)) {
@@ -1744,9 +2109,11 @@ class SenseKeyboardView @JvmOverloads constructor(
                 )
             }
         }
-        emojiGridBounds?.let { bounds ->
-            if (panel == Panel.EMOJI && bounds.contains(x, y)) {
-                return FrozenTouchTarget.EmojiGridArea(
+        for (scrollPanel in ScrollPanel.entries) {
+            val bounds = panelViewportBounds(scrollPanel) ?: continue
+            if (bounds.contains(x, y)) {
+                return FrozenTouchTarget.PanelScrollArea(
+                    panel = scrollPanel,
                     bounds = RectF(bounds),
                     gesturePolicy = pageScrollGesturePolicy,
                 )
@@ -1756,23 +2123,41 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun hitBoundsForKey(key: Key): RectF {
-        if (key.style != KeyStyle.EMOJI) return key.bounds
-        val grid = emojiGridBounds ?: return key.bounds
+        val viewport = key.scrollPanel?.let(::panelViewportBounds) ?: return key.bounds
         return RectF(
-            maxOf(key.bounds.left, grid.left),
-            maxOf(key.bounds.top, grid.top),
-            minOf(key.bounds.right, grid.right),
-            minOf(key.bounds.bottom, grid.bottom),
+            maxOf(key.bounds.left, viewport.left),
+            maxOf(key.bounds.top, viewport.top),
+            minOf(key.bounds.right, viewport.right),
+            minOf(key.bounds.bottom, viewport.bottom),
         )
     }
 
-    private fun isEmojiScrollTarget(target: FrozenTouchTarget): Boolean =
-        target is FrozenTouchTarget.EmojiGridArea ||
-            (target is FrozenTouchTarget.KeyValue && target.key.style == KeyStyle.EMOJI)
+    private fun scrollPanelFor(target: FrozenTouchTarget): ScrollPanel? = when (target) {
+        is FrozenTouchTarget.PanelScrollArea -> target.panel
+        is FrozenTouchTarget.KeyValue -> target.key.scrollPanel
+        else -> null
+    }
+
+    private fun panelViewportBounds(panel: ScrollPanel): RectF? = when (panel) {
+        ScrollPanel.EMOJI -> emojiGridBounds
+        ScrollPanel.SYMBOL_CATEGORIES -> symbolCategoryBounds
+        ScrollPanel.SYMBOL_VALUES -> symbolGridBounds
+    }
+
+    private fun scrollStateFor(panel: ScrollPanel): ContinuousVerticalScrollState = when (panel) {
+        ScrollPanel.EMOJI -> emojiScrollState
+        ScrollPanel.SYMBOL_CATEGORIES -> symbolCategoryScrollState
+        ScrollPanel.SYMBOL_VALUES -> symbolGridScrollState
+    }
+
+    private fun isCollapsedCandidateScrollTarget(target: FrozenTouchTarget): Boolean =
+        !candidatesExpanded &&
+            collapsedCandidateLayout?.hasOverflow == true &&
+            (target is FrozenTouchTarget.CandidateValue || target is FrozenTouchTarget.CandidateStripArea)
 
     private fun gesturePolicyForKey(key: Key): TouchInputReducer.GesturePolicy = when {
-        key.style == KeyStyle.EMOJI || key.style == KeyStyle.CARD -> pageScrollGesturePolicy
-        SwipeCharacterMap.forKey(key.code) != null -> TouchInputReducer.GesturePolicy.upwardFlick(
+        key.scrollPanel != null || key.style == KeyStyle.CARD -> pageScrollGesturePolicy
+        SwipeCharacterMap.forKey(key.code, swipeCharacterMode()) != null -> TouchInputReducer.GesturePolicy.upwardFlick(
             minimumDistance = KeyboardGestureThresholds.upwardFlickDistance(
                 minimumDistance = dp(12f),
                 keyHeight = key.bounds.height(),
@@ -1807,7 +2192,8 @@ class SenseKeyboardView @JvmOverloads constructor(
             is FrozenTouchTarget.CandidatePageArea -> if (activation.gesture != TouchInputReducer.Gesture.TAP) {
                 scrollCandidatePage(if (activation.gesture == TouchInputReducer.Gesture.SWIPE_UP) 1 else -1)
             }
-            is FrozenTouchTarget.EmojiGridArea -> Unit
+            is FrozenTouchTarget.CandidateStripArea -> Unit
+            is FrozenTouchTarget.PanelScrollArea -> Unit
             is FrozenTouchTarget.KeyValue -> activateGesture(target.key, activation.gesture)
         }
     }
@@ -1815,12 +2201,12 @@ class SenseKeyboardView @JvmOverloads constructor(
     private fun activateGesture(key: Key, gesture: TouchInputReducer.Gesture) {
         if (key.code == KeyCodes.DELETE) return // DELETE is emitted immediately on DOWN.
         when {
-            key.style == KeyStyle.EMOJI && gesture != TouchInputReducer.Gesture.TAP -> Unit
+            key.scrollPanel != null && gesture != TouchInputReducer.Gesture.TAP -> Unit
             key.style == KeyStyle.CARD && gesture != TouchInputReducer.Gesture.TAP && clipboardItems.isNotEmpty() -> {
                 scrollClipboard(if (gesture == TouchInputReducer.Gesture.SWIPE_UP) 1 else -1)
             }
             gesture == TouchInputReducer.Gesture.SWIPE_UP && key.code > 0 -> {
-                SwipeCharacterMap.forKey(key.code)?.let {
+                (key.hint ?: SwipeCharacterMap.forKey(key.code, swipeCharacterMode()))?.let {
                     dispatchQueuedKeysNow()
                     textListener?.invoke(it)
                 }
@@ -1895,8 +2281,16 @@ class SenseKeyboardView @JvmOverloads constructor(
     private fun cancelAllTouches() {
         touchReducer.cancelAll()
         pressedTargets.clear()
-        emojiPointerYs.clear()
+        panelPointerYs.clear()
+        clearPanelPointer()
+        stopPanelFling()
         stopBackspaceRepeat()
+        stopCandidateSettle()
+        candidateStripScrollState.cancelAll()?.let { settle ->
+            if (candidateStripScrollState.moveTo(settle.targetOffset)) {
+                rebuildCandidateLayout(width, height)
+            }
+        }
     }
 
     private fun collapseCandidates() {
@@ -1916,8 +2310,17 @@ class SenseKeyboardView @JvmOverloads constructor(
             return
         }
         if (key.style == KeyStyle.CATEGORY) {
-            emojiGroupIndex = key.clipboardIndex.coerceIn(0, EMOJI_GROUPS.lastIndex)
+            stopPanelFling()
+            emojiGroupIndex = key.clipboardIndex.coerceIn(0, EmojiCatalog.categories.lastIndex)
             emojiScrollState.reset()
+            rebuildKeys(width, height)
+            invalidate()
+            return
+        }
+        if (key.style == KeyStyle.SYMBOL_CATEGORY) {
+            stopPanelFling()
+            symbolCategoryIndex = key.clipboardIndex.coerceIn(0, SymbolCatalog.categories.lastIndex)
+            symbolGridScrollState.reset()
             rebuildKeys(width, height)
             invalidate()
             return
@@ -1981,6 +2384,155 @@ class SenseKeyboardView @JvmOverloads constructor(
         invalidate()
     }
 
+    private fun startCandidateSettle(settle: CandidateStripScrollState.Settle) {
+        stopCandidateSettle()
+        if (!settle.animate) {
+            if (candidateStripScrollState.moveTo(settle.targetOffset)) {
+                rebuildCandidateLayout(width, height)
+                invalidate()
+            }
+            return
+        }
+        candidateSettleStartOffset = candidateStripScrollState.offset
+        candidateSettleTargetOffset = settle.targetOffset
+        candidateSettleStartedAtMillis = SystemClock.uptimeMillis()
+        postOnAnimation(candidateSettleRunnable)
+    }
+
+    private fun stopCandidateSettle() {
+        removeCallbacks(candidateSettleRunnable)
+    }
+
+    private fun startPanelScroll(
+        pointerId: Int,
+        panel: ScrollPanel,
+        y: Float,
+        event: MotionEvent,
+    ) {
+        panelPointerYs.put(pointerId, y)
+        if (activePanelPointerId != NO_POINTER) return
+        stopPanelFling()
+        activePanelPointerId = pointerId
+        activePanelScroll = panel
+        activePanelScrollLatched = false
+        panelVelocityTracker = VelocityTracker.obtain().also { it.addMovement(event) }
+    }
+
+    private fun acquirePanelScrollForLatchedPointer(
+        pointerId: Int,
+        panel: ScrollPanel,
+        y: Float,
+        event: MotionEvent,
+    ) {
+        if (pointerId == activePanelPointerId && panel == activePanelScroll) return
+        if (activePanelPointerId != NO_POINTER && activePanelScrollLatched) return
+
+        panelVelocityTracker?.recycle()
+        activePanelPointerId = pointerId
+        activePanelScroll = panel
+        activePanelScrollLatched = false
+        panelVelocityTracker = VelocityTracker.obtain().also { it.addMovement(event) }
+        if (panelPointerYs.indexOfKey(pointerId) < 0) {
+            panelPointerYs.put(pointerId, y)
+        }
+    }
+
+    private fun cancelOtherPanelTouches(
+        ownerPointerId: Int,
+        panel: ScrollPanel,
+    ) {
+        for (index in pressedTargets.size() - 1 downTo 0) {
+            val pointerId = pressedTargets.keyAt(index)
+            val target = pressedTargets.valueAt(index)
+            if (
+                pointerId != ownerPointerId &&
+                scrollPanelFor(target) == panel
+            ) {
+                touchReducer.cancel(pointerId)
+                pressedTargets.removeAt(index)
+                panelPointerYs.remove(pointerId)
+            }
+        }
+    }
+
+    private fun cancelOtherCandidateStripTouches(ownerPointerId: Int) {
+        for (index in pressedTargets.size() - 1 downTo 0) {
+            val pointerId = pressedTargets.keyAt(index)
+            val target = pressedTargets.valueAt(index)
+            val isCandidateTarget =
+                target is FrozenTouchTarget.CandidateValue ||
+                    target is FrozenTouchTarget.CandidateStripArea
+            if (pointerId != ownerPointerId && isCandidateTarget) {
+                touchReducer.cancel(pointerId)
+                pressedTargets.removeAt(index)
+            }
+        }
+    }
+
+    private fun finishPanelScroll(
+        pointerId: Int,
+        panel: ScrollPanel?,
+        shouldFling: Boolean,
+    ) {
+        if (pointerId != activePanelPointerId) return
+        val activePanel = activePanelScroll
+        val tracker = panelVelocityTracker
+        if (shouldFling && panel != null && panel == activePanel && tracker != null) {
+            tracker.computeCurrentVelocity(1_000, maximumFlingVelocity)
+            val velocity = KineticScrollPolicy.contentVelocity(
+                fingerVelocity = tracker.getYVelocity(pointerId),
+                minimumFlingVelocity = minimumFlingVelocity,
+                maximumFlingVelocity = maximumFlingVelocity,
+            )
+            if (velocity != 0) startPanelFling(panel, velocity)
+        }
+        clearPanelPointer()
+    }
+
+    private fun startPanelFling(panel: ScrollPanel, velocity: Int) {
+        val state = scrollStateFor(panel)
+        if (state.maximumOffset <= 0f) return
+        panelScroller.forceFinished(true)
+        flingingPanel = panel
+        panelScroller.fling(
+            0,
+            state.offset.toInt(),
+            0,
+            velocity,
+            0,
+            0,
+            0,
+            state.maximumOffset.toInt(),
+        )
+        postInvalidateOnAnimation()
+    }
+
+    override fun computeScroll() {
+        super.computeScroll()
+        val panel = flingingPanel ?: return
+        if (panelScroller.computeScrollOffset()) {
+            if (scrollStateFor(panel).scrollTo(panelScroller.currY.toFloat())) {
+                rebuildKeys(width, height)
+            }
+            postInvalidateOnAnimation()
+        } else {
+            flingingPanel = null
+        }
+    }
+
+    private fun stopPanelFling() {
+        if (!panelScroller.isFinished) panelScroller.forceFinished(true)
+        flingingPanel = null
+    }
+
+    private fun clearPanelPointer() {
+        panelVelocityTracker?.recycle()
+        panelVelocityTracker = null
+        activePanelPointerId = NO_POINTER
+        activePanelScroll = null
+        activePanelScrollLatched = false
+    }
+
     private fun scrollClipboard(delta: Int) {
         val pageCount = ((clipboardItems.size + CLIPBOARD_ITEMS_PER_PAGE - 1) / CLIPBOARD_ITEMS_PER_PAGE).coerceAtLeast(1)
         clipboardPageIndex = (clipboardPageIndex + delta).coerceIn(0, pageCount - 1)
@@ -2024,6 +2576,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     override fun onDetachedFromWindow() {
         cancelAllTouches()
         removeCallbacks(keyDispatchRunnable)
+        removeCallbacks(candidateSettleRunnable)
         keyEventQueue.clear()
         keyDispatchPosted = false
         super.onDetachedFromWindow()
@@ -2044,11 +2597,22 @@ class SenseKeyboardView @JvmOverloads constructor(
         editorPanelVisible = panel == Panel.EDITOR,
     )
 
+    /** Idle UI has one toolbar row; active candidates temporarily consume two rows. */
+    private fun keyboardChromeBottom(): Float = KeyboardLayoutContract.topChromeBottom(
+        candidateHeight = candidateHeight,
+        toolbarHeight = toolbarHeight,
+        candidatesTakeToolbar = candidateTakesToolbar(),
+        editorPanelVisible = panel == Panel.EDITOR,
+    )
+
     private fun collapsedCandidateBottom(): Float = KeyboardLayoutContract.collapsedCandidateBottom(
         candidateHeight = candidateHeight,
         toolbarHeight = toolbarHeight,
         takesToolbar = candidateTakesToolbar(),
     )
+
+    private fun swipeCharacterMode(): SwipeCharacterMode =
+        if (chineseMode) SwipeCharacterMode.CHINESE else SwipeCharacterMode.ENGLISH
 
     private fun dp(value: Float): Float = value * density
 
@@ -2057,43 +2621,8 @@ class SenseKeyboardView @JvmOverloads constructor(
     private companion object {
         const val CLIPBOARD_ITEMS_PER_PAGE = 3
         const val VERTICAL_GESTURE_DOMINANCE = 1.15f
-
-        val EMOJI_GROUPS = listOf(
-            EmojiGroup(
-                "☺",
-                listOf(
-                    "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋",
-                    "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😭",
-                ),
-            ),
-            EmojiGroup(
-                "♥",
-                listOf(
-                    "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "💟", "👍", "👎",
-                    "👌", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "👇", "☝️", "✋", "🤚", "🖐️", "🖖", "👋", "🤝", "👏", "🙌", "👐", "🤲",
-                ),
-            ),
-            EmojiGroup(
-                "✿",
-                listOf(
-                    "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨", "🐯", "🦁", "🐮", "🐷", "🐸", "🐵", "🌱", "🌿", "☘️", "🍀", "🎋", "🌵",
-                    "🌴", "🌳", "🌲", "🌷", "🌹", "🥀", "🌺", "🌸", "🌼", "🌻", "🌞", "🌝", "🌚", "⭐", "🌟", "✨", "⚡", "🔥", "🌈", "☀️", "🌙",
-                ),
-            ),
-            EmojiGroup(
-                "♨",
-                listOf(
-                    "🍎", "🍐", "🍊", "🍋", "🍌", "🍉", "🍇", "🍓", "🫐", "🍈", "🍒", "🍑", "🥭", "🍍", "🥥", "🥝", "🍅", "🥑", "🍆", "🥔", "🥕",
-                    "🍞", "🥐", "🥖", "🥨", "🧀", "🍳", "🥞", "🧇", "🍔", "🍟", "🍕", "🌭", "🥪", "🌮", "🍜", "🍚", "🍣", "🍰", "🎂", "☕", "🍵",
-                ),
-            ),
-            EmojiGroup(
-                "⚑",
-                listOf(
-                    "⚽", "🏀", "🏈", "⚾", "🥎", "🎾", "🏐", "🏉", "🥏", "🎱", "🏓", "🏸", "🥅", "⛳", "🏹", "🎣", "🤿", "🥊", "🥋", "🎽", "🛹",
-                    "🚗", "🚕", "🚌", "🚎", "🏎️", "🚓", "🚑", "🚒", "🚐", "🛻", "🚚", "🚲", "🛵", "✈️", "🚀", "🚁", "⛵", "🚢", "⌚", "📱", "💻",
-                ),
-            ),
-        )
+        const val CANDIDATE_FAST_FLING_VELOCITY_DP_PER_SECOND = 720f
+        const val CANDIDATE_SETTLE_DURATION_MILLIS = 180L
+        const val NO_POINTER = -1
     }
 }

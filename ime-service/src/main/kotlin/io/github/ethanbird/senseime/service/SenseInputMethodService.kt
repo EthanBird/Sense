@@ -22,6 +22,7 @@ import io.github.ethanbird.senseime.core.Candidate
 import io.github.ethanbird.senseime.core.CandidateMatchKind
 import io.github.ethanbird.senseime.core.CharacterBigramModel
 import io.github.ethanbird.senseime.core.EnglishLexicon
+import io.github.ethanbird.senseime.core.EnglishInputSession
 import io.github.ethanbird.senseime.core.FakeDecoder
 import io.github.ethanbird.senseime.core.InputDecoder
 import io.github.ethanbird.senseime.core.MemoryUserLexicon
@@ -30,7 +31,10 @@ import io.github.ethanbird.senseime.core.PinyinDecoder
 import io.github.ethanbird.senseime.core.ProgressivePinyinDecoder
 import io.github.ethanbird.senseime.core.ProgressivePinyinDecoding
 import io.github.ethanbird.senseime.core.PinyinSyllableSegmenter
+import io.github.ethanbird.senseime.core.SemanticCandidateCatalog
+import io.github.ethanbird.senseime.core.SemanticCandidateMixer
 import io.github.ethanbird.senseime.core.UserLexicon
+import io.github.ethanbird.senseime.core.editorComposingTextUpdate
 import io.github.ethanbird.senseime.ui.KeyCodes
 import io.github.ethanbird.senseime.ui.KeyboardLayoutContract
 import io.github.ethanbird.senseime.ui.SenseKeyboardView
@@ -43,6 +47,7 @@ class SenseInputMethodService : InputMethodService() {
     private var userLexicon: UserLexicon? = null
     private val candidateSession = CandidateDecodeSession()
     private var composition = PinyinComposition()
+    private var englishInput = EnglishInputSession(EnglishLexicon.EMPTY)
     private var shifted = false
     private var chineseMode = true
     private var keyboardView: SenseKeyboardView? = null
@@ -87,6 +92,7 @@ class SenseInputMethodService : InputMethodService() {
         val englishLexicon = runCatching {
             assets.open(ENGLISH_LEXICON_ASSET).use { EnglishLexicon.load(it) }
         }.getOrElse { EnglishLexicon.EMPTY }
+        englishInput = EnglishInputSession(englishLexicon, DECODE_CANDIDATE_LIMIT)
         val learned = runCatching<UserLexicon> { PersistentUserLexicon(this) }.getOrElse { MemoryUserLexicon() }
         userLexicon = learned
         adaptiveDecoder = AdaptivePinyinDecoder(
@@ -100,7 +106,7 @@ class SenseInputMethodService : InputMethodService() {
         candidateRunner = LatestOnlyTaskRunner(
             threadName = "sense-candidate-decoder",
             work = { request ->
-                (activeDecoder as? ProgressivePinyinDecoder)?.decodeProgressively(
+                val decoding = (activeDecoder as? ProgressivePinyinDecoder)?.decodeProgressively(
                     request.composition,
                     DECODE_CANDIDATE_LIMIT,
                 ) ?: ProgressivePinyinDecoding(
@@ -111,6 +117,15 @@ class SenseInputMethodService : InputMethodService() {
                         DECODE_CANDIDATE_LIMIT,
                     ),
                     prefixCandidates = emptyList(),
+                )
+                decoding.copy(
+                    wholeCandidates = SemanticCandidateMixer.merge(
+                        primary = decoding.wholeCandidates,
+                        semantic = SemanticCandidateCatalog.suggest(
+                            request.composition.remainingPinyin,
+                        ),
+                        limit = DECODE_CANDIDATE_LIMIT,
+                    ),
                 )
             },
             deliver = { _, request, decoding ->
@@ -199,6 +214,24 @@ class SenseInputMethodService : InputMethodService() {
         )
         selectionStart = newSelStart
         selectionEnd = newSelEnd
+        val hasActiveComposition = if (chineseMode) {
+            composition.visibleText.isNotEmpty()
+        } else {
+            englishInput.composing.isNotEmpty()
+        }
+        if (
+            EditorCompositionSelectionPolicy.shouldCancelLocalComposition(
+                hasActiveComposition = hasActiveComposition,
+                newSelectionStart = newSelStart,
+                newSelectionEnd = newSelEnd,
+                candidatesStart = candidatesStart,
+                candidatesEnd = candidatesEnd,
+            )
+        ) {
+            // Clear local state before asking the host to finish its span so a
+            // synchronous selection callback cannot observe the stale session.
+            resetComposition(finishConnection = true)
+        }
         val nextSelectionActive = when {
             newSelStart >= 0 && newSelEnd >= 0 && newSelStart != newSelEnd -> true
             oldSelStart >= 0 && oldSelEnd >= 0 && oldSelStart != oldSelEnd -> false
@@ -253,7 +286,13 @@ class SenseInputMethodService : InputMethodService() {
     private fun handleCharacter(character: Char) {
         if (!chineseMode) {
             val output = if (shifted) character.uppercaseChar() else character
-            currentInputConnection?.commitText(output.toString(), 1)
+            if (output.lowercaseChar() in 'a'..'z') {
+                englishInput.type(output)
+                updateConnectionComposition(englishInput.composing)
+                render()
+            } else {
+                commitText(output.toString())
+            }
             if (shifted) {
                 shifted = false
                 keyboardView?.setShifted(false)
@@ -267,14 +306,18 @@ class SenseInputMethodService : InputMethodService() {
         }
 
         composition = composition.type(character)
-        updateConnectionComposition()
+        updateConnectionComposition(composition.visibleText)
         render()
     }
 
     private fun handleBackspace() {
-        if (composition.visibleText.isNotEmpty()) {
+        if (!chineseMode && englishInput.composing.isNotEmpty()) {
+            englishInput.backspace()
+            updateConnectionComposition(englishInput.composing)
+            render()
+        } else if (composition.visibleText.isNotEmpty()) {
             composition = composition.backspace()
-            updateConnectionComposition()
+            updateConnectionComposition(composition.visibleText)
             render()
         } else {
             deleteOneCodePointOrSelection()
@@ -282,6 +325,13 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun handleSpace() {
+        if (!chineseMode) {
+            if (englishInput.composing.isNotEmpty()) {
+                if (!commitEnglishComposition(englishInput.defaultCommitCandidate)) return
+            }
+            currentInputConnection?.commitText(" ", 1)
+            return
+        }
         if (composition.visibleText.isEmpty()) {
             currentInputConnection?.commitText(" ", 1)
             return
@@ -303,7 +353,9 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun handleEnter() {
-        if (composition.visibleText.isNotEmpty()) {
+        if (!chineseMode && englishInput.composing.isNotEmpty()) {
+            commitEnglishComposition(candidate = null)
+        } else if (composition.visibleText.isNotEmpty()) {
             // Enter confirms exactly what the user can see. It never auto-selects
             // a Chinese candidate and does not append a newline in this branch.
             commitRawComposition()
@@ -313,6 +365,10 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun commitCandidate(revision: Long, sourceIndex: Int) {
+        if (!chineseMode) {
+            englishInput.select(revision, sourceIndex)?.let(::commitEnglishComposition)
+            return
+        }
         if (composition.visibleText.isEmpty()) return
         when (val choice = candidateSession.select(composition, revision, sourceIndex)) {
             is ProgressiveCandidateChoice.Whole -> commitPrimary(choice.candidate)
@@ -320,7 +376,7 @@ class SenseInputMethodService : InputMethodService() {
                 val next = composition.acceptPrefix(revision, choice.value)
                 if (next == composition) return
                 composition = next
-                updateConnectionComposition()
+                updateConnectionComposition(composition.visibleText)
                 render()
             }
 
@@ -330,6 +386,9 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun commitText(text: String) {
         if (deferIfSpacePending(DeferredInput.Text(text))) return
+        if (!chineseMode && englishInput.composing.isNotEmpty()) {
+            if (!commitEnglishComposition(englishInput.defaultCommitCandidate)) return
+        }
         if (composition.visibleText.isNotEmpty()) {
             val decoding = currentDecoding()
             if (composition.remainingPinyin.isNotEmpty() && decoding == null) {
@@ -348,7 +407,11 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun toggleLanguage() {
-        if (composition.visibleText.isNotEmpty()) commitRawComposition()
+        if (chineseMode) {
+            if (composition.visibleText.isNotEmpty()) commitRawComposition()
+        } else if (englishInput.composing.isNotEmpty()) {
+            commitEnglishComposition(candidate = null)
+        }
         chineseMode = !chineseMode
         shifted = false
         keyboardView?.setShifted(false)
@@ -358,7 +421,7 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun switchInputMethod() {
-        if (composition.visibleText.isNotEmpty()) commitRawComposition()
+        commitActiveRawComposition()
         (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).showInputMethodPicker()
     }
 
@@ -372,7 +435,7 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun showEditor() {
-        if (composition.visibleText.isNotEmpty()) commitRawComposition()
+        commitActiveRawComposition()
         editorSelectionActive = selectionStart >= 0 && selectionStart != selectionEnd
         keyboardView?.setEditorSelectionActive(editorSelectionActive)
         keyboardView?.setPanel(SenseKeyboardView.Panel.EDITOR)
@@ -502,6 +565,7 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun resetComposition(finishConnection: Boolean) {
         composition = composition.reset()
+        englishInput.reset()
         clearPendingCommit()
         deferredInputs.clear()
         shifted = false
@@ -511,6 +575,14 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun render() {
+        if (!chineseMode) {
+            keyboardView?.updateComposing(
+                englishInput.revision,
+                englishInput.composing,
+                englishInput.candidates.map { it.text },
+            )
+            return
+        }
         val request = CandidateDecodeRequest(composition)
         val launch = candidateSession.begin(request.composition)
         if (launch.stateChanged) mainHandler.removeCallbacksAndMessages(candidateResultToken)
@@ -605,6 +677,26 @@ class SenseInputMethodService : InputMethodService() {
         return commitComposition(composition.confirmRaw(), rawInput = null, learnable = null)
     }
 
+    private fun commitEnglishComposition(candidate: Candidate?): Boolean {
+        if (englishInput.composing.isEmpty()) return false
+        val output = candidate?.text ?: englishInput.composing
+        val committed = currentInputConnection?.commitText(output, 1) == true
+        if (!committed) return false
+        englishInput.reset()
+        shifted = false
+        keyboardView?.setShifted(false)
+        render()
+        return true
+    }
+
+    private fun commitActiveRawComposition() {
+        if (chineseMode) {
+            if (composition.visibleText.isNotEmpty()) commitRawComposition()
+        } else if (englishInput.composing.isNotEmpty()) {
+            commitEnglishComposition(candidate = null)
+        }
+    }
+
     private fun commitComposition(
         output: String,
         rawInput: String?,
@@ -626,12 +718,9 @@ class SenseInputMethodService : InputMethodService() {
         return true
     }
 
-    private fun updateConnectionComposition() {
-        if (composition.visibleText.isEmpty()) {
-            currentInputConnection?.finishComposingText()
-        } else {
-            currentInputConnection?.setComposingText(composition.visibleText, 1)
-        }
+    private fun updateConnectionComposition(visibleText: String) {
+        val update = editorComposingTextUpdate(visibleText)
+        currentInputConnection?.setComposingText(update.text, update.newCursorPosition)
     }
 
     private fun deferIfSpacePending(input: DeferredInput): Boolean {

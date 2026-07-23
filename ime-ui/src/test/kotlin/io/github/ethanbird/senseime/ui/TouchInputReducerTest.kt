@@ -195,6 +195,18 @@ class TouchInputReducerTest {
     }
 
     @Test
+    fun continuousScrollAcceptsClampedAbsoluteAnimationOffsets() {
+        val scroll = ContinuousVerticalScrollState()
+        scroll.configure(contentExtent = 420f, viewportExtent = 180f)
+
+        assertTrue(scroll.scrollTo(75f))
+        assertEquals(75f, scroll.offset)
+        assertTrue(scroll.scrollTo(900f))
+        assertEquals(240f, scroll.offset)
+        assertFalse(scroll.scrollTo(999f))
+    }
+
+    @Test
     fun cancelRemovesOnlyRequestedPointerAndCancelAllClearsRest() {
         val reducer = TouchInputReducer<String>(24f, 30f)
         reducer.onDown(1, "q", 0f, 0f)
