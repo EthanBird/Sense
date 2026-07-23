@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "stage": "M6-input-polish",
+  "generatedAt": "2026-07-23T12:06:37.628759719Z",
+  "correctness": {
+    "englishHost": ["host", "hosts", "hostile"],
+    "finalBackspaceEditorReplacement": "",
+    "emoji": {
+      "ji": "🐔",
+      "yao": "💊",
+      "you": "🈶",
+      "suo": "🔒"
+    },
+    "symbols": {
+      "oumu": "Ω",
+      "pai": "π",
+      "zuo": "←",
+      "you": "→"
+    },
+    "youCombinedOrder": ["🈶", "→"],
+    "semanticInsertionIndex": 6,
+    "primaryPrefixPreserved": 6
+  },
+  "englishComposition": {
+    "p95Ns": 62979.35,
+    "gateNs": 1000000.00
+  },
+  "semanticLookup": {
+    "p95Ns": 824.22,
+    "gateNs": 250000.00
+  },
+  "semanticMixer": {
+    "p95Ns": 2483.17,
+    "gateNs": 250000.00
+  }
+}

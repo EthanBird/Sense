@@ -1,5 +1,10 @@
 package io.github.ethanbird.senseime.ui
 
+enum class SwipeCharacterMode {
+    CHINESE,
+    ENGLISH,
+}
+
 /** Up-swipe characters shown as the small hint above every alphabet key. */
 object SwipeCharacterMap {
     private val values = mapOf(
@@ -11,9 +16,24 @@ object SwipeCharacterMap {
         'n' to "；", 'm' to "、",
     )
 
-    fun forKey(code: Int): String? {
+    /**
+     * Returns the character produced by an upward flick.
+     *
+     * Chinese is the default because a composing pinyin keyboard must not
+     * silently insert ASCII sentence punctuation. Callers rendering the
+     * English keyboard should pass [SwipeCharacterMode.ENGLISH].
+     */
+    fun forKey(
+        code: Int,
+        mode: SwipeCharacterMode = SwipeCharacterMode.CHINESE,
+    ): String? {
         if (code !in 'A'.code..'z'.code) return null
-        return values[code.toChar().lowercaseChar()]
+        val letter = code.toChar().lowercaseChar()
+        return when {
+            mode == SwipeCharacterMode.CHINESE && letter == 's' -> "！"
+            mode == SwipeCharacterMode.CHINESE && letter == 'l' -> "？"
+            else -> values[letter]
+        }
     }
 
     val size: Int

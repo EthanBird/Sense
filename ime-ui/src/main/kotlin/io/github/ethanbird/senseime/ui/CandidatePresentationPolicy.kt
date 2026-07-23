@@ -4,7 +4,6 @@ package io.github.ethanbird.senseime.ui
 object CandidatePresentationPolicy {
     enum class HeaderRole {
         COMPOSING,
-        BRANDING,
     }
 
     data class HeaderSpec(
@@ -37,14 +36,6 @@ object CandidatePresentationPolicy {
             yDp = 14f,
             textSizeSp = 11f,
             verticallyCentered = false,
-        )
-
-        !hasCandidates -> HeaderSpec(
-            role = HeaderRole.BRANDING,
-            xDp = 14f,
-            yDp = 22.5f,
-            textSizeSp = 13f,
-            verticallyCentered = true,
         )
 
         else -> null

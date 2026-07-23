@@ -42,6 +42,17 @@ class CandidatePresentationPolicyTest {
     }
 
     @Test
+    fun idleKeyboardHasNoBrandOrModeHeaderRow() {
+        assertEquals(
+            null,
+            CandidatePresentationPolicy.headerSpec(
+                composing = "",
+                hasCandidates = false,
+            ),
+        )
+    }
+
+    @Test
     fun activeCompositionTakesToolbarExceptInsideEditorPanel() {
         assertTrue(CandidatePresentationPolicy.takesToolbar("zhongwen", editorPanelVisible = false))
         assertFalse(CandidatePresentationPolicy.takesToolbar("", editorPanelVisible = false))

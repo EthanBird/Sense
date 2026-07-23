@@ -96,3 +96,15 @@ tasks.register<JavaExec>("m5MixedInputBenchmark") {
         rootProject.layout.projectDirectory.file("benchmarks/results/m5-mixed-input.json").asFile.absolutePath,
     )
 }
+
+tasks.register<JavaExec>("m6InputPolishBenchmark") {
+    group = "verification"
+    description = "Gates English composition and late semantic Emoji/symbol candidates."
+    dependsOn(tasks.named("classes"))
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("io.github.ethanbird.senseime.core.M6InputPolishBenchmark")
+    args(
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/english_lexicon.txt").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("benchmarks/results/m6-input-polish.json").asFile.absolutePath,
+    )
+}

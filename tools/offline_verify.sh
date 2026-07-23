@@ -18,9 +18,9 @@ fi
 BUILD_TOOLS="$SDK/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK/platforms/android-36/android.jar"
 KOTLIN_LIB="$GRADLE_DIST/lib"
-OUT="$ROOT/build/offline-v0.3.2-m5"
+OUT="$ROOT/build/offline-v0.3.3-m6"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
-APK="$APK_DIR/Sense-v0.3.2-m5-debug.apk"
+APK="$APK_DIR/Sense-v0.3.3-m6-debug.apk"
 LEXICON_ASSET="$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin"
 LEXICON_SHA256="eda69e1ff2a972f0a4ba30f4f2699ca744d1f8d62118d3fb696fe956f0b35ef6"
 BIGRAM_ASSET="$ROOT/ime-service/src/main/assets/pinyin_bigrams.bin"
@@ -71,12 +71,17 @@ mapfile -t UI_LAYOUT_SOURCES < <(printf '%s\n' \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyCodes.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/CandidatePresentationPolicy.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/CanvasIconGeometry.kt" \
+    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/CandidateStripScrollState.kt" \
+    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/EmojiCatalog.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardLayoutContract.kt" \
+    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KineticScrollPolicy.kt" \
+    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/SymbolCatalog.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/SwipeCharacterMap.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/TouchInputReducer.kt")
 mapfile -t UI_TEST_SOURCES < <(find "$ROOT/ime-ui/src/test/kotlin" -name '*.kt' -print | sort)
 mapfile -t SERVICE_PURE_SOURCES < <(printf '%s\n' \
     "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/CandidateDecodeSession.kt" \
+    "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/EditorCompositionSelectionPolicy.kt" \
     "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/EditorPrivacyPolicy.kt" \
     "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/LatestOnlyTaskRunner.kt" \
     "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ProgressiveCandidateSnapshot.kt")
@@ -170,6 +175,11 @@ java -cp "$STDLIB:$OUT/core-main" \
     "$ENGLISH_ASSET" \
     "$ROOT/benchmarks/results/m5-mixed-input.json"
 
+java -cp "$STDLIB:$OUT/core-main" \
+    io.github.ethanbird.senseime.core.M6InputPolishBenchmark \
+    "$ENGLISH_ASSET" \
+    "$ROOT/benchmarks/results/m6-input-polish.json"
+
 "$BUILD_TOOLS/aapt2" compile --dir "$ROOT/app/src/main/res" -o "$OUT/app-res.zip"
 "$BUILD_TOOLS/aapt2" compile --dir "$ROOT/ime-service/src/main/res" -o "$OUT/ime-service-res.zip"
 "$BUILD_TOOLS/aapt2" link \
@@ -177,8 +187,8 @@ java -cp "$STDLIB:$OUT/core-main" \
     --manifest "$ROOT/tools/offline/AndroidManifest.xml" \
     --min-sdk-version 29 \
     --target-sdk-version 36 \
-    --version-code 8 \
-    --version-name 0.3.2-m5 \
+    --version-code 9 \
+    --version-name 0.3.3-m6 \
     --auto-add-overlay \
     --output-text-symbols "$OUT/R.txt" \
     -A "$ROOT/ime-service/src/main/assets" \
@@ -247,7 +257,7 @@ keytool -genkeypair \
 "$BUILD_TOOLS/zipalign" -c -P 16 4 "$APK"
 "$BUILD_TOOLS/aapt2" dump badging "$APK" | tee "$OUT/apk-badging.txt"
 "$BUILD_TOOLS/aapt2" dump permissions "$APK" | tee "$OUT/apk-permissions.txt"
-grep -F "package: name='io.github.ethanbird.senseime' versionCode='8' versionName='0.3.2-m5'" "$OUT/apk-badging.txt"
+grep -F "package: name='io.github.ethanbird.senseime' versionCode='9' versionName='0.3.3-m6'" "$OUT/apk-badging.txt"
 grep -Fx "minSdkVersion:'29'" "$OUT/apk-badging.txt"
 grep -Fx "targetSdkVersion:'36'" "$OUT/apk-badging.txt"
 if grep -Fq "android.permission.INTERNET" "$OUT/apk-permissions.txt"; then
@@ -294,4 +304,4 @@ HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --text "$OUT/lint.txt" \
     "$ROOT/tools/offline"
 
-echo "v0.3.2-m5 verification complete: $APK"
+echo "v0.3.3-m6 verification complete: $APK"

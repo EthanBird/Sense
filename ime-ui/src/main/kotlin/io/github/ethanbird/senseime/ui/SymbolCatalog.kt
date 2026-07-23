@@ -1,0 +1,276 @@
+package io.github.ethanbird.senseime.ui
+
+/** Stable identifiers for the symbol panel's category rail. */
+enum class SymbolCategoryId {
+    COMMON,
+    CHINESE,
+    ENGLISH,
+    NETWORK,
+    MATH,
+    SUPERSCRIPT,
+    ORDINAL,
+    IPA,
+    HIRAGANA,
+    KATAKANA,
+    ARROWS,
+    SPECIAL,
+    PINYIN,
+    BOPOMOFO,
+    VERTICAL_FORMS,
+    RADICALS,
+    CYRILLIC,
+    GREEK,
+    LATIN,
+    BOX_DRAWING,
+    DIALECT_PHONETICS,
+    TIBETAN,
+}
+
+data class SymbolCategory(
+    val id: SymbolCategoryId,
+    val label: String,
+    val values: List<String>,
+)
+
+/**
+ * Offline symbol data. Categories are deliberately separate from layout so a
+ * panel can switch category without rebuilding or paginating the characters.
+ */
+object SymbolCatalog {
+    val categories: List<SymbolCategory> = listOf(
+        category(
+            SymbolCategoryId.COMMON,
+            "常用",
+            """
+            ， 。 ？ ！ ～ 、 ： ； · … —— “ ” ‘ ’ （ ） 【 】 〔 〕
+            《 》 〈 〉 「 」 『 』 ﹁ ﹂ ﹃ ﹄ ￥ $ € £ ¢ © ® ™
+            ✓ ✔ ✕ ✖ ★ ☆ ● ○ ■ □ ▲ △ ▼ ▽ ◆ ◇
+            """,
+        ),
+        category(
+            SymbolCategoryId.CHINESE,
+            "中文",
+            """
+            ， 。 、 ； ： ？ ！ · ‥ … 〰 〜 ～ ﹏ —— — 「 」 『 』 “ ”
+            ‘ ’ 〝 〞 〟 （ ） 〔 〕 【 】 〖 〗 〘 〙 〚 〛 《 》 〈 〉
+            ﹙ ﹚ ﹛ ﹜ ﹝ ﹞ ︵ ︶ ︷ ︸ ︹ ︺ ︻ ︼ ︽ ︾ ︿ ﹀
+            """,
+        ),
+        category(
+            SymbolCategoryId.ENGLISH,
+            "英文",
+            """
+            , . ? ! : ; ' " ` ~ @ # $ % ^ & * - _ + = / \ | ( )
+            [ ] { } < > … – — • © ® ™ § ¶
+            """,
+        ),
+        category(
+            SymbolCategoryId.NETWORK,
+            "网络",
+            """
+            @ # ＃ _ - . / : ; = + & ? % * ~ | \ ^ ` www. .com .cn .net
+            .org .io .dev http:// https:// ftp:// mailto: :// / @gmail.com
+            """,
+        ),
+        category(
+            SymbolCategoryId.MATH,
+            "数学",
+            """
+            + − ± ∓ × ÷ ⋅ ∗ ∘ = ≠ ≈ ≉ ≃ ≅ ≡ ≢ < > ≤ ≥ ≪ ≫ ≮ ≯
+            ∝ ∞ √ ∛ ∜ ² ³ ⁿ % ‰ ‱ ∑ ∏ ∐ ∫ ∬ ∭ ∮ ∯ ∰ ∂ ∇ ∆
+            ∈ ∉ ∋ ∌ ⊂ ⊃ ⊆ ⊇ ⊄ ⊅ ⊈ ⊉ ∪ ∩ ∖ ∅ ℕ ℤ ℚ ℝ ℂ
+            ∧ ∨ ¬ ⇒ ⇔ ∀ ∃ ∄ ∴ ∵ ∎ ⊥ ∥ ∦ ∠ ∡ ∢ ⊙ ⊕ ⊖ ⊗
+            ⌈ ⌉ ⌊ ⌋ ⟨ ⟩ |x| π τ φ θ ° ′ ″ ℃ ℉ Å Ω μ
+            """,
+        ),
+        category(
+            SymbolCategoryId.SUPERSCRIPT,
+            "角标",
+            """
+            ⁰ ¹ ² ³ ⁴ ⁵ ⁶ ⁷ ⁸ ⁹ ⁺ ⁻ ⁼ ⁽ ⁾ ⁿ ⁱ
+            ᵃ ᵇ ᶜ ᵈ ᵉ ᶠ ᵍ ʰ ʲ ᵏ ˡ ᵐ ᵒ ᵖ ʳ ˢ ᵗ ᵘ ᵛ ʷ ˣ ʸ ᶻ
+            ₀ ₁ ₂ ₃ ₄ ₅ ₆ ₇ ₈ ₉ ₊ ₋ ₌ ₍ ₎ ₐ ₑ ₕ ᵢ ⱼ ₖ ₗ ₘ ₙ ₒ ₚ
+            ᵣ ₛ ₜ ᵤ ᵥ ₓ
+            """,
+        ),
+        category(
+            SymbolCategoryId.ORDINAL,
+            "序号",
+            """
+            ① ② ③ ④ ⑤ ⑥ ⑦ ⑧ ⑨ ⑩ ⑪ ⑫ ⑬ ⑭ ⑮ ⑯ ⑰ ⑱ ⑲ ⑳
+            ⓪ ❶ ❷ ❸ ❹ ❺ ❻ ❼ ❽ ❾ ❿ ➀ ➁ ➂ ➃ ➄ ➅ ➆ ➇ ➈ ➉
+            ㈠ ㈡ ㈢ ㈣ ㈤ ㈥ ㈦ ㈧ ㈨ ㈩ ㊀ ㊁ ㊂ ㊃ ㊄ ㊅ ㊆ ㊇ ㊈ ㊉
+            Ⅰ Ⅱ Ⅲ Ⅳ Ⅴ Ⅵ Ⅶ Ⅷ Ⅸ Ⅹ Ⅺ Ⅻ ⅰ ⅱ ⅲ ⅳ ⅴ ⅵ ⅶ ⅷ ⅸ ⅹ
+            """,
+        ),
+        category(
+            SymbolCategoryId.IPA,
+            "音标",
+            """
+            i y ɨ ʉ ɯ u ɪ ʏ ʊ e ø ɘ ɵ ɤ o ə ɛ œ ɜ ɞ ʌ ɔ æ ɐ a ɶ ɑ ɒ
+            p b t d ʈ ɖ c ɟ k ɡ q ɢ ʔ m ɱ n ɳ ɲ ŋ ɴ ʙ r ʀ ⱱ ɾ ɽ
+            ɸ β f v θ ð s z ʃ ʒ ʂ ʐ ç ʝ x ɣ χ ʁ ħ ʕ h ɦ ɬ ɮ ʋ ɹ ɻ j ɰ
+            ʍ w ɥ ʜ ʢ ʡ ɕ ʑ ɺ ɧ ʘ ǀ ǃ ǂ ǁ ɓ ɗ ʄ ɠ ʛ ʼ ʰ ʲ ʷ ˠ ˤ
+            ˈ ˌ ː ˑ ̆ | ‖ ‿ ̥ ̬ ̹ ̜ ̟ ̠ ̈ ̽ ̩ ̯ ˞ ̤ ̰ ̼ ʴ ʵ ʶ
+            """,
+        ),
+        category(
+            SymbolCategoryId.HIRAGANA,
+            "平假",
+            """
+            あ い う え お か き く け こ さ し す せ そ た ち つ て と
+            な に ぬ ね の は ひ ふ へ ほ ま み む め も や ゆ よ ら り る れ ろ
+            わ を ん が ぎ ぐ げ ご ざ じ ず ぜ ぞ だ ぢ づ で ど ば び ぶ べ ぼ
+            ぱ ぴ ぷ ぺ ぽ ぁ ぃ ぅ ぇ ぉ ゃ ゅ ょ っ ゎ ゔ ゐ ゑ ゝ ゞ ゟ
+            """,
+        ),
+        category(
+            SymbolCategoryId.KATAKANA,
+            "片假",
+            """
+            ア イ ウ エ オ カ キ ク ケ コ サ シ ス セ ソ タ チ ツ テ ト
+            ナ ニ ヌ ネ ノ ハ ヒ フ ヘ ホ マ ミ ム メ モ ヤ ユ ヨ ラ リ ル レ ロ
+            ワ ヲ ン ガ ギ グ ゲ ゴ ザ ジ ズ ゼ ゾ ダ ヂ ヅ デ ド バ ビ ブ ベ ボ
+            パ ピ プ ペ ポ ァ ィ ゥ ェ ォ ャ ュ ョ ッ ヮ ヴ ヰ ヱ ヿ ヽ ヾ ヺ ー
+            """,
+        ),
+        category(
+            SymbolCategoryId.ARROWS,
+            "箭头",
+            """
+            ← ↑ → ↓ ↔ ↕ ↖ ↗ ↘ ↙ ↚ ↛ ↜ ↝ ↞ ↟ ↠ ↡ ↢ ↣ ↤ ↥ ↦ ↧
+            ↩ ↪ ↫ ↬ ↭ ↮ ↯ ↰ ↱ ↲ ↳ ↴ ↵ ↶ ↷ ↺ ↻ ↼ ↽ ↾ ↿ ⇀ ⇁ ⇂ ⇃
+            ⇄ ⇅ ⇆ ⇇ ⇈ ⇉ ⇊ ⇋ ⇌ ⇍ ⇎ ⇏ ⇐ ⇑ ⇒ ⇓ ⇔ ⇕ ⇖ ⇗ ⇘ ⇙
+            ⇚ ⇛ ⇜ ⇝ ⇞ ⇟ ⇠ ⇡ ⇢ ⇣ ⇤ ⇥ ⇦ ⇧ ⇨ ⇩ ⇪ ➔ ➜ ➝ ➞ ➟ ➠
+            ➡ ➢ ➣ ➤ ➥ ➦ ➧ ➨ ➩ ➪ ➫ ➬ ➭ ➮ ➯ ➱ ➲ ➳ ➴ ➵ ➶ ➷ ➸
+            """,
+        ),
+        category(
+            SymbolCategoryId.SPECIAL,
+            "特殊",
+            """
+            ★ ☆ ✦ ✧ ✩ ✪ ✫ ✬ ✭ ✮ ✯ ✰ ✴ ✵ ✶ ✷ ✸ ✹ ✺ ✻ ✼ ✽ ✾
+            ● ○ ◉ ◎ ◌ ◍ ◐ ◑ ◒ ◓ ◔ ◕ ◖ ◗ ■ □ ▪ ▫ ▣ ▤ ▥ ▦ ▧ ▨ ▩
+            ▲ △ ▶ ▷ ▼ ▽ ◀ ◁ ◆ ◇ ◈ ♠ ♣ ♥ ♦ ♤ ♧ ♡ ♢ ☀ ☁ ☂ ☃ ☄
+            ☎ ☏ ⌛ ⌚ ⚐ ⚑ ⚠ ⚡ ⚓ ⚙ ⚛ ⚕ ⚖ ⚗ ⚘ ⚚ ⚜ ⚝ ⚞ ⚟
+            ♪ ♫ ♬ ♭ ♮ ♯ 𝄞 𝄢 ☯ ☮ ☪ ✝ ☸ ✡ ☦ ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓
+            """,
+        ),
+        category(
+            SymbolCategoryId.PINYIN,
+            "拼音",
+            """
+            ā á ǎ à ō ó ǒ ò ē é ě è ī í ǐ ì ū ú ǔ ù ǖ ǘ ǚ ǜ ü ê
+            Ā Á Ǎ À Ō Ó Ǒ Ò Ē É Ě È Ī Í Ǐ Ì Ū Ú Ǔ Ù Ǖ Ǘ Ǚ Ǜ Ü Ê
+            ń ň ǹ ḿ m̄ m̌ m̀ ɡ ɑ ẑ ĉ ŝ ŋ · ˉ ˊ ˇ ˋ ˙
+            """,
+        ),
+        category(
+            SymbolCategoryId.BOPOMOFO,
+            "注音",
+            """
+            ㄅ ㄆ ㄇ ㄈ ㄉ ㄊ ㄋ ㄌ ㄍ ㄎ ㄏ ㄐ ㄑ ㄒ ㄓ ㄔ ㄕ ㄖ ㄗ ㄘ ㄙ
+            ㄧ ㄨ ㄩ ㄚ ㄛ ㄜ ㄝ ㄞ ㄟ ㄠ ㄡ ㄢ ㄣ ㄤ ㄥ ㄦ
+            ㄪ ㄫ ㄬ ㄭ ㆠ ㆡ ㆢ ㆣ ㆤ ㆥ ㆦ ㆧ ㆨ ㆩ ㆪ ㆫ ㆬ ㆭ ㆮ ㆯ
+            ㆰ ㆱ ㆲ ㆳ ㆴ ㆵ ㆶ ㆷ ˉ ˊ ˇ ˋ ˙
+            """,
+        ),
+        category(
+            SymbolCategoryId.VERTICAL_FORMS,
+            "竖标",
+            """
+            ︐ ︑ ︒ ︓ ︔ ︕ ︖ ︙ ︰ ︱ ︲ ︳ ︴
+            ︵ ︶ ︷ ︸ ︹ ︺ ︻ ︼ ︽ ︾ ︿ ﹀ ﹁ ﹂ ﹃ ﹄
+            ﹉ ﹊ ﹋ ﹌ ﹍ ﹎ ﹏ ︘ ︙ ︚ ︛
+            """,
+        ),
+        SymbolCategory(
+            SymbolCategoryId.RADICALS,
+            "部首",
+            codePointRange(0x2F00, 0x2FD5),
+        ),
+        category(
+            SymbolCategoryId.CYRILLIC,
+            "俄文",
+            """
+            А Б В Г Д Е Ё Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я
+            а б в г д е ё ж з и й к л м н о п р с т у ф х ц ч ш щ ъ ы ь э ю я
+            Є І Ї Ґ Ў Ђ Љ Њ Ћ Џ є і ї ґ ў ђ љ њ ћ џ
+            """,
+        ),
+        category(
+            SymbolCategoryId.GREEK,
+            "希腊",
+            """
+            Α Β Γ Δ Ε Ζ Η Θ Ι Κ Λ Μ Ν Ξ Ο Π Ρ Σ Τ Υ Φ Χ Ψ Ω
+            α β γ δ ε ζ η θ ι κ λ μ ν ξ ο π ρ σ ς τ υ φ χ ψ ω
+            ϐ ϑ ϒ ϕ ϖ Ϛ Ϝ Ϟ Ϡ
+            """,
+        ),
+        category(
+            SymbolCategoryId.LATIN,
+            "拉丁",
+            """
+            À Á Â Ã Ä Å Æ Ç È É Ê Ë Ì Í Î Ï Ð Ñ Ò Ó Ô Õ Ö Ø Œ
+            Ù Ú Û Ü Ý Þ ß à á â ã ä å æ ç è é ê ë ì í î ï ð ñ
+            ò ó ô õ ö ø œ ù ú û ü ý þ ÿ Ā Ă Ą Ć Ĉ Č Ď Đ Ē Ė Ę Ğ Ģ Ħ
+            Ĩ Ī Į İ Ķ Ĺ Ļ Ľ Ł Ń Ņ Ň Ŋ Ō Ő Ŕ Ř Ś Ş Š Ţ Ť Ŧ Ũ Ū Ů Ű Ų
+            Ŵ Ŷ Ź Ż Ž Ɓ Ƃ Ɔ Ɗ Ə Ɛ ƒ Ɠ Ɣ Ɨ Ƙ Ɲ Ɵ Ƥ Ʀ Ʃ Ƭ Ʈ Ʊ Ʋ Ƴ Ƶ
+            """,
+        ),
+        category(
+            SymbolCategoryId.BOX_DRAWING,
+            "制表",
+            """
+            ─ ━ │ ┃ ┄ ┅ ┆ ┇ ┈ ┉ ┊ ┋ ┌ ┍ ┎ ┏ ┐ ┑ ┒ ┓ └ ┕ ┖ ┗ ┘ ┙ ┚ ┛
+            ├ ┝ ┞ ┟ ┠ ┡ ┢ ┣ ┤ ┥ ┦ ┧ ┨ ┩ ┪ ┫ ┬ ┭ ┮ ┯ ┰ ┱ ┲ ┳ ┴ ┵ ┶ ┷
+            ┸ ┹ ┺ ┻ ┼ ┽ ┾ ┿ ╀ ╁ ╂ ╃ ╄ ╅ ╆ ╇ ╈ ╉ ╊ ╋ ╌ ╍ ╎ ╏
+            ═ ║ ╒ ╓ ╔ ╕ ╖ ╗ ╘ ╙ ╚ ╛ ╜ ╝ ╞ ╟ ╠ ╡ ╢ ╣ ╤ ╥ ╦ ╧ ╨ ╩
+            ╪ ╫ ╬ ╭ ╮ ╯ ╰ ╱ ╲ ╳ ▀ ▄ █ ▌ ▐ ░ ▒ ▓
+            """,
+        ),
+        category(
+            SymbolCategoryId.DIALECT_PHONETICS,
+            "土音",
+            """
+            ȵ ŋ ɲ ɳ ɴ ɱ ɯ ɰ ɿ ʅ ʮ ʯ ɚ ɝ ɤ ɐ ɑ ɒ ɔ ɛ ə ɜ ʌ
+            ɕ ʑ ʂ ʐ ʃ ʒ ɦ ɣ ʁ χ ʔ ʕ ʙ ʀ ɹ ɻ ɾ ɽ ɮ ɬ
+            ʰ ʷ ʲ ˠ ˤ ˀ ʼ ˈ ˌ ː ˑ ̃ ̄ ́ ̌ ̀ ̆ ̥ ̬ ̩
+            """,
+        ),
+        category(
+            SymbolCategoryId.TIBETAN,
+            "藏文",
+            """
+            ༀ ༁ ༂ ༃ ༄ ༅ ༆ ༇ ༈ ༉ ༊ ། ༎ ༏ ༐ ༑ ༒ ༔ ༴ ༵ ༶ ༷
+            ཀ ཁ ག གྷ ང ཅ ཆ ཇ ཉ ཊ ཋ ཌ ཎ ཏ ཐ ད དྷ ན པ ཕ བ བྷ མ
+            ཙ ཚ ཛ ཛྷ ཝ ཞ ཟ འ ཡ ར ལ ཤ ཥ ས ཧ ཨ
+            ི ུ ེ ཻ ོ ཽ ྀ ྂ ྃ ྆ ྇ ྍ ྎ ྏ ྐ ࿐ ࿑ ࿒ ࿓ ࿔ ࿕ ࿖ ࿗ ࿘
+            """,
+        ),
+    )
+
+    private val byId = categories.associateBy(SymbolCategory::id)
+
+    init {
+        require(byId.size == SymbolCategoryId.entries.size)
+        require(categories.all { it.values.isNotEmpty() })
+    }
+
+    val totalCount: Int
+        get() = categories.sumOf { it.values.size }
+
+    fun category(id: SymbolCategoryId): SymbolCategory = requireNotNull(byId[id])
+}
+
+private fun category(
+    id: SymbolCategoryId,
+    label: String,
+    raw: String,
+): SymbolCategory = SymbolCategory(id, label, symbolValues(raw))
+
+private fun symbolValues(raw: String): List<String> =
+    raw.trim().split(Regex("\\s+")).filter(String::isNotEmpty)
+
+private fun codePointRange(first: Int, last: Int): List<String> =
+    (first..last).map { codePoint -> String(Character.toChars(codePoint)) }

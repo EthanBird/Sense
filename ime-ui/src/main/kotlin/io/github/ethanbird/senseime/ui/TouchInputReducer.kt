@@ -350,7 +350,13 @@ class ContinuousVerticalScrollState {
     /** Positive deltas move toward later content; negative deltas move back. */
     fun scrollBy(delta: Float): Boolean {
         if (delta == 0f) return false
-        val next = (offset + delta).coerceIn(0f, maximumOffset)
+        return scrollTo(offset + delta)
+    }
+
+    /** Moves to an absolute content offset, clamped to the current viewport. */
+    fun scrollTo(value: Float): Boolean {
+        require(value.isFinite())
+        val next = value.coerceIn(0f, maximumOffset)
         if (next == offset) return false
         offset = next
         return true
