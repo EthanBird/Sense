@@ -8,8 +8,14 @@ package io.github.ethanbird.senseime.ui
  * edge actions so its centre remains reserved.
  */
 object KeyboardLayoutContract {
-    const val PORTRAIT_KEYBOARD_HEIGHT_DP = 400f
-    const val LANDSCAPE_KEYBOARD_HEIGHT_DP = 300f
+    /**
+     * M6 accidentally kept the removed toolbar row in the total height. That
+     * made the idle letter rows 42dp taller, then shrank them as soon as the
+     * candidate strip took over the toolbar. Keep the M6 composing-state key
+     * size while removing that dead row from both orientations.
+     */
+    const val PORTRAIT_KEYBOARD_HEIGHT_DP = 358f
+    const val LANDSCAPE_KEYBOARD_HEIGHT_DP = 258f
 
     data class CandidateSlot(
         val left: Float,
@@ -132,7 +138,7 @@ object KeyboardLayoutContract {
     ): Float {
         require(candidateHeight > 0f)
         require(toolbarHeight >= 0f)
-        return candidateHeight + if (takesToolbar) toolbarHeight else 0f
+        return maxOf(candidateHeight, toolbarHeight)
     }
 
     fun topChromeBottom(
@@ -143,11 +149,7 @@ object KeyboardLayoutContract {
     ): Float {
         require(candidateHeight > 0f)
         require(toolbarHeight > 0f)
-        return when {
-            editorPanelVisible -> candidateHeight
-            candidatesTakeToolbar -> candidateHeight + toolbarHeight
-            else -> toolbarHeight
-        }
+        return maxOf(candidateHeight, toolbarHeight)
     }
 
     fun letterLabel(character: Char, chineseMode: Boolean, shifted: Boolean): String =

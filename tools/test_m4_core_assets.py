@@ -16,16 +16,19 @@ ROOT = Path(__file__).resolve().parent.parent
 LEXICON = ROOT / "ime-service/src/main/assets/pinyin_lexicon.bin"
 BIGRAMS = ROOT / "ime-service/src/main/assets/pinyin_bigrams.bin"
 CUSTOM = ROOT / "ime-service/src/main/lexicon/sense_custom.dict.tsv"
-LEXICON_SHA256 = "eda69e1ff2a972f0a4ba30f4f2699ca744d1f8d62118d3fb696fe956f0b35ef6"
-BIGRAM_SHA256 = "c3d806b2baeac31aaa2859607ab7c01399229332c3bf77758216ec62713e9220"
+IDIOMS = ROOT / "ime-service/src/main/lexicon/sense_idioms.dict.tsv"
+LEXICON_SHA256 = "ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
+BIGRAM_SHA256 = "db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c"
 
 
 class M4CoreAssetsTest(unittest.TestCase):
     def test_production_initials_and_progressive_fixture(self) -> None:
         entries = build_pinyin_lexicon.read_binary(LEXICON)
-        self.assertEqual(326_298, len(entries))
+        self.assertEqual(429_901, len(entries))
         self.assertEqual("我", entries["{w"][0].text)
         self.assertEqual("一个字", entries["~ygz"][0].text)
+        self.assertEqual("上窜下跳", entries["~scxt"][0].text)
+        self.assertEqual("蛇鼠一窝", entries["~ssyw"][0].text)
         self.assertEqual("匹配", entries["pipei"][0].text)
         self.assertIn("匹", [candidate.text for candidate in entries["pi"][:32]])
         self.assertIn("批", [candidate.text for candidate in entries["pi"][:32]])
@@ -44,7 +47,7 @@ class M4CoreAssetsTest(unittest.TestCase):
             rebuilt_lexicon = root / "pinyin_lexicon.bin"
             rebuilt_bigrams = root / "pinyin_bigrams.bin"
 
-            entries, _ = build_pinyin_lexicon.augment_binary(LEXICON, [CUSTOM])
+            entries, _ = build_pinyin_lexicon.augment_binary(LEXICON, [IDIOMS, CUSTOM])
             build_pinyin_lexicon.write_binary(entries, rebuilt_lexicon)
             self.assertEqual(LEXICON.read_bytes(), rebuilt_lexicon.read_bytes())
 

@@ -24,6 +24,15 @@ class PinyinLexiconBuilderTest(unittest.TestCase):
         self.assertEqual(["弱词", "若词"], [candidate.text for candidate in values])
         self.assertEqual([0, 1], [candidate.source_tier for candidate in values])
 
+    def test_explicit_custom_source_tier_is_preserved(self) -> None:
+        entries = self._read(
+            "日常词\tri chang ci\t10\n上窜下跳\tshang cuan xia tiao\t1\t1\n",
+            "",
+        )
+
+        self.assertEqual(1, entries["shangcuanxiatiao"][0].source_tier)
+        self.assertEqual("上窜下跳", entries["~scxt"][0].text)
+
     def test_statistical_prefix_is_isolated_and_excludes_cedict(self) -> None:
         entries = self._read(
             "先\txian\t100\n先思\txian si\t1000\n我\two\t10000\n",
@@ -93,6 +102,26 @@ class PinyinLexiconBuilderTest(unittest.TestCase):
             self.assertEqual("一个字", loaded["~ygz"][0].text)
             self.assertEqual("我", loaded["{w"][0].text)
             self.assertEqual("应该做", loaded["}yinggz|yinggaizuo"][0].text)
+
+    def test_binary_augmentation_rejects_corrupt_fallback_syllables(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            base_source = root / "base.tsv"
+            base_binary = root / "base.bin"
+            custom = root / "custom.tsv"
+            base_source.write_text("上\tshang\t100\n下\txia\t100\n", encoding="utf-8")
+            custom.write_text(
+                "上窜下跳\tshang cuan xia tiao\t1\t1\n"
+                "错误词\troo xhi ci\t1\t1\n",
+                encoding="utf-8",
+            )
+            base_entries, _ = builder.read_dictionary([base_source], [])
+            builder.write_binary(base_entries, base_binary)
+
+            augmented, syllables = builder.augment_binary(base_binary, [custom])
+
+            self.assertNotIn("rooxhici", augmented)
+            self.assertNotIn("roo", syllables)
 
     def test_binary_reader_rejects_truncation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

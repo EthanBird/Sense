@@ -251,8 +251,8 @@ class PinyinDecoder private constructor(
         CandidateMatchKind.BASE_EXACT -> 0
         CandidateMatchKind.BASE_COMPOSED -> 1
         CandidateMatchKind.BASE_HYBRID -> 1
+        CandidateMatchKind.BASE_INITIALS -> 1
         CandidateMatchKind.BASE_PREFIX -> 2
-        CandidateMatchKind.BASE_INITIALS -> 3
         CandidateMatchKind.CORRECTED -> 4
         CandidateMatchKind.ENGLISH_EXACT -> 5
         CandidateMatchKind.ENGLISH_PREFIX -> 6
@@ -375,11 +375,22 @@ class PinyinDecoder private constructor(
         return readCandidates(record, limit, CandidateMatchKind.BASE_INITIALS)
             .map {
                 it.copy(
+                    score = it.score + initialsLengthBonus(it.text, query),
                     canonicalPinyin = null,
                     canonicalInitials = query,
                     matchKind = CandidateMatchKind.BASE_INITIALS,
                 )
             }
+    }
+
+    private fun initialsLengthBonus(text: String, query: String): Float {
+        val textLength = text.codePointCount(0, text.length)
+        if (textLength != query.length) return 0f
+        return if (textLength == 4) {
+            FOUR_CHARACTER_INITIALS_BONUS
+        } else {
+            EXACT_INITIALS_LENGTH_BONUS
+        }
     }
 
     private fun readHybridCandidates(query: String, limit: Int): List<Candidate> {
@@ -724,6 +735,8 @@ class PinyinDecoder private constructor(
         private const val HYBRID_NAMESPACE = "}"
         private const val HYBRID_SEPARATOR = "|"
         private const val MIN_INITIALS_LENGTH = 2
+        private const val EXACT_INITIALS_LENGTH_BONUS = 3f
+        private const val FOUR_CHARACTER_INITIALS_BONUS = 10f
         private const val MIN_HYBRID_LENGTH = 3
         private const val HYBRID_SCAN_LIMIT = 128
         private val KEY_NEIGHBORS = mapOf(

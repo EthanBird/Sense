@@ -15,10 +15,10 @@ permissions:
   contents: read
 
 env:
-  RELEASE_TAG: v0.3.3-m6
-  RELEASE_APK: Sense-v0.3.3-m6.apk
-  LEXICON_SHA256: eda69e1ff2a972f0a4ba30f4f2699ca744d1f8d62118d3fb696fe956f0b35ef6
-  BIGRAM_SHA256: c3d806b2baeac31aaa2859607ab7c01399229332c3bf77758216ec62713e9220
+  RELEASE_TAG: v0.3.4-m7
+  RELEASE_APK: Sense-v0.3.4-m7.apk
+  LEXICON_SHA256: ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6
+  BIGRAM_SHA256: db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c
   ENGLISH_SHA256: 1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624
   ENGLISH_WORD_COUNT: "20000"
 
@@ -47,6 +47,7 @@ jobs:
             ime-service/src/main/assets/pinyin_lexicon.bin \
             /tmp/pinyin_lexicon.bin \
             --base-binary \
+            --custom ime-service/src/main/lexicon/sense_idioms.dict.tsv \
             --custom ime-service/src/main/lexicon/sense_custom.dict.tsv
           cmp ime-service/src/main/assets/pinyin_lexicon.bin /tmp/pinyin_lexicon.bin
           echo "$LEXICON_SHA256  ime-service/src/main/assets/pinyin_lexicon.bin" | sha256sum -c -
@@ -73,8 +74,9 @@ jobs:
           cmp licenses/CC-CEDICT-NOTICE.md ime-service/src/main/assets/CC-CEDICT-NOTICE.txt
           cmp licenses/CC-BY-SA-4.0.txt ime-service/src/main/assets/CC-BY-SA-4.0.txt
           cmp licenses/popular-english-words-ISC.txt ime-service/src/main/assets/POPULAR-ENGLISH-WORDS-ISC.txt
+          cmp licenses/chinese-idiom-chengyu-MIT.txt ime-service/src/main/assets/CHINESE-IDIOM-CHENGYU-MIT.txt
 
-      - name: Verify 0.3.3 input-polish correctness
+      - name: Verify 0.3.4 fixed-height and lexicon correctness
         run: >-
           ./gradlew
           :core-input:test
@@ -97,7 +99,7 @@ jobs:
           :core-input:m5MixedInputBenchmark
           :core-input:m6InputPolishBenchmark
 
-      - name: Verify assembled 0.3.3 APK
+      - name: Verify assembled 0.3.4 APK
         shell: bash
         run: |
           set -euo pipefail
@@ -113,7 +115,7 @@ jobs:
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" > /tmp/apk-badging.txt
           "$build_tools/aapt2" dump permissions "$apk" > /tmp/apk-permissions.txt
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='9' versionName='0.3.3-m6'" /tmp/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='10' versionName='0.3.4-m7'" /tmp/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" /tmp/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" /tmp/apk-badging.txt
           if grep -Fq 'android.permission.INTERNET' /tmp/apk-permissions.txt; then
@@ -126,6 +128,7 @@ jobs:
           unzip -p "$apk" assets/CC-CEDICT-NOTICE.txt | cmp - licenses/CC-CEDICT-NOTICE.md
           unzip -p "$apk" assets/CC-BY-SA-4.0.txt | cmp - licenses/CC-BY-SA-4.0.txt
           unzip -p "$apk" assets/POPULAR-ENGLISH-WORDS-ISC.txt | cmp - licenses/popular-english-words-ISC.txt
+          unzip -p "$apk" assets/CHINESE-IDIOM-CHENGYU-MIT.txt | cmp - licenses/chinese-idiom-chengyu-MIT.txt
           unzip -p "$apk" assets/pinyin_lexicon.bin | sha256sum | awk '{print $1}' | grep -Fx "$LEXICON_SHA256"
           unzip -p "$apk" assets/pinyin_bigrams.bin | sha256sum | awk '{print $1}' | grep -Fx "$BIGRAM_SHA256"
           unzip -p "$apk" assets/english_lexicon.txt | sha256sum | awk '{print $1}' | grep -Fx "$ENGLISH_SHA256"
@@ -136,7 +139,7 @@ jobs:
       - name: Upload debug APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.3.3-m6-apks
+          name: sense-v0.3.4-m7-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -146,7 +149,7 @@ jobs:
             benchmarks/results/m6-input-polish.json
           if-no-files-found: error
 
-  release-0-3-3:
+  release-0-3-4:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -158,7 +161,7 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: sense-v0.3.3-m6-apks
+          name: sense-v0.3.4-m7-apks
           path: artifacts
 
       - name: Prepare release assets
@@ -178,7 +181,7 @@ jobs:
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" | tee release/apk-badging.txt
           "$build_tools/aapt2" dump permissions "$apk" | tee release/apk-permissions.txt
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='9' versionName='0.3.3-m6'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='10' versionName='0.3.4-m7'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           if grep -Fq 'android.permission.INTERNET' release/apk-permissions.txt; then
@@ -191,6 +194,7 @@ jobs:
           unzip -p "$apk" assets/CC-CEDICT-NOTICE.txt | cmp - licenses/CC-CEDICT-NOTICE.md
           unzip -p "$apk" assets/CC-BY-SA-4.0.txt | cmp - licenses/CC-BY-SA-4.0.txt
           unzip -p "$apk" assets/POPULAR-ENGLISH-WORDS-ISC.txt | cmp - licenses/popular-english-words-ISC.txt
+          unzip -p "$apk" assets/CHINESE-IDIOM-CHENGYU-MIT.txt | cmp - licenses/chinese-idiom-chengyu-MIT.txt
           unzip -p "$apk" assets/pinyin_lexicon.bin | sha256sum | awk '{print $1}' | grep -Fx "$LEXICON_SHA256"
           unzip -p "$apk" assets/pinyin_bigrams.bin | sha256sum | awk '{print $1}' | grep -Fx "$BIGRAM_SHA256"
           unzip -p "$apk" assets/english_lexicon.txt | sha256sum | awk '{print $1}' | grep -Fx "$ENGLISH_SHA256"
@@ -201,7 +205,7 @@ jobs:
           cd release
           sha256sum "$RELEASE_APK" > SHA256SUMS.txt
 
-      - name: Create 0.3.3 prerelease
+      - name: Create 0.3.4 prerelease
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -235,8 +239,8 @@ jobs:
             fi
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
-              --title "Sense v0.3.3-m6 · 输入精修与候选交互" \
-              --notes-file docs/releases/v0.3.3-m6.md \
+              --title "Sense v0.3.4-m7 · 固定键盘高度与扩充四字词库" \
+              --notes-file docs/releases/v0.3.4-m7.md \
               --prerelease \
               "release/$RELEASE_APK" \
               release/SHA256SUMS.txt

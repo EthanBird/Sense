@@ -1,20 +1,22 @@
 {
   "schemaVersion": 1,
   "stage": "M4-core",
-  "generatedAt": "2026-07-22T17:03:14.381635807Z",
+  "generatedAt": "2026-07-23T15:08:16.012792227Z",
   "lexicon": {
-    "keys": 137265,
-    "bytes": 5940672,
-    "sha256": "d8d6ad58a462a0c00abd9300bd7f58930e0cff5a3bbf0089ff7128d805dab80c"
+    "keys": 429901,
+    "bytes": 19439754,
+    "sha256": "ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
   },
   "bigrams": {
-    "records": 46651,
-    "bytes": 559822,
-    "sha256": "c8a7c4b9fe7b4b17b73fc29073c4c55943720e8203d42ca5f467c54f8aa12e28"
+    "records": 46657,
+    "bytes": 559894,
+    "sha256": "db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c"
   },
   "correctness": {
     "w": "我",
     "ygz": "一个字",
+    "scxt": "上窜下跳",
+    "ssyw": "蛇鼠一窝",
     "pipeiPrefix": "匹|pei",
     "enter": "匹pei",
     "space": "匹配"
@@ -33,25 +35,25 @@
   },
   "initialsLookup": {
     "lookupsPerSample": 20000,
-    "p95Ns": 3313.76,
+    "p95Ns": 117931.07,
     "gateNs": 250000.00
   },
   "progressiveDecode": {
     "lookupsPerSample": 5000,
-    "p95Ns": 90802.97,
+    "p95Ns": 28463.76,
     "gateNs": 500000.00
   },
   "productionLimitProgressiveDecode": {
     "candidateLimit": 255,
     "prefixCandidateCount": 94,
     "lookupsPerSample": 100,
-    "p95Ns": 127155.92,
+    "p95Ns": 93833.17,
     "gateNs": 5000000.00
   },
   "segmentedComposition": {
     "candidateLimit": 255,
     "lookupsPerSample": 100,
-    "p95Ns": 2155621.97,
+    "p95Ns": 1011419.88,
     "gateNs": 5000000.00
   }
 }
