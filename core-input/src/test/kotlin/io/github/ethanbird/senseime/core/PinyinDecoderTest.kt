@@ -328,6 +328,49 @@ class PinyinDecoderTest {
     }
 
     @Test
+    fun exactMultiSegmentPinyinOutranksAnInsertedCorrectionCompletion() {
+        val qualityDecoder = PinyinDecoder.fromBytes(
+            lexicon(
+                "hao" to listOf(item("好", 10, "h")),
+                "haoo" to listOf(item("好哦", Int.MAX_VALUE, "ho")),
+                "hen" to listOf(item("很", 10, "h")),
+                "jin" to listOf(item("今", 10, "j")),
+                "qi" to listOf(item("气", 10, "q")),
+                "tian" to listOf(item("天", 10, "t")),
+            ),
+        )
+
+        val values = qualityDecoder.decode("jintiantianqihenhao", 16)
+
+        assertEquals("今天天气很好", values.first().text)
+        assertEquals(CandidateMatchKind.BASE_COMPOSED, values.first().matchKind)
+        assertTrue(
+            "fixture must retain the higher-scoring one-edit alternative",
+            values.any { it.text == "今天天气很好哦" && it.matchKind == CandidateMatchKind.CORRECTED },
+        )
+    }
+
+    @Test
+    fun contextRerankingCannotMoveACorrectionAheadOfCanonicalComposition() {
+        val contextual = PinyinDecoder.fromBytes(
+            lexicon(
+                "hao" to listOf(item("好", 10, "h")),
+                "ni" to listOf(item("你", 10, "n")),
+                "xni" to listOf(item("李", Int.MAX_VALUE, "l")),
+            ),
+            CharacterBigramModel { previous, next ->
+                if (previous == '爱'.code && next == '李'.code) 100f else 0f
+            },
+        )
+
+        val values = contextual.decodeAfter('爱'.code, "nihao", 16)
+
+        assertEquals("你好", values.first().text)
+        assertEquals(CandidateMatchKind.BASE_COMPOSED, values.first().matchKind)
+        assertTrue(values.any { it.text == "李好" && it.matchKind == CandidateMatchKind.CORRECTED })
+    }
+
+    @Test
     fun invalidBinaryIsRejected() {
         val failure = runCatching { PinyinDecoder.fromBytes(byteArrayOf(1, 2, 3)) }
         assertTrue(failure.isFailure)

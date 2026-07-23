@@ -59,15 +59,39 @@ class PinyinDecoder private constructor(
         val statisticalPrefix = readStatisticalPrefixCandidates(query, outputLimit)
         val dynamicPrefix = readPrefixCandidates(query, outputLimit)
         val corrected = readCorrectedCandidates(query, outputLimit)
-        return mergeCandidates(
-            hybrid + initials + composed + statisticalPrefix + dynamicPrefix + corrected,
+        // If the raw query already has a complete pinyin segmentation, a
+        // correction that inserts another letter is only an alternative. Keep
+        // it behind the normal ranker so a newly added `...haoo` phrase cannot
+        // turn exact `...henhao` into `...很好哦`. Same-length substitutions
+        // and transpositions still compete normally; that preserves typo
+        // recovery when a weak accidental segmentation also exists.
+        val (completionCorrections, competitiveCorrections) = if (
+            composed.isNotEmpty() && hasStrongMultiSegmentComposition(query)
+        ) {
+            corrected.partition { isCompletionCorrection(it, query) }
+        } else {
+            emptyList<Candidate>() to corrected
+        }
+        val primary = mergeCandidates(
+            hybrid + initials + composed + statisticalPrefix + dynamicPrefix + competitiveCorrections,
             outputLimit,
         )
+        return if (completionCorrections.isEmpty()) {
+            primary
+        } else {
+            concatenateCandidateGroups(
+                listOf(primary, mergeCandidates(completionCorrections, outputLimit)),
+                outputLimit,
+            )
+        }
     }
 
     override fun decodeAfter(previousCodePoint: Int, composing: String, limit: Int): List<Candidate> {
         if (limit <= 0 || !Character.isValidCodePoint(previousCodePoint)) return emptyList()
-        val hasCanonicalExact = findExact(normalize(composing)) >= 0
+        val query = normalize(composing)
+        val hasCanonicalExact = findExact(query) >= 0
+        val hasCanonicalComposition =
+            !hasCanonicalExact && hasStrongMultiSegmentComposition(query)
         return decode(composing, limit)
             .map { candidate ->
                 candidate.copy(
@@ -76,7 +100,11 @@ class PinyinDecoder private constructor(
             }
             .sortedWith(
                 compareBy<Candidate> {
-                    if (hasCanonicalExact) exactQuerySourceGroup(it.matchKind) else 0
+                    when {
+                        hasCanonicalExact -> exactQuerySourceGroup(it.matchKind)
+                        hasCanonicalComposition && isCompletionCorrection(it, query) -> 1
+                        else -> 0
+                    }
                 }
                     .thenByDescending { it.score }
                     .thenBy { matchPriority(it.matchKind) }
@@ -241,6 +269,10 @@ class PinyinDecoder private constructor(
         CandidateMatchKind.BASE_HYBRID -> 1
         else -> 2
     }
+
+    private fun isCompletionCorrection(candidate: Candidate, query: String): Boolean =
+        candidate.matchKind == CandidateMatchKind.CORRECTED &&
+            candidate.canonicalPinyin?.length?.let { it > query.length } == true
 
     /**
      * Small UI/benchmark requests keep a compact search budget. The IME's
@@ -526,6 +558,27 @@ class PinyinDecoder private constructor(
             if (maximumSegments[start] < 0) return@forEach
             val maxEnd = minOf(query.length, start + MAX_SEGMENT_CODE_LENGTH)
             for (end in (start + 1)..maxEnd) {
+                if (findExact(query, start, end) >= 0) {
+                    maximumSegments[end] = maxOf(maximumSegments[end], maximumSegments[start] + 1)
+                }
+            }
+        }
+        return maximumSegments.last() >= 2
+    }
+
+    /**
+     * A canonical composition used to suppress completion-style corrections
+     * must not depend on one-letter fallback records such as `n`. Without this
+     * guard, `fun` can be treated as `fu + n`, and a transposition typo ending
+     * in `...ern` can look like a valid sentence.
+     */
+    private fun hasStrongMultiSegmentComposition(query: String): Boolean {
+        val maximumSegments = IntArray(query.length + 1) { -1 }
+        maximumSegments[0] = 0
+        query.indices.forEach { start ->
+            if (maximumSegments[start] < 0) return@forEach
+            val maxEnd = minOf(query.length, start + MAX_SEGMENT_CODE_LENGTH)
+            for (end in (start + 2)..maxEnd) {
                 if (findExact(query, start, end) >= 0) {
                     maximumSegments[end] = maxOf(maximumSegments[end], maximumSegments[start] + 1)
                 }

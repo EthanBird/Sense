@@ -35,6 +35,7 @@ Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 A
 - 新增方向移动、开始选择、Home/End、删除、全选、复制、剪切、粘贴组成的文字编辑页；
 - 引入 20,000 词本地英文词典和确定性混排，固定回放覆盖 `host → host, hosts, hostile` 以及 `fun → 妇女, 👩🏻, 服你, 赋能, fun, 腐女`；
 - 新增全拼与首拼混合索引，`zhongwsrf / zhongwensrf → 中文输入法` 并保留规范全拼 `zhongwenshurufa`；
+- 完整多音节全拼优先于“再补一个字母”的纠错补全，避免 `今天天气很好` 被高权重新词误排为 `今天天气很好哦`；同长度换位/替换纠错仍参与正常竞争；
 - 已选择混拼会把实际输入串作为用户词 alias 持久化；密码或声明不允许个性化的编辑器同时禁用用户词学习与剪贴板历史捕获/展示；
 - 中文模式 QWERTY 键帽显示大写，待输入拼音和内部 key code 仍保持小写。
 
@@ -44,7 +45,7 @@ Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 A
 |---|---|
 | M4/M5 生产资产 Python 回归 | M4 2/2、M5 4/4 本地通过；词典与 Bigram 仍做 fresh-checkout 字节级重建 |
 | 生成资产 | 拼音 326,298 keys / SHA `eda69e…5ef6`；Bigram 46,655 / SHA `c3d806…2200`；英文 20,000 词 / SHA `1a1823…5624` |
-| Kotlin 正确性 | 独立 Kotlin/JUnit 编译回归：core 65/65、service 状态机与隐私策略 19/19、UI 纯逻辑 43/43，共 127/127 本地通过；Android View、Lint 与正式 Gradle 任务仍由 GitHub Actions 阻断验证 |
+| Kotlin 正确性 | 独立 Kotlin/JUnit 编译回归：core 67/67、service 状态机与隐私策略 19/19、UI 纯逻辑 43/43，共 129/129 本地通过；Android View、Lint 与正式 Gradle 任务仍由 GitHub Actions 阻断验证 |
 | M5 Host 门禁 | `w/z` 中文首拼、合法全拼优先、`host`、`fun`、混拼 alias、`zhongwsrf`、`zhongwensrf`；英文查找 ≤ 500 µs，混输渐进与 hybrid 查询各 ≤ 5 ms |
 | Android Lint 与编译 | GitHub Actions 构建 Debug、Benchmark 与 Macrobenchmark APK |
 | APK 元数据门禁 | `versionCode 8`、`versionName 0.3.2-m5`、`minSdk 29`、`targetSdk 36` |
