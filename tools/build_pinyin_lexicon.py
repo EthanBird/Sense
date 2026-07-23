@@ -26,6 +26,7 @@ MIN_INITIALS_LENGTH = 2
 MAX_INITIALS_LENGTH = 12
 MAX_INITIALS_CANDIDATES = 32
 MAX_HYBRID_CANDIDATES = 64
+TIER_ONE_ADDITIONAL_SYLLABLES = {"lve", "nve"}
 
 
 @dataclass(frozen=True)
@@ -73,13 +74,15 @@ def add_entry(
     weight: int,
     syllables: set[str],
     source_tier: int = 0,
+    update_syllables: bool = True,
 ) -> None:
     tokens = normalized_syllables(raw_code)
     code = "".join(tokens)
     initials = "".join(token[0] for token in tokens)
     if not text or not code or not initials:
         return
-    syllables.update(tokens)
+    if update_syllables:
+        syllables.update(tokens)
     encoded_text = text.encode("utf-8")
     if len(code) > 255 or len(encoded_text) > 255 or len(initials) > 255:
         return
@@ -93,6 +96,16 @@ def add_entry(
         )
     ):
         entries[code][text] = candidate
+
+
+def parsed_source_tier(fields: list[str]) -> int:
+    if len(fields) <= 3:
+        return 0
+    try:
+        source_tier = int(fields[3])
+    except ValueError:
+        return 0
+    return source_tier if source_tier in (0, 1) else 0
 
 
 def read_dictionary(
@@ -114,7 +127,7 @@ def read_dictionary(
                 weight = max(0, int(fields[2])) if len(fields) > 2 else 0
             except ValueError:
                 weight = 0
-            add_entry(entries, text, raw_code, weight, syllables)
+            add_entry(entries, text, raw_code, weight, syllables, parsed_source_tier(fields))
 
     prefix_source = {code: dict(values) for code, values in entries.items()}
     cedict_pattern = re.compile(r"^\S+\s+(\S+)\s+\[{1,2}(.+?)\]{1,2}\s+/")
@@ -422,7 +435,24 @@ def augment_binary(
                 weight = max(0, int(fields[2])) if len(fields) > 2 else 0
             except ValueError:
                 weight = 0
-            add_entry(full, fields[0].strip(), fields[1], weight, syllables)
+            source_tier = parsed_source_tier(fields)
+            tokens = normalized_syllables(fields[1])
+            if source_tier == 1 and any(
+                token not in syllables and token not in TIER_ONE_ADDITIONAL_SYLLABLES
+                for token in tokens
+            ):
+                continue
+            add_entry(
+                full,
+                fields[0].strip(),
+                fields[1],
+                weight,
+                syllables,
+                source_tier,
+                update_syllables=source_tier == 0 or any(
+                    token in TIER_ONE_ADDITIONAL_SYLLABLES for token in tokens
+                ),
+            )
 
     ranked = {
         code: sorted(

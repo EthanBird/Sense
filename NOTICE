@@ -1,9 +1,10 @@
-Sense includes compiled dictionary data from Rime “pinyin-simp” and
-CC-CEDICT, plus a popularity-ranked English word list derived from
-popular-english-words. The application code remains under the repository's
-MIT License. The generated Chinese dictionary and bigram assets are separately
-distributed under CC BY-SA 4.0 because they incorporate CC-CEDICT data. The
-English word-list asset remains under the ISC License described below.
+Sense includes compiled dictionary data from Rime “pinyin-simp”,
+CC-CEDICT and chinese-idiom-chengyu, plus a popularity-ranked English word
+list derived from popular-english-words. The application code remains under
+the repository's MIT License. The generated Chinese dictionary and bigram
+assets are separately distributed under CC BY-SA 4.0 because they incorporate
+CC-CEDICT data. The imported idiom source remains available under its MIT
+License and the English word-list asset remains under the ISC License.
 
 Rime pinyin-simp
 -----------------
@@ -29,6 +30,23 @@ License URL: https://creativecommons.org/licenses/by-sa/4.0/
 License copy: licenses/CC-BY-SA-4.0.txt
 Local notice: licenses/CC-CEDICT-NOTICE.md
 
+chinese-idiom-chengyu
+----------------------
+
+Source: https://github.com/wenhuangzeng/chinese-idiom-chengyu
+Package: chinese-idiom-chengyu 1.1.0
+Source archive SHA-256: 907c860ee668ffb856a0a1fd283e3f375faca22b8df48e557eae0450dc90220c
+Copyright: Wenhuang Zeng
+License: MIT
+License copy: licenses/chinese-idiom-chengyu-MIT.txt
+APK copy: assets/CHINESE-IDIOM-CHENGYU-MIT.txt
+
+Sense imports only aligned Han word/pinyin pairs. The deterministic importer
+retains 30,246 of 30,895 source records, normalizes tone marks and ü, rejects
+syllables outside Sense's pinned inventory, and writes
+ime-service/src/main/lexicon/sense_idioms.dict.tsv (1,014,156 bytes; SHA-256
+2175614fec07000bb1f5bdec45df10eea2e50580c4d50d7fc5931e91ec945007).
+
 popular-english-words
 ---------------------
 
@@ -46,14 +64,17 @@ tools/build_pinyin_lexicon.py. Changes to the source data are: simplified-field
 selection for CC-CEDICT; lowercase and tone removal; u:/ü to v normalization;
 candidate-level syllable-initial extraction; duplicate removal; low-weight
 CC-CEDICT fallback merging; Rime-only statistical prefix indexing; exact
-multi-syllable initials indexing; Sense custom phrase overlay; ranking; and
-binary encoding. The 2026-07-23 M5 build parsed 122,811 CC-CEDICT entries,
+multi-syllable initials indexing; chinese-idiom-chengyu and Sense custom
+phrase overlays; ranking; and binary encoding. The 2026-07-23 M5 base build
+parsed 122,811 CC-CEDICT entries,
 imported 80,777 previously missing (pinyin, text) pairs and retained 80,525
 after the per-code candidate cap, skipped 1,922 invalid or unsupported rows,
 and produced 97,538 exact keys, 7,357 isolated prefix keys, 32,372 exact
 initials keys and 189,031 private hybrid-input index keys (326,298 total keys;
-14,616,041 bytes; SHA-256
-eda69e1ff2a972f0a4ba30f4f2699ca744d1f8d62118d3fb696fe956f0b35ef6).
+14,616,041 bytes). The M7 overlay increases the compiled dictionary to
+119,662 exact keys, 7,357 isolated prefix keys, 47,018 exact-initials keys and
+255,864 hybrid keys (429,901 total; 19,439,754 bytes; SHA-256
+ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6).
 The private “}” namespace maps mixed full-pinyin-plus-initials spellings back to
 their canonical pinyin and is an index only, not independent linguistic source
 material.
@@ -65,9 +86,9 @@ excludes statistical-prefix, hybrid-index, initials-index and CC-CEDICT
 fallback-tier records,
 accumulates adjacent Han character evidence from dictionary weights, normalizes
 it into bounded scores,
-and writes a sorted version 1 binary table. The 2026-07-23 M5 build retained all
-46,655 observed Han bigrams (559,870 bytes; SHA-256
-c3d806b2baeac31aaa2859607ab7c01399229332c3bf77758216ec62713e9220).
+and writes a sorted version 1 binary table. The 2026-07-23 M7 build retained all
+46,657 observed Han bigrams (559,894 bytes; SHA-256
+db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c).
 For a single conservative attribution boundary, Sense distributes this model
 with the generated dictionary asset set under CC BY-SA 4.0. MDBG has not
 endorsed Sense.

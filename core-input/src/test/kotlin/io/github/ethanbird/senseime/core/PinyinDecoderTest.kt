@@ -39,6 +39,22 @@ class PinyinDecoderTest {
     }
 
     @Test
+    fun exactFourCharacterInitialsOutrankAccidentalLetterComposition() {
+        val shortCodeDecoder = PinyinDecoder.fromBytes(
+            lexicon(
+                "c" to listOf(item("从", 1_000_000_000, "c")),
+                "s" to listOf(item("上", 1_000_000_000, "s")),
+                "t" to listOf(item("条", 1_000_000_000, "t")),
+                "x" to listOf(item("下", 1_000_000_000, "x")),
+                "~scxt" to listOf(item("上窜下跳", 1, "scxt", sourceTier = 1)),
+            ),
+        )
+
+        assertEquals("上窜下跳", shortCodeDecoder.decode("scxt").first().text)
+        assertEquals(CandidateMatchKind.BASE_INITIALS, shortCodeDecoder.decode("scxt").first().matchKind)
+    }
+
+    @Test
     fun apostrophesAndUppercaseAreNormalized() {
         assertEquals("你好", decoder.decode("Ni'Hao").first().text)
     }

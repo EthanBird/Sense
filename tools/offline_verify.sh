@@ -18,13 +18,13 @@ fi
 BUILD_TOOLS="$SDK/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK/platforms/android-36/android.jar"
 KOTLIN_LIB="$GRADLE_DIST/lib"
-OUT="$ROOT/build/offline-v0.3.3-m6"
+OUT="$ROOT/build/offline-v0.3.4-m7"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
-APK="$APK_DIR/Sense-v0.3.3-m6-debug.apk"
+APK="$APK_DIR/Sense-v0.3.4-m7-debug.apk"
 LEXICON_ASSET="$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin"
-LEXICON_SHA256="eda69e1ff2a972f0a4ba30f4f2699ca744d1f8d62118d3fb696fe956f0b35ef6"
+LEXICON_SHA256="ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
 BIGRAM_ASSET="$ROOT/ime-service/src/main/assets/pinyin_bigrams.bin"
-BIGRAM_SHA256="c3d806b2baeac31aaa2859607ab7c01399229332c3bf77758216ec62713e9220"
+BIGRAM_SHA256="db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c"
 ENGLISH_ASSET="$ROOT/ime-service/src/main/assets/english_lexicon.txt"
 ENGLISH_SHA256="1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624"
 ENGLISH_WORD_COUNT="20000"
@@ -41,6 +41,7 @@ python3 "$ROOT/tools/build_pinyin_lexicon.py" \
     "$LEXICON_ASSET" \
     "$OUT/pinyin_lexicon.bin" \
     --base-binary \
+    --custom "$ROOT/ime-service/src/main/lexicon/sense_idioms.dict.tsv" \
     --custom "$ROOT/ime-service/src/main/lexicon/sense_custom.dict.tsv"
 cmp "$LEXICON_ASSET" "$OUT/pinyin_lexicon.bin"
 printf '%s  %s\n' "$LEXICON_SHA256" "$LEXICON_ASSET" | sha256sum -c -
@@ -59,6 +60,7 @@ cmp "$ROOT/licenses/rime-pinyin-simp-LICENSE" "$ROOT/ime-service/src/main/assets
 cmp "$ROOT/licenses/CC-CEDICT-NOTICE.md" "$ROOT/ime-service/src/main/assets/CC-CEDICT-NOTICE.txt"
 cmp "$ROOT/licenses/CC-BY-SA-4.0.txt" "$ROOT/ime-service/src/main/assets/CC-BY-SA-4.0.txt"
 cmp "$ROOT/licenses/popular-english-words-ISC.txt" "$ROOT/ime-service/src/main/assets/POPULAR-ENGLISH-WORDS-ISC.txt"
+cmp "$ROOT/licenses/chinese-idiom-chengyu-MIT.txt" "$ROOT/ime-service/src/main/assets/CHINESE-IDIOM-CHENGYU-MIT.txt"
 
 COMPILER_CP=$(find "$KOTLIN_LIB" -maxdepth 1 -name '*.jar' -print | paste -sd: -)
 STDLIB="$KOTLIN_LIB/kotlin-stdlib-2.0.21.jar"
@@ -187,8 +189,8 @@ java -cp "$STDLIB:$OUT/core-main" \
     --manifest "$ROOT/tools/offline/AndroidManifest.xml" \
     --min-sdk-version 29 \
     --target-sdk-version 36 \
-    --version-code 9 \
-    --version-name 0.3.3-m6 \
+    --version-code 10 \
+    --version-name 0.3.4-m7 \
     --auto-add-overlay \
     --output-text-symbols "$OUT/R.txt" \
     -A "$ROOT/ime-service/src/main/assets" \
@@ -257,7 +259,7 @@ keytool -genkeypair \
 "$BUILD_TOOLS/zipalign" -c -P 16 4 "$APK"
 "$BUILD_TOOLS/aapt2" dump badging "$APK" | tee "$OUT/apk-badging.txt"
 "$BUILD_TOOLS/aapt2" dump permissions "$APK" | tee "$OUT/apk-permissions.txt"
-grep -F "package: name='io.github.ethanbird.senseime' versionCode='9' versionName='0.3.3-m6'" "$OUT/apk-badging.txt"
+grep -F "package: name='io.github.ethanbird.senseime' versionCode='10' versionName='0.3.4-m7'" "$OUT/apk-badging.txt"
 grep -Fx "minSdkVersion:'29'" "$OUT/apk-badging.txt"
 grep -Fx "targetSdkVersion:'36'" "$OUT/apk-badging.txt"
 if grep -Fq "android.permission.INTERNET" "$OUT/apk-permissions.txt"; then
@@ -270,6 +272,7 @@ unzip -p "$APK" assets/RIME-PINYIN-SIMP-LICENSE.txt | cmp - "$ROOT/licenses/rime
 unzip -p "$APK" assets/CC-CEDICT-NOTICE.txt | cmp - "$ROOT/licenses/CC-CEDICT-NOTICE.md"
 unzip -p "$APK" assets/CC-BY-SA-4.0.txt | cmp - "$ROOT/licenses/CC-BY-SA-4.0.txt"
 unzip -p "$APK" assets/POPULAR-ENGLISH-WORDS-ISC.txt | cmp - "$ROOT/licenses/popular-english-words-ISC.txt"
+unzip -p "$APK" assets/CHINESE-IDIOM-CHENGYU-MIT.txt | cmp - "$ROOT/licenses/chinese-idiom-chengyu-MIT.txt"
 unzip -p "$APK" assets/pinyin_lexicon.bin | sha256sum | awk '{print $1}' | grep -Fx "$LEXICON_SHA256"
 unzip -p "$APK" assets/pinyin_bigrams.bin | sha256sum | awk '{print $1}' | grep -Fx "$BIGRAM_SHA256"
 unzip -p "$APK" assets/english_lexicon.txt | sha256sum | awk '{print $1}' | grep -Fx "$ENGLISH_SHA256"
@@ -304,4 +307,4 @@ HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --text "$OUT/lint.txt" \
     "$ROOT/tools/offline"
 
-echo "v0.3.3-m6 verification complete: $APK"
+echo "v0.3.4-m7 verification complete: $APK"

@@ -38,11 +38,11 @@ class KeyboardLayoutContractTest {
     }
 
     @Test
-    fun activeCandidateAreaConsumesToolbarAndPortraitUsesTallerHeight() {
+    fun toolbarAndCandidatesShareOneFixedHeightWithoutResizingLetterRows() {
         assertEquals(45f, KeyboardLayoutContract.collapsedCandidateBottom(45f, 42f, takesToolbar = false))
-        assertEquals(87f, KeyboardLayoutContract.collapsedCandidateBottom(45f, 42f, takesToolbar = true))
+        assertEquals(45f, KeyboardLayoutContract.collapsedCandidateBottom(45f, 42f, takesToolbar = true))
         assertEquals(
-            42f,
+            45f,
             KeyboardLayoutContract.topChromeBottom(
                 candidateHeight = 45f,
                 toolbarHeight = 42f,
@@ -51,7 +51,7 @@ class KeyboardLayoutContractTest {
             ),
         )
         assertEquals(
-            87f,
+            45f,
             KeyboardLayoutContract.topChromeBottom(
                 candidateHeight = 45f,
                 toolbarHeight = 42f,
@@ -59,6 +59,17 @@ class KeyboardLayoutContractTest {
                 editorPanelVisible = false,
             ),
         )
+        assertEquals(
+            45f,
+            KeyboardLayoutContract.topChromeBottom(
+                candidateHeight = 45f,
+                toolbarHeight = 42f,
+                candidatesTakeToolbar = true,
+                editorPanelVisible = true,
+            ),
+        )
+        assertEquals(358f, KeyboardLayoutContract.preferredKeyboardHeightDp(isLandscape = false))
+        assertEquals(258f, KeyboardLayoutContract.preferredKeyboardHeightDp(isLandscape = true))
         assertTrue(
             KeyboardLayoutContract.preferredKeyboardHeightDp(isLandscape = false) >
                 KeyboardLayoutContract.preferredKeyboardHeightDp(isLandscape = true),

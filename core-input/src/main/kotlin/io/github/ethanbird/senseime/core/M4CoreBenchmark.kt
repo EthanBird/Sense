@@ -46,6 +46,16 @@ object M4CoreBenchmark {
         check(initials?.text == initialsExpectation && initials.matchKind == CandidateMatchKind.BASE_INITIALS) {
             "ygz initials regression: $initials"
         }
+        val fourCharacterInitials = linkedMapOf(
+            "scxt" to "上窜下跳",
+            "ssyw" to "蛇鼠一窝",
+        ).mapValues { (shortCode, expected) ->
+            base.decode(shortCode, 8).firstOrNull().also { candidate ->
+                check(candidate?.text == expected && candidate.matchKind == CandidateMatchKind.BASE_INITIALS) {
+                    "$shortCode four-character initials regression: $candidate"
+                }
+            }!!
+        }
         val coverageCandidates = base.decode(coverage[1], coverageLimit)
         val coverageRank = rankOf(coverageCandidates, coverage[2])
             ?: error("${coverage[1]} must expose ${coverage[2]} within $coverageLimit candidates")
@@ -163,6 +173,8 @@ object M4CoreBenchmark {
               "correctness": {
                 "w": "我",
                 "ygz": "一个字",
+                "scxt": "${fourCharacterInitials.getValue("scxt").text}",
+                "ssyw": "${fourCharacterInitials.getValue("ssyw").text}",
                 "pipeiPrefix": "匹|pei",
                 "enter": "匹pei",
                 "space": "匹配"

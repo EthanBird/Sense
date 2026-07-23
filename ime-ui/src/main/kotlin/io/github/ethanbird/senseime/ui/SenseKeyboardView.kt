@@ -2597,7 +2597,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         editorPanelVisible = panel == Panel.EDITOR,
     )
 
-    /** Idle UI has one toolbar row; active candidates temporarily consume two rows. */
+    /** Toolbar and collapsed candidates replace each other inside one fixed row. */
     private fun keyboardChromeBottom(): Float = KeyboardLayoutContract.topChromeBottom(
         candidateHeight = candidateHeight,
         toolbarHeight = toolbarHeight,

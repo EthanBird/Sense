@@ -21,12 +21,13 @@ ENGLISH = ASSETS / "english_lexicon.txt"
 ENGLISH_LICENSE = ASSETS / "POPULAR-ENGLISH-WORDS-ISC.txt"
 REPOSITORY_ENGLISH_LICENSE = ROOT / "licenses/popular-english-words-ISC.txt"
 CUSTOM = ROOT / "ime-service/src/main/lexicon/sense_custom.dict.tsv"
+IDIOMS = ROOT / "ime-service/src/main/lexicon/sense_idioms.dict.tsv"
 
-LEXICON_RECORDS = 326_298
-BIGRAM_RECORDS = 46_655
+LEXICON_RECORDS = 429_901
+BIGRAM_RECORDS = 46_657
 ENGLISH_WORDS = 20_000
-LEXICON_SHA256 = "eda69e1ff2a972f0a4ba30f4f2699ca744d1f8d62118d3fb696fe956f0b35ef6"
-BIGRAM_SHA256 = "c3d806b2baeac31aaa2859607ab7c01399229332c3bf77758216ec62713e9220"
+LEXICON_SHA256 = "ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
+BIGRAM_SHA256 = "db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c"
 ENGLISH_SHA256 = "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624"
 ENGLISH_LICENSE_SHA256 = "f432301e16a48011db30f6fd74d5ec906745d5c9bfcacb91c924e4738d7e4fa7"
 ENGLISH_HEADER = [
@@ -90,7 +91,7 @@ class M5MixedAssetsTest(unittest.TestCase):
             rebuilt_lexicon = root / "pinyin_lexicon.bin"
             rebuilt_bigrams = root / "pinyin_bigrams.bin"
 
-            entries, _ = build_pinyin_lexicon.augment_binary(LEXICON, [CUSTOM])
+            entries, _ = build_pinyin_lexicon.augment_binary(LEXICON, [IDIOMS, CUSTOM])
             build_pinyin_lexicon.write_binary(entries, rebuilt_lexicon)
             self.assertEqual(LEXICON.read_bytes(), rebuilt_lexicon.read_bytes())
 
