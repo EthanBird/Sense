@@ -87,6 +87,7 @@ class TouchInputReducer<T>(
     data class MoveResult(
         val canceled: Boolean,
         val tapSuppressed: Boolean,
+        val verticalScrollLatched: Boolean,
     )
 
     private var pointerIds = IntArray(10) { NONE }
@@ -148,7 +149,13 @@ class TouchInputReducer<T>(
         policy: GesturePolicy,
     ): MoveResult {
         val slot = findSlot(pointerId)
-        if (slot < 0) return MoveResult(canceled = false, tapSuppressed = false)
+        if (slot < 0) {
+            return MoveResult(
+                canceled = false,
+                tapSuppressed = false,
+                verticalScrollLatched = false,
+            )
+        }
         updateGestureTrace(slot, x, y, policy)
         if (policy.kind == GesturePolicy.Kind.TAP_ONLY && !insideTapTarget && !canceled[slot]) {
             canceled[slot] = true
@@ -156,6 +163,7 @@ class TouchInputReducer<T>(
         return MoveResult(
             canceled = canceled[slot],
             tapSuppressed = tapSuppressed[slot],
+            verticalScrollLatched = latchedGestures[slot] != NO_GESTURE,
         )
     }
 
@@ -316,6 +324,42 @@ class TouchInputReducer<T>(
         const val NO_GESTURE: Byte = 0
         const val SWIPE_UP_GESTURE: Byte = -1
         const val SWIPE_DOWN_GESTURE: Byte = 1
+    }
+}
+
+/**
+ * Small allocation-free state holder for pixel-scrolling custom keyboard panels.
+ *
+ * The state deliberately knows nothing about Android touch events. The View can
+ * feed it drag deltas while JVM tests verify clamping and partial-row movement.
+ */
+class ContinuousVerticalScrollState {
+    var offset: Float = 0f
+        private set
+
+    var maximumOffset: Float = 0f
+        private set
+
+    fun configure(contentExtent: Float, viewportExtent: Float) {
+        require(contentExtent >= 0f)
+        require(viewportExtent >= 0f)
+        maximumOffset = (contentExtent - viewportExtent).coerceAtLeast(0f)
+        offset = offset.coerceIn(0f, maximumOffset)
+    }
+
+    /** Positive deltas move toward later content; negative deltas move back. */
+    fun scrollBy(delta: Float): Boolean {
+        if (delta == 0f) return false
+        val next = (offset + delta).coerceIn(0f, maximumOffset)
+        if (next == offset) return false
+        offset = next
+        return true
+    }
+
+    fun reset(): Boolean {
+        if (offset == 0f) return false
+        offset = 0f
+        return true
     }
 }
 

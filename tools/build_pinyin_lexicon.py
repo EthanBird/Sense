@@ -20,9 +20,12 @@ MAX_PREFIX_CANDIDATES = 16
 PREFIX_COMPLETION_DECAY = 0.72
 PREFIX_NAMESPACE = "{"
 INITIALS_NAMESPACE = "~"
+HYBRID_NAMESPACE = "}"
+HYBRID_SEPARATOR = "|"
 MIN_INITIALS_LENGTH = 2
 MAX_INITIALS_LENGTH = 12
 MAX_INITIALS_CANDIDATES = 32
+MAX_HYBRID_CANDIDATES = 64
 
 
 @dataclass(frozen=True)
@@ -169,7 +172,8 @@ def read_dictionary(
             f"duplicates={cedict_duplicate}, skipped={cedict_skipped}"
         )
     prefixed = add_statistical_prefixes(ranked, prefix_ranked)
-    return add_initials_index(prefixed, ranked), syllables
+    hybrid = add_hybrid_index(prefixed, ranked, syllables)
+    return add_initials_index(hybrid, ranked), syllables
 
 
 def add_statistical_prefixes(
@@ -221,6 +225,88 @@ def add_initials_index(
             key=lambda item: (item.source_tier, -item.weight, len(item.text), item.text, item.initials),
         )[:MAX_INITIALS_CANDIDATES]
     return result
+
+
+def add_hybrid_index(
+    entries: dict[str, list[LexiconCandidate]],
+    full_pinyin_source: dict[str, list[LexiconCandidate]],
+    syllables: set[str],
+) -> dict[str, list[LexiconCandidate]]:
+    """Index `full-pinyin prefix + remaining syllable initials` forms.
+
+    The canonical full pinyin follows a separator in the private namespaced
+    key. Runtime lookup scans `}typed|...`, retaining canonical metadata for
+    adaptive learning without changing the v3 binary candidate record. Every
+    proper syllable boundary is indexed, so both `zhongwsrf` and
+    `zhongwensrf` resolve to the same canonical phrase.
+    """
+    aggregate: defaultdict[str, dict[str, LexiconCandidate]] = defaultdict(dict)
+    for full_code, candidates in full_pinyin_source.items():
+        for candidate in candidates:
+            tokens = split_code_by_initials(full_code, candidate.initials, syllables)
+            if not tokens or len(tokens) < 2:
+                continue
+            for full_prefix_count in range(1, len(tokens)):
+                mixed = (
+                    "".join(tokens[:full_prefix_count])
+                    + "".join(token[0] for token in tokens[full_prefix_count:])
+                )
+                if mixed in (full_code, candidate.initials):
+                    continue
+                key = HYBRID_NAMESPACE + mixed + HYBRID_SEPARATOR + full_code
+                if len(key.encode("ascii")) > 255:
+                    continue
+                previous = aggregate[key].get(candidate.text)
+                if previous is None or _candidate_is_better(candidate, previous):
+                    aggregate[key][candidate.text] = candidate
+
+    result = {
+        code: values
+        for code, values in entries.items()
+        if not code.startswith(HYBRID_NAMESPACE)
+    }
+    for code, values in aggregate.items():
+        result[code] = sorted(
+            values.values(),
+            key=lambda item: (item.source_tier, -item.weight, len(item.text), item.text, item.initials),
+        )[:MAX_HYBRID_CANDIDATES]
+    return result
+
+
+def split_code_by_initials(
+    code: str,
+    initials: str,
+    syllables: set[str],
+) -> tuple[str, ...] | None:
+    """Recover the unique syllable path represented by a record's initials."""
+    if not code or not initials:
+        return None
+    memo: dict[tuple[int, int], list[tuple[str, ...]]] = {}
+
+    def visit(offset: int, initial_index: int) -> list[tuple[str, ...]]:
+        state = (offset, initial_index)
+        if state in memo:
+            return memo[state]
+        if initial_index == len(initials):
+            return [()] if offset == len(code) else []
+        if offset >= len(code) or code[offset] != initials[initial_index]:
+            return []
+
+        matches: list[tuple[str, ...]] = []
+        for end in range(offset + 1, min(len(code), offset + 6) + 1):
+            token = code[offset:end]
+            if token not in syllables:
+                continue
+            for tail in visit(end, initial_index + 1):
+                matches.append((token, *tail))
+                if len(matches) > 1:
+                    memo[state] = matches
+                    return matches
+        memo[state] = matches
+        return matches
+
+    paths = visit(0, 0)
+    return paths[0] if len(paths) == 1 else None
 
 
 def _candidate_is_better(candidate: LexiconCandidate, previous: LexiconCandidate) -> bool:
@@ -317,12 +403,16 @@ def augment_binary(
     existing = read_binary(base)
     full: defaultdict[str, dict[str, LexiconCandidate]] = defaultdict(dict)
     for code, candidates in existing.items():
-        if code.startswith((PREFIX_NAMESPACE, INITIALS_NAMESPACE)):
+        if code.startswith((PREFIX_NAMESPACE, INITIALS_NAMESPACE, HYBRID_NAMESPACE)):
             continue
         for candidate in candidates:
             full[code][candidate.text] = candidate
 
-    syllables: set[str] = set()
+    syllables: set[str] = {
+        code
+        for code, candidates in full.items()
+        if len(code) <= 6 and any(len(candidate.initials) == 1 for candidate in candidates.values())
+    }
     for path in custom_paths:
         for line in path.read_text(encoding="utf-8").splitlines():
             if not line or line.startswith("#") or "\t" not in line:
@@ -341,9 +431,14 @@ def augment_binary(
         )[:MAX_CANDIDATES]
         for code, values in full.items()
     }
-    preserved = {code: values for code, values in existing.items() if not code.startswith(INITIALS_NAMESPACE)}
+    preserved = {
+        code: values
+        for code, values in existing.items()
+        if not code.startswith((INITIALS_NAMESPACE, HYBRID_NAMESPACE))
+    }
     preserved.update(ranked)
-    return add_initials_index(preserved, ranked), syllables
+    hybrid = add_hybrid_index(preserved, ranked, syllables)
+    return add_initials_index(hybrid, ranked), syllables
 
 
 def main() -> None:

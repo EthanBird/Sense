@@ -27,6 +27,27 @@ class KeyboardLayoutContractTest {
     }
 
     @Test
+    fun chineseLetterLabelsAreUppercaseButCodesStayLowercase() {
+        assertEquals("Q", KeyboardLayoutContract.letterLabel('q', chineseMode = true, shifted = false))
+        assertEquals("q", KeyboardLayoutContract.letterLabel('q', chineseMode = false, shifted = false))
+        assertEquals("Q", KeyboardLayoutContract.letterLabel('q', chineseMode = false, shifted = true))
+
+        val chineseRow = KeyboardLayoutContract.thirdLetterRow(shifted = false, chineseMode = true)
+        assertEquals(listOf("Z", "X", "C", "V", "B", "N", "M"), chineseRow.drop(1).dropLast(1).map { it.label })
+        assertEquals("zxcvbnm".map { it.code }, chineseRow.drop(1).dropLast(1).map { it.code })
+    }
+
+    @Test
+    fun activeCandidateAreaConsumesToolbarAndPortraitUsesTallerHeight() {
+        assertEquals(45f, KeyboardLayoutContract.collapsedCandidateBottom(45f, 42f, takesToolbar = false))
+        assertEquals(87f, KeyboardLayoutContract.collapsedCandidateBottom(45f, 42f, takesToolbar = true))
+        assertTrue(
+            KeyboardLayoutContract.preferredKeyboardHeightDp(isLandscape = false) >
+                KeyboardLayoutContract.preferredKeyboardHeightDp(isLandscape = true),
+        )
+    }
+
+    @Test
     fun functionRowEndsWithPeriodLanguageAndEnter() {
         val row = KeyboardLayoutContract.functionRow(chineseMode = true)
 
@@ -286,5 +307,85 @@ class KeyboardLayoutContractTest {
         assertTrue(geometry.indicatorBottom <= geometry.actionTop)
         assertTrue(geometry.gridBottom <= geometry.indicatorY - 2f)
         assertTrue(geometry.indicatorY + 2f <= geometry.actionTop)
+    }
+
+    @Test
+    fun scrollableEmojiGridUsesTheSpacePreviouslyReservedForPageDots() {
+        val scrolling = KeyboardLayoutContract.scrollableEmojiLayoutGeometry(
+            contentTop = 91f,
+            contentBottom = 342f,
+            categoryHeight = 29f,
+            actionHeight = 40f,
+            gridGap = 3f,
+        )
+        val paged = KeyboardLayoutContract.emojiLayoutGeometry(
+            contentTop = 91f,
+            contentBottom = 342f,
+            categoryHeight = 29f,
+            actionHeight = 40f,
+            gridGap = 3f,
+            indicatorBandHeight = 14f,
+        )
+
+        assertTrue(scrolling.gridBottom > paged.gridBottom)
+        assertEquals(scrolling.gridBottom + 3f, scrolling.actionTop)
+    }
+
+    @Test
+    fun clipboardCardsAreSingleColumnAndThreePerPage() {
+        val slots = KeyboardLayoutContract.clipboardCardSlots(
+            viewWidth = 360f,
+            contentTop = 120f,
+            contentBottom = 330f,
+            itemCount = 8,
+            pageStart = 3,
+            horizontalPadding = 6f,
+            gap = 5f,
+        )
+
+        assertEquals(listOf(3, 4, 5), slots.map { it.sourceIndex })
+        assertTrue(slots.all { it.left == 6f && it.right == 354f })
+        assertTrue(slots.zipWithNext().all { (before, after) -> before.bottom < after.top })
+        assertTrue(slots.last().bottom <= 330f)
+    }
+
+    @Test
+    fun clipboardPreviewFitsTwoLinesAndDoesNotSplitEmojiSurrogates() {
+        val measure: (String) -> Float = { value ->
+            Character.codePointCount(value, 0, value.length) * 10f
+        }
+        val preview = KeyboardLayoutContract.clipboardPreviewLines(
+            text = "😀中文abcdef",
+            maximumWidth = 30f,
+            measureText = measure,
+        )
+
+        assertEquals("😀中文", preview.first)
+        assertEquals("ab…", preview.second)
+        assertTrue(measure(preview.first) <= 30f)
+        assertTrue(measure(preview.second.orEmpty()) <= 30f)
+        assertFalse(Character.isHighSurrogate(preview.first.last()))
+        assertFalse(Character.isLowSurrogate(preview.second.orEmpty().first()))
+    }
+
+    @Test
+    fun editorLayoutContainsEveryActionWithoutOverlaps() {
+        val slots = KeyboardLayoutContract.editorLayout(
+            viewWidth = 360f,
+            contentTop = 52f,
+            contentBottom = 340f,
+            horizontalPadding = 6f,
+            gap = 5f,
+        )
+
+        assertEquals(KeyboardLayoutContract.EditorKeyRole.entries.toSet(), slots.map { it.role }.toSet())
+        assertTrue(slots.all { it.right > it.left && it.bottom > it.top })
+        slots.forEachIndexed { leftIndex, left ->
+            slots.drop(leftIndex + 1).forEach { right ->
+                val overlaps = left.left < right.right && left.right > right.left &&
+                    left.top < right.bottom && left.bottom > right.top
+                assertFalse("${left.role} overlaps ${right.role}", overlaps)
+            }
+        }
     }
 }

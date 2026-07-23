@@ -34,12 +34,29 @@ class SenseKeyboardView @JvmOverloads constructor(
         SYMBOLS,
         EMOJI,
         CLIPBOARD,
+        EDITOR,
     }
 
     enum class ClipboardAction {
         CLEAR,
         DELETE,
         REFRESH,
+    }
+
+    enum class EditorAction {
+        BACK,
+        UP,
+        LEFT,
+        TOGGLE_SELECTION,
+        RIGHT,
+        DOWN,
+        DELETE,
+        COPY,
+        CUT,
+        PASTE,
+        HOME,
+        SELECT_ALL,
+        END,
     }
 
     private enum class KeyStyle {
@@ -51,6 +68,8 @@ class SenseKeyboardView @JvmOverloads constructor(
         EMOJI,
         CATEGORY,
         RAIL,
+        EDITOR_DIRECTION,
+        EDITOR_PRIMARY,
     }
 
     private enum class Icon {
@@ -68,6 +87,11 @@ class SenseKeyboardView @JvmOverloads constructor(
         CLEAR,
         REFRESH,
         CLIPBOARD,
+        UP,
+        DOWN,
+        RIGHT,
+        HOME,
+        END,
     }
 
     private data class Key(
@@ -81,6 +105,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         val clipboardAction: ClipboardAction? = null,
         val clipboardIndex: Int = -1,
         val secondaryLabel: String? = null,
+        val editorAction: EditorAction? = null,
     )
 
     private data class VisibleCandidate(
@@ -135,6 +160,11 @@ class SenseKeyboardView @JvmOverloads constructor(
             override val gesturePolicy: TouchInputReducer.GesturePolicy,
         ) : FrozenTouchTarget
 
+        data class EmojiGridArea(
+            override val bounds: RectF,
+            override val gesturePolicy: TouchInputReducer.GesturePolicy,
+        ) : FrozenTouchTarget
+
         data class KeyValue(
             val key: Key,
             override val gesturePolicy: TouchInputReducer.GesturePolicy,
@@ -146,6 +176,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     var candidateListener: ((revision: Long, sourceIndex: Int) -> Unit)? = null
     var textListener: ((text: String) -> Unit)? = null
     var clipboardActionListener: ((action: ClipboardAction, index: Int) -> Unit)? = null
+    var editorActionListener: ((action: EditorAction) -> Unit)? = null
 
     private val density = resources.displayMetrics.density
     private val scaledTouchSlop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
@@ -163,6 +194,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     private var expandedCandidateGridBounds: RectF? = null
     private var clipboardItems: List<String> = emptyList()
     private var composing: String = ""
+    private var compositionRevision: Long = 0L
     private var candidateRevision: Long = 0L
     private var candidatePageIndex = 0
     private var candidatePageLabel = "1 / 1"
@@ -173,13 +205,18 @@ class SenseKeyboardView @JvmOverloads constructor(
     )
     private val keyEventQueue = KeyEventQueue(initialCapacity = 64)
     private val pressedTargets = SparseArray<FrozenTouchTarget>(4)
+    private val emojiPointerYs = SparseArray<Float>(2)
     private var keyDispatchPosted = false
     private val backspaceRepeatSession = BackspaceRepeatSession()
     private var emojiGroupIndex = 0
-    private var emojiPageIndex = 0
-    private var emojiPageIndicatorY = 0f
+    private val emojiScrollState = ContinuousVerticalScrollState()
+    private var emojiGridBounds: RectF? = null
     private var clipboardPageIndex = 0
     private var clipboardPageLabel = ""
+    private var editorSelectionActive = false
+    private var editorMainBounds: RectF? = null
+    private var editorBottomTop = 0f
+    private var editorBottomSeparators = FloatArray(0)
     private var shifted = false
     private var chineseMode = true
     private var panel = Panel.LETTERS
@@ -227,10 +264,24 @@ class SenseKeyboardView @JvmOverloads constructor(
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
     }
 
+    /**
+     * Updates only the active composition. The last ready candidate batch stays
+     * visible but non-interactive until [updateComposing] supplies the matching
+     * revision, avoiding an empty pending frame.
+     */
+    fun updateComposition(revision: Long, text: String) {
+        updateCandidateUi(revision, text, values = null)
+    }
+
+    /** Atomically publishes a ready candidate batch for [revision]. */
     fun updateComposing(revision: Long, text: String, values: List<String>) {
-        val nextCandidates = values.toList()
+        updateCandidateUi(revision, text, values.toList())
+    }
+
+    private fun updateCandidateUi(revision: Long, text: String, values: List<String>?) {
+        val wasTakeover = candidateTakesToolbar()
         val shouldReset = CandidatePresentationPolicy.shouldResetNavigation(
-            previousRevision = candidateRevision,
+            previousRevision = compositionRevision,
             previousComposing = composing,
             nextRevision = revision,
             nextComposing = text,
@@ -240,17 +291,27 @@ class SenseKeyboardView @JvmOverloads constructor(
             candidatesExpanded = false
             candidatePageIndex = 0
         }
-        if (nextCandidates != candidates) {
+        val nextCandidates = when {
+            values != null -> values
+            text.isEmpty() -> emptyList()
+            else -> null
+        }
+        if (nextCandidates != null && nextCandidates != candidates) {
             candidateMeasuredWidths = FloatArray(nextCandidates.size) { Float.NaN }
             candidateGeneration++
             candidatePages = emptyList()
             candidatePageCacheKey = null
         }
-        candidateRevision = revision
+        compositionRevision = revision
         composing = text
-        candidates = nextCandidates
+        if (nextCandidates != null) {
+            candidateRevision = revision
+            candidates = nextCandidates
+        }
         rebuildCandidateLayout(width, height)
-        if (wasExpanded != candidatesExpanded) rebuildKeys(width, height)
+        if (wasExpanded != candidatesExpanded || wasTakeover != candidateTakesToolbar()) {
+            rebuildKeys(width, height)
+        }
         invalidate()
     }
 
@@ -274,7 +335,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         collapseCandidates()
         if (panel == value && !wasExpanded) return
         panel = value
-        if (value == Panel.EMOJI) emojiPageIndex = 0
+        if (value == Panel.EMOJI) emojiScrollState.reset()
         rebuildKeys(width, height)
         invalidate()
     }
@@ -288,8 +349,32 @@ class SenseKeyboardView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun updateClipboard(values: List<String>) {
+        clipboardItems = values
+        val pageCount = ((clipboardItems.size + CLIPBOARD_ITEMS_PER_PAGE - 1) / CLIPBOARD_ITEMS_PER_PAGE)
+            .coerceAtLeast(1)
+        clipboardPageIndex = clipboardPageIndex.coerceAtMost(pageCount - 1)
+        if (panel == Panel.CLIPBOARD) {
+            rebuildKeys(width, height)
+            invalidate()
+        }
+    }
+
+    fun setEditorSelectionActive(value: Boolean) {
+        if (editorSelectionActive == value) return
+        editorSelectionActive = value
+        if (panel == Panel.EDITOR) {
+            rebuildKeys(width, height)
+            invalidate()
+        }
+    }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val desiredHeight = dp(360f).toInt()
+        val desiredHeight = dp(
+            KeyboardLayoutContract.preferredKeyboardHeightDp(
+                isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
+            ),
+        ).toInt()
         setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), resolveSize(desiredHeight, heightMeasureSpec))
     }
 
@@ -312,13 +397,17 @@ class SenseKeyboardView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         drawBackground(canvas)
-        drawCandidates(canvas)
-        if (!candidatesExpanded) {
-            drawToolbar(canvas)
-            if (panel == Panel.CLIPBOARD) drawClipboardHeader(canvas)
+        if (panel == Panel.EDITOR) {
+            drawEditorHeader(canvas)
+            drawEditorPanelBackground(canvas)
+        } else {
+            drawCandidates(canvas)
+            if (!candidatesExpanded) {
+                if (!candidateTakesToolbar()) drawToolbar(canvas)
+                if (panel == Panel.CLIPBOARD) drawClipboardHeader(canvas)
+            }
         }
         drawKeys(canvas)
-        if (!candidatesExpanded && panel == Panel.EMOJI) drawEmojiPageIndicator(canvas)
     }
 
     private fun drawBackground(canvas: Canvas) {
@@ -337,7 +426,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         }
         paint.style = Paint.Style.FILL
         paint.color = color(0x22FFFFFF, 0x0FFFFFFF)
-        canvas.drawRect(0f, 0f, width.toFloat(), candidateHeight, paint)
+        canvas.drawRect(0f, 0f, width.toFloat(), collapsedCandidateBottom(), paint)
 
         val headerSpec = CandidatePresentationPolicy.headerSpec(
             composing = composing,
@@ -424,7 +513,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             }
             paint.style = Paint.Style.FILL
             paint.color = color(0xFF172033.toInt(), 0xFFF3F4F7.toInt())
-            paint.textSize = sp(17f)
+            paint.textSize = sp(if (!candidatesExpanded && candidateTakesToolbar()) 19f else 17f)
             paint.textAlign = Paint.Align.LEFT
             val saveCount = canvas.save()
             canvas.clipRect(candidate.bounds)
@@ -477,6 +566,31 @@ class SenseKeyboardView @JvmOverloads constructor(
         }
     }
 
+    private fun drawEditorHeader(canvas: Canvas) {
+        paint.style = Paint.Style.FILL
+        paint.color = color(0x22FFFFFF, 0x0FFFFFFF)
+        canvas.drawRect(0f, 0f, width.toFloat(), candidateHeight, paint)
+        paint.color = color(0xFF263247.toInt(), 0xFFF0F1F4.toInt())
+        paint.textSize = sp(16f)
+        paint.textAlign = Paint.Align.LEFT
+        drawCenteredText(canvas, "文字编辑", dp(14f), candidateHeight / 2f)
+        paint.color = color(0x1F172033, 0x35FFFFFF)
+        canvas.drawRect(0f, candidateHeight - max(1f, density), width.toFloat(), candidateHeight, paint)
+    }
+
+    private fun drawEditorPanelBackground(canvas: Canvas) {
+        val bounds = editorMainBounds ?: return
+        paint.style = Paint.Style.FILL
+        paint.color = color(0xF7FFFFFF.toInt(), 0xFF292A2C.toInt())
+        canvas.drawRoundRect(bounds, dp(10f), dp(10f), paint)
+        paint.color = color(0x18172033, 0x28FFFFFF)
+        val divider = max(1f, density)
+        canvas.drawRect(bounds.left, editorBottomTop, bounds.right, editorBottomTop + divider, paint)
+        editorBottomSeparators.forEach { x ->
+            canvas.drawRect(x, editorBottomTop, x + divider, bounds.bottom, paint)
+        }
+    }
+
     private fun drawKeys(canvas: Canvas) {
         keys.forEach { key ->
             val pressed = isKeyPressed(key)
@@ -487,6 +601,8 @@ class SenseKeyboardView @JvmOverloads constructor(
                 KeyStyle.EMOJI -> drawEmojiKey(canvas, key, pressed)
                 KeyStyle.CATEGORY -> drawCategoryKey(canvas, key, pressed)
                 KeyStyle.RAIL -> drawRailKey(canvas, key, pressed)
+                KeyStyle.EDITOR_DIRECTION -> drawEditorDirectionKey(canvas, key, pressed)
+                KeyStyle.EDITOR_PRIMARY -> drawEditorPrimaryKey(canvas, key, pressed)
                 else -> drawKeyboardKey(canvas, key, pressed)
             }
         }
@@ -564,14 +680,25 @@ class SenseKeyboardView @JvmOverloads constructor(
         paint.textSize = sp(13f)
         paint.textAlign = Paint.Align.LEFT
         val x = key.bounds.left + dp(11f)
+        val saveCount = canvas.save()
+        canvas.clipRect(
+            x,
+            key.bounds.top + dp(3f),
+            key.bounds.right - dp(40f),
+            key.bounds.bottom - dp(3f),
+        )
         drawCenteredText(canvas, key.label, x, key.bounds.centerY() - if (key.secondaryLabel != null) dp(8f) else 0f)
         key.secondaryLabel?.let { secondLine ->
             paint.color = color(0xFF6B7484.toInt(), 0xFF9B9EA5.toInt())
             drawCenteredText(canvas, secondLine, x, key.bounds.centerY() + dp(10f))
         }
+        canvas.restoreToCount(saveCount)
     }
 
     private fun drawEmojiKey(canvas: Canvas, key: Key, pressed: Boolean) {
+        val clipBounds = emojiGridBounds ?: return
+        val saveCount = canvas.save()
+        canvas.clipRect(clipBounds)
         if (pressed) {
             paint.style = Paint.Style.FILL
             paint.color = color(0x255B7DF0, 0x456D61D8)
@@ -582,6 +709,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         paint.textSize = sp(25f)
         paint.textAlign = Paint.Align.CENTER
         drawCenteredText(canvas, key.label, key.bounds.centerX(), key.bounds.centerY())
+        canvas.restoreToCount(saveCount)
     }
 
     private fun drawCategoryKey(canvas: Canvas, key: Key, pressed: Boolean) {
@@ -609,6 +737,49 @@ class SenseKeyboardView @JvmOverloads constructor(
         paint.textSize = sp(17f)
         paint.textAlign = Paint.Align.CENTER
         drawCenteredText(canvas, key.label, key.bounds.centerX(), key.bounds.centerY())
+    }
+
+    private fun drawEditorPrimaryKey(canvas: Canvas, key: Key, pressed: Boolean) {
+        paint.style = Paint.Style.FILL
+        paint.color = if (pressed || editorSelectionActive) {
+            color(0xFF5B7DF0.toInt(), 0xFF6D61D8.toInt())
+        } else {
+            color(0xE6FFFFFF.toInt(), 0xFF303132.toInt())
+        }
+        canvas.drawRoundRect(key.bounds, dp(10f), dp(10f), paint)
+        if (!pressed && !editorSelectionActive) {
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = max(1f, density)
+            paint.color = color(0x30172033, 0x45FFFFFF)
+            canvas.drawRoundRect(key.bounds, dp(10f), dp(10f), paint)
+        }
+        paint.color = if (pressed || editorSelectionActive) {
+            Color.WHITE
+        } else {
+            color(0xFF172033.toInt(), 0xFFF3F4F7.toInt())
+        }
+        paint.textSize = sp(15f)
+        paint.textAlign = Paint.Align.CENTER
+        drawCenteredText(canvas, key.label, key.bounds.centerX(), key.bounds.centerY())
+        paint.style = Paint.Style.FILL
+    }
+
+    private fun drawEditorDirectionKey(canvas: Canvas, key: Key, pressed: Boolean) {
+        if (pressed) {
+            paint.style = Paint.Style.FILL
+            paint.color = color(0x255B7DF0, 0x456D61D8)
+            canvas.drawRoundRect(key.bounds, dp(9f), dp(9f), paint)
+        }
+        val tint = color(0xFF5D687A.toInt(), 0xFFB8BBC2.toInt())
+        if (key.icon != null) {
+            drawIcon(canvas, key.icon, key.bounds, tint)
+        } else {
+            paint.style = Paint.Style.FILL
+            paint.color = color(0xFF172033.toInt(), 0xFFF3F4F7.toInt())
+            paint.textSize = sp(16f)
+            paint.textAlign = Paint.Align.CENTER
+            drawCenteredText(canvas, key.label, key.bounds.centerX(), key.bounds.centerY())
+        }
     }
 
     private fun drawIcon(canvas: Canvas, icon: Icon, bounds: RectF, tint: Int) {
@@ -730,6 +901,53 @@ class SenseKeyboardView @JvmOverloads constructor(
                 iconPath.lineTo(cx + unit * 7f, cy)
                 canvas.drawPath(iconPath, paint)
             }
+            Icon.UP -> {
+                iconPath.moveTo(cx, cy - unit * 7f)
+                iconPath.lineTo(cx - unit * 5f, cy - unit * 2f)
+                iconPath.moveTo(cx, cy - unit * 7f)
+                iconPath.lineTo(cx + unit * 5f, cy - unit * 2f)
+                iconPath.moveTo(cx, cy - unit * 7f)
+                iconPath.lineTo(cx, cy + unit * 7f)
+                canvas.drawPath(iconPath, paint)
+            }
+            Icon.DOWN -> {
+                iconPath.moveTo(cx, cy + unit * 7f)
+                iconPath.lineTo(cx - unit * 5f, cy + unit * 2f)
+                iconPath.moveTo(cx, cy + unit * 7f)
+                iconPath.lineTo(cx + unit * 5f, cy + unit * 2f)
+                iconPath.moveTo(cx, cy + unit * 7f)
+                iconPath.lineTo(cx, cy - unit * 7f)
+                canvas.drawPath(iconPath, paint)
+            }
+            Icon.RIGHT -> {
+                iconPath.moveTo(cx + unit * 7f, cy)
+                iconPath.lineTo(cx + unit * 2f, cy - unit * 5f)
+                iconPath.moveTo(cx + unit * 7f, cy)
+                iconPath.lineTo(cx + unit * 2f, cy + unit * 5f)
+                iconPath.moveTo(cx + unit * 7f, cy)
+                iconPath.lineTo(cx - unit * 7f, cy)
+                canvas.drawPath(iconPath, paint)
+            }
+            Icon.HOME -> {
+                canvas.drawLine(cx - unit * 7f, cy - unit * 7f, cx - unit * 7f, cy + unit * 7f, paint)
+                iconPath.moveTo(cx - unit * 5f, cy)
+                iconPath.lineTo(cx, cy - unit * 5f)
+                iconPath.moveTo(cx - unit * 5f, cy)
+                iconPath.lineTo(cx, cy + unit * 5f)
+                iconPath.moveTo(cx - unit * 5f, cy)
+                iconPath.lineTo(cx + unit * 7f, cy)
+                canvas.drawPath(iconPath, paint)
+            }
+            Icon.END -> {
+                canvas.drawLine(cx + unit * 7f, cy - unit * 7f, cx + unit * 7f, cy + unit * 7f, paint)
+                iconPath.moveTo(cx + unit * 5f, cy)
+                iconPath.lineTo(cx, cy - unit * 5f)
+                iconPath.moveTo(cx + unit * 5f, cy)
+                iconPath.lineTo(cx, cy + unit * 5f)
+                iconPath.moveTo(cx + unit * 5f, cy)
+                iconPath.lineTo(cx - unit * 7f, cy)
+                canvas.drawPath(iconPath, paint)
+            }
             Icon.CLEAR -> {
                 canvas.drawRoundRect(cx - unit * 5f, cy - unit * 4f, cx + unit * 5f, cy + unit * 7f, unit, unit, paint)
                 canvas.drawLine(cx - unit * 7f, cy - unit * 6f, cx + unit * 7f, cy - unit * 6f, paint)
@@ -777,18 +995,6 @@ class SenseKeyboardView @JvmOverloads constructor(
         canvas.drawText(text, x, baseline, paint)
     }
 
-    private fun drawEmojiPageIndicator(canvas: Canvas) {
-        val pageCount = ((EMOJI_GROUPS[emojiGroupIndex].values.size + EMOJI_ITEMS_PER_PAGE - 1) / EMOJI_ITEMS_PER_PAGE).coerceAtLeast(1)
-        if (pageCount <= 1) return
-        val gap = dp(7f)
-        val startX = width / 2f - (pageCount - 1) * gap / 2f
-        paint.style = Paint.Style.FILL
-        repeat(pageCount) { page ->
-            paint.color = if (page == emojiPageIndex) color(0xFF536FE5.toInt(), 0xFFC1B9FF.toInt()) else color(0x55708090, 0x668E929A)
-            canvas.drawCircle(startX + page * gap, emojiPageIndicatorY, if (page == emojiPageIndex) dp(2f) else dp(1.35f), paint)
-        }
-    }
-
     private fun rebuildCandidateLayout(viewWidth: Int, viewHeight: Int) {
         visibleCandidates.clear()
         candidateControls.clear()
@@ -819,7 +1025,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             }
             return
         }
-        paint.textSize = sp(17f)
+        paint.textSize = sp(if (candidateTakesToolbar()) 19f else 17f)
         val collapsed = KeyboardLayoutContract.collapsedCandidateStrip(
             viewWidth = viewWidth.toFloat(),
             candidateCount = candidates.size,
@@ -884,18 +1090,20 @@ class SenseKeyboardView @JvmOverloads constructor(
             candidatePageIndex = 0
         }
 
-        val top = if (composing.isBlank()) dp(3f) else dp(13f)
+        val collapsedBottom = collapsedCandidateBottom()
+        val top = if (composing.isBlank()) dp(3f) else dp(18f)
         collapsed.slots.forEachIndexed { sourceIndex, slot ->
             visibleCandidates += VisibleCandidate(
                 sourceIndex = sourceIndex,
-                bounds = RectF(slot.left, top, slot.right, candidateHeight - dp(3f)),
+                bounds = RectF(slot.left, top, slot.right, collapsedBottom - dp(3f)),
                 textAnchor = slot.textAnchor,
             )
         }
         if (collapsed.hasOverflow && canExpand) {
             candidateControls += CandidateControlSlot(
                 CandidateControl.EXPAND,
-                RectF(viewWidth - candidateControlWidth, 0f, viewWidth.toFloat(), candidateHeight),
+                RectF(viewWidth - candidateControlWidth, 0f, viewWidth.toFloat(), collapsedBottom),
+                enabled = candidateRevision == compositionRevision,
             )
         }
     }
@@ -934,15 +1142,19 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private fun rebuildKeys(viewWidth: Int, viewHeight: Int) {
         keys.clear()
+        emojiGridBounds = null
+        editorMainBounds = null
+        editorBottomSeparators = FloatArray(0)
         if (viewWidth <= 0 || viewHeight <= 0) return
         if (!candidatesExpanded) {
-            layoutToolbar(viewWidth)
+            if (!candidateTakesToolbar() && panel != Panel.EDITOR) layoutToolbar(viewWidth)
             when (panel) {
                 Panel.LETTERS -> layoutLetters(viewWidth, viewHeight)
                 Panel.NUMBERS -> layoutNumbers(viewWidth, viewHeight)
                 Panel.SYMBOLS -> layoutSymbols(viewWidth, viewHeight)
                 Panel.EMOJI -> layoutEmoji(viewWidth, viewHeight)
                 Panel.CLIPBOARD -> layoutClipboard(viewWidth, viewHeight)
+                Panel.EDITOR -> layoutEditor(viewWidth, viewHeight)
             }
         }
         layoutSystemBar(viewWidth, viewHeight)
@@ -973,21 +1185,29 @@ class SenseKeyboardView @JvmOverloads constructor(
         val (top, rowHeight) = keyboardGrid(viewHeight)
         layoutEqualRow(
             "qwertyuiop".map { character ->
-                KeySpec(if (shifted) character.uppercase() else character.toString(), character.code, SwipeCharacterMap.forKey(character.code))
+                KeySpec(
+                    KeyboardLayoutContract.letterLabel(character, chineseMode, shifted),
+                    character.code,
+                    SwipeCharacterMap.forKey(character.code),
+                )
             },
             top,
             rowHeight,
         )
         layoutEqualRow(
             "asdfghjkl".map { character ->
-                KeySpec(if (shifted) character.uppercase() else character.toString(), character.code, SwipeCharacterMap.forKey(character.code))
+                KeySpec(
+                    KeyboardLayoutContract.letterLabel(character, chineseMode, shifted),
+                    character.code,
+                    SwipeCharacterMap.forKey(character.code),
+                )
             },
             top + rowHeight + keyGap,
             rowHeight,
             dp(18f),
         )
         layoutWeightedRow(
-            KeyboardLayoutContract.thirdLetterRow(shifted).map { it.toWeightedSpec() },
+            KeyboardLayoutContract.thirdLetterRow(shifted, chineseMode).map { it.toWeightedSpec() },
             top + 2 * (rowHeight + keyGap),
             rowHeight,
         )
@@ -1052,15 +1272,13 @@ class SenseKeyboardView @JvmOverloads constructor(
         val top = candidateHeight + toolbarHeight + dp(4f)
         val bottom = viewHeight - systemBarHeight - dp(6f)
         val categoryHeight = dp(29f)
-        val geometry = KeyboardLayoutContract.emojiLayoutGeometry(
+        val geometry = KeyboardLayoutContract.scrollableEmojiLayoutGeometry(
             contentTop = top,
             contentBottom = bottom,
             categoryHeight = categoryHeight,
             actionHeight = dp(40f),
             gridGap = dp(3f),
-            indicatorBandHeight = dp(14f),
         )
-        emojiPageIndicatorY = geometry.indicatorY
         val categorySlot = (viewWidth - horizontalPadding * 2) / EMOJI_GROUPS.size
         EMOJI_GROUPS.forEachIndexed { index, group ->
             keys += Key(
@@ -1076,24 +1294,33 @@ class SenseKeyboardView @JvmOverloads constructor(
                 clipboardIndex = index,
             )
         }
-        val rows = 3
         val columns = 7
         val itemWidth = (viewWidth - horizontalPadding * 2) / columns
-        val itemHeight = (geometry.gridBottom - geometry.gridTop) / rows
+        val viewportHeight = geometry.gridBottom - geometry.gridTop
+        val itemHeight = max(dp(46f), viewportHeight / 3f)
         val values = EMOJI_GROUPS[emojiGroupIndex].values
-        val pageCount = ((values.size + EMOJI_ITEMS_PER_PAGE - 1) / EMOJI_ITEMS_PER_PAGE).coerceAtLeast(1)
-        emojiPageIndex = emojiPageIndex.coerceIn(0, pageCount - 1)
-        values.drop(emojiPageIndex * EMOJI_ITEMS_PER_PAGE).take(EMOJI_ITEMS_PER_PAGE).forEachIndexed { index, text ->
+        val contentRows = (values.size + columns - 1) / columns
+        emojiScrollState.configure(contentRows * itemHeight, viewportHeight)
+        emojiGridBounds = RectF(
+            horizontalPadding,
+            geometry.gridTop,
+            viewWidth - horizontalPadding,
+            geometry.gridBottom,
+        )
+        values.forEachIndexed { index, text ->
             val row = index / columns
             val column = index % columns
+            val itemTop = geometry.gridTop + row * itemHeight - emojiScrollState.offset
+            val itemBottom = itemTop + itemHeight
+            if (itemBottom <= geometry.gridTop || itemTop >= geometry.gridBottom) return@forEachIndexed
             keys += Key(
                 text,
                 0,
                 RectF(
                     horizontalPadding + column * itemWidth,
-                    geometry.gridTop + row * itemHeight,
+                    itemTop,
                     horizontalPadding + (column + 1) * itemWidth,
-                    geometry.gridTop + (row + 1) * itemHeight,
+                    itemBottom,
                 ),
                 style = KeyStyle.EMOJI,
                 text = text,
@@ -1130,38 +1357,146 @@ class SenseKeyboardView @JvmOverloads constructor(
             )
             return
         }
-        val columns = 2
-        val rows = 3
-        val cardWidth = (viewWidth - horizontalPadding * 2 - keyGap) / columns
-        val cardHeight = (bottom - top - keyGap) / rows
         val pageCount = ((clipboardItems.size + CLIPBOARD_ITEMS_PER_PAGE - 1) / CLIPBOARD_ITEMS_PER_PAGE).coerceAtLeast(1)
         clipboardPageIndex = clipboardPageIndex.coerceIn(0, pageCount - 1)
         clipboardPageLabel = if (pageCount > 1) "${clipboardPageIndex + 1}/$pageCount" else ""
         val pageStart = clipboardPageIndex * CLIPBOARD_ITEMS_PER_PAGE
-        clipboardItems.drop(pageStart).take(CLIPBOARD_ITEMS_PER_PAGE).forEachIndexed { index, text ->
-            val row = index / columns
-            val column = index % columns
-            val left = horizontalPadding + column * (cardWidth + keyGap)
-            val cardTop = top + row * (cardHeight + keyGap)
-            val globalIndex = pageStart + index
+        KeyboardLayoutContract.clipboardCardSlots(
+            viewWidth = viewWidth.toFloat(),
+            contentTop = top,
+            contentBottom = bottom,
+            itemCount = clipboardItems.size,
+            pageStart = pageStart,
+            horizontalPadding = horizontalPadding,
+            gap = keyGap,
+            itemsPerPage = CLIPBOARD_ITEMS_PER_PAGE,
+        ).forEach { slot ->
+            val text = clipboardItems[slot.sourceIndex]
+            val previewLines = clipboardPreviewLines(
+                text = text,
+                maximumWidth = slot.right - slot.left - dp(62f),
+            )
             keys += Key(
-                text.replace('\n', ' ').take(16),
+                previewLines.first,
                 0,
-                RectF(left, cardTop, left + cardWidth, cardTop + cardHeight),
+                RectF(slot.left, slot.top, slot.right, slot.bottom),
                 style = KeyStyle.CARD,
                 text = text,
-                secondaryLabel = text.replace('\n', ' ').drop(16).take(16).takeIf { it.isNotEmpty() },
+                secondaryLabel = previewLines.second,
             )
             keys += Key(
                 "",
                 0,
-                RectF(left + cardWidth - dp(31f), cardTop + dp(2f), left + cardWidth - dp(2f), cardTop + dp(31f)),
+                RectF(slot.right - dp(31f), slot.top + dp(2f), slot.right - dp(2f), slot.top + dp(31f)),
                 style = KeyStyle.TOOL,
                 icon = Icon.CLEAR,
                 clipboardAction = ClipboardAction.DELETE,
-                clipboardIndex = globalIndex,
+                clipboardIndex = slot.sourceIndex,
             )
         }
+    }
+
+    private fun clipboardPreviewLines(text: String, maximumWidth: Float): Pair<String, String?> {
+        paint.textSize = sp(13f)
+        return KeyboardLayoutContract.clipboardPreviewLines(
+            text = text,
+            maximumWidth = maximumWidth.coerceAtLeast(1f),
+            measureText = { value -> paint.measureText(value) },
+        )
+    }
+
+    private fun layoutEditor(viewWidth: Int, viewHeight: Int) {
+        keys += Key(
+            label = "",
+            code = 0,
+            bounds = RectF(viewWidth - dp(62f), 0f, viewWidth.toFloat(), candidateHeight),
+            style = KeyStyle.TOOL,
+            icon = Icon.BACK,
+            editorAction = EditorAction.BACK,
+        )
+        val slots = KeyboardLayoutContract.editorLayout(
+            viewWidth = viewWidth.toFloat(),
+            contentTop = candidateHeight + dp(7f),
+            contentBottom = viewHeight - systemBarHeight - dp(8f),
+            horizontalPadding = horizontalPadding,
+            gap = keyGap,
+        )
+        val railRoles = setOf(
+            KeyboardLayoutContract.EditorKeyRole.DELETE,
+            KeyboardLayoutContract.EditorKeyRole.COPY,
+            KeyboardLayoutContract.EditorKeyRole.CUT,
+            KeyboardLayoutContract.EditorKeyRole.PASTE,
+        )
+        val mainSlots = slots.filterNot { it.role in railRoles }
+        editorMainBounds = RectF(
+            mainSlots.minOf { it.left },
+            mainSlots.minOf { it.top },
+            mainSlots.maxOf { it.right },
+            mainSlots.maxOf { it.bottom },
+        )
+        val bottomSlots = slots.filter {
+            it.role == KeyboardLayoutContract.EditorKeyRole.HOME ||
+                it.role == KeyboardLayoutContract.EditorKeyRole.SELECT_ALL ||
+                it.role == KeyboardLayoutContract.EditorKeyRole.END
+        }.sortedBy { it.left }
+        editorBottomTop = bottomSlots.first().top
+        editorBottomSeparators = bottomSlots.zipWithNext { left, right ->
+            (left.right + right.left) / 2f
+        }.toFloatArray()
+
+        slots.forEach { slot ->
+            val action = slot.role.toEditorAction()
+            val icon = when (slot.role) {
+                KeyboardLayoutContract.EditorKeyRole.UP -> Icon.UP
+                KeyboardLayoutContract.EditorKeyRole.LEFT -> Icon.BACK
+                KeyboardLayoutContract.EditorKeyRole.RIGHT -> Icon.RIGHT
+                KeyboardLayoutContract.EditorKeyRole.DOWN -> Icon.DOWN
+                KeyboardLayoutContract.EditorKeyRole.DELETE -> Icon.DELETE
+                KeyboardLayoutContract.EditorKeyRole.HOME -> Icon.HOME
+                KeyboardLayoutContract.EditorKeyRole.END -> Icon.END
+                else -> null
+            }
+            val label = when (slot.role) {
+                KeyboardLayoutContract.EditorKeyRole.TOGGLE_SELECTION ->
+                    if (editorSelectionActive) "取消选择" else "开始选择"
+                KeyboardLayoutContract.EditorKeyRole.COPY -> "复制"
+                KeyboardLayoutContract.EditorKeyRole.CUT -> "剪切"
+                KeyboardLayoutContract.EditorKeyRole.PASTE -> "粘贴"
+                KeyboardLayoutContract.EditorKeyRole.SELECT_ALL -> "全选"
+                else -> ""
+            }
+            val style = when (slot.role) {
+                KeyboardLayoutContract.EditorKeyRole.TOGGLE_SELECTION -> KeyStyle.EDITOR_PRIMARY
+                KeyboardLayoutContract.EditorKeyRole.DELETE,
+                KeyboardLayoutContract.EditorKeyRole.COPY,
+                KeyboardLayoutContract.EditorKeyRole.CUT,
+                KeyboardLayoutContract.EditorKeyRole.PASTE -> KeyStyle.ACTION
+                else -> KeyStyle.EDITOR_DIRECTION
+            }
+            keys += Key(
+                label = label,
+                code = 0,
+                bounds = RectF(slot.left, slot.top, slot.right, slot.bottom),
+                style = style,
+                icon = icon,
+                editorAction = action,
+            )
+        }
+    }
+
+    private fun KeyboardLayoutContract.EditorKeyRole.toEditorAction(): EditorAction = when (this) {
+        KeyboardLayoutContract.EditorKeyRole.UP -> EditorAction.UP
+        KeyboardLayoutContract.EditorKeyRole.LEFT -> EditorAction.LEFT
+        KeyboardLayoutContract.EditorKeyRole.TOGGLE_SELECTION -> EditorAction.TOGGLE_SELECTION
+        KeyboardLayoutContract.EditorKeyRole.RIGHT -> EditorAction.RIGHT
+        KeyboardLayoutContract.EditorKeyRole.DOWN -> EditorAction.DOWN
+        KeyboardLayoutContract.EditorKeyRole.DELETE -> EditorAction.DELETE
+        KeyboardLayoutContract.EditorKeyRole.COPY -> EditorAction.COPY
+        KeyboardLayoutContract.EditorKeyRole.CUT -> EditorAction.CUT
+        KeyboardLayoutContract.EditorKeyRole.PASTE -> EditorAction.PASTE
+        KeyboardLayoutContract.EditorKeyRole.HOME -> EditorAction.HOME
+        KeyboardLayoutContract.EditorKeyRole.SELECT_ALL -> EditorAction.SELECT_ALL
+        KeyboardLayoutContract.EditorKeyRole.END -> EditorAction.END
     }
 
     private fun layoutBottomRow(y: Float, rowHeight: Float, returnLabel: String? = null) {
@@ -1266,6 +1601,17 @@ class SenseKeyboardView @JvmOverloads constructor(
                         insideTapTarget = isInsideTapTarget(target, event.getX(pointerIndex), event.getY(pointerIndex)),
                         policy = target.gesturePolicy,
                     )
+                    if (isEmojiScrollTarget(target)) {
+                        val currentY = event.getY(pointerIndex)
+                        val previousY = emojiPointerYs[pointerId] ?: currentY
+                        if (
+                            move.verticalScrollLatched &&
+                            emojiScrollState.scrollBy(previousY - currentY)
+                        ) {
+                            rebuildKeys(width, height)
+                        }
+                        emojiPointerYs.put(pointerId, currentY)
+                    }
                     if (move.canceled || move.tapSuppressed) {
                         pressedTargets.remove(pointerId)
                         if (backspaceRepeatSession.owns(pointerId)) stopBackspaceRepeat(pointerId)
@@ -1302,12 +1648,18 @@ class SenseKeyboardView @JvmOverloads constructor(
             touchReducer.onDown(pointerId, target, x, y)
         }
         pressedTargets.put(pointerId, target)
+        if (isEmojiScrollTarget(target)) {
+            emojiPointerYs.put(pointerId, y)
+        }
         val key = (target as? FrozenTouchTarget.KeyValue)?.key
         if (key?.code == KeyCodes.DELETE) {
             enqueueKey(KeyCodes.DELETE)
             startBackspaceRepeat(pointerId)
         }
-        if (target !is FrozenTouchTarget.CandidatePageArea) {
+        if (
+            target !is FrozenTouchTarget.CandidatePageArea &&
+            target !is FrozenTouchTarget.EmojiGridArea
+        ) {
             performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
         }
         invalidate()
@@ -1330,12 +1682,14 @@ class SenseKeyboardView @JvmOverloads constructor(
         }
         pressedTargets.remove(pointerId)
         stopBackspaceRepeat(pointerId)
+        emojiPointerYs.remove(pointerId)
         invalidate()
         if (activation != null) {
             activateTouchTarget(activation)
             if (
                 activation.gesture == TouchInputReducer.Gesture.TAP &&
-                activation.target !is FrozenTouchTarget.CandidatePageArea
+                activation.target !is FrozenTouchTarget.CandidatePageArea &&
+                activation.target !is FrozenTouchTarget.EmojiGridArea
             ) {
                 performClick()
             }
@@ -1344,46 +1698,77 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun touchTargetAt(x: Float, y: Float): FrozenTouchTarget? {
-        for (index in candidateControls.indices) {
-            val slot = candidateControls[index]
-            if (slot.enabled && slot.bounds.contains(x, y)) {
-                return FrozenTouchTarget.CandidateControlValue(
-                    value = slot.control,
-                    bounds = RectF(slot.bounds),
-                    gesturePolicy = tapGesturePolicy,
+        if (panel != Panel.EDITOR) {
+            for (index in candidateControls.indices) {
+                val slot = candidateControls[index]
+                if (slot.enabled && slot.bounds.contains(x, y)) {
+                    return FrozenTouchTarget.CandidateControlValue(
+                        value = slot.control,
+                        bounds = RectF(slot.bounds),
+                        gesturePolicy = tapGesturePolicy,
+                    )
+                }
+            }
+        }
+        if (panel != Panel.EDITOR && candidateRevision == compositionRevision) {
+            for (index in visibleCandidates.indices) {
+                val candidate = visibleCandidates[index]
+                if (candidate.bounds.contains(x, y)) {
+                    return FrozenTouchTarget.CandidateValue(
+                        revision = candidateRevision,
+                        sourceIndex = candidate.sourceIndex,
+                        bounds = RectF(candidate.bounds),
+                        gesturePolicy = if (candidatesExpanded) pageScrollGesturePolicy else tapGesturePolicy,
+                    )
+                }
+            }
+        }
+        if (panel != Panel.EDITOR) {
+            expandedCandidateGridBounds?.let { bounds ->
+                if (bounds.contains(x, y)) {
+                    return FrozenTouchTarget.CandidatePageArea(
+                        bounds = RectF(bounds),
+                        gesturePolicy = pageScrollGesturePolicy,
+                    )
+                }
+            }
+        }
+        for (index in keys.lastIndex downTo 0) {
+            val key = keys[index]
+            val hitBounds = hitBoundsForKey(key)
+            if (hitBounds.contains(x, y)) {
+                return FrozenTouchTarget.KeyValue(
+                    key = key,
+                    gesturePolicy = gesturePolicyForKey(key),
+                    bounds = hitBounds,
                 )
             }
         }
-        for (index in visibleCandidates.indices) {
-            val candidate = visibleCandidates[index]
-            if (candidate.bounds.contains(x, y)) {
-                return FrozenTouchTarget.CandidateValue(
-                    revision = candidateRevision,
-                    sourceIndex = candidate.sourceIndex,
-                    bounds = RectF(candidate.bounds),
-                    gesturePolicy = if (candidatesExpanded) pageScrollGesturePolicy else tapGesturePolicy,
-                )
-            }
-        }
-        expandedCandidateGridBounds?.let { bounds ->
-            if (bounds.contains(x, y)) {
-                return FrozenTouchTarget.CandidatePageArea(
+        emojiGridBounds?.let { bounds ->
+            if (panel == Panel.EMOJI && bounds.contains(x, y)) {
+                return FrozenTouchTarget.EmojiGridArea(
                     bounds = RectF(bounds),
                     gesturePolicy = pageScrollGesturePolicy,
                 )
             }
         }
-        for (index in keys.lastIndex downTo 0) {
-            val key = keys[index]
-            if (key.bounds.contains(x, y)) {
-                return FrozenTouchTarget.KeyValue(
-                    key = key,
-                    gesturePolicy = gesturePolicyForKey(key),
-                )
-            }
-        }
         return null
     }
+
+    private fun hitBoundsForKey(key: Key): RectF {
+        if (key.style != KeyStyle.EMOJI) return key.bounds
+        val grid = emojiGridBounds ?: return key.bounds
+        return RectF(
+            maxOf(key.bounds.left, grid.left),
+            maxOf(key.bounds.top, grid.top),
+            minOf(key.bounds.right, grid.right),
+            minOf(key.bounds.bottom, grid.bottom),
+        )
+    }
+
+    private fun isEmojiScrollTarget(target: FrozenTouchTarget): Boolean =
+        target is FrozenTouchTarget.EmojiGridArea ||
+            (target is FrozenTouchTarget.KeyValue && target.key.style == KeyStyle.EMOJI)
 
     private fun gesturePolicyForKey(key: Key): TouchInputReducer.GesturePolicy = when {
         key.style == KeyStyle.EMOJI || key.style == KeyStyle.CARD -> pageScrollGesturePolicy
@@ -1422,6 +1807,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             is FrozenTouchTarget.CandidatePageArea -> if (activation.gesture != TouchInputReducer.Gesture.TAP) {
                 scrollCandidatePage(if (activation.gesture == TouchInputReducer.Gesture.SWIPE_UP) 1 else -1)
             }
+            is FrozenTouchTarget.EmojiGridArea -> Unit
             is FrozenTouchTarget.KeyValue -> activateGesture(target.key, activation.gesture)
         }
     }
@@ -1429,9 +1815,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     private fun activateGesture(key: Key, gesture: TouchInputReducer.Gesture) {
         if (key.code == KeyCodes.DELETE) return // DELETE is emitted immediately on DOWN.
         when {
-            key.style == KeyStyle.EMOJI && gesture != TouchInputReducer.Gesture.TAP -> {
-                scrollEmoji(if (gesture == TouchInputReducer.Gesture.SWIPE_UP) 1 else -1)
-            }
+            key.style == KeyStyle.EMOJI && gesture != TouchInputReducer.Gesture.TAP -> Unit
             key.style == KeyStyle.CARD && gesture != TouchInputReducer.Gesture.TAP && clipboardItems.isNotEmpty() -> {
                 scrollClipboard(if (gesture == TouchInputReducer.Gesture.SWIPE_UP) 1 else -1)
             }
@@ -1511,6 +1895,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     private fun cancelAllTouches() {
         touchReducer.cancelAll()
         pressedTargets.clear()
+        emojiPointerYs.clear()
         stopBackspaceRepeat()
     }
 
@@ -1521,13 +1906,18 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun activateKey(key: Key) {
+        key.editorAction?.let { action ->
+            dispatchQueuedKeysNow()
+            editorActionListener?.invoke(action)
+            return
+        }
         key.clipboardAction?.let { action ->
             activateClipboardAction(action, key.clipboardIndex)
             return
         }
         if (key.style == KeyStyle.CATEGORY) {
             emojiGroupIndex = key.clipboardIndex.coerceIn(0, EMOJI_GROUPS.lastIndex)
-            emojiPageIndex = 0
+            emojiScrollState.reset()
             rebuildKeys(width, height)
             invalidate()
             return
@@ -1574,14 +1964,6 @@ class SenseKeyboardView @JvmOverloads constructor(
             ClipboardAction.REFRESH -> Unit
         }
         clipboardActionListener?.invoke(action, index)
-        rebuildKeys(width, height)
-        invalidate()
-    }
-
-    private fun scrollEmoji(delta: Int) {
-        val values = EMOJI_GROUPS[emojiGroupIndex].values
-        val pageCount = ((values.size + EMOJI_ITEMS_PER_PAGE - 1) / EMOJI_ITEMS_PER_PAGE).coerceAtLeast(1)
-        emojiPageIndex = (emojiPageIndex + delta).coerceIn(0, pageCount - 1)
         rebuildKeys(width, height)
         invalidate()
     }
@@ -1657,13 +2039,23 @@ class SenseKeyboardView @JvmOverloads constructor(
     private fun isNightMode(): Boolean =
         resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
 
+    private fun candidateTakesToolbar(): Boolean = CandidatePresentationPolicy.takesToolbar(
+        composing = composing,
+        editorPanelVisible = panel == Panel.EDITOR,
+    )
+
+    private fun collapsedCandidateBottom(): Float = KeyboardLayoutContract.collapsedCandidateBottom(
+        candidateHeight = candidateHeight,
+        toolbarHeight = toolbarHeight,
+        takesToolbar = candidateTakesToolbar(),
+    )
+
     private fun dp(value: Float): Float = value * density
 
     private fun sp(value: Float): Float = value * density * resources.configuration.fontScale
 
     private companion object {
-        const val CLIPBOARD_ITEMS_PER_PAGE = 6
-        const val EMOJI_ITEMS_PER_PAGE = 21
+        const val CLIPBOARD_ITEMS_PER_PAGE = 3
         const val VERTICAL_GESTURE_DOMINANCE = 1.15f
 
         val EMOJI_GROUPS = listOf(

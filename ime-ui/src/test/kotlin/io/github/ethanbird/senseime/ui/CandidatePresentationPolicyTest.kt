@@ -40,4 +40,11 @@ class CandidatePresentationPolicyTest {
         assertEquals(pending, ready)
         assertEquals(CandidatePresentationPolicy.HeaderRole.COMPOSING, ready?.role)
     }
+
+    @Test
+    fun activeCompositionTakesToolbarExceptInsideEditorPanel() {
+        assertTrue(CandidatePresentationPolicy.takesToolbar("zhongwen", editorPanelVisible = false))
+        assertFalse(CandidatePresentationPolicy.takesToolbar("", editorPanelVisible = false))
+        assertFalse(CandidatePresentationPolicy.takesToolbar("zhongwen", editorPanelVisible = true))
+    }
 }

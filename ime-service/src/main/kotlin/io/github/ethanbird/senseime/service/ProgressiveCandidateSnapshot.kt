@@ -47,26 +47,36 @@ internal class ProgressiveCandidateSnapshot private constructor(
                 )
             }
             val choices = ArrayList<ProgressiveCandidateChoice>(limit)
-            val displayedTexts = HashSet<String>()
+            val displayedChoices = HashSet<String>()
+            fun add(choice: ProgressiveCandidateChoice) {
+                val identity = when (choice) {
+                    is ProgressiveCandidateChoice.Whole -> "W\u0000${choice.candidate.text}"
+                    is ProgressiveCandidateChoice.Prefix -> {
+                        "P\u0000${choice.candidate.text}\u0000${choice.value.consumedPinyin}\u0000${choice.value.remainingPinyin}"
+                    }
+                }
+                if (choices.size < limit && displayedChoices.add(identity)) choices += choice
+            }
 
             // Full-pinyin phrases must not be displaced by the much larger set of
             // first-syllable characters. Keep a useful whole-candidate head, then
             // expose segmentation choices, followed by every remaining whole
             // candidate that fits in the caller's bounded presentation budget.
-            decoding.wholeCandidates.take(WHOLE_CANDIDATE_HEAD_SIZE).forEach { candidate ->
-                if (choices.size < limit && displayedTexts.add(candidate.text)) {
-                    choices += ProgressiveCandidateChoice.Whole(candidate)
-                }
+            val wholeHeadSize = if (
+                decoding.wholeCandidates.firstOrNull()?.matchKind in ENGLISH_MATCH_KINDS
+            ) {
+                ENGLISH_WHOLE_CANDIDATE_HEAD_SIZE
+            } else {
+                WHOLE_CANDIDATE_HEAD_SIZE
+            }
+            decoding.wholeCandidates.take(wholeHeadSize).forEach { candidate ->
+                add(ProgressiveCandidateChoice.Whole(candidate))
             }
             decoding.prefixCandidates.forEach { prefix ->
-                if (choices.size < limit && displayedTexts.add(prefix.candidate.text)) {
-                    choices += ProgressiveCandidateChoice.Prefix(prefix)
-                }
+                add(ProgressiveCandidateChoice.Prefix(prefix))
             }
-            decoding.wholeCandidates.drop(WHOLE_CANDIDATE_HEAD_SIZE).forEach { candidate ->
-                if (choices.size < limit && displayedTexts.add(candidate.text)) {
-                    choices += ProgressiveCandidateChoice.Whole(candidate)
-                }
+            decoding.wholeCandidates.drop(wholeHeadSize).forEach { candidate ->
+                add(ProgressiveCandidateChoice.Whole(candidate))
             }
             return ProgressiveCandidateSnapshot(
                 snapshot = CandidateSnapshot(decoding.revision, choices.map { it.candidate }),
@@ -75,5 +85,10 @@ internal class ProgressiveCandidateSnapshot private constructor(
         }
 
         private const val WHOLE_CANDIDATE_HEAD_SIZE = 12
+        private const val ENGLISH_WHOLE_CANDIDATE_HEAD_SIZE = 3
+        private val ENGLISH_MATCH_KINDS = setOf(
+            io.github.ethanbird.senseime.core.CandidateMatchKind.ENGLISH_EXACT,
+            io.github.ethanbird.senseime.core.CandidateMatchKind.ENGLISH_PREFIX,
+        )
     }
 }

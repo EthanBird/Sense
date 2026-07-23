@@ -7,7 +7,7 @@ import org.junit.Test
 
 class AdaptivePinyinDecoderTest {
     private val segmenter = PinyinSyllableSegmenter(
-        setOf("an", "de", "di", "fan", "fang", "gan", "ge", "hao", "ni", "ren", "shi", "wo", "xi", "xian", "yi"),
+        setOf("an", "de", "di", "fan", "fang", "fu", "gan", "ge", "hao", "ni", "nv", "o", "ren", "shi", "wo", "xi", "xian", "yi"),
     )
 
     @Test
@@ -127,6 +127,65 @@ class AdaptivePinyinDecoderTest {
 
         assertEquals(listOf("的", "地"), lexicon.lookup("d", 2).map { it.text })
         assertTrue(lexicon.lookup("d", 2)[0].lastUsedAtMillis > lexicon.lookup("d", 2)[1].lastUsedAtMillis)
+    }
+
+    @Test
+    fun hybridSelectionLearnsItsCanonicalFullPinyin() {
+        val lexicon = MemoryUserLexicon(clock = { 1000L })
+        val decoder = AdaptivePinyinDecoder(emptyBase(), lexicon, segmenter)
+
+        val learned = decoder.learn(
+            "fun",
+            Candidate(
+                text = "妇女",
+                canonicalPinyin = "funv",
+                canonicalInitials = "fn",
+                matchKind = CandidateMatchKind.BASE_HYBRID,
+            ),
+        )
+
+        assertEquals("funv", learned?.fullPinyin)
+        assertEquals(setOf("fun"), learned?.aliases)
+        assertEquals("妇女", decoder.decode("fun").first().text)
+        assertEquals(CandidateMatchKind.USER_FULL, decoder.decode("fun").first().matchKind)
+        assertEquals("妇女", decoder.decode("fn").first().text)
+
+        val reloaded = AdaptivePinyinDecoder(
+            emptyBase(),
+            MemoryUserLexicon(listOf(requireNotNull(learned))),
+            segmenter,
+        )
+        assertEquals("妇女", reloaded.decode("fun").first().text)
+    }
+
+    @Test
+    fun invalidTailStillOffersAChinesePrefixAfterThreeEnglishWords() {
+        val base = object : InputDecoder {
+            override fun decode(composing: String, limit: Int): List<Candidate> =
+                if (composing == "ho") {
+                    listOf(
+                        Candidate(
+                            text = "好哦",
+                            canonicalPinyin = "haoo",
+                            canonicalInitials = "ho",
+                            matchKind = CandidateMatchKind.BASE_HYBRID,
+                        ),
+                    )
+                } else {
+                    emptyList()
+                }
+        }
+        val english = EnglishLexicon.fromWords(listOf("hosted", "host", "hosts", "hostile"))
+        val decoder = AdaptivePinyinDecoder(base, MemoryUserLexicon(), segmenter, english)
+        val composition = PinyinComposition(remainingPinyin = "host", revision = 7)
+
+        val result = decoder.decodeProgressively(composition, 16)
+        val prefix = result.prefixCandidates.first { it.candidate.text == "好哦" }
+
+        assertEquals(listOf("host", "hosts", "hostile"), result.wholeCandidates.take(3).map { it.text })
+        assertEquals("ho", prefix.consumedPinyin)
+        assertEquals("st", prefix.remainingPinyin)
+        assertEquals("好哦st", composition.acceptPrefix(7, prefix).visibleText)
     }
 
     private fun emptyBase(): InputDecoder = object : InputDecoder {

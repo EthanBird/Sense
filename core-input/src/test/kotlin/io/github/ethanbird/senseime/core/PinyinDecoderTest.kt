@@ -25,6 +25,10 @@ class PinyinDecoderTest {
             "{w" to listOf(item("我", 850, "w"), item("为", 300, "w")),
             "{xian" to listOf(item("先思", 500, "xs")),
             "~ygz" to listOf(item("一个字", 840000, "ygz"), item("应该做", 353, "ygz")),
+            "}fun|funv" to listOf(item("妇女", 9000, "fn")),
+            "ken" to listOf(item("肯", 100, "k")),
+            "}ken|keneng" to listOf(item("可能", 100000, "kn")),
+            "}zhongwsrf|zhongwenshurufa" to listOf(item("中文输入法", 8000, "zwsrf")),
             "zhu" to listOf(item("主", 0, "z"), item("株", 1, "z", sourceTier = 1)),
         ),
     )
@@ -172,6 +176,37 @@ class PinyinDecoderTest {
     }
 
     @Test
+    fun fullPinyinFollowedByInitialsReturnsCanonicalHybridPhrase() {
+        val candidate = decoder.decode("zhongwsrf").first()
+
+        assertEquals("中文输入法", candidate.text)
+        assertEquals("zhongwenshurufa", candidate.canonicalPinyin)
+        assertEquals("zwsrf", candidate.canonicalInitials)
+        assertEquals(CandidateMatchKind.BASE_HYBRID, candidate.matchKind)
+    }
+
+    @Test
+    fun hybridAndInitialsSourcesCanCoexistWithoutEarlyReturn() {
+        val values = decoder.decode("fun")
+
+        assertEquals("妇女", values.first().text)
+        assertEquals(CandidateMatchKind.BASE_HYBRID, values.first().matchKind)
+    }
+
+    @Test
+    fun hybridAliasCannotDisplaceAValidFullPinyinCandidate() {
+        val values = decoder.decode("ken")
+
+        assertEquals("肯", values.first().text)
+        assertEquals(CandidateMatchKind.BASE_EXACT, values.first().matchKind)
+        assertTrue(values.any { it.text == "可能" && it.matchKind == CandidateMatchKind.BASE_HYBRID })
+        assertEquals(
+            CandidateMatchKind.BASE_EXACT,
+            decoder.decodeAfter("上".codePointAt(0), "ken", 255).first().matchKind,
+        )
+    }
+
+    @Test
     fun selectedCharacterContextCanRerankAnExactTail() {
         val contextual = PinyinDecoder.fromBytes(
             lexicon(
@@ -290,6 +325,49 @@ class PinyinDecoderTest {
         assertEquals("woshiyigezhongguoren", candidate.canonicalPinyin)
         assertEquals("wsygzgr", candidate.canonicalInitials)
         assertEquals(CandidateMatchKind.CORRECTED, candidate.matchKind)
+    }
+
+    @Test
+    fun exactMultiSegmentPinyinOutranksAnInsertedCorrectionCompletion() {
+        val qualityDecoder = PinyinDecoder.fromBytes(
+            lexicon(
+                "hao" to listOf(item("好", 10, "h")),
+                "haoo" to listOf(item("好哦", Int.MAX_VALUE, "ho")),
+                "hen" to listOf(item("很", 10, "h")),
+                "jin" to listOf(item("今", 10, "j")),
+                "qi" to listOf(item("气", 10, "q")),
+                "tian" to listOf(item("天", 10, "t")),
+            ),
+        )
+
+        val values = qualityDecoder.decode("jintiantianqihenhao", 16)
+
+        assertEquals("今天天气很好", values.first().text)
+        assertEquals(CandidateMatchKind.BASE_COMPOSED, values.first().matchKind)
+        assertTrue(
+            "fixture must retain the higher-scoring one-edit alternative",
+            values.any { it.text == "今天天气很好哦" && it.matchKind == CandidateMatchKind.CORRECTED },
+        )
+    }
+
+    @Test
+    fun contextRerankingCannotMoveACorrectionAheadOfCanonicalComposition() {
+        val contextual = PinyinDecoder.fromBytes(
+            lexicon(
+                "hao" to listOf(item("好", 10, "h")),
+                "ni" to listOf(item("你", 10, "n")),
+                "xni" to listOf(item("李", Int.MAX_VALUE, "l")),
+            ),
+            CharacterBigramModel { previous, next ->
+                if (previous == '爱'.code && next == '李'.code) 100f else 0f
+            },
+        )
+
+        val values = contextual.decodeAfter('爱'.code, "nihao", 16)
+
+        assertEquals("你好", values.first().text)
+        assertEquals(CandidateMatchKind.BASE_COMPOSED, values.first().matchKind)
+        assertTrue(values.any { it.text == "李好" && it.matchKind == CandidateMatchKind.CORRECTED })
     }
 
     @Test

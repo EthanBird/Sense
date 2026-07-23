@@ -13,10 +13,12 @@ permissions:
   contents: read
 
 env:
-  RELEASE_TAG: v0.3.1-m4
-  RELEASE_APK: Sense-v0.3.1-m4.apk
-  LEXICON_SHA256: d8d6ad58a462a0c00abd9300bd7f58930e0cff5a3bbf0089ff7128d805dab80c
-  BIGRAM_SHA256: c8a7c4b9fe7b4b17b73fc29073c4c55943720e8203d42ca5f467c54f8aa12e28
+  RELEASE_TAG: v0.3.2-m5
+  RELEASE_APK: Sense-v0.3.2-m5.apk
+  LEXICON_SHA256: eda69e1ff2a972f0a4ba30f4f2699ca744d1f8d62118d3fb696fe956f0b35ef6
+  BIGRAM_SHA256: c3d806b2baeac31aaa2859607ab7c01399229332c3bf77758216ec62713e9220
+  ENGLISH_SHA256: 1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624
+  ENGLISH_WORD_COUNT: "20000"
 
 jobs:
   verify:
@@ -33,11 +35,12 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Verify M4 lexicon and initials index
+      - name: Verify M4 regressions and M5 mixed assets
         run: |
           set -euo pipefail
           python3 tools/test_build_pinyin_lexicon.py
           python3 tools/test_m4_core_assets.py
+          python3 tools/test_m5_mixed_assets.py
           python3 tools/build_pinyin_lexicon.py \
             ime-service/src/main/assets/pinyin_lexicon.bin \
             /tmp/pinyin_lexicon.bin \
@@ -45,8 +48,11 @@ jobs:
             --custom ime-service/src/main/lexicon/sense_custom.dict.tsv
           cmp ime-service/src/main/assets/pinyin_lexicon.bin /tmp/pinyin_lexicon.bin
           echo "$LEXICON_SHA256  ime-service/src/main/assets/pinyin_lexicon.bin" | sha256sum -c -
+          echo "$ENGLISH_SHA256  ime-service/src/main/assets/english_lexicon.txt" | sha256sum -c -
+          awk '!/^#/ && NF { count++ } END { print count + 0 }' \
+            ime-service/src/main/assets/english_lexicon.txt | grep -Fx "$ENGLISH_WORD_COUNT"
 
-      - name: Verify M4 bigram model
+      - name: Verify generated bigram model
         run: |
           set -euo pipefail
           python3 tools/test_build_bigram_model.py
@@ -64,8 +70,9 @@ jobs:
           cmp licenses/rime-pinyin-simp-LICENSE ime-service/src/main/assets/RIME-PINYIN-SIMP-LICENSE.txt
           cmp licenses/CC-CEDICT-NOTICE.md ime-service/src/main/assets/CC-CEDICT-NOTICE.txt
           cmp licenses/CC-BY-SA-4.0.txt ime-service/src/main/assets/CC-BY-SA-4.0.txt
+          cmp licenses/popular-english-words-ISC.txt ime-service/src/main/assets/POPULAR-ENGLISH-WORDS-ISC.txt
 
-      - name: Verify 0.3.1 candidate, gesture and learning correctness
+      - name: Verify 0.3.2 mixed-input and keyboard correctness
         run: >-
           ./gradlew
           :core-input:test
@@ -76,7 +83,7 @@ jobs:
           :app:assembleBenchmark
           :benchmark:assembleBenchmark
 
-      - name: Verify M4 host benchmarks
+      - name: Verify M0 through M5 host benchmarks
         run: >-
           ./gradlew
           --no-parallel
@@ -85,8 +92,9 @@ jobs:
           :core-input:m2AdaptiveBenchmark
           :core-input:m3SentenceBenchmark
           :core-input:m4CoreBenchmark
+          :core-input:m5MixedInputBenchmark
 
-      - name: Verify assembled 0.3.1 APK
+      - name: Verify assembled 0.3.2 APK
         shell: bash
         run: |
           set -euo pipefail
@@ -102,7 +110,7 @@ jobs:
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" > /tmp/apk-badging.txt
           "$build_tools/aapt2" dump permissions "$apk" > /tmp/apk-permissions.txt
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='7' versionName='0.3.1-m4'" /tmp/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='8' versionName='0.3.2-m5'" /tmp/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" /tmp/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" /tmp/apk-badging.txt
           if grep -Fq 'android.permission.INTERNET' /tmp/apk-permissions.txt; then
@@ -114,21 +122,27 @@ jobs:
           unzip -p "$apk" assets/RIME-PINYIN-SIMP-LICENSE.txt | cmp - licenses/rime-pinyin-simp-LICENSE
           unzip -p "$apk" assets/CC-CEDICT-NOTICE.txt | cmp - licenses/CC-CEDICT-NOTICE.md
           unzip -p "$apk" assets/CC-BY-SA-4.0.txt | cmp - licenses/CC-BY-SA-4.0.txt
+          unzip -p "$apk" assets/POPULAR-ENGLISH-WORDS-ISC.txt | cmp - licenses/popular-english-words-ISC.txt
           unzip -p "$apk" assets/pinyin_lexicon.bin | sha256sum | awk '{print $1}' | grep -Fx "$LEXICON_SHA256"
           unzip -p "$apk" assets/pinyin_bigrams.bin | sha256sum | awk '{print $1}' | grep -Fx "$BIGRAM_SHA256"
+          unzip -p "$apk" assets/english_lexicon.txt | sha256sum | awk '{print $1}' | grep -Fx "$ENGLISH_SHA256"
+          unzip -p "$apk" assets/english_lexicon.txt |
+            awk '!/^#/ && NF { count++ } END { print count + 0 }' |
+            grep -Fx "$ENGLISH_WORD_COUNT"
 
       - name: Upload debug APKs
         uses: actions/upload-artifact@v4
         with:
-          name: sense-v0.3.1-m4-apks
+          name: sense-v0.3.2-m5-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
             benchmark/build/outputs/apk/benchmark/*.apk
             benchmarks/results/m4-core.json
+            benchmarks/results/m5-mixed-input.json
           if-no-files-found: error
 
-  release-0-3-1:
+  release-0-3-2:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -140,7 +154,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: sense-v0.3.1-m4-apks
+          name: sense-v0.3.2-m5-apks
           path: artifacts
 
       - name: Prepare release assets
@@ -160,7 +174,7 @@ jobs:
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" | tee release/apk-badging.txt
           "$build_tools/aapt2" dump permissions "$apk" | tee release/apk-permissions.txt
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='7' versionName='0.3.1-m4'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='8' versionName='0.3.2-m5'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           if grep -Fq 'android.permission.INTERNET' release/apk-permissions.txt; then
@@ -172,13 +186,18 @@ jobs:
           unzip -p "$apk" assets/RIME-PINYIN-SIMP-LICENSE.txt | cmp - licenses/rime-pinyin-simp-LICENSE
           unzip -p "$apk" assets/CC-CEDICT-NOTICE.txt | cmp - licenses/CC-CEDICT-NOTICE.md
           unzip -p "$apk" assets/CC-BY-SA-4.0.txt | cmp - licenses/CC-BY-SA-4.0.txt
+          unzip -p "$apk" assets/POPULAR-ENGLISH-WORDS-ISC.txt | cmp - licenses/popular-english-words-ISC.txt
           unzip -p "$apk" assets/pinyin_lexicon.bin | sha256sum | awk '{print $1}' | grep -Fx "$LEXICON_SHA256"
           unzip -p "$apk" assets/pinyin_bigrams.bin | sha256sum | awk '{print $1}' | grep -Fx "$BIGRAM_SHA256"
+          unzip -p "$apk" assets/english_lexicon.txt | sha256sum | awk '{print $1}' | grep -Fx "$ENGLISH_SHA256"
+          unzip -p "$apk" assets/english_lexicon.txt |
+            awk '!/^#/ && NF { count++ } END { print count + 0 }' |
+            grep -Fx "$ENGLISH_WORD_COUNT"
           cp "$apk" "release/$RELEASE_APK"
           cd release
           sha256sum "$RELEASE_APK" > SHA256SUMS.txt
 
-      - name: Create 0.3.1 prerelease
+      - name: Create 0.3.2 prerelease
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -205,8 +224,8 @@ jobs:
             fi
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
-              --title "Sense v0.3.1-m4 · 候选、手势与学习修复" \
-              --notes-file docs/releases/v0.3.1-m4.md \
+              --title "Sense v0.3.2-m5 · 中英混输与键盘交互收敛" \
+              --notes-file docs/releases/v0.3.2-m5.md \
               --prerelease \
               "release/$RELEASE_APK" \
               release/SHA256SUMS.txt

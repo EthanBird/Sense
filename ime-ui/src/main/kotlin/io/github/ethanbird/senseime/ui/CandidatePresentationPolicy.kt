@@ -22,6 +22,9 @@ object CandidatePresentationPolicy {
         nextComposing: String,
     ): Boolean = previousRevision != nextRevision || previousComposing != nextComposing
 
+    fun takesToolbar(composing: String, editorPanelVisible: Boolean): Boolean =
+        composing.isNotBlank() && !editorPanelVisible
+
     /**
      * Composing text deliberately has one geometry whether candidates are
      * pending or ready, preventing the async empty -> values transition from

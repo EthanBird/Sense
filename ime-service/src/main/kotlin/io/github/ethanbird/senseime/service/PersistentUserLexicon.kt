@@ -31,9 +31,14 @@ class PersistentUserLexicon(context: Context) : UserLexicon {
 
     override fun lookup(code: String, limit: Int): List<LearnedPhrase> = memory.lookup(code, limit)
 
-    override fun record(fullPinyin: String, initials: String, text: String): LearnedPhrase = synchronized(lifecycleLock) {
+    override fun record(
+        fullPinyin: String,
+        initials: String,
+        text: String,
+        aliases: Set<String>,
+    ): LearnedPhrase = synchronized(lifecycleLock) {
         check(!closed) { "User lexicon is closed" }
-        memory.record(fullPinyin, initials, text)
+        memory.record(fullPinyin, initials, text, aliases)
     }
 
     override fun close() {
@@ -64,6 +69,7 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
                 use_count INTEGER NOT NULL CHECK(use_count > 0),
                 created_at_ms INTEGER NOT NULL,
                 last_used_at_ms INTEGER NOT NULL,
+                aliases TEXT NOT NULL DEFAULT '',
                 PRIMARY KEY(full_pinyin, phrase)
             ) WITHOUT ROWID
             """.trimIndent(),
@@ -73,7 +79,11 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
         )
     }
 
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        if (oldVersion < 2) {
+            db.execSQL("ALTER TABLE $TABLE_PHRASE ADD COLUMN aliases TEXT NOT NULL DEFAULT ''")
+        }
+    }
 
     fun loadAll(): List<LearnedPhrase> {
         val values = ArrayList<LearnedPhrase>()
@@ -95,6 +105,10 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
                     useCount = cursor.getInt(3),
                     createdAtMillis = cursor.getLong(4),
                     lastUsedAtMillis = cursor.getLong(5),
+                    aliases = cursor.getString(6)
+                        .split(',')
+                        .filter(String::isNotEmpty)
+                        .toSet(),
                 )
             }
         } finally {
@@ -111,6 +125,7 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
                 put("initials", phrase.initials)
                 put("use_count", phrase.useCount)
                 put("last_used_at_ms", phrase.lastUsedAtMillis)
+                put("aliases", phrase.aliases.sorted().joinToString(","))
             }
             val changed = db.update(
                 TABLE_PHRASE,
@@ -134,7 +149,7 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
 
     private companion object {
         const val DATABASE_NAME = "sense_user_lexicon.db"
-        const val DATABASE_VERSION = 1
+        const val DATABASE_VERSION = 2
         const val TABLE_PHRASE = "user_phrase"
         val COLUMNS = arrayOf(
             "full_pinyin",
@@ -143,6 +158,7 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
             "use_count",
             "created_at_ms",
             "last_used_at_ms",
+            "aliases",
         )
     }
 }

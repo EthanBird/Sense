@@ -8,6 +8,9 @@ package io.github.ethanbird.senseime.ui
  * edge actions so its centre remains reserved.
  */
 object KeyboardLayoutContract {
+    const val PORTRAIT_KEYBOARD_HEIGHT_DP = 400f
+    const val LANDSCAPE_KEYBOARD_HEIGHT_DP = 300f
+
     data class CandidateSlot(
         val left: Float,
         val right: Float,
@@ -79,10 +82,66 @@ object KeyboardLayoutContract {
         val actionBottom: Float,
     )
 
-    fun thirdLetterRow(shifted: Boolean): List<WeightedKey> = buildList {
+    data class ScrollableEmojiLayoutGeometry(
+        val categoryTop: Float,
+        val categoryBottom: Float,
+        val gridTop: Float,
+        val gridBottom: Float,
+        val actionTop: Float,
+        val actionBottom: Float,
+    )
+
+    data class ClipboardCardSlot(
+        val sourceIndex: Int,
+        val left: Float,
+        val top: Float,
+        val right: Float,
+        val bottom: Float,
+    )
+
+    enum class EditorKeyRole {
+        UP,
+        LEFT,
+        TOGGLE_SELECTION,
+        RIGHT,
+        DOWN,
+        DELETE,
+        COPY,
+        CUT,
+        PASTE,
+        HOME,
+        SELECT_ALL,
+        END,
+    }
+
+    data class EditorKeySlot(
+        val role: EditorKeyRole,
+        val left: Float,
+        val top: Float,
+        val right: Float,
+        val bottom: Float,
+    )
+
+    fun preferredKeyboardHeightDp(isLandscape: Boolean): Float =
+        if (isLandscape) LANDSCAPE_KEYBOARD_HEIGHT_DP else PORTRAIT_KEYBOARD_HEIGHT_DP
+
+    fun collapsedCandidateBottom(
+        candidateHeight: Float,
+        toolbarHeight: Float,
+        takesToolbar: Boolean,
+    ): Float {
+        require(candidateHeight > 0f)
+        require(toolbarHeight >= 0f)
+        return candidateHeight + if (takesToolbar) toolbarHeight else 0f
+    }
+
+    fun letterLabel(character: Char, chineseMode: Boolean, shifted: Boolean): String =
+        if (chineseMode || shifted) character.uppercase() else character.toString()
+
+    fun thirdLetterRow(shifted: Boolean, chineseMode: Boolean = false): List<WeightedKey> = buildList {
         add(WeightedKey("⇧", KeyCodes.SHIFT, 1.25f, action = true))
         "zxcvbnm".forEach { character ->
-            add(WeightedKey(if (shifted) character.uppercase() else character.toString(), character.code, 1f))
+            add(WeightedKey(letterLabel(character, chineseMode, shifted), character.code, 1f))
         }
         add(WeightedKey("⌫", KeyCodes.DELETE, 1.25f, action = true))
     }
@@ -195,6 +254,163 @@ object KeyboardLayoutContract {
             actionTop = actionTop,
             actionBottom = contentBottom,
         )
+    }
+
+    fun scrollableEmojiLayoutGeometry(
+        contentTop: Float,
+        contentBottom: Float,
+        categoryHeight: Float,
+        actionHeight: Float,
+        gridGap: Float,
+    ): ScrollableEmojiLayoutGeometry {
+        require(categoryHeight > 0f)
+        require(actionHeight > 0f)
+        require(gridGap >= 0f)
+        val categoryBottom = contentTop + categoryHeight
+        val actionTop = contentBottom - actionHeight
+        val gridTop = categoryBottom + gridGap
+        val gridBottom = actionTop - gridGap
+        require(gridBottom > gridTop)
+        return ScrollableEmojiLayoutGeometry(
+            categoryTop = contentTop,
+            categoryBottom = categoryBottom,
+            gridTop = gridTop,
+            gridBottom = gridBottom,
+            actionTop = actionTop,
+            actionBottom = contentBottom,
+        )
+    }
+
+    fun clipboardCardSlots(
+        viewWidth: Float,
+        contentTop: Float,
+        contentBottom: Float,
+        itemCount: Int,
+        pageStart: Int,
+        horizontalPadding: Float,
+        gap: Float,
+        itemsPerPage: Int = 3,
+    ): List<ClipboardCardSlot> {
+        require(viewWidth > horizontalPadding * 2)
+        require(contentBottom > contentTop)
+        require(itemCount >= 0)
+        require(pageStart >= 0)
+        require(gap >= 0f)
+        require(itemsPerPage > 0)
+        val visibleCount = (itemCount - pageStart).coerceIn(0, itemsPerPage)
+        if (visibleCount == 0) return emptyList()
+        val cardHeight = (contentBottom - contentTop - gap * (itemsPerPage - 1)) / itemsPerPage
+        require(cardHeight > 0f)
+        return List(visibleCount) { pageIndex ->
+            val top = contentTop + pageIndex * (cardHeight + gap)
+            ClipboardCardSlot(
+                sourceIndex = pageStart + pageIndex,
+                left = horizontalPadding,
+                top = top,
+                right = viewWidth - horizontalPadding,
+                bottom = top + cardHeight,
+            )
+        }
+    }
+
+    fun clipboardPreviewLines(
+        text: String,
+        maximumWidth: Float,
+        measureText: (String) -> Float,
+    ): Pair<String, String?> {
+        require(maximumWidth > 0f)
+        val normalized = text.replace('\n', ' ').replace('\r', ' ').trim()
+        if (normalized.isEmpty()) return "" to null
+        val firstEnd = fittingCodePointPrefixEnd(normalized, maximumWidth, measureText)
+        if (firstEnd >= normalized.length) return normalized to null
+        val first = normalized.substring(0, firstEnd).trimEnd()
+        val remainder = normalized.substring(firstEnd).trimStart()
+        if (measureText(remainder) <= maximumWidth) return first to remainder
+
+        val ellipsis = "…"
+        val secondEnd = fittingCodePointPrefixEnd(
+            remainder,
+            (maximumWidth - measureText(ellipsis)).coerceAtLeast(0f),
+            measureText,
+        )
+        return first to (remainder.substring(0, secondEnd).trimEnd() + ellipsis)
+    }
+
+    private fun fittingCodePointPrefixEnd(
+        text: String,
+        maximumWidth: Float,
+        measureText: (String) -> Float,
+    ): Int {
+        var end = 0
+        while (end < text.length) {
+            val next = end + Character.charCount(Character.codePointAt(text, end))
+            if (measureText(text.substring(0, next)) > maximumWidth) break
+            end = next
+        }
+        return end
+    }
+
+    fun editorLayout(
+        viewWidth: Float,
+        contentTop: Float,
+        contentBottom: Float,
+        horizontalPadding: Float,
+        gap: Float,
+    ): List<EditorKeySlot> {
+        require(viewWidth > horizontalPadding * 2)
+        require(contentBottom > contentTop)
+        require(gap >= 0f)
+        val usableWidth = viewWidth - horizontalPadding * 2
+        val railWidth = usableWidth * 0.17f
+        val mainRight = viewWidth - horizontalPadding - railWidth - gap
+        val mainWidth = mainRight - horizontalPadding
+        val bottomHeight = (contentBottom - contentTop) * 0.26f
+        val bottomTop = contentBottom - bottomHeight
+        val padBottom = bottomTop - gap
+        val padHeight = padBottom - contentTop
+        require(mainWidth > gap * 2)
+        require(padHeight > gap * 2)
+
+        val cellWidth = (mainWidth - gap * 2) / 3f
+        val cellHeight = (padHeight - gap * 2) / 3f
+        fun gridSlot(role: EditorKeyRole, column: Int, row: Int) = EditorKeySlot(
+            role = role,
+            left = horizontalPadding + column * (cellWidth + gap),
+            top = contentTop + row * (cellHeight + gap),
+            right = horizontalPadding + column * (cellWidth + gap) + cellWidth,
+            bottom = contentTop + row * (cellHeight + gap) + cellHeight,
+        )
+
+        val railLeft = viewWidth - horizontalPadding - railWidth
+        val railCellHeight = (contentBottom - contentTop - gap * 3) / 4f
+        val railRoles = listOf(
+            EditorKeyRole.DELETE,
+            EditorKeyRole.COPY,
+            EditorKeyRole.CUT,
+            EditorKeyRole.PASTE,
+        )
+        val bottomCellWidth = (mainWidth - gap * 2) / 3f
+        val bottomRoles = listOf(
+            EditorKeyRole.HOME,
+            EditorKeyRole.SELECT_ALL,
+            EditorKeyRole.END,
+        )
+
+        return buildList {
+            add(gridSlot(EditorKeyRole.UP, 1, 0))
+            add(gridSlot(EditorKeyRole.LEFT, 0, 1))
+            add(gridSlot(EditorKeyRole.TOGGLE_SELECTION, 1, 1))
+            add(gridSlot(EditorKeyRole.RIGHT, 2, 1))
+            add(gridSlot(EditorKeyRole.DOWN, 1, 2))
+            railRoles.forEachIndexed { index, role ->
+                val top = contentTop + index * (railCellHeight + gap)
+                add(EditorKeySlot(role, railLeft, top, railLeft + railWidth, top + railCellHeight))
+            }
+            bottomRoles.forEachIndexed { index, role ->
+                val left = horizontalPadding + index * (bottomCellWidth + gap)
+                add(EditorKeySlot(role, left, bottomTop, left + bottomCellWidth, contentBottom))
+            }
+        }
     }
 
     fun leftAlignedCandidateSlots(

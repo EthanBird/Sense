@@ -137,6 +137,7 @@ class TouchInputReducerTest {
         val activation = reducer.onUp(1, 50f, 60f, insideTapTarget = true, policy = policy)
 
         assertTrue(move.tapSuppressed)
+        assertTrue(move.verticalScrollLatched)
         assertEquals("emoji", activation?.target)
         assertEquals(TouchInputReducer.Gesture.SWIPE_UP, activation?.gesture)
     }
@@ -164,6 +165,33 @@ class TouchInputReducerTest {
         val activation = reducer.onUp(1, 53f, 57f, insideTapTarget = true, policy = policy)
 
         assertEquals(TouchInputReducer.Gesture.TAP, activation?.gesture)
+    }
+
+    @Test
+    fun continuousScrollMovesByPixelsAndClampsAtBothEdges() {
+        val scroll = ContinuousVerticalScrollState()
+        scroll.configure(contentExtent = 420f, viewportExtent = 180f)
+
+        assertTrue(scroll.scrollBy(17f))
+        assertEquals(17f, scroll.offset)
+        assertTrue(scroll.scrollBy(1_000f))
+        assertEquals(240f, scroll.offset)
+        assertFalse(scroll.scrollBy(1f))
+        assertTrue(scroll.scrollBy(-1_000f))
+        assertEquals(0f, scroll.offset)
+    }
+
+    @Test
+    fun continuousScrollReconfigurationAndResetKeepOffsetValid() {
+        val scroll = ContinuousVerticalScrollState()
+        scroll.configure(contentExtent = 500f, viewportExtent = 200f)
+        scroll.scrollBy(260f)
+
+        scroll.configure(contentExtent = 230f, viewportExtent = 200f)
+        assertEquals(30f, scroll.offset)
+        assertTrue(scroll.reset())
+        assertEquals(0f, scroll.offset)
+        assertFalse(scroll.reset())
     }
 
     @Test
