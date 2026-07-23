@@ -46,6 +46,27 @@ class PinyinLexiconBuilderTest(unittest.TestCase):
             [candidate.text for candidate in entries["~ygz"]],
         )
 
+    def test_hybrid_index_keeps_canonical_full_pinyin_in_private_key(self) -> None:
+        entries = self._read(
+            "妇女\tfu nv\t1000\n赋能\tfu neng\t900\n中文输入法\tzhong wen shu ru fa\t800\n",
+            "",
+        )
+
+        self.assertEqual("妇女", entries["}fun|funv"][0].text)
+        self.assertEqual("赋能", entries["}fun|funeng"][0].text)
+        self.assertEqual("中文输入法", entries["}zhongwsrf|zhongwenshurufa"][0].text)
+        self.assertEqual("中文输入法", entries["}zhongwensrf|zhongwenshurufa"][0].text)
+        self.assertEqual("中文输入法", entries["}zhongwenshurf|zhongwenshurufa"][0].text)
+
+    def test_syllable_recovery_uses_initials_to_disambiguate_boundaries(self) -> None:
+        syllables = {"an", "fang", "fan", "gan", "xi", "xian"}
+
+        self.assertEqual(("xi", "an"), builder.split_code_by_initials("xian", "xa", syllables))
+        self.assertEqual(("xian",), builder.split_code_by_initials("xian", "x", syllables))
+        self.assertEqual(("fang", "an"), builder.split_code_by_initials("fangan", "fa", syllables))
+        self.assertEqual(("fan", "gan"), builder.split_code_by_initials("fangan", "fg", syllables))
+        self.assertIsNone(builder.split_code_by_initials("invalid", "iv", syllables))
+
     def test_binary_augmentation_is_deterministic_and_overlays_custom_phrase(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -54,7 +75,10 @@ class PinyinLexiconBuilderTest(unittest.TestCase):
             custom = root / "custom.tsv"
             first = root / "first.bin"
             second = root / "second.bin"
-            base_source.write_text("我\two\t10000\n应该做\tying gai zuo\t100\n", encoding="utf-8")
+            base_source.write_text(
+                "我\two\t10000\n应\tying\t10\n该\tgai\t10\n做\tzuo\t10\n应该做\tying gai zuo\t100\n",
+                encoding="utf-8",
+            )
             custom.write_text("一个字\tyi ge zi\t9000\n", encoding="utf-8")
             base_entries, _ = builder.read_dictionary([base_source], [])
             builder.write_binary(base_entries, base_binary)
@@ -68,6 +92,7 @@ class PinyinLexiconBuilderTest(unittest.TestCase):
             loaded = builder.read_binary(first)
             self.assertEqual("一个字", loaded["~ygz"][0].text)
             self.assertEqual("我", loaded["{w"][0].text)
+            self.assertEqual("应该做", loaded["}yinggz|yinggaizuo"][0].text)
 
     def test_binary_reader_rejects_truncation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -9,11 +9,17 @@ data class LearnedPhrase(
     val useCount: Int,
     val createdAtMillis: Long,
     val lastUsedAtMillis: Long,
+    val aliases: Set<String> = emptySet(),
 )
 
 interface UserLexicon : AutoCloseable {
     fun lookup(code: String, limit: Int): List<LearnedPhrase>
-    fun record(fullPinyin: String, initials: String, text: String): LearnedPhrase
+    fun record(
+        fullPinyin: String,
+        initials: String,
+        text: String,
+        aliases: Set<String> = emptySet(),
+    ): LearnedPhrase
     override fun close() = Unit
 }
 
@@ -25,6 +31,7 @@ class MemoryUserLexicon(
     private val records = LinkedHashMap<Pair<String, String>, LearnedPhrase>()
     private val fullIndex = HashMap<String, MutableSet<Pair<String, String>>>()
     private val initialsIndex = HashMap<String, MutableSet<Pair<String, String>>>()
+    private val aliasIndex = HashMap<String, MutableSet<Pair<String, String>>>()
     private var latestAssignedUsedAtMillis = Long.MIN_VALUE
 
     init {
@@ -38,6 +45,7 @@ class MemoryUserLexicon(
         val keys = LinkedHashSet<Pair<String, String>>()
         fullIndex[normalized]?.let(keys::addAll)
         initialsIndex[normalized]?.let(keys::addAll)
+        aliasIndex[normalized]?.let(keys::addAll)
         return keys
             .asSequence()
             .mapNotNull(records::get)
@@ -52,13 +60,26 @@ class MemoryUserLexicon(
     }
 
     @Synchronized
-    override fun record(fullPinyin: String, initials: String, text: String): LearnedPhrase {
+    override fun record(
+        fullPinyin: String,
+        initials: String,
+        text: String,
+        aliases: Set<String>,
+    ): LearnedPhrase {
         val full = PinyinSyllableSegmenter.normalize(fullPinyin)
         val short = PinyinSyllableSegmenter.normalize(initials)
         require(full.isNotEmpty() && short.isNotEmpty() && text.isNotEmpty())
         val now = nextUsedAtMillis()
         val key = full to text
         val previous = records[key]
+        val normalizedAliases = buildSet {
+            previous?.aliases?.forEach(::add)
+            aliases
+                .asSequence()
+                .map(PinyinSyllableSegmenter::normalize)
+                .filter { it.isNotEmpty() && it != full && it != short }
+                .forEach(::add)
+        }
         val value = LearnedPhrase(
             fullPinyin = full,
             initials = short,
@@ -66,6 +87,7 @@ class MemoryUserLexicon(
             useCount = (previous?.useCount ?: 0) + 1,
             createdAtMillis = previous?.createdAtMillis ?: now,
             lastUsedAtMillis = now,
+            aliases = normalizedAliases,
         )
         records[key] = value
         if (previous == null) {
@@ -74,6 +96,9 @@ class MemoryUserLexicon(
         } else if (previous.initials != short) {
             initialsIndex[previous.initials]?.remove(key)
             initialsIndex.getOrPut(short) { LinkedHashSet() } += key
+        }
+        normalizedAliases.forEach { alias ->
+            aliasIndex.getOrPut(alias) { LinkedHashSet() } += key
         }
         onRecord(value)
         return value
@@ -84,6 +109,9 @@ class MemoryUserLexicon(
         records[key] = value
         fullIndex.getOrPut(value.fullPinyin) { LinkedHashSet() } += key
         initialsIndex.getOrPut(value.initials) { LinkedHashSet() } += key
+        value.aliases.forEach { alias ->
+            aliasIndex.getOrPut(alias) { LinkedHashSet() } += key
+        }
         latestAssignedUsedAtMillis = maxOf(latestAssignedUsedAtMillis, value.lastUsedAtMillis)
     }
 
@@ -104,13 +132,15 @@ class AdaptivePinyinDecoder(
     private val base: InputDecoder,
     private val userLexicon: UserLexicon,
     private val segmenter: PinyinSyllableSegmenter,
+    private val englishLexicon: EnglishLexicon = EnglishLexicon.EMPTY,
 ) : ProgressivePinyinDecoder, ContextualInputDecoder {
     override fun decode(composing: String, limit: Int): List<Candidate> {
         if (limit <= 0) return emptyList()
         val query = PinyinSyllableSegmenter.normalize(composing)
         if (query.isEmpty()) return emptyList()
 
-        return mergeUserAndBase(query, limit, base.decode(query, limit))
+        val chinese = mergeUserAndBase(query, limit, base.decode(query, limit))
+        return MixedCandidateRanker.merge(chinese, englishLexicon.suggest(query, limit), limit)
     }
 
     override fun decodeAfter(previousCodePoint: Int, composing: String, limit: Int): List<Candidate> {
@@ -120,7 +150,8 @@ class AdaptivePinyinDecoder(
         val baseCandidates = (base as? ContextualInputDecoder)
             ?.decodeAfter(previousCodePoint, query, limit)
             ?: base.decode(query, limit)
-        return mergeUserAndBase(query, limit, baseCandidates)
+        val chinese = mergeUserAndBase(query, limit, baseCandidates)
+        return MixedCandidateRanker.merge(chinese, englishLexicon.suggest(query, limit), limit)
     }
 
     private fun mergeUserAndBase(
@@ -174,14 +205,27 @@ class AdaptivePinyinDecoder(
         }
 
         val prefixLimit = minOf(limit, MAX_PROGRESSIVE_CANDIDATES)
+        val segmentablePrefixLengths = segmenter.selectablePrefixLengths(query).toSet()
+        val prefixLengths = LinkedHashSet<Int>()
+        prefixLengths.addAll(segmentablePrefixLengths)
+        if (!segmenter.isComplete(query)) {
+            for (length in 1..minOf(query.length - 1, MAX_FALLBACK_PREFIX_LENGTH)) {
+                prefixLengths += length
+            }
+        }
         val prefixGroups = ArrayList<List<PinyinPrefixCandidate>>()
-        for (length in segmenter.selectablePrefixLengths(query)) {
+        for (length in prefixLengths.sorted()) {
             if (length >= query.length) continue
             val consumed = query.substring(0, length)
             val remaining = query.substring(length)
+            val maximumHanCharacters = if (length in segmentablePrefixLengths) {
+                1
+            } else {
+                MAX_FALLBACK_PREFIX_HAN_CHARACTERS
+            }
             val group = decode(consumed, prefixLimit)
                 .asSequence()
-                .filter(::isSingleHanCandidate)
+                .filter { isSelectableHanCandidate(it, maximumHanCharacters) }
                 .distinctBy { it.text }
                 .map { PinyinPrefixCandidate(it, consumed, remaining) }
                 .sortedWith(prefixComparator(wholePrefixRank))
@@ -252,7 +296,11 @@ class AdaptivePinyinDecoder(
             ?.let(PinyinSyllableSegmenter::normalize)
             ?.takeIf { it.length == characterCount }
         val initials = suppliedInitials ?: segmenter.initials(canonical, characterCount) ?: return null
-        return userLexicon.record(canonical, initials, candidate.text)
+        val aliases = normalizedRawInput
+            .takeIf { it != canonical && it != initials }
+            ?.let(::setOf)
+            .orEmpty()
+        return userLexicon.record(canonical, initials, candidate.text, aliases)
     }
 
     private fun isHanCharacter(character: Char): Boolean =
@@ -260,13 +308,20 @@ class AdaptivePinyinDecoder(
             character.code in 0x4E00..0x9FFF ||
             character.code in 0xF900..0xFAFF
 
-    private fun isSingleHanCandidate(candidate: Candidate): Boolean =
-        candidate.text.length == 1 &&
-            isHanCharacter(candidate.text[0]) &&
-            candidate.canonicalInitials?.length == 1
+    private fun isSelectableHanCandidate(
+        candidate: Candidate,
+        maximumHanCharacters: Int,
+    ): Boolean {
+        val characterCount = candidate.text.count(::isHanCharacter)
+        return characterCount in 1..maximumHanCharacters &&
+            characterCount == candidate.text.length &&
+            candidate.canonicalInitials?.length == characterCount
+    }
 
     private companion object {
         const val USER_BONUS = 30f
         const val MAX_PROGRESSIVE_CANDIDATES = 255
+        const val MAX_FALLBACK_PREFIX_LENGTH = 8
+        const val MAX_FALLBACK_PREFIX_HAN_CHARACTERS = 4
     }
 }

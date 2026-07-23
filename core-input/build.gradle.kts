@@ -81,3 +81,18 @@ tasks.register<JavaExec>("m4CoreBenchmark") {
         rootProject.layout.projectDirectory.file("benchmarks/results/m4-core.json").asFile.absolutePath,
     )
 }
+
+tasks.register<JavaExec>("m5MixedInputBenchmark") {
+    group = "verification"
+    description = "Gates bilingual English and full-pinyin-plus-initials correctness/latency."
+    dependsOn(tasks.named("classes"))
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("io.github.ethanbird.senseime.core.M5MixedInputBenchmark")
+    args(
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/pinyin_lexicon.bin").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/pinyin_bigrams.bin").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/pinyin_syllables.txt").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/english_lexicon.txt").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("benchmarks/results/m5-mixed-input.json").asFile.absolutePath,
+    )
+}

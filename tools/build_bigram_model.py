@@ -16,7 +16,7 @@ MAGIC = b"SBGM"
 VERSION = 1
 DEFAULT_MAX_PAIRS = 65536
 MAX_SCORE = 3.0
-INDEX_NAMESPACES = ("{", "~")
+INDEX_NAMESPACES = ("{", "}", "~")
 
 
 def is_han(character: str) -> bool:

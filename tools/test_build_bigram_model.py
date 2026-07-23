@@ -21,6 +21,7 @@ class BigramModelBuilderTest(unittest.TestCase):
                     ("woshi", [("我是", 1000, "ws", 0), ("我时", 10, "ws", 0)]),
                     ("zhongguo", [("中国", 500, "zg", 0)]),
                     ("{w", [("外围", 999999, "ww", 0)]),
+                    ("}fun|funv", [("妇女", 999999, "fn", 0)]),
                     ("~ygz", [("一个字", 999999, "ygz", 0)]),
                     ("ci", [("次级", 999999, "cj", 1)]),
                 ],
@@ -34,6 +35,7 @@ class BigramModelBuilderTest(unittest.TestCase):
             self.assertGreater(scores[(ord("我"), ord("是"))], scores[(ord("我"), ord("时"))])
             self.assertIn((ord("中"), ord("国")), scores)
             self.assertNotIn((ord("外"), ord("围")), scores)
+            self.assertNotIn((ord("妇"), ord("女")), scores)
             self.assertNotIn((ord("一"), ord("个")), scores)
             self.assertNotIn((ord("次"), ord("级")), scores)
             self.assertEqual(b"SBGM", model.read_bytes()[:4])

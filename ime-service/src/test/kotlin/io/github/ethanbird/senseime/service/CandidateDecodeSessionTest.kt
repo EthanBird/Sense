@@ -73,6 +73,25 @@ class CandidateDecodeSessionTest {
     }
 
     @Test
+    fun newRevisionRetainsOldVisualBatchButCannotSelectIt() {
+        val session = CandidateDecodeSession()
+        val first = PinyinComposition().type('h')
+        session.begin(first)
+        session.complete(first, decoding(first, "好", "和"), limit = 255)
+
+        val second = first.type('a')
+        val pending = session.begin(second)
+
+        assertEquals(listOf("好", "和"), pending.presentation.snapshot.candidates.map { it.text })
+        assertTrue(pending.presentation.pending)
+        assertNull(session.currentDecoding(second))
+        assertNull(session.select(second, second.revision, 0))
+
+        val ready = session.complete(second, decoding(second, "哈"), limit = 255)
+        assertEquals(listOf("哈"), ready?.snapshot?.candidates?.map { it.text })
+    }
+
+    @Test
     fun mismatchedPayloadAndStaleSelectionAreRejected() {
         val session = CandidateDecodeSession()
         val composition = PinyinComposition().type('d')

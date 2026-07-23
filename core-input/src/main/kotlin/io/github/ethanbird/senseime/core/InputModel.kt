@@ -11,9 +11,12 @@ data class Candidate(
 enum class CandidateMatchKind {
     BASE_EXACT,
     BASE_COMPOSED,
+    BASE_HYBRID,
     BASE_PREFIX,
     BASE_INITIALS,
     CORRECTED,
+    ENGLISH_EXACT,
+    ENGLISH_PREFIX,
     USER_FULL,
     USER_INITIALS,
 }

@@ -18,13 +18,16 @@ fi
 BUILD_TOOLS="$SDK/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK/platforms/android-36/android.jar"
 KOTLIN_LIB="$GRADLE_DIST/lib"
-OUT="$ROOT/build/offline-v0.3.1-m4"
+OUT="$ROOT/build/offline-v0.3.2-m5"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
-APK="$APK_DIR/Sense-v0.3.1-m4-debug.apk"
+APK="$APK_DIR/Sense-v0.3.2-m5-debug.apk"
 LEXICON_ASSET="$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin"
-LEXICON_SHA256="d8d6ad58a462a0c00abd9300bd7f58930e0cff5a3bbf0089ff7128d805dab80c"
+LEXICON_SHA256="eda69e1ff2a972f0a4ba30f4f2699ca744d1f8d62118d3fb696fe956f0b35ef6"
 BIGRAM_ASSET="$ROOT/ime-service/src/main/assets/pinyin_bigrams.bin"
-BIGRAM_SHA256="c8a7c4b9fe7b4b17b73fc29073c4c55943720e8203d42ca5f467c54f8aa12e28"
+BIGRAM_SHA256="c3d806b2baeac31aaa2859607ab7c01399229332c3bf77758216ec62713e9220"
+ENGLISH_ASSET="$ROOT/ime-service/src/main/assets/english_lexicon.txt"
+ENGLISH_SHA256="1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624"
+ENGLISH_WORD_COUNT="20000"
 export ANDROID_USER_HOME=${ANDROID_USER_HOME:-$OUT/android-user-home}
 
 find "$OUT" -mindepth 1 -delete 2>/dev/null || true
@@ -33,6 +36,7 @@ mkdir -p "$OUT/core-main" "$OUT/core-test" "$OUT/ui-main" "$OUT/ui-test" "$OUT/s
 python3 "$ROOT/tools/test_build_pinyin_lexicon.py" 2>&1 | tee "$OUT/lexicon-builder-tests.txt"
 python3 "$ROOT/tools/test_build_bigram_model.py" 2>&1 | tee "$OUT/bigram-builder-tests.txt"
 python3 "$ROOT/tools/test_m4_core_assets.py" 2>&1 | tee "$OUT/m4-core-assets-tests.txt"
+python3 "$ROOT/tools/test_m5_mixed_assets.py" 2>&1 | tee "$OUT/m5-mixed-assets-tests.txt"
 python3 "$ROOT/tools/build_pinyin_lexicon.py" \
     "$LEXICON_ASSET" \
     "$OUT/pinyin_lexicon.bin" \
@@ -46,12 +50,15 @@ python3 "$ROOT/tools/build_bigram_model.py" \
     --max-pairs 65536
 cmp "$BIGRAM_ASSET" "$OUT/pinyin_bigrams.bin"
 printf '%s  %s\n' "$BIGRAM_SHA256" "$BIGRAM_ASSET" | sha256sum -c -
+printf '%s  %s\n' "$ENGLISH_SHA256" "$ENGLISH_ASSET" | sha256sum -c -
+awk '!/^#/ && NF { count++ } END { print count + 0 }' "$ENGLISH_ASSET" | grep -Fx "$ENGLISH_WORD_COUNT"
 
 cmp "$ROOT/NOTICE" "$ROOT/ime-service/src/main/assets/NOTICE.txt"
 cmp "$ROOT/LICENSE" "$ROOT/ime-service/src/main/assets/LICENSE.txt"
 cmp "$ROOT/licenses/rime-pinyin-simp-LICENSE" "$ROOT/ime-service/src/main/assets/RIME-PINYIN-SIMP-LICENSE.txt"
 cmp "$ROOT/licenses/CC-CEDICT-NOTICE.md" "$ROOT/ime-service/src/main/assets/CC-CEDICT-NOTICE.txt"
 cmp "$ROOT/licenses/CC-BY-SA-4.0.txt" "$ROOT/ime-service/src/main/assets/CC-BY-SA-4.0.txt"
+cmp "$ROOT/licenses/popular-english-words-ISC.txt" "$ROOT/ime-service/src/main/assets/POPULAR-ENGLISH-WORDS-ISC.txt"
 
 COMPILER_CP=$(find "$KOTLIN_LIB" -maxdepth 1 -name '*.jar' -print | paste -sd: -)
 STDLIB="$KOTLIN_LIB/kotlin-stdlib-2.0.21.jar"
@@ -70,6 +77,7 @@ mapfile -t UI_LAYOUT_SOURCES < <(printf '%s\n' \
 mapfile -t UI_TEST_SOURCES < <(find "$ROOT/ime-ui/src/test/kotlin" -name '*.kt' -print | sort)
 mapfile -t SERVICE_PURE_SOURCES < <(printf '%s\n' \
     "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/CandidateDecodeSession.kt" \
+    "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/EditorPrivacyPolicy.kt" \
     "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/LatestOnlyTaskRunner.kt" \
     "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ProgressiveCandidateSnapshot.kt")
 mapfile -t SERVICE_TEST_SOURCES < <(find "$ROOT/ime-service/src/test/kotlin" -name '*.kt' -print | sort)
@@ -154,6 +162,14 @@ java -cp "$STDLIB:$OUT/core-main" \
     "$ROOT/benchmarks/replay/m4-core.tsv" \
     "$ROOT/benchmarks/results/m4-core.json"
 
+java -cp "$STDLIB:$OUT/core-main" \
+    io.github.ethanbird.senseime.core.M5MixedInputBenchmark \
+    "$LEXICON_ASSET" \
+    "$BIGRAM_ASSET" \
+    "$ROOT/ime-service/src/main/assets/pinyin_syllables.txt" \
+    "$ENGLISH_ASSET" \
+    "$ROOT/benchmarks/results/m5-mixed-input.json"
+
 "$BUILD_TOOLS/aapt2" compile --dir "$ROOT/app/src/main/res" -o "$OUT/app-res.zip"
 "$BUILD_TOOLS/aapt2" compile --dir "$ROOT/ime-service/src/main/res" -o "$OUT/ime-service-res.zip"
 "$BUILD_TOOLS/aapt2" link \
@@ -161,8 +177,8 @@ java -cp "$STDLIB:$OUT/core-main" \
     --manifest "$ROOT/tools/offline/AndroidManifest.xml" \
     --min-sdk-version 29 \
     --target-sdk-version 36 \
-    --version-code 7 \
-    --version-name 0.3.1-m4 \
+    --version-code 8 \
+    --version-name 0.3.2-m5 \
     --auto-add-overlay \
     --output-text-symbols "$OUT/R.txt" \
     -A "$ROOT/ime-service/src/main/assets" \
@@ -231,7 +247,7 @@ keytool -genkeypair \
 "$BUILD_TOOLS/zipalign" -c -P 16 4 "$APK"
 "$BUILD_TOOLS/aapt2" dump badging "$APK" | tee "$OUT/apk-badging.txt"
 "$BUILD_TOOLS/aapt2" dump permissions "$APK" | tee "$OUT/apk-permissions.txt"
-grep -F "package: name='io.github.ethanbird.senseime' versionCode='7' versionName='0.3.1-m4'" "$OUT/apk-badging.txt"
+grep -F "package: name='io.github.ethanbird.senseime' versionCode='8' versionName='0.3.2-m5'" "$OUT/apk-badging.txt"
 grep -Fx "minSdkVersion:'29'" "$OUT/apk-badging.txt"
 grep -Fx "targetSdkVersion:'36'" "$OUT/apk-badging.txt"
 if grep -Fq "android.permission.INTERNET" "$OUT/apk-permissions.txt"; then
@@ -243,16 +259,23 @@ unzip -p "$APK" assets/LICENSE.txt | cmp - "$ROOT/LICENSE"
 unzip -p "$APK" assets/RIME-PINYIN-SIMP-LICENSE.txt | cmp - "$ROOT/licenses/rime-pinyin-simp-LICENSE"
 unzip -p "$APK" assets/CC-CEDICT-NOTICE.txt | cmp - "$ROOT/licenses/CC-CEDICT-NOTICE.md"
 unzip -p "$APK" assets/CC-BY-SA-4.0.txt | cmp - "$ROOT/licenses/CC-BY-SA-4.0.txt"
+unzip -p "$APK" assets/POPULAR-ENGLISH-WORDS-ISC.txt | cmp - "$ROOT/licenses/popular-english-words-ISC.txt"
 unzip -p "$APK" assets/pinyin_lexicon.bin | sha256sum | awk '{print $1}' | grep -Fx "$LEXICON_SHA256"
 unzip -p "$APK" assets/pinyin_bigrams.bin | sha256sum | awk '{print $1}' | grep -Fx "$BIGRAM_SHA256"
+unzip -p "$APK" assets/english_lexicon.txt | sha256sum | awk '{print $1}' | grep -Fx "$ENGLISH_SHA256"
+unzip -p "$APK" assets/english_lexicon.txt |
+    awk '!/^#/ && NF { count++ } END { print count + 0 }' |
+    grep -Fx "$ENGLISH_WORD_COUNT"
 unzip -l "$APK" \
     assets/NOTICE.txt \
     assets/LICENSE.txt \
     assets/RIME-PINYIN-SIMP-LICENSE.txt \
     assets/CC-CEDICT-NOTICE.txt \
     assets/CC-BY-SA-4.0.txt \
+    assets/POPULAR-ENGLISH-WORDS-ISC.txt \
     assets/pinyin_lexicon.bin \
-    assets/pinyin_bigrams.bin | tee "$OUT/apk-attributed-assets.txt"
+    assets/pinyin_bigrams.bin \
+    assets/english_lexicon.txt | tee "$OUT/apk-attributed-assets.txt"
 sha256sum "$APK" | tee "$APK.sha256"
 
 HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
@@ -271,4 +294,4 @@ HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --text "$OUT/lint.txt" \
     "$ROOT/tools/offline"
 
-echo "v0.3.1-m4 verification complete: $APK"
+echo "v0.3.2-m5 verification complete: $APK"

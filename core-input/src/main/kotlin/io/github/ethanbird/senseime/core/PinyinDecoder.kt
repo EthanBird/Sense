@@ -21,6 +21,7 @@ class PinyinDecoder private constructor(
         val query = normalize(composing)
         if (query.isEmpty()) return emptyList()
         val outputLimit = minOf(limit, MAX_DECODE_CANDIDATES)
+        val hybrid = readHybridCandidates(query, outputLimit)
 
         val exact = findExact(query)
         if (exact >= 0) {
@@ -35,12 +36,20 @@ class PinyinDecoder private constructor(
             } else {
                 emptyList()
             }
-            return mergeCandidates(exactCandidates + composedCandidates, outputLimit)
+            val canonicalFullPinyin = mergeCandidates(
+                exactCandidates + composedCandidates,
+                outputLimit,
+            )
+            // A private hybrid alias must never outrank a valid full-pinyin
+            // spelling merely because the underlying phrase has a larger raw
+            // dictionary weight (`hang` must remain 行/航…, not 韩国).
+            return concatenateCandidateGroups(
+                listOf(canonicalFullPinyin, hybrid),
+                outputLimit,
+            )
         }
 
         val initials = readInitialsCandidates(query, outputLimit)
-        if (initials.isNotEmpty()) return initials
-
         val composed = composeCandidates(
             query,
             outputLimit,
@@ -50,18 +59,29 @@ class PinyinDecoder private constructor(
         val statisticalPrefix = readStatisticalPrefixCandidates(query, outputLimit)
         val dynamicPrefix = readPrefixCandidates(query, outputLimit)
         val corrected = readCorrectedCandidates(query, outputLimit)
-        return mergeCandidates(composed + statisticalPrefix + dynamicPrefix + corrected, outputLimit)
+        return mergeCandidates(
+            hybrid + initials + composed + statisticalPrefix + dynamicPrefix + corrected,
+            outputLimit,
+        )
     }
 
     override fun decodeAfter(previousCodePoint: Int, composing: String, limit: Int): List<Candidate> {
         if (limit <= 0 || !Character.isValidCodePoint(previousCodePoint)) return emptyList()
+        val hasCanonicalExact = findExact(normalize(composing)) >= 0
         return decode(composing, limit)
             .map { candidate ->
                 candidate.copy(
                     score = candidate.score + bigramModel.score(previousCodePoint, candidate.text.codePointAt(0)),
                 )
             }
-            .sortedWith(compareByDescending<Candidate> { it.score }.thenBy { matchPriority(it.matchKind) }.thenBy { it.text.length })
+            .sortedWith(
+                compareBy<Candidate> {
+                    if (hasCanonicalExact) exactQuerySourceGroup(it.matchKind) else 0
+                }
+                    .thenByDescending { it.score }
+                    .thenBy { matchPriority(it.matchKind) }
+                    .thenBy { it.text.length },
+            )
     }
 
     private fun findExact(query: String): Int {
@@ -202,12 +222,24 @@ class PinyinDecoder private constructor(
     private fun matchPriority(kind: CandidateMatchKind): Int = when (kind) {
         CandidateMatchKind.BASE_EXACT -> 0
         CandidateMatchKind.BASE_COMPOSED -> 1
+        CandidateMatchKind.BASE_HYBRID -> 1
         CandidateMatchKind.BASE_PREFIX -> 2
         CandidateMatchKind.BASE_INITIALS -> 3
         CandidateMatchKind.CORRECTED -> 4
+        CandidateMatchKind.ENGLISH_EXACT -> 5
+        CandidateMatchKind.ENGLISH_PREFIX -> 6
         CandidateMatchKind.USER_FULL,
         CandidateMatchKind.USER_INITIALS
         -> 0
+    }
+
+    private fun exactQuerySourceGroup(kind: CandidateMatchKind): Int = when (kind) {
+        CandidateMatchKind.BASE_EXACT,
+        CandidateMatchKind.BASE_COMPOSED,
+        -> 0
+
+        CandidateMatchKind.BASE_HYBRID -> 1
+        else -> 2
     }
 
     /**
@@ -243,6 +275,20 @@ class PinyinDecoder private constructor(
                     .thenBy { it.text },
             )
             .take(limit)
+    }
+
+    private fun concatenateCandidateGroups(
+        groups: List<List<Candidate>>,
+        limit: Int,
+    ): List<Candidate> {
+        val result = ArrayList<Candidate>(limit)
+        val seen = HashSet<String>()
+        groups.forEach { group ->
+            group.forEach { candidate ->
+                if (result.size < limit && seen.add(candidate.text)) result += candidate
+            }
+        }
+        return result
     }
 
     /**
@@ -302,6 +348,31 @@ class PinyinDecoder private constructor(
                     matchKind = CandidateMatchKind.BASE_INITIALS,
                 )
             }
+    }
+
+    private fun readHybridCandidates(query: String, limit: Int): List<Candidate> {
+        if (query.length < MIN_HYBRID_LENGTH) return emptyList()
+        val prefix = HYBRID_NAMESPACE + query + HYBRID_SEPARATOR
+        val values = ArrayList<Candidate>(minOf(limit, 32))
+        var index = lowerBound(prefix)
+        var scanned = 0
+        while (
+            index < recordOffsets.size &&
+            scanned < HYBRID_SCAN_LIMIT &&
+            codeStartsWith(index, prefix)
+        ) {
+            val code = readCode(index)
+            val canonical = code.substring(prefix.length)
+            readCandidates(
+                index,
+                limit,
+                CandidateMatchKind.BASE_HYBRID,
+                canonical,
+            ).forEach(values::add)
+            index += 1
+            scanned += 1
+        }
+        return mergeCandidates(values, limit)
     }
 
     private fun readPrefixCandidates(query: String, limit: Int): List<Candidate> {
@@ -597,7 +668,11 @@ class PinyinDecoder private constructor(
         private val FUZZY_SUBSTITUTIONS = setOf('n' to 'l', 'f' to 'h')
         private const val PREFIX_NAMESPACE = "{"
         private const val INITIALS_NAMESPACE = "~"
+        private const val HYBRID_NAMESPACE = "}"
+        private const val HYBRID_SEPARATOR = "|"
         private const val MIN_INITIALS_LENGTH = 2
+        private const val MIN_HYBRID_LENGTH = 3
+        private const val HYBRID_SCAN_LIMIT = 128
         private val KEY_NEIGHBORS = mapOf(
             'q' to "wa", 'w' to "qeas", 'e' to "wrsd", 'r' to "etdf", 't' to "ryfg",
             'y' to "tugh", 'u' to "yihj", 'i' to "uojk", 'o' to "ipkl", 'p' to "ol",

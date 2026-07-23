@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "stage": "M5-mixed-input",
+  "generatedAt": "2026-07-23T05:33:42.020232569Z",
+  "correctness": {
+    "w": "我",
+    "z": "在",
+    "hangFirstSource": "BASE_EXACT",
+    "host": ["host", "hosts", "hostile", "好哦|st"],
+    "fun": ["妇女", "👩🏻", "服你", "赋能", "fun", "腐女"],
+    "funLearnedAlias": "fun",
+    "zhongwsrf": "中文输入法",
+    "zhongwensrf": "中文输入法"
+  },
+  "englishLexicon": {
+    "words": 20000,
+    "bytes": 161139,
+    "sha256": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624",
+    "p95Ns": 4634.14,
+    "gateNs": 500000.00
+  },
+  "mixedProgressiveDecode": {
+    "p95Ns": 770783.89,
+    "gateNs": 5000000.00
+  },
+  "hybridDecode": {
+    "p95Ns": 1211108.38,
+    "gateNs": 5000000.00
+  }
+}

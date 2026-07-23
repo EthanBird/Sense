@@ -39,9 +39,14 @@ internal class CandidateDecodeSession {
             return CandidateDecodeLaunch(current, shouldDecode = false, stateChanged = false)
         }
         val shouldDecode = composition.remainingPinyin.isNotEmpty()
+        val retainedVisualSnapshot = if (shouldDecode) {
+            current.snapshot
+        } else {
+            ProgressiveCandidateSnapshot.EMPTY
+        }
         current = CandidatePresentation(
             composition = composition,
-            snapshot = ProgressiveCandidateSnapshot.EMPTY,
+            snapshot = retainedVisualSnapshot,
             decoding = null,
             pending = shouldDecode,
         )
