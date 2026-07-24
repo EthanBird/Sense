@@ -24,6 +24,18 @@ sealed interface AiEvent {
         val label: String,
     ) : AiEvent
 
+    /**
+     * A short, user-facing description of current agent progress.
+     *
+     * This is deliberately not a reasoning or chain-of-thought channel. Producers may stream only
+     * a concise public summary that is safe to show directly in the keyboard UI.
+     */
+    data class DescriptionDelta(
+        override val requestId: String,
+        override val runGeneration: Long,
+        val text: String,
+    ) : AiEvent
+
     data class PreviewReset(
         override val requestId: String,
         override val runGeneration: Long,
@@ -99,10 +111,13 @@ enum class HarnessErrorCode {
     PROVIDER_CONFIGURATION,
     PROVIDER_RATE_LIMIT,
     PROVIDER_UNAVAILABLE,
+    PROVIDER_CONTENT_FILTER,
     PROVIDER_FAILURE,
     INTERNAL_FAILURE,
     EVENT_LIMIT_EXCEEDED,
     PREVIEW_LIMIT_EXCEEDED,
+    DESCRIPTION_LIMIT_EXCEEDED,
+    OUTPUT_TRUNCATED,
     REPAIR_LIMIT_EXCEEDED,
     INVALID_EVENT,
 }

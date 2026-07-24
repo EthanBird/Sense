@@ -14,6 +14,16 @@ class ProviderProfileTest {
         assertTrue(profile.validate().isValid)
         assertEquals("https://api.openai.com/v1/responses", profile.endpointUrl())
         assertTrue(profile.streaming)
+        assertEquals(ThinkingMode.DISABLED, profile.thinkingMode)
+        assertEquals(
+            ProviderTimeouts(
+                connectTimeoutMs = 15_000,
+                firstEventTimeoutMs = 30_000,
+                streamIdleTimeoutMs = 30_000,
+                totalTimeoutMs = 120_000,
+            ),
+            profile.timeouts,
+        )
     }
 
     @Test

@@ -18,9 +18,9 @@ fi
 BUILD_TOOLS="$SDK/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK/platforms/android-36/android.jar"
 KOTLIN_LIB="$GRADLE_DIST/lib"
-OUT="$ROOT/build/offline-v0.3.6-m8"
+OUT="$ROOT/build/offline-v0.3.7-m8"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
-APK="$APK_DIR/Sense-v0.3.6-m8-debug.apk"
+APK="$APK_DIR/Sense-v0.3.7-m8-debug.apk"
 LEXICON_ASSET="$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin"
 LEXICON_SHA256="ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
 BIGRAM_ASSET="$ROOT/ime-service/src/main/assets/pinyin_bigrams.bin"
@@ -109,7 +109,8 @@ mapfile -t SERVICE_PURE_SOURCES < <(
             "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/EditorCompositionSelectionPolicy.kt" \
             "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/EditorPrivacyPolicy.kt" \
             "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/LatestOnlyTaskRunner.kt" \
-            "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ProgressiveCandidateSnapshot.kt"
+            "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ProgressiveCandidateSnapshot.kt" \
+            "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ai/AgentStreamPresentation.kt"
         find "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ai/editor" \
             -name '*.kt' -print
     } | sort -u
@@ -179,6 +180,9 @@ java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect \
     -classpath "$STDLIB:$OUT/protocol-main:$OUT/brain-api-main" \
     -d "$OUT/brain-main" "${BRAIN_SOURCES[@]}"
+if [[ -d "$ROOT/ai-brain/src/main/resources" ]]; then
+    cp -R "$ROOT/ai-brain/src/main/resources/." "$OUT/brain-main/"
+fi
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect \
     -classpath "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/brain-api-main:$OUT/brain-main" \
@@ -343,8 +347,8 @@ java -cp "$STDLIB:$OUT/core-main" \
     --manifest "$ROOT/tools/offline/AndroidManifest.xml" \
     --min-sdk-version 29 \
     --target-sdk-version 36 \
-    --version-code 13 \
-    --version-name 0.3.6-m8 \
+    --version-code 14 \
+    --version-name 0.3.7-m8 \
     --auto-add-overlay \
     --output-text-symbols "$OUT/R.txt" \
     -A "$ROOT/ime-service/src/main/assets" \
@@ -394,6 +398,7 @@ java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
 
 cp "$OUT/resources.apk" "$OUT/unsigned-unaligned.apk"
 (cd "$OUT/dex" && zip -q -j "$OUT/unsigned-unaligned.apk" classes*.dex)
+(cd "$ROOT/ai-brain/src/main/resources" && zip -q -r "$OUT/unsigned-unaligned.apk" .)
 "$BUILD_TOOLS/zipalign" -f 4 "$OUT/unsigned-unaligned.apk" "$OUT/unsigned-aligned.apk"
 
 keytool -genkeypair \
@@ -473,7 +478,7 @@ actions = {
 if "android.view.InputMethod" not in actions:
     raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
 PY
-grep -F "package: name='io.github.ethanbird.senseime' versionCode='13' versionName='0.3.6-m8'" "$OUT/apk-badging.txt"
+grep -F "package: name='io.github.ethanbird.senseime' versionCode='14' versionName='0.3.7-m8'" "$OUT/apk-badging.txt"
 grep -Fx "minSdkVersion:'29'" "$OUT/apk-badging.txt"
 grep -Fx "targetSdkVersion:'36'" "$OUT/apk-badging.txt"
 DECLARED_PERMISSIONS=$(
@@ -501,6 +506,7 @@ unzip -p "$APK" assets/CC-CEDICT-NOTICE.txt | cmp - "$ROOT/licenses/CC-CEDICT-NO
 unzip -p "$APK" assets/CC-BY-SA-4.0.txt | cmp - "$ROOT/licenses/CC-BY-SA-4.0.txt"
 unzip -p "$APK" assets/POPULAR-ENGLISH-WORDS-ISC.txt | cmp - "$ROOT/licenses/popular-english-words-ISC.txt"
 unzip -p "$APK" assets/CHINESE-IDIOM-CHENGYU-MIT.txt | cmp - "$ROOT/licenses/chinese-idiom-chengyu-MIT.txt"
+unzip -p "$APK" sense/soul.md | cmp - "$ROOT/ai-brain/src/main/resources/sense/soul.md"
 unzip -p "$APK" assets/pinyin_lexicon.bin | sha256sum | awk '{print $1}' | grep -Fx "$LEXICON_SHA256"
 unzip -p "$APK" assets/pinyin_bigrams.bin | sha256sum | awk '{print $1}' | grep -Fx "$BIGRAM_SHA256"
 unzip -p "$APK" assets/english_lexicon.txt | sha256sum | awk '{print $1}' | grep -Fx "$ENGLISH_SHA256"
@@ -514,6 +520,7 @@ unzip -l "$APK" \
     assets/CC-CEDICT-NOTICE.txt \
     assets/CC-BY-SA-4.0.txt \
     assets/POPULAR-ENGLISH-WORDS-ISC.txt \
+    sense/soul.md \
     assets/pinyin_lexicon.bin \
     assets/pinyin_bigrams.bin \
     assets/english_lexicon.txt | tee "$OUT/apk-attributed-assets.txt"
@@ -539,4 +546,4 @@ HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --text "$OUT/lint.txt" \
     "$ROOT/tools/offline"
 
-echo "v0.3.6-m8 verification complete: $APK"
+echo "v0.3.7-m8 verification complete: $APK"

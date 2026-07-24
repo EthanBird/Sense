@@ -11,16 +11,18 @@
     <string name="enable_ime">启用 Sense</string>
     <string name="switch_ime">切换到 Sense</string>
     <string name="ai_provider_title">AI Provider</string>
-    <string name="ai_provider_body">长按空格会把当前输入框全文或选区发送到这里配置的 Provider；正文不会写入本地日志，API Key 使用 Android Keystore 加密。连通性测试只发送固定测试文本，不读取输入框。</string>
+    <string name="ai_provider_body">长按空格会把当前输入框全文或选区发送到这里配置的 Provider；正文不会写入本地日志，API Key 使用 Android Keystore 加密。连通性测试只发送固定测试文本并强制使用快速模式，不读取输入框。</string>
     <string name="ai_provider_name">显示名称</string>
     <string name="ai_provider_base_url">Base URL</string>
     <string name="ai_provider_model">模型</string>
     <string name="ai_provider_style">API 协议</string>
     <string name="ai_provider_structured_output">结构化输出（兼容服务可选 JSON Object 或仅提示词）</string>
+    <string name="ai_provider_thinking_mode">模型思考模式</string>
     <string name="ai_provider_key">API Key</string>
     <string name="ai_provider_stream">流式响应</string>
     <string name="ai_provider_save">保存 Provider</string>
     <string name="ai_provider_test">保存并测试连接（消耗少量 Token）</string>
+    <string name="ai_provider_test_cancel">取消连通性测试</string>
     <string name="ai_provider_validate">检查本地配置（不联网）</string>
     <string name="ai_provider_clear_key">清除已保存的 API Key</string>
     <string name="ai_provider_not_configured">尚未配置；长按空格会安全返回键盘。</string>
@@ -33,14 +35,14 @@
     <string name="ai_provider_key_optional">可选；留空表示无认证</string>
     <string name="ai_provider_key_cleared">API Key 已清除，Provider 配置仍保留。</string>
     <string name="ai_provider_deepseek_chat_required">DeepSeek 官方 API 需选择“OpenAI-compatible Chat Completions”。</string>
-    <string name="ai_provider_deepseek_json_required">DeepSeek 不支持此处的严格 JSON Schema；请选择“JSON Object”或“仅提示词约束”。</string>
+    <string name="ai_provider_deepseek_reasoning_unsupported">当前 DeepSeek 思考模式与推理强度不兼容；快速模式需省略推理强度，深度模式仅支持 Provider 接受的强度。</string>
     <string name="ai_provider_test_starting">已保存，正在启动私有 Brain 连通性测试…</string>
     <string name="ai_provider_test_connecting">正在连接 Provider…</string>
     <string name="ai_provider_test_understanding">Provider 已连接，正在验证模型响应…</string>
     <string name="ai_provider_test_generating">模型正在生成固定测试结果…</string>
     <string name="ai_provider_test_validating">正在执行本地结构化协议门禁…</string>
-    <string name="ai_provider_test_succeeded">连接成功：URL、认证、模型、响应解析与本地协议均已通过。</string>
-    <string name="ai_provider_test_succeeded_with_usage">连接成功：完整协议已通过。本次用量：输入 %1$d、输出 %2$d Token。</string>
+    <string name="ai_provider_test_succeeded">连接成功（%1$.2f 秒）：URL、认证、模型、Agent 工具提交与本地协议均已通过。</string>
+    <string name="ai_provider_test_succeeded_with_usage">连接成功（%1$.2f 秒）：完整 Agent 协议已通过。本次用量：输入 %2$d、输出 %3$d Token。</string>
     <string name="ai_provider_test_cancelled">连通性测试已取消。</string>
     <string name="ai_provider_test_not_configured">测试失败：尚未保存 Provider 配置。</string>
     <string name="ai_provider_test_authentication">测试失败：认证被拒绝，请检查或重建 API Key。</string>
@@ -60,5 +62,5 @@
     <string name="dictionary_notice_body">基础词频来自 Rime pinyin-simp（Apache-2.0）；补充词条来自 MDBG 发布的 CC-CEDICT。合并词典及派生句级模型按 CC BY-SA 4.0 资产边界提供。点击离线查看完整署名与许可。</string>
     <string name="dictionary_notice_load_error">无法读取随应用打包的许可文件。</string>
     <string name="close">关闭</string>
-    <string name="version_label">版本 0.3.6-m8 · Android 10+</string>
+    <string name="version_label">版本 0.3.7-m8 · Android 10+</string>
 </resources>

@@ -58,6 +58,7 @@ sealed interface ProviderConnectionTestEvent {
     data class Succeeded(
         val inputTokens: Long?,
         val outputTokens: Long?,
+        val elapsedMs: Long,
     ) : ProviderConnectionTestEvent
 
     data class Failed(
@@ -108,6 +109,7 @@ internal object ProviderConnectionTestProtocol {
     // keeping this explicit, user-triggered diagnostic inexpensive.
     const val MAX_OUTPUT_CHARS = 512
     const val TEST_TEXT = "Sense AI connectivity test."
+    const val FIELD_IDENTITY = "sense.settings.provider-test"
 
     fun buildRequest(
         requestId: String,
@@ -118,7 +120,7 @@ internal object ProviderConnectionTestProtocol {
             requestId = requestId,
             snapshotId = "$requestId.snapshot",
             editorGeneration = generation,
-            fieldIdentity = "sense.settings.provider-test",
+            fieldIdentity = FIELD_IDENTITY,
             capability = SnapshotCapability.FULL_DOCUMENT,
             text = TEST_TEXT,
             selection = TextSelectionV1(TEST_TEXT.length, TEST_TEXT.length),
@@ -135,6 +137,28 @@ internal object ProviderConnectionTestProtocol {
             snapshot = snapshot,
             maxOutputChars = MAX_OUTPUT_CHARS,
         )
+    }
+
+    /**
+     * Identifies the fixed Settings probe without trusting a user editor field or request prefix.
+     *
+     * Brain uses this only to select the low-latency connectivity request mode. It grants no
+     * additional editor capability and the final proposal still crosses the complete local gate.
+     */
+    fun isProbe(request: HarnessRequestV1): Boolean {
+        val snapshot = request.snapshot
+        return snapshot.fieldIdentity == FIELD_IDENTITY &&
+            snapshot.text == TEST_TEXT &&
+            snapshot.snapshotId == "${request.requestId}.snapshot" &&
+            snapshot.baseSha256 == EditorTextDigest.sha256Utf8(TEST_TEXT) &&
+            snapshot.capability == SnapshotCapability.FULL_DOCUMENT &&
+            snapshot.selection == TextSelectionV1(TEST_TEXT.length, TEST_TEXT.length) &&
+            snapshot.target == PatchTarget.WHOLE_FIELD &&
+            snapshot.textStartOffset == 0 &&
+            !snapshot.truncated &&
+            request.skill == EditorIntent.SMART_EDIT &&
+            snapshot.maxOutputChars == MAX_OUTPUT_CHARS &&
+            request.maxOutputChars == MAX_OUTPUT_CHARS
     }
 
     fun mapPhase(phase: HarnessPhase): ProviderConnectionTestPhase = when (phase) {
@@ -168,8 +192,11 @@ internal object ProviderConnectionTestProtocol {
         -> ProviderConnectionTestFailure.TIMEOUT
 
         "PROTOCOL_INVALID",
+        "OUTPUT_TRUNCATED",
+        "PROVIDER_CONTENT_FILTER",
         "EVENT_LIMIT_EXCEEDED",
         "PREVIEW_LIMIT_EXCEEDED",
+        "DESCRIPTION_LIMIT_EXCEEDED",
         "REPAIR_LIMIT_EXCEEDED",
         "INVALID_EVENT",
         -> ProviderConnectionTestFailure.PROTOCOL

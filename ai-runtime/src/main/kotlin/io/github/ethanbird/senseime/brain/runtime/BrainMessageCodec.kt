@@ -109,6 +109,12 @@ internal object BrainMessageCodec {
                 putString("label", event.label)
             }
 
+            is AiEvent.DescriptionDelta -> {
+                val payload = encodeDescriptionDelta(event)
+                putString("type", payload.type)
+                putString(DESCRIPTION_TEXT_KEY, payload.text)
+            }
+
             is AiEvent.PreviewReset -> {
                 putString("type", "preview_reset")
                 putInt("attempt", event.attempt)
@@ -153,6 +159,11 @@ internal object BrainMessageCodec {
                 generation,
                 HarnessPhase.valueOf(bundle.requireString("phase")),
                 bundle.requireString("label"),
+            )
+            DESCRIPTION_DELTA_TYPE -> decodeDescriptionDelta(
+                requestId = requestId,
+                generation = generation,
+                text = bundle.requireString(DESCRIPTION_TEXT_KEY),
             )
             "preview_reset" -> AiEvent.PreviewReset(
                 requestId,
@@ -215,5 +226,29 @@ internal object BrainMessageCodec {
     private fun Bundle.requireString(key: String): String =
         requireNotNull(getString(key)) { "Missing Brain message field $key" }
 
+    internal fun decodeDescriptionDelta(
+        requestId: String,
+        generation: Long,
+        text: String,
+    ): AiEvent.DescriptionDelta = AiEvent.DescriptionDelta(
+        requestId = requestId,
+        runGeneration = generation,
+        text = text,
+    )
+
+    internal fun encodeDescriptionDelta(
+        event: AiEvent.DescriptionDelta,
+    ): DescriptionDeltaWirePayload = DescriptionDeltaWirePayload(
+        type = DESCRIPTION_DELTA_TYPE,
+        text = event.text,
+    )
+
+    internal data class DescriptionDeltaWirePayload(
+        val type: String,
+        val text: String,
+    )
+
+    internal const val DESCRIPTION_DELTA_TYPE = "description_delta"
+    internal const val DESCRIPTION_TEXT_KEY = "text"
     private const val NO_SELECTION = Int.MIN_VALUE
 }

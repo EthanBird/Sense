@@ -13,6 +13,7 @@ data class BoundedHarnessLimits(
     val maxProviderEvents: Int = 2_048,
     val maxPreviewChars: Int = SenseAiProtocol.DEFAULT_MAX_OUTPUT_CHARS,
     val maxPreviewResets: Int = 1,
+    val maxDescriptionChars: Int = DEFAULT_MAX_DESCRIPTION_CHARS,
 ) {
     init {
         require(firstEventTimeoutMs > 0)
@@ -23,6 +24,12 @@ data class BoundedHarnessLimits(
         require(maxProviderEvents > 0)
         require(maxPreviewChars > 0)
         require(maxPreviewResets >= 0)
+        require(maxDescriptionChars > 0)
+    }
+
+    companion object {
+        /** One short public progress sentence, never hidden model reasoning. */
+        const val DEFAULT_MAX_DESCRIPTION_CHARS = 160
     }
 }
 
@@ -84,6 +91,7 @@ class BoundedHarnessSession(
     private var lastObservedAtMs: Long? = null
     private var providerEventCount = 0
     private var currentPreviewChars = 0
+    private var currentDescriptionChars = 0
     private var previewResetCount = 0
     private var terminalEvent: AiEvent? = null
 
@@ -156,6 +164,7 @@ class BoundedHarnessSession(
         providerEventCount += 1
         return@synchronized when (event) {
             is AiEvent.Status -> acceptStatus(event, nowMonotonicMs)
+            is AiEvent.DescriptionDelta -> acceptDescriptionDelta(event, nowMonotonicMs)
             is AiEvent.PreviewReset -> acceptPreviewReset(event, nowMonotonicMs)
             is AiEvent.PreviewDelta -> acceptPreviewDelta(event, nowMonotonicMs)
             is AiEvent.Usage -> acceptUsage(event, nowMonotonicMs)
@@ -312,6 +321,26 @@ class BoundedHarnessSession(
         }
         previewResetCount += 1
         currentPreviewChars = 0
+        currentDescriptionChars = 0
+        noteProviderEvent(nowMonotonicMs)
+        return emit(event)
+    }
+
+    private fun acceptDescriptionDelta(
+        event: AiEvent.DescriptionDelta,
+        nowMonotonicMs: Long,
+    ): HarnessDispatch {
+        if (
+            event.text.isEmpty() ||
+            !event.text.hasValidUnicodeScalars() ||
+            event.text.any(::isUnsafeDescriptionCharacter)
+        ) {
+            return fail(HarnessErrorCode.INVALID_EVENT)
+        }
+        if (event.text.length > limits.maxDescriptionChars - currentDescriptionChars) {
+            return fail(HarnessErrorCode.DESCRIPTION_LIMIT_EXCEEDED)
+        }
+        currentDescriptionChars += event.text.length
         noteProviderEvent(nowMonotonicMs)
         return emit(event)
     }
@@ -425,6 +454,16 @@ class BoundedHarnessSession(
         }
         return indexOf('\u0000') < 0
     }
+
+    private fun isUnsafeDescriptionCharacter(value: Char): Boolean =
+        Character.isISOControl(value) ||
+            value == '\u2028' ||
+            value == '\u2029' ||
+            value == '\u061c' ||
+            value == '\u200e' ||
+            value == '\u200f' ||
+            value in '\u202a'..'\u202e' ||
+            value in '\u2066'..'\u2069'
 
     private companion object {
         const val MAX_STATUS_LABEL_CHARS = 128

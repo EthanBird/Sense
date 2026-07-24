@@ -46,6 +46,18 @@ internal object ProviderErrorClassifier {
 
         val code = when {
             fingerprint.containsAny(
+                "finish_reason_length",
+                "output reached its token limit",
+                "max_output_tokens",
+            ) -> HarnessErrorCode.OUTPUT_TRUNCATED
+
+            fingerprint.containsAny(
+                "content_filter",
+                "content filter",
+                "safety policy",
+            ) -> HarnessErrorCode.PROVIDER_CONTENT_FILTER
+
+            fingerprint.containsAny(
                 "invalid_api_key",
                 "authentication",
                 "unauthorized",
@@ -73,6 +85,8 @@ internal object ProviderErrorClassifier {
             fingerprint.containsAny(
                 "server_error",
                 "service_unavailable",
+                "insufficient_system_resource",
+                "insufficient system resources",
                 "temporarily unavailable",
                 "overloaded",
                 "timeout",

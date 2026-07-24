@@ -16,6 +16,13 @@ data class ProviderProfile(
     val apiStyle: ProviderApiStyle = ProviderApiStyle.OPENAI_RESPONSES,
     val baseUrl: String = DEFAULT_OPENAI_BASE_URL,
     val model: String,
+    /**
+     * Controls whether the provider may spend latency and tokens on an explicit reasoning phase.
+     *
+     * [ThinkingMode.DISABLED] is the safe mobile default: the keyboard should respond quickly
+     * unless the user deliberately opts into provider-side thinking.
+     */
+    val thinkingMode: ThinkingMode = ThinkingMode.DISABLED,
     val reasoningEffort: ReasoningEffort = ReasoningEffort.DEFAULT,
     val streaming: Boolean = true,
     val structuredOutput: StructuredOutputMode = StructuredOutputMode.JSON_SCHEMA,
@@ -53,6 +60,17 @@ enum class ProviderApiStyle {
     OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
 }
 
+enum class ThinkingMode {
+    /** Let the provider choose. Not every compatible API exposes an automatic mode. */
+    AUTO,
+
+    /** Prefer the lowest-latency path and do not request an explicit reasoning phase. */
+    DISABLED,
+
+    /** Explicitly request provider-side reasoning when the provider supports it. */
+    ENABLED,
+}
+
 enum class ReasoningEffort(val wireValue: String?) {
     DEFAULT(null),
     NONE("none"),
@@ -74,10 +92,10 @@ enum class StructuredOutputMode {
 }
 
 data class ProviderTimeouts(
-    val connectTimeoutMs: Long = 8_000,
-    val firstEventTimeoutMs: Long = 8_000,
-    val streamIdleTimeoutMs: Long = 8_000,
-    val totalTimeoutMs: Long = 30_000,
+    val connectTimeoutMs: Long = 15_000,
+    val firstEventTimeoutMs: Long = 30_000,
+    val streamIdleTimeoutMs: Long = 30_000,
+    val totalTimeoutMs: Long = 120_000,
 )
 
 enum class ProviderProfileErrorCode {

@@ -8,6 +8,14 @@ import java.nio.charset.StandardCharsets
 
 internal sealed interface ProviderContentEvent {
     data class TextDelta(val text: String) : ProviderContentEvent
+    /** Provider-private reasoning occurred; its content is deliberately discarded. */
+    data object ReasoningActivity : ProviderContentEvent
+    data class ToolCallDelta(
+        val index: Int,
+        val id: String? = null,
+        val name: String? = null,
+        val arguments: String = "",
+    ) : ProviderContentEvent
     data class Usage(val inputTokens: Long, val outputTokens: Long) : ProviderContentEvent
     data class Completed(val finalText: String? = null) : ProviderContentEvent
     data class Error(
@@ -131,12 +139,58 @@ internal class OpenAiResponseDecoder(
 
             ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS -> {
                 val choices = root.arrayValue("choices")
-                choices.orEmpty().forEach { choiceValue ->
-                    val choice = choiceValue as? JsonValue.ObjectValue ?: return@forEach
+                choices.orEmpty().forEach choiceLoop@ { choiceValue ->
+                    val choice = choiceValue as? JsonValue.ObjectValue ?: return@choiceLoop
                     val delta = choice.objectValue("delta")
                     val message = choice.objectValue("message")
+                    val reasoningContent =
+                        delta?.string("reasoning_content") ?: message?.string("reasoning_content")
+                    if (!reasoningContent.isNullOrEmpty()) {
+                        // Never forward chain-of-thought bytes. The engine may turn this marker
+                        // into a fixed, provider-neutral activity status.
+                        result += ProviderContentEvent.ReasoningActivity
+                    }
                     val content = delta?.string("content") ?: message?.string("content")
                     if (!content.isNullOrEmpty()) result += ProviderContentEvent.TextDelta(content)
+                    val toolCalls =
+                        delta?.arrayValue("tool_calls") ?: message?.arrayValue("tool_calls")
+                    toolCalls.orEmpty().forEachIndexed toolLoop@ { toolPosition, toolValue ->
+                        val tool = toolValue as? JsonValue.ObjectValue ?: return@toolLoop
+                        val function = tool.objectValue("function")
+                        val index = tool.long("index")?.takeIf { it in 0..Int.MAX_VALUE }
+                            ?.toInt() ?: toolPosition
+                        val id = tool.string("id")
+                        val name = function?.string("name")
+                        val arguments = function?.string("arguments").orEmpty()
+                        if (id != null || name != null || arguments.isNotEmpty()) {
+                            result += ProviderContentEvent.ToolCallDelta(
+                                index = index,
+                                id = id,
+                                name = name,
+                                arguments = arguments,
+                            )
+                        }
+                    }
+                    when (val finishReason = choice.string("finish_reason")) {
+                        "length" -> result += ProviderContentEvent.Error(
+                            message = "provider output reached its token limit",
+                            providerCode = "finish_reason_length",
+                        )
+                        "insufficient_system_resource" -> result += ProviderContentEvent.Error(
+                            message = "provider has insufficient system resources",
+                            retryable = true,
+                            providerCode = "insufficient_system_resource",
+                        )
+                        "content_filter" -> result += ProviderContentEvent.Error(
+                            message = "provider content filter interrupted the response",
+                            providerCode = "content_filter",
+                        )
+                        null, "stop", "tool_calls" -> Unit
+                        else -> result += ProviderContentEvent.Error(
+                            message = "unsupported provider finish reason",
+                            providerCode = finishReason,
+                        )
+                    }
                 }
                 usage(root)?.let(result::add)
                 if (terminalDocument && !completed) {

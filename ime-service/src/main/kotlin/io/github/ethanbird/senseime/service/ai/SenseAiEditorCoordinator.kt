@@ -172,7 +172,7 @@ class SenseAiEditorCoordinator(
         onSurfaceUpdate(
             run.uiGeneration,
             AiSurfacePhase.ERROR,
-            run.preview.toString(),
+            run.presentation.preview,
             "输入框已变化，松开空格后重试",
         )
     }
@@ -211,7 +211,7 @@ class SenseAiEditorCoordinator(
         onSurfaceUpdate(
             run.uiGeneration,
             AiSurfacePhase.ERROR,
-            run.preview.toString(),
+            run.presentation.preview,
             "输入框已变化，松开空格后重试",
         )
         return true
@@ -244,12 +244,22 @@ class SenseAiEditorCoordinator(
             is AiEvent.Status -> onSurfaceUpdate(
                 run.uiGeneration,
                 AiSurfacePhase.STREAMING,
-                run.preview.toString(),
-                statusLabel(event),
+                run.presentation.preview,
+                run.presentation.descriptionOr(statusLabel(event)),
             )
 
+            is AiEvent.DescriptionDelta -> {
+                run.presentation.appendDescription(event.text)
+                onSurfaceUpdate(
+                    run.uiGeneration,
+                    AiSurfacePhase.STREAMING,
+                    run.presentation.preview,
+                    run.presentation.descriptionOr("正在处理…"),
+                )
+            }
+
             is AiEvent.PreviewReset -> {
-                run.preview.setLength(0)
+                run.presentation.reset()
                 onSurfaceUpdate(
                     run.uiGeneration,
                     AiSurfacePhase.STREAMING,
@@ -259,13 +269,12 @@ class SenseAiEditorCoordinator(
             }
 
             is AiEvent.PreviewDelta -> {
-                val remaining = MAX_PREVIEW_CHARS - run.preview.length
-                if (remaining > 0) run.preview.append(event.text.take(remaining))
+                run.presentation.appendPreview(event.text)
                 onSurfaceUpdate(
                     run.uiGeneration,
                     AiSurfacePhase.STREAMING,
-                    run.preview.toString(),
-                    "正在生成…",
+                    run.presentation.preview,
+                    run.presentation.descriptionOr("正在生成…"),
                 )
             }
 
@@ -279,7 +288,7 @@ class SenseAiEditorCoordinator(
                 onSurfaceUpdate(
                     run.uiGeneration,
                     AiSurfacePhase.ERROR,
-                    run.preview.toString(),
+                    run.presentation.preview,
                     failureLabel(event),
                 )
             }
@@ -315,7 +324,7 @@ class SenseAiEditorCoordinator(
             onSurfaceUpdate(
                 run.uiGeneration,
                 AiSurfacePhase.ERROR,
-                run.preview.toString(),
+                run.presentation.preview,
                 "输入框已变化，未覆盖",
             )
             return
@@ -343,7 +352,7 @@ class SenseAiEditorCoordinator(
             onSurfaceUpdate(
                 run.uiGeneration,
                 AiSurfacePhase.COMPLETE,
-                run.preview.toString(),
+                run.presentation.preview,
                 "无需修改",
             )
             return
@@ -710,7 +719,7 @@ class SenseAiEditorCoordinator(
         onSurfaceUpdate(
             run.uiGeneration,
             AiSurfacePhase.ERROR,
-            run.preview.toString(),
+            run.presentation.preview,
             status,
         )
     }
@@ -728,6 +737,8 @@ class SenseAiEditorCoordinator(
             "本次思考超时"
         io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.PROTOCOL_INVALID ->
             "模型没有返回可验证的编辑结果"
+        io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.OUTPUT_TRUNCATED ->
+            "模型输出达到上限，请缩短内容或使用快速模式"
         io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.PROVIDER_NOT_CONFIGURED ->
             "尚未配置 Provider"
         io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.PROVIDER_AUTHENTICATION ->
@@ -740,6 +751,8 @@ class SenseAiEditorCoordinator(
             "Provider 请求过于频繁，请稍后重试"
         io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.PROVIDER_UNAVAILABLE ->
             "Provider 服务暂时不可用"
+        io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.PROVIDER_CONTENT_FILTER ->
+            "Provider 内容策略阻止了本次处理"
         io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.PROVIDER_FAILURE ->
             "Provider 网络请求失败"
         else -> "AI 暂时不可用"
@@ -761,7 +774,7 @@ class SenseAiEditorCoordinator(
         val request: HarnessRequestV1,
         val lease: ActiveEditorPatchLease,
         val transaction: EditorTransactionStateMachine,
-        val preview: StringBuilder = StringBuilder(),
+        val presentation: AgentStreamPresentation = AgentStreamPresentation(),
     )
 
     private data class EditorExecutionResult(
@@ -773,7 +786,6 @@ class SenseAiEditorCoordinator(
         private const val MAX_CONTEXT_CHARS = 65_536
         private const val CONTEXT_PROBE_CHARS = MAX_CONTEXT_CHARS + 1
         private const val MAX_CONTEXT_LINES = 8_192
-        private const val MAX_PREVIEW_CHARS = 4_096
     }
 }
 

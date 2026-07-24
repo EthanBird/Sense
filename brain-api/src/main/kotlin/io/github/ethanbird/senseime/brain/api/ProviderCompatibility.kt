@@ -16,11 +16,38 @@ object ProviderCompatibility {
             if (profile.apiStyle != ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS) {
                 add(ProviderCompatibilityIssue.DEEPSEEK_REQUIRES_CHAT_COMPLETIONS)
             }
-            if (profile.structuredOutput == StructuredOutputMode.JSON_SCHEMA) {
-                add(ProviderCompatibilityIssue.DEEPSEEK_REQUIRES_JSON_OBJECT)
+            if (!supportsDeepSeekReasoningConfiguration(profile)) {
+                add(ProviderCompatibilityIssue.DEEPSEEK_REASONING_CONFIGURATION_UNSUPPORTED)
             }
         }
     }
+
+    /**
+     * DeepSeek V4 has a binary thinking switch. Omitting it (Sense AUTO) is supported and currently
+     * defaults to enabled. Its effort API accepts HIGH; LOW/MEDIUM are accepted but mapped to HIGH.
+     * Effort must be omitted when thinking is disabled, and NONE/MINIMAL are not valid DeepSeek
+     * effort values when thinking is active.
+     */
+    private fun supportsDeepSeekReasoningConfiguration(profile: ProviderProfile): Boolean =
+        when (profile.thinkingMode) {
+            ThinkingMode.DISABLED -> profile.reasoningEffort == ReasoningEffort.DEFAULT
+            ThinkingMode.AUTO,
+            ThinkingMode.ENABLED,
+            -> profile.reasoningEffort !in setOf(
+                ReasoningEffort.NONE,
+                ReasoningEffort.MINIMAL,
+            )
+        }
+
+    /**
+     * Selects an explicit mode for documents written before `thinking_mode` was persisted.
+     *
+     * Official DeepSeek profiles deliberately migrate to the low-latency disabled mode because
+     * omitting its switch currently defaults to thinking enabled. Other endpoints retain their
+     * historical provider-default behavior; Sense must not guess third-party capabilities.
+     */
+    fun thinkingModeForLegacyProfile(baseUrl: String): ThinkingMode =
+        if (isOfficialDeepSeek(baseUrl)) ThinkingMode.DISABLED else ThinkingMode.AUTO
 
     fun isOfficialDeepSeek(baseUrl: String): Boolean {
         val host = runCatching { URI(baseUrl).host }.getOrNull() ?: return false
@@ -32,5 +59,5 @@ object ProviderCompatibility {
 
 enum class ProviderCompatibilityIssue {
     DEEPSEEK_REQUIRES_CHAT_COMPLETIONS,
-    DEEPSEEK_REQUIRES_JSON_OBJECT,
+    DEEPSEEK_REASONING_CONFIGURATION_UNSUPPORTED,
 }

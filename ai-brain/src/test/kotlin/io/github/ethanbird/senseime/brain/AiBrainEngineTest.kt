@@ -6,6 +6,7 @@ import io.github.ethanbird.senseime.ai.protocol.EditorSnapshotV1
 import io.github.ethanbird.senseime.ai.protocol.EditorTextDigest
 import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
 import io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode
+import io.github.ethanbird.senseime.ai.protocol.HarnessPhase
 import io.github.ethanbird.senseime.ai.protocol.HarnessRequestV1
 import io.github.ethanbird.senseime.ai.protocol.PatchTarget
 import io.github.ethanbird.senseime.ai.protocol.SnapshotCapability
@@ -21,6 +22,8 @@ import io.github.ethanbird.senseime.brain.api.ProviderStreamSink
 import io.github.ethanbird.senseime.brain.api.ProviderTimeouts
 import io.github.ethanbird.senseime.brain.api.ProviderTransport
 import io.github.ethanbird.senseime.brain.api.ProviderWireRequest
+import io.github.ethanbird.senseime.brain.api.StructuredOutputMode
+import io.github.ethanbird.senseime.brain.api.ThinkingMode
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.CountDownLatch
 import org.junit.Assert.assertEquals
@@ -47,6 +50,113 @@ class AiBrainEngineTest {
             fixture.events.filterIsInstance<AiEvent.FinalPatch>().single().patch.operation.text,
         )
         assertFalse(fixture.events.any { it is AiEvent.Failed })
+    }
+
+    @Test
+    fun `DeepSeek native tool streams public description and validates its nested patch`() {
+        val fixture = Fixture(deepSeekNative = true)
+        val handle = fixture.start()
+        val arguments =
+            "{\"description\":\"已完成润色\",\"patch\":${fixture.patch("原生工具结果")}}"
+
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            "data: {\"choices\":[{\"delta\":{\"reasoning_content\":" +
+                "\"this must remain private\"}}]}\n\n",
+        )
+        fixture.transport.bytes(0, nativeToolDelta(arguments), oneByteAtATime = true)
+        fixture.transport.bytes(
+            0,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+        fixture.transport.bytes(0, "data: [DONE]\n\n")
+
+        assertTrue(handle.isTerminal)
+        assertEquals(
+            "已完成润色",
+            fixture.events.filterIsInstance<AiEvent.DescriptionDelta>()
+                .joinToString("") { it.text },
+        )
+        assertEquals(
+            "原生工具结果",
+            fixture.events.filterIsInstance<AiEvent.PreviewDelta>()
+                .joinToString("") { it.text },
+        )
+        assertEquals(
+            "原生工具结果",
+            fixture.events.filterIsInstance<AiEvent.FinalPatch>()
+                .single().patch.operation.text,
+        )
+        val phases = fixture.events.filterIsInstance<AiEvent.Status>().map { it.phase }
+        assertTrue(HarnessPhase.GENERATING in phases)
+        assertTrue(HarnessPhase.VALIDATING in phases)
+        assertTrue(fixture.events.none {
+            it is AiEvent.DescriptionDelta && it.text.contains("private")
+        })
+    }
+
+    @Test
+    fun `DeepSeek ordinary assistant content cannot bypass native terminal tool`() {
+        val fixture = Fixture(deepSeekNative = true)
+        val handle = fixture.start()
+
+        fixture.transport.open(0)
+        fixture.transport.bytes(0, chatDelta(fixture.patch("不得直接采用")))
+        fixture.transport.bytes(0, "data: [DONE]\n\n")
+
+        assertFalse(handle.isTerminal)
+        assertEquals(2, fixture.transport.requests.size)
+        assertTrue(fixture.events.none { it is AiEvent.FinalPatch })
+        assertTrue(fixture.events.none { it is AiEvent.PreviewDelta })
+    }
+
+    @Test
+    fun `replace intent must match the requested harness skill`() {
+        val fixture = Fixture(deepSeekNative = true)
+        val handle = fixture.start()
+        val arguments =
+            "{\"description\":\"错误任务\",\"patch\":" +
+                "${fixture.patch("不应采用", intent = "translate")}}"
+
+        fixture.transport.open(0)
+        fixture.transport.bytes(0, nativeToolDelta(arguments))
+        fixture.transport.bytes(0, "data: [DONE]\n\n")
+
+        assertFalse(handle.isTerminal)
+        assertEquals(2, fixture.transport.requests.size)
+        assertTrue(fixture.events.none { it is AiEvent.FinalPatch })
+        assertTrue(fixture.events.any { it is AiEvent.PreviewReset })
+    }
+
+    @Test
+    fun `token truncation fails explicitly without spending the repair attempt`() {
+        val fixture = Fixture(deepSeekNative = true)
+        val handle = fixture.start()
+
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"length\"}]}\n\n",
+        )
+
+        assertTrue(handle.isTerminal)
+        assertEquals(1, fixture.transport.requests.size)
+        assertEquals(
+            HarnessErrorCode.OUTPUT_TRUNCATED,
+            fixture.events.filterIsInstance<AiEvent.Failed>().single().code,
+        )
+    }
+
+    @Test
+    fun `connectivity request mode is forwarded to DeepSeek wire request`() {
+        val fixture = Fixture(deepSeekNative = true)
+        fixture.start(BrainRequestMode.CONNECTIVITY_TEST)
+        val body = fixture.transport.requests.single().body.toString(StandardCharsets.UTF_8)
+
+        assertTrue(body.contains("\"thinking\":{\"type\":\"disabled\"}"))
+        assertTrue(body.contains("\"max_tokens\":512"))
+        assertTrue(body.contains("\"tool_choice\""))
     }
 
     @Test
@@ -308,17 +418,25 @@ class AiBrainEngineTest {
         }
     }
 
-    private class Fixture {
+    private class Fixture(
+        deepSeekNative: Boolean = false,
+    ) {
         val clock = MutableClock()
         val transport = FakeTransport()
         val events = mutableListOf<AiEvent>()
         private val request = harness()
         private val profile = ProviderProfile(
-            id = "test",
-            displayName = "Test",
+            id = if (deepSeekNative) "deepseek" else "test",
+            displayName = if (deepSeekNative) "DeepSeek" else "Test",
             apiStyle = ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
-            baseUrl = "https://provider.test/v1",
-            model = "test-model",
+            baseUrl = if (deepSeekNative) {
+                "https://api.deepseek.com/v1"
+            } else {
+                "https://provider.test/v1"
+            },
+            model = if (deepSeekNative) "deepseek-v4-pro" else "test-model",
+            thinkingMode = ThinkingMode.DISABLED,
+            structuredOutput = StructuredOutputMode.JSON_OBJECT,
             timeouts = ProviderTimeouts(
                 connectTimeoutMs = 1_000,
                 firstEventTimeoutMs = 8_000,
@@ -327,14 +445,18 @@ class AiBrainEngineTest {
             ),
         )
 
-        fun start() = AiBrainEngine(transport, clock).start(
+        fun start(
+            requestMode: BrainRequestMode = BrainRequestMode.NORMAL,
+        ) = AiBrainEngine(transport, clock).start(
             BrainRunSpec(request, profile, ProviderCredential.None),
-        ) { events += it }
+            { events += it },
+            requestMode,
+        )
 
-        fun patch(text: String): String = """
+        fun patch(text: String, intent: String = "rewrite"): String = """
             {"protocol":"sense.editor.patch.v1","request_id":"request-1",
             "snapshot_id":"snapshot-1","base_sha256":"${request.snapshot.baseSha256}",
-            "intent":"rewrite","operation":{"type":"replace","target":"whole_field",
+            "intent":"$intent","operation":{"type":"replace","target":"whole_field",
             "text":${jsonString(text)},"selection_after":"end"}}
         """.trimIndent().replace("\n", "")
     }
@@ -407,6 +529,11 @@ class AiBrainEngineTest {
 
         private fun chatDelta(content: String): String =
             "data: {\"choices\":[{\"delta\":{\"content\":${jsonString(content)}}}]}\n\n"
+
+        private fun nativeToolDelta(arguments: String): String =
+            "data: {\"choices\":[{\"delta\":{\"tool_calls\":[{\"index\":0," +
+                "\"id\":\"call-1\",\"type\":\"function\",\"function\":{" +
+                "\"name\":\"sense_submit_patch\",\"arguments\":${jsonString(arguments)}}}]}}]}\n\n"
 
         private fun jsonString(value: String): String =
             JsonWriter().string(value).toString()
