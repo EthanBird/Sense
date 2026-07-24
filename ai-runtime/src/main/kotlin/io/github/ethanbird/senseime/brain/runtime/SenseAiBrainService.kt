@@ -93,7 +93,7 @@ class SenseAiBrainService : Service() {
                     provider = config.profile,
                     credential = config.credential,
                 ),
-                eventSink = { event -> emit(identity, event) },
+                sink = { event -> emit(identity, event) },
             )
         }.getOrElse {
             emit(
