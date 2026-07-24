@@ -27,10 +27,12 @@ internal object OpenAiRequestFactory {
         require(attempt in 0..1)
         require((attempt == 0) == (repair == null))
 
+        val includeInlineContract =
+            profile.structuredOutput != StructuredOutputMode.JSON_SCHEMA
         val prompt = if (repair == null) {
-            buildHarnessInput(request)
+            buildHarnessInput(request, includeInlineContract)
         } else {
-            buildRepairInput(request, repair)
+            buildRepairInput(request, repair, includeInlineContract)
         }
         val body = when (profile.apiStyle) {
             ProviderApiStyle.OPENAI_RESPONSES -> responsesBody(profile, request, prompt)
@@ -128,9 +130,16 @@ internal object OpenAiRequestFactory {
         }
     }
 
-    private fun buildHarnessInput(request: HarnessRequestV1): String = buildString {
+    private fun buildHarnessInput(
+        request: HarnessRequestV1,
+        includeInlineContract: Boolean,
+    ): String = buildString {
         appendSkillContract(request.skill)
-        append(' ')
+        if (includeInlineContract) {
+            append('\n')
+            appendInlinePatchContract(request)
+        }
+        append('\n')
         append("Return only one sense.editor.patch.v1 object. Snapshot JSON:\n")
         appendSnapshot(request)
     }
@@ -138,6 +147,7 @@ internal object OpenAiRequestFactory {
     private fun buildRepairInput(
         request: HarnessRequestV1,
         repair: RepairContext,
+        includeInlineContract: Boolean,
     ): String = buildString {
         append("Your previous answer was rejected by the local protocol gate. ")
         append("This is the only repair attempt. Return only a corrected ")
@@ -147,8 +157,63 @@ internal object OpenAiRequestFactory {
         append(repair.rejectedDocument.take(OpenAiResponseDecoder.MAX_RESPONSE_BYTES))
         append("\nTask contract: ")
         appendSkillContract(request.skill)
+        if (includeInlineContract) {
+            append('\n')
+            appendInlinePatchContract(request)
+        }
         append("\nImmutable snapshot JSON:\n")
         appendSnapshot(request)
+    }
+
+    /**
+     * JSON Object and prompt-only providers do not receive [PATCH_JSON_SCHEMA] out of band.
+     * Keep a closed, concrete contract in the prompt so OpenAI-compatible providers such as
+     * DeepSeek can produce a document accepted by the dependency-free local decoder.
+     */
+    private fun StringBuilder.appendInlinePatchContract(request: HarnessRequestV1) {
+        val snapshot = request.snapshot
+        val authorizedTarget = snapshot.target
+        val exampleReplacement = "替换文本".take(request.maxOutputChars)
+        append("Closed output JSON contract (no Markdown, comments, or extra keys). ")
+        append("Root keys are exactly protocol, request_id, snapshot_id, base_sha256, intent, ")
+        append("operation. Copy request_id, snapshot_id, and base_sha256 from the snapshot exactly. ")
+        append("intent is one of smart_edit, answer, rewrite, continue, translate, format, ")
+        append("no_change. ")
+        if (authorizedTarget == null) {
+            append("This snapshot authorizes no replacement, so return no_change. ")
+        } else {
+            append("For replace, operation keys are exactly type, target, text, selection_after; ")
+            append("type=\"replace\"; target must be ")
+            jsonString(authorizedTarget.wireValue)
+            append("; text is a JSON string no longer than ")
+            append(request.maxOutputChars)
+            append("; selection_after is one of start, end, select_replacement. ")
+            append("Valid replace example for this request: ")
+            append('{')
+            appendFrozenPatchIdentity(request)
+            append(',')
+            property("intent", request.skill.wireValue)
+            append(",\"operation\":{\"type\":\"replace\",\"target\":")
+            jsonString(authorizedTarget.wireValue)
+            append(",\"text\":")
+            jsonString(exampleReplacement)
+            append(",\"selection_after\":\"end\"}}. ")
+        }
+        append("For no_change, intent must be \"no_change\" and operation must contain only ")
+        append("type. Valid no_change example: ")
+        append('{')
+        appendFrozenPatchIdentity(request)
+        append(",\"intent\":\"no_change\",\"operation\":{\"type\":\"no_change\"}}.")
+    }
+
+    private fun StringBuilder.appendFrozenPatchIdentity(request: HarnessRequestV1) {
+        property("protocol", "sense.editor.patch.v1")
+        append(',')
+        property("request_id", request.requestId)
+        append(',')
+        property("snapshot_id", request.snapshot.snapshotId)
+        append(',')
+        property("base_sha256", request.snapshot.baseSha256)
     }
 
     private fun StringBuilder.appendSkillContract(skill: EditorIntent) {
