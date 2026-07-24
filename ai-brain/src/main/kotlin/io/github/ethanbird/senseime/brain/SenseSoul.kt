@@ -6,7 +6,7 @@ import java.nio.charset.CodingErrorAction
 import java.nio.charset.StandardCharsets
 
 internal object SenseSoul {
-    const val VERSION = "sense.soul.v1"
+    const val VERSION = "sense.soul.v2"
     const val RESOURCE_PATH = "sense/soul.md"
     private const val MAX_SOUL_BYTES = 32 * 1_024
 

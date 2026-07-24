@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 env:
-  RELEASE_TAG: v0.4.1
-  RELEASE_APK: Sense-v0.4.1.apk
+  RELEASE_TAG: v0.4.2
+  RELEASE_APK: Sense-v0.4.2.apk
   LEXICON_SHA256: ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6
   BIGRAM_SHA256: db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c
   ENGLISH_SHA256: 1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624
@@ -76,7 +76,7 @@ jobs:
           cmp licenses/popular-english-words-ISC.txt ime-service/src/main/assets/POPULAR-ENGLISH-WORDS-ISC.txt
           cmp licenses/chinese-idiom-chengyu-MIT.txt ime-service/src/main/assets/CHINESE-IDIOM-CHENGYU-MIT.txt
 
-      - name: Verify 0.4.1 AI recovery, HyperOS speech, and toolbox regressions
+      - name: Verify 0.4.2 Agent state machine, streaming UI, and toolbox regressions
         run: >-
           ./gradlew
           :ai-protocol:test
@@ -238,7 +238,7 @@ jobs:
             :core-input:m5MixedInputBenchmark \
             :core-input:m6InputPolishBenchmark
 
-      - name: Verify assembled 0.4.1 APK
+      - name: Verify assembled 0.4.2 APK
         shell: bash
         run: |
           set -euo pipefail
@@ -341,7 +341,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='16' versionName='0.4.1'" /tmp/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='17' versionName='0.4.2'" /tmp/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" /tmp/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" /tmp/apk-badging.txt
           declared_permissions=$(
@@ -383,7 +383,7 @@ jobs:
       - name: Upload debug APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.4.1-apks
+          name: sense-v0.4.2-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -393,7 +393,7 @@ jobs:
             benchmarks/results/m6-input-polish.json
           if-no-files-found: error
 
-  release-0-4-1:
+  release-0-4-2:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -405,7 +405,7 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: sense-v0.4.1-apks
+          name: sense-v0.4.2-apks
           path: artifacts
 
       - name: Prepare release assets
@@ -512,7 +512,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='16' versionName='0.4.1'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='17' versionName='0.4.2'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           declared_permissions=$(
@@ -554,7 +554,7 @@ jobs:
           cd release
           sha256sum "$RELEASE_APK" > SHA256SUMS.txt
 
-      - name: Create Sense 0.4.1 release
+      - name: Create Sense 0.4.2 release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -588,8 +588,8 @@ jobs:
             fi
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
-              --title "Sense v0.4.1 · AI 流恢复、澎湃 OS 语音兼容与工具箱" \
-              --notes-file docs/releases/v0.4.1.md \
+              --title "Sense v0.4.2 · Agent 状态机、多轮反馈与新工具箱" \
+              --notes-file docs/releases/v0.4.2.md \
               "release/$RELEASE_APK" \
               release/SHA256SUMS.txt
           fi

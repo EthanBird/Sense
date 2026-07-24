@@ -26,6 +26,26 @@ internal data class StreamRecoveryContext(
     val reason: String,
 ) : SecondAttemptContext
 
+/**
+ * One provider-visible tool exchange retained for a bounded Agent sub-turn.
+ *
+ * Reasoning is replayed only because DeepSeek requires it after a thinking-mode tool call. It
+ * never leaves private Brain and is never exposed to the IME process.
+ */
+internal data class AgentToolExchange(
+    val assistantReasoning: String,
+    val assistantContent: String,
+    val toolCallId: String,
+    val toolName: String,
+    val toolArguments: String,
+    val toolResult: String,
+)
+
+internal data class AgentConversationContext(
+    val exchanges: List<AgentToolExchange>,
+    val forceTerminalTool: Boolean = false,
+)
+
 internal object OpenAiRequestFactory {
     fun create(
         profile: ProviderProfile,
@@ -33,11 +53,13 @@ internal object OpenAiRequestFactory {
         credential: ProviderCredential,
         attempt: Int,
         secondAttempt: SecondAttemptContext? = null,
+        agentConversation: AgentConversationContext? = null,
         requestMode: BrainRequestMode = BrainRequestMode.NORMAL,
     ): ProviderWireRequest {
         profile.requireValid()
         require(attempt in 0..1)
         require((attempt == 0) == (secondAttempt == null))
+        require(secondAttempt == null || agentConversation == null)
 
         val nativePatchTool = usesNativePatchTool(profile)
         val includeInlineContract =
@@ -59,12 +81,14 @@ internal object OpenAiRequestFactory {
                     request,
                     requestMode,
                     nativePatchTool,
+                    agentConversation,
+                    secondAttempt != null,
                 )
         }
         val headers = linkedMapOf(
             "Accept" to if (profile.streaming) "text/event-stream" else "application/json",
             "Content-Type" to "application/json; charset=utf-8",
-            "User-Agent" to "Sense-IME/0.3 AI-Brain",
+            "User-Agent" to "Sense-IME/0.4.2 AI-Brain",
         )
         when (credential) {
             is ProviderCredential.Bearer -> headers["Authorization"] = "Bearer ${credential.token}"
@@ -113,14 +137,13 @@ internal object OpenAiRequestFactory {
         request: HarnessRequestV1,
         requestMode: BrainRequestMode,
         nativePatchTool: Boolean,
+        agentConversation: AgentConversationContext?,
+        repairOrRecovery: Boolean,
     ): String = buildString {
         append('{')
         property("model", profile.model)
-        append(",\"messages\":[{\"role\":\"system\",\"content\":")
-        jsonString(SenseSoul.text)
-        append("},{\"role\":\"user\",\"content\":")
-        jsonString(prompt)
-        append("}]")
+        append(",\"messages\":")
+        appendChatMessages(prompt, agentConversation)
         append(",\"stream\":").append(profile.streaming)
         if (nativePatchTool && profile.streaming) {
             append(",\"stream_options\":{\"include_usage\":true}")
@@ -128,10 +151,19 @@ internal object OpenAiRequestFactory {
         append(",\"max_tokens\":").append(providerTokenBudget(requestMode))
         if (nativePatchTool) {
             appendDeepSeekThinking(profile, requestMode)
-            appendNativePatchTool(
+            appendNativeAgentTools(
                 request = request,
-                forceChoice = requestMode == BrainRequestMode.CONNECTIVITY_TEST ||
-                    effectiveThinkingMode(profile, requestMode) == ThinkingMode.DISABLED,
+                includeProgressTool =
+                    requestMode == BrainRequestMode.NORMAL &&
+                        !repairOrRecovery &&
+                        agentConversation?.forceTerminalTool != true,
+                forceChoice =
+                    requestMode == BrainRequestMode.CONNECTIVITY_TEST ||
+                        (
+                            repairOrRecovery &&
+                                effectiveThinkingMode(profile, requestMode) ==
+                                ThinkingMode.DISABLED
+                            ),
             )
         } else if (requestMode == BrainRequestMode.NORMAL) {
             profile.reasoningEffort.wireValue?.let {
@@ -143,6 +175,38 @@ internal object OpenAiRequestFactory {
             appendStructuredOutput(profile, responses = false)
         }
         append('}')
+    }
+
+    private fun StringBuilder.appendChatMessages(
+        prompt: String,
+        conversation: AgentConversationContext?,
+    ) {
+        append("[{\"role\":\"system\",\"content\":")
+        jsonString(SenseSoul.text)
+        append("},{\"role\":\"user\",\"content\":")
+        jsonString(prompt)
+        append('}')
+        conversation?.exchanges.orEmpty().forEach { exchange ->
+            append(",{\"role\":\"assistant\",\"content\":")
+            jsonString(exchange.assistantContent)
+            if (exchange.assistantReasoning.isNotEmpty()) {
+                append(",\"reasoning_content\":")
+                jsonString(exchange.assistantReasoning)
+            }
+            append(",\"tool_calls\":[{\"id\":")
+            jsonString(exchange.toolCallId)
+            append(",\"type\":\"function\",\"function\":{\"name\":")
+            jsonString(exchange.toolName)
+            append(",\"arguments\":")
+            jsonString(exchange.toolArguments)
+            append("}}]}")
+            append(",{\"role\":\"tool\",\"tool_call_id\":")
+            jsonString(exchange.toolCallId)
+            append(",\"content\":")
+            jsonString(exchange.toolResult)
+            append('}')
+        }
+        append(']')
     }
 
     private fun StringBuilder.appendDeepSeekThinking(
@@ -165,11 +229,26 @@ internal object OpenAiRequestFactory {
         }
     }
 
-    private fun StringBuilder.appendNativePatchTool(
+    private fun StringBuilder.appendNativeAgentTools(
         request: HarnessRequestV1,
+        includeProgressTool: Boolean,
         forceChoice: Boolean,
     ) {
-        append(",\"tools\":[{\"type\":\"function\",\"function\":{")
+        append(",\"tools\":[")
+        if (includeProgressTool) {
+            append("{\"type\":\"function\",\"function\":{")
+            property("name", NATIVE_PROGRESS_TOOL_NAME)
+            append(',')
+            property(
+                "description",
+                "Publish one concise progress update, then continue the task in the next Agent turn.",
+            )
+            append(",\"parameters\":{\"type\":\"object\",\"additionalProperties\":false,")
+            append("\"required\":[\"message\"],\"properties\":{")
+            append("\"message\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":160}}}")
+            append("}},")
+        }
+        append("{\"type\":\"function\",\"function\":{")
         property("name", NATIVE_PATCH_TOOL_NAME)
         append(',')
         property(
@@ -281,7 +360,11 @@ internal object OpenAiRequestFactory {
         }
         append('\n')
         if (nativePatchTool) {
-            append("Finish by calling sense_submit_patch exactly once. Snapshot JSON:\n")
+            append(
+                "Use exactly one tool call per turn. First call sense_report_progress with one " +
+                    "useful public update; after its tool result, finish by calling " +
+                    "sense_submit_patch exactly once. Snapshot JSON:\n",
+            )
         } else {
             append("Return only one sense.editor.patch.v1 object. Snapshot JSON:\n")
         }
@@ -525,6 +608,7 @@ internal object OpenAiRequestFactory {
     }
 
     internal const val NATIVE_PATCH_TOOL_NAME = "sense_submit_patch"
+    internal const val NATIVE_PROGRESS_TOOL_NAME = "sense_report_progress"
     internal const val NORMAL_MAX_TOKENS = 8_192
     internal const val CONNECTIVITY_TEST_MAX_TOKENS = 512
     private const val MAX_RECOVERY_PREFIX_CHARS = 4_096

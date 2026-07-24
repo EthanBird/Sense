@@ -587,13 +587,25 @@ class SenseKeyboardView @JvmOverloads constructor(
         phase: AiSurfacePhase,
         preview: String,
         statusText: String = "",
+        activities: List<AiSurfaceActivity> = aiSurfaceState?.activities.orEmpty(),
     ): Boolean {
         val current = aiSurfaceState ?: return false
         if (current.generation != generation) return false
+        val boundedPreview = AiSurfaceContract.boundedPreview(preview)
+        val stablePreview = when {
+            boundedPreview.isNotEmpty() -> boundedPreview
+            current.preview.isNotEmpty() &&
+                phase != AiSurfacePhase.COMPLETE &&
+                phase != AiSurfacePhase.ERROR -> current.preview
+            else -> boundedPreview
+        }
         aiSurfaceState = current.copy(
             phase = phase,
-            preview = AiSurfaceContract.boundedPreview(preview),
-            statusText = statusText.ifBlank { defaultAiStatus(phase) },
+            preview = stablePreview,
+            statusText = statusText.ifBlank {
+                current.statusText.ifBlank { defaultAiStatus(phase) }
+            },
+            activities = activities.takeLast(AiSurfaceContract.MAX_VISIBLE_ACTIVITIES),
         )
         invalidate()
         return true
@@ -612,7 +624,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         aiSurfaceState = current.copy(
             phase = phase,
             preview = AiSurfaceContract.appendBounded(current.preview, delta),
-            statusText = defaultAiStatus(phase),
+            statusText = current.statusText.ifBlank { defaultAiStatus(phase) },
         )
         invalidate()
         return true
@@ -700,6 +712,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             if (!candidatesExpanded) {
                 if (panel == Panel.CLIPBOARD) drawClipboardHeader(canvas)
                 if (panel == Panel.SYMBOLS) drawSymbolPanelBackground(canvas)
+                if (panel == Panel.TOOLBOX) drawToolboxPanelBackground(canvas)
             }
         }
         drawKeys(canvas)
@@ -749,21 +762,142 @@ class SenseKeyboardView @JvmOverloads constructor(
         canvas.drawRoundRect(card, dp(13f), dp(13f), paint)
         paint.style = Paint.Style.FILL
 
-        val preview = state.preview.ifBlank {
-            if (state.phase == AiSurfacePhase.STARTING) "正在读取输入框并准备任务…" else ""
-        }
-        if (preview.isNotEmpty()) {
+        val timelineBottom = drawAiActivityTimeline(
+            canvas = canvas,
+            state = state,
+            card = card,
+            accent = accent,
+        )
+        val preview = state.preview
+        if (preview.isNotEmpty() && timelineBottom < card.bottom - dp(25f)) {
+            paint.style = Paint.Style.FILL
+            paint.color = color(0xFF748096.toInt(), 0xFFAEB3BE.toInt())
+            paint.textSize = sp(10.5f)
+            paint.textAlign = Paint.Align.LEFT
+            drawCenteredText(
+                canvas,
+                "输出预览",
+                card.left + dp(14f),
+                timelineBottom + dp(11f),
+            )
             drawAiPreviewText(
                 canvas = canvas,
                 text = preview,
                 left = card.left + dp(14f),
-                top = card.top + dp(14f),
+                top = timelineBottom + dp(22f),
                 right = card.right - dp(14f),
                 bottom = card.bottom - dp(14f),
+            )
+        } else if (preview.isEmpty() && timelineBottom < card.bottom - dp(28f)) {
+            paint.style = Paint.Style.FILL
+            paint.color = color(0xFF78859A.toInt(), 0xFF9FA4AF.toInt())
+            paint.textSize = sp(11.5f)
+            paint.textAlign = Paint.Align.LEFT
+            val waiting = when (state.phase) {
+                AiSurfacePhase.STARTING -> "正在建立会话，稍后将在这里显示结果"
+                AiSurfacePhase.STREAMING -> "Agent 仍在工作；可继续按住，或上滑锁定后松手"
+                AiSurfacePhase.COMPLETE -> "本次任务没有需要展示的替换文字"
+                AiSurfacePhase.ERROR -> "已保留最后状态，输入框未被未经校验的结果覆盖"
+            }
+            drawCenteredText(
+                canvas,
+                ellipsizeToWidth(waiting, card.width() - dp(28f)),
+                card.left + dp(14f),
+                timelineBottom + dp(18f),
             )
         }
 
         drawAiLockAffordance(canvas, state, accent)
+    }
+
+    private fun drawAiActivityTimeline(
+        canvas: Canvas,
+        state: AiSurfaceState,
+        card: RectF,
+        accent: Int,
+    ): Float {
+        val fallback = AiSurfaceActivity(
+            id = "fallback",
+            title = state.statusText.ifBlank { defaultAiStatus(state.phase) },
+            state = when (state.phase) {
+                AiSurfacePhase.COMPLETE -> AiSurfaceActivityState.COMPLETED
+                AiSurfacePhase.ERROR -> AiSurfaceActivityState.FAILED
+                else -> AiSurfaceActivityState.RUNNING
+            },
+        )
+        val maximumRows = if (state.preview.isEmpty()) 4 else 3
+        val activities = state.activities.ifEmpty { listOf(fallback) }.takeLast(maximumRows)
+        val left = card.left + dp(14f)
+        val right = card.right - dp(14f)
+        val rowHeight = dp(if (state.preview.isEmpty()) 34f else 31f)
+        var top = card.top + dp(8f)
+        var hasRunning = false
+        val pulse = ((SystemClock.uptimeMillis() % 1_200L) / 1_200f)
+        activities.forEachIndexed { index, activity ->
+            val centerY = top + rowHeight / 2f
+            val markerX = left + dp(5f)
+            when (activity.state) {
+                AiSurfaceActivityState.RUNNING -> {
+                    hasRunning = true
+                    paint.style = Paint.Style.FILL
+                    paint.color = color(0x205B72E8, 0x309C8CFF)
+                    canvas.drawCircle(
+                        markerX,
+                        centerY,
+                        dp(4.5f + 2f * kotlin.math.sin(pulse * Math.PI).toFloat()),
+                        paint,
+                    )
+                    paint.color = accent
+                    canvas.drawCircle(markerX, centerY, dp(2.8f), paint)
+                }
+                AiSurfaceActivityState.COMPLETED -> {
+                    paint.style = Paint.Style.STROKE
+                    paint.strokeWidth = max(1.5f, density * 1.3f)
+                    paint.strokeCap = Paint.Cap.ROUND
+                    paint.color = color(0xFF3D9A70.toInt(), 0xFF74D9AA.toInt())
+                    canvas.drawCircle(markerX, centerY, dp(5f), paint)
+                    iconPath.reset()
+                    iconPath.moveTo(markerX - dp(2.5f), centerY)
+                    iconPath.lineTo(markerX - dp(0.5f), centerY + dp(2f))
+                    iconPath.lineTo(markerX + dp(3f), centerY - dp(2.5f))
+                    canvas.drawPath(iconPath, paint)
+                    paint.strokeCap = Paint.Cap.BUTT
+                }
+                AiSurfaceActivityState.FAILED -> {
+                    paint.style = Paint.Style.FILL
+                    paint.color = color(0xFFD14D58.toInt(), 0xFFFF8A93.toInt())
+                    canvas.drawCircle(markerX, centerY, dp(5f), paint)
+                    paint.color = Color.WHITE
+                    paint.textAlign = Paint.Align.CENTER
+                    paint.textSize = sp(8.5f)
+                    drawCenteredText(canvas, "!", markerX, centerY)
+                }
+            }
+            paint.style = Paint.Style.FILL
+            paint.color = color(0xFF26344A.toInt(), 0xFFE9EBEF.toInt())
+            paint.textSize = sp(12.5f)
+            paint.textAlign = Paint.Align.LEFT
+            val detailWidth = if (activity.detail.isBlank()) 0f else dp(54f)
+            drawCenteredText(
+                canvas,
+                ellipsizeToWidth(activity.title, right - left - dp(18f) - detailWidth),
+                left + dp(16f),
+                centerY,
+            )
+            if (activity.detail.isNotBlank()) {
+                paint.color = color(0xFF7B8798.toInt(), 0xFFA7ABB4.toInt())
+                paint.textSize = sp(10.5f)
+                paint.textAlign = Paint.Align.RIGHT
+                drawCenteredText(canvas, activity.detail, right, centerY)
+            }
+            if (index < activities.lastIndex) {
+                paint.color = color(0x0F172033, 0x12FFFFFF)
+                canvas.drawRect(left + dp(16f), top + rowHeight - 1f, right, top + rowHeight, paint)
+            }
+            top += rowHeight
+        }
+        if (hasRunning) postInvalidateDelayed(120L)
+        return top + dp(2f)
     }
 
     private fun drawVoiceSurface(canvas: Canvas) {
@@ -1287,26 +1421,39 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun drawToolboxCard(canvas: Canvas, key: Key, pressed: Boolean) {
+        val accent = when (key.icon) {
+            Icon.SYMBOLS -> color(0xFF4D78EA.toInt(), 0xFF8BA8FF.toInt())
+            Icon.EDITOR -> color(0xFF2E8E9E.toInt(), 0xFF5DD2E3.toInt())
+            Icon.VOICE -> color(0xFF8B5BE8.toInt(), 0xFFB99AFF.toInt())
+            Icon.CLIPBOARD -> color(0xFFE17B42.toInt(), 0xFFFFA66F.toInt())
+            Icon.EMOJI -> color(0xFFCC8B25.toInt(), 0xFFFFC561.toInt())
+            else -> color(0xFF4C6F9D.toInt(), 0xFF95A9C6.toInt())
+        }
+        if (pressed) {
+            paint.style = Paint.Style.FILL
+            paint.color = color(0x145B7DF0, 0x286D61D8)
+            canvas.drawRoundRect(key.bounds, dp(16f), dp(16f), paint)
+        }
+        val tileSize = minOf(dp(54f), key.bounds.width() - dp(14f), key.bounds.height() - dp(30f))
+        val tile = RectF(
+            key.bounds.centerX() - tileSize / 2f,
+            key.bounds.top + dp(5f),
+            key.bounds.centerX() + tileSize / 2f,
+            key.bounds.top + dp(5f) + tileSize,
+        )
         paint.style = Paint.Style.FILL
         paint.color = if (pressed) {
-            color(0xFF5B7DF0.toInt(), 0xFF6D61D8.toInt())
+            accent
         } else {
-            color(0xC7FFFFFF.toInt(), 0xFF292A2C.toInt())
+            color(0xB8FFFFFF.toInt(), 0xFF292B2E.toInt())
         }
-        canvas.drawRoundRect(key.bounds, dp(13f), dp(13f), paint)
-        if (!pressed) {
-            paint.style = Paint.Style.STROKE
-            paint.strokeWidth = max(1f, density)
-            paint.color = color(0x14172033, 0x26FFFFFF)
-            canvas.drawRoundRect(key.bounds, dp(13f), dp(13f), paint)
-        }
-        paint.style = Paint.Style.FILL
+        canvas.drawRoundRect(tile, dp(17f), dp(17f), paint)
 
         val iconBounds = RectF(
-            key.bounds.centerX() - dp(25f),
-            key.bounds.top + dp(8f),
-            key.bounds.centerX() + dp(25f),
-            minOf(key.bounds.bottom - dp(22f), key.bounds.top + dp(52f)),
+            tile.left + dp(12f),
+            tile.top + dp(12f),
+            tile.right - dp(12f),
+            tile.bottom - dp(12f),
         )
         key.icon?.let { icon ->
             drawIcon(
@@ -1316,19 +1463,37 @@ class SenseKeyboardView @JvmOverloads constructor(
                 tint = if (pressed) {
                     Color.WHITE
                 } else {
-                    color(0xFF52637C.toInt(), 0xFFD1D4DC.toInt())
+                    accent
                 },
             )
         }
         paint.style = Paint.Style.FILL
-        paint.color = if (pressed) Color.WHITE else color(0xFF273449.toInt(), 0xFFF0F1F4.toInt())
-        paint.textSize = sp(13.5f)
+        paint.color = color(0xFF354257.toInt(), 0xFFE3E5EA.toInt())
+        paint.textSize = sp(12.5f)
         paint.textAlign = Paint.Align.CENTER
         drawCenteredText(
             canvas,
             key.label,
             key.bounds.centerX(),
-            key.bounds.bottom - dp(16f),
+            minOf(key.bounds.bottom - dp(7f), tile.bottom + dp(17f)),
+        )
+    }
+
+    private fun drawToolboxPanelBackground(canvas: Canvas) {
+        val top = keyboardChromeBottom()
+        paint.style = Paint.Style.FILL
+        paint.color = color(0xFF344258.toInt(), 0xFFE7E9ED.toInt())
+        paint.textSize = sp(13f)
+        paint.textAlign = Paint.Align.LEFT
+        drawCenteredText(canvas, "工具箱", horizontalPadding, top + dp(20f))
+        paint.color = color(0xFF8290A4.toInt(), 0xFF989DA7.toInt())
+        paint.textSize = sp(10.5f)
+        paint.textAlign = Paint.Align.RIGHT
+        drawCenteredText(
+            canvas,
+            "长按空格唤醒 AI",
+            width - horizontalPadding,
+            top + dp(20f),
         )
     }
 
@@ -2108,16 +2273,16 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun layoutToolbox(viewWidth: Int, viewHeight: Int) {
-        val top = keyboardChromeBottom() + dp(8f)
-        val bottom = viewHeight - systemBarHeight - dp(8f)
+        val top = keyboardChromeBottom() + dp(38f)
+        val bottom = viewHeight - systemBarHeight - dp(6f)
         if (bottom <= top) return
         KeyboardLayoutContract.toolboxLayout(
             viewWidth = viewWidth.toFloat(),
             contentTop = top,
             contentBottom = bottom,
-            horizontalPadding = horizontalPadding,
-            horizontalGap = keyGap,
-            verticalGap = keyGap,
+            horizontalPadding = dp(10f),
+            horizontalGap = dp(5f),
+            verticalGap = dp(4f),
         ).forEach { slot ->
             val icon = when (slot.item) {
                 KeyboardLayoutContract.ToolboxItem.SYMBOLS -> Icon.SYMBOLS
@@ -3254,6 +3419,12 @@ class SenseKeyboardView @JvmOverloads constructor(
             phase = AiSurfacePhase.STARTING,
             preview = "",
             statusText = defaultAiStatus(AiSurfacePhase.STARTING),
+            activities = listOf(
+                AiSurfaceActivity(
+                    id = "activation",
+                    title = "正在读取输入框并建立安全会话",
+                ),
+            ),
             lockProgress = 0f,
             locked = false,
         )

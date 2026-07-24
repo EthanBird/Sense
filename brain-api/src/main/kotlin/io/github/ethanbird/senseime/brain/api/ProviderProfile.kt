@@ -93,9 +93,9 @@ enum class StructuredOutputMode {
 
 data class ProviderTimeouts(
     val connectTimeoutMs: Long = 15_000,
-    val firstEventTimeoutMs: Long = 30_000,
-    val streamIdleTimeoutMs: Long = 30_000,
-    val totalTimeoutMs: Long = 120_000,
+    val firstEventTimeoutMs: Long = 45_000,
+    val streamIdleTimeoutMs: Long = 120_000,
+    val totalTimeoutMs: Long = 300_000,
 )
 
 enum class ProviderProfileErrorCode {

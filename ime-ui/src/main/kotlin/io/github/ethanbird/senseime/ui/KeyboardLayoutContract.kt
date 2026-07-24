@@ -123,7 +123,7 @@ object KeyboardLayoutContract {
         VOICE("语音输入", KeyCodes.VOICE, ToolboxActivationRoute.SERVICE_ACTION),
         CLIPBOARD("剪贴板", KeyCodes.CLIPBOARD, ToolboxActivationRoute.SERVICE_ACTION),
         EMOJI("Emoji", KeyCodes.EMOJI, ToolboxActivationRoute.EMOJI_PANEL),
-        SETTINGS("先思设置", KeyCodes.SETTINGS, ToolboxActivationRoute.SETTINGS_CALLBACK),
+        SETTINGS("先思首页", KeyCodes.SETTINGS, ToolboxActivationRoute.SETTINGS_CALLBACK),
     }
 
     data class ToolboxSlot(
@@ -218,8 +218,9 @@ object KeyboardLayoutContract {
     }
 
     /**
-     * A stable 3 × 2 toolbox grid. Geometry is kept outside the Canvas view so
-     * every entry remains reachable in both portrait and landscape layouts.
+     * A compact control-centre grid: four icon-first entries on the first row and the remaining
+     * entries centred on the second. The visual gaps stay generous while every slot owns its
+     * entire hit area.
      */
     fun toolboxLayout(
         viewWidth: Float,
@@ -235,7 +236,7 @@ object KeyboardLayoutContract {
         require(horizontalGap >= 0f)
         require(verticalGap >= 0f)
 
-        val columns = 3
+        val columns = 4
         val rows = 2
         val availableWidth = viewWidth - horizontalPadding * 2f - horizontalGap * (columns - 1)
         val availableHeight = contentBottom - contentTop - verticalGap * (rows - 1)
@@ -244,9 +245,13 @@ object KeyboardLayoutContract {
         val cellHeight = availableHeight / rows
 
         return ToolboxItem.entries.mapIndexed { index, item ->
-            val column = index % columns
             val row = index / columns
-            val left = horizontalPadding + column * (cellWidth + horizontalGap)
+            val rowStart = row * columns
+            val rowCount = minOf(columns, ToolboxItem.entries.size - rowStart)
+            val column = index - rowStart
+            val occupiedWidth = rowCount * cellWidth + (rowCount - 1) * horizontalGap
+            val rowLeft = (viewWidth - occupiedWidth) / 2f
+            val left = rowLeft + column * (cellWidth + horizontalGap)
             val top = contentTop + row * (cellHeight + verticalGap)
             ToolboxSlot(
                 item = item,

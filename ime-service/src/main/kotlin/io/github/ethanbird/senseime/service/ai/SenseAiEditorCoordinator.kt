@@ -8,6 +8,8 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.ExtractedTextRequest
 import android.view.inputmethod.InputConnection
 import io.github.ethanbird.senseime.ai.protocol.AiEvent
+import io.github.ethanbird.senseime.ai.protocol.AgentProgressState
+import io.github.ethanbird.senseime.ai.protocol.AgentSessionStateMachine
 import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import io.github.ethanbird.senseime.ai.protocol.EditorSnapshotV1
 import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
@@ -43,6 +45,8 @@ import io.github.ethanbird.senseime.service.ai.editor.SelectionOnlyPostApplyObse
 import io.github.ethanbird.senseime.service.ai.editor.SelectedEditorText
 import io.github.ethanbird.senseime.service.ai.editor.SurroundingEditorText
 import io.github.ethanbird.senseime.ui.AiSurfacePhase
+import io.github.ethanbird.senseime.ui.AiSurfaceActivity
+import io.github.ethanbird.senseime.ui.AiSurfaceActivityState
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 
@@ -66,6 +70,7 @@ class SenseAiEditorCoordinator(
         phase: AiSurfacePhase,
         preview: String,
         status: String,
+        activities: List<AiSurfaceActivity>,
     ) -> Unit,
     private val onOwnApplyWindow: (applicationToken: Long?, active: Boolean) -> Unit,
 ) : AutoCloseable {
@@ -84,6 +89,7 @@ class SenseAiEditorCoordinator(
             frame.phase,
             frame.run.presentation.preview,
             frame.status,
+            frame.run.surfaceActivities(),
         )
     }
 
@@ -159,6 +165,7 @@ class SenseAiEditorCoordinator(
             AiSurfacePhase.STARTING,
             "",
             startingStatus(snapshot.target),
+            run.surfaceActivities(),
         )
         brainClient.start(request)
     }
@@ -201,6 +208,7 @@ class SenseAiEditorCoordinator(
             AiSurfacePhase.ERROR,
             run.presentation.preview,
             "输入框已变化，松开空格后重试",
+            run.surfaceActivities(),
         )
     }
 
@@ -241,6 +249,7 @@ class SenseAiEditorCoordinator(
             AiSurfacePhase.ERROR,
             run.presentation.preview,
             "输入框已变化，松开空格后重试",
+            run.surfaceActivities(),
         )
         return true
     }
@@ -262,12 +271,14 @@ class SenseAiEditorCoordinator(
         ) {
             return
         }
+        run.agentSession.accept(event)
         when (event) {
             is AiEvent.Started -> onSurfaceUpdate(
                 run.uiGeneration,
                 AiSurfacePhase.STARTING,
-                "",
+                run.presentation.preview,
                 startingStatus(run.lease.snapshot.target),
+                run.surfaceActivities(),
             )
 
             is AiEvent.Status -> {
@@ -282,14 +293,21 @@ class SenseAiEditorCoordinator(
                 scheduleSurfaceFrame(run, run.presentation.descriptionOr("正在处理…"))
             }
 
+            is AiEvent.AgentProgress -> {
+                scheduleSurfaceFrame(
+                    run,
+                    if (event.detail.isBlank()) event.title else "${event.title} · ${event.detail}",
+                )
+            }
+
             is AiEvent.PreviewReset -> {
-                run.presentation.reset()
                 clearPendingSurfaceFrame()
                 onSurfaceUpdate(
                     run.uiGeneration,
                     AiSurfacePhase.STREAMING,
-                    "",
+                    run.presentation.preview,
                     "正在修正输出格式…",
+                    run.surfaceActivities(),
                 )
             }
 
@@ -323,6 +341,7 @@ class SenseAiEditorCoordinator(
                     AiSurfacePhase.ERROR,
                     run.presentation.preview,
                     failureLabel(event),
+                    run.surfaceActivities(),
                 )
             }
 
@@ -372,12 +391,14 @@ class SenseAiEditorCoordinator(
         val guarded = (guard as? EditorPatchGuardDecision.Accepted)?.guardedPatch
         if (guarded == null) {
             run.transaction.fail(EditorTransactionFailure.PATCH_REJECTED)
+            run.agentSession.markApplyFailed("输入框已变化，未覆盖")
             active = null
             onSurfaceUpdate(
                 run.uiGeneration,
                 AiSurfacePhase.ERROR,
                 run.presentation.preview,
                 "输入框已变化，未覆盖",
+                run.surfaceActivities(),
             )
             return
         }
@@ -391,6 +412,14 @@ class SenseAiEditorCoordinator(
         if (transition !is io.github.ethanbird.senseime.service.ai.editor.EditorTransactionTransition.Changed) {
             return
         }
+        run.agentSession.markApplying()
+        onSurfaceUpdate(
+            run.uiGeneration,
+            AiSurfacePhase.STREAMING,
+            run.presentation.preview,
+            "正在安全写入输入框…",
+            run.surfaceActivities(),
+        )
         val plan = runCatching {
             EditorPatchPlanner.plan(guarded, Build.VERSION.SDK_INT)
         }.getOrElse {
@@ -405,12 +434,14 @@ class SenseAiEditorCoordinator(
         if (plan is EditorPatchPlan.NoChange) {
             run.transaction.markApplied(event.requestId, event.runGeneration, token)
             run.presentation.complete(authoritativePreview)
+            run.agentSession.markApplied("无需修改输入框")
             active = null
             onSurfaceUpdate(
                 run.uiGeneration,
                 AiSurfacePhase.COMPLETE,
                 run.presentation.preview,
                 "无需修改",
+                run.surfaceActivities(),
             )
             return
         }
@@ -451,12 +482,14 @@ class SenseAiEditorCoordinator(
         }
         run.transaction.markApplied(event.requestId, event.runGeneration, token)
         run.presentation.complete(authoritativePreview)
+        run.agentSession.markApplied()
         active = null
         onSurfaceUpdate(
             run.uiGeneration,
             AiSurfacePhase.COMPLETE,
             run.presentation.preview,
             "已写入输入框",
+            run.surfaceActivities(),
         )
     }
 
@@ -824,17 +857,31 @@ class SenseAiEditorCoordinator(
     }
 
     private fun failApply(run: ActiveRun, status: String) {
+        run.agentSession.markApplyFailed(status)
         active = null
         onSurfaceUpdate(
             run.uiGeneration,
             AiSurfacePhase.ERROR,
             run.presentation.preview,
             status,
+            run.surfaceActivities(),
         )
     }
 
     private fun showError(generation: Long, status: String) {
-        onSurfaceUpdate(generation, AiSurfacePhase.ERROR, "", status)
+        onSurfaceUpdate(
+            generation,
+            AiSurfacePhase.ERROR,
+            "",
+            status,
+            listOf(
+                AiSurfaceActivity(
+                    id = "error",
+                    title = status,
+                    state = AiSurfaceActivityState.FAILED,
+                ),
+            ),
+        )
     }
 
     private fun failureLabel(event: AiEvent.Failed): String = when (event.code) {
@@ -880,7 +927,25 @@ class SenseAiEditorCoordinator(
         val lease: ActiveEditorPatchLease,
         val transaction: EditorTransactionStateMachine,
         val presentation: AgentStreamPresentation = AgentStreamPresentation(),
-    )
+        val agentSession: AgentSessionStateMachine = AgentSessionStateMachine(
+            requestId = request.requestId,
+            runGeneration = request.runGeneration,
+        ),
+    ) {
+        fun surfaceActivities(): List<AiSurfaceActivity> =
+            agentSession.snapshot.steps.map { step ->
+                AiSurfaceActivity(
+                    id = step.id,
+                    title = step.title,
+                    detail = step.detail,
+                    state = when (step.state) {
+                        AgentProgressState.RUNNING -> AiSurfaceActivityState.RUNNING
+                        AgentProgressState.COMPLETED -> AiSurfaceActivityState.COMPLETED
+                        AgentProgressState.FAILED -> AiSurfaceActivityState.FAILED
+                    },
+                )
+            }
+    }
 
     private data class PendingSurfaceFrame(
         val run: ActiveRun,

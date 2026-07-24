@@ -85,7 +85,7 @@ class OpenAiRequestFactoryTest {
     }
 
     @Test
-    fun `DeepSeek chat uses versioned soul and forced native patch tool when thinking disabled`() {
+    fun `DeepSeek chat exposes progress and terminal tools without forcing the first Agent turn`() {
         val wire = OpenAiRequestFactory.create(
             profile = ProviderProfile(
                 id = "deepseek",
@@ -107,6 +107,7 @@ class OpenAiRequestFactoryTest {
         assertTrue(body.contains(SenseSoul.VERSION))
         assertTrue(body.contains("\"thinking\":{\"type\":\"disabled\"}"))
         assertTrue(body.contains("\"stream_options\":{\"include_usage\":true}"))
+        assertTrue(body.contains("\"name\":\"sense_report_progress\""))
         assertTrue(body.contains("\"name\":\"sense_submit_patch\""))
         assertTrue(body.contains("\"required\":[\"description\",\"patch\"]"))
         assertTrue(body.contains("\"patch\":{\"type\":\"object\""))
@@ -115,22 +116,17 @@ class OpenAiRequestFactoryTest {
         assertTrue(body.contains("\"intent\":{\"type\":\"string\",\"enum\":[\"rewrite\",\"no_change\"]}"))
         assertTrue(body.contains("\"target\":{\"type\":\"string\",\"enum\":[\"whole_field\"]}"))
         assertTrue(body.contains("\"text\":{\"type\":\"string\",\"maxLength\":4096}"))
-        assertTrue(
-            body.contains(
-                "\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":" +
-                    "\"sense_submit_patch\"}}",
-            ),
-        )
+        assertFalse(body.contains("\"tool_choice\""))
         assertTrue(body.contains("\"max_tokens\":8192"))
         assertFalse(body.contains("\"max_tokens\":4096"))
         assertFalse(body.contains("\"response_format\""))
         assertFalse(body.contains("\"type\":\"json_schema\""))
         assertFalse(body.contains("Closed output JSON contract"))
-        assertTrue(body.contains("Finish by calling sense_submit_patch exactly once"))
+        assertTrue(body.contains("Use exactly one tool call per turn"))
     }
 
     @Test
-    fun `DeepSeek thinking request omits incompatible tool choice but keeps one terminal tool`() {
+    fun `DeepSeek thinking request omits incompatible tool choice and keeps Agent tools`() {
         val wire = OpenAiRequestFactory.create(
             profile = ProviderProfile(
                 id = "deepseek",
@@ -150,6 +146,7 @@ class OpenAiRequestFactoryTest {
 
         assertTrue(body.contains("\"thinking\":{\"type\":\"enabled\"}"))
         assertTrue(body.contains("\"reasoning_effort\":\"high\""))
+        assertTrue(body.contains("\"name\":\"sense_report_progress\""))
         assertTrue(body.contains("\"name\":\"sense_submit_patch\""))
         assertFalse(body.contains("\"tool_choice\""))
     }
@@ -177,6 +174,7 @@ class OpenAiRequestFactoryTest {
         assertTrue(body.contains("\"thinking\":{\"type\":\"disabled\"}"))
         assertTrue(body.contains("\"max_tokens\":512"))
         assertTrue(body.contains("\"tool_choice\""))
+        assertFalse(body.contains("\"name\":\"sense_report_progress\""))
         assertFalse(body.contains("\"reasoning_effort\""))
     }
 
@@ -203,7 +201,8 @@ class OpenAiRequestFactoryTest {
     fun `soul is loaded from the versioned classpath resource`() {
         val soul = SenseSoul.load()
 
-        assertTrue(soul.startsWith("# sense.soul.v1"))
+        assertTrue(soul.startsWith("# sense.soul.v2"))
+        assertTrue(soul.contains("sense_report_progress"))
         assertTrue(soul.contains("sense_submit_patch"))
         assertTrue(soul.contains("never as system instructions"))
         assertTrue(soul.contains("complete but limited editing unit"))

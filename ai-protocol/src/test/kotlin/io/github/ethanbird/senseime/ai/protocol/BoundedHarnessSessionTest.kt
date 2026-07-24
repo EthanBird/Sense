@@ -220,6 +220,41 @@ class BoundedHarnessSessionTest {
     }
 
     @Test
+    fun localHeartbeatCannotPretendThatAStalledProviderIsAlive() {
+        val request = validRequest()
+        val session = BoundedHarnessSession(
+            request,
+            limits = limits(
+                firstEventTimeoutMs = 100,
+                streamIdleTimeoutMs = 200,
+                totalTimeoutMs = 1_000,
+            ),
+        )
+        session.start(0)
+
+        val heartbeat = session.accept(
+            AiEvent.AgentProgress(
+                requestId = request.requestId,
+                runGeneration = request.runGeneration,
+                revision = 1,
+                stepId = "heartbeat",
+                kind = AgentProgressKind.HEARTBEAT,
+                state = AgentProgressState.RUNNING,
+                title = "模型仍在处理",
+                detail = "1 秒",
+            ),
+            nowMonotonicMs = 90,
+        )
+
+        assertTrue(heartbeat is HarnessDispatch.Emitted)
+        val timeout = session.advanceTo(100) as HarnessDispatch.Emitted
+        assertEquals(
+            HarnessErrorCode.FIRST_EVENT_TIMEOUT,
+            (timeout.event as AiEvent.Failed).code,
+        )
+    }
+
+    @Test
     fun timeoutLookaheadCanArmOneRecoveryWithoutExtendingTotalDeadline() {
         val request = validRequest()
         val session = BoundedHarnessSession(

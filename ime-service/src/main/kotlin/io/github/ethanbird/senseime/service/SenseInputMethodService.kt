@@ -201,8 +201,14 @@ class SenseInputMethodService : InputMethodService() {
                     view.isAiSurfaceActive() && view.activeAiGeneration() == generation
                 } == true
             },
-            onSurfaceUpdate = { generation, phase, preview, status ->
-                keyboardView?.updateAiSurface(generation, phase, preview, status)
+            onSurfaceUpdate = { generation, phase, preview, status, activities ->
+                keyboardView?.updateAiSurface(
+                    generation,
+                    phase,
+                    preview,
+                    status,
+                    activities,
+                )
             },
             onOwnApplyWindow = { token, active ->
                 aiApplicationToken = if (active) token else null

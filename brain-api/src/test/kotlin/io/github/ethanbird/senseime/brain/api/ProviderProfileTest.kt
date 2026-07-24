@@ -18,9 +18,9 @@ class ProviderProfileTest {
         assertEquals(
             ProviderTimeouts(
                 connectTimeoutMs = 15_000,
-                firstEventTimeoutMs = 30_000,
-                streamIdleTimeoutMs = 30_000,
-                totalTimeoutMs = 120_000,
+                firstEventTimeoutMs = 45_000,
+                streamIdleTimeoutMs = 120_000,
+                totalTimeoutMs = 300_000,
             ),
             profile.timeouts,
         )

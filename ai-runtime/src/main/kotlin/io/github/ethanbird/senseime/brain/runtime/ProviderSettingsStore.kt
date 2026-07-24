@@ -193,11 +193,13 @@ class ProviderSettingsStore(context: Context) {
             reasoningEffort = ReasoningEffort.valueOf(json.getString("reasoning_effort")),
             streaming = json.getBoolean("streaming"),
             structuredOutput = StructuredOutputMode.valueOf(json.getString("structured_output")),
-            timeouts = ProviderTimeouts(
-                connectTimeoutMs = timeouts.getLong("connect_ms"),
-                firstEventTimeoutMs = timeouts.getLong("first_event_ms"),
-                streamIdleTimeoutMs = timeouts.getLong("idle_ms"),
-                totalTimeoutMs = timeouts.getLong("total_ms"),
+            timeouts = migrateLegacyTimeouts(
+                ProviderTimeouts(
+                    connectTimeoutMs = timeouts.getLong("connect_ms"),
+                    firstEventTimeoutMs = timeouts.getLong("first_event_ms"),
+                    streamIdleTimeoutMs = timeouts.getLong("idle_ms"),
+                    totalTimeoutMs = timeouts.getLong("total_ms"),
+                ),
             ),
             allowInsecureLocalhost = json.optBoolean("allow_insecure_localhost", false),
         )
@@ -213,6 +215,18 @@ class ProviderSettingsStore(context: Context) {
             ciphertextBase64 = credential.getString("ciphertext"),
         )
     }
+
+    private fun migrateLegacyTimeouts(value: ProviderTimeouts): ProviderTimeouts =
+        if (
+            value.connectTimeoutMs == 15_000L &&
+            value.firstEventTimeoutMs == 30_000L &&
+            value.streamIdleTimeoutMs == 30_000L &&
+            value.totalTimeoutMs == 120_000L
+        ) {
+            ProviderTimeouts()
+        } else {
+            value
+        }
 
     private fun encrypt(plainText: String): EncryptedSecret {
         val cipher = Cipher.getInstance(CIPHER_TRANSFORMATION)

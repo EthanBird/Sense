@@ -90,7 +90,7 @@ class OpenAiResponseDecoderTest {
     }
 
     @Test
-    fun `DeepSeek reasoning content becomes only a safe activity marker`() {
+    fun `DeepSeek reasoning content stays in a private replay event`() {
         val decoder = OpenAiResponseDecoder(
             ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
             streaming = true,
@@ -102,9 +102,11 @@ class OpenAiResponseDecoderTest {
                 ).toByteArray(),
         )
 
-        assertEquals(listOf(ProviderContentEvent.ReasoningActivity), events)
+        assertEquals(
+            listOf(ProviderContentEvent.ReasoningDelta("private chain of thought")),
+            events,
+        )
         assertTrue(events.none { it is ProviderContentEvent.TextDelta })
-        assertTrue(events.toString().contains("private chain of thought").not())
     }
 
     @Test
