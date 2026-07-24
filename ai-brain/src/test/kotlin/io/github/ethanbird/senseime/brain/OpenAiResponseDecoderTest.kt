@@ -81,6 +81,31 @@ class OpenAiResponseDecoderTest {
     }
 
     @Test
+    fun `provider error retains only bounded classification metadata`() {
+        val decoder = OpenAiResponseDecoder(
+            ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+            streaming = true,
+        )
+        val events = decoder.feed(
+            (
+                "data: {\"error\":{\"message\":\"Too many requests\"," +
+                    "\"type\":\"rate_limit_error\",\"code\":\"rate_limit_exceeded\"," +
+                    "\"status\":429}}\n\n"
+                ).toByteArray(),
+        )
+
+        assertEquals(
+            ProviderContentEvent.Error(
+                message = "Too many requests",
+                type = "rate_limit_error",
+                providerCode = "rate_limit_exceeded",
+                statusCode = 429,
+            ),
+            events.single(),
+        )
+    }
+
+    @Test
     fun `streaming preview exposes only operation text`() {
         val preview = StreamingPatchPreview()
 
