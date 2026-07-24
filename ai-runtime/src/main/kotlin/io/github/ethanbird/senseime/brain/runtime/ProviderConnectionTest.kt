@@ -164,8 +164,11 @@ internal object ProviderConnectionTestProtocol {
     fun mapPhase(phase: HarnessPhase): ProviderConnectionTestPhase = when (phase) {
         HarnessPhase.CONNECTING -> ProviderConnectionTestPhase.CONNECTING
         HarnessPhase.UNDERSTANDING -> ProviderConnectionTestPhase.UNDERSTANDING
+        HarnessPhase.THINKING,
+        HarnessPhase.TOOL_RUNNING,
         HarnessPhase.GENERATING -> ProviderConnectionTestPhase.GENERATING
         HarnessPhase.VALIDATING -> ProviderConnectionTestPhase.VALIDATING
+        HarnessPhase.APPLYING -> ProviderConnectionTestPhase.VALIDATING
     }
 
     fun mapFailure(code: HarnessErrorCode): ProviderConnectionTestFailure =

@@ -103,8 +103,11 @@ internal fun agentStatusLabel(event: AiEvent.Status): String = when (event.label
     else -> when (event.phase) {
         HarnessPhase.CONNECTING -> "正在连接模型…"
         HarnessPhase.UNDERSTANDING -> "正在理解输入框…"
+        HarnessPhase.THINKING -> "模型正在思考…"
+        HarnessPhase.TOOL_RUNNING -> "正在执行安全工具…"
         HarnessPhase.GENERATING -> "正在生成…"
         HarnessPhase.VALIDATING -> "正在校验编辑结果…"
+        HarnessPhase.APPLYING -> "正在写入输入框…"
     }
 }
 

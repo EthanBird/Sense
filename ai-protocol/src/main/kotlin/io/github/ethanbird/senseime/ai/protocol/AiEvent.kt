@@ -62,6 +62,26 @@ sealed interface AiEvent {
         val description: String = "",
     ) : AiEvent
 
+    /**
+     * One public, structured Agent activity update.
+     *
+     * This is the keyboard equivalent of an in-place Hermes status message: [stepId] identifies a
+     * stable row, [state] advances that row, and tool work is correlated by [toolCallId]. The
+     * payload is deliberately public-summary-only and must never contain private model reasoning.
+     */
+    data class AgentProgress(
+        override val requestId: String,
+        override val runGeneration: Long,
+        val revision: Long,
+        val stepId: String,
+        val kind: AgentProgressKind,
+        val state: AgentProgressState,
+        val title: String,
+        val detail: String = "",
+        val toolCallId: String? = null,
+        val toolName: String? = null,
+    ) : AiEvent
+
     data class Usage(
         override val requestId: String,
         override val runGeneration: Long,
@@ -98,8 +118,30 @@ sealed interface AiEvent {
 enum class HarnessPhase {
     CONNECTING,
     UNDERSTANDING,
+    THINKING,
+    TOOL_RUNNING,
     GENERATING,
     VALIDATING,
+    APPLYING,
+}
+
+enum class AgentProgressKind {
+    OBSERVATION,
+    CONNECTION,
+    THINKING,
+    DRAFTING,
+    ASSISTANT_UPDATE,
+    TOOL,
+    VALIDATION,
+    APPLICATION,
+    HEARTBEAT,
+    RECOVERY,
+}
+
+enum class AgentProgressState {
+    RUNNING,
+    COMPLETED,
+    FAILED,
 }
 
 enum class HarnessCancelReason {

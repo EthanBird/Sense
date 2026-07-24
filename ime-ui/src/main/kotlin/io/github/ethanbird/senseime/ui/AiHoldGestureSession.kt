@@ -258,11 +258,25 @@ enum class AiSurfacePhase {
     ERROR,
 }
 
+enum class AiSurfaceActivityState {
+    RUNNING,
+    COMPLETED,
+    FAILED,
+}
+
+data class AiSurfaceActivity(
+    val id: String,
+    val title: String,
+    val detail: String = "",
+    val state: AiSurfaceActivityState = AiSurfaceActivityState.RUNNING,
+)
+
 data class AiSurfaceState(
     val generation: Long,
     val phase: AiSurfacePhase,
     val preview: String,
     val statusText: String,
+    val activities: List<AiSurfaceActivity> = emptyList(),
     val lockProgress: Float = 0f,
     val locked: Boolean = false,
 )
@@ -272,6 +286,7 @@ data class AiSurfaceState(
  */
 object AiSurfaceContract {
     const val MAX_PREVIEW_CHARS = 4_096
+    const val MAX_VISIBLE_ACTIVITIES = 4
     const val LOCK_DISTANCE_DP = 56f
 
     data class Bounds(

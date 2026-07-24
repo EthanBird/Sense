@@ -137,6 +137,18 @@ internal object BrainMessageCodec {
                 putString("description", event.description)
             }
 
+            is AiEvent.AgentProgress -> {
+                putString("type", "agent_progress")
+                putLong("revision", event.revision)
+                putString("step_id", event.stepId)
+                putString("progress_kind", event.kind.name)
+                putString("progress_state", event.state.name)
+                putString("title", event.title)
+                putString("detail", event.detail)
+                event.toolCallId?.let { putString("tool_call_id", it) }
+                event.toolName?.let { putString("tool_name", it) }
+            }
+
             is AiEvent.Usage -> {
                 putString("type", "usage")
                 putLong("input_tokens", event.inputTokens)
@@ -203,6 +215,22 @@ internal object BrainMessageCodec {
                     description = payload.description,
                 )
             }
+            "agent_progress" -> AiEvent.AgentProgress(
+                requestId = requestId,
+                runGeneration = generation,
+                revision = bundle.getLong("revision"),
+                stepId = bundle.requireString("step_id"),
+                kind = io.github.ethanbird.senseime.ai.protocol.AgentProgressKind.valueOf(
+                    bundle.requireString("progress_kind"),
+                ),
+                state = io.github.ethanbird.senseime.ai.protocol.AgentProgressState.valueOf(
+                    bundle.requireString("progress_state"),
+                ),
+                title = bundle.requireString("title"),
+                detail = bundle.getString("detail").orEmpty(),
+                toolCallId = bundle.getString("tool_call_id"),
+                toolName = bundle.getString("tool_name"),
+            )
             "usage" -> AiEvent.Usage(
                 requestId,
                 generation,

@@ -171,6 +171,7 @@ class SenseAiProviderTestClient(
             }
 
             is AiEvent.DescriptionDelta,
+            is AiEvent.AgentProgress,
             is AiEvent.PreviewDelta,
             is AiEvent.PreviewReset,
             is AiEvent.PreviewReplace,

@@ -8,8 +8,12 @@ import java.nio.charset.StandardCharsets
 
 internal sealed interface ProviderContentEvent {
     data class TextDelta(val text: String) : ProviderContentEvent
-    /** Provider-private reasoning occurred; its content is deliberately discarded. */
-    data object ReasoningActivity : ProviderContentEvent
+    /**
+     * Provider-private reasoning required only for a compatible multi-turn tool replay.
+     *
+     * Brain keeps this bounded and private; it is never forwarded as a protocol event or UI string.
+     */
+    data class ReasoningDelta(val text: String) : ProviderContentEvent
     data class ToolCallDelta(
         val index: Int,
         val id: String? = null,
@@ -165,9 +169,7 @@ internal class OpenAiResponseDecoder(
                     val reasoningContent =
                         delta?.string("reasoning_content") ?: message?.string("reasoning_content")
                     if (!reasoningContent.isNullOrEmpty()) {
-                        // Never forward chain-of-thought bytes. The engine may turn this marker
-                        // into a fixed, provider-neutral activity status.
-                        result += ProviderContentEvent.ReasoningActivity
+                        result += ProviderContentEvent.ReasoningDelta(reasoningContent)
                     }
                     val content = delta?.string("content") ?: message?.string("content")
                     if (!content.isNullOrEmpty()) result += ProviderContentEvent.TextDelta(content)

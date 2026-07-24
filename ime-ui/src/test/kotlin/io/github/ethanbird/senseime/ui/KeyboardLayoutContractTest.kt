@@ -107,7 +107,7 @@ class KeyboardLayoutContractTest {
     }
 
     @Test
-    fun toolboxExposesSixDistinctActionsInAReachableThreeByTwoGrid() {
+    fun toolboxExposesSixDistinctActionsInAnIconFirstFourColumnGrid() {
         val slots = KeyboardLayoutContract.toolboxLayout(
             viewWidth = 360f,
             contentTop = 53f,
@@ -128,10 +128,13 @@ class KeyboardLayoutContractTest {
             ),
             slots.map { it.item.activationRoute }.toSet(),
         )
-        val firstRow = slots.take(3)
+        val firstRow = slots.take(4)
         assertEquals(6f, firstRow[0].left, 0.001f)
-        assertEquals(123.666f, firstRow[1].left, 0.001f)
-        assertEquals(241.333f, firstRow[2].left, 0.001f)
+        assertEquals(94.25f, firstRow[1].left, 0.001f)
+        assertEquals(182.5f, firstRow[2].left, 0.001f)
+        assertEquals(270.75f, firstRow[3].left, 0.001f)
+        assertEquals(94.25f, slots[4].left, 0.001f)
+        assertEquals(182.5f, slots[5].left, 0.001f)
         assertTrue(slots.all { it.right <= 354f })
         assertTrue(slots.all { it.bottom <= 298f })
         assertTrue(slots.all { it.right - it.left >= 48f && it.bottom - it.top >= 48f })

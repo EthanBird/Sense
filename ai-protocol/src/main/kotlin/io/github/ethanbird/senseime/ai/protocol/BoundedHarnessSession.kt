@@ -96,6 +96,8 @@ class BoundedHarnessSession(
     private var currentDescriptionChars = 0
     private var previewResetCount = 0
     private var providerRecoveryCount = 0
+    private var lastAgentProgressRevision = 0L
+    private val activeToolCalls = linkedMapOf<String, String>()
     private var terminalEvent: AiEvent? = null
 
     val state: BoundedHarnessState
@@ -173,6 +175,7 @@ class BoundedHarnessSession(
             is AiEvent.PreviewReset -> acceptPreviewReset(event, nowMonotonicMs)
             is AiEvent.PreviewDelta -> acceptPreviewDelta(event, nowMonotonicMs)
             is AiEvent.PreviewReplace -> acceptPreviewReplace(event, nowMonotonicMs)
+            is AiEvent.AgentProgress -> acceptAgentProgress(event, nowMonotonicMs)
             is AiEvent.Usage -> acceptUsage(event, nowMonotonicMs)
             is AiEvent.FinalPatch -> acceptFinalPatch(event, nowMonotonicMs)
             is AiEvent.Cancelled -> {
@@ -492,6 +495,60 @@ class BoundedHarnessSession(
         return emit(event)
     }
 
+    private fun acceptAgentProgress(
+        event: AiEvent.AgentProgress,
+        nowMonotonicMs: Long,
+    ): HarnessDispatch {
+        if (
+            event.revision <= lastAgentProgressRevision ||
+            !event.stepId.isSafePublicToken(MAX_AGENT_STEP_ID_CHARS) ||
+            !event.title.isSafePublicLine(MAX_AGENT_TITLE_CHARS, requireContent = true) ||
+            !event.detail.isSafePublicLine(MAX_AGENT_DETAIL_CHARS, requireContent = false)
+        ) {
+            return fail(HarnessErrorCode.INVALID_EVENT)
+        }
+        if (event.kind == AgentProgressKind.TOOL) {
+            val callId = event.toolCallId
+            val toolName = event.toolName
+            if (
+                callId == null ||
+                toolName == null ||
+                !callId.isSafePublicToken(MAX_TOOL_TOKEN_CHARS) ||
+                !toolName.isSafePublicToken(MAX_TOOL_TOKEN_CHARS)
+            ) {
+                return fail(HarnessErrorCode.INVALID_EVENT)
+            }
+            when (event.state) {
+                AgentProgressState.RUNNING -> {
+                    val existing = activeToolCalls[callId]
+                    if (existing != null && existing != toolName) {
+                        return fail(HarnessErrorCode.INVALID_EVENT)
+                    }
+                    activeToolCalls[callId] = toolName
+                }
+                AgentProgressState.COMPLETED,
+                AgentProgressState.FAILED,
+                -> if (activeToolCalls.remove(callId) != toolName) {
+                    return fail(HarnessErrorCode.INVALID_EVENT)
+                }
+            }
+        } else if (event.toolCallId != null || event.toolName != null) {
+            return fail(HarnessErrorCode.INVALID_EVENT)
+        }
+
+        lastAgentProgressRevision = event.revision
+        // Local observations and heartbeats are useful UI feedback, not evidence that the remote
+        // socket is alive. They therefore cannot postpone the provider watchdog.
+        if (
+            event.kind != AgentProgressKind.OBSERVATION &&
+            event.kind != AgentProgressKind.HEARTBEAT &&
+            event.kind != AgentProgressKind.RECOVERY
+        ) {
+            noteProviderEvent(nowMonotonicMs)
+        }
+        return emit(event)
+    }
+
     private fun acceptUsage(event: AiEvent.Usage, nowMonotonicMs: Long): HarnessDispatch {
         if (event.inputTokens < 0 || event.outputTokens < 0) {
             return fail(HarnessErrorCode.INVALID_EVENT)
@@ -604,8 +661,27 @@ class BoundedHarnessSession(
             value in '\u202a'..'\u202e' ||
             value in '\u2066'..'\u2069'
 
+    private fun String.isSafePublicToken(maxChars: Int): Boolean =
+        isNotBlank() &&
+            length <= maxChars &&
+            hasValidUnicodeScalars() &&
+            all { it.code in 0x21..0x7e }
+
+    private fun String.isSafePublicLine(
+        maxChars: Int,
+        requireContent: Boolean,
+    ): Boolean =
+        (!requireContent || isNotBlank()) &&
+            length <= maxChars &&
+            hasValidUnicodeScalars() &&
+            none(::isUnsafeDescriptionCharacter)
+
     private companion object {
         const val MAX_STATUS_LABEL_CHARS = 128
+        const val MAX_AGENT_STEP_ID_CHARS = 64
+        const val MAX_AGENT_TITLE_CHARS = 160
+        const val MAX_AGENT_DETAIL_CHARS = 160
+        const val MAX_TOOL_TOKEN_CHARS = 128
         val RECOVERY_STATUS_LABELS = setOf("provider_recovering", "provider_repairing")
     }
 }

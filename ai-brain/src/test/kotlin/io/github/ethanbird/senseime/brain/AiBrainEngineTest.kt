@@ -1,6 +1,10 @@
 package io.github.ethanbird.senseime.brain
 
 import io.github.ethanbird.senseime.ai.protocol.AiEvent
+import io.github.ethanbird.senseime.ai.protocol.AgentProgressKind
+import io.github.ethanbird.senseime.ai.protocol.AgentProgressState
+import io.github.ethanbird.senseime.ai.protocol.AgentSessionStateMachine
+import io.github.ethanbird.senseime.ai.protocol.AgentSessionTransition
 import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import io.github.ethanbird.senseime.ai.protocol.EditorSnapshotV1
 import io.github.ethanbird.senseime.ai.protocol.EditorTextDigest
@@ -91,11 +95,130 @@ class AiBrainEngineTest {
                 .single().patch.operation.text,
         )
         val phases = fixture.events.filterIsInstance<AiEvent.Status>().map { it.phase }
-        assertTrue(HarnessPhase.GENERATING in phases)
+        assertTrue(HarnessPhase.TOOL_RUNNING in phases)
         assertTrue(HarnessPhase.VALIDATING in phases)
         assertTrue(fixture.events.none {
             it is AiEvent.DescriptionDelta && it.text.contains("private")
         })
+    }
+
+    @Test
+    fun `DeepSeek progress tool creates a real second Agent turn with private reasoning replay`() {
+        val fixture = Fixture(deepSeekNative = true)
+        val handle = fixture.start()
+
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            "data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"private-plan\"}}]}\n\n",
+        )
+        fixture.transport.bytes(
+            0,
+            progressToolDelta("{\"message\":\"已理解内容，正在组织可直接写入的答案\"}"),
+        )
+        fixture.transport.bytes(
+            0,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+
+        assertFalse(handle.isTerminal)
+        assertEquals(2, fixture.transport.requests.size)
+        val secondBody = fixture.transport.requests[1].body.toString(StandardCharsets.UTF_8)
+        assertTrue(secondBody.contains("\"role\":\"tool\""))
+        assertTrue(secondBody.contains("\"tool_call_id\":\"call-progress\""))
+        assertTrue(secondBody.contains("\"reasoning_content\":\"private-plan\""))
+        assertTrue(
+            fixture.events.filterIsInstance<AiEvent.AgentProgress>()
+                .any {
+                    it.kind == AgentProgressKind.ASSISTANT_UPDATE &&
+                        it.title == "已理解内容，正在组织可直接写入的答案"
+                },
+        )
+        assertTrue(fixture.events.none {
+            it is AiEvent.DescriptionDelta && it.text.contains("private-plan")
+        })
+
+        val arguments =
+            "{\"description\":\"已完成处理\",\"patch\":${fixture.patch("多轮结果")}}"
+        fixture.transport.open(1)
+        fixture.transport.bytes(1, nativeToolDelta(arguments, callId = "call-final"))
+        fixture.transport.bytes(
+            1,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+
+        assertTrue(handle.isTerminal)
+        assertEquals(
+            "多轮结果",
+            fixture.events.filterIsInstance<AiEvent.FinalPatch>().single().patch.operation.text,
+        )
+        val publicStateMachine = AgentSessionStateMachine("request-1", 1L)
+        val dropped = fixture.events
+            .map(publicStateMachine::accept)
+            .filterIsInstance<AgentSessionTransition.Dropped>()
+        assertTrue("engine emitted an invalid public state transition: $dropped", dropped.isEmpty())
+    }
+
+    @Test
+    fun `DeepSeek cannot create an unbounded loop by hallucinating a third progress call`() {
+        val fixture = Fixture(deepSeekNative = true)
+        val handle = fixture.start()
+
+        repeat(2) { turn ->
+            fixture.transport.open(turn)
+            fixture.transport.bytes(
+                turn,
+                progressToolDelta(
+                    arguments = "{\"message\":\"公开进度 ${turn + 1}\"}",
+                    callId = "call-progress-${turn + 1}",
+                ),
+            )
+            fixture.transport.bytes(
+                turn,
+                "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+            )
+        }
+
+        assertEquals(3, fixture.transport.requests.size)
+        val terminalOnlyBody =
+            fixture.transport.requests[2].body.toString(StandardCharsets.UTF_8)
+        val terminalOnlyTools = with(ProviderJson) {
+            parse(terminalOnlyBody).member("tools")?.array().orEmpty()
+        }
+        val terminalOnlyToolNames = terminalOnlyTools.mapNotNull { tool ->
+            with(ProviderJson) {
+                tool.member("function")?.member("name")?.string()
+            }
+        }
+        assertEquals(listOf("sense_submit_patch"), terminalOnlyToolNames)
+
+        fixture.transport.open(2)
+        fixture.transport.bytes(
+            2,
+            progressToolDelta(
+                arguments = "{\"message\":\"不应继续循环\"}",
+                callId = "call-progress-3",
+            ),
+        )
+        fixture.transport.bytes(
+            2,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+
+        assertFalse(handle.isTerminal)
+        assertEquals(4, fixture.transport.requests.size)
+        assertEquals(
+            2,
+            fixture.events.filterIsInstance<AiEvent.AgentProgress>()
+                .count { it.kind == AgentProgressKind.ASSISTANT_UPDATE },
+        )
+        assertTrue(
+            fixture.events.filterIsInstance<AiEvent.AgentProgress>()
+                .any {
+                    it.kind == AgentProgressKind.TOOL &&
+                        it.state == AgentProgressState.FAILED
+                },
+        )
     }
 
     @Test
@@ -711,10 +834,22 @@ class AiBrainEngineTest {
         private fun chatDelta(content: String): String =
             "data: {\"choices\":[{\"delta\":{\"content\":${jsonString(content)}}}]}\n\n"
 
-        private fun nativeToolDelta(arguments: String): String =
+        private fun nativeToolDelta(
+            arguments: String,
+            callId: String = "call-1",
+        ): String =
             "data: {\"choices\":[{\"delta\":{\"tool_calls\":[{\"index\":0," +
-                "\"id\":\"call-1\",\"type\":\"function\",\"function\":{" +
+                "\"id\":\"$callId\",\"type\":\"function\",\"function\":{" +
                 "\"name\":\"sense_submit_patch\",\"arguments\":${jsonString(arguments)}}}]}}]}\n\n"
+
+        private fun progressToolDelta(
+            arguments: String,
+            callId: String = "call-progress",
+        ): String =
+            "data: {\"choices\":[{\"delta\":{\"tool_calls\":[{\"index\":0," +
+                "\"id\":\"$callId\",\"type\":\"function\",\"function\":{" +
+                "\"name\":\"sense_report_progress\",\"arguments\":" +
+                "${jsonString(arguments)}}}]}}]}\n\n"
 
         private fun jsonString(value: String): String =
             JsonWriter().string(value).toString()

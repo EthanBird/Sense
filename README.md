@@ -2,9 +2,9 @@
 
 > Android 原生高性能中文输入法：普通输入完全本地运行，AI、记忆与工具能力通过可配置的长按方向 Skill 显式触发。
 
-**项目状态：** `v0.4.1` AI 流恢复、HyperOS 系统语音兼容与键盘内工具箱
+**项目状态：** `v0.4.2` Agent 状态机、多轮公开反馈与新工具箱
 
-**当前版本：** `v0.4.1`（`versionCode 16`）
+**当前版本：** `v0.4.2`（`versionCode 17`）
 
 **更新日期：** 2026-07-25
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
@@ -22,47 +22,50 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.1 流恢复、系统语音回退与工具箱
+## 0. 当前迭代：v0.4.2 Agent 状态机、多轮反馈与新工具箱
 
-`v0.4.1` 是 `0.4.x` AI 完善周期内的集中修复，不扩大模型的编辑权限，也不提前升级到
+`v0.4.2` 是 `0.4.x` AI 完善周期内的交互与协议升级，不扩大模型的编辑权限，也不提前升级到
 `0.5.0`：
 
-- HyperOS 等 OEM 设备的设备端 `SpeechRecognizer` 可能在创建成功后异步返回客户端、
-  服务端或语言错误；Sense 现在在同一语音 session 内只允许一次普通系统
-  `RecognitionService` 回退，并用 session + attempt 身份拒绝已销毁识别器的迟到回调；
-- Provider 流因首字节超时、流空闲或无终止标记而中断时，只允许一次有界恢复。恢复不
-  延长 Harness 总时限，也不增加模型写入权限；
-- 恢复请求携带有界的中断证据和已公开稳定前缀，第二次完整生成会与首轮可见文本校准；
-  前缀一致时只追加新后缀，不从空白重新闪回；内容真实分叉时先缓存非空替代内容，再以
-  一次原子替换校准，避免出现“清空一帧”；
-- 流式预览仍无上屏资格；最终覆盖必须来自第二次完整的
+- Agent 运行采用显式状态机，区分读取、连接、理解、思考、公开更新、工具调用、生成、
+  校验、写入、恢复和终止；上滑锁定只改变手势控制权，不再重置执行状态或可见输出；
+- DeepSeek 原生工具模式支持真实的多轮循环：
+  `sense_report_progress → 本地工具结果 → 继续生成 → sense_submit_patch`。工具调用按
+  call id 关联，私有 `reasoning_content` 只在 Brain 内按 Provider 规则回放，绝不显示；
+- 键盘 AI 区以稳定 step id 原位更新最近活动，并保留非空预览。模型暂未产出正文时显示
+  明确的等待状态，不再出现“正常生成”加空白主区域；
+- 有停止键的锁定会话使用更宽松的 45 秒首事件、120 秒流空闲和 300 秒绝对安全上限；
+  本地心跳只负责反馈，不能伪装为远端网络活动或无限续期；
+- 流式预览仍无上屏资格；最终覆盖必须来自完整的
   `sense_submit_patch` / `sense.editor.patch.v1`，并继续通过本地协议、generation、hash/CAS
   和写后校验；
-- 工具栏首项改为键盘内工具箱，集中提供符号、文字编辑、语音输入、剪贴板、Emoji 与
-  “先思设置”；设置入口直接打开 Sense 首页，既有工具不再被首项符号页独占。
+- 工具箱改为四列图标优先的控制中心，第二行居中；符号、文字编辑、语音、剪贴板、
+  Emoji 和“先思首页”使用统一键盘底色、圆角图标底座及完整卡片命中区域。
 
 AI 最终结果仍只能通过 `sense_submit_patch` / `sense.editor.patch.v1` 提议；普通模型文本、
 流式预览、私有推理和迟到回调都没有写入权限。完整设计见
 [`ADR 0012`](docs/adr/0012-v0.4.0-interruptible-ai-and-speech-surface.md) 与
-[`ADR 0013`](docs/adr/0013-v0.4.1-bounded-stream-and-system-speech-recovery.md)。
+[`ADR 0013`](docs/adr/0013-v0.4.1-bounded-stream-and-system-speech-recovery.md)、
+[`ADR 0014`](docs/adr/0014-v0.4.2-agent-session-state-machine.md)。
 
-只有 GitHub Actions 的 `verify` 作业全部通过，工作流才会创建 `v0.4.1` Release；
+只有 GitHub Actions 的 `verify` 作业全部通过，工作流才会创建 `v0.4.2` Release；
 未实际执行的 Kotlin、Lint、APK 或真机检查不会写成“已通过”。
 
 | 门禁 | 当前状态 |
 |---|---|
-| AI 协议与 Brain | 版本化 Soul、原生终止工具、单遍流解析、一次有界流恢复、稳定前缀校准、严格 Patch、取消与迟到事件 |
+| AI 协议与 Brain | `sense.soul.v2`、显式状态机、原生进度/终止工具、DeepSeek thinking 工具回放、一次有界流恢复、严格 Patch、取消与迟到事件 |
 | AI 编辑事务 | 全文、选区、受限上下文、隐私拒绝、generation/hash CAS 与写后校验 |
-| AI 交互 | 短按空格无回归、长按唤醒、上滑锁定、未锁定松手取消、锁定后松手继续、右下强制停止 |
+| AI 交互 | 短按空格无回归、长按唤醒、上滑锁定不重置、活动时间线、非空预览保持、右下强制停止 |
 | Voice Surface | 设备端异步失败后同 session 一次系统服务回退、attempt 隔离、云端语音配置、声纹缓冲、取消与最终一次提交 |
-| 键盘工具箱 | 工具栏首项、3 × 2 工具入口、Sense 设置首页、横竖屏可达性 |
+| 键盘工具箱 | 图标优先 4 + 2 布局、Sense 首页、完整命中区域、横竖屏可达性 |
+| 真实 Provider 探针 | 显式环境变量启用；不记录 Key/正文/私有推理；验证进度工具、多轮继续、工具关联与唯一终止 Patch |
 | M4/M5 生产资产 Python 回归 | 词典与 Bigram 继续做 fresh-checkout 字节级重建 |
 | 生成资产 | 拼音 429,901 keys / SHA `ef2fac…cce6`；Bigram 46,657 / SHA `db00a1…18c`；英文 20,000 词 / SHA `1a1823…5624` |
 | 既有 Kotlin 正确性 | core、service、UI 全量回归继续阻断发布；Android View、Lint 与正式 Gradle 任务以 Actions 结果为准 |
 | M7 输入基线 | 顶部固定 45dp、竖/横屏总高 358/258dp；生产资产首候选 `scxt → 上窜下跳`、`ssyw → 蛇鼠一窝` |
 | M0–M6 Host 门禁 | 所有既有正确性与延迟基准必须无回归 |
 | Android Lint 与编译 | GitHub Actions 构建 Debug、Benchmark 与 Macrobenchmark APK |
-| APK 元数据门禁 | `versionCode 16`、`versionName 0.4.1`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据门禁 | `versionCode 17`、`versionName 0.4.2`、`minSdk 29`、`targetSdk 36` |
 | APK 完整性门禁 | zipalign、签名、模型哈希、20,000 英文词、许可、仅 `INTERNET` / `RECORD_AUDIO` |
 | Android 真机 | HyperOS 系统 ASR 回退、AI 弱网/截断恢复、工具箱手感、Brain 进程与 OEM 矩阵仍需验收 |
 
@@ -113,7 +116,9 @@ SQLite 用户词库、剪贴板历史和 Provider 配置。AI 编辑基础威胁
 [`ADR 0011`](docs/adr/0011-v0.3.7-m8-agent-soul-provider-latency.md)，本轮锁定、受限上下文
 和语音设计见 [`ADR 0012`](docs/adr/0012-v0.4.0-interruptible-ai-and-speech-surface.md)，
 本轮恢复边界与工具箱见
-[`ADR 0013`](docs/adr/0013-v0.4.1-bounded-stream-and-system-speech-recovery.md)。
+[`ADR 0013`](docs/adr/0013-v0.4.1-bounded-stream-and-system-speech-recovery.md)，本轮 Agent
+状态机与多轮反馈见
+[`ADR 0014`](docs/adr/0014-v0.4.2-agent-session-state-machine.md)。
 
 ## 1. 项目结论
 
@@ -336,7 +341,7 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.4.1` AI 流恢复、系统语音兼容与工具箱阶段。
+以下保留 M0 的实施记录；当前代码位于 `v0.4.2` Agent 状态机、多轮反馈与新工具箱阶段。
 现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。
 
