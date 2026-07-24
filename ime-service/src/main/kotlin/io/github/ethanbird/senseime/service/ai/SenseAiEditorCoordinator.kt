@@ -728,8 +728,20 @@ class SenseAiEditorCoordinator(
             "本次思考超时"
         io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.PROTOCOL_INVALID ->
             "模型没有返回可验证的编辑结果"
+        io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.PROVIDER_NOT_CONFIGURED ->
+            "尚未配置 Provider"
+        io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.PROVIDER_AUTHENTICATION ->
+            "Provider 认证失败，请检查 API Key"
+        io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.PROVIDER_QUOTA ->
+            "Provider 余额不足"
+        io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.PROVIDER_CONFIGURATION ->
+            "Provider 协议、模型或参数不兼容"
+        io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.PROVIDER_RATE_LIMIT ->
+            "Provider 请求过于频繁，请稍后重试"
+        io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.PROVIDER_UNAVAILABLE ->
+            "Provider 服务暂时不可用"
         io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.PROVIDER_FAILURE ->
-            "Provider 未配置或请求失败"
+            "Provider 网络请求失败"
         else -> "AI 暂时不可用"
     }
 
