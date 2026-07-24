@@ -125,6 +125,18 @@ internal object BrainMessageCodec {
                 putString("text", event.text)
             }
 
+            is AiEvent.PreviewReplace -> {
+                BrainPreviewReplaceWirePolicy.requirePayload(
+                    event.attempt,
+                    event.text,
+                    event.description,
+                )
+                putString("type", "preview_replace")
+                putInt("attempt", event.attempt)
+                putString("text", event.text)
+                putString("description", event.description)
+            }
+
             is AiEvent.Usage -> {
                 putString("type", "usage")
                 putLong("input_tokens", event.inputTokens)
@@ -175,6 +187,22 @@ internal object BrainMessageCodec {
                 generation,
                 bundle.requireString("text"),
             )
+            "preview_replace" -> {
+                val payload = BrainPreviewReplaceWirePolicy.requirePayload(
+                    attempt = bundle.getInt("attempt").takeIf {
+                        bundle.containsKey("attempt")
+                    },
+                    text = bundle.getString("text"),
+                    description = bundle.getString("description"),
+                )
+                AiEvent.PreviewReplace(
+                    requestId = requestId,
+                    runGeneration = generation,
+                    attempt = payload.attempt,
+                    text = payload.text,
+                    description = payload.description,
+                )
+            }
             "usage" -> AiEvent.Usage(
                 requestId,
                 generation,

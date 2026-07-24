@@ -1,6 +1,9 @@
 package io.github.ethanbird.senseime.service.ai
 
+import io.github.ethanbird.senseime.ai.protocol.AiEvent
+import io.github.ethanbird.senseime.ai.protocol.HarnessPhase
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AgentStreamPresentationTest {
@@ -54,5 +57,55 @@ class AgentStreamPresentationTest {
         presentation.appendPreview("🐔")
 
         assertEquals("…4🐔", presentation.preview)
+    }
+
+    @Test
+    fun retryReplacementAtomicallyReplacesThenAcceptsLaterDeltas() {
+        val presentation = AgentStreamPresentation()
+        presentation.appendDescription("旧说明")
+        presentation.appendPreview("旧结果")
+
+        presentation.replace(preview = "新结果", description = "新说明")
+        presentation.appendPreview("继续")
+        presentation.appendDescription("完成")
+
+        assertEquals("新结果继续", presentation.preview)
+        assertEquals("新说明完成", presentation.description)
+    }
+
+    @Test
+    fun terminalAuthorityReplacesStaleRetryDraftWithTheValidatedResult() {
+        val presentation = AgentStreamPresentation()
+        presentation.appendDescription("重试中的旧说明")
+        presentation.appendPreview("第一轮残留草稿")
+
+        presentation.complete(authoritativePreview = "输入框权威文本")
+
+        assertEquals("输入框权威文本", presentation.preview)
+        assertEquals("", presentation.description)
+    }
+
+    @Test
+    fun recoveryAndRepairStatusesAreExplicitAndOverrideExistingDescription() {
+        val recovery = AiEvent.Status(
+            requestId = "request",
+            runGeneration = 1,
+            phase = HarnessPhase.CONNECTING,
+            label = "provider_recovering",
+        )
+        val repair = recovery.copy(label = "provider_repairing")
+
+        assertEquals("连接中断，正在校准续接…", agentStatusLabel(recovery))
+        assertEquals("响应格式需校准，正在修正…", agentStatusLabel(repair))
+        assertEquals(
+            "连接中断，正在校准续接…",
+            agentStatusForPresentation(recovery, currentDescription = "旧说明"),
+        )
+        assertEquals(
+            "响应格式需校准，正在修正…",
+            agentStatusForPresentation(repair, currentDescription = "旧说明"),
+        )
+        assertTrue(recovery.label.isRecoveryStatusLabel())
+        assertTrue(repair.label.isRecoveryStatusLabel())
     }
 }

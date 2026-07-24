@@ -2,6 +2,7 @@ package io.github.ethanbird.senseime.service
 
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import android.inputmethodservice.InputMethodService
 import android.os.Handler
@@ -231,6 +232,7 @@ class SenseInputMethodService : InputMethodService() {
         view.textListener = ::commitText
         view.clipboardActionListener = ::handleClipboardAction
         view.editorActionListener = ::handleEditorAction
+        view.settingsActionListener = ::openSenseHome
         view.aiHoldListener = object : SenseKeyboardView.AiHoldListener {
             override fun onAiHoldStarted(generation: Long) {
                 beginAiHold(generation)
@@ -252,6 +254,18 @@ class SenseInputMethodService : InputMethodService() {
         )
         keyboardView = view
         render()
+    }
+
+    private fun openSenseHome() {
+        cancelVoiceSession(exitSurface = true)
+        cancelAndExitAi(HarnessCancelReason.CALLER_REQUESTED)
+        val launchIntent = Intent()
+            .setClassName(packageName, SENSE_SETTINGS_ACTIVITY)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        runCatching { startActivity(launchIntent) }
+            .onFailure {
+                Toast.makeText(this, "无法打开 Sense 设置", Toast.LENGTH_SHORT).show()
+            }
     }
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
@@ -1376,6 +1390,8 @@ class SenseInputMethodService : InputMethodService() {
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private companion object {
+        const val SENSE_SETTINGS_ACTIVITY =
+            "io.github.ethanbird.senseime.SettingsActivity"
         const val PINYIN_ASSET = "pinyin_lexicon.bin"
         const val PINYIN_BIGRAM_ASSET = "pinyin_bigrams.bin"
         const val PINYIN_SYLLABLES_ASSET = "pinyin_syllables.txt"

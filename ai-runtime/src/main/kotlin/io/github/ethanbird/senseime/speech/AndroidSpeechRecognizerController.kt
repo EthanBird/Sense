@@ -91,7 +91,12 @@ class AndroidSpeechRecognizerController(
     fun stop() {
         runOnMain {
             val session = active ?: return@runOnMain
+            session.recoveryAttempt = session.recoveryAttempt.markStopRequested()
             dispatch(SpeechRecognitionEvent.ProcessingRequested(session.id))
+            // The failed OEM recognizer has already been destroyed while a system-service fallback
+            // is queued for the next main-loop turn. Do not call stopListening() on that retired
+            // binder; the queued fallback will observe stopRequested and terminate cleanly.
+            if (session.fallbackPending) return@runOnMain
             runCatching { session.recognizer.stopListening() }
                 .onFailure {
                     failAndRelease(
@@ -188,7 +193,18 @@ class AndroidSpeechRecognizerController(
         val session = ActiveSession(
             id = sessionId,
             recognizer = recognizer.recognizer,
-            usingOnDeviceRecognizer = recognizer.usingOnDeviceRecognizer,
+            profile = profile,
+            recoveryAttempt = SystemSpeechFallbackAttempt(
+                route = if (recognizer.usingOnDeviceRecognizer) {
+                    SystemSpeechRecognizerRoute.ON_DEVICE
+                } else {
+                    SystemSpeechRecognizerRoute.SYSTEM_SERVICE
+                },
+            ),
+            attemptToken = SystemSpeechAttemptToken(
+                sessionId = sessionId,
+                attemptOrdinal = 1,
+            ),
         )
         active = session
         dispatch(
@@ -197,21 +213,20 @@ class AndroidSpeechRecognizerController(
                 usingOnDeviceRecognizer = session.usingOnDeviceRecognizer,
             ),
         )
-        session.recognizer.setRecognitionListener(SessionRecognitionListener(sessionId))
+        startRecognizerAttempt(session)
+    }
+
+    private fun startRecognizerAttempt(session: ActiveSession) {
         runCatching {
+            session.recognizer.setRecognitionListener(SessionRecognitionListener(session))
             session.recognizer.startListening(
-                recognitionIntent(
-                    profile = profile,
-                    usingOnDeviceRecognizer = session.usingOnDeviceRecognizer,
-                ),
+                recognitionIntent(session.profile),
             )
         }.onFailure {
-            failAndRelease(
+            handleRecognizerFailure(
                 session,
-                SpeechRecognitionFailure(
-                    kind = SpeechRecognitionFailureKind.CLIENT,
-                    message = "无法启动系统语音识别",
-                ),
+                platformError = SpeechRecognizer.ERROR_CLIENT,
+                fallbackMessage = "无法启动系统语音识别",
             )
         }
     }
@@ -245,7 +260,6 @@ class AndroidSpeechRecognizerController(
 
     private fun recognitionIntent(
         profile: SpeechProviderProfile,
-        usingOnDeviceRecognizer: Boolean,
     ) = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
         putExtra(
             RecognizerIntent.EXTRA_LANGUAGE_MODEL,
@@ -254,9 +268,9 @@ class AndroidSpeechRecognizerController(
         putExtra(RecognizerIntent.EXTRA_LANGUAGE, profile.languageTag)
         putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, profile.interimResults)
         putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, MAX_RESULTS)
-        if (usingOnDeviceRecognizer) {
-            putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
-        }
+        // Do not add EXTRA_PREFER_OFFLINE for createOnDeviceSpeechRecognizer(). The factory has
+        // already selected the route, while some OEM services (including HyperOS variants) reject
+        // the redundant routing extra asynchronously with ERROR_CLIENT.
     }
 
     private fun cancelActive(dispatchCancellation: Boolean) {
@@ -281,13 +295,13 @@ class AndroidSpeechRecognizerController(
         session: ActiveSession,
         failure: SpeechRecognitionFailure,
     ) {
-        if (active?.id != session.id) return
+        if (active !== session) return
         dispatch(SpeechRecognitionEvent.Failed(session.id, failure))
         release(session)
     }
 
     private fun release(session: ActiveSession) {
-        if (active?.id != session.id) return
+        if (active !== session) return
         active = null
         requestedSessionId.compareAndSet(session.id, 0L)
         runCatching { session.recognizer.destroy() }
@@ -309,35 +323,58 @@ class AndroidSpeechRecognizerController(
     }
 
     private inner class SessionRecognitionListener(
-        private val sessionId: Long,
+        private val session: ActiveSession,
     ) : RecognitionListener {
+        private val sessionId: Long
+            get() = session.id
+
         override fun onReadyForSpeech(params: Bundle?) {
-            if (active?.id == sessionId) dispatch(SpeechRecognitionEvent.Ready(sessionId))
+            if (isCurrentAttempt(session)) dispatch(SpeechRecognitionEvent.Ready(sessionId))
         }
 
         override fun onBeginningOfSpeech() {
-            if (active?.id == sessionId) dispatch(SpeechRecognitionEvent.SpeechBegan(sessionId))
+            if (isCurrentAttempt(session)) {
+                session.recoveryAttempt =
+                    SystemSpeechObservationPolicy.observeSpeechBoundary(
+                        session.recoveryAttempt,
+                    )
+                dispatch(SpeechRecognitionEvent.SpeechBegan(sessionId))
+            }
         }
 
         override fun onRmsChanged(rmsdB: Float) {
-            if (active?.id == sessionId) {
+            if (isCurrentAttempt(session)) {
                 dispatch(SpeechRecognitionEvent.RmsChanged(sessionId, rmsdB))
             }
         }
 
-        override fun onBufferReceived(buffer: ByteArray?) = Unit
+        override fun onBufferReceived(buffer: ByteArray?) {
+            if (!isCurrentAttempt(session)) return
+            session.recoveryAttempt = SystemSpeechObservationPolicy.observeAudioBuffer(
+                attempt = session.recoveryAttempt,
+                byteCount = buffer?.size ?: 0,
+            )
+        }
 
         override fun onEndOfSpeech() {
-            if (active?.id == sessionId) dispatch(SpeechRecognitionEvent.SpeechEnded(sessionId))
+            if (isCurrentAttempt(session)) {
+                // Some OEM services omit onBeginningOfSpeech. Treating end-of-speech as observed
+                // capture prevents a later service error from silently discarding the utterance.
+                session.recoveryAttempt =
+                    SystemSpeechObservationPolicy.observeSpeechBoundary(
+                        session.recoveryAttempt,
+                    )
+                dispatch(SpeechRecognitionEvent.SpeechEnded(sessionId))
+            }
         }
 
         override fun onError(error: Int) {
-            val session = active?.takeIf { it.id == sessionId } ?: return
-            failAndRelease(session, mapRecognizerError(error))
+            if (!isCurrentAttempt(session)) return
+            handleRecognizerFailure(session, error)
         }
 
         override fun onResults(results: Bundle?) {
-            val session = active?.takeIf { it.id == sessionId } ?: return
+            if (!isCurrentAttempt(session)) return
             val candidates = resultCandidates(results)
             val finalText = candidates.firstOrNull().orEmpty()
             if (finalText.isBlank()) {
@@ -361,19 +398,109 @@ class AndroidSpeechRecognizerController(
         }
 
         override fun onPartialResults(partialResults: Bundle?) {
-            if (active?.id != sessionId) return
+            if (!isCurrentAttempt(session)) return
             val text = resultCandidates(partialResults).firstOrNull() ?: return
+            session.recoveryAttempt = SystemSpeechObservationPolicy.observePartialText(
+                attempt = session.recoveryAttempt,
+                text = text,
+            )
             dispatch(SpeechRecognitionEvent.PartialResult(sessionId, text))
         }
 
         override fun onEvent(eventType: Int, params: Bundle?) = Unit
     }
 
-    private data class ActiveSession(
+    private fun isCurrentAttempt(session: ActiveSession): Boolean =
+        SystemSpeechCallbackGate.accepts(
+            active = active?.attemptToken,
+            callback = session.attemptToken,
+            fallbackPending = active?.fallbackPending == true,
+        )
+
+    private fun handleRecognizerFailure(
+        session: ActiveSession,
+        platformError: Int,
+        fallbackMessage: String? = null,
+    ) {
+        if (!isCurrentAttempt(session)) return
+        val decision = SystemSpeechFallbackPolicy.decide(
+            attempt = session.recoveryAttempt,
+            failure = fallbackSignal(platformError),
+        )
+        if (decision == SystemSpeechRecoveryDecision.RETRY_WITH_SYSTEM_SERVICE) {
+            scheduleSystemServiceFallback(session)
+            return
+        }
+        val failure = mapRecognizerError(platformError).let {
+            if (fallbackMessage == null) it else it.copy(message = fallbackMessage)
+        }
+        failAndRelease(session, failure)
+    }
+
+    private fun scheduleSystemServiceFallback(session: ActiveSession) {
+        if (!isCurrentAttempt(session)) return
+        val fallbackAttempt = SystemSpeechFallbackPolicy.beginSystemFallback(
+            session.recoveryAttempt,
+        )
+        session.fallbackPending = true
+        runCatching { session.recognizer.destroy() }
+        dispatch(SpeechRecognitionEvent.SystemFallbackStarted(session.id))
+
+        // Cross a main-loop boundary so an OEM service can tear down the failed on-device binder
+        // before the ordinary RecognitionService is created.
+        mainHandler.post {
+            if (
+                active !== session ||
+                !session.fallbackPending ||
+                requestedSessionId.get() != session.id
+            ) {
+                return@post
+            }
+            if (session.recoveryAttempt.stopRequested) {
+                session.fallbackPending = false
+                failAndRelease(
+                    session,
+                    SpeechRecognitionFailure(
+                        kind = SpeechRecognitionFailureKind.CLIENT,
+                        message = "系统识别服务切换期间录音已结束，请重新录音",
+                    ),
+                )
+                return@post
+            }
+            val created = createRecognizer(preferOnDevice = false).getOrElse {
+                session.fallbackPending = false
+                failAndRelease(
+                    session,
+                    SpeechRecognitionFailure(
+                        kind = SpeechRecognitionFailureKind.RECOGNIZER_UNAVAILABLE,
+                        message = "设备端识别不可用，且无法创建系统语音识别服务",
+                    ),
+                )
+                return@post
+            }
+            val fallback = ActiveSession(
+                id = session.id,
+                recognizer = created.recognizer,
+                profile = session.profile,
+                recoveryAttempt = fallbackAttempt,
+                attemptToken = session.attemptToken.nextAttempt(),
+            )
+            active = fallback
+            startRecognizerAttempt(fallback)
+        }
+    }
+
+    private class ActiveSession(
         val id: Long,
         val recognizer: SpeechRecognizer,
-        val usingOnDeviceRecognizer: Boolean,
-    )
+        val profile: SpeechProviderProfile,
+        var recoveryAttempt: SystemSpeechFallbackAttempt,
+        val attemptToken: SystemSpeechAttemptToken,
+        var fallbackPending: Boolean = false,
+    ) {
+        val usingOnDeviceRecognizer: Boolean
+            get() = recoveryAttempt.route == SystemSpeechRecognizerRoute.ON_DEVICE
+    }
 
     private data class CreatedRecognizer(
         val recognizer: SpeechRecognizer,
@@ -444,6 +571,35 @@ class AndroidSpeechRecognizerController(
                 message = message,
             )
         }
+
+        private fun fallbackSignal(error: Int): SystemSpeechRecognizerFailureSignal =
+            when (error) {
+                SpeechRecognizer.ERROR_CLIENT ->
+                    SystemSpeechRecognizerFailureSignal.CLIENT
+                SpeechRecognizer.ERROR_AUDIO ->
+                    SystemSpeechRecognizerFailureSignal.AUDIO
+                SpeechRecognizer.ERROR_RECOGNIZER_BUSY ->
+                    SystemSpeechRecognizerFailureSignal.BUSY
+                SpeechRecognizer.ERROR_NETWORK,
+                SpeechRecognizer.ERROR_NETWORK_TIMEOUT,
+                -> SystemSpeechRecognizerFailureSignal.NETWORK
+                SpeechRecognizer.ERROR_SPEECH_TIMEOUT ->
+                    SystemSpeechRecognizerFailureSignal.TIMEOUT
+                SpeechRecognizer.ERROR_NO_MATCH ->
+                    SystemSpeechRecognizerFailureSignal.NO_MATCH
+                SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS ->
+                    SystemSpeechRecognizerFailureSignal.PERMISSION
+                SpeechRecognizer.ERROR_SERVER ->
+                    SystemSpeechRecognizerFailureSignal.SERVER
+                ERROR_SERVER_DISCONNECTED_COMPAT ->
+                    SystemSpeechRecognizerFailureSignal.SERVER_DISCONNECTED
+                ERROR_LANGUAGE_NOT_SUPPORTED_COMPAT ->
+                    SystemSpeechRecognizerFailureSignal.LANGUAGE_NOT_SUPPORTED
+                ERROR_LANGUAGE_UNAVAILABLE_COMPAT ->
+                    SystemSpeechRecognizerFailureSignal.LANGUAGE_UNAVAILABLE
+                else ->
+                    SystemSpeechRecognizerFailureSignal.UNKNOWN
+            }
 
         // SpeechRecognizer constants added in API 31. Local values avoid unsafe field access on 29/30.
         private const val ERROR_TOO_MANY_REQUESTS_COMPAT = 10

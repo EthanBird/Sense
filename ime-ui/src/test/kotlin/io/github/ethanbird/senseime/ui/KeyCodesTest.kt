@@ -17,4 +17,20 @@ class KeyCodesTest {
         assertTrue(voiceCodes.all { it < 0 })
         assertEquals(voiceCodes.size, voiceCodes.distinct().size)
     }
+
+    @Test
+    fun toolboxAndSettingsCodesArePrivateAndDoNotAliasExistingActions() {
+        val codes = listOf(
+            KeyCodes.TOOLBOX,
+            KeyCodes.SETTINGS,
+            KeyCodes.SYMBOLS,
+            KeyCodes.EDITOR,
+            KeyCodes.VOICE,
+            KeyCodes.CLIPBOARD,
+            KeyCodes.EMOJI,
+        )
+
+        assertTrue(codes.all { it < 0 })
+        assertEquals(codes.size, codes.distinct().size)
+    }
 }

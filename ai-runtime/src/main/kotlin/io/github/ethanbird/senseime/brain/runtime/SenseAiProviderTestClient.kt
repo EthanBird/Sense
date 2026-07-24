@@ -173,6 +173,7 @@ class SenseAiProviderTestClient(
             is AiEvent.DescriptionDelta,
             is AiEvent.PreviewDelta,
             is AiEvent.PreviewReset,
+            is AiEvent.PreviewReplace,
             -> Unit
         }
     }

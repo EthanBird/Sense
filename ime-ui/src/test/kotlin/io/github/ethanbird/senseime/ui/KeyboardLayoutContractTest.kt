@@ -107,6 +107,78 @@ class KeyboardLayoutContractTest {
     }
 
     @Test
+    fun toolboxExposesSixDistinctActionsInAReachableThreeByTwoGrid() {
+        val slots = KeyboardLayoutContract.toolboxLayout(
+            viewWidth = 360f,
+            contentTop = 53f,
+            contentBottom = 298f,
+            horizontalPadding = 6f,
+            horizontalGap = 5f,
+            verticalGap = 5f,
+        )
+
+        assertEquals(KeyboardLayoutContract.ToolboxItem.entries, slots.map { it.item })
+        assertEquals(6, slots.map { it.item.keyCode }.distinct().size)
+        assertEquals(
+            setOf(
+                KeyboardLayoutContract.ToolboxActivationRoute.SYMBOLS_PANEL,
+                KeyboardLayoutContract.ToolboxActivationRoute.EMOJI_PANEL,
+                KeyboardLayoutContract.ToolboxActivationRoute.SERVICE_ACTION,
+                KeyboardLayoutContract.ToolboxActivationRoute.SETTINGS_CALLBACK,
+            ),
+            slots.map { it.item.activationRoute }.toSet(),
+        )
+        val firstRow = slots.take(3)
+        assertEquals(6f, firstRow[0].left, 0.001f)
+        assertEquals(123.666f, firstRow[1].left, 0.001f)
+        assertEquals(241.333f, firstRow[2].left, 0.001f)
+        assertTrue(slots.all { it.right <= 354f })
+        assertTrue(slots.all { it.bottom <= 298f })
+        assertTrue(slots.all { it.right - it.left >= 48f && it.bottom - it.top >= 48f })
+        slots.forEachIndexed { index, left ->
+            slots.drop(index + 1).forEach { right ->
+                val overlaps = left.left < right.right &&
+                    left.right > right.left &&
+                    left.top < right.bottom &&
+                    left.bottom > right.top
+                assertFalse(overlaps)
+            }
+        }
+    }
+
+    @Test
+    fun toolboxInteractionSeparatesLocalPanelsServiceActionsAndSettingsCallback() {
+        assertEquals(
+            KeyboardLayoutContract.ToolboxActivationRoute.SYMBOLS_PANEL,
+            KeyboardLayoutContract.toolboxActivationRoute(KeyCodes.SYMBOLS),
+        )
+        assertEquals(
+            KeyboardLayoutContract.ToolboxActivationRoute.EMOJI_PANEL,
+            KeyboardLayoutContract.toolboxActivationRoute(KeyCodes.EMOJI),
+        )
+        assertEquals(
+            setOf(
+                KeyCodes.EDITOR,
+                KeyCodes.VOICE,
+                KeyCodes.CLIPBOARD,
+            ),
+            KeyboardLayoutContract.ToolboxItem.entries
+                .filter {
+                    KeyboardLayoutContract.toolboxActivationRoute(it.keyCode) ==
+                        KeyboardLayoutContract.ToolboxActivationRoute.SERVICE_ACTION
+                }
+                .map { it.keyCode }
+                .toSet(),
+        )
+        assertEquals(
+            KeyboardLayoutContract.ToolboxActivationRoute.SETTINGS_CALLBACK,
+            KeyboardLayoutContract.toolboxActivationRoute(KeyCodes.SETTINGS),
+        )
+        assertEquals(null, KeyboardLayoutContract.toolboxActivationRoute(KeyCodes.TOOLBOX))
+        assertEquals(null, KeyboardLayoutContract.toolboxActivationRoute(KeyCodes.LETTERS))
+    }
+
+    @Test
     fun functionRowEndsWithPeriodLanguageAndEnter() {
         val row = KeyboardLayoutContract.functionRow(chineseMode = true)
 

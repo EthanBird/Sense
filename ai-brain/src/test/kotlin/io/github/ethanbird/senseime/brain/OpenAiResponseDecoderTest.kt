@@ -50,6 +50,46 @@ class OpenAiResponseDecoderTest {
     }
 
     @Test
+    fun `stream EOF without DONE or finish reason is a retryable truncation`() {
+        val decoder = OpenAiResponseDecoder(
+            ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+            streaming = true,
+        )
+        decoder.feed(
+            "data: {\"choices\":[{\"delta\":{\"content\":\"half\"}}]}\n\n".toByteArray(),
+        )
+
+        val terminal = decoder.finish().single() as ProviderContentEvent.Error
+
+        assertTrue(terminal.retryable)
+        assertEquals(OpenAiResponseDecoder.UNEXPECTED_STREAM_EOF, terminal.providerCode)
+    }
+
+    @Test
+    fun `chat finish reason completes immediately and drops late DONE and EOF`() {
+        val decoder = OpenAiResponseDecoder(
+            ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+            streaming = true,
+        )
+        val streamed = decoder.feed(
+            (
+                "data: {\"choices\":[{\"delta\":{\"content\":\"complete\"}," +
+                    "\"finish_reason\":\"stop\"}]}\n\n"
+                ).toByteArray(),
+        )
+
+        assertEquals(
+            listOf(
+                ProviderContentEvent.TextDelta("complete"),
+                ProviderContentEvent.Completed(),
+            ),
+            streamed,
+        )
+        assertEquals(emptyList<ProviderContentEvent>(), decoder.feed("data: [DONE]\n\n".toByteArray()))
+        assertEquals(emptyList<ProviderContentEvent>(), decoder.finish())
+    }
+
+    @Test
     fun `DeepSeek reasoning content becomes only a safe activity marker`() {
         val decoder = OpenAiResponseDecoder(
             ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
@@ -96,6 +136,7 @@ class OpenAiResponseDecoderTest {
                     index = 0,
                     arguments = "写\",\"patch\":{}}",
                 ),
+                ProviderContentEvent.Completed(),
             ),
             events,
         )

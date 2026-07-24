@@ -67,6 +67,9 @@ class AiBrainEngine(
         private var nativeToolName: String? = null
         private var nativeToolError: String? = null
         private var generationStatusEmitted = false
+        private val emittedDescription = StringBuilder()
+        private val emittedPreview = StringBuilder()
+        private var retryVisible: StableRetryVisibleStream? = null
         private val usesNativePatchTool =
             spec.provider.apiStyle ==
                 io.github.ethanbird.senseime.brain.api.ProviderApiStyle
@@ -85,16 +88,31 @@ class AiBrainEngine(
         fun start() {
             val dispatch = synchronized(lock) { session.start(clock.nowMs()) }
             publish(listOf(dispatch))
-            if (!isTerminal) openAttempt(attempt = 0, repair = null)
+            if (!isTerminal) openAttempt(attempt = 0, secondAttempt = null)
         }
 
         override fun tick() {
             val outcome = synchronized(lock) {
-                val dispatch = session.advanceTo(clock.nowMs())
-                terminalOutcome(listOf(dispatch))
+                val now = clock.nowMs()
+                val pending = session.pendingTimeoutCode(now)
+                if (
+                    activeAttempt == 0 &&
+                    pending != null &&
+                    pending.isAutomaticRecoveryEligible()
+                ) {
+                    startSecondAttemptOutcome(
+                        context = streamRecoveryContext("watchdog_${pending.name.lowercase()}"),
+                        prior = mutableListOf(),
+                        nowMonotonicMs = now,
+                    )
+                } else {
+                    val dispatch = session.advanceTo(now)
+                    terminalOutcome(listOf(dispatch))
+                }
             }
             outcome.cancelCall?.cancel()
             publish(outcome.dispatches)
+            outcome.secondAttempt?.let { openAttempt(attempt = 1, secondAttempt = it) }
         }
 
         override fun cancel(reason: HarnessCancelReason) {
@@ -112,14 +130,17 @@ class AiBrainEngine(
             publish(outcome.dispatches)
         }
 
-        private fun openAttempt(attempt: Int, repair: RepairContext?) {
+        private fun openAttempt(
+            attempt: Int,
+            secondAttempt: SecondAttemptContext?,
+        ) {
             val wireRequest = try {
                 OpenAiRequestFactory.create(
                     profile = spec.provider,
                     request = spec.harnessRequest,
                     credential = spec.credential,
                     attempt = attempt,
-                    repair = repair,
+                    secondAttempt = secondAttempt,
                     requestMode = requestMode,
                 )
             } catch (_: Exception) {
@@ -199,10 +220,23 @@ class AiBrainEngine(
                 if (!isActive(token, attempt)) return
                 if (metadata.statusCode !in 200..299) {
                     val failure = ProviderErrorClassifier.fromHttpStatus(metadata.statusCode)
-                    return@synchronized failOutcome(
-                        failure.code,
-                        retryable = failure.retryable,
-                    )
+                    return@synchronized if (
+                        attempt == 0 &&
+                        failure.retryable &&
+                        failure.code.isAutomaticRecoveryEligible()
+                    ) {
+                        startSecondAttemptOutcome(
+                            context = streamRecoveryContext(
+                                "http_${metadata.statusCode}",
+                            ),
+                            prior = mutableListOf(),
+                        )
+                    } else {
+                        failOutcome(
+                            failure.code,
+                            retryable = failure.retryable,
+                        )
+                    }
                 }
                 if (
                     spec.provider.streaming &&
@@ -228,6 +262,7 @@ class AiBrainEngine(
             }
             outcome.cancelCall?.cancel()
             publish(outcome.dispatches)
+            outcome.secondAttempt?.let { openAttempt(attempt = 1, secondAttempt = it) }
         }
 
         private fun onTransportBytes(
@@ -266,7 +301,7 @@ class AiBrainEngine(
             }
             outcome.cancelCall?.cancel()
             publish(outcome.dispatches)
-            outcome.repair?.let { openAttempt(attempt = 1, repair = it) }
+            outcome.secondAttempt?.let { openAttempt(attempt = 1, secondAttempt = it) }
         }
 
         private fun onTransportComplete(token: Long, attempt: Int) {
@@ -289,7 +324,7 @@ class AiBrainEngine(
             }
             outcome.cancelCall?.cancel()
             publish(outcome.dispatches)
-            outcome.repair?.let { openAttempt(attempt = 1, repair = it) }
+            outcome.secondAttempt?.let { openAttempt(attempt = 1, secondAttempt = it) }
         }
 
         private fun onTransportFailure(
@@ -326,10 +361,24 @@ class AiBrainEngine(
                         failure.retryable,
                     )
                 }
-                failOutcome(classified.code, classified.retryable)
+                if (
+                    attempt == 0 &&
+                    classified.retryable &&
+                    classified.code.isAutomaticRecoveryEligible()
+                ) {
+                    startSecondAttemptOutcome(
+                        context = streamRecoveryContext(
+                            "transport_${failure.kind.name.lowercase()}",
+                        ),
+                        prior = mutableListOf(),
+                    )
+                } else {
+                    failOutcome(classified.code, classified.retryable)
+                }
             }
             outcome.cancelCall?.cancel()
             publish(outcome.dispatches)
+            outcome.secondAttempt?.let { openAttempt(attempt = 1, secondAttempt = it) }
         }
 
         private fun consumeNormalized(
@@ -370,14 +419,7 @@ class AiBrainEngine(
                             )
                         }
                         if (visible.isNotEmpty()) {
-                            dispatches += session.accept(
-                                AiEvent.PreviewDelta(
-                                    requestId = requestId,
-                                    runGeneration = runGeneration,
-                                    text = visible,
-                                ),
-                                clock.nowMs(),
-                            )
+                            emitVisiblePreview(visible, dispatches)
                         }
                     }
                     is ProviderContentEvent.Usage -> dispatches += session.accept(
@@ -397,19 +439,37 @@ class AiBrainEngine(
                             statusCode = event.statusCode,
                             providerRetryable = event.retryable,
                         )
-                        return failOutcome(
-                            failure.code,
-                            failure.retryable,
-                            prior = dispatches,
-                        )
+                        return if (
+                            attempt == 0 &&
+                            failure.retryable &&
+                            failure.code.isAutomaticRecoveryEligible()
+                        ) {
+                            startSecondAttemptOutcome(
+                                context = streamRecoveryContext(
+                                    event.providerCode ?: "provider_stream_error",
+                                ),
+                                prior = dispatches,
+                            )
+                        } else {
+                            failOutcome(
+                                failure.code,
+                                failure.retryable,
+                                prior = dispatches,
+                            )
+                        }
                     }
                     is ProviderContentEvent.Completed -> {
                         if (!usesNativePatchTool &&
                             preview!!.fullDocument().isEmpty() &&
                             !event.finalText.isNullOrEmpty()
                         ) {
-                            preview!!.append(event.finalText)
+                            val visible = preview!!.append(event.finalText)
+                            if (visible.isNotEmpty()) {
+                                emitVisiblePreview(visible, dispatches)
+                            }
                         }
+                        finishRetryVisibility(dispatches)
+                        if (session.state.isTerminal) return terminalOutcome(dispatches)
                         return finalizePatch(attempt, dispatches)
                     }
                 }
@@ -519,23 +579,12 @@ class AiBrainEngine(
             validationSummary: String,
         ): Outcome {
             if (attempt == 0) {
-                prior += session.accept(
-                    AiEvent.PreviewReset(
-                        requestId = requestId,
-                        runGeneration = runGeneration,
-                        // BoundedHarnessSession numbers the initial stream as attempt 1.
-                        attempt = 2,
-                    ),
-                    clock.nowMs(),
-                )
-                val oldCall = invalidateActive()
-                return Outcome(
-                    dispatches = prior,
-                    cancelCall = oldCall,
-                    repair = RepairContext(
+                return startSecondAttemptOutcome(
+                    context = RepairContext(
                         rejectedDocument = rejectedDocument,
                         validationSummary = validationSummary,
                     ),
+                    prior = prior,
                 )
             }
             return failOutcome(
@@ -597,21 +646,139 @@ class AiBrainEngine(
                 return
             }
             if (visible.description.isNotEmpty()) {
+                emitVisibleDescription(visible.description, dispatches)
+            }
+            if (visible.patchText.isNotEmpty() && !session.state.isTerminal) {
+                emitVisiblePreview(visible.patchText, dispatches)
+            }
+        }
+
+        /**
+         * Starts the only second provider call while preserving the original harness authority.
+         *
+         * Must be called under [lock]. The old token is invalidated before its socket is cancelled;
+         * late callbacks therefore cannot append to the retry or reach FinalPatch.
+         */
+        private fun startSecondAttemptOutcome(
+            context: SecondAttemptContext,
+            prior: MutableList<HarnessDispatch>,
+            nowMonotonicMs: Long = clock.nowMs(),
+        ): Outcome {
+            if (activeAttempt != 0 || session.state.isTerminal) {
+                return failOutcome(
+                    HarnessErrorCode.PROVIDER_FAILURE,
+                    retryable = false,
+                    prior = prior,
+                )
+            }
+            prior += session.recoverProviderStream(
+                requestId = requestId,
+                runGeneration = runGeneration,
+                attempt = 2,
+                statusLabel = when (context) {
+                    is RepairContext -> "provider_repairing"
+                    is StreamRecoveryContext -> "provider_recovering"
+                },
+                nowMonotonicMs = nowMonotonicMs,
+            )
+            if (session.state.isTerminal) return terminalOutcome(prior)
+
+            retryVisible = StableRetryVisibleStream(
+                firstDescription = emittedDescription.toString(),
+                firstPreview = emittedPreview.toString(),
+            )
+            val oldCall = invalidateActive()
+            return Outcome(
+                dispatches = prior,
+                cancelCall = oldCall,
+                secondAttempt = context,
+            )
+        }
+
+        private fun streamRecoveryContext(reason: String): StreamRecoveryContext =
+            StreamRecoveryContext(
+                interruptedDocument = currentAttemptDocument(),
+                stableDescription = emittedDescription.toString(),
+                stablePreview = emittedPreview.toString(),
+                reason = reason,
+            )
+
+        private fun currentAttemptDocument(): String =
+            if (usesNativePatchTool) {
+                nativeTool?.fullDocument().orEmpty()
+            } else {
+                preview?.fullDocument().orEmpty()
+            }
+
+        private fun emitVisibleDescription(
+            text: String,
+            dispatches: MutableList<HarnessDispatch>,
+        ) {
+            val reconciler = retryVisible
+            val update = if (reconciler == null) {
+                StableRetryVisibleUpdate(description = text)
+            } else {
+                reconciler.appendDescription(text)
+            }
+            emitVisibleUpdate(update, dispatches)
+        }
+
+        private fun emitVisiblePreview(
+            text: String,
+            dispatches: MutableList<HarnessDispatch>,
+        ) {
+            val reconciler = retryVisible
+            val update = if (reconciler == null) {
+                StableRetryVisibleUpdate(preview = text)
+            } else {
+                reconciler.appendPreview(text)
+            }
+            emitVisibleUpdate(update, dispatches)
+        }
+
+        private fun finishRetryVisibility(dispatches: MutableList<HarnessDispatch>) {
+            retryVisible?.finish()?.let { emitVisibleUpdate(it, dispatches) }
+        }
+
+        private fun emitVisibleUpdate(
+            update: StableRetryVisibleUpdate,
+            dispatches: MutableList<HarnessDispatch>,
+        ) {
+            if (update.replace) {
+                emittedDescription.setLength(0)
+                emittedDescription.append(update.description)
+                emittedPreview.setLength(0)
+                emittedPreview.append(update.preview)
+                dispatches += session.accept(
+                    AiEvent.PreviewReplace(
+                        requestId = requestId,
+                        runGeneration = runGeneration,
+                        attempt = 2,
+                        text = update.preview,
+                        description = update.description,
+                    ),
+                    clock.nowMs(),
+                )
+                return
+            }
+            if (update.description.isNotEmpty()) {
+                emittedDescription.append(update.description)
                 dispatches += session.accept(
                     AiEvent.DescriptionDelta(
                         requestId = requestId,
                         runGeneration = runGeneration,
-                        text = visible.description,
+                        text = update.description,
                     ),
                     clock.nowMs(),
                 )
             }
-            if (visible.patchText.isNotEmpty() && !session.state.isTerminal) {
+            if (update.preview.isNotEmpty() && !session.state.isTerminal) {
+                emittedPreview.append(update.preview)
                 dispatches += session.accept(
                     AiEvent.PreviewDelta(
                         requestId = requestId,
                         runGeneration = runGeneration,
-                        text = visible.patchText,
+                        text = update.preview,
                     ),
                     clock.nowMs(),
                 )
@@ -675,12 +842,21 @@ class AiBrainEngine(
             val mediaType = this?.substringBefore(';')?.trim()?.lowercase() ?: return false
             return mediaType == "application/json" || mediaType.endsWith("+json")
         }
+
+        private fun HarnessErrorCode.isAutomaticRecoveryEligible(): Boolean = when (this) {
+            HarnessErrorCode.FIRST_EVENT_TIMEOUT,
+            HarnessErrorCode.STREAM_IDLE_TIMEOUT,
+            HarnessErrorCode.PROVIDER_UNAVAILABLE,
+            HarnessErrorCode.PROVIDER_FAILURE,
+            -> true
+            else -> false
+        }
     }
 
     private data class Outcome(
         val dispatches: List<HarnessDispatch>,
         val cancelCall: ProviderCall? = null,
-        val repair: RepairContext? = null,
+        val secondAttempt: SecondAttemptContext? = null,
     )
 
     private companion object {

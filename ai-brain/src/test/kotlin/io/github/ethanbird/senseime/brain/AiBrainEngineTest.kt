@@ -16,11 +16,13 @@ import io.github.ethanbird.senseime.brain.api.MonotonicClock
 import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
 import io.github.ethanbird.senseime.brain.api.ProviderCall
 import io.github.ethanbird.senseime.brain.api.ProviderCredential
+import io.github.ethanbird.senseime.brain.api.ProviderFailureKind
 import io.github.ethanbird.senseime.brain.api.ProviderProfile
 import io.github.ethanbird.senseime.brain.api.ProviderResponseMetadata
 import io.github.ethanbird.senseime.brain.api.ProviderStreamSink
 import io.github.ethanbird.senseime.brain.api.ProviderTimeouts
 import io.github.ethanbird.senseime.brain.api.ProviderTransport
+import io.github.ethanbird.senseime.brain.api.ProviderTransportFailure
 import io.github.ethanbird.senseime.brain.api.ProviderWireRequest
 import io.github.ethanbird.senseime.brain.api.StructuredOutputMode
 import io.github.ethanbird.senseime.brain.api.ThinkingMode
@@ -70,9 +72,9 @@ class AiBrainEngineTest {
             0,
             "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
         )
-        fixture.transport.bytes(0, "data: [DONE]\n\n")
 
         assertTrue(handle.isTerminal)
+        assertEquals(1, fixture.events.filterIsInstance<AiEvent.FinalPatch>().size)
         assertEquals(
             "已完成润色",
             fixture.events.filterIsInstance<AiEvent.DescriptionDelta>()
@@ -126,7 +128,11 @@ class AiBrainEngineTest {
         assertFalse(handle.isTerminal)
         assertEquals(2, fixture.transport.requests.size)
         assertTrue(fixture.events.none { it is AiEvent.FinalPatch })
-        assertTrue(fixture.events.any { it is AiEvent.PreviewReset })
+        assertTrue(fixture.events.none { it is AiEvent.PreviewReset })
+        assertTrue(
+            fixture.events.filterIsInstance<AiEvent.Status>()
+                .any { it.label == "provider_repairing" },
+        )
     }
 
     @Test
@@ -177,23 +183,24 @@ class AiBrainEngineTest {
     }
 
     @Test
-    fun `first event timeout cancels transport`() {
+    fun `first event timeout cancels transport and spends one bounded recovery`() {
         val fixture = Fixture()
         val handle = fixture.start()
 
         fixture.clock.now = 8_001
         handle.tick()
 
-        assertTrue(handle.isTerminal)
+        assertFalse(handle.isTerminal)
         assertTrue(fixture.transport.calls[0].cancelled)
-        assertEquals(
-            HarnessErrorCode.FIRST_EVENT_TIMEOUT,
-            fixture.events.filterIsInstance<AiEvent.Failed>().single().code,
+        assertEquals(2, fixture.transport.requests.size)
+        assertTrue(
+            fixture.events.filterIsInstance<AiEvent.Status>()
+                .any { it.label == "provider_recovering" },
         )
     }
 
     @Test
-    fun `stream idle timeout starts after first provider event`() {
+    fun `stream idle timeout starts one bounded recovery after first provider event`() {
         val fixture = Fixture()
         val handle = fixture.start()
         fixture.transport.open(0)
@@ -201,10 +208,9 @@ class AiBrainEngineTest {
         fixture.clock.now = 8_001
         handle.tick()
 
-        assertEquals(
-            HarnessErrorCode.STREAM_IDLE_TIMEOUT,
-            fixture.events.filterIsInstance<AiEvent.Failed>().single().code,
-        )
+        assertFalse(handle.isTerminal)
+        assertEquals(2, fixture.transport.requests.size)
+        assertTrue(fixture.transport.calls[0].cancelled)
     }
 
     @Test
@@ -225,8 +231,13 @@ class AiBrainEngineTest {
 
         fixture.clock.now = 22_000
         handle.tick()
+        assertFalse(handle.isTerminal)
+        assertEquals(2, fixture.transport.requests.size)
+
+        fixture.clock.now = 30_000
+        handle.tick()
         assertEquals(
-            HarnessErrorCode.STREAM_IDLE_TIMEOUT,
+            HarnessErrorCode.TOTAL_TIMEOUT,
             fixture.events.filterIsInstance<AiEvent.Failed>().single().code,
         )
     }
@@ -260,10 +271,7 @@ class AiBrainEngineTest {
             Triple(402, HarnessErrorCode.PROVIDER_QUOTA, false),
             Triple(404, HarnessErrorCode.PROVIDER_CONFIGURATION, false),
             Triple(422, HarnessErrorCode.PROVIDER_CONFIGURATION, false),
-            Triple(408, HarnessErrorCode.PROVIDER_UNAVAILABLE, true),
             Triple(429, HarnessErrorCode.PROVIDER_RATE_LIMIT, true),
-            Triple(500, HarnessErrorCode.PROVIDER_UNAVAILABLE, true),
-            Triple(503, HarnessErrorCode.PROVIDER_UNAVAILABLE, true),
         )
 
         cases.forEach { (statusCode, expectedCode, expectedRetryable) ->
@@ -276,6 +284,24 @@ class AiBrainEngineTest {
             assertEquals("HTTP $statusCode", expectedCode, failure.code)
             assertEquals("HTTP $statusCode", expectedRetryable, failure.retryable)
             assertTrue("HTTP $statusCode must cancel its call", fixture.transport.calls[0].cancelled)
+        }
+    }
+
+    @Test
+    fun `transient HTTP failures spend one automatic recovery instead of failing immediately`() {
+        listOf(408, 500, 503).forEach { statusCode ->
+            val fixture = Fixture()
+            val handle = fixture.start()
+
+            fixture.transport.open(0, statusCode = statusCode)
+
+            assertFalse("HTTP $statusCode should recover", handle.isTerminal)
+            assertEquals("HTTP $statusCode", 2, fixture.transport.requests.size)
+            assertTrue("HTTP $statusCode", fixture.transport.calls[0].cancelled)
+            assertTrue(
+                fixture.events.filterIsInstance<AiEvent.Status>()
+                    .any { it.label == "provider_recovering" },
+            )
         }
     }
 
@@ -322,7 +348,11 @@ class AiBrainEngineTest {
 
         assertEquals(2, fixture.transport.requests.size)
         assertTrue(fixture.transport.calls[0].cancelled)
-        assertEquals(1, fixture.events.filterIsInstance<AiEvent.PreviewReset>().size)
+        assertTrue(fixture.events.none { it is AiEvent.PreviewReset })
+        assertTrue(
+            fixture.events.filterIsInstance<AiEvent.Status>()
+                .any { it.label == "provider_repairing" },
+        )
         assertFalse(handle.isTerminal)
 
         fixture.transport.open(1)
@@ -386,6 +416,154 @@ class AiBrainEngineTest {
             "accepted",
             fixture.events.filterIsInstance<AiEvent.FinalPatch>().single().patch.operation.text,
         )
+    }
+
+    @Test
+    fun `network recovery suppresses regenerated prefix and appends only unseen suffix`() {
+        val fixture = Fixture()
+        val handle = fixture.start()
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            chatDelta("""{"operation":{"text":"稳定前缀"""),
+        )
+
+        fixture.transport.failure(
+            0,
+            ProviderTransportFailure(
+                kind = ProviderFailureKind.IO,
+                message = "mobile network changed",
+                retryable = true,
+            ),
+        )
+
+        assertFalse(handle.isTerminal)
+        assertEquals(2, fixture.transport.requests.size)
+        fixture.transport.open(1)
+        fixture.transport.bytes(1, chatDelta(fixture.patch("稳定前缀继续")))
+        fixture.transport.bytes(1, "data: [DONE]\n\n")
+
+        assertTrue(handle.isTerminal)
+        assertEquals(
+            "稳定前缀继续",
+            fixture.events.filterIsInstance<AiEvent.PreviewDelta>()
+                .joinToString("") { it.text },
+        )
+        assertTrue(fixture.events.none { it is AiEvent.PreviewReplace })
+        assertEquals(
+            "稳定前缀继续",
+            fixture.events.filterIsInstance<AiEvent.FinalPatch>()
+                .single().patch.operation.text,
+        )
+    }
+
+    @Test
+    fun `clean premature SSE EOF is recovered instead of misclassified as format repair`() {
+        val fixture = Fixture()
+        fixture.start()
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            chatDelta("""{"operation":{"text":"半截"""),
+        )
+
+        fixture.transport.complete(0)
+
+        assertEquals(2, fixture.transport.requests.size)
+        assertTrue(
+            fixture.events.filterIsInstance<AiEvent.Status>()
+                .any { it.label == "provider_recovering" },
+        )
+        assertTrue(
+            fixture.events.filterIsInstance<AiEvent.Status>()
+                .none { it.label == "provider_repairing" },
+        )
+        assertTrue(fixture.events.none { it is AiEvent.PreviewReset })
+        val retryBody = fixture.transport.requests[1].body.toString(StandardCharsets.UTF_8)
+        assertTrue(retryBody.contains("single transport recovery attempt"))
+    }
+
+    @Test
+    fun `divergent retry uses one nonempty atomic preview replacement`() {
+        val fixture = Fixture()
+        val handle = fixture.start()
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            chatDelta("""{"operation":{"text":"旧结果"""),
+        )
+        fixture.transport.failure(
+            0,
+            ProviderTransportFailure(
+                kind = ProviderFailureKind.READ_TIMEOUT,
+                message = "stalled",
+                retryable = true,
+            ),
+        )
+
+        fixture.transport.open(1)
+        fixture.transport.bytes(1, chatDelta(fixture.patch("全新答案")))
+        fixture.transport.bytes(1, "data: [DONE]\n\n")
+
+        assertTrue(handle.isTerminal)
+        val replacement = fixture.events.filterIsInstance<AiEvent.PreviewReplace>().single()
+        assertEquals(2, replacement.attempt)
+        assertEquals("全新答案", replacement.text)
+        assertTrue(replacement.text.isNotEmpty())
+        assertTrue(fixture.events.none { it is AiEvent.PreviewReset })
+    }
+
+    @Test
+    fun `second transport interruption fails without a third request`() {
+        val fixture = Fixture()
+        val handle = fixture.start()
+        fixture.transport.failure(
+            0,
+            ProviderTransportFailure(
+                kind = ProviderFailureKind.CONNECT_TIMEOUT,
+                message = "first timeout",
+                retryable = true,
+            ),
+        )
+        fixture.transport.failure(
+            1,
+            ProviderTransportFailure(
+                kind = ProviderFailureKind.READ_TIMEOUT,
+                message = "second timeout",
+                retryable = true,
+            ),
+        )
+
+        assertTrue(handle.isTerminal)
+        assertEquals(2, fixture.transport.requests.size)
+        assertEquals(
+            HarnessErrorCode.STREAM_IDLE_TIMEOUT,
+            fixture.events.filterIsInstance<AiEvent.Failed>().single().code,
+        )
+    }
+
+    @Test
+    fun `cancellation after recovery revokes the retry before late final patch`() {
+        val fixture = Fixture()
+        val handle = fixture.start()
+        fixture.transport.failure(
+            0,
+            ProviderTransportFailure(
+                kind = ProviderFailureKind.IO,
+                message = "switch network",
+                retryable = true,
+            ),
+        )
+
+        handle.cancel(HarnessCancelReason.POINTER_RELEASED)
+        fixture.transport.open(1)
+        fixture.transport.bytes(1, chatDelta(fixture.patch("不得写入")))
+        fixture.transport.bytes(1, "data: [DONE]\n\n")
+
+        assertTrue(handle.isTerminal)
+        assertTrue(fixture.transport.calls[1].cancelled)
+        assertEquals(1, fixture.events.filterIsInstance<AiEvent.Cancelled>().size)
+        assertTrue(fixture.events.none { it is AiEvent.FinalPatch })
     }
 
     @Test
@@ -494,6 +672,9 @@ class AiBrainEngineTest {
         }
 
         fun complete(index: Int) = sinks[index].onComplete()
+
+        fun failure(index: Int, failure: ProviderTransportFailure) =
+            sinks[index].onFailure(failure)
     }
 
     private class FakeCall : ProviderCall {

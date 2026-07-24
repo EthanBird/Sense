@@ -87,12 +87,15 @@ class BoundedHarnessSession(
     private val lock = Any()
     private var mutableState = BoundedHarnessState.CREATED
     private var startedAtMs: Long? = null
+    private var providerAttemptStartedAtMs: Long? = null
+    private var awaitingFirstProviderEvent = false
     private var lastProviderEventAtMs: Long? = null
     private var lastObservedAtMs: Long? = null
     private var providerEventCount = 0
     private var currentPreviewChars = 0
     private var currentDescriptionChars = 0
     private var previewResetCount = 0
+    private var providerRecoveryCount = 0
     private var terminalEvent: AiEvent? = null
 
     val state: BoundedHarnessState
@@ -115,6 +118,8 @@ class BoundedHarnessSession(
         }
 
         startedAtMs = nowMonotonicMs
+        providerAttemptStartedAtMs = nowMonotonicMs
+        awaitingFirstProviderEvent = true
         val validation = ProtocolValidator.validate(request)
         if (!validation.isValid) {
             return@synchronized fail(HarnessErrorCode.REQUEST_INVALID)
@@ -167,6 +172,7 @@ class BoundedHarnessSession(
             is AiEvent.DescriptionDelta -> acceptDescriptionDelta(event, nowMonotonicMs)
             is AiEvent.PreviewReset -> acceptPreviewReset(event, nowMonotonicMs)
             is AiEvent.PreviewDelta -> acceptPreviewDelta(event, nowMonotonicMs)
+            is AiEvent.PreviewReplace -> acceptPreviewReplace(event, nowMonotonicMs)
             is AiEvent.Usage -> acceptUsage(event, nowMonotonicMs)
             is AiEvent.FinalPatch -> acceptFinalPatch(event, nowMonotonicMs)
             is AiEvent.Cancelled -> {
@@ -295,6 +301,95 @@ class BoundedHarnessSession(
         expireIfNeeded(nowMonotonicMs) ?: HarnessDispatch.NoEvent(mutableState)
     }
 
+    /**
+     * Returns the timeout that [advanceTo] would emit without making the run terminal.
+     *
+     * Brain uses this one-step lookahead to spend its single transport recovery before a stalled
+     * socket turns the whole editor transaction into a failure. The absolute total deadline is
+     * still owned by this session and can never be extended by recovery.
+     */
+    fun pendingTimeoutCode(nowMonotonicMs: Long): HarnessErrorCode? = synchronized(lock) {
+        observeTime(nowMonotonicMs)
+        if (mutableState == BoundedHarnessState.CREATED || mutableState.isTerminal) {
+            return@synchronized null
+        }
+        timeoutCodeIfNeeded(nowMonotonicMs)
+    }
+
+    /**
+     * Arms one new provider stream without resetting already accepted public preview text.
+     *
+     * This is deliberately narrower than restarting a harness: request/generation authority,
+     * preview budgets, editor snapshot, and the total deadline are preserved. [attempt] is the
+     * user-visible second attempt number and is fixed to 2 by the current bounded protocol.
+     */
+    fun recoverProviderStream(
+        requestId: String,
+        runGeneration: Long,
+        attempt: Int,
+        statusLabel: String,
+        nowMonotonicMs: Long,
+    ): HarnessDispatch = synchronized(lock) {
+        observeTime(nowMonotonicMs)
+        if (requestId != request.requestId) {
+            return@synchronized HarnessDispatch.Dropped(
+                sourceEvent = null,
+                reason = HarnessDropReason.REQUEST_MISMATCH,
+                state = mutableState,
+            )
+        }
+        if (runGeneration != request.runGeneration) {
+            return@synchronized HarnessDispatch.Dropped(
+                sourceEvent = null,
+                reason = HarnessDropReason.GENERATION_MISMATCH,
+                state = mutableState,
+            )
+        }
+        if (mutableState == BoundedHarnessState.CREATED) {
+            return@synchronized HarnessDispatch.Dropped(
+                sourceEvent = null,
+                reason = HarnessDropReason.NOT_STARTED,
+                state = mutableState,
+            )
+        }
+        if (mutableState.isTerminal) {
+            return@synchronized HarnessDispatch.Dropped(
+                sourceEvent = null,
+                reason = HarnessDropReason.TERMINATED,
+                state = mutableState,
+            )
+        }
+        if (providerRecoveryCount >= 1) {
+            return@synchronized fail(HarnessErrorCode.REPAIR_LIMIT_EXCEEDED)
+        }
+        if (attempt != 2) return@synchronized fail(HarnessErrorCode.INVALID_EVENT)
+        if (statusLabel !in RECOVERY_STATUS_LABELS) {
+            return@synchronized fail(HarnessErrorCode.INVALID_EVENT)
+        }
+        val started = startedAtMs ?: return@synchronized fail(HarnessErrorCode.INTERNAL_FAILURE)
+        if (nowMonotonicMs - started >= limits.totalTimeoutMs) {
+            return@synchronized fail(HarnessErrorCode.TOTAL_TIMEOUT)
+        }
+        if (providerEventCount >= limits.maxProviderEvents) {
+            return@synchronized fail(HarnessErrorCode.EVENT_LIMIT_EXCEEDED)
+        }
+
+        providerEventCount += 1
+        providerRecoveryCount += 1
+        // Recovery starts a fresh first-provider-event window but never changes startedAtMs. This
+        // local status is not network progress and must not switch the retry to the idle timeout.
+        providerAttemptStartedAtMs = nowMonotonicMs
+        awaitingFirstProviderEvent = true
+        emit(
+            AiEvent.Status(
+                requestId = request.requestId,
+                runGeneration = request.runGeneration,
+                phase = HarnessPhase.CONNECTING,
+                label = statusLabel,
+            ),
+        )
+    }
+
     private fun acceptStatus(event: AiEvent.Status, nowMonotonicMs: Long): HarnessDispatch {
         if (
             event.label.isBlank() ||
@@ -361,6 +456,42 @@ class BoundedHarnessSession(
         return emit(event)
     }
 
+    private fun acceptPreviewReplace(
+        event: AiEvent.PreviewReplace,
+        nowMonotonicMs: Long,
+    ): HarnessDispatch {
+        if (providerRecoveryCount != 1) {
+            return fail(HarnessErrorCode.INVALID_EVENT)
+        }
+        if (previewResetCount >= limits.maxPreviewResets) {
+            return fail(HarnessErrorCode.REPAIR_LIMIT_EXCEEDED)
+        }
+        if (event.attempt != 2) {
+            return fail(HarnessErrorCode.INVALID_EVENT)
+        }
+        if (event.text.isEmpty() || !event.text.hasValidUnicodeScalars()) {
+            return fail(HarnessErrorCode.INVALID_EVENT)
+        }
+        if (event.text.length > minOf(limits.maxPreviewChars, request.maxOutputChars)) {
+            return fail(HarnessErrorCode.PREVIEW_LIMIT_EXCEEDED)
+        }
+        if (
+            !event.description.hasValidUnicodeScalars() ||
+            event.description.any(::isUnsafeDescriptionCharacter)
+        ) {
+            return fail(HarnessErrorCode.INVALID_EVENT)
+        }
+        if (event.description.length > limits.maxDescriptionChars) {
+            return fail(HarnessErrorCode.DESCRIPTION_LIMIT_EXCEEDED)
+        }
+
+        previewResetCount += 1
+        currentPreviewChars = event.text.length
+        currentDescriptionChars = event.description.length
+        noteProviderEvent(nowMonotonicMs)
+        return emit(event)
+    }
+
     private fun acceptUsage(event: AiEvent.Usage, nowMonotonicMs: Long): HarnessDispatch {
         if (event.inputTokens < 0 || event.outputTokens < 0) {
             return fail(HarnessErrorCode.INVALID_EVENT)
@@ -389,23 +520,31 @@ class BoundedHarnessSession(
     }
 
     private fun expireIfNeeded(nowMonotonicMs: Long): HarnessDispatch? {
+        return timeoutCodeIfNeeded(nowMonotonicMs)?.let(::fail)
+    }
+
+    private fun timeoutCodeIfNeeded(nowMonotonicMs: Long): HarnessErrorCode? {
         val started = startedAtMs ?: return null
         if (nowMonotonicMs - started >= limits.totalTimeoutMs) {
-            return fail(HarnessErrorCode.TOTAL_TIMEOUT)
+            return HarnessErrorCode.TOTAL_TIMEOUT
         }
 
-        val lastProvider = lastProviderEventAtMs
-        if (lastProvider == null) {
-            if (nowMonotonicMs - started >= limits.firstEventTimeoutMs) {
-                return fail(HarnessErrorCode.FIRST_EVENT_TIMEOUT)
+        if (awaitingFirstProviderEvent) {
+            val attemptStarted = providerAttemptStartedAtMs ?: started
+            if (nowMonotonicMs - attemptStarted >= limits.firstEventTimeoutMs) {
+                return HarnessErrorCode.FIRST_EVENT_TIMEOUT
             }
-        } else if (nowMonotonicMs - lastProvider >= limits.streamIdleTimeoutMs) {
-            return fail(HarnessErrorCode.STREAM_IDLE_TIMEOUT)
+        } else {
+            val lastProvider = lastProviderEventAtMs ?: providerAttemptStartedAtMs ?: started
+            if (nowMonotonicMs - lastProvider >= limits.streamIdleTimeoutMs) {
+                return HarnessErrorCode.STREAM_IDLE_TIMEOUT
+            }
         }
         return null
     }
 
     private fun noteProviderEvent(nowMonotonicMs: Long) {
+        awaitingFirstProviderEvent = false
         lastProviderEventAtMs = nowMonotonicMs
     }
 
@@ -467,5 +606,6 @@ class BoundedHarnessSession(
 
     private companion object {
         const val MAX_STATUS_LABEL_CHARS = 128
+        val RECOVERY_STATUS_LABELS = setOf("provider_recovering", "provider_repairing")
     }
 }
