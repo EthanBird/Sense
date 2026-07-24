@@ -142,6 +142,67 @@ class AiBrainEngineTest {
     }
 
     @Test
+    fun `HTTP failures map to actionable provider errors with bounded retry policy`() {
+        val cases = listOf(
+            Triple(400, HarnessErrorCode.PROVIDER_CONFIGURATION, false),
+            Triple(401, HarnessErrorCode.PROVIDER_AUTHENTICATION, false),
+            Triple(403, HarnessErrorCode.PROVIDER_AUTHENTICATION, false),
+            Triple(402, HarnessErrorCode.PROVIDER_QUOTA, false),
+            Triple(404, HarnessErrorCode.PROVIDER_CONFIGURATION, false),
+            Triple(422, HarnessErrorCode.PROVIDER_CONFIGURATION, false),
+            Triple(408, HarnessErrorCode.PROVIDER_UNAVAILABLE, true),
+            Triple(429, HarnessErrorCode.PROVIDER_RATE_LIMIT, true),
+            Triple(500, HarnessErrorCode.PROVIDER_UNAVAILABLE, true),
+            Triple(503, HarnessErrorCode.PROVIDER_UNAVAILABLE, true),
+        )
+
+        cases.forEach { (statusCode, expectedCode, expectedRetryable) ->
+            val fixture = Fixture()
+            val handle = fixture.start()
+            fixture.transport.open(0, statusCode = statusCode)
+
+            val failure = fixture.events.filterIsInstance<AiEvent.Failed>().single()
+            assertTrue("HTTP $statusCode must terminate", handle.isTerminal)
+            assertEquals("HTTP $statusCode", expectedCode, failure.code)
+            assertEquals("HTTP $statusCode", expectedRetryable, failure.retryable)
+            assertTrue("HTTP $statusCode must cancel its call", fixture.transport.calls[0].cancelled)
+        }
+    }
+
+    @Test
+    fun `provider stream envelope maps quota error without exposing payload`() {
+        val fixture = Fixture()
+        val handle = fixture.start()
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            "data: {\"error\":{\"message\":\"Insufficient balance\"," +
+                "\"type\":\"billing_error\",\"code\":\"insufficient_quota\"}}\n\n",
+        )
+
+        val failure = fixture.events.filterIsInstance<AiEvent.Failed>().single()
+        assertTrue(handle.isTerminal)
+        assertEquals(HarnessErrorCode.PROVIDER_QUOTA, failure.code)
+        assertFalse(failure.retryable)
+    }
+
+    @Test
+    fun `provider stream rate-limit error is retryable`() {
+        val fixture = Fixture()
+        fixture.start()
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            "data: {\"error\":{\"message\":\"Too many requests\"," +
+                "\"type\":\"rate_limit_error\",\"code\":\"rate_limit_exceeded\"}}\n\n",
+        )
+
+        val failure = fixture.events.filterIsInstance<AiEvent.Failed>().single()
+        assertEquals(HarnessErrorCode.PROVIDER_RATE_LIMIT, failure.code)
+        assertTrue(failure.retryable)
+    }
+
+    @Test
     fun `invalid first document gets exactly one repair and succeeds`() {
         val fixture = Fixture()
         val handle = fixture.start()
@@ -293,8 +354,12 @@ class AiBrainEngineTest {
             return FakeCall().also(calls::add)
         }
 
-        fun open(index: Int, contentType: String = "text/event-stream") {
-            sinks[index].onOpen(ProviderResponseMetadata(200, contentType))
+        fun open(
+            index: Int,
+            contentType: String = "text/event-stream",
+            statusCode: Int = 200,
+        ) {
+            sinks[index].onOpen(ProviderResponseMetadata(statusCode, contentType))
         }
 
         fun bytes(index: Int, text: String, oneByteAtATime: Boolean = false) {

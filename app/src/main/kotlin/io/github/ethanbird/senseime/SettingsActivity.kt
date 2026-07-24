@@ -24,11 +24,17 @@ import android.widget.Spinner
 import android.widget.ArrayAdapter
 import android.widget.Switch
 import android.widget.TextView
+import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
+import io.github.ethanbird.senseime.brain.api.ProviderCompatibilityIssue
 import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
 import io.github.ethanbird.senseime.brain.api.ProviderCredential
 import io.github.ethanbird.senseime.brain.api.ProviderProfile
 import io.github.ethanbird.senseime.brain.api.StructuredOutputMode
+import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestEvent
+import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestFailure
+import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestPhase
 import io.github.ethanbird.senseime.brain.runtime.ProviderSettingsStore
+import io.github.ethanbird.senseime.brain.runtime.SenseAiProviderTestClient
 
 class SettingsActivity : Activity() {
     private lateinit var statusText: TextView
@@ -40,7 +46,10 @@ class SettingsActivity : Activity() {
     private lateinit var providerStructuredOutput: Spinner
     private lateinit var providerStreaming: Switch
     private lateinit var providerStatus: TextView
+    private lateinit var providerTestButton: Button
     private val providerStore by lazy { ProviderSettingsStore(this) }
+    private lateinit var providerTestClient: SenseAiProviderTestClient
+    private var providerTestRunning = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,12 +61,23 @@ class SettingsActivity : Activity() {
             window.setDecorFitsSystemWindows(false)
         }
         setContentView(buildContent())
+        providerTestClient = SenseAiProviderTestClient(this, ::onProviderConnectionTestEvent)
     }
 
     override fun onResume() {
         super.onResume()
         updateStatus()
         loadProviderSettings()
+    }
+
+    override fun onStop() {
+        if (::providerTestClient.isInitialized) providerTestClient.cancel()
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        if (::providerTestClient.isInitialized) providerTestClient.close()
+        super.onDestroy()
     }
 
     private fun buildContent(): View {
@@ -182,7 +202,12 @@ class SettingsActivity : Activity() {
         addView(labeledField(R.string.ai_provider_key, providerApiKey).withTop(dp(10)))
         addView(providerStreaming.withTop(dp(10)))
 
-        addView(primaryButton(R.string.ai_provider_save, ::saveProviderSettings).withTop(dp(12)))
+        addView(secondaryButton(R.string.ai_provider_save, ::saveProviderSettings).withTop(dp(12)))
+        providerTestButton = primaryButton(
+            R.string.ai_provider_test,
+            ::saveAndTestProviderConnection,
+        )
+        addView(providerTestButton.withTop(dp(8)))
         addView(secondaryButton(R.string.ai_provider_validate, ::validateSavedProvider).withTop(dp(8)))
         addView(
             secondaryButton(
@@ -195,29 +220,25 @@ class SettingsActivity : Activity() {
     }
 
     private fun saveProviderSettings() {
-        val profile = ProviderProfile(
-            id = "primary",
-            displayName = providerName.text.toString().trim(),
-            apiStyle = if (providerApiStyle.selectedItemPosition == 0) {
-                ProviderApiStyle.OPENAI_RESPONSES
-            } else {
-                ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS
-            },
-            baseUrl = providerBaseUrl.text.toString().trim(),
-            model = providerModel.text.toString().trim(),
-            streaming = providerStreaming.isChecked,
-            structuredOutput = when (providerStructuredOutput.selectedItemPosition) {
-                0 -> StructuredOutputMode.JSON_SCHEMA
-                1 -> StructuredOutputMode.JSON_OBJECT
-                else -> StructuredOutputMode.PROMPT_ONLY
-            },
-        )
-        val validation = profile.validate()
-        if (!validation.isValid) {
-            providerStatus.text = validation.errors.joinToString("\n") { it.message }
-            providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
-            return
+        if (providerTestRunning) providerTestClient.cancel()
+        persistProviderSettings()
+    }
+
+    private fun saveAndTestProviderConnection() {
+        if (providerTestRunning) return
+        persistProviderSettings {
+            providerTestRunning = true
+            providerTestButton.isEnabled = false
+            providerStatus.setText(R.string.ai_provider_test_starting)
+            providerStatus.setTextColor(getColor(R.color.sense_secondary))
+            providerTestClient.start()
         }
+    }
+
+    private fun persistProviderSettings(onSaved: (() -> Unit)? = null) {
+        val profile = currentProviderProfile()
+        if (!showProfileErrors(profile)) return
+
         val enteredKey = providerApiKey.text.toString()
         val key = if (enteredKey.isEmpty()) {
             null
@@ -236,6 +257,7 @@ class SettingsActivity : Activity() {
                 providerApiKey.hint = getString(R.string.ai_provider_key_saved)
                 providerStatus.setText(R.string.ai_provider_saved)
                 providerStatus.setTextColor(getColor(R.color.sense_success))
+                onSaved?.invoke()
             }
             .onFailure {
                 providerStatus.setText(R.string.ai_provider_save_failed)
@@ -243,12 +265,57 @@ class SettingsActivity : Activity() {
             }
     }
 
+    private fun currentProviderProfile(): ProviderProfile =
+        ProviderProfile(
+            id = "primary",
+            displayName = providerName.text.toString().trim(),
+            apiStyle = if (providerApiStyle.selectedItemPosition == 0) {
+                ProviderApiStyle.OPENAI_RESPONSES
+            } else {
+                ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS
+            },
+            baseUrl = providerBaseUrl.text.toString().trim(),
+            model = providerModel.text.toString().trim(),
+            streaming = providerStreaming.isChecked,
+            structuredOutput = when (providerStructuredOutput.selectedItemPosition) {
+                0 -> StructuredOutputMode.JSON_SCHEMA
+                1 -> StructuredOutputMode.JSON_OBJECT
+                else -> StructuredOutputMode.PROMPT_ONLY
+            },
+        )
+
+    private fun showProfileErrors(profile: ProviderProfile): Boolean {
+        val validation = profile.validate()
+        if (!validation.isValid) {
+            providerStatus.text = validation.errors.joinToString("\n") { it.message }
+            providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+            return false
+        }
+
+        val compatibilityIssues = ProviderCompatibility.issues(profile)
+        if (compatibilityIssues.isNotEmpty()) {
+            providerStatus.text = compatibilityIssues.joinToString("\n") { issue ->
+                getString(
+                    when (issue) {
+                        ProviderCompatibilityIssue.DEEPSEEK_REQUIRES_CHAT_COMPLETIONS ->
+                            R.string.ai_provider_deepseek_chat_required
+                        ProviderCompatibilityIssue.DEEPSEEK_REQUIRES_JSON_OBJECT ->
+                            R.string.ai_provider_deepseek_json_required
+                    },
+                )
+            }
+            providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+            return false
+        }
+        return true
+    }
+
     private fun validateSavedProvider() {
         providerStore.load()
             .onSuccess { config ->
                 providerStatus.setText(
                     if (config == null) R.string.ai_provider_not_configured
-                    else R.string.ai_provider_valid,
+                    else R.string.ai_provider_local_valid,
                 )
                 providerStatus.setTextColor(
                     getColor(if (config == null) R.color.sense_secondary else R.color.sense_success),
@@ -258,6 +325,88 @@ class SettingsActivity : Activity() {
                 providerStatus.setText(R.string.ai_provider_invalid)
                 providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
             }
+    }
+
+    private fun onProviderConnectionTestEvent(event: ProviderConnectionTestEvent) {
+        when (event) {
+            ProviderConnectionTestEvent.Starting -> {
+                providerStatus.setText(R.string.ai_provider_test_starting)
+                providerStatus.setTextColor(getColor(R.color.sense_secondary))
+            }
+
+            is ProviderConnectionTestEvent.Progress -> {
+                providerStatus.setText(
+                    when (event.phase) {
+                        ProviderConnectionTestPhase.CONNECTING ->
+                            R.string.ai_provider_test_connecting
+                        ProviderConnectionTestPhase.UNDERSTANDING ->
+                            R.string.ai_provider_test_understanding
+                        ProviderConnectionTestPhase.GENERATING ->
+                            R.string.ai_provider_test_generating
+                        ProviderConnectionTestPhase.VALIDATING ->
+                            R.string.ai_provider_test_validating
+                    },
+                )
+                providerStatus.setTextColor(getColor(R.color.sense_secondary))
+            }
+
+            is ProviderConnectionTestEvent.Succeeded -> {
+                finishProviderTest()
+                val inputTokens = event.inputTokens
+                val outputTokens = event.outputTokens
+                providerStatus.text = if (inputTokens != null && outputTokens != null) {
+                    getString(
+                        R.string.ai_provider_test_succeeded_with_usage,
+                        inputTokens,
+                        outputTokens,
+                    )
+                } else {
+                    getString(R.string.ai_provider_test_succeeded)
+                }
+                providerStatus.setTextColor(getColor(R.color.sense_success))
+            }
+
+            is ProviderConnectionTestEvent.Failed -> {
+                finishProviderTest()
+                providerStatus.setText(providerTestFailureMessage(event.failure))
+                providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+            }
+
+            ProviderConnectionTestEvent.Cancelled -> {
+                finishProviderTest()
+                providerStatus.setText(R.string.ai_provider_test_cancelled)
+                providerStatus.setTextColor(getColor(R.color.sense_secondary))
+            }
+        }
+    }
+
+    private fun providerTestFailureMessage(failure: ProviderConnectionTestFailure): Int =
+        when (failure) {
+            ProviderConnectionTestFailure.NOT_CONFIGURED ->
+                R.string.ai_provider_test_not_configured
+            ProviderConnectionTestFailure.AUTHENTICATION ->
+                R.string.ai_provider_test_authentication
+            ProviderConnectionTestFailure.QUOTA ->
+                R.string.ai_provider_test_quota
+            ProviderConnectionTestFailure.CONFIGURATION ->
+                R.string.ai_provider_test_configuration
+            ProviderConnectionTestFailure.RATE_LIMIT ->
+                R.string.ai_provider_test_rate_limit
+            ProviderConnectionTestFailure.UNAVAILABLE ->
+                R.string.ai_provider_test_unavailable
+            ProviderConnectionTestFailure.NETWORK ->
+                R.string.ai_provider_test_network
+            ProviderConnectionTestFailure.TIMEOUT ->
+                R.string.ai_provider_test_timeout
+            ProviderConnectionTestFailure.PROTOCOL ->
+                R.string.ai_provider_test_protocol
+            ProviderConnectionTestFailure.INTERNAL ->
+                R.string.ai_provider_test_internal
+        }
+
+    private fun finishProviderTest() {
+        providerTestRunning = false
+        providerTestButton.isEnabled = true
     }
 
     private fun clearProviderCredential() {

@@ -18,9 +18,9 @@ fi
 BUILD_TOOLS="$SDK/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK/platforms/android-36/android.jar"
 KOTLIN_LIB="$GRADLE_DIST/lib"
-OUT="$ROOT/build/offline-v0.3.5-m8"
+OUT="$ROOT/build/offline-v0.3.6-m8"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
-APK="$APK_DIR/Sense-v0.3.5-m8-debug.apk"
+APK="$APK_DIR/Sense-v0.3.6-m8-debug.apk"
 LEXICON_ASSET="$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin"
 LEXICON_SHA256="ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
 BIGRAM_ASSET="$ROOT/ime-service/src/main/assets/pinyin_bigrams.bin"
@@ -82,7 +82,9 @@ mapfile -t BRAIN_API_SOURCES < <(find "$ROOT/brain-api/src/main/kotlin" -name '*
 mapfile -t BRAIN_API_TEST_SOURCES < <(find "$ROOT/brain-api/src/test/kotlin" -name '*.kt' -print | sort)
 mapfile -t BRAIN_SOURCES < <(find "$ROOT/ai-brain/src/main/kotlin" -name '*.kt' -print | sort)
 mapfile -t BRAIN_TEST_SOURCES < <(find "$ROOT/ai-brain/src/test/kotlin" -name '*.kt' -print | sort)
-RUNTIME_PURE_SOURCE="$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainIpcTextChunker.kt"
+mapfile -t RUNTIME_PURE_SOURCES < <(printf '%s\n' \
+    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainIpcTextChunker.kt" \
+    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/ProviderConnectionTest.kt")
 mapfile -t RUNTIME_TEST_SOURCES < <(find "$ROOT/ai-runtime/src/test/kotlin" -name '*.kt' -print | sort)
 mapfile -t CORE_SOURCES < <(find "$ROOT/core-input/src/main/kotlin" -name '*.kt' -print | sort)
 mapfile -t TEST_SOURCES < <(find "$ROOT/core-input/src/test/kotlin" -name '*.kt' -print | sort)
@@ -94,6 +96,7 @@ mapfile -t UI_LAYOUT_SOURCES < <(printf '%s\n' \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/EmojiCatalog.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardLayoutContract.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KineticScrollPolicy.kt" \
+    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardGapHitResolver.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/SymbolCatalog.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/SwipeCharacterMap.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/TouchInputReducer.kt" \
@@ -197,11 +200,13 @@ java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/brain-api-main:$OUT/b
     org.junit.runner.JUnitCore "${BRAIN_TEST_CLASSES[@]}" | tee "$OUT/brain-unit-tests.txt"
 
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
-    -jvm-target 17 -no-stdlib -no-reflect -classpath "$STDLIB" \
-    -d "$OUT/runtime-main" "$RUNTIME_PURE_SOURCE"
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath "$STDLIB:$OUT/protocol-main" \
+    -d "$OUT/runtime-main" "${RUNTIME_PURE_SOURCES[@]}"
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect \
-    -classpath "$STDLIB:$JUNIT:$HAMCREST:$OUT/runtime-main" \
+    -classpath "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/runtime-main" \
+    -Xfriend-paths="$OUT/runtime-main" \
     -d "$OUT/runtime-test" "${RUNTIME_TEST_SOURCES[@]}"
 RUNTIME_TEST_CLASSES=()
 for source in "${RUNTIME_TEST_SOURCES[@]}"; do
@@ -215,7 +220,7 @@ for source in "${RUNTIME_TEST_SOURCES[@]}"; do
     [[ -n "$package_name" ]]
     RUNTIME_TEST_CLASSES+=("$package_name.${file_name%.kt}")
 done
-java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/runtime-main:$OUT/runtime-test" \
+java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/runtime-main:$OUT/runtime-test" \
     org.junit.runner.JUnitCore "${RUNTIME_TEST_CLASSES[@]}" | tee "$OUT/runtime-unit-tests.txt"
 
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
@@ -247,6 +252,7 @@ java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect \
     -classpath "$STDLIB:$JUNIT:$HAMCREST:$OUT/ui-main" \
+    -Xfriend-paths="$OUT/ui-main" \
     -d "$OUT/ui-test" "${UI_TEST_SOURCES[@]}"
 UI_TEST_CLASSES=()
 for source in "${UI_TEST_SOURCES[@]}"; do
@@ -337,8 +343,8 @@ java -cp "$STDLIB:$OUT/core-main" \
     --manifest "$ROOT/tools/offline/AndroidManifest.xml" \
     --min-sdk-version 29 \
     --target-sdk-version 36 \
-    --version-code 12 \
-    --version-name 0.3.5-m8 \
+    --version-code 13 \
+    --version-name 0.3.6-m8 \
     --auto-add-overlay \
     --output-text-symbols "$OUT/R.txt" \
     -A "$ROOT/ime-service/src/main/assets" \
@@ -467,7 +473,7 @@ actions = {
 if "android.view.InputMethod" not in actions:
     raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
 PY
-grep -F "package: name='io.github.ethanbird.senseime' versionCode='12' versionName='0.3.5-m8'" "$OUT/apk-badging.txt"
+grep -F "package: name='io.github.ethanbird.senseime' versionCode='13' versionName='0.3.6-m8'" "$OUT/apk-badging.txt"
 grep -Fx "minSdkVersion:'29'" "$OUT/apk-badging.txt"
 grep -Fx "targetSdkVersion:'36'" "$OUT/apk-badging.txt"
 DECLARED_PERMISSIONS=$(
@@ -533,4 +539,4 @@ HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --text "$OUT/lint.txt" \
     "$ROOT/tools/offline"
 
-echo "v0.3.5-m8 verification complete: $APK"
+echo "v0.3.6-m8 verification complete: $APK"

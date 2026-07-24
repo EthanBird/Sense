@@ -179,11 +179,10 @@ class AiBrainEngine(
             val outcome = synchronized(lock) {
                 if (!isActive(token, attempt)) return
                 if (metadata.statusCode !in 200..299) {
+                    val failure = ProviderErrorClassifier.fromHttpStatus(metadata.statusCode)
                     return@synchronized failOutcome(
-                        HarnessErrorCode.PROVIDER_FAILURE,
-                        retryable = metadata.statusCode == 408 ||
-                            metadata.statusCode == 429 ||
-                            metadata.statusCode >= 500,
+                        failure.code,
+                        retryable = failure.retryable,
                     )
                 }
                 if (
@@ -281,13 +280,34 @@ class AiBrainEngine(
         ) {
             val outcome = synchronized(lock) {
                 if (!isActive(token, attempt)) return
-                val code = when (failure.kind) {
-                    ProviderFailureKind.CONNECT_TIMEOUT -> HarnessErrorCode.FIRST_EVENT_TIMEOUT
-                    ProviderFailureKind.READ_TIMEOUT -> HarnessErrorCode.STREAM_IDLE_TIMEOUT
-                    ProviderFailureKind.CANCELLED -> HarnessErrorCode.PROVIDER_FAILURE
-                    else -> HarnessErrorCode.PROVIDER_FAILURE
+                val classified = when (failure.kind) {
+                    ProviderFailureKind.CONNECT_TIMEOUT -> ClassifiedProviderError(
+                        HarnessErrorCode.FIRST_EVENT_TIMEOUT,
+                        retryable = true,
+                    )
+                    ProviderFailureKind.READ_TIMEOUT -> ClassifiedProviderError(
+                        HarnessErrorCode.STREAM_IDLE_TIMEOUT,
+                        retryable = true,
+                    )
+                    ProviderFailureKind.HTTP_STATUS ->
+                        failure.statusCode?.let(ProviderErrorClassifier::fromHttpStatus)
+                            ?: ClassifiedProviderError(
+                                HarnessErrorCode.PROVIDER_FAILURE,
+                                failure.retryable,
+                            )
+                    ProviderFailureKind.INTERNAL -> ClassifiedProviderError(
+                        HarnessErrorCode.INTERNAL_FAILURE,
+                        retryable = false,
+                    )
+                    ProviderFailureKind.CANCELLED,
+                    ProviderFailureKind.IO,
+                    ProviderFailureKind.MALFORMED_RESPONSE,
+                    ProviderFailureKind.RESPONSE_TOO_LARGE -> ClassifiedProviderError(
+                        HarnessErrorCode.PROVIDER_FAILURE,
+                        failure.retryable,
+                    )
                 }
-                failOutcome(code, failure.retryable)
+                failOutcome(classified.code, classified.retryable)
             }
             outcome.cancelCall?.cancel()
             publish(outcome.dispatches)
@@ -331,11 +351,20 @@ class AiBrainEngine(
                         ),
                         clock.nowMs(),
                     )
-                    is ProviderContentEvent.Error -> return failOutcome(
-                        HarnessErrorCode.PROVIDER_FAILURE,
-                        event.retryable,
-                        prior = dispatches,
-                    )
+                    is ProviderContentEvent.Error -> {
+                        val failure = ProviderErrorClassifier.fromProviderPayload(
+                            message = event.message,
+                            type = event.type,
+                            providerCode = event.providerCode,
+                            statusCode = event.statusCode,
+                            providerRetryable = event.retryable,
+                        )
+                        return failOutcome(
+                            failure.code,
+                            failure.retryable,
+                            prior = dispatches,
+                        )
+                    }
                     is ProviderContentEvent.Completed -> {
                         if (
                             preview!!.fullDocument().isEmpty() &&

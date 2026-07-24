@@ -2362,6 +2362,28 @@ class SenseKeyboardView @JvmOverloads constructor(
                 )
             }
         }
+        val nearestKeyIndex = KeyboardGapHitResolver.nearestIndex(
+            x = x,
+            y = y,
+            maximumDistance = keyGap,
+            targetCount = keys.size,
+            isEligible = { index ->
+                val key = keys[index]
+                key.scrollPanel == null && key.style != KeyStyle.CARD
+            },
+            left = { index -> keys[index].bounds.left },
+            top = { index -> keys[index].bounds.top },
+            right = { index -> keys[index].bounds.right },
+            bottom = { index -> keys[index].bounds.bottom },
+        )
+        if (nearestKeyIndex != KeyboardGapHitResolver.NONE) {
+            val key = keys[nearestKeyIndex]
+            return FrozenTouchTarget.KeyValue(
+                key = key,
+                gesturePolicy = gesturePolicyForKey(key),
+                bounds = key.bounds,
+            )
+        }
         for (scrollPanel in ScrollPanel.entries) {
             val bounds = panelViewportBounds(scrollPanel) ?: continue
             if (bounds.contains(x, y)) {
@@ -2422,13 +2444,17 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private fun isInsideTapTarget(target: FrozenTouchTarget, x: Float, y: Float): Boolean {
         val bounds = target.bounds
-        val key = (target as? FrozenTouchTarget.KeyValue)?.key ?: return bounds.contains(x, y)
-        if (key.code == KeyCodes.DELETE) return bounds.contains(x, y)
-        val hitSlop = scaledTouchSlop
-        return x >= bounds.left - hitSlop &&
-            x <= bounds.right + hitSlop &&
-            y >= bounds.top - hitSlop &&
-            y <= bounds.bottom + hitSlop
+        if (target !is FrozenTouchTarget.KeyValue) return bounds.contains(x, y)
+        val hitSlop = maxOf(scaledTouchSlop, keyGap)
+        return KeyboardGapHitResolver.containsWithSlop(
+            x = x,
+            y = y,
+            left = bounds.left,
+            top = bounds.top,
+            right = bounds.right,
+            bottom = bounds.bottom,
+            slop = hitSlop,
+        )
     }
 
     private fun activateTouchTarget(activation: TouchInputReducer.Activation<FrozenTouchTarget>) {
