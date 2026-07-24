@@ -14,17 +14,37 @@ import android.view.Gravity
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import android.widget.Spinner
+import android.widget.ArrayAdapter
+import android.widget.Switch
 import android.widget.TextView
+import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
+import io.github.ethanbird.senseime.brain.api.ProviderCredential
+import io.github.ethanbird.senseime.brain.api.ProviderProfile
+import io.github.ethanbird.senseime.brain.api.StructuredOutputMode
+import io.github.ethanbird.senseime.brain.runtime.ProviderSettingsStore
 
 class SettingsActivity : Activity() {
     private lateinit var statusText: TextView
+    private lateinit var providerName: EditText
+    private lateinit var providerBaseUrl: EditText
+    private lateinit var providerModel: EditText
+    private lateinit var providerApiKey: EditText
+    private lateinit var providerApiStyle: Spinner
+    private lateinit var providerStructuredOutput: Spinner
+    private lateinit var providerStreaming: Switch
+    private lateinit var providerStatus: TextView
+    private val providerStore by lazy { ProviderSettingsStore(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         window.statusBarColor = Color.TRANSPARENT
         window.navigationBarColor = getColor(R.color.sense_background)
@@ -37,6 +57,7 @@ class SettingsActivity : Activity() {
     override fun onResume() {
         super.onResume()
         updateStatus()
+        loadProviderSettings()
     }
 
     private fun buildContent(): View {
@@ -62,11 +83,12 @@ class SettingsActivity : Activity() {
             getSystemService(InputMethodManager::class.java).showInputMethodPicker()
         }.withTop(dp(10)))
 
+        content.addView(card(R.string.ai_provider_title, providerForm()).withTop(dp(24)))
         content.addView(
             card(
                 R.string.m0_title,
                 text(R.string.m0_body, 15f, R.color.sense_secondary),
-            ).withTop(dp(24)),
+            ).withTop(dp(12)),
         )
         content.addView(
             card(
@@ -106,6 +128,221 @@ class SettingsActivity : Activity() {
         val enabled = manager.enabledInputMethodList.any { it.packageName == packageName }
         statusText.setText(if (enabled) R.string.ime_enabled else R.string.ime_disabled)
         statusText.setTextColor(getColor(if (enabled) R.color.sense_success else R.color.sense_primary))
+    }
+
+    private fun providerForm(): View = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+
+        addView(text(R.string.ai_provider_body, 13f, R.color.sense_secondary))
+        providerName = editField(R.string.ai_provider_name, "OpenAI")
+        providerBaseUrl = editField(R.string.ai_provider_base_url, ProviderProfile.DEFAULT_OPENAI_BASE_URL)
+        providerModel = editField(R.string.ai_provider_model, DEFAULT_PROVIDER_MODEL)
+        providerApiKey = editField(R.string.ai_provider_key, "sk-…").apply {
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD or
+                android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+            importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+            imeOptions = imeOptions or EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
+            isSaveEnabled = false
+        }
+        providerApiStyle = Spinner(this@SettingsActivity).apply {
+            adapter = ArrayAdapter(
+                this@SettingsActivity,
+                android.R.layout.simple_spinner_dropdown_item,
+                listOf("OpenAI Responses", "OpenAI-compatible Chat Completions"),
+            )
+        }
+        providerStructuredOutput = Spinner(this@SettingsActivity).apply {
+            adapter = ArrayAdapter(
+                this@SettingsActivity,
+                android.R.layout.simple_spinner_dropdown_item,
+                listOf(
+                    "严格 JSON Schema（OpenAI Responses 推荐）",
+                    "JSON Object（兼容服务推荐）",
+                    "仅提示词约束（最广兼容）",
+                ),
+            )
+        }
+        providerStreaming = Switch(this@SettingsActivity).apply {
+            setText(R.string.ai_provider_stream)
+            isChecked = true
+            setTextColor(getColor(R.color.sense_primary))
+        }
+
+        addView(labeledField(R.string.ai_provider_name, providerName).withTop(dp(14)))
+        addView(labeledField(R.string.ai_provider_base_url, providerBaseUrl).withTop(dp(10)))
+        addView(labeledField(R.string.ai_provider_model, providerModel).withTop(dp(10)))
+        addView(labeledField(R.string.ai_provider_style, providerApiStyle).withTop(dp(10)))
+        addView(
+            labeledField(
+                R.string.ai_provider_structured_output,
+                providerStructuredOutput,
+            ).withTop(dp(10)),
+        )
+        addView(labeledField(R.string.ai_provider_key, providerApiKey).withTop(dp(10)))
+        addView(providerStreaming.withTop(dp(10)))
+
+        addView(primaryButton(R.string.ai_provider_save, ::saveProviderSettings).withTop(dp(12)))
+        addView(secondaryButton(R.string.ai_provider_validate, ::validateSavedProvider).withTop(dp(8)))
+        addView(
+            secondaryButton(
+                R.string.ai_provider_clear_key,
+                ::clearProviderCredential,
+            ).withTop(dp(8)),
+        )
+        providerStatus = text(R.string.ai_provider_not_configured, 12f, R.color.sense_secondary)
+        addView(providerStatus.withTop(dp(10)))
+    }
+
+    private fun saveProviderSettings() {
+        val profile = ProviderProfile(
+            id = "primary",
+            displayName = providerName.text.toString().trim(),
+            apiStyle = if (providerApiStyle.selectedItemPosition == 0) {
+                ProviderApiStyle.OPENAI_RESPONSES
+            } else {
+                ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS
+            },
+            baseUrl = providerBaseUrl.text.toString().trim(),
+            model = providerModel.text.toString().trim(),
+            streaming = providerStreaming.isChecked,
+            structuredOutput = when (providerStructuredOutput.selectedItemPosition) {
+                0 -> StructuredOutputMode.JSON_SCHEMA
+                1 -> StructuredOutputMode.JSON_OBJECT
+                else -> StructuredOutputMode.PROMPT_ONLY
+            },
+        )
+        val validation = profile.validate()
+        if (!validation.isValid) {
+            providerStatus.text = validation.errors.joinToString("\n") { it.message }
+            providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+            return
+        }
+        val enteredKey = providerApiKey.text.toString()
+        val key = if (enteredKey.isEmpty()) {
+            null
+        } else {
+            val valid = runCatching { ProviderCredential.Bearer(enteredKey) }.isSuccess
+            if (!valid) {
+                providerStatus.setText(R.string.ai_provider_key_invalid)
+                providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+                return
+            }
+            enteredKey.toCharArray()
+        }
+        providerStore.save(profile, key)
+            .onSuccess {
+                providerApiKey.text.clear()
+                providerApiKey.hint = getString(R.string.ai_provider_key_saved)
+                providerStatus.setText(R.string.ai_provider_saved)
+                providerStatus.setTextColor(getColor(R.color.sense_success))
+            }
+            .onFailure {
+                providerStatus.setText(R.string.ai_provider_save_failed)
+                providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+            }
+    }
+
+    private fun validateSavedProvider() {
+        providerStore.load()
+            .onSuccess { config ->
+                providerStatus.setText(
+                    if (config == null) R.string.ai_provider_not_configured
+                    else R.string.ai_provider_valid,
+                )
+                providerStatus.setTextColor(
+                    getColor(if (config == null) R.color.sense_secondary else R.color.sense_success),
+                )
+            }
+            .onFailure {
+                providerStatus.setText(R.string.ai_provider_invalid)
+                providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+            }
+    }
+
+    private fun clearProviderCredential() {
+        providerStore.loadProfile()
+            .onSuccess { profile ->
+                if (profile == null) {
+                    providerStatus.setText(R.string.ai_provider_not_configured)
+                    providerStatus.setTextColor(getColor(R.color.sense_secondary))
+                    return@onSuccess
+                }
+                providerStore.save(profile, CharArray(0))
+                    .onSuccess {
+                        providerApiKey.text.clear()
+                        providerApiKey.hint = getString(R.string.ai_provider_key_optional)
+                        providerStatus.setText(R.string.ai_provider_key_cleared)
+                        providerStatus.setTextColor(getColor(R.color.sense_success))
+                    }
+                    .onFailure {
+                        providerStatus.setText(R.string.ai_provider_save_failed)
+                        providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+                    }
+            }
+            .onFailure {
+                providerStatus.setText(R.string.ai_provider_invalid)
+                providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+            }
+    }
+
+    private fun loadProviderSettings() {
+        if (!::providerStatus.isInitialized) return
+        providerStore.loadProfile()
+            .onSuccess { profile ->
+                if (profile == null) {
+                    providerName.setText("OpenAI")
+                    providerBaseUrl.setText(ProviderProfile.DEFAULT_OPENAI_BASE_URL)
+                    providerModel.setText(DEFAULT_PROVIDER_MODEL)
+                    providerApiStyle.setSelection(0)
+                    providerStructuredOutput.setSelection(0)
+                    providerStreaming.isChecked = true
+                    providerApiKey.hint = getString(R.string.ai_provider_key_optional)
+                    providerStatus.setText(R.string.ai_provider_not_configured)
+                    return@onSuccess
+                }
+                providerName.setText(profile.displayName)
+                providerBaseUrl.setText(profile.baseUrl)
+                providerModel.setText(profile.model)
+                providerApiStyle.setSelection(
+                    if (profile.apiStyle == ProviderApiStyle.OPENAI_RESPONSES) 0 else 1,
+                )
+                providerStructuredOutput.setSelection(
+                    when (profile.structuredOutput) {
+                        StructuredOutputMode.JSON_SCHEMA -> 0
+                        StructuredOutputMode.JSON_OBJECT -> 1
+                        StructuredOutputMode.PROMPT_ONLY -> 2
+                    },
+                )
+                providerStreaming.isChecked = profile.streaming
+                providerApiKey.hint = getString(
+                    if (providerStore.hasCredential()) R.string.ai_provider_key_saved
+                    else R.string.ai_provider_key_optional,
+                )
+                providerStatus.setText(R.string.ai_provider_saved)
+                providerStatus.setTextColor(getColor(R.color.sense_success))
+            }
+            .onFailure {
+                providerStatus.setText(R.string.ai_provider_invalid)
+                providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+            }
+    }
+
+    private fun editField(labelRes: Int, hintText: String): EditText = EditText(this).apply {
+        hint = hintText
+        contentDescription = getString(labelRes)
+        textSize = 14f
+        setSingleLine(true)
+        setTextColor(getColor(R.color.sense_primary))
+        setHintTextColor(getColor(R.color.sense_secondary))
+        setPadding(dp(12), dp(10), dp(12), dp(10))
+        background = rounded(getColor(R.color.sense_background), dp(10).toFloat())
+    }
+
+    private fun labeledField(labelRes: Int, field: View): LinearLayout = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        addView(text(labelRes, 12f, R.color.sense_secondary, Typeface.BOLD))
+        addView(field.withTop(dp(5)))
     }
 
     private fun showDictionaryNotice() {
@@ -214,4 +451,8 @@ class SettingsActivity : Activity() {
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+
+    companion object {
+        private const val DEFAULT_PROVIDER_MODEL = "gpt-4.1-mini"
+    }
 }

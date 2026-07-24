@@ -181,6 +181,65 @@ class BoundedHarnessSessionTest {
     }
 
     @Test
+    fun transportActivityRefreshesIdleWithoutConsumingTypedEventBudget() {
+        val request = validRequest()
+        val session = BoundedHarnessSession(
+            request,
+            limits = limits(
+                firstEventTimeoutMs = 100,
+                streamIdleTimeoutMs = 200,
+                totalTimeoutMs = 1_000,
+                maxProviderEvents = 1,
+            ),
+        )
+        session.start(0)
+
+        assertTrue(
+            session.noteProviderActivity(
+                request.requestId,
+                request.runGeneration,
+                90,
+            ) is HarnessDispatch.NoEvent,
+        )
+        assertTrue(
+            session.noteProviderActivity(
+                request.requestId,
+                request.runGeneration,
+                280,
+            ) is HarnessDispatch.NoEvent,
+        )
+
+        assertTrue(session.advanceTo(479) is HarnessDispatch.NoEvent)
+        assertEquals(BoundedHarnessState.STREAMING, session.state)
+        assertEquals(0, session.acceptedProviderEvents)
+        val timeout = session.advanceTo(480) as HarnessDispatch.Emitted
+        assertEquals(
+            HarnessErrorCode.STREAM_IDLE_TIMEOUT,
+            (timeout.event as AiEvent.Failed).code,
+        )
+    }
+
+    @Test
+    fun staleTransportActivityCannotExtendTheCurrentRun() {
+        val request = validRequest()
+        val session = BoundedHarnessSession(request, limits = limits())
+        session.start(0)
+
+        val stale = session.noteProviderActivity(
+            request.requestId,
+            request.runGeneration - 1,
+            90,
+        )
+
+        assertTrue(stale is HarnessDispatch.Dropped)
+        val timeout = session.advanceTo(100) as HarnessDispatch.Emitted
+        assertEquals(
+            HarnessErrorCode.FIRST_EVENT_TIMEOUT,
+            (timeout.event as AiEvent.Failed).code,
+        )
+    }
+
+    @Test
     fun explicitProviderFailureIsTerminalAndCannotBeReplaced() {
         val fake = DeterministicFakeHarness(validRequest())
         fake.start()
