@@ -14,6 +14,7 @@ import io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode
 import io.github.ethanbird.senseime.brain.AiBrainEngine
 import io.github.ethanbird.senseime.brain.api.BrainRunHandle
 import io.github.ethanbird.senseime.brain.api.BrainRunSpec
+import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
 
 /**
  * Non-exported process host for Provider networking and model response parsing.
@@ -72,14 +73,39 @@ class SenseAiBrainService : Service() {
         previous?.handle?.cancel(HarnessCancelReason.CALLER_REQUESTED)
         mainHandler.removeCallbacks(ticker)
 
-        val config = settings.load().getOrNull()
+        val configResult = settings.load()
+        if (configResult.isFailure) {
+            emit(
+                identity,
+                AiEvent.Failed(
+                    request.requestId,
+                    request.runGeneration,
+                    HarnessErrorCode.INTERNAL_FAILURE,
+                    retryable = false,
+                ),
+            )
+            return
+        }
+        val config = configResult.getOrNull()
         if (config == null) {
             emit(
                 identity,
                 AiEvent.Failed(
                     request.requestId,
                     request.runGeneration,
-                    HarnessErrorCode.PROVIDER_FAILURE,
+                    HarnessErrorCode.PROVIDER_NOT_CONFIGURED,
+                    retryable = false,
+                ),
+            )
+            return
+        }
+        if (ProviderCompatibility.issues(config.profile).isNotEmpty()) {
+            emit(
+                identity,
+                AiEvent.Failed(
+                    request.requestId,
+                    request.runGeneration,
+                    HarnessErrorCode.PROVIDER_CONFIGURATION,
                     retryable = false,
                 ),
             )
