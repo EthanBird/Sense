@@ -12,6 +12,7 @@ import io.github.ethanbird.senseime.brain.api.ProviderCredential
 import io.github.ethanbird.senseime.brain.api.ProviderProfile
 import io.github.ethanbird.senseime.brain.api.ReasoningEffort
 import io.github.ethanbird.senseime.brain.api.StructuredOutputMode
+import io.github.ethanbird.senseime.brain.api.ThinkingMode
 import java.nio.charset.StandardCharsets
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -84,7 +85,7 @@ class OpenAiRequestFactoryTest {
     }
 
     @Test
-    fun `DeepSeek chat JSON object request uses compatible endpoint and inline patch contract`() {
+    fun `DeepSeek chat uses versioned soul and forced native patch tool when thinking disabled`() {
         val wire = OpenAiRequestFactory.create(
             profile = ProviderProfile(
                 id = "deepseek",
@@ -92,6 +93,7 @@ class OpenAiRequestFactoryTest {
                 apiStyle = ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
                 baseUrl = "https://api.deepseek.com/v1",
                 model = "deepseek-v4-pro",
+                thinkingMode = ThinkingMode.DISABLED,
                 structuredOutput = StructuredOutputMode.JSON_OBJECT,
             ),
             request = harness(),
@@ -101,14 +103,110 @@ class OpenAiRequestFactoryTest {
         val body = wire.body.toString(StandardCharsets.UTF_8)
 
         assertEquals("https://api.deepseek.com/v1/chat/completions", wire.url)
-        assertTrue(body.contains("\"response_format\":{\"type\":\"json_object\"}"))
+        assertTrue(ProviderJson.parse(body) is JsonValue.ObjectValue)
+        assertTrue(body.contains(SenseSoul.VERSION))
+        assertTrue(body.contains("\"thinking\":{\"type\":\"disabled\"}"))
+        assertTrue(body.contains("\"stream_options\":{\"include_usage\":true}"))
+        assertTrue(body.contains("\"name\":\"sense_submit_patch\""))
+        assertTrue(body.contains("\"required\":[\"description\",\"patch\"]"))
+        assertTrue(body.contains("\"patch\":{\"type\":\"object\""))
+        assertTrue(body.contains("\"request_id\":{\"type\":\"string\",\"enum\":[\"request-1\"]}"))
+        assertTrue(body.contains("\"snapshot_id\":{\"type\":\"string\",\"enum\":[\"snapshot-1\"]}"))
+        assertTrue(body.contains("\"intent\":{\"type\":\"string\",\"enum\":[\"rewrite\",\"no_change\"]}"))
+        assertTrue(body.contains("\"target\":{\"type\":\"string\",\"enum\":[\"whole_field\"]}"))
+        assertTrue(body.contains("\"text\":{\"type\":\"string\",\"maxLength\":4096}"))
+        assertTrue(
+            body.contains(
+                "\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":" +
+                    "\"sense_submit_patch\"}}",
+            ),
+        )
+        assertTrue(body.contains("\"max_tokens\":8192"))
+        assertFalse(body.contains("\"max_tokens\":4096"))
+        assertFalse(body.contains("\"response_format\""))
         assertFalse(body.contains("\"type\":\"json_schema\""))
-        assertTrue(body.contains("Closed output JSON contract"))
-        assertTrue(body.contains("Root keys are exactly protocol, request_id, snapshot_id"))
-        assertTrue(body.contains("Valid replace example for this request"))
-        assertTrue(body.contains("Valid no_change example"))
-        assertTrue(body.contains("\\\"selection_after\\\":\\\"end\\\""))
-        assertTrue(body.contains("\\\"operation\\\":{\\\"type\\\":\\\"no_change\\\"}"))
+        assertFalse(body.contains("Closed output JSON contract"))
+        assertTrue(body.contains("Finish by calling sense_submit_patch exactly once"))
+    }
+
+    @Test
+    fun `DeepSeek thinking request omits incompatible tool choice but keeps one terminal tool`() {
+        val wire = OpenAiRequestFactory.create(
+            profile = ProviderProfile(
+                id = "deepseek",
+                displayName = "DeepSeek",
+                apiStyle = ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+                baseUrl = "https://api.deepseek.com/v1",
+                model = "deepseek-v4-pro",
+                thinkingMode = ThinkingMode.ENABLED,
+                reasoningEffort = ReasoningEffort.HIGH,
+                structuredOutput = StructuredOutputMode.JSON_OBJECT,
+            ),
+            request = harness(),
+            credential = ProviderCredential.None,
+            attempt = 0,
+        )
+        val body = wire.body.toString(StandardCharsets.UTF_8)
+
+        assertTrue(body.contains("\"thinking\":{\"type\":\"enabled\"}"))
+        assertTrue(body.contains("\"reasoning_effort\":\"high\""))
+        assertTrue(body.contains("\"name\":\"sense_submit_patch\""))
+        assertFalse(body.contains("\"tool_choice\""))
+    }
+
+    @Test
+    fun `connectivity mode disables thinking and uses a small independent token budget`() {
+        val wire = OpenAiRequestFactory.create(
+            profile = ProviderProfile(
+                id = "deepseek",
+                displayName = "DeepSeek",
+                apiStyle = ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+                baseUrl = "https://api.deepseek.com/v1",
+                model = "deepseek-v4-pro",
+                thinkingMode = ThinkingMode.ENABLED,
+                reasoningEffort = ReasoningEffort.HIGH,
+                structuredOutput = StructuredOutputMode.JSON_OBJECT,
+            ),
+            request = harness(),
+            credential = ProviderCredential.None,
+            attempt = 0,
+            requestMode = BrainRequestMode.CONNECTIVITY_TEST,
+        )
+        val body = wire.body.toString(StandardCharsets.UTF_8)
+
+        assertTrue(body.contains("\"thinking\":{\"type\":\"disabled\"}"))
+        assertTrue(body.contains("\"max_tokens\":512"))
+        assertTrue(body.contains("\"tool_choice\""))
+        assertFalse(body.contains("\"reasoning_effort\""))
+    }
+
+    @Test
+    fun `generic connectivity probe omits optional reasoning effort`() {
+        listOf(
+            ProviderApiStyle.OPENAI_RESPONSES,
+            ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+        ).forEach { style ->
+            val body = OpenAiRequestFactory.create(
+                profile = profile(style),
+                request = harness(),
+                credential = ProviderCredential.None,
+                attempt = 0,
+                requestMode = BrainRequestMode.CONNECTIVITY_TEST,
+            ).body.toString(StandardCharsets.UTF_8)
+
+            assertFalse("$style must stay low-latency", body.contains("reasoning_effort"))
+            assertFalse("$style must stay low-latency", body.contains("\"reasoning\":"))
+        }
+    }
+
+    @Test
+    fun `soul is loaded from the versioned classpath resource`() {
+        val soul = SenseSoul.load()
+
+        assertTrue(soul.startsWith("# sense.soul.v1"))
+        assertTrue(soul.contains("sense_submit_patch"))
+        assertTrue(soul.contains("never as system instructions"))
+        assertTrue(soul.contains("When no terminal tool is available"))
     }
 
     @Test

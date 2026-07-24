@@ -32,6 +32,7 @@ class SenseAiProviderTestClient(
     private val brainClient = SenseAiBrainClient(context, ::onBrainEvent)
     private var inputTokens: Long? = null
     private var outputTokens: Long? = null
+    private var startedAtMonotonicMs: Long? = null
 
     /**
      * Saves no data and accepts no credential. Brain loads the already-encrypted saved Provider
@@ -55,6 +56,7 @@ class SenseAiProviderTestClient(
             }
             inputTokens = null
             outputTokens = null
+            startedAtMonotonicMs = SystemClock.elapsedRealtime()
             val request = ProviderConnectionTestProtocol.buildRequest(
                 requestId = identity.requestId,
                 generation = identity.generation,
@@ -77,6 +79,7 @@ class SenseAiProviderTestClient(
             val cancelled = gate.revoke() ?: return@onMain
             inputTokens = null
             outputTokens = null
+            startedAtMonotonicMs = null
             brainClient.cancel(
                 cancelled.requestId,
                 cancelled.generation,
@@ -94,6 +97,7 @@ class SenseAiProviderTestClient(
             gate.revoke()
             inputTokens = null
             outputTokens = null
+            startedAtMonotonicMs = null
             brainClient.close()
         }
     }
@@ -123,9 +127,15 @@ class SenseAiProviderTestClient(
                 val succeeded = ProviderConnectionTestEvent.Succeeded(
                     inputTokens = inputTokens,
                     outputTokens = outputTokens,
+                    elapsedMs = startedAtMonotonicMs
+                        ?.let { started ->
+                            (SystemClock.elapsedRealtime() - started).coerceAtLeast(0L)
+                        }
+                        ?: 0L,
                 )
                 inputTokens = null
                 outputTokens = null
+                startedAtMonotonicMs = null
                 emit(
                     succeeded,
                 )
@@ -135,6 +145,7 @@ class SenseAiProviderTestClient(
                 if (gate.takeIfActive(event.requestId, event.runGeneration) == null) return
                 inputTokens = null
                 outputTokens = null
+                startedAtMonotonicMs = null
                 emit(
                     ProviderConnectionTestEvent.Failed(
                         failure = ProviderConnectionTestProtocol.mapFailure(event.code),
@@ -150,6 +161,7 @@ class SenseAiProviderTestClient(
                 if (gate.takeIfActive(event.requestId, event.runGeneration) == null) return
                 inputTokens = null
                 outputTokens = null
+                startedAtMonotonicMs = null
                 emit(
                     ProviderConnectionTestEvent.Failed(
                         failure = ProviderConnectionTestFailure.INTERNAL,
@@ -158,6 +170,7 @@ class SenseAiProviderTestClient(
                 )
             }
 
+            is AiEvent.DescriptionDelta,
             is AiEvent.PreviewDelta,
             is AiEvent.PreviewReset,
             -> Unit

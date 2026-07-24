@@ -278,6 +278,140 @@ class BoundedHarnessSessionTest {
     }
 
     @Test
+    fun publicDescriptionIsIdentityGatedAndBounded() {
+        val request = validRequest()
+        val session = BoundedHarnessSession(
+            request,
+            limits = limits(maxDescriptionChars = 4),
+        )
+        session.start(0)
+
+        val stale = session.accept(
+            AiEvent.DescriptionDelta(
+                requestId = request.requestId,
+                runGeneration = request.runGeneration - 1,
+                text = "旧",
+            ),
+            nowMonotonicMs = 1,
+        )
+        assertTrue(stale is HarnessDispatch.Dropped)
+        assertEquals(
+            HarnessDropReason.GENERATION_MISMATCH,
+            (stale as HarnessDispatch.Dropped).reason,
+        )
+
+        val accepted = session.accept(
+            AiEvent.DescriptionDelta(
+                requestId = request.requestId,
+                runGeneration = request.runGeneration,
+                text = "正在分析",
+            ),
+            nowMonotonicMs = 2,
+        )
+        assertTrue(accepted is HarnessDispatch.Emitted)
+
+        val overflow = session.accept(
+            AiEvent.DescriptionDelta(
+                requestId = request.requestId,
+                runGeneration = request.runGeneration,
+                text = "。",
+            ),
+            nowMonotonicMs = 3,
+        ) as HarnessDispatch.Emitted
+        assertEquals(
+            HarnessErrorCode.DESCRIPTION_LIMIT_EXCEEDED,
+            (overflow.event as AiEvent.Failed).code,
+        )
+    }
+
+    @Test
+    fun previewResetClearsBothPreviewAndDescriptionBudgets() {
+        val request = validRequest()
+        val session = BoundedHarnessSession(
+            request,
+            limits = limits(
+                maxPreviewChars = 4,
+                maxDescriptionChars = 4,
+            ),
+        )
+        session.start(0)
+        session.accept(
+            AiEvent.PreviewDelta(request.requestId, request.runGeneration, "1234"),
+            nowMonotonicMs = 1,
+        )
+        session.accept(
+            AiEvent.DescriptionDelta(request.requestId, request.runGeneration, "分析中"),
+            nowMonotonicMs = 2,
+        )
+
+        val reset = session.accept(
+            AiEvent.PreviewReset(request.requestId, request.runGeneration, attempt = 2),
+            nowMonotonicMs = 3,
+        )
+        assertTrue(reset is HarnessDispatch.Emitted)
+        assertTrue(
+            session.accept(
+                AiEvent.PreviewDelta(request.requestId, request.runGeneration, "5678"),
+                nowMonotonicMs = 4,
+            ) is HarnessDispatch.Emitted,
+        )
+        assertTrue(
+            session.accept(
+                AiEvent.DescriptionDelta(request.requestId, request.runGeneration, "生成中"),
+                nowMonotonicMs = 5,
+            ) is HarnessDispatch.Emitted,
+        )
+        assertEquals(BoundedHarnessState.STREAMING, session.state)
+    }
+
+    @Test
+    fun publicDescriptionRejectsControlCharactersAndBrokenUnicode() {
+        val request = validRequest()
+        val newline = BoundedHarnessSession(request)
+        newline.start(0)
+        val newlineFailure = newline.accept(
+            AiEvent.DescriptionDelta(request.requestId, request.runGeneration, "分析\n结果"),
+            nowMonotonicMs = 1,
+        ) as HarnessDispatch.Emitted
+        assertEquals(
+            HarnessErrorCode.INVALID_EVENT,
+            (newlineFailure.event as AiEvent.Failed).code,
+        )
+
+        val brokenUnicode = BoundedHarnessSession(request)
+        brokenUnicode.start(0)
+        val unicodeFailure = brokenUnicode.accept(
+            AiEvent.DescriptionDelta(
+                request.requestId,
+                request.runGeneration,
+                "\uD83D",
+            ),
+            nowMonotonicMs = 1,
+        ) as HarnessDispatch.Emitted
+        assertEquals(
+            HarnessErrorCode.INVALID_EVENT,
+            (unicodeFailure.event as AiEvent.Failed).code,
+        )
+
+        listOf("伪装\u2028换行", "安全\u202e反转").forEach { unsafe ->
+            val session = BoundedHarnessSession(request)
+            session.start(0)
+            val failure = session.accept(
+                AiEvent.DescriptionDelta(
+                    request.requestId,
+                    request.runGeneration,
+                    unsafe,
+                ),
+                nowMonotonicMs = 1,
+            ) as HarnessDispatch.Emitted
+            assertEquals(
+                HarnessErrorCode.INVALID_EVENT,
+                (failure.event as AiEvent.Failed).code,
+            )
+        }
+    }
+
+    @Test
     fun invalidStatusAndProviderEventBudgetFailClosed() {
         val invalidStatus = DeterministicFakeHarness(validRequest())
         invalidStatus.start()
@@ -307,6 +441,7 @@ class BoundedHarnessSessionTest {
         maxProviderEvents: Int = 2_048,
         maxPreviewChars: Int = SenseAiProtocol.DEFAULT_MAX_OUTPUT_CHARS,
         maxPreviewResets: Int = 1,
+        maxDescriptionChars: Int = BoundedHarnessLimits.DEFAULT_MAX_DESCRIPTION_CHARS,
     ) = BoundedHarnessLimits(
         firstEventTimeoutMs = firstEventTimeoutMs,
         streamIdleTimeoutMs = streamIdleTimeoutMs,
@@ -314,6 +449,7 @@ class BoundedHarnessSessionTest {
         maxProviderEvents = maxProviderEvents,
         maxPreviewChars = maxPreviewChars,
         maxPreviewResets = maxPreviewResets,
+        maxDescriptionChars = maxDescriptionChars,
     )
 
     private fun validRequest(

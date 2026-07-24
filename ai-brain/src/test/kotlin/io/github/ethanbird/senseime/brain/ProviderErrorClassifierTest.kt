@@ -8,6 +8,49 @@ import org.junit.Test
 
 class ProviderErrorClassifierTest {
     @Test
+    fun `content filter is not misreported as a network failure`() {
+        assertEquals(
+            ClassifiedProviderError(
+                code = HarnessErrorCode.PROVIDER_CONTENT_FILTER,
+                retryable = false,
+            ),
+            ProviderErrorClassifier.fromProviderPayload(
+                message = "provider content filter interrupted the response",
+                providerCode = "content_filter",
+            ),
+        )
+    }
+
+    @Test
+    fun `DeepSeek length finish reason is an explicit output truncation`() {
+        assertEquals(
+            ClassifiedProviderError(
+                code = HarnessErrorCode.OUTPUT_TRUNCATED,
+                retryable = false,
+            ),
+            ProviderErrorClassifier.fromProviderPayload(
+                message = "provider output reached its token limit",
+                providerCode = "finish_reason_length",
+            ),
+        )
+    }
+
+    @Test
+    fun `DeepSeek insufficient system resource is transient provider unavailability`() {
+        assertEquals(
+            ClassifiedProviderError(
+                code = HarnessErrorCode.PROVIDER_UNAVAILABLE,
+                retryable = true,
+            ),
+            ProviderErrorClassifier.fromProviderPayload(
+                message = "provider has insufficient system resources",
+                providerCode = "insufficient_system_resource",
+                providerRetryable = true,
+            ),
+        )
+    }
+
+    @Test
     fun `unknown client status stays generic and non-retryable`() {
         val result = ProviderErrorClassifier.fromHttpStatus(418)
 

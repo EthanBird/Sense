@@ -9,13 +9,16 @@ import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
 import io.github.ethanbird.senseime.ai.protocol.HarnessDispatch
 import io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode
 import io.github.ethanbird.senseime.ai.protocol.HarnessPhase
+import io.github.ethanbird.senseime.ai.protocol.PatchOperationType
 import io.github.ethanbird.senseime.ai.protocol.ProtocolValidator
+import io.github.ethanbird.senseime.ai.protocol.SenseAiProtocol
 import io.github.ethanbird.senseime.brain.api.BrainEventSink
 import io.github.ethanbird.senseime.brain.api.BrainRunHandle
 import io.github.ethanbird.senseime.brain.api.BrainRunSpec
 import io.github.ethanbird.senseime.brain.api.CompletedProviderCall
 import io.github.ethanbird.senseime.brain.api.MonotonicClock
 import io.github.ethanbird.senseime.brain.api.ProviderCall
+import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
 import io.github.ethanbird.senseime.brain.api.ProviderFailureKind
 import io.github.ethanbird.senseime.brain.api.ProviderResponseMetadata
 import io.github.ethanbird.senseime.brain.api.ProviderStreamSink
@@ -33,26 +36,24 @@ class AiBrainEngine(
     private val transport: ProviderTransport,
     private val clock: MonotonicClock = MonotonicClock.SYSTEM,
 ) {
-    fun start(spec: BrainRunSpec, sink: BrainEventSink): BrainRunHandle {
+    fun start(
+        spec: BrainRunSpec,
+        sink: BrainEventSink,
+        requestMode: BrainRequestMode = BrainRequestMode.NORMAL,
+    ): BrainRunHandle {
         spec.provider.requireValid()
-        return Run(spec, sink).also(Run::start)
+        return Run(spec, sink, requestMode).also(Run::start)
     }
 
     private inner class Run(
         private val spec: BrainRunSpec,
         private val eventSink: BrainEventSink,
+        private val requestMode: BrainRequestMode,
     ) : BrainRunHandle {
         private val lock = Any()
         private val session = BoundedHarnessSession(
             request = spec.harnessRequest,
-            limits = BoundedHarnessLimits(
-                firstEventTimeoutMs = spec.provider.timeouts.firstEventTimeoutMs,
-                streamIdleTimeoutMs = spec.provider.timeouts.streamIdleTimeoutMs,
-                totalTimeoutMs = spec.provider.timeouts.totalTimeoutMs,
-                maxProviderEvents = MAX_PROVIDER_EVENTS,
-                maxPreviewChars = spec.harnessRequest.maxOutputChars,
-                maxPreviewResets = 1,
-            ),
+            limits = harnessLimits(spec, requestMode),
         )
         private var tokenCounter = 0L
         private var activeToken = -1L
@@ -60,6 +61,17 @@ class AiBrainEngine(
         private var activeCall: ProviderCall? = null
         private var decoder: OpenAiResponseDecoder? = null
         private var preview: StreamingPatchPreview? = null
+        private var nativeTool: NativePatchToolAccumulator? = null
+        private var nativeToolIndex: Int? = null
+        private var nativeToolId: String? = null
+        private var nativeToolName: String? = null
+        private var nativeToolError: String? = null
+        private var generationStatusEmitted = false
+        private val usesNativePatchTool =
+            spec.provider.apiStyle ==
+                io.github.ethanbird.senseime.brain.api.ProviderApiStyle
+                    .OPENAI_COMPATIBLE_CHAT_COMPLETIONS &&
+                ProviderCompatibility.isOfficialDeepSeek(spec.provider.baseUrl)
 
         override val requestId: String
             get() = spec.harnessRequest.requestId
@@ -108,6 +120,7 @@ class AiBrainEngine(
                     credential = spec.credential,
                     attempt = attempt,
                     repair = repair,
+                    requestMode = requestMode,
                 )
             } catch (_: Exception) {
                 failLocally(HarnessErrorCode.INTERNAL_FAILURE, retryable = false)
@@ -125,6 +138,12 @@ class AiBrainEngine(
                     streaming = spec.provider.streaming,
                 )
                 preview = StreamingPatchPreview()
+                nativeTool = if (usesNativePatchTool) NativePatchToolAccumulator() else null
+                nativeToolIndex = null
+                nativeToolId = null
+                nativeToolName = null
+                nativeToolError = null
+                generationStatusEmitted = false
                 activeToken
             }
             val returnedCall = try {
@@ -321,9 +340,28 @@ class AiBrainEngine(
             for (event in normalized) {
                 if (session.state.isTerminal) break
                 when (event) {
+                    ProviderContentEvent.ReasoningActivity -> {
+                        emitGeneratingStatus(dispatches, "provider_reasoning")
+                    }
+                    is ProviderContentEvent.ToolCallDelta -> {
+                        if (!usesNativePatchTool) {
+                            return failOutcome(
+                                HarnessErrorCode.PROTOCOL_INVALID,
+                                retryable = false,
+                                prior = dispatches,
+                            )
+                        }
+                        emitGeneratingStatus(dispatches, "provider_generating")
+                        consumeNativeToolDelta(event, dispatches)
+                    }
                     is ProviderContentEvent.TextDelta -> {
+                        emitGeneratingStatus(dispatches, "provider_generating")
                         val visible = try {
-                            preview!!.append(event.text)
+                            // Ordinary assistant content can never authorize an edit when the
+                            // provider was given the native terminal tool. It is retained only as
+                            // bounded repair evidence and is never shown as the generated result.
+                            val extracted = preview!!.append(event.text)
+                            if (usesNativePatchTool) "" else extracted
                         } catch (_: ProviderPayloadException) {
                             return failOutcome(
                                 HarnessErrorCode.PREVIEW_LIMIT_EXCEEDED,
@@ -366,7 +404,7 @@ class AiBrainEngine(
                         )
                     }
                     is ProviderContentEvent.Completed -> {
-                        if (
+                        if (!usesNativePatchTool &&
                             preview!!.fullDocument().isEmpty() &&
                             !event.finalText.isNullOrEmpty()
                         ) {
@@ -383,17 +421,65 @@ class AiBrainEngine(
             attempt: Int,
             prior: MutableList<HarnessDispatch>,
         ): Outcome {
-            val document = preview!!.fullDocument()
+            prior += session.accept(
+                AiEvent.Status(
+                    requestId = requestId,
+                    runGeneration = runGeneration,
+                    phase = HarnessPhase.VALIDATING,
+                    label = "validating_patch",
+                ),
+                clock.nowMs(),
+            )
+            if (session.state.isTerminal) return terminalOutcome(prior)
+
+            val nativeFailure = nativeToolError
+            val document = if (usesNativePatchTool && nativeFailure == null) {
+                if (
+                    nativeToolIndex == null ||
+                    nativeToolName != OpenAiRequestFactory.NATIVE_PATCH_TOOL_NAME
+                ) {
+                    return repairOrFail(
+                        attempt = attempt,
+                        prior = prior,
+                        rejectedDocument = nativeTool?.fullDocument()
+                            ?.takeIf(String::isNotEmpty)
+                            ?: preview!!.fullDocument(),
+                        validationSummary = "terminal sense_submit_patch tool call is missing",
+                    )
+                }
+                try {
+                    nativeTool!!.finish().patchDocument
+                } catch (error: ProviderPayloadException) {
+                    return repairOrFail(
+                        attempt = attempt,
+                        prior = prior,
+                        rejectedDocument = nativeTool!!.fullDocument(),
+                        validationSummary = error.message ?: "invalid native tool arguments",
+                    )
+                }
+            } else if (usesNativePatchTool) {
+                return repairOrFail(
+                    attempt = attempt,
+                    prior = prior,
+                    rejectedDocument = nativeTool?.fullDocument().orEmpty(),
+                    validationSummary = nativeFailure ?: "invalid native tool call",
+                )
+            } else {
+                preview!!.fullDocument()
+            }
             val decoded = EditorPatchJsonCodec.decode(document)
-            val errors = when (decoded) {
+            val validationSummary = when (decoded) {
                 is io.github.ethanbird.senseime.ai.protocol.PatchDecodeResult.Failure ->
-                    decoded.errors
+                    decoded.errors.joinToString("; ") { "${it.path}: ${it.message}" }
                 is io.github.ethanbird.senseime.ai.protocol.PatchDecodeResult.Success -> {
                     val validation = ProtocolValidator.validate(
                         decoded.patch,
                         spec.harnessRequest.snapshot,
                     )
-                    if (validation.isValid) {
+                    val intentMatches =
+                        decoded.patch.operation.type == PatchOperationType.NO_CHANGE ||
+                            decoded.patch.intent == spec.harnessRequest.skill
+                    if (validation.isValid && intentMatches) {
                         prior += session.accept(
                             AiEvent.FinalPatch(
                                 requestId = requestId,
@@ -404,10 +490,34 @@ class AiBrainEngine(
                         )
                         return terminalOutcome(prior)
                     }
-                    validation.errors
+                    buildList {
+                        addAll(
+                            validation.errors.map { "${it.path}: ${it.message}" },
+                        )
+                        if (!intentMatches) {
+                            add(
+                                "$.intent: replace intent must equal requested skill " +
+                                    spec.harnessRequest.skill.wireValue,
+                            )
+                        }
+                    }.joinToString("; ")
                 }
             }
 
+            return repairOrFail(
+                attempt = attempt,
+                prior = prior,
+                rejectedDocument = document,
+                validationSummary = validationSummary,
+            )
+        }
+
+        private fun repairOrFail(
+            attempt: Int,
+            prior: MutableList<HarnessDispatch>,
+            rejectedDocument: String,
+            validationSummary: String,
+        ): Outcome {
             if (attempt == 0) {
                 prior += session.accept(
                     AiEvent.PreviewReset(
@@ -423,10 +533,8 @@ class AiBrainEngine(
                     dispatches = prior,
                     cancelCall = oldCall,
                     repair = RepairContext(
-                        rejectedDocument = document,
-                        validationSummary = errors.joinToString("; ") {
-                            "${it.path}: ${it.message}"
-                        },
+                        rejectedDocument = rejectedDocument,
+                        validationSummary = validationSummary,
                     ),
                 )
             }
@@ -435,6 +543,79 @@ class AiBrainEngine(
                 retryable = false,
                 prior = prior,
             )
+        }
+
+        private fun emitGeneratingStatus(
+            dispatches: MutableList<HarnessDispatch>,
+            label: String,
+        ) {
+            if (generationStatusEmitted || session.state.isTerminal) return
+            generationStatusEmitted = true
+            dispatches += session.accept(
+                AiEvent.Status(
+                    requestId = requestId,
+                    runGeneration = runGeneration,
+                    phase = HarnessPhase.GENERATING,
+                    label = label,
+                ),
+                clock.nowMs(),
+            )
+        }
+
+        private fun consumeNativeToolDelta(
+            event: ProviderContentEvent.ToolCallDelta,
+            dispatches: MutableList<HarnessDispatch>,
+        ) {
+            if (nativeToolError != null) return
+            val currentIndex = nativeToolIndex
+            if (currentIndex != null && currentIndex != event.index) {
+                nativeToolError = "multiple native tool calls are not allowed"
+                return
+            }
+            nativeToolIndex = event.index
+            event.id?.let { incoming ->
+                val current = nativeToolId
+                if (current != null && current != incoming) {
+                    nativeToolError = "native tool call identity changed"
+                    return
+                }
+                nativeToolId = incoming
+            }
+            event.name?.let { incoming ->
+                val current = nativeToolName
+                if (current != null && current != incoming) {
+                    nativeToolError = "native tool name changed"
+                    return
+                }
+                nativeToolName = incoming
+            }
+            if (event.arguments.isEmpty()) return
+            val visible = try {
+                nativeTool!!.append(event.arguments)
+            } catch (error: ProviderPayloadException) {
+                nativeToolError = error.message ?: "invalid native tool argument stream"
+                return
+            }
+            if (visible.description.isNotEmpty()) {
+                dispatches += session.accept(
+                    AiEvent.DescriptionDelta(
+                        requestId = requestId,
+                        runGeneration = runGeneration,
+                        text = visible.description,
+                    ),
+                    clock.nowMs(),
+                )
+            }
+            if (visible.patchText.isNotEmpty() && !session.state.isTerminal) {
+                dispatches += session.accept(
+                    AiEvent.PreviewDelta(
+                        requestId = requestId,
+                        runGeneration = runGeneration,
+                        text = visible.patchText,
+                    ),
+                    clock.nowMs(),
+                )
+            }
         }
 
         private fun failLocally(code: HarnessErrorCode, retryable: Boolean) {
@@ -475,6 +656,7 @@ class AiBrainEngine(
             activeAttempt = -1
             decoder = null
             preview = null
+            nativeTool = null
             return activeCall.also { activeCall = null }
         }
 
@@ -502,6 +684,34 @@ class AiBrainEngine(
     )
 
     private companion object {
-        const val MAX_PROVIDER_EVENTS = 4_096
+        const val MIN_PROVIDER_EVENTS = 4_096
+        const val PROVIDER_EVENT_OVERHEAD = 2_048
+        const val CONNECTIVITY_TOTAL_TIMEOUT_MS = 30_000L
+
+        fun harnessLimits(
+            spec: BrainRunSpec,
+            requestMode: BrainRequestMode,
+        ): BoundedHarnessLimits {
+            val configured = spec.provider.timeouts
+            val total = if (requestMode == BrainRequestMode.CONNECTIVITY_TEST) {
+                minOf(configured.totalTimeoutMs, CONNECTIVITY_TOTAL_TIMEOUT_MS)
+            } else {
+                configured.totalTimeoutMs
+            }
+            val boundedOutput = spec.harnessRequest.maxOutputChars
+                .coerceIn(0, SenseAiProtocol.ABSOLUTE_MAX_OUTPUT_CHARS)
+            val eventBudget = maxOf(
+                MIN_PROVIDER_EVENTS,
+                boundedOutput + PROVIDER_EVENT_OVERHEAD,
+            )
+            return BoundedHarnessLimits(
+                firstEventTimeoutMs = minOf(configured.firstEventTimeoutMs, total),
+                streamIdleTimeoutMs = minOf(configured.streamIdleTimeoutMs, total),
+                totalTimeoutMs = total,
+                maxProviderEvents = eventBudget,
+                maxPreviewChars = maxOf(1, boundedOutput),
+                maxPreviewResets = 1,
+            )
+        }
     }
 }

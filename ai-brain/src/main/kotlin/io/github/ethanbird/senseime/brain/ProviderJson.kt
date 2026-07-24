@@ -35,6 +35,38 @@ internal object ProviderJson {
 
     fun JsonValue.long(): Long? = (this as? JsonValue.NumberValue)?.value?.toLongOrNull()
 
+    /** Serializes an already parsed provider value without accepting raw JSON fragments. */
+    fun stringify(value: JsonValue): String = buildString {
+        appendJson(value)
+    }
+
+    private fun StringBuilder.appendJson(value: JsonValue) {
+        when (value) {
+            is JsonValue.ObjectValue -> {
+                append('{')
+                value.members.entries.forEachIndexed { index, (name, member) ->
+                    if (index > 0) append(',')
+                    append(JsonWriter().string(name))
+                    append(':')
+                    appendJson(member)
+                }
+                append('}')
+            }
+            is JsonValue.ArrayValue -> {
+                append('[')
+                value.values.forEachIndexed { index, member ->
+                    if (index > 0) append(',')
+                    appendJson(member)
+                }
+                append(']')
+            }
+            is JsonValue.StringValue -> append(JsonWriter().string(value.value))
+            is JsonValue.NumberValue -> append(value.value)
+            is JsonValue.BooleanValue -> append(value.value)
+            JsonValue.NullValue -> append("null")
+        }
+    }
+
     private class Parser(private val source: String) {
         private var index = 0
         private var depth = 0

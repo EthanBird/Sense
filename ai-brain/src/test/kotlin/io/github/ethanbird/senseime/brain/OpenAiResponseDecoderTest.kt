@@ -50,6 +50,85 @@ class OpenAiResponseDecoderTest {
     }
 
     @Test
+    fun `DeepSeek reasoning content becomes only a safe activity marker`() {
+        val decoder = OpenAiResponseDecoder(
+            ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+            streaming = true,
+        )
+        val events = decoder.feed(
+            (
+                "data: {\"choices\":[{\"delta\":{\"reasoning_content\":" +
+                    "\"private chain of thought\"}}]}\n\n"
+                ).toByteArray(),
+        )
+
+        assertEquals(listOf(ProviderContentEvent.ReasoningActivity), events)
+        assertTrue(events.none { it is ProviderContentEvent.TextDelta })
+        assertTrue(events.toString().contains("private chain of thought").not())
+    }
+
+    @Test
+    fun `DeepSeek streams native tool argument fragments without interpreting them`() {
+        val decoder = OpenAiResponseDecoder(
+            ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+            streaming = true,
+        )
+        val events = decoder.feed(
+            (
+                "data: {\"choices\":[{\"delta\":{\"tool_calls\":[{\"index\":0," +
+                    "\"id\":\"call-1\",\"function\":{\"name\":\"sense_submit_patch\"," +
+                    "\"arguments\":\"{\\\"description\\\":\\\"已改\"}}]}}]}\n\n" +
+                    "data: {\"choices\":[{\"delta\":{\"tool_calls\":[{\"index\":0," +
+                    "\"function\":{\"arguments\":\"写\\\",\\\"patch\\\":{}}\"}}]}," +
+                    "\"finish_reason\":\"tool_calls\"}]}\n\n"
+                ).toByteArray(),
+        )
+
+        assertEquals(
+            listOf(
+                ProviderContentEvent.ToolCallDelta(
+                    index = 0,
+                    id = "call-1",
+                    name = "sense_submit_patch",
+                    arguments = "{\"description\":\"已改",
+                ),
+                ProviderContentEvent.ToolCallDelta(
+                    index = 0,
+                    arguments = "写\",\"patch\":{}}",
+                ),
+            ),
+            events,
+        )
+    }
+
+    @Test
+    fun `terminal finish reasons distinguish token exhaustion and transient capacity`() {
+        fun decode(reason: String): ProviderContentEvent = OpenAiResponseDecoder(
+            ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+            streaming = true,
+        ).feed(
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"$reason\"}]}\n\n"
+                .toByteArray(),
+        ).single()
+
+        assertEquals(
+            ProviderContentEvent.Error(
+                message = "provider output reached its token limit",
+                providerCode = "finish_reason_length",
+            ),
+            decode("length"),
+        )
+        assertEquals(
+            ProviderContentEvent.Error(
+                message = "provider has insufficient system resources",
+                retryable = true,
+                providerCode = "insufficient_system_resource",
+            ),
+            decode("insufficient_system_resource"),
+        )
+    }
+
+    @Test
     fun `non streaming Responses extracts output text`() {
         val decoder = OpenAiResponseDecoder(ProviderApiStyle.OPENAI_RESPONSES, streaming = false)
         decoder.feed(
@@ -63,6 +142,36 @@ class OpenAiResponseDecoderTest {
             listOf(
                 ProviderContentEvent.Usage(2, 1),
                 ProviderContentEvent.TextDelta("result"),
+                ProviderContentEvent.Completed(),
+            ),
+            decoder.finish(),
+        )
+    }
+
+    @Test
+    fun `non streaming Chat extracts a native tool call and usage`() {
+        val decoder = OpenAiResponseDecoder(
+            ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+            streaming = false,
+        )
+        decoder.feed(
+            """
+            {"choices":[{"message":{"tool_calls":[{"id":"call-1","type":"function",
+            "function":{"name":"sense_submit_patch","arguments":"{\"description\":\"完成\"}"}}],
+            "content":null},"finish_reason":"tool_calls"}],
+            "usage":{"prompt_tokens":12,"completion_tokens":3}}
+            """.trimIndent().toByteArray(),
+        )
+
+        assertEquals(
+            listOf(
+                ProviderContentEvent.ToolCallDelta(
+                    index = 0,
+                    id = "call-1",
+                    name = "sense_submit_patch",
+                    arguments = "{\"description\":\"完成\"}",
+                ),
+                ProviderContentEvent.Usage(12, 3),
                 ProviderContentEvent.Completed(),
             ),
             decoder.finish(),
@@ -121,5 +230,29 @@ class OpenAiResponseDecoderTest {
 
         assertEquals("", preview.append("""{"operation":{"text":"\ud83e"""))
         assertEquals("🧠", preview.append("""\udde0"}}"""))
+    }
+
+    @Test
+    fun `native tool accumulator streams public description and patch text then closes contract`() {
+        val accumulator = NativePatchToolAccumulator()
+        val first = accumulator.append(
+            """{"description":"已润色","patch":{"protocol":"sense.editor.patch.v1","text":"先""",
+        )
+        val second = accumulator.append("""思"}}""")
+        val submission = accumulator.finish()
+
+        assertEquals("已润色", first.description)
+        assertEquals("先", first.patchText)
+        assertEquals("", second.description)
+        assertEquals("思", second.patchText)
+        assertEquals("已润色", submission.description)
+        assertTrue(submission.patchDocument.contains("\"text\":\"先思\""))
+    }
+
+    @Test(expected = ProviderPayloadException::class)
+    fun `native tool description rejects line separators and bidi controls`() {
+        NativePatchToolAccumulator().append(
+            "{\"description\":\"安全\u2028伪装\",\"patch\":{}}",
+        )
     }
 }

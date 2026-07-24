@@ -12,6 +12,7 @@ import io.github.ethanbird.senseime.ai.protocol.AiEvent
 import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
 import io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode
 import io.github.ethanbird.senseime.brain.AiBrainEngine
+import io.github.ethanbird.senseime.brain.BrainRequestMode
 import io.github.ethanbird.senseime.brain.api.BrainRunHandle
 import io.github.ethanbird.senseime.brain.api.BrainRunSpec
 import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
@@ -65,13 +66,15 @@ class SenseAiBrainService : Service() {
         val reply = message.replyTo
         if (request == null || reply == null) return
         val identity = request.requestId to request.runGeneration
-        val previous = synchronized(activeLock) {
-            active.also {
-                active = ActiveRun(identity = identity, reply = reply)
-            }
-        }
+        val previous = synchronized(activeLock) { active }
+        // Cancellation emits the previous terminal event synchronously. Keep its ActiveRun
+        // installed until that callback reaches its original Messenger; replacing it first would
+        // make emit() drop the cancellation as stale and strand the old client's UI.
         previous?.handle?.cancel(HarnessCancelReason.CALLER_REQUESTED)
         mainHandler.removeCallbacks(ticker)
+        synchronized(activeLock) {
+            active = ActiveRun(identity = identity, reply = reply)
+        }
 
         val configResult = settings.load()
         if (configResult.isFailure) {
@@ -113,6 +116,11 @@ class SenseAiBrainService : Service() {
         }
 
         val handle = runCatching {
+            val requestMode = if (ProviderConnectionTestProtocol.isProbe(request)) {
+                BrainRequestMode.CONNECTIVITY_TEST
+            } else {
+                BrainRequestMode.NORMAL
+            }
             engine.start(
                 BrainRunSpec(
                     harnessRequest = request,
@@ -120,6 +128,7 @@ class SenseAiBrainService : Service() {
                     credential = config.credential,
                 ),
                 sink = { event -> emit(identity, event) },
+                requestMode = requestMode,
             )
         }.getOrElse {
             emit(

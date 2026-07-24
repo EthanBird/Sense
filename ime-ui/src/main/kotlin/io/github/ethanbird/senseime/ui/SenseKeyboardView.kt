@@ -601,9 +601,10 @@ class SenseKeyboardView @JvmOverloads constructor(
         canvas.drawCircle(dp(17f), keyRegionTop / 2f, dp(4f), paint)
         paint.textAlign = Paint.Align.LEFT
         paint.textSize = sp(13.5f)
+        val status = state.statusText.ifBlank { defaultAiStatus(state.phase) }
         drawCenteredText(
             canvas,
-            state.statusText.ifBlank { defaultAiStatus(state.phase) },
+            ellipsizeToWidth(status, width - dp(41f)),
             dp(29f),
             keyRegionTop / 2f,
         )
@@ -641,7 +642,13 @@ class SenseKeyboardView @JvmOverloads constructor(
         paint.textAlign = Paint.Align.CENTER
         drawCenteredText(
             canvas,
-            "松开空格取消",
+            if (state.phase == AiSurfacePhase.STARTING ||
+                state.phase == AiSurfacePhase.STREAMING
+            ) {
+                "松开空格取消"
+            } else {
+                "松开空格返回"
+            },
             width / 2f,
             height - systemBarHeight / 2f,
         )
@@ -663,12 +670,12 @@ class SenseKeyboardView @JvmOverloads constructor(
         paint.textAlign = Paint.Align.LEFT
         paint.getFontMetrics(fontMetrics)
         val lineHeight = (fontMetrics.descent - fontMetrics.ascent) + dp(5f)
-        var baseline = top - fontMetrics.ascent
+        val lines = mutableListOf<Pair<Int, Int>>()
         var index = 0
-        while (index < text.length && baseline + fontMetrics.descent <= bottom) {
+        while (index < text.length) {
             if (text[index] == '\n') {
+                lines += index to index
                 index++
-                baseline += lineHeight
                 continue
             }
             val newline = text.indexOf('\n', index).let { if (it < 0) text.length else it }
@@ -689,12 +696,35 @@ class SenseKeyboardView @JvmOverloads constructor(
                 count--
             }
             if (count <= 0) count = minOf(2, text.length - index)
-            canvas.drawText(text, index, index + count, left, baseline, paint)
+            lines += index to index + count
             index += count
             if (index == newline) index++
+        }
+        val maxLines = maxOf(1, ((bottom - top) / lineHeight).toInt())
+        val firstLine = maxOf(0, lines.size - maxLines)
+        var baseline = top - fontMetrics.ascent
+        for (lineIndex in firstLine until lines.size) {
+            if (baseline + fontMetrics.descent > bottom) break
+            val (start, end) = lines[lineIndex]
+            if (end > start) canvas.drawText(text, start, end, left, baseline, paint)
             baseline += lineHeight
         }
         canvas.restoreToCount(saveCount)
+    }
+
+    private fun ellipsizeToWidth(text: String, maxWidth: Float): String {
+        if (maxWidth <= 0f || paint.measureText(text) <= maxWidth) return text
+        val ellipsis = "…"
+        val available = maxOf(0f, maxWidth - paint.measureText(ellipsis))
+        var count = paint.breakText(text, true, available, null)
+        if (
+            count in 1 until text.length &&
+            text[count - 1].isHighSurrogate() &&
+            text[count].isLowSurrogate()
+        ) {
+            count--
+        }
+        return text.take(count.coerceAtLeast(0)).trimEnd() + ellipsis
     }
 
     private fun drawBackground(canvas: Canvas) {

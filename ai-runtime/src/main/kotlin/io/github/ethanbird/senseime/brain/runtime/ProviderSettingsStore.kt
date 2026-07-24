@@ -6,11 +6,13 @@ import android.security.keystore.KeyProperties
 import android.util.AtomicFile
 import android.util.Base64
 import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
+import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
 import io.github.ethanbird.senseime.brain.api.ProviderCredential
 import io.github.ethanbird.senseime.brain.api.ProviderProfile
 import io.github.ethanbird.senseime.brain.api.ProviderTimeouts
 import io.github.ethanbird.senseime.brain.api.ReasoningEffort
 import io.github.ethanbird.senseime.brain.api.StructuredOutputMode
+import io.github.ethanbird.senseime.brain.api.ThinkingMode
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.RandomAccessFile
@@ -143,6 +145,7 @@ class ProviderSettingsStore(context: Context) {
                     .put("api_style", profile.apiStyle.name)
                     .put("base_url", profile.baseUrl)
                     .put("model", profile.model)
+                    .put("thinking_mode", profile.thinkingMode.name)
                     .put("reasoning_effort", profile.reasoningEffort.name)
                     .put("streaming", profile.streaming)
                     .put("structured_output", profile.structuredOutput.name)
@@ -171,13 +174,19 @@ class ProviderSettingsStore(context: Context) {
 
     private fun decodeProfile(json: JSONObject): ProviderProfile {
         val timeouts = json.getJSONObject("timeouts")
+        val baseUrl = json.getString("base_url")
+        val thinkingMode = json.optString("thinking_mode")
+            .takeIf(String::isNotBlank)
+            ?.let(ThinkingMode::valueOf)
+            ?: ProviderCompatibility.thinkingModeForLegacyProfile(baseUrl)
         return ProviderProfile(
             schemaVersion = json.getInt("schema_version"),
             id = json.getString("id"),
             displayName = json.getString("display_name"),
             apiStyle = ProviderApiStyle.valueOf(json.getString("api_style")),
-            baseUrl = json.getString("base_url"),
+            baseUrl = baseUrl,
             model = json.getString("model"),
+            thinkingMode = thinkingMode,
             reasoningEffort = ReasoningEffort.valueOf(json.getString("reasoning_effort")),
             streaming = json.getBoolean("streaming"),
             structuredOutput = StructuredOutputMode.valueOf(json.getString("structured_output")),

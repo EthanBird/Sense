@@ -30,6 +30,7 @@ import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
 import io.github.ethanbird.senseime.brain.api.ProviderCredential
 import io.github.ethanbird.senseime.brain.api.ProviderProfile
 import io.github.ethanbird.senseime.brain.api.StructuredOutputMode
+import io.github.ethanbird.senseime.brain.api.ThinkingMode
 import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestEvent
 import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestFailure
 import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestPhase
@@ -44,6 +45,7 @@ class SettingsActivity : Activity() {
     private lateinit var providerApiKey: EditText
     private lateinit var providerApiStyle: Spinner
     private lateinit var providerStructuredOutput: Spinner
+    private lateinit var providerThinkingMode: Spinner
     private lateinit var providerStreaming: Switch
     private lateinit var providerStatus: TextView
     private lateinit var providerTestButton: Button
@@ -183,6 +185,17 @@ class SettingsActivity : Activity() {
                 ),
             )
         }
+        providerThinkingMode = Spinner(this@SettingsActivity).apply {
+            adapter = ArrayAdapter(
+                this@SettingsActivity,
+                android.R.layout.simple_spinner_dropdown_item,
+                listOf(
+                    "快速（关闭思考，推荐）",
+                    "自动（由 Provider 决定）",
+                    "深度（开启思考）",
+                ),
+            )
+        }
         providerStreaming = Switch(this@SettingsActivity).apply {
             setText(R.string.ai_provider_stream)
             isChecked = true
@@ -197,6 +210,12 @@ class SettingsActivity : Activity() {
             labeledField(
                 R.string.ai_provider_structured_output,
                 providerStructuredOutput,
+            ).withTop(dp(10)),
+        )
+        addView(
+            labeledField(
+                R.string.ai_provider_thinking_mode,
+                providerThinkingMode,
             ).withTop(dp(10)),
         )
         addView(labeledField(R.string.ai_provider_key, providerApiKey).withTop(dp(10)))
@@ -225,10 +244,13 @@ class SettingsActivity : Activity() {
     }
 
     private fun saveAndTestProviderConnection() {
-        if (providerTestRunning) return
+        if (providerTestRunning) {
+            providerTestClient.cancel()
+            return
+        }
         persistProviderSettings {
             providerTestRunning = true
-            providerTestButton.isEnabled = false
+            providerTestButton.setText(R.string.ai_provider_test_cancel)
             providerStatus.setText(R.string.ai_provider_test_starting)
             providerStatus.setTextColor(getColor(R.color.sense_secondary))
             providerTestClient.start()
@@ -236,6 +258,7 @@ class SettingsActivity : Activity() {
     }
 
     private fun persistProviderSettings(onSaved: (() -> Unit)? = null) {
+        applyKnownProviderPreset()
         val profile = currentProviderProfile()
         if (!showProfileErrors(profile)) return
 
@@ -276,6 +299,11 @@ class SettingsActivity : Activity() {
             },
             baseUrl = providerBaseUrl.text.toString().trim(),
             model = providerModel.text.toString().trim(),
+            thinkingMode = when (providerThinkingMode.selectedItemPosition) {
+                1 -> ThinkingMode.AUTO
+                2 -> ThinkingMode.ENABLED
+                else -> ThinkingMode.DISABLED
+            },
             streaming = providerStreaming.isChecked,
             structuredOutput = when (providerStructuredOutput.selectedItemPosition) {
                 0 -> StructuredOutputMode.JSON_SCHEMA
@@ -283,6 +311,25 @@ class SettingsActivity : Activity() {
                 else -> StructuredOutputMode.PROMPT_ONLY
             },
         )
+
+    /**
+     * Applies the protocol required by a known official endpoint before Save/Test validation.
+     *
+     * DeepSeek's native terminal tool ignores the legacy structured-output selector, but it does
+     * require Chat Completions. Users can therefore enter URL, model, and key without first
+     * discovering two unrelated compatibility dropdowns.
+     */
+    private fun applyKnownProviderPreset() {
+        if (!ProviderCompatibility.isOfficialDeepSeek(providerBaseUrl.text.toString().trim())) {
+            return
+        }
+        providerApiStyle.setSelection(1)
+        providerStructuredOutput.setSelection(1)
+        val currentName = providerName.text.toString().trim()
+        if (currentName.isEmpty() || currentName.equals("OpenAI", ignoreCase = true)) {
+            providerName.setText("DeepSeek")
+        }
+    }
 
     private fun showProfileErrors(profile: ProviderProfile): Boolean {
         val validation = profile.validate()
@@ -299,8 +346,8 @@ class SettingsActivity : Activity() {
                     when (issue) {
                         ProviderCompatibilityIssue.DEEPSEEK_REQUIRES_CHAT_COMPLETIONS ->
                             R.string.ai_provider_deepseek_chat_required
-                        ProviderCompatibilityIssue.DEEPSEEK_REQUIRES_JSON_OBJECT ->
-                            R.string.ai_provider_deepseek_json_required
+                        ProviderCompatibilityIssue.DEEPSEEK_REASONING_CONFIGURATION_UNSUPPORTED ->
+                            R.string.ai_provider_deepseek_reasoning_unsupported
                     },
                 )
             }
@@ -357,11 +404,15 @@ class SettingsActivity : Activity() {
                 providerStatus.text = if (inputTokens != null && outputTokens != null) {
                     getString(
                         R.string.ai_provider_test_succeeded_with_usage,
+                        event.elapsedMs / 1_000.0,
                         inputTokens,
                         outputTokens,
                     )
                 } else {
-                    getString(R.string.ai_provider_test_succeeded)
+                    getString(
+                        R.string.ai_provider_test_succeeded,
+                        event.elapsedMs / 1_000.0,
+                    )
                 }
                 providerStatus.setTextColor(getColor(R.color.sense_success))
             }
@@ -407,6 +458,7 @@ class SettingsActivity : Activity() {
     private fun finishProviderTest() {
         providerTestRunning = false
         providerTestButton.isEnabled = true
+        providerTestButton.setText(R.string.ai_provider_test)
     }
 
     private fun clearProviderCredential() {
@@ -445,6 +497,7 @@ class SettingsActivity : Activity() {
                     providerModel.setText(DEFAULT_PROVIDER_MODEL)
                     providerApiStyle.setSelection(0)
                     providerStructuredOutput.setSelection(0)
+                    providerThinkingMode.setSelection(0)
                     providerStreaming.isChecked = true
                     providerApiKey.hint = getString(R.string.ai_provider_key_optional)
                     providerStatus.setText(R.string.ai_provider_not_configured)
@@ -461,6 +514,13 @@ class SettingsActivity : Activity() {
                         StructuredOutputMode.JSON_SCHEMA -> 0
                         StructuredOutputMode.JSON_OBJECT -> 1
                         StructuredOutputMode.PROMPT_ONLY -> 2
+                    },
+                )
+                providerThinkingMode.setSelection(
+                    when (profile.thinkingMode) {
+                        ThinkingMode.DISABLED -> 0
+                        ThinkingMode.AUTO -> 1
+                        ThinkingMode.ENABLED -> 2
                     },
                 )
                 providerStreaming.isChecked = profile.streaming

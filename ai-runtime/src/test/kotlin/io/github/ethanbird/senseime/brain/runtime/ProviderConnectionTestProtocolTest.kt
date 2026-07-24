@@ -32,6 +32,12 @@ class ProviderConnectionTestProtocolTest {
         assertEquals(request.snapshot.text.length, request.snapshot.selection?.end)
         assertFalse(request.snapshot.truncated)
         assertEquals(request.maxOutputChars, request.snapshot.maxOutputChars)
+        assertTrue(ProviderConnectionTestProtocol.isProbe(request))
+        assertFalse(
+            ProviderConnectionTestProtocol.isProbe(
+                request.copy(snapshot = request.snapshot.copy(text = "editor content")),
+            ),
+        )
     }
 
     @Test
@@ -71,6 +77,18 @@ class ProviderConnectionTestProtocolTest {
         assertEquals(
             ProviderConnectionTestFailure.PROTOCOL,
             ProviderConnectionTestProtocol.mapFailureName("PROTOCOL_INVALID"),
+        )
+        assertEquals(
+            ProviderConnectionTestFailure.PROTOCOL,
+            ProviderConnectionTestProtocol.mapFailureName("OUTPUT_TRUNCATED"),
+        )
+        assertEquals(
+            ProviderConnectionTestFailure.PROTOCOL,
+            ProviderConnectionTestProtocol.mapFailureName("PROVIDER_CONTENT_FILTER"),
+        )
+        assertEquals(
+            ProviderConnectionTestFailure.PROTOCOL,
+            ProviderConnectionTestProtocol.mapFailureName("DESCRIPTION_LIMIT_EXCEEDED"),
         )
         assertEquals(
             ProviderConnectionTestFailure.INTERNAL,
