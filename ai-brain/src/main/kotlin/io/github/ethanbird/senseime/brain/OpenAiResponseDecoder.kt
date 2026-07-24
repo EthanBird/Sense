@@ -38,14 +38,18 @@ internal class OpenAiResponseDecoder(
     private val sse = if (streaming) SseDecoder(maxEventBytes = maxResponseBytes) else null
     private val body = if (streaming) null else ByteArrayOutputStream()
     private var completed = false
+    private var sawTerminalStreamMarker = false
 
     fun feed(
         bytes: ByteArray,
         offset: Int = 0,
         length: Int = bytes.size - offset,
     ): List<ProviderContentEvent> {
-        check(!completed) { "provider response decoder is complete" }
         require(offset >= 0 && length >= 0 && offset <= bytes.size - length)
+        // A terminal provider frame is authoritative. Some compatible servers still send a
+        // trailing [DONE] frame or close callback afterwards, so make that tail idempotent instead
+        // of turning a valid completion into an INTERNAL_FAILURE.
+        if (completed) return emptyList()
         return if (streaming) {
             sse!!.feed(bytes, offset, length).flatMap(::normalizeSse)
         } else {
@@ -58,7 +62,7 @@ internal class OpenAiResponseDecoder(
     }
 
     fun finish(): List<ProviderContentEvent> {
-        check(!completed) { "provider response decoder is complete" }
+        if (completed) return emptyList()
         val events = if (streaming) {
             sse!!.finish().flatMap(::normalizeSse).toMutableList()
         } else {
@@ -66,18 +70,31 @@ internal class OpenAiResponseDecoder(
                 .toMutableList()
         }
         if (events.none { it is ProviderContentEvent.Completed || it is ProviderContentEvent.Error }) {
-            events += ProviderContentEvent.Completed()
+            if (streaming && !sawTerminalStreamMarker) {
+                // A clean socket EOF is not a successful SSE completion. Mobile networks and
+                // reverse proxies can close a half-response without throwing an IOException.
+                // Treating that truncation as Completed used to send a partial JSON document into
+                // the protocol repair path, which visibly cleared the keyboard and restarted from
+                // the beginning.
+                events += ProviderContentEvent.Error(
+                    message = "provider stream ended before a terminal event",
+                    retryable = true,
+                    providerCode = UNEXPECTED_STREAM_EOF,
+                )
+            } else {
+                events += ProviderContentEvent.Completed()
+            }
         }
         completed = true
         return events
     }
 
     private fun normalizeSse(event: SseEvent): List<ProviderContentEvent> {
+        if (completed) return emptyList()
         if (event.data.trim() == "[DONE]") {
-            return if (completed) emptyList() else {
-                completed = true
-                listOf(ProviderContentEvent.Completed())
-            }
+            sawTerminalStreamMarker = true
+            completed = true
+            return listOf(ProviderContentEvent.Completed())
         }
         return normalizeDocument(event.data, event.event, terminalDocument = false)
     }
@@ -116,6 +133,7 @@ internal class OpenAiResponseDecoder(
                         }
                     }
                     "response.completed" -> {
+                        sawTerminalStreamMarker = true
                         usage(root.objectValue("response") ?: root)?.let(result::add)
                         if (!completed) {
                             completed = true
@@ -139,6 +157,7 @@ internal class OpenAiResponseDecoder(
 
             ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS -> {
                 val choices = root.arrayValue("choices")
+                var terminalFinishReason = false
                 choices.orEmpty().forEach choiceLoop@ { choiceValue ->
                     val choice = choiceValue as? JsonValue.ObjectValue ?: return@choiceLoop
                     val delta = choice.objectValue("delta")
@@ -185,7 +204,11 @@ internal class OpenAiResponseDecoder(
                             message = "provider content filter interrupted the response",
                             providerCode = "content_filter",
                         )
-                        null, "stop", "tool_calls" -> Unit
+                        "stop", "tool_calls" -> {
+                            sawTerminalStreamMarker = true
+                            terminalFinishReason = true
+                        }
+                        null -> Unit
                         else -> result += ProviderContentEvent.Error(
                             message = "unsupported provider finish reason",
                             providerCode = finishReason,
@@ -193,7 +216,11 @@ internal class OpenAiResponseDecoder(
                     }
                 }
                 usage(root)?.let(result::add)
-                if (terminalDocument && !completed) {
+                if (
+                    !completed &&
+                    (terminalDocument || terminalFinishReason) &&
+                    result.none { it is ProviderContentEvent.Error }
+                ) {
                     completed = true
                     result += ProviderContentEvent.Completed()
                 }
@@ -261,6 +288,7 @@ internal class OpenAiResponseDecoder(
 
     companion object {
         const val MAX_RESPONSE_BYTES = 1_048_576
+        const val UNEXPECTED_STREAM_EOF = "unexpected_stream_eof"
     }
 }
 

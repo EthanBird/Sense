@@ -18,9 +18,9 @@ fi
 BUILD_TOOLS="$SDK/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK/platforms/android-36/android.jar"
 KOTLIN_LIB="$GRADLE_DIST/lib"
-OUT="$ROOT/build/offline-v0.4.0"
+OUT="$ROOT/build/offline-v0.4.1"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
-APK="$APK_DIR/Sense-v0.4.0-debug.apk"
+APK="$APK_DIR/Sense-v0.4.1-debug.apk"
 LEXICON_ASSET="$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin"
 LEXICON_SHA256="ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
 BIGRAM_ASSET="$ROOT/ime-service/src/main/assets/pinyin_bigrams.bin"
@@ -87,6 +87,7 @@ mapfile -t RUNTIME_PURE_SOURCES < <(printf '%s\n' \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainIpcSerialDeliveryQueue.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainIpcTextChunker.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainRunTickerSlot.kt" \
+    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainPreviewReplaceWirePolicy.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/ProviderConnectionTest.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/speech/CloudSpeechProtocol.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/speech/CloudSpeechResponseDecoder.kt" \
@@ -95,7 +96,8 @@ mapfile -t RUNTIME_PURE_SOURCES < <(printf '%s\n' \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/speech/Pcm16Audio.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/speech/SpeechProviderCredentialPolicy.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/speech/SpeechProviderProfile.kt" \
-    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/speech/SpeechRecognitionState.kt")
+    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/speech/SpeechRecognitionState.kt" \
+    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/speech/SystemSpeechFallbackPolicy.kt")
 mapfile -t RUNTIME_TEST_SOURCES < <(find "$ROOT/ai-runtime/src/test/kotlin" -name '*.kt' -print | sort)
 mapfile -t CORE_SOURCES < <(find "$ROOT/core-input/src/main/kotlin" -name '*.kt' -print | sort)
 mapfile -t TEST_SOURCES < <(find "$ROOT/core-input/src/test/kotlin" -name '*.kt' -print | sort)
@@ -362,8 +364,8 @@ java -cp "$STDLIB:$OUT/core-main" \
     --manifest "$ROOT/tools/offline/AndroidManifest.xml" \
     --min-sdk-version 29 \
     --target-sdk-version 36 \
-    --version-code 15 \
-    --version-name 0.4.0 \
+    --version-code 16 \
+    --version-name 0.4.1 \
     --auto-add-overlay \
     --output-text-symbols "$OUT/R.txt" \
     -A "$ROOT/ime-service/src/main/assets" \
@@ -493,7 +495,7 @@ actions = {
 if "android.view.InputMethod" not in actions:
     raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
 PY
-grep -F "package: name='io.github.ethanbird.senseime' versionCode='15' versionName='0.4.0'" "$OUT/apk-badging.txt"
+grep -F "package: name='io.github.ethanbird.senseime' versionCode='16' versionName='0.4.1'" "$OUT/apk-badging.txt"
 grep -Fx "minSdkVersion:'29'" "$OUT/apk-badging.txt"
 grep -Fx "targetSdkVersion:'36'" "$OUT/apk-badging.txt"
 DECLARED_PERMISSIONS=$(
@@ -568,4 +570,4 @@ HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --text "$OUT/lint.txt" \
     "$ROOT/tools/offline"
 
-echo "v0.4.0 verification complete: $APK"
+echo "v0.4.1 verification complete: $APK"

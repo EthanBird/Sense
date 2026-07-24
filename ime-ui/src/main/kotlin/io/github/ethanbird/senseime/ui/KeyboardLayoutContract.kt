@@ -106,6 +106,34 @@ object KeyboardLayoutContract {
         val primaryButtonBottom: Float,
     )
 
+    enum class ToolboxActivationRoute {
+        SYMBOLS_PANEL,
+        EMOJI_PANEL,
+        SERVICE_ACTION,
+        SETTINGS_CALLBACK,
+    }
+
+    enum class ToolboxItem(
+        val label: String,
+        val keyCode: Int,
+        val activationRoute: ToolboxActivationRoute,
+    ) {
+        SYMBOLS("符号", KeyCodes.SYMBOLS, ToolboxActivationRoute.SYMBOLS_PANEL),
+        EDITOR("文字编辑", KeyCodes.EDITOR, ToolboxActivationRoute.SERVICE_ACTION),
+        VOICE("语音输入", KeyCodes.VOICE, ToolboxActivationRoute.SERVICE_ACTION),
+        CLIPBOARD("剪贴板", KeyCodes.CLIPBOARD, ToolboxActivationRoute.SERVICE_ACTION),
+        EMOJI("Emoji", KeyCodes.EMOJI, ToolboxActivationRoute.EMOJI_PANEL),
+        SETTINGS("先思设置", KeyCodes.SETTINGS, ToolboxActivationRoute.SETTINGS_CALLBACK),
+    }
+
+    data class ToolboxSlot(
+        val item: ToolboxItem,
+        val left: Float,
+        val top: Float,
+        val right: Float,
+        val bottom: Float,
+    )
+
     data class ClipboardCardSlot(
         val sourceIndex: Int,
         val left: Float,
@@ -113,6 +141,15 @@ object KeyboardLayoutContract {
         val right: Float,
         val bottom: Float,
     )
+
+    /**
+     * The single activation policy used by both the keyboard View and JVM tests.
+     *
+     * Keeping this beside [ToolboxItem] prevents the rendered cards and their click behavior from
+     * drifting into two independently maintained switch statements.
+     */
+    fun toolboxActivationRoute(keyCode: Int): ToolboxActivationRoute? =
+        ToolboxItem.entries.firstOrNull { it.keyCode == keyCode }?.activationRoute
 
     enum class EditorKeyRole {
         UP,
@@ -178,6 +215,47 @@ object KeyboardLayoutContract {
             primaryButtonTop = buttonTop,
             primaryButtonBottom = buttonBottom,
         )
+    }
+
+    /**
+     * A stable 3 × 2 toolbox grid. Geometry is kept outside the Canvas view so
+     * every entry remains reachable in both portrait and landscape layouts.
+     */
+    fun toolboxLayout(
+        viewWidth: Float,
+        contentTop: Float,
+        contentBottom: Float,
+        horizontalPadding: Float,
+        horizontalGap: Float,
+        verticalGap: Float,
+    ): List<ToolboxSlot> {
+        require(viewWidth > 0f)
+        require(contentBottom > contentTop)
+        require(horizontalPadding >= 0f)
+        require(horizontalGap >= 0f)
+        require(verticalGap >= 0f)
+
+        val columns = 3
+        val rows = 2
+        val availableWidth = viewWidth - horizontalPadding * 2f - horizontalGap * (columns - 1)
+        val availableHeight = contentBottom - contentTop - verticalGap * (rows - 1)
+        if (availableWidth <= 0f || availableHeight <= 0f) return emptyList()
+        val cellWidth = availableWidth / columns
+        val cellHeight = availableHeight / rows
+
+        return ToolboxItem.entries.mapIndexed { index, item ->
+            val column = index % columns
+            val row = index / columns
+            val left = horizontalPadding + column * (cellWidth + horizontalGap)
+            val top = contentTop + row * (cellHeight + verticalGap)
+            ToolboxSlot(
+                item = item,
+                left = left,
+                top = top,
+                right = left + cellWidth,
+                bottom = top + cellHeight,
+            )
+        }
     }
 
     fun collapsedCandidateBottom(

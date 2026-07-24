@@ -69,6 +69,14 @@ sealed interface SpeechRecognitionEvent {
         val usingOnDeviceRecognizer: Boolean,
     ) : SpeechRecognitionEvent
 
+    /**
+     * The OEM on-device recognizer rejected the request, so the same user session is being
+     * restarted once on the ordinary system RecognitionService.
+     */
+    data class SystemFallbackStarted(
+        override val sessionId: Long,
+    ) : SpeechRecognitionEvent
+
     data class Ready(
         override val sessionId: Long,
     ) : SpeechRecognitionEvent
@@ -158,6 +166,18 @@ object SpeechRecognitionReducer {
             return state
         }
         return when (event) {
+            is SpeechRecognitionEvent.SystemFallbackStarted -> state.copy(
+                revision = state.revision + 1L,
+                phase = SpeechRecognitionPhase.STARTING,
+                partialText = "",
+                finalText = null,
+                alternatives = emptyList(),
+                rmsDb = null,
+                waveformLevel = 0f,
+                usingOnDeviceRecognizer = false,
+                failure = null,
+            )
+
             is SpeechRecognitionEvent.Ready,
             is SpeechRecognitionEvent.SpeechBegan,
             -> if (

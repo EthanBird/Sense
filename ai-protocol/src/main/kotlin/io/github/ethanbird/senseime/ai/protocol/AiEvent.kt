@@ -48,6 +48,20 @@ sealed interface AiEvent {
         val text: String,
     ) : AiEvent
 
+    /**
+     * Atomically reconciles a regenerated retry with the preview already visible in the IME.
+     *
+     * This is presentation state only and can never authorize an editor mutation. [FinalPatch]
+     * remains the sole model proposal that may proceed to the local editor guard.
+     */
+    data class PreviewReplace(
+        override val requestId: String,
+        override val runGeneration: Long,
+        val attempt: Int,
+        val text: String,
+        val description: String = "",
+    ) : AiEvent
+
     data class Usage(
         override val requestId: String,
         override val runGeneration: Long,

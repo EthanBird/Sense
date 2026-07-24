@@ -1,6 +1,8 @@
 package io.github.ethanbird.senseime.service.ai
 
+import io.github.ethanbird.senseime.ai.protocol.AiEvent
 import io.github.ethanbird.senseime.ai.protocol.BoundedHarnessLimits
+import io.github.ethanbird.senseime.ai.protocol.HarnessPhase
 
 /**
  * Bounded public presentation state for one Agent run.
@@ -43,6 +45,21 @@ internal class AgentStreamPresentation(
         appendHeadBounded(descriptionBuilder, text, maxDescriptionChars)
     }
 
+    fun replace(
+        preview: String,
+        description: String,
+    ) {
+        previewBuilder.setLength(0)
+        descriptionBuilder.setLength(0)
+        appendPreview(preview)
+        appendDescription(description)
+    }
+
+    /** Reconciles the surface with the validated terminal result, including an empty result. */
+    fun complete(authoritativePreview: String) {
+        replace(preview = authoritativePreview, description = "")
+    }
+
     fun descriptionOr(fallback: String): String =
         if (descriptionBuilder.isEmpty()) fallback else descriptionBuilder.toString()
 
@@ -77,5 +94,31 @@ internal class AgentStreamPresentation(
     private companion object {
         const val PREVIEW_TRIM_SLACK_CHARS = 1_024
         const val ELLIPSIS = "…"
+    }
+}
+
+internal fun agentStatusLabel(event: AiEvent.Status): String = when (event.label) {
+    "provider_recovering" -> "连接中断，正在校准续接…"
+    "provider_repairing" -> "响应格式需校准，正在修正…"
+    else -> when (event.phase) {
+        HarnessPhase.CONNECTING -> "正在连接模型…"
+        HarnessPhase.UNDERSTANDING -> "正在理解输入框…"
+        HarnessPhase.GENERATING -> "正在生成…"
+        HarnessPhase.VALIDATING -> "正在校验编辑结果…"
+    }
+}
+
+internal fun String.isRecoveryStatusLabel(): Boolean =
+    this == "provider_recovering" || this == "provider_repairing"
+
+internal fun agentStatusForPresentation(
+    event: AiEvent.Status,
+    currentDescription: String,
+): String {
+    val providerStatus = agentStatusLabel(event)
+    return if (event.label.isRecoveryStatusLabel()) {
+        providerStatus
+    } else {
+        currentDescription.takeIf(String::isNotEmpty) ?: providerStatus
     }
 }

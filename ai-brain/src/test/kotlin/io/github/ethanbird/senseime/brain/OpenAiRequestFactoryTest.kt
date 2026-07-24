@@ -267,7 +267,7 @@ class OpenAiRequestFactoryTest {
             request = harness(),
             credential = ProviderCredential.None,
             attempt = 1,
-            repair = RepairContext("{bad}", "$.protocol: wrong"),
+            secondAttempt = RepairContext("{bad}", "$.protocol: wrong"),
         )
         val body = wire.body.toString(StandardCharsets.UTF_8)
 
@@ -276,6 +276,32 @@ class OpenAiRequestFactoryTest {
         assertTrue(body.contains("{bad}"))
         assertTrue(body.contains("$.protocol: wrong"))
         assertTrue(body.contains("Closed output JSON contract"))
+    }
+
+    @Test
+    fun `transport recovery requests one complete regeneration with stable prefix`() {
+        val wire = OpenAiRequestFactory.create(
+            profile = profile(
+                ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+                structuredOutput = StructuredOutputMode.JSON_OBJECT,
+            ),
+            request = harness(),
+            credential = ProviderCredential.None,
+            attempt = 1,
+            secondAttempt = StreamRecoveryContext(
+                interruptedDocument = "{\"operation\":{\"text\":\"稳定",
+                stableDescription = "正在润色",
+                stablePreview = "稳定",
+                reason = "unexpected_stream_eof",
+            ),
+        )
+        val body = wire.body.toString(StandardCharsets.UTF_8)
+
+        assertEquals(1, wire.attempt)
+        assertTrue(body.contains("single transport recovery attempt"))
+        assertTrue(body.contains("Regenerate the entire structured answer from the beginning"))
+        assertTrue(body.contains("稳定"))
+        assertTrue(body.contains("unexpected_stream_eof"))
     }
 
     private fun profile(

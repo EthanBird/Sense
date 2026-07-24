@@ -220,6 +220,117 @@ class BoundedHarnessSessionTest {
     }
 
     @Test
+    fun timeoutLookaheadCanArmOneRecoveryWithoutExtendingTotalDeadline() {
+        val request = validRequest()
+        val session = BoundedHarnessSession(
+            request,
+            limits = limits(
+                firstEventTimeoutMs = 100,
+                streamIdleTimeoutMs = 200,
+                totalTimeoutMs = 500,
+            ),
+        )
+        session.start(0)
+
+        assertEquals(HarnessErrorCode.FIRST_EVENT_TIMEOUT, session.pendingTimeoutCode(100))
+        val recovery = session.recoverProviderStream(
+            requestId = request.requestId,
+            runGeneration = request.runGeneration,
+            attempt = 2,
+            statusLabel = "provider_recovering",
+            nowMonotonicMs = 100,
+        ) as HarnessDispatch.Emitted
+
+        assertEquals("provider_recovering", (recovery.event as AiEvent.Status).label)
+        assertTrue(session.advanceTo(199) is HarnessDispatch.NoEvent)
+        val firstEvent = session.advanceTo(200) as HarnessDispatch.Emitted
+        assertEquals(
+            HarnessErrorCode.FIRST_EVENT_TIMEOUT,
+            (firstEvent.event as AiEvent.Failed).code,
+        )
+
+        val oneShot = BoundedHarnessSession(request, limits = limits())
+        oneShot.start(0)
+        oneShot.recoverProviderStream(
+            requestId = request.requestId,
+            runGeneration = request.runGeneration,
+            attempt = 2,
+            statusLabel = "provider_repairing",
+            nowMonotonicMs = 1,
+        )
+        val repeated = oneShot.recoverProviderStream(
+            requestId = request.requestId,
+            runGeneration = request.runGeneration,
+            attempt = 2,
+            statusLabel = "provider_recovering",
+            nowMonotonicMs = 2,
+        ) as HarnessDispatch.Emitted
+        assertEquals(
+            HarnessErrorCode.REPAIR_LIMIT_EXCEEDED,
+            (repeated.event as AiEvent.Failed).code,
+        )
+
+        val totalSession = BoundedHarnessSession(
+            request,
+            limits = limits(streamIdleTimeoutMs = 100, totalTimeoutMs = 100),
+        )
+        totalSession.start(0)
+        val total = totalSession.recoverProviderStream(
+            requestId = request.requestId,
+            runGeneration = request.runGeneration,
+            attempt = 2,
+            statusLabel = "provider_recovering",
+            nowMonotonicMs = 100,
+        ) as HarnessDispatch.Emitted
+        assertEquals(HarnessErrorCode.TOTAL_TIMEOUT, (total.event as AiEvent.Failed).code)
+    }
+
+    @Test
+    fun recoveredProviderUsesFirstEventTimeoutThenIdleTimeoutAfterRealActivity() {
+        val request = validRequest()
+        fun newSession() = BoundedHarnessSession(
+            request,
+            limits = limits(
+                firstEventTimeoutMs = 50,
+                streamIdleTimeoutMs = 200,
+                totalTimeoutMs = 1_000,
+            ),
+        ).also {
+            it.start(0)
+            it.recoverProviderStream(
+                requestId = request.requestId,
+                runGeneration = request.runGeneration,
+                attempt = 2,
+                statusLabel = "provider_recovering",
+                nowMonotonicMs = 10,
+            )
+        }
+
+        val waitingForFirst = newSession()
+        assertTrue(waitingForFirst.advanceTo(59) is HarnessDispatch.NoEvent)
+        val firstTimeout = waitingForFirst.advanceTo(60) as HarnessDispatch.Emitted
+        assertEquals(
+            HarnessErrorCode.FIRST_EVENT_TIMEOUT,
+            (firstTimeout.event as AiEvent.Failed).code,
+        )
+
+        val streaming = newSession()
+        assertTrue(
+            streaming.noteProviderActivity(
+                request.requestId,
+                request.runGeneration,
+                nowMonotonicMs = 40,
+            ) is HarnessDispatch.NoEvent,
+        )
+        assertTrue(streaming.advanceTo(239) is HarnessDispatch.NoEvent)
+        val idleTimeout = streaming.advanceTo(240) as HarnessDispatch.Emitted
+        assertEquals(
+            HarnessErrorCode.STREAM_IDLE_TIMEOUT,
+            (idleTimeout.event as AiEvent.Failed).code,
+        )
+    }
+
+    @Test
     fun staleTransportActivityCannotExtendTheCurrentRun() {
         val request = validRequest()
         val session = BoundedHarnessSession(request, limits = limits())
@@ -362,6 +473,135 @@ class BoundedHarnessSessionTest {
             ) is HarnessDispatch.Emitted,
         )
         assertEquals(BoundedHarnessState.STREAMING, session.state)
+    }
+
+    @Test
+    fun previewReplaceIsAttemptAndIdentityGatedAndReplacesBothBudgets() {
+        val request = validRequest(maxOutputChars = 4)
+        val session = BoundedHarnessSession(
+            request,
+            limits = limits(
+                maxPreviewChars = 4,
+                maxDescriptionChars = 4,
+                maxPreviewResets = 1,
+            ),
+        )
+        session.start(0)
+        session.accept(
+            AiEvent.PreviewDelta(request.requestId, request.runGeneration, "old"),
+            nowMonotonicMs = 1,
+        )
+        session.accept(
+            AiEvent.DescriptionDelta(request.requestId, request.runGeneration, "旧"),
+            nowMonotonicMs = 2,
+        )
+        session.recoverProviderStream(
+            requestId = request.requestId,
+            runGeneration = request.runGeneration,
+            attempt = 2,
+            statusLabel = "provider_recovering",
+            nowMonotonicMs = 3,
+        )
+
+        val replacement = session.accept(
+            AiEvent.PreviewReplace(
+                requestId = request.requestId,
+                runGeneration = request.runGeneration,
+                attempt = 2,
+                text = "新结果",
+                description = "新",
+            ),
+            nowMonotonicMs = 4,
+        )
+        assertTrue(replacement is HarnessDispatch.Emitted)
+        assertTrue(
+            session.accept(
+                AiEvent.PreviewDelta(request.requestId, request.runGeneration, "续"),
+                nowMonotonicMs = 5,
+            ) is HarnessDispatch.Emitted,
+        )
+        val secondReplacement = session.accept(
+            AiEvent.PreviewReplace(
+                requestId = request.requestId,
+                runGeneration = request.runGeneration,
+                attempt = 3,
+                text = "again",
+            ),
+            nowMonotonicMs = 6,
+        ) as HarnessDispatch.Emitted
+        assertEquals(
+            HarnessErrorCode.REPAIR_LIMIT_EXCEEDED,
+            (secondReplacement.event as AiEvent.Failed).code,
+        )
+    }
+
+    @Test
+    fun previewReplaceRejects_empty_and_oversized_payloads() {
+        val request = validRequest(maxOutputChars = 2)
+        val empty = BoundedHarnessSession(request, limits = limits(maxPreviewChars = 2))
+        empty.start(0)
+        empty.recoverProviderStream(
+            request.requestId,
+            request.runGeneration,
+            attempt = 2,
+            statusLabel = "provider_recovering",
+            nowMonotonicMs = 1,
+        )
+        val emptyFailure = empty.accept(
+            AiEvent.PreviewReplace(
+                request.requestId,
+                request.runGeneration,
+                attempt = 2,
+                text = "",
+            ),
+            nowMonotonicMs = 2,
+        ) as HarnessDispatch.Emitted
+        assertEquals(HarnessErrorCode.INVALID_EVENT, (emptyFailure.event as AiEvent.Failed).code)
+
+        val oversized = BoundedHarnessSession(request, limits = limits(maxPreviewChars = 2))
+        oversized.start(0)
+        oversized.recoverProviderStream(
+            request.requestId,
+            request.runGeneration,
+            attempt = 2,
+            statusLabel = "provider_recovering",
+            nowMonotonicMs = 1,
+        )
+        val oversizedFailure = oversized.accept(
+            AiEvent.PreviewReplace(
+                request.requestId,
+                request.runGeneration,
+                attempt = 2,
+                text = "123",
+            ),
+            nowMonotonicMs = 2,
+        ) as HarnessDispatch.Emitted
+        assertEquals(
+            HarnessErrorCode.PREVIEW_LIMIT_EXCEEDED,
+            (oversizedFailure.event as AiEvent.Failed).code,
+        )
+    }
+
+    @Test
+    fun previewReplaceCannotBeInjectedWithoutAnArmedRecovery() {
+        val request = validRequest()
+        val session = BoundedHarnessSession(request)
+        session.start(0)
+
+        val failure = session.accept(
+            AiEvent.PreviewReplace(
+                requestId = request.requestId,
+                runGeneration = request.runGeneration,
+                attempt = 2,
+                text = "不得注入",
+            ),
+            nowMonotonicMs = 1,
+        ) as HarnessDispatch.Emitted
+
+        assertEquals(
+            HarnessErrorCode.INVALID_EVENT,
+            (failure.event as AiEvent.Failed).code,
+        )
     }
 
     @Test

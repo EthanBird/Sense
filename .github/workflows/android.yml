@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 env:
-  RELEASE_TAG: v0.4.0
-  RELEASE_APK: Sense-v0.4.0.apk
+  RELEASE_TAG: v0.4.1
+  RELEASE_APK: Sense-v0.4.1.apk
   LEXICON_SHA256: ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6
   BIGRAM_SHA256: db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c
   ENGLISH_SHA256: 1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624
@@ -76,7 +76,7 @@ jobs:
           cmp licenses/popular-english-words-ISC.txt ime-service/src/main/assets/POPULAR-ENGLISH-WORDS-ISC.txt
           cmp licenses/chinese-idiom-chengyu-MIT.txt ime-service/src/main/assets/CHINESE-IDIOM-CHENGYU-MIT.txt
 
-      - name: Verify 0.4.0 AI, speech, editor, and provider regressions
+      - name: Verify 0.4.1 AI recovery, HyperOS speech, and toolbox regressions
         run: >-
           ./gradlew
           :ai-protocol:test
@@ -123,6 +123,40 @@ jobs:
               raise SystemExit(f"{manifest_path}: missing application")
 
           services = application.findall("service")
+          settings_matches = [
+              activity
+              for activity in application.findall("activity")
+              if activity.get(android + "name")
+              == "io.github.ethanbird.senseime.SettingsActivity"
+          ]
+          if len(settings_matches) != 1:
+              raise SystemExit(
+                  f"{manifest_path}: expected one Sense SettingsActivity, "
+                  f"found {len(settings_matches)}"
+              )
+          settings = settings_matches[0]
+          if settings.get(android + "exported") != "true":
+              raise SystemExit(f"{manifest_path}: SettingsActivity must be exported=true")
+          launcher_filters = []
+          for intent_filter in settings.findall("intent-filter"):
+              activity_actions = {
+                  action.get(android + "name")
+                  for action in intent_filter.findall("action")
+              }
+              categories = {
+                  category.get(android + "name")
+                  for category in intent_filter.findall("category")
+              }
+              if (
+                  "android.intent.action.MAIN" in activity_actions
+                  and "android.intent.category.LAUNCHER" in categories
+              ):
+                  launcher_filters.append(intent_filter)
+          if len(launcher_filters) != 1:
+              raise SystemExit(
+                  f"{manifest_path}: SettingsActivity must have exactly one "
+                  "MAIN+LAUNCHER filter"
+              )
 
           def exactly_one(name: str):
               matches = [
@@ -204,7 +238,7 @@ jobs:
             :core-input:m5MixedInputBenchmark \
             :core-input:m6InputPolishBenchmark
 
-      - name: Verify assembled 0.4.0 APK
+      - name: Verify assembled 0.4.1 APK
         shell: bash
         run: |
           set -euo pipefail
@@ -238,6 +272,40 @@ jobs:
           if application is None:
               raise SystemExit(f"{manifest_path}: missing application")
           services = application.findall("service")
+          settings_matches = [
+              activity
+              for activity in application.findall("activity")
+              if activity.get(android + "name")
+              == "io.github.ethanbird.senseime.SettingsActivity"
+          ]
+          if len(settings_matches) != 1:
+              raise SystemExit(
+                  f"{manifest_path}: expected one Sense SettingsActivity, "
+                  f"found {len(settings_matches)}"
+              )
+          settings = settings_matches[0]
+          if settings.get(android + "exported") != "true":
+              raise SystemExit(f"{manifest_path}: SettingsActivity must be exported=true")
+          launcher_filters = []
+          for intent_filter in settings.findall("intent-filter"):
+              activity_actions = {
+                  action.get(android + "name")
+                  for action in intent_filter.findall("action")
+              }
+              categories = {
+                  category.get(android + "name")
+                  for category in intent_filter.findall("category")
+              }
+              if (
+                  "android.intent.action.MAIN" in activity_actions
+                  and "android.intent.category.LAUNCHER" in categories
+              ):
+                  launcher_filters.append(intent_filter)
+          if len(launcher_filters) != 1:
+              raise SystemExit(
+                  f"{manifest_path}: SettingsActivity must have exactly one "
+                  "MAIN+LAUNCHER filter"
+              )
 
           def exactly_one(name: str):
               matches = [
@@ -273,7 +341,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='15' versionName='0.4.0'" /tmp/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='16' versionName='0.4.1'" /tmp/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" /tmp/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" /tmp/apk-badging.txt
           declared_permissions=$(
@@ -315,7 +383,7 @@ jobs:
       - name: Upload debug APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.4.0-apks
+          name: sense-v0.4.1-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -325,7 +393,7 @@ jobs:
             benchmarks/results/m6-input-polish.json
           if-no-files-found: error
 
-  release-0-4-0:
+  release-0-4-1:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -337,7 +405,7 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: sense-v0.4.0-apks
+          name: sense-v0.4.1-apks
           path: artifacts
 
       - name: Prepare release assets
@@ -375,6 +443,40 @@ jobs:
           if application is None:
               raise SystemExit(f"{manifest_path}: missing application")
           services = application.findall("service")
+          settings_matches = [
+              activity
+              for activity in application.findall("activity")
+              if activity.get(android + "name")
+              == "io.github.ethanbird.senseime.SettingsActivity"
+          ]
+          if len(settings_matches) != 1:
+              raise SystemExit(
+                  f"{manifest_path}: expected one Sense SettingsActivity, "
+                  f"found {len(settings_matches)}"
+              )
+          settings = settings_matches[0]
+          if settings.get(android + "exported") != "true":
+              raise SystemExit(f"{manifest_path}: SettingsActivity must be exported=true")
+          launcher_filters = []
+          for intent_filter in settings.findall("intent-filter"):
+              activity_actions = {
+                  action.get(android + "name")
+                  for action in intent_filter.findall("action")
+              }
+              categories = {
+                  category.get(android + "name")
+                  for category in intent_filter.findall("category")
+              }
+              if (
+                  "android.intent.action.MAIN" in activity_actions
+                  and "android.intent.category.LAUNCHER" in categories
+              ):
+                  launcher_filters.append(intent_filter)
+          if len(launcher_filters) != 1:
+              raise SystemExit(
+                  f"{manifest_path}: SettingsActivity must have exactly one "
+                  "MAIN+LAUNCHER filter"
+              )
 
           def exactly_one(name: str):
               matches = [
@@ -410,7 +512,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='15' versionName='0.4.0'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='16' versionName='0.4.1'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           declared_permissions=$(
@@ -452,7 +554,7 @@ jobs:
           cd release
           sha256sum "$RELEASE_APK" > SHA256SUMS.txt
 
-      - name: Create Sense 0.4.0 release
+      - name: Create Sense 0.4.1 release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -486,8 +588,8 @@ jobs:
             fi
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
-              --title "Sense v0.4.0 · AI 锁定、兼容覆盖与语音输入" \
-              --notes-file docs/releases/v0.4.0.md \
+              --title "Sense v0.4.1 · AI 流恢复、澎湃 OS 语音兼容与工具箱" \
+              --notes-file docs/releases/v0.4.1.md \
               "release/$RELEASE_APK" \
               release/SHA256SUMS.txt
           fi

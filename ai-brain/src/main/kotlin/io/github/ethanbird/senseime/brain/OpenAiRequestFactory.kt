@@ -12,10 +12,19 @@ import io.github.ethanbird.senseime.brain.api.StructuredOutputMode
 import io.github.ethanbird.senseime.brain.api.ThinkingMode
 import java.nio.charset.StandardCharsets
 
+internal sealed interface SecondAttemptContext
+
 internal data class RepairContext(
     val rejectedDocument: String,
     val validationSummary: String,
-)
+) : SecondAttemptContext
+
+internal data class StreamRecoveryContext(
+    val interruptedDocument: String,
+    val stableDescription: String,
+    val stablePreview: String,
+    val reason: String,
+) : SecondAttemptContext
 
 internal object OpenAiRequestFactory {
     fun create(
@@ -23,20 +32,22 @@ internal object OpenAiRequestFactory {
         request: HarnessRequestV1,
         credential: ProviderCredential,
         attempt: Int,
-        repair: RepairContext? = null,
+        secondAttempt: SecondAttemptContext? = null,
         requestMode: BrainRequestMode = BrainRequestMode.NORMAL,
     ): ProviderWireRequest {
         profile.requireValid()
         require(attempt in 0..1)
-        require((attempt == 0) == (repair == null))
+        require((attempt == 0) == (secondAttempt == null))
 
         val nativePatchTool = usesNativePatchTool(profile)
         val includeInlineContract =
             !nativePatchTool && profile.structuredOutput != StructuredOutputMode.JSON_SCHEMA
-        val prompt = if (repair == null) {
-            buildHarnessInput(request, includeInlineContract, nativePatchTool)
-        } else {
-            buildRepairInput(request, repair, includeInlineContract, nativePatchTool)
+        val prompt = when (secondAttempt) {
+            null -> buildHarnessInput(request, includeInlineContract, nativePatchTool)
+            is RepairContext ->
+                buildRepairInput(request, secondAttempt, includeInlineContract, nativePatchTool)
+            is StreamRecoveryContext ->
+                buildRecoveryInput(request, secondAttempt, includeInlineContract, nativePatchTool)
         }
         val body = when (profile.apiStyle) {
             ProviderApiStyle.OPENAI_RESPONSES ->
@@ -307,6 +318,54 @@ internal object OpenAiRequestFactory {
     }
 
     /**
+     * Replays a transport-interrupted request as one complete structured answer.
+     *
+     * Compatible streaming APIs have no portable resume cursor. Supplying the bounded partial
+     * document and already-visible public prefix makes deterministic providers much more likely to
+     * regenerate the same prefix, while Brain still validates the second complete document from
+     * scratch before any editor mutation is authorized.
+     */
+    private fun buildRecoveryInput(
+        request: HarnessRequestV1,
+        recovery: StreamRecoveryContext,
+        includeInlineContract: Boolean,
+        nativePatchTool: Boolean,
+    ): String = buildString {
+        append("The previous provider stream was interrupted before terminal completion. ")
+        append("Regenerate the entire structured answer from the beginning; do not return only ")
+        append("the missing suffix. Preserve the stable public prefix exactly when it remains ")
+        append("correct. This is the single transport recovery attempt.\nInterruption: ")
+        append(recovery.reason.take(MAX_RECOVERY_REASON_CHARS))
+        if (recovery.stableDescription.isNotEmpty()) {
+            append("\nStable public description prefix:\n")
+            append(recovery.stableDescription.take(MAX_RECOVERY_PREFIX_CHARS))
+        }
+        if (recovery.stablePreview.isNotEmpty()) {
+            append("\nStable replacement-text prefix:\n")
+            append(recovery.stablePreview.take(MAX_RECOVERY_PREFIX_CHARS))
+        }
+        if (recovery.interruptedDocument.isNotEmpty()) {
+            append("\nInterrupted structured document (untrusted and incomplete):\n")
+            append(recovery.interruptedDocument.take(OpenAiResponseDecoder.MAX_RESPONSE_BYTES))
+        }
+        append("\nTask contract: ")
+        appendSkillContract(request.skill)
+        appendContextWindowContract(request)
+        if (includeInlineContract) {
+            append('\n')
+            appendInlinePatchContract(request)
+        }
+        append('\n')
+        if (nativePatchTool) {
+            append("Call sense_submit_patch exactly once with the complete regenerated result.")
+        } else {
+            append("Return only one complete sense.editor.patch.v1 object.")
+        }
+        append("\nImmutable snapshot JSON:\n")
+        appendSnapshot(request)
+    }
+
+    /**
      * JSON Object and prompt-only providers do not receive [PATCH_JSON_SCHEMA] out of band.
      * Keep a closed, concrete contract in the prompt so OpenAI-compatible providers such as
      * DeepSeek can produce a document accepted by the dependency-free local decoder.
@@ -468,6 +527,8 @@ internal object OpenAiRequestFactory {
     internal const val NATIVE_PATCH_TOOL_NAME = "sense_submit_patch"
     internal const val NORMAL_MAX_TOKENS = 8_192
     internal const val CONNECTIVITY_TEST_MAX_TOKENS = 512
+    private const val MAX_RECOVERY_PREFIX_CHARS = 4_096
+    private const val MAX_RECOVERY_REASON_CHARS = 256
     private const val NO_CHANGE_OPERATION_SCHEMA =
         "{\"type\":\"object\",\"additionalProperties\":false," +
             "\"required\":[\"type\"],\"properties\":{" +

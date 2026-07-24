@@ -44,6 +44,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     enum class Panel {
         LETTERS,
         NUMBERS,
+        TOOLBOX,
         SYMBOLS,
         EMOJI,
         CLIPBOARD,
@@ -88,6 +89,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         EDITOR_PRIMARY,
         EDITOR_ACTION,
         VOICE_PRIMARY,
+        TOOLBOX_CARD,
     }
 
     private enum class ScrollPanel {
@@ -98,10 +100,12 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private enum class Icon {
         TOOLS,
+        SYMBOLS,
         KEYBOARD,
         EMOJI,
         EDITOR,
         VOICE,
+        SETTINGS,
         HIDE,
         DELETE,
         ENTER,
@@ -203,6 +207,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     var textListener: ((text: String) -> Unit)? = null
     var clipboardActionListener: ((action: ClipboardAction, index: Int) -> Unit)? = null
     var editorActionListener: ((action: EditorAction) -> Unit)? = null
+    var settingsActionListener: (() -> Unit)? = null
     var aiHoldListener: AiHoldListener? = null
 
     private val density = resources.displayMetrics.density
@@ -1275,9 +1280,56 @@ class SenseKeyboardView @JvmOverloads constructor(
                 KeyStyle.EDITOR_PRIMARY -> drawEditorPrimaryKey(canvas, key, pressed)
                 KeyStyle.EDITOR_ACTION -> drawEditorActionKey(canvas, key, pressed)
                 KeyStyle.VOICE_PRIMARY -> drawVoicePrimaryKey(canvas, key, pressed)
+                KeyStyle.TOOLBOX_CARD -> drawToolboxCard(canvas, key, pressed)
                 else -> drawKeyboardKey(canvas, key, pressed)
             }
         }
+    }
+
+    private fun drawToolboxCard(canvas: Canvas, key: Key, pressed: Boolean) {
+        paint.style = Paint.Style.FILL
+        paint.color = if (pressed) {
+            color(0xFF5B7DF0.toInt(), 0xFF6D61D8.toInt())
+        } else {
+            color(0xC7FFFFFF.toInt(), 0xFF292A2C.toInt())
+        }
+        canvas.drawRoundRect(key.bounds, dp(13f), dp(13f), paint)
+        if (!pressed) {
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = max(1f, density)
+            paint.color = color(0x14172033, 0x26FFFFFF)
+            canvas.drawRoundRect(key.bounds, dp(13f), dp(13f), paint)
+        }
+        paint.style = Paint.Style.FILL
+
+        val iconBounds = RectF(
+            key.bounds.centerX() - dp(25f),
+            key.bounds.top + dp(8f),
+            key.bounds.centerX() + dp(25f),
+            minOf(key.bounds.bottom - dp(22f), key.bounds.top + dp(52f)),
+        )
+        key.icon?.let { icon ->
+            drawIcon(
+                canvas = canvas,
+                icon = icon,
+                bounds = iconBounds,
+                tint = if (pressed) {
+                    Color.WHITE
+                } else {
+                    color(0xFF52637C.toInt(), 0xFFD1D4DC.toInt())
+                },
+            )
+        }
+        paint.style = Paint.Style.FILL
+        paint.color = if (pressed) Color.WHITE else color(0xFF273449.toInt(), 0xFFF0F1F4.toInt())
+        paint.textSize = sp(13.5f)
+        paint.textAlign = Paint.Align.CENTER
+        drawCenteredText(
+            canvas,
+            key.label,
+            key.bounds.centerX(),
+            key.bounds.bottom - dp(16f),
+        )
     }
 
     private fun drawVoicePrimaryKey(canvas: Canvas, key: Key, pressed: Boolean) {
@@ -1612,6 +1664,14 @@ class SenseKeyboardView @JvmOverloads constructor(
                     }
                 }
             }
+            Icon.SYMBOLS -> {
+                paint.textAlign = Paint.Align.CENTER
+                paint.textSize = sp(17f)
+                paint.style = Paint.Style.FILL
+                canvas.drawText("Ω", cx - unit * 3.2f, cy + unit * 3.4f, paint)
+                paint.textSize = sp(12f)
+                canvas.drawText("#", cx + unit * 4.2f, cy - unit * 2.2f, paint)
+            }
             Icon.KEYBOARD -> {
                 canvas.drawRoundRect(cx - unit * 8f, cy - unit * 6f, cx + unit * 8f, cy + unit * 6f, unit * 2f, unit * 2f, paint)
                 repeat(3) { row ->
@@ -1648,6 +1708,17 @@ class SenseKeyboardView @JvmOverloads constructor(
                 iconPath.quadTo(cx + unit * 5.5f, cy + unit * 6f, cx + unit * 6f, cy)
                 canvas.drawPath(iconPath, paint)
                 canvas.drawLine(cx, cy + unit * 6f, cx, cy + unit * 9f, paint)
+            }
+            Icon.SETTINGS -> {
+                canvas.drawCircle(cx, cy, unit * 3.2f, paint)
+                repeat(8) { index ->
+                    val angle = Math.PI * index / 4.0
+                    val innerX = cx + kotlin.math.cos(angle).toFloat() * unit * 5.5f
+                    val innerY = cy + kotlin.math.sin(angle).toFloat() * unit * 5.5f
+                    val outerX = cx + kotlin.math.cos(angle).toFloat() * unit * 8f
+                    val outerY = cy + kotlin.math.sin(angle).toFloat() * unit * 8f
+                    canvas.drawLine(innerX, innerY, outerX, outerY, paint)
+                }
             }
             Icon.HIDE -> {
                 iconPath.moveTo(cx - unit * 7f, cy - unit * 2f)
@@ -2004,6 +2075,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             when (panel) {
                 Panel.LETTERS -> layoutLetters(viewWidth, viewHeight)
                 Panel.NUMBERS -> layoutNumbers(viewWidth, viewHeight)
+                Panel.TOOLBOX -> layoutToolbox(viewWidth, viewHeight)
                 Panel.SYMBOLS -> layoutSymbols(viewWidth, viewHeight)
                 Panel.EMOJI -> layoutEmoji(viewWidth, viewHeight)
                 Panel.CLIPBOARD -> layoutClipboard(viewWidth, viewHeight)
@@ -2016,7 +2088,7 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private fun layoutToolbar(viewWidth: Int) {
         val items = listOf(
-            Icon.TOOLS to KeyCodes.SYMBOLS,
+            Icon.TOOLS to KeyCodes.TOOLBOX,
             Icon.KEYBOARD to KeyCodes.LETTERS,
             Icon.EMOJI to KeyCodes.EMOJI,
             Icon.EDITOR to KeyCodes.EDITOR,
@@ -2030,6 +2102,36 @@ class SenseKeyboardView @JvmOverloads constructor(
                 code,
                 RectF(index * slot + dp(5f), dp(3f), (index + 1) * slot - dp(5f), toolbarHeight - dp(3f)),
                 style = KeyStyle.TOOL,
+                icon = icon,
+            )
+        }
+    }
+
+    private fun layoutToolbox(viewWidth: Int, viewHeight: Int) {
+        val top = keyboardChromeBottom() + dp(8f)
+        val bottom = viewHeight - systemBarHeight - dp(8f)
+        if (bottom <= top) return
+        KeyboardLayoutContract.toolboxLayout(
+            viewWidth = viewWidth.toFloat(),
+            contentTop = top,
+            contentBottom = bottom,
+            horizontalPadding = horizontalPadding,
+            horizontalGap = keyGap,
+            verticalGap = keyGap,
+        ).forEach { slot ->
+            val icon = when (slot.item) {
+                KeyboardLayoutContract.ToolboxItem.SYMBOLS -> Icon.SYMBOLS
+                KeyboardLayoutContract.ToolboxItem.EDITOR -> Icon.EDITOR
+                KeyboardLayoutContract.ToolboxItem.VOICE -> Icon.VOICE
+                KeyboardLayoutContract.ToolboxItem.CLIPBOARD -> Icon.CLIPBOARD
+                KeyboardLayoutContract.ToolboxItem.EMOJI -> Icon.EMOJI
+                KeyboardLayoutContract.ToolboxItem.SETTINGS -> Icon.SETTINGS
+            }
+            keys += Key(
+                label = slot.item.label,
+                code = slot.item.keyCode,
+                bounds = RectF(slot.left, slot.top, slot.right, slot.bottom),
+                style = KeyStyle.TOOLBOX_CARD,
                 icon = icon,
             )
         }
@@ -3353,6 +3455,25 @@ class SenseKeyboardView @JvmOverloads constructor(
             return
         }
         if (key.code == 0) return
+        val toolboxRoute = if (key.code < 0) {
+            KeyboardLayoutContract.toolboxActivationRoute(key.code)
+        } else {
+            null
+        }
+        toolboxRoute?.let { route ->
+            dispatchQueuedKeysNow()
+            when (route) {
+                KeyboardLayoutContract.ToolboxActivationRoute.SYMBOLS_PANEL ->
+                    setPanel(Panel.SYMBOLS)
+                KeyboardLayoutContract.ToolboxActivationRoute.EMOJI_PANEL ->
+                    setPanel(Panel.EMOJI)
+                KeyboardLayoutContract.ToolboxActivationRoute.SERVICE_ACTION ->
+                    enqueueKey(key.code)
+                KeyboardLayoutContract.ToolboxActivationRoute.SETTINGS_CALLBACK ->
+                    settingsActionListener?.invoke()
+            }
+            return
+        }
         when (key.code) {
             KeyCodes.LETTERS -> {
                 dispatchQueuedKeysNow()
@@ -3362,13 +3483,9 @@ class SenseKeyboardView @JvmOverloads constructor(
                 dispatchQueuedKeysNow()
                 setPanel(Panel.NUMBERS)
             }
-            KeyCodes.SYMBOLS -> {
+            KeyCodes.TOOLBOX -> {
                 dispatchQueuedKeysNow()
-                setPanel(Panel.SYMBOLS)
-            }
-            KeyCodes.EMOJI -> {
-                dispatchQueuedKeysNow()
-                setPanel(Panel.EMOJI)
+                setPanel(Panel.TOOLBOX)
             }
             else -> enqueueKey(key.code)
         }

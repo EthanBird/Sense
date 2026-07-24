@@ -21,6 +21,7 @@ import io.github.ethanbird.senseime.service.ai.editor.AndroidEditorSecurityClass
 import io.github.ethanbird.senseime.service.ai.editor.EditorApplyCommand
 import io.github.ethanbird.senseime.service.ai.editor.EditorCaptureDecision
 import io.github.ethanbird.senseime.service.ai.editor.EditorContextWindowPolicy
+import io.github.ethanbird.senseime.service.ai.editor.EditorCompletionPreviewPolicy
 import io.github.ethanbird.senseime.service.ai.editor.EditorExtractedTextContract
 import io.github.ethanbird.senseime.service.ai.editor.EditorPatchGuard
 import io.github.ethanbird.senseime.service.ai.editor.EditorPatchGuardDecision
@@ -269,10 +270,12 @@ class SenseAiEditorCoordinator(
                 startingStatus(run.lease.snapshot.target),
             )
 
-            is AiEvent.Status -> scheduleSurfaceFrame(
-                run,
-                run.presentation.descriptionOr(statusLabel(event)),
-            )
+            is AiEvent.Status -> {
+                scheduleSurfaceFrame(
+                    run,
+                    agentStatusForPresentation(event, run.presentation.description),
+                )
+            }
 
             is AiEvent.DescriptionDelta -> {
                 run.presentation.appendDescription(event.text)
@@ -293,6 +296,14 @@ class SenseAiEditorCoordinator(
             is AiEvent.PreviewDelta -> {
                 run.presentation.appendPreview(event.text)
                 scheduleSurfaceFrame(run, run.presentation.descriptionOr("正在生成…"))
+            }
+
+            is AiEvent.PreviewReplace -> {
+                run.presentation.replace(
+                    preview = event.text,
+                    description = event.description,
+                )
+                scheduleSurfaceFrame(run, run.presentation.descriptionOr("连接已恢复，继续生成…"))
             }
 
             is AiEvent.FinalPatch -> {
@@ -387,8 +398,13 @@ class SenseAiEditorCoordinator(
             failApply(run, "无法生成安全的文本替换计划")
             return
         }
+        val authoritativePreview = EditorCompletionPreviewPolicy.resolve(
+            plan = plan,
+            guardedLiveEditor = guarded.liveEditor,
+        )
         if (plan is EditorPatchPlan.NoChange) {
             run.transaction.markApplied(event.requestId, event.runGeneration, token)
+            run.presentation.complete(authoritativePreview)
             active = null
             onSurfaceUpdate(
                 run.uiGeneration,
@@ -434,11 +450,12 @@ class SenseAiEditorCoordinator(
             return
         }
         run.transaction.markApplied(event.requestId, event.runGeneration, token)
+        run.presentation.complete(authoritativePreview)
         active = null
         onSurfaceUpdate(
             run.uiGeneration,
             AiSurfacePhase.COMPLETE,
-            plan.expectedState.textWindow,
+            run.presentation.preview,
             "已写入输入框",
         )
     }
@@ -856,17 +873,6 @@ class SenseAiEditorCoordinator(
         } else {
             "正在理解输入框…"
         }
-
-    private fun statusLabel(event: AiEvent.Status): String = when (event.phase) {
-        io.github.ethanbird.senseime.ai.protocol.HarnessPhase.CONNECTING ->
-            "正在连接模型…"
-        io.github.ethanbird.senseime.ai.protocol.HarnessPhase.UNDERSTANDING ->
-            "正在理解输入框…"
-        io.github.ethanbird.senseime.ai.protocol.HarnessPhase.GENERATING ->
-            "正在生成…"
-        io.github.ethanbird.senseime.ai.protocol.HarnessPhase.VALIDATING ->
-            "正在校验编辑结果…"
-    }
 
     private data class ActiveRun(
         val uiGeneration: Long,

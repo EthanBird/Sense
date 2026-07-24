@@ -139,6 +139,33 @@ class SpeechRecognitionStateTest {
     }
 
     @Test
+    fun `system fallback keeps session identity and resets on-device attempt state`() {
+        val started = reduce(
+            SpeechRecognitionState(),
+            SpeechRecognitionEvent.Started(12L, usingOnDeviceRecognizer = true),
+        )
+        val partial = reduce(
+            started,
+            SpeechRecognitionEvent.PartialResult(12L, "不应跨识别器保留"),
+        )
+        val fallback = reduce(
+            partial,
+            SpeechRecognitionEvent.SystemFallbackStarted(12L),
+        )
+
+        assertEquals(12L, fallback.sessionId)
+        assertEquals(SpeechRecognitionPhase.STARTING, fallback.phase)
+        assertEquals(false, fallback.usingOnDeviceRecognizer)
+        assertEquals("", fallback.partialText)
+
+        val staleOtherSession = reduce(
+            fallback,
+            SpeechRecognitionEvent.SystemFallbackStarted(11L),
+        )
+        assertSame(fallback, staleOtherSession)
+    }
+
+    @Test
     fun `destroy is terminal and clears sensitive transient text`() {
         val started = reduce(
             SpeechRecognitionState(),
