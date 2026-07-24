@@ -22,6 +22,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":ai-protocol"))
+    implementation(project(":ai-runtime"))
     implementation(project(":core-input"))
     implementation(project(":ime-ui"))
     testImplementation(libs.junit)

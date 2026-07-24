@@ -179,6 +179,52 @@ class BoundedHarnessSession(
     }
 
     /**
+     * Notes validated transport progress without surfacing provider-private reasoning or
+     * consuming the typed event budget.
+     *
+     * The total deadline remains absolute. Identity and generation checks prevent stale network
+     * callbacks from extending a newer run.
+     */
+    fun noteProviderActivity(
+        requestId: String,
+        runGeneration: Long,
+        nowMonotonicMs: Long,
+    ): HarnessDispatch = synchronized(lock) {
+        observeTime(nowMonotonicMs)
+        if (requestId != request.requestId) {
+            return@synchronized HarnessDispatch.Dropped(
+                sourceEvent = null,
+                reason = HarnessDropReason.REQUEST_MISMATCH,
+                state = mutableState,
+            )
+        }
+        if (runGeneration != request.runGeneration) {
+            return@synchronized HarnessDispatch.Dropped(
+                sourceEvent = null,
+                reason = HarnessDropReason.GENERATION_MISMATCH,
+                state = mutableState,
+            )
+        }
+        if (mutableState == BoundedHarnessState.CREATED) {
+            return@synchronized HarnessDispatch.Dropped(
+                sourceEvent = null,
+                reason = HarnessDropReason.NOT_STARTED,
+                state = mutableState,
+            )
+        }
+        if (mutableState.isTerminal) {
+            return@synchronized HarnessDispatch.Dropped(
+                sourceEvent = null,
+                reason = HarnessDropReason.TERMINATED,
+                state = mutableState,
+            )
+        }
+        expireIfNeeded(nowMonotonicMs)?.let { return@synchronized it }
+        noteProviderEvent(nowMonotonicMs)
+        HarnessDispatch.NoEvent(mutableState)
+    }
+
+    /**
      * Synchronously invalidates this generation. The caller should cancel Binder/coroutine/HTTP
      * work after this transition has completed.
      *

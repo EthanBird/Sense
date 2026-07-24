@@ -74,5 +74,8 @@ include(
     ":ime-ui",
     ":core-input",
     ":ai-protocol",
+    ":brain-api",
+    ":ai-brain",
+    ":ai-runtime",
     ":benchmark",
 )

@@ -16,6 +16,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
+import io.github.ethanbird.senseime.ai.protocol.TextSelectionV1
 import io.github.ethanbird.senseime.core.AdaptivePinyinDecoder
 import io.github.ethanbird.senseime.core.BinaryCharacterBigramModel
 import io.github.ethanbird.senseime.core.Candidate
@@ -35,6 +37,8 @@ import io.github.ethanbird.senseime.core.SemanticCandidateCatalog
 import io.github.ethanbird.senseime.core.SemanticCandidateMixer
 import io.github.ethanbird.senseime.core.UserLexicon
 import io.github.ethanbird.senseime.core.editorComposingTextUpdate
+import io.github.ethanbird.senseime.service.ai.SenseAiEditorCoordinator
+import io.github.ethanbird.senseime.service.ai.editor.EditorStaleReason
 import io.github.ethanbird.senseime.ui.KeyCodes
 import io.github.ethanbird.senseime.ui.KeyboardLayoutContract
 import io.github.ethanbird.senseime.ui.SenseKeyboardView
@@ -64,6 +68,12 @@ class SenseInputMethodService : InputMethodService() {
     private var learningAllowed = true
     private var clipboardHistoryAllowed = false
     private lateinit var clipboardManager: ClipboardManager
+    private lateinit var aiCoordinator: SenseAiEditorCoordinator
+    private var currentEditorInfo: EditorInfo? = null
+    private var editorGeneration = 0L
+    private var editorSessionId = 0L
+    private var editorFieldIdentity = "editor-0"
+    private var aiApplicationToken: Long? = null
     private val clipboardHistory = ArrayDeque<String>()
 
     private val clipboardListener = ClipboardManager.OnPrimaryClipChangedListener {
@@ -146,6 +156,34 @@ class SenseInputMethodService : InputMethodService() {
         clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         loadClipboardHistory()
         clipboardManager.addPrimaryClipChangedListener(clipboardListener)
+        aiCoordinator = SenseAiEditorCoordinator(
+            context = this,
+            connection = { currentInputConnection },
+            editorInfo = { currentEditorInfo },
+            editorSelection = {
+                if (selectionStart < 0 || selectionEnd < 0) {
+                    null
+                } else {
+                    TextSelectionV1(
+                        minOf(selectionStart, selectionEnd),
+                        maxOf(selectionStart, selectionEnd),
+                    )
+                }
+            },
+            editorGeneration = { editorGeneration },
+            fieldIdentity = { currentAiFieldIdentity() },
+            pointerStillDown = { generation ->
+                keyboardView?.let { view ->
+                    view.isAiSurfaceActive() && view.activeAiGeneration() == generation
+                } == true
+            },
+            onSurfaceUpdate = { generation, phase, preview, status ->
+                keyboardView?.updateAiSurface(generation, phase, preview, status)
+            },
+            onOwnApplyWindow = { token, active ->
+                aiApplicationToken = if (active) token else null
+            },
+        )
     }
 
     override fun onCreateInputView(): View = SenseKeyboardView(this).also { view ->
@@ -160,19 +198,33 @@ class SenseInputMethodService : InputMethodService() {
         view.textListener = ::commitText
         view.clipboardActionListener = ::handleClipboardAction
         view.editorActionListener = ::handleEditorAction
+        view.aiHoldListener = object : SenseKeyboardView.AiHoldListener {
+            override fun onAiHoldStarted(generation: Long) {
+                beginAiHold(generation)
+            }
+
+            override fun onAiHoldCancelled(generation: Long) {
+                aiCoordinator.cancel(generation, HarnessCancelReason.POINTER_RELEASED)
+            }
+        }
         view.setChineseMode(chineseMode)
         keyboardView = view
         render()
     }
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
+        invalidateAiForEditorChange(EditorStaleReason.START_INPUT)
         super.onStartInput(attribute, restarting)
+        currentEditorInfo = attribute
+        editorGeneration = nextGeneration(editorGeneration)
+        editorSessionId = nextGeneration(editorSessionId)
+        editorFieldIdentity = "editor-$editorSessionId"
         val persistenceAllowed = allowsLocalPersistence(attribute)
         learningAllowed = persistenceAllowed
         clipboardHistoryAllowed = persistenceAllowed
         editorSelectionActive = false
-        selectionStart = -1
-        selectionEnd = -1
+        selectionStart = attribute?.initialSelStart ?: -1
+        selectionEnd = attribute?.initialSelEnd ?: -1
         keyboardView?.setEditorSelectionActive(false)
         resetComposition(finishConnection = true)
         keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
@@ -191,8 +243,10 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     override fun onFinishInput() {
+        invalidateAiForEditorChange(EditorStaleReason.FINISH_INPUT)
         clipboardHistoryAllowed = false
         resetComposition(finishConnection = true)
+        currentEditorInfo = null
         super.onFinishInput()
     }
 
@@ -212,6 +266,21 @@ class SenseInputMethodService : InputMethodService() {
             candidatesStart,
             candidatesEnd,
         )
+        val selectionChanged = selectionStart != newSelStart || selectionEnd != newSelEnd
+        if (selectionChanged) {
+            val ownToken = aiApplicationToken
+            val normalizedSelection = if (newSelStart < 0 || newSelEnd < 0) {
+                null
+            } else {
+                TextSelectionV1(
+                    minOf(newSelStart, newSelEnd),
+                    maxOf(newSelStart, newSelEnd),
+                )
+            }
+            if (aiCoordinator.markSelectionChanged(normalizedSelection, ownToken)) {
+                editorGeneration = nextGeneration(editorGeneration)
+            }
+        }
         selectionStart = newSelStart
         selectionEnd = newSelEnd
         val hasActiveComposition = if (chineseMode) {
@@ -255,8 +324,82 @@ class SenseInputMethodService : InputMethodService() {
         userLexicon?.close()
         userLexicon = null
         adaptiveDecoder = null
+        if (::aiCoordinator.isInitialized) aiCoordinator.close()
+        aiApplicationToken = null
         keyboardView = null
         super.onDestroy()
+    }
+
+    override fun onWindowHidden() {
+        cancelAndExitAi(HarnessCancelReason.WINDOW_HIDDEN)
+        super.onWindowHidden()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        cancelAndExitAi(HarnessCancelReason.CONFIGURATION_CHANGED)
+        super.onConfigurationChanged(newConfig)
+    }
+
+    private fun beginAiHold(generation: Long) {
+        val view = keyboardView ?: return
+        if (!view.isAiSurfaceActive() || view.activeAiGeneration() != generation) return
+        val compositionSettled = when {
+            !chineseMode && englishInput.composing.isNotEmpty() ->
+                commitEnglishComposition(englishInput.defaultCommitCandidate)
+            chineseMode && composition.visibleText.isNotEmpty() -> {
+                val decoding = currentDecoding()
+                if (decoding != null) {
+                    commitPrimary(decoding.wholeCandidates.firstOrNull())
+                } else {
+                    // Long-press has already given the decoder 380 ms. A stalled
+                    // worker must not make AI activation hang indefinitely.
+                    commitRawComposition()
+                }
+            }
+            else -> true
+        }
+        if (!compositionSettled) {
+            view.updateAiSurface(
+                generation,
+                io.github.ethanbird.senseime.ui.AiSurfacePhase.ERROR,
+                "",
+                "无法确认当前输入，松开空格后重试",
+            )
+            return
+        }
+        // A composing commit can be acknowledged by the host on a later main-loop turn.
+        // Capture only after that turn, and re-check that this exact hold still owns the surface.
+        mainHandler.post {
+            if (
+                !destroyed &&
+                view === keyboardView &&
+                view.isAiSurfaceActive() &&
+                view.activeAiGeneration() == generation
+            ) {
+                aiCoordinator.start(generation)
+            }
+        }
+    }
+
+    private fun invalidateAiForEditorChange(reason: EditorStaleReason) {
+        if (!::aiCoordinator.isInitialized) return
+        aiCoordinator.markEditorChanged(reason)
+        keyboardView?.activeAiGeneration()?.let(keyboardView!!::exitAiSurface)
+    }
+
+    private fun cancelAndExitAi(reason: HarnessCancelReason) {
+        val view = keyboardView ?: return
+        val generation = view.activeAiGeneration() ?: return
+        aiCoordinator.cancel(generation, reason)
+        view.exitAiSurface(generation)
+    }
+
+    private fun nextGeneration(value: Long): Long =
+        if (value == Long.MAX_VALUE) 1L else value + 1L
+
+    private fun currentAiFieldIdentity(): String {
+        val connectionIdentity = currentInputConnection?.let(System::identityHashCode) ?: 0
+        return "$editorFieldIdentity:$connectionIdentity"
     }
 
     private fun handleKey(code: Int) {

@@ -18,9 +18,9 @@ fi
 BUILD_TOOLS="$SDK/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK/platforms/android-36/android.jar"
 KOTLIN_LIB="$GRADLE_DIST/lib"
-OUT="$ROOT/build/offline-v0.3.5-m8-a"
+OUT="$ROOT/build/offline-v0.3.5-m8"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
-APK="$APK_DIR/Sense-v0.3.5-m8-a-debug.apk"
+APK="$APK_DIR/Sense-v0.3.5-m8-debug.apk"
 LEXICON_ASSET="$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin"
 LEXICON_SHA256="ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
 BIGRAM_ASSET="$ROOT/ime-service/src/main/assets/pinyin_bigrams.bin"
@@ -31,7 +31,16 @@ ENGLISH_WORD_COUNT="20000"
 export ANDROID_USER_HOME=${ANDROID_USER_HOME:-$OUT/android-user-home}
 
 find "$OUT" -mindepth 1 -delete 2>/dev/null || true
-mkdir -p "$OUT/protocol-main" "$OUT/protocol-test" "$OUT/core-main" "$OUT/core-test" "$OUT/ui-main" "$OUT/ui-test" "$OUT/service-main" "$OUT/service-test" "$OUT/generated" "$OUT/app-classes" "$OUT/dex" "$ANDROID_USER_HOME" "$APK_DIR"
+mkdir -p \
+    "$OUT/protocol-main" "$OUT/protocol-test" \
+    "$OUT/brain-api-main" "$OUT/brain-api-test" \
+    "$OUT/brain-main" "$OUT/brain-test" \
+    "$OUT/runtime-main" "$OUT/runtime-test" \
+    "$OUT/core-main" "$OUT/core-test" \
+    "$OUT/ui-main" "$OUT/ui-test" \
+    "$OUT/service-main" "$OUT/service-test" \
+    "$OUT/generated" "$OUT/app-classes" "$OUT/dex" \
+    "$ANDROID_USER_HOME" "$APK_DIR"
 
 python3 "$ROOT/tools/test_build_pinyin_lexicon.py" 2>&1 | tee "$OUT/lexicon-builder-tests.txt"
 python3 "$ROOT/tools/test_build_bigram_model.py" 2>&1 | tee "$OUT/bigram-builder-tests.txt"
@@ -69,6 +78,12 @@ HAMCREST="$KOTLIN_LIB/hamcrest-core-1.3.jar"
 
 mapfile -t PROTOCOL_SOURCES < <(find "$ROOT/ai-protocol/src/main/kotlin" -name '*.kt' -print | sort)
 mapfile -t PROTOCOL_TEST_SOURCES < <(find "$ROOT/ai-protocol/src/test/kotlin" -name '*.kt' -print | sort)
+mapfile -t BRAIN_API_SOURCES < <(find "$ROOT/brain-api/src/main/kotlin" -name '*.kt' -print | sort)
+mapfile -t BRAIN_API_TEST_SOURCES < <(find "$ROOT/brain-api/src/test/kotlin" -name '*.kt' -print | sort)
+mapfile -t BRAIN_SOURCES < <(find "$ROOT/ai-brain/src/main/kotlin" -name '*.kt' -print | sort)
+mapfile -t BRAIN_TEST_SOURCES < <(find "$ROOT/ai-brain/src/test/kotlin" -name '*.kt' -print | sort)
+RUNTIME_PURE_SOURCE="$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainIpcTextChunker.kt"
+mapfile -t RUNTIME_TEST_SOURCES < <(find "$ROOT/ai-runtime/src/test/kotlin" -name '*.kt' -print | sort)
 mapfile -t CORE_SOURCES < <(find "$ROOT/core-input/src/main/kotlin" -name '*.kt' -print | sort)
 mapfile -t TEST_SOURCES < <(find "$ROOT/core-input/src/test/kotlin" -name '*.kt' -print | sort)
 mapfile -t UI_LAYOUT_SOURCES < <(printf '%s\n' \
@@ -81,15 +96,36 @@ mapfile -t UI_LAYOUT_SOURCES < <(printf '%s\n' \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KineticScrollPolicy.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/SymbolCatalog.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/SwipeCharacterMap.kt" \
-    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/TouchInputReducer.kt")
+    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/TouchInputReducer.kt" \
+    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/AiHoldGestureSession.kt")
 mapfile -t UI_TEST_SOURCES < <(find "$ROOT/ime-ui/src/test/kotlin" -name '*.kt' -print | sort)
-mapfile -t SERVICE_PURE_SOURCES < <(printf '%s\n' \
-    "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/CandidateDecodeSession.kt" \
-    "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/EditorCompositionSelectionPolicy.kt" \
-    "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/EditorPrivacyPolicy.kt" \
-    "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/LatestOnlyTaskRunner.kt" \
-    "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ProgressiveCandidateSnapshot.kt")
+mapfile -t SERVICE_PURE_SOURCES < <(
+    {
+        printf '%s\n' \
+            "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/CandidateDecodeSession.kt" \
+            "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/EditorCompositionSelectionPolicy.kt" \
+            "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/EditorPrivacyPolicy.kt" \
+            "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/LatestOnlyTaskRunner.kt" \
+            "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ProgressiveCandidateSnapshot.kt"
+        find "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ai/editor" \
+            -name '*.kt' -print
+    } | sort -u
+)
 mapfile -t SERVICE_TEST_SOURCES < <(find "$ROOT/ime-service/src/test/kotlin" -name '*.kt' -print | sort)
+
+if command -v rg >/dev/null 2>&1; then
+    if rg -n 'java\.net\.|javax\.net\.|okhttp|retrofit' \
+        "$ROOT/ime-service" "$ROOT/ime-ui"; then
+        echo "Release gate failed: network transport leaked into the IME or UI module." >&2
+        exit 1
+    fi
+elif grep -R -n -E \
+    --include='*.kt' \
+    'java\.net\.|javax\.net\.|okhttp|retrofit' \
+    "$ROOT/ime-service" "$ROOT/ime-ui"; then
+    echo "Release gate failed: network transport leaked into the IME or UI module." >&2
+    exit 1
+fi
 
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect -classpath "$STDLIB" \
@@ -102,10 +138,85 @@ PROTOCOL_TEST_CLASSES=()
 for source in "${PROTOCOL_TEST_SOURCES[@]}"; do
     [[ "$source" == *Test.kt ]] || continue
     file_name=${source##*/}
-    PROTOCOL_TEST_CLASSES+=("io.github.ethanbird.senseime.ai.protocol.${file_name%.kt}")
+    package_name=$(
+        sed -n -E \
+            's/^[[:space:]]*package[[:space:]]+([^[:space:]]+).*/\1/p' \
+            "$source"
+    )
+    [[ -n "$package_name" ]]
+    PROTOCOL_TEST_CLASSES+=("$package_name.${file_name%.kt}")
 done
 java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/protocol-test" \
     org.junit.runner.JUnitCore "${PROTOCOL_TEST_CLASSES[@]}" | tee "$OUT/protocol-unit-tests.txt"
+
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath "$STDLIB:$OUT/protocol-main" \
+    -d "$OUT/brain-api-main" "${BRAIN_API_SOURCES[@]}"
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/brain-api-main" \
+    -d "$OUT/brain-api-test" "${BRAIN_API_TEST_SOURCES[@]}"
+BRAIN_API_TEST_CLASSES=()
+for source in "${BRAIN_API_TEST_SOURCES[@]}"; do
+    [[ "$source" == *Test.kt ]] || continue
+    file_name=${source##*/}
+    package_name=$(
+        sed -n -E \
+            's/^[[:space:]]*package[[:space:]]+([^[:space:]]+).*/\1/p' \
+            "$source"
+    )
+    [[ -n "$package_name" ]]
+    BRAIN_API_TEST_CLASSES+=("$package_name.${file_name%.kt}")
+done
+java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/brain-api-main:$OUT/brain-api-test" \
+    org.junit.runner.JUnitCore "${BRAIN_API_TEST_CLASSES[@]}" | tee "$OUT/brain-api-unit-tests.txt"
+
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath "$STDLIB:$OUT/protocol-main:$OUT/brain-api-main" \
+    -d "$OUT/brain-main" "${BRAIN_SOURCES[@]}"
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/brain-api-main:$OUT/brain-main" \
+    -Xfriend-paths="$OUT/brain-main" \
+    -d "$OUT/brain-test" "${BRAIN_TEST_SOURCES[@]}"
+BRAIN_TEST_CLASSES=()
+for source in "${BRAIN_TEST_SOURCES[@]}"; do
+    [[ "$source" == *Test.kt ]] || continue
+    file_name=${source##*/}
+    package_name=$(
+        sed -n -E \
+            's/^[[:space:]]*package[[:space:]]+([^[:space:]]+).*/\1/p' \
+            "$source"
+    )
+    [[ -n "$package_name" ]]
+    BRAIN_TEST_CLASSES+=("$package_name.${file_name%.kt}")
+done
+java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/brain-api-main:$OUT/brain-main:$OUT/brain-test" \
+    org.junit.runner.JUnitCore "${BRAIN_TEST_CLASSES[@]}" | tee "$OUT/brain-unit-tests.txt"
+
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect -classpath "$STDLIB" \
+    -d "$OUT/runtime-main" "$RUNTIME_PURE_SOURCE"
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath "$STDLIB:$JUNIT:$HAMCREST:$OUT/runtime-main" \
+    -d "$OUT/runtime-test" "${RUNTIME_TEST_SOURCES[@]}"
+RUNTIME_TEST_CLASSES=()
+for source in "${RUNTIME_TEST_SOURCES[@]}"; do
+    [[ "$source" == *Test.kt ]] || continue
+    file_name=${source##*/}
+    package_name=$(
+        sed -n -E \
+            's/^[[:space:]]*package[[:space:]]+([^[:space:]]+).*/\1/p' \
+            "$source"
+    )
+    [[ -n "$package_name" ]]
+    RUNTIME_TEST_CLASSES+=("$package_name.${file_name%.kt}")
+done
+java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/runtime-main:$OUT/runtime-test" \
+    org.junit.runner.JUnitCore "${RUNTIME_TEST_CLASSES[@]}" | tee "$OUT/runtime-unit-tests.txt"
 
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect -classpath "$STDLIB" \
@@ -119,7 +230,13 @@ CORE_TEST_CLASSES=()
 for source in "${TEST_SOURCES[@]}"; do
     [[ "$source" == *Test.kt ]] || continue
     file_name=${source##*/}
-    CORE_TEST_CLASSES+=("io.github.ethanbird.senseime.core.${file_name%.kt}")
+    package_name=$(
+        sed -n -E \
+            's/^[[:space:]]*package[[:space:]]+([^[:space:]]+).*/\1/p' \
+            "$source"
+    )
+    [[ -n "$package_name" ]]
+    CORE_TEST_CLASSES+=("$package_name.${file_name%.kt}")
 done
 java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/core-main:$OUT/core-test" \
     org.junit.runner.JUnitCore "${CORE_TEST_CLASSES[@]}" | tee "$OUT/unit-tests.txt"
@@ -135,26 +252,39 @@ UI_TEST_CLASSES=()
 for source in "${UI_TEST_SOURCES[@]}"; do
     [[ "$source" == *Test.kt ]] || continue
     file_name=${source##*/}
-    UI_TEST_CLASSES+=("io.github.ethanbird.senseime.ui.${file_name%.kt}")
+    package_name=$(
+        sed -n -E \
+            's/^[[:space:]]*package[[:space:]]+([^[:space:]]+).*/\1/p' \
+            "$source"
+    )
+    [[ -n "$package_name" ]]
+    UI_TEST_CLASSES+=("$package_name.${file_name%.kt}")
 done
 java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/ui-main:$OUT/ui-test" \
     org.junit.runner.JUnitCore "${UI_TEST_CLASSES[@]}" | tee "$OUT/ui-unit-tests.txt"
 
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
-    -jvm-target 17 -no-stdlib -no-reflect -classpath "$STDLIB:$OUT/core-main" \
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath "$STDLIB:$OUT/protocol-main:$OUT/core-main" \
     -d "$OUT/service-main" "${SERVICE_PURE_SOURCES[@]}"
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect \
-    -classpath "$STDLIB:$JUNIT:$HAMCREST:$OUT/core-main:$OUT/service-main" \
+    -classpath "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/core-main:$OUT/service-main" \
     -Xfriend-paths="$OUT/service-main" \
     -d "$OUT/service-test" "${SERVICE_TEST_SOURCES[@]}"
 SERVICE_TEST_CLASSES=()
 for source in "${SERVICE_TEST_SOURCES[@]}"; do
     [[ "$source" == *Test.kt ]] || continue
     file_name=${source##*/}
-    SERVICE_TEST_CLASSES+=("io.github.ethanbird.senseime.service.${file_name%.kt}")
+    package_name=$(
+        sed -n -E \
+            's/^[[:space:]]*package[[:space:]]+([^[:space:]]+).*/\1/p' \
+            "$source"
+    )
+    [[ -n "$package_name" ]]
+    SERVICE_TEST_CLASSES+=("$package_name.${file_name%.kt}")
 done
-java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/core-main:$OUT/service-main:$OUT/service-test" \
+java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/core-main:$OUT/service-main:$OUT/service-test" \
     org.junit.runner.JUnitCore "${SERVICE_TEST_CLASSES[@]}" | tee "$OUT/service-unit-tests.txt"
 
 java -cp "$STDLIB:$OUT/core-main" \
@@ -207,8 +337,8 @@ java -cp "$STDLIB:$OUT/core-main" \
     --manifest "$ROOT/tools/offline/AndroidManifest.xml" \
     --min-sdk-version 29 \
     --target-sdk-version 36 \
-    --version-code 11 \
-    --version-name 0.3.5-m8-a \
+    --version-code 12 \
+    --version-name 0.3.5-m8 \
     --auto-add-overlay \
     --output-text-symbols "$OUT/R.txt" \
     -A "$ROOT/ime-service/src/main/assets" \
@@ -231,6 +361,10 @@ END { if (type != "") print "    }"; print "}" }
 
 mapfile -t APP_SOURCES < <(
     find \
+        "$ROOT/ai-protocol/src/main/kotlin" \
+        "$ROOT/brain-api/src/main/kotlin" \
+        "$ROOT/ai-brain/src/main/kotlin" \
+        "$ROOT/ai-runtime/src/main/kotlin" \
         "$ROOT/core-input/src/main/kotlin" \
         "$ROOT/ime-ui/src/main/kotlin" \
         "$ROOT/ime-service/src/main/kotlin" \
@@ -277,11 +411,81 @@ keytool -genkeypair \
 "$BUILD_TOOLS/zipalign" -c -P 16 4 "$APK"
 "$BUILD_TOOLS/aapt2" dump badging "$APK" | tee "$OUT/apk-badging.txt"
 "$BUILD_TOOLS/aapt2" dump permissions "$APK" | tee "$OUT/apk-permissions.txt"
-grep -F "package: name='io.github.ethanbird.senseime' versionCode='11' versionName='0.3.5-m8-a'" "$OUT/apk-badging.txt"
+APK_ANALYZER=$(
+    find "$SDK/cmdline-tools" -type f -name apkanalyzer -print |
+        sort -V |
+        tail -n 1
+)
+if [[ ! -x "$APK_ANALYZER" ]]; then
+    echo "Android apkanalyzer is required to verify the packaged manifest." >&2
+    exit 2
+fi
+"$APK_ANALYZER" manifest print "$APK" > "$OUT/apk-manifest.xml"
+python3 - "$OUT/apk-manifest.xml" <<'PY'
+import sys
+import xml.etree.ElementTree as ET
+
+manifest_path = sys.argv[1]
+android = "{http://schemas.android.com/apk/res/android}"
+root = ET.parse(manifest_path).getroot()
+application = root.find("application")
+if application is None:
+    raise SystemExit(f"{manifest_path}: missing application")
+services = application.findall("service")
+
+
+def exactly_one(name: str):
+    matches = [
+        service
+        for service in services
+        if service.get(android + "name") == name
+    ]
+    if len(matches) != 1:
+        raise SystemExit(
+            f"{manifest_path}: expected one {name}, found {len(matches)}"
+        )
+    return matches[0]
+
+
+brain = exactly_one(
+    "io.github.ethanbird.senseime.brain.runtime.SenseAiBrainService"
+)
+if brain.get(android + "exported") != "false":
+    raise SystemExit(f"{manifest_path}: Brain service must be exported=false")
+if brain.get(android + "process") != ":brain":
+    raise SystemExit(f"{manifest_path}: Brain service must run in :brain")
+
+ime = exactly_one(
+    "io.github.ethanbird.senseime.service.SenseInputMethodService"
+)
+if ime.get(android + "permission") != "android.permission.BIND_INPUT_METHOD":
+    raise SystemExit(f"{manifest_path}: IME service must require BIND_INPUT_METHOD")
+actions = {
+    action.get(android + "name")
+    for action in ime.findall("./intent-filter/action")
+}
+if "android.view.InputMethod" not in actions:
+    raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
+PY
+grep -F "package: name='io.github.ethanbird.senseime' versionCode='12' versionName='0.3.5-m8'" "$OUT/apk-badging.txt"
 grep -Fx "minSdkVersion:'29'" "$OUT/apk-badging.txt"
 grep -Fx "targetSdkVersion:'36'" "$OUT/apk-badging.txt"
-if grep -Fq "android.permission.INTERNET" "$OUT/apk-permissions.txt"; then
-    echo "Release gate failed: APK declares android.permission.INTERNET." >&2
+DECLARED_PERMISSIONS=$(
+    sed -n -E \
+        "s/^uses-permission(-sdk-[0-9]+)?: name='([^']+)'.*/\2/p" \
+        "$OUT/apk-permissions.txt" |
+        sort -u
+)
+if ! grep -Fxq "android.permission.INTERNET" <<<"$DECLARED_PERMISSIONS"; then
+    echo "Release gate failed: AI build is missing android.permission.INTERNET." >&2
+    exit 1
+fi
+UNEXPECTED_PERMISSIONS=$(
+    grep -Fvx "android.permission.INTERNET" <<<"$DECLARED_PERMISSIONS" || true
+)
+if [[ -n "$UNEXPECTED_PERMISSIONS" ]]; then
+    printf 'Release gate failed: unexpected APK permissions:\n%s\n' \
+        "$UNEXPECTED_PERMISSIONS" >&2
     exit 1
 fi
 unzip -p "$APK" assets/NOTICE.txt | cmp - "$ROOT/NOTICE"
@@ -321,9 +525,12 @@ HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --sources "$ROOT/ime-ui/src/main/kotlin" \
     --sources "$ROOT/core-input/src/main/kotlin" \
     --sources "$ROOT/ai-protocol/src/main/kotlin" \
+    --sources "$ROOT/brain-api/src/main/kotlin" \
+    --sources "$ROOT/ai-brain/src/main/kotlin" \
+    --sources "$ROOT/ai-runtime/src/main/kotlin" \
     --classpath "$OUT/app-classes" \
     --libraries "$ANDROID_JAR" \
     --text "$OUT/lint.txt" \
     "$ROOT/tools/offline"
 
-echo "v0.3.5-m8-a verification complete: $APK"
+echo "v0.3.5-m8 verification complete: $APK"

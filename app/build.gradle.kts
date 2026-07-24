@@ -11,8 +11,8 @@ android {
         applicationId = "io.github.ethanbird.senseime"
         minSdk = 29
         targetSdk = 36
-        versionCode = 11
-        versionName = "0.3.5-m8-a"
+        versionCode = 12
+        versionName = "0.3.5-m8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -51,5 +51,6 @@ android {
 }
 
 dependencies {
+    implementation(project(":ai-runtime"))
     implementation(project(":ime-service"))
 }

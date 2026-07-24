@@ -30,6 +30,12 @@ class SenseKeyboardView @JvmOverloads constructor(
         fun onKey(code: Int)
     }
 
+    interface AiHoldListener {
+        fun onAiHoldStarted(generation: Long)
+
+        fun onAiHoldCancelled(generation: Long)
+    }
+
     enum class Panel {
         LETTERS,
         NUMBERS,
@@ -189,6 +195,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     var textListener: ((text: String) -> Unit)? = null
     var clipboardActionListener: ((action: ClipboardAction, index: Int) -> Unit)? = null
     var editorActionListener: ((action: EditorAction) -> Unit)? = null
+    var aiHoldListener: AiHoldListener? = null
 
     private val density = resources.displayMetrics.density
     private val scaledTouchSlop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
@@ -235,6 +242,12 @@ class SenseKeyboardView @JvmOverloads constructor(
     private val maximumFlingVelocity = ViewConfiguration.get(context).scaledMaximumFlingVelocity.toFloat()
     private var keyDispatchPosted = false
     private val backspaceRepeatSession = BackspaceRepeatSession()
+    private val aiHoldGestureSession = AiHoldGestureSession(
+        maximumStationaryDistance = maxOf(scaledTouchSlop, dp(10f)),
+    )
+    private var scheduledAiHoldPointerId = NO_POINTER
+    private var scheduledAiHoldGeneration = 0L
+    private var aiSurfaceState: AiSurfaceState? = null
     private var emojiGroupIndex = 0
     private val emojiScrollState = ContinuousVerticalScrollState()
     private var emojiGridBounds: RectF? = null
@@ -306,6 +319,32 @@ class SenseKeyboardView @JvmOverloads constructor(
             enqueueKey(KeyCodes.DELETE)
             val held = backspaceRepeatSession.heldMillis(SystemClock.uptimeMillis())
             postDelayed(this, BackspaceRepeatPolicy.intervalMillis(held))
+        }
+    }
+    private val aiHoldActivationRunnable = object : Runnable {
+        override fun run() {
+            val pointerId = scheduledAiHoldPointerId
+            if (pointerId == NO_POINTER) return
+            val generation = scheduledAiHoldGeneration
+            val now = SystemClock.uptimeMillis()
+            val outcome = aiHoldGestureSession.tryActivate(
+                pointerId = pointerId,
+                expectedGeneration = generation,
+                nowMillis = now,
+            )
+            if (outcome == AiHoldGestureSession.Outcome.ACTIVATED) {
+                scheduledAiHoldPointerId = NO_POINTER
+                scheduledAiHoldGeneration = 0L
+                beginAiSurface(generation)
+                return
+            }
+            val remaining = aiHoldGestureSession.millisUntilActivation(now)
+            if (
+                remaining > 0L &&
+                aiHoldGestureSession.armedGeneration() == generation
+            ) {
+                postDelayed(this, remaining)
+            }
         }
     }
 
@@ -433,6 +472,67 @@ class SenseKeyboardView @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Replaces the current stream preview. Updates from a released/cancelled
+     * generation are ignored so a late provider frame cannot resurrect AI UI.
+     */
+    fun updateAiSurface(
+        generation: Long,
+        phase: AiSurfacePhase,
+        preview: String,
+        statusText: String = "",
+    ): Boolean {
+        val current = aiSurfaceState ?: return false
+        if (current.generation != generation) return false
+        aiSurfaceState = current.copy(
+            phase = phase,
+            preview = AiSurfaceContract.boundedPreview(preview),
+            statusText = statusText.ifBlank { defaultAiStatus(phase) },
+        )
+        invalidate()
+        return true
+    }
+
+    /**
+     * Allocation-bounded convenience path for token/delta streaming.
+     */
+    fun appendAiStreamPreview(
+        generation: Long,
+        delta: String,
+        phase: AiSurfacePhase = AiSurfacePhase.STREAMING,
+    ): Boolean {
+        val current = aiSurfaceState ?: return false
+        if (current.generation != generation) return false
+        aiSurfaceState = current.copy(
+            phase = phase,
+            preview = AiSurfaceContract.appendBounded(current.preview, delta),
+            statusText = defaultAiStatus(phase),
+        )
+        invalidate()
+        return true
+    }
+
+    /**
+     * Host-controlled terminal exit. Pointer UP/CANCEL invokes the cancellation
+     * callback and exits automatically; this method is for a completed/error
+     * flow that the host has already settled.
+     */
+    fun exitAiSurface(generation: Long): Boolean {
+        val current = aiSurfaceState ?: return false
+        if (current.generation != generation) return false
+        aiHoldGestureSession.cancelAll()
+        clearScheduledAiHold()
+        aiSurfaceState = null
+        rebuildCandidateLayout(width, height)
+        rebuildKeys(width, height)
+        invalidate()
+        return true
+    }
+
+    fun isAiSurfaceActive(): Boolean = aiSurfaceState != null
+
+    fun activeAiGeneration(): Long? = aiSurfaceState?.generation
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val desiredHeight = dp(
             KeyboardLayoutContract.preferredKeyboardHeightDp(
@@ -461,6 +561,11 @@ class SenseKeyboardView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         drawBackground(canvas)
+        val aiState = aiSurfaceState
+        if (aiState != null) {
+            drawAiSurface(canvas, aiState)
+            return
+        }
         if (panel == Panel.EDITOR) {
             drawEditorHeader(canvas)
             drawEditorPanelBackground(canvas)
@@ -472,6 +577,124 @@ class SenseKeyboardView @JvmOverloads constructor(
             }
         }
         drawKeys(canvas)
+    }
+
+    private fun drawAiSurface(canvas: Canvas, state: AiSurfaceState) {
+        val keyRegionTop = keyboardChromeBottom()
+        if (height.toFloat() <= keyRegionTop + systemBarHeight) return
+        val surface = AiSurfaceContract.bounds(
+            keyboardHeight = height.toFloat(),
+            keyRegionTop = keyRegionTop,
+            systemBarHeight = systemBarHeight,
+        )
+        val accent = when (state.phase) {
+            AiSurfacePhase.STARTING -> color(0xFF5B72E8.toInt(), 0xFF9C8CFF.toInt())
+            AiSurfacePhase.STREAMING -> color(0xFF3F7CEA.toInt(), 0xFF9C8CFF.toInt())
+            AiSurfacePhase.COMPLETE -> color(0xFF26845A.toInt(), 0xFF71D9A8.toInt())
+            AiSurfacePhase.ERROR -> color(0xFFD14D58.toInt(), 0xFFFF8A93.toInt())
+        }
+
+        paint.style = Paint.Style.FILL
+        paint.color = color(0x26FFFFFF, 0x1AFFFFFF)
+        canvas.drawRect(0f, 0f, width.toFloat(), keyRegionTop, paint)
+        paint.color = accent
+        canvas.drawCircle(dp(17f), keyRegionTop / 2f, dp(4f), paint)
+        paint.textAlign = Paint.Align.LEFT
+        paint.textSize = sp(13.5f)
+        drawCenteredText(
+            canvas,
+            state.statusText.ifBlank { defaultAiStatus(state.phase) },
+            dp(29f),
+            keyRegionTop / 2f,
+        )
+
+        val card = RectF(
+            horizontalPadding,
+            surface.top + dp(7f),
+            width - horizontalPadding,
+            surface.bottom - dp(7f),
+        )
+        paint.color = color(0xD8FFFFFF.toInt(), 0xFF252627.toInt())
+        canvas.drawRoundRect(card, dp(13f), dp(13f), paint)
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = max(1f, density)
+        paint.color = color(0x185B72E8, 0x309C8CFF)
+        canvas.drawRoundRect(card, dp(13f), dp(13f), paint)
+        paint.style = Paint.Style.FILL
+
+        val preview = state.preview.ifBlank {
+            if (state.phase == AiSurfacePhase.STARTING) "正在读取输入框并准备任务…" else ""
+        }
+        if (preview.isNotEmpty()) {
+            drawAiPreviewText(
+                canvas = canvas,
+                text = preview,
+                left = card.left + dp(14f),
+                top = card.top + dp(14f),
+                right = card.right - dp(14f),
+                bottom = card.bottom - dp(14f),
+            )
+        }
+
+        paint.color = color(0xFF667085.toInt(), 0xFFAAADB5.toInt())
+        paint.textSize = sp(12f)
+        paint.textAlign = Paint.Align.CENTER
+        drawCenteredText(
+            canvas,
+            "松开空格取消",
+            width / 2f,
+            height - systemBarHeight / 2f,
+        )
+    }
+
+    private fun drawAiPreviewText(
+        canvas: Canvas,
+        text: String,
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+    ) {
+        if (right <= left || bottom <= top) return
+        val saveCount = canvas.save()
+        canvas.clipRect(left, top, right, bottom)
+        paint.color = color(0xFF182235.toInt(), 0xFFF1F2F5.toInt())
+        paint.textSize = sp(15f)
+        paint.textAlign = Paint.Align.LEFT
+        paint.getFontMetrics(fontMetrics)
+        val lineHeight = (fontMetrics.descent - fontMetrics.ascent) + dp(5f)
+        var baseline = top - fontMetrics.ascent
+        var index = 0
+        while (index < text.length && baseline + fontMetrics.descent <= bottom) {
+            if (text[index] == '\n') {
+                index++
+                baseline += lineHeight
+                continue
+            }
+            val newline = text.indexOf('\n', index).let { if (it < 0) text.length else it }
+            var count = paint.breakText(
+                text,
+                index,
+                newline,
+                true,
+                right - left,
+                null,
+            )
+            if (count <= 0) count = 1
+            if (
+                index + count < text.length &&
+                text[index + count - 1].isHighSurrogate() &&
+                text[index + count].isLowSurrogate()
+            ) {
+                count--
+            }
+            if (count <= 0) count = minOf(2, text.length - index)
+            canvas.drawText(text, index, index + count, left, baseline, paint)
+            index += count
+            if (index == newline) index++
+            baseline += lineHeight
+        }
+        canvas.restoreToCount(saveCount)
     }
 
     private fun drawBackground(canvas: Canvas) {
@@ -1856,6 +2079,9 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (aiSurfaceState != null) {
+            return handleAiSurfaceTouch(event)
+        }
         if (activePanelPointerId != NO_POINTER) {
             panelVelocityTracker?.addMovement(event)
         }
@@ -1868,6 +2094,12 @@ class SenseKeyboardView @JvmOverloads constructor(
                     val pointerId = event.getPointerId(pointerIndex)
                     val x = event.getX(pointerIndex)
                     val y = event.getY(pointerIndex)
+                    if (
+                        aiHoldGestureSession.move(pointerId, x, y) ==
+                        AiHoldGestureSession.Outcome.ELIGIBILITY_CANCELLED
+                    ) {
+                        clearScheduledAiHold()
+                    }
                     if (candidateStripScrollState.owns(pointerId)) {
                         val candidateMove = candidateStripScrollState.move(
                             pointerId = pointerId,
@@ -1982,6 +2214,14 @@ class SenseKeyboardView @JvmOverloads constructor(
             enqueueKey(KeyCodes.DELETE)
             startBackspaceRepeat(pointerId)
         }
+        if (key?.code == KeyCodes.SPACE) {
+            aiHoldGestureSession.begin(
+                pointerId = pointerId,
+                x = x,
+                y = y,
+                eventTimeMillis = event.eventTime,
+            )?.let(::scheduleAiHold)
+        }
         if (
             target !is FrozenTouchTarget.CandidatePageArea &&
             target !is FrozenTouchTarget.CandidateStripArea &&
@@ -1997,6 +2237,19 @@ class SenseKeyboardView @JvmOverloads constructor(
         val pointerId = event.getPointerId(pointerIndex)
         val x = event.getX(pointerIndex)
         val y = event.getY(pointerIndex)
+        when (aiHoldGestureSession.pointerUp(pointerId, event.eventTime)) {
+            AiHoldGestureSession.Outcome.SHORT_TAP -> clearScheduledAiHold()
+            AiHoldGestureSession.Outcome.HOLD_RELEASED -> {
+                clearScheduledAiHold()
+                touchReducer.cancel(pointerId)
+                pressedTargets.remove(pointerId)
+                stopBackspaceRepeat(pointerId)
+                panelPointerYs.remove(pointerId)
+                invalidate()
+                return true
+            }
+            else -> Unit
+        }
         val originalTarget = touchReducer.target(pointerId)
         val candidateSettle = candidateStripScrollState.finish(
             pointerId = pointerId,
@@ -2279,6 +2532,20 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun cancelAllTouches() {
+        val activeGeneration = aiSurfaceState?.generation
+        val aiOutcome = aiHoldGestureSession.cancelAll()
+        clearScheduledAiHold()
+        aiSurfaceState = null
+        cancelOrdinaryTouches()
+        if (
+            aiOutcome == AiHoldGestureSession.Outcome.ACTIVE_CANCELLED &&
+            activeGeneration != null
+        ) {
+            aiHoldListener?.onAiHoldCancelled(activeGeneration)
+        }
+    }
+
+    private fun cancelOrdinaryTouches() {
         touchReducer.cancelAll()
         pressedTargets.clear()
         panelPointerYs.clear()
@@ -2291,6 +2558,79 @@ class SenseKeyboardView @JvmOverloads constructor(
                 rebuildCandidateLayout(width, height)
             }
         }
+    }
+
+    private fun scheduleAiHold(arm: AiHoldGestureSession.Arm) {
+        scheduledAiHoldPointerId = arm.pointerId
+        scheduledAiHoldGeneration = arm.generation
+        removeCallbacks(aiHoldActivationRunnable)
+        val delay = (arm.activationAtMillis - SystemClock.uptimeMillis()).coerceAtLeast(0L)
+        postDelayed(aiHoldActivationRunnable, delay)
+    }
+
+    private fun clearScheduledAiHold() {
+        scheduledAiHoldPointerId = NO_POINTER
+        scheduledAiHoldGeneration = 0L
+        removeCallbacks(aiHoldActivationRunnable)
+    }
+
+    private fun beginAiSurface(generation: Long) {
+        cancelOrdinaryTouches()
+        // Preserve the established FIFO boundary: any key already committed
+        // before the hold activation must reach the editor before it snapshots.
+        dispatchQueuedKeysNow()
+        aiSurfaceState = AiSurfaceState(
+            generation = generation,
+            phase = AiSurfacePhase.STARTING,
+            preview = "",
+            statusText = defaultAiStatus(AiSurfacePhase.STARTING),
+        )
+        performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+        invalidate()
+        aiHoldListener?.onAiHoldStarted(generation)
+    }
+
+    private fun handleAiSurfaceTouch(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_UP,
+            MotionEvent.ACTION_POINTER_UP -> {
+                val pointerId = event.getPointerId(event.actionIndex)
+                if (aiHoldGestureSession.owns(pointerId)) {
+                    cancelActiveAi(pointerId)
+                    performClick()
+                }
+            }
+            MotionEvent.ACTION_CANCEL -> cancelActiveAi(pointerId = null)
+            MotionEvent.ACTION_DOWN -> {
+                // A fresh stream means the owner terminal event was lost.
+                cancelActiveAi(pointerId = null)
+            }
+        }
+        return true
+    }
+
+    private fun cancelActiveAi(pointerId: Int?) {
+        val generation = aiSurfaceState?.generation ?: return
+        val outcome = if (pointerId == null) {
+            aiHoldGestureSession.cancelAll()
+        } else {
+            aiHoldGestureSession.pointerCancel(pointerId)
+        }
+        if (outcome != AiHoldGestureSession.Outcome.ACTIVE_CANCELLED) return
+        clearScheduledAiHold()
+        aiSurfaceState = null
+        cancelOrdinaryTouches()
+        rebuildCandidateLayout(width, height)
+        rebuildKeys(width, height)
+        invalidate()
+        aiHoldListener?.onAiHoldCancelled(generation)
+    }
+
+    private fun defaultAiStatus(phase: AiSurfacePhase): String = when (phase) {
+        AiSurfacePhase.STARTING -> "先思 AI · 正在思考"
+        AiSurfacePhase.STREAMING -> "先思 AI · 正在生成"
+        AiSurfacePhase.COMPLETE -> "先思 AI · 已完成"
+        AiSurfacePhase.ERROR -> "先思 AI · 出现错误"
     }
 
     private fun collapseCandidates() {

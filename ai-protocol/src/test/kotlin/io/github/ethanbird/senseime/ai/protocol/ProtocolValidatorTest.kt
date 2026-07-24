@@ -15,6 +15,15 @@ class ProtocolValidatorTest {
     }
 
     @Test
+    fun runtimeFieldIdentityFormatIsProtocolSafe() {
+        val result = ProtocolValidator.validate(
+            snapshot().copy(fieldIdentity = "editor-42:123456789"),
+        )
+
+        assertTrue(result.errors.toString(), result.isValid)
+    }
+
+    @Test
     fun fullDocumentCannotPretendTruncatedTextIsComplete() {
         val result = ProtocolValidator.validate(snapshot().copy(truncated = true))
 
