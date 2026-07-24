@@ -77,6 +77,36 @@ class KeyboardLayoutContractTest {
     }
 
     @Test
+    fun voiceLayoutKeepsLandscapeActionAndWaveformUsable() {
+        val geometry = KeyboardLayoutContract.voiceLayout(
+            candidateHeight = 45f,
+            contentBottom = KeyboardLayoutContract.LANDSCAPE_KEYBOARD_HEIGHT_DP - 52f,
+            unit = 1f,
+        )
+
+        assertTrue(geometry.statusCenterY > 45f)
+        assertTrue(geometry.transcriptCenterY > geometry.statusCenterY)
+        assertTrue(geometry.waveformTop > geometry.transcriptCenterY)
+        assertTrue(geometry.waveformBottom > geometry.waveformTop)
+        assertTrue(geometry.primaryButtonTop > geometry.waveformBottom)
+        assertTrue(geometry.primaryButtonBottom - geometry.primaryButtonTop >= 42f)
+    }
+
+    @Test
+    fun voiceLayoutUsesRoomyPortraitWaveformWithoutOvershootingContent() {
+        val contentBottom = KeyboardLayoutContract.PORTRAIT_KEYBOARD_HEIGHT_DP - 52f
+        val geometry = KeyboardLayoutContract.voiceLayout(
+            candidateHeight = 45f,
+            contentBottom = contentBottom,
+            unit = 1f,
+        )
+
+        assertTrue(geometry.waveformBottom - geometry.waveformTop >= 80f)
+        assertEquals(52f, geometry.primaryButtonBottom - geometry.primaryButtonTop, 0.001f)
+        assertTrue(geometry.primaryButtonBottom < contentBottom)
+    }
+
+    @Test
     fun functionRowEndsWithPeriodLanguageAndEnter() {
         val row = KeyboardLayoutContract.functionRow(chineseMode = true)
 

@@ -22,17 +22,25 @@ internal class AgentStreamPresentation(
     }
 
     val preview: String
-        get() = previewBuilder.toString()
+        get() = rollingTail(previewBuilder, maxPreviewChars)
 
     val description: String
         get() = descriptionBuilder.toString()
 
     fun appendPreview(text: String) {
-        appendBounded(previewBuilder, text, maxPreviewChars)
+        if (text.isEmpty()) return
+        previewBuilder.append(text)
+        // Trim in chunks rather than once per provider token. This keeps append amortized while
+        // the public value remains a strict rolling tail window.
+        if (previewBuilder.length > maxPreviewChars + PREVIEW_TRIM_SLACK_CHARS) {
+            val proposedStart = previewBuilder.length - maxPreviewChars
+            val safeStart = safeUtf16Start(previewBuilder, proposedStart)
+            previewBuilder.delete(0, safeStart)
+        }
     }
 
     fun appendDescription(text: String) {
-        appendBounded(descriptionBuilder, text, maxDescriptionChars)
+        appendHeadBounded(descriptionBuilder, text, maxDescriptionChars)
     }
 
     fun descriptionOr(fallback: String): String =
@@ -43,8 +51,31 @@ internal class AgentStreamPresentation(
         descriptionBuilder.setLength(0)
     }
 
-    private fun appendBounded(target: StringBuilder, text: String, limit: Int) {
+    private fun appendHeadBounded(target: StringBuilder, text: String, limit: Int) {
         val remaining = limit - target.length
         if (remaining > 0) target.append(text.take(remaining))
+    }
+
+    private fun rollingTail(target: StringBuilder, limit: Int): String {
+        if (target.length <= limit) return target.toString()
+        val proposedStart = target.length - (limit - ELLIPSIS.length)
+        val safeStart = safeUtf16Start(target, proposedStart)
+        return ELLIPSIS + target.substring(safeStart)
+    }
+
+    private fun safeUtf16Start(text: CharSequence, proposedStart: Int): Int {
+        if (
+            proposedStart in 1 until text.length &&
+            text[proposedStart - 1].isHighSurrogate() &&
+            text[proposedStart].isLowSurrogate()
+        ) {
+            return proposedStart + 1
+        }
+        return proposedStart
+    }
+
+    private companion object {
+        const val PREVIEW_TRIM_SLACK_CHARS = 1_024
+        const val ELLIPSIS = "…"
     }
 }

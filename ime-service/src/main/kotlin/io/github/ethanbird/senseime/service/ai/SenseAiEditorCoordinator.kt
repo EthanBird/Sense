@@ -1,6 +1,8 @@
 package io.github.ethanbird.senseime.service.ai
 
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.ExtractedTextRequest
@@ -18,6 +20,8 @@ import io.github.ethanbird.senseime.service.ai.editor.ActiveEditorPatchLease
 import io.github.ethanbird.senseime.service.ai.editor.AndroidEditorSecurityClassifier
 import io.github.ethanbird.senseime.service.ai.editor.EditorApplyCommand
 import io.github.ethanbird.senseime.service.ai.editor.EditorCaptureDecision
+import io.github.ethanbird.senseime.service.ai.editor.EditorContextWindowPolicy
+import io.github.ethanbird.senseime.service.ai.editor.EditorExtractedTextContract
 import io.github.ethanbird.senseime.service.ai.editor.EditorPatchGuard
 import io.github.ethanbird.senseime.service.ai.editor.EditorPatchGuardDecision
 import io.github.ethanbird.senseime.service.ai.editor.EditorPatchGuardInput
@@ -65,11 +69,26 @@ class SenseAiEditorCoordinator(
     private val onOwnApplyWindow: (applicationToken: Long?, active: Boolean) -> Unit,
 ) : AutoCloseable {
     private val brainClient = SenseAiBrainClient(context, ::onBrainEvent)
+    private val mainHandler = Handler(Looper.getMainLooper())
     private val applicationTokens = AtomicLong(1)
     private var active: ActiveRun? = null
+    private var pendingSurfaceFrame: PendingSurfaceFrame? = null
+    private var surfaceFramePosted = false
+    private val publishSurfaceFrame = Runnable {
+        surfaceFramePosted = false
+        val frame = pendingSurfaceFrame.also { pendingSurfaceFrame = null } ?: return@Runnable
+        if (active !== frame.run) return@Runnable
+        onSurfaceUpdate(
+            frame.run.uiGeneration,
+            frame.phase,
+            frame.run.presentation.preview,
+            frame.status,
+        )
+    }
 
     fun start(uiGeneration: Long) {
         if (uiGeneration <= 0L) return
+        clearPendingSurfaceFrame()
         active?.let {
             cancel(it.uiGeneration, HarnessCancelReason.CALLER_REQUESTED)
         }
@@ -106,7 +125,7 @@ class SenseAiEditorCoordinator(
             val status = if (decision is EditorCaptureDecision.Blocked) {
                 "此输入框不允许远端 AI"
             } else {
-                "当前应用无法提供可安全覆盖的全文或选区"
+                "当前应用无法提供可安全定位的文本，请先选择文字"
             }
             showError(uiGeneration, status)
             return
@@ -134,7 +153,12 @@ class SenseAiEditorCoordinator(
             ),
         )
         active = run
-        onSurfaceUpdate(uiGeneration, AiSurfacePhase.STARTING, "", "正在连接模型…")
+        onSurfaceUpdate(
+            uiGeneration,
+            AiSurfacePhase.STARTING,
+            "",
+            startingStatus(snapshot.target),
+        )
         brainClient.start(request)
     }
 
@@ -150,6 +174,7 @@ class SenseAiEditorCoordinator(
             reason.toTransactionReason(),
         )
         // Local authority is revoked before Binder/network cancellation is requested.
+        clearPendingSurfaceFrame()
         active = null
         brainClient.cancel(run.request.requestId, run.request.runGeneration, reason)
     }
@@ -164,6 +189,7 @@ class SenseAiEditorCoordinator(
             return
         }
         active = null
+        clearPendingSurfaceFrame()
         brainClient.cancel(
             run.request.requestId,
             run.request.runGeneration,
@@ -203,6 +229,7 @@ class SenseAiEditorCoordinator(
             return false
         }
         active = null
+        clearPendingSurfaceFrame()
         brainClient.cancel(
             run.request.requestId,
             run.request.runGeneration,
@@ -218,6 +245,7 @@ class SenseAiEditorCoordinator(
     }
 
     override fun close() {
+        clearPendingSurfaceFrame()
         active?.let {
             cancel(it.uiGeneration, HarnessCancelReason.CALLER_REQUESTED)
         }
@@ -238,28 +266,22 @@ class SenseAiEditorCoordinator(
                 run.uiGeneration,
                 AiSurfacePhase.STARTING,
                 "",
-                "正在理解输入框…",
+                startingStatus(run.lease.snapshot.target),
             )
 
-            is AiEvent.Status -> onSurfaceUpdate(
-                run.uiGeneration,
-                AiSurfacePhase.STREAMING,
-                run.presentation.preview,
+            is AiEvent.Status -> scheduleSurfaceFrame(
+                run,
                 run.presentation.descriptionOr(statusLabel(event)),
             )
 
             is AiEvent.DescriptionDelta -> {
                 run.presentation.appendDescription(event.text)
-                onSurfaceUpdate(
-                    run.uiGeneration,
-                    AiSurfacePhase.STREAMING,
-                    run.presentation.preview,
-                    run.presentation.descriptionOr("正在处理…"),
-                )
+                scheduleSurfaceFrame(run, run.presentation.descriptionOr("正在处理…"))
             }
 
             is AiEvent.PreviewReset -> {
                 run.presentation.reset()
+                clearPendingSurfaceFrame()
                 onSurfaceUpdate(
                     run.uiGeneration,
                     AiSurfacePhase.STREAMING,
@@ -270,20 +292,20 @@ class SenseAiEditorCoordinator(
 
             is AiEvent.PreviewDelta -> {
                 run.presentation.appendPreview(event.text)
-                onSurfaceUpdate(
-                    run.uiGeneration,
-                    AiSurfacePhase.STREAMING,
-                    run.presentation.preview,
-                    run.presentation.descriptionOr("正在生成…"),
-                )
+                scheduleSurfaceFrame(run, run.presentation.descriptionOr("正在生成…"))
             }
 
-            is AiEvent.FinalPatch -> applyFinalPatch(run, event)
+            is AiEvent.FinalPatch -> {
+                clearPendingSurfaceFrame()
+                applyFinalPatch(run, event)
+            }
             is AiEvent.Cancelled -> {
+                clearPendingSurfaceFrame()
                 active = null
             }
 
             is AiEvent.Failed -> {
+                clearPendingSurfaceFrame()
                 active = null
                 onSurfaceUpdate(
                     run.uiGeneration,
@@ -294,6 +316,25 @@ class SenseAiEditorCoordinator(
             }
 
             is AiEvent.Usage -> Unit
+        }
+    }
+
+    private fun scheduleSurfaceFrame(run: ActiveRun, status: String) {
+        pendingSurfaceFrame = PendingSurfaceFrame(
+            run = run,
+            phase = AiSurfacePhase.STREAMING,
+            status = status,
+        )
+        if (surfaceFramePosted) return
+        surfaceFramePosted = true
+        mainHandler.postDelayed(publishSurfaceFrame, SURFACE_FRAME_INTERVAL_MS)
+    }
+
+    private fun clearPendingSurfaceFrame() {
+        pendingSurfaceFrame = null
+        if (surfaceFramePosted) {
+            mainHandler.removeCallbacks(publishSurfaceFrame)
+            surfaceFramePosted = false
         }
     }
 
@@ -494,7 +535,10 @@ class SenseAiEditorCoordinator(
         original: EditorSnapshotV1,
         plan: EditorPatchPlan.Replace,
     ): Boolean {
-        if (original.capability == SnapshotCapability.SELECTION_ONLY) {
+        if (
+            original.capability == SnapshotCapability.SELECTION_ONLY ||
+            original.target == PatchTarget.CONTEXT_WINDOW
+        ) {
             return verifySelectionOnlyExpectedState(plan)
         }
         val current = readLive(
@@ -626,28 +670,21 @@ class SenseAiEditorCoordinator(
         val extractedText = runCatching {
             inputConnection.getExtractedText(request, 0)
         }.getOrNull()
-        val before = runCatching {
-            inputConnection.getTextBeforeCursor(CONTEXT_PROBE_CHARS, 0)?.toString()
-        }.getOrNull()
-        val after = runCatching {
-            inputConnection.getTextAfterCursor(CONTEXT_PROBE_CHARS, 0)?.toString()
-        }.getOrNull()
-        val extracted = extractedText?.text?.toString()?.let { text ->
+        val extractedFromLegacyApi = extractedText?.text?.toString()?.let { text ->
             val partial = extractedText.partialStartOffset >= 0 ||
                 extractedText.partialEndOffset >= 0
             val normalizedSelectionStart =
                 minOf(extractedText.selectionStart, extractedText.selectionEnd)
             val normalizedSelectionEnd =
                 maxOf(extractedText.selectionStart, extractedText.selectionEnd)
-            val validSelection =
-                normalizedSelectionStart >= 0 &&
-                    normalizedSelectionEnd <= text.length
-            val completeDocument =
-                extractedText.startOffset == 0 &&
-                    !partial &&
-                    validSelection &&
-                    before == text.substring(0, normalizedSelectionStart) &&
-                    after == text.substring(normalizedSelectionEnd)
+            val completeDocument = EditorExtractedTextContract.isCompleteDocument(
+                startOffset = extractedText.startOffset,
+                partialStartOffset = extractedText.partialStartOffset,
+                partialEndOffset = extractedText.partialEndOffset,
+                selectionStartInText = normalizedSelectionStart,
+                selectionEndInText = normalizedSelectionEnd,
+                textLength = text.length,
+            )
             ExtractedEditorText(
                 text = text,
                 startOffset = extractedText.startOffset,
@@ -656,7 +693,53 @@ class SenseAiEditorCoordinator(
                 completeDocument = completeDocument,
                 partialUpdate = partial,
             )
+        }?.let { extracted ->
+            if (extracted.completeDocument) {
+                extracted
+            } else {
+                EditorContextWindowPolicy.constrain(extracted)
+            }
         }
+        val atomicContext = if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            extractedFromLegacyApi?.completeDocument != true
+        ) {
+            runCatching {
+                inputConnection.getSurroundingText(
+                    CONTEXT_SIDE_CHARS,
+                    CONTEXT_SIDE_CHARS,
+                    0,
+                )
+            }.getOrNull()?.takeIf { it.offset >= 0 }?.let { context ->
+                val text = context.text.toString()
+                val start = minOf(context.selectionStart, context.selectionEnd)
+                val end = maxOf(context.selectionStart, context.selectionEnd)
+                if (
+                    start < 0 ||
+                    end < start ||
+                    end > text.length ||
+                    context.offset.toLong() + text.length > Int.MAX_VALUE.toLong()
+                ) {
+                    null
+                } else {
+                    EditorContextWindowPolicy.constrain(
+                        ExtractedEditorText(
+                            text = text,
+                            startOffset = context.offset,
+                            selectionStartInText = start,
+                            selectionEndInText = end,
+                            completeDocument = false,
+                        ),
+                    )
+                }
+            }
+        } else {
+            null
+        }
+        val extracted = extractedFromLegacyApi
+            ?.takeIf { it.completeDocument && !it.partialUpdate && it.startOffset == 0 }
+            ?: atomicContext
+            ?: extractedFromLegacyApi
         val extractedSelection = extracted?.takeIf {
             it.startOffset >= 0 &&
                 it.selectionStartInText >= 0 &&
@@ -680,9 +763,18 @@ class SenseAiEditorCoordinator(
             readSucceeded = effectiveSelection?.isCollapsed != false || selectedValue != null,
             text = selectedValue,
         )
-        val surrounding = if (extracted?.completeDocument == true) {
+        val surrounding = if (
+            extracted?.completeDocument == true ||
+            atomicContext != null
+        ) {
             null
         } else {
+            val before = runCatching {
+                inputConnection.getTextBeforeCursor(CONTEXT_PROBE_CHARS, 0)?.toString()
+            }.getOrNull()
+            val after = runCatching {
+                inputConnection.getTextAfterCursor(CONTEXT_PROBE_CHARS, 0)?.toString()
+            }.getOrNull()
             if (before == null || after == null) null else SurroundingEditorText(before, after)
         }
         return EditorSnapshotCapturePolicy.capture(
@@ -758,6 +850,13 @@ class SenseAiEditorCoordinator(
         else -> "AI 暂时不可用"
     }
 
+    private fun startingStatus(target: PatchTarget?): String =
+        if (target == PatchTarget.CONTEXT_WINDOW) {
+            "此应用仅开放光标附近文本，正在安全处理该范围…"
+        } else {
+            "正在理解输入框…"
+        }
+
     private fun statusLabel(event: AiEvent.Status): String = when (event.phase) {
         io.github.ethanbird.senseime.ai.protocol.HarnessPhase.CONNECTING ->
             "正在连接模型…"
@@ -777,6 +876,12 @@ class SenseAiEditorCoordinator(
         val presentation: AgentStreamPresentation = AgentStreamPresentation(),
     )
 
+    private data class PendingSurfaceFrame(
+        val run: ActiveRun,
+        val phase: AiSurfacePhase,
+        val status: String,
+    )
+
     private data class EditorExecutionResult(
         val mutationAccepted: Boolean,
     )
@@ -785,7 +890,9 @@ class SenseAiEditorCoordinator(
         private const val LOGICAL_SPACE_POINTER = 0
         private const val MAX_CONTEXT_CHARS = 65_536
         private const val CONTEXT_PROBE_CHARS = MAX_CONTEXT_CHARS + 1
+        private const val CONTEXT_SIDE_CHARS = MAX_CONTEXT_CHARS / 2
         private const val MAX_CONTEXT_LINES = 8_192
+        private const val SURFACE_FRAME_INTERVAL_MS = 16L
     }
 }
 

@@ -263,6 +263,7 @@ internal object OpenAiRequestFactory {
         nativePatchTool: Boolean,
     ): String = buildString {
         appendSkillContract(request.skill)
+        appendContextWindowContract(request)
         if (includeInlineContract) {
             append('\n')
             appendInlinePatchContract(request)
@@ -296,6 +297,7 @@ internal object OpenAiRequestFactory {
         append(repair.rejectedDocument.take(OpenAiResponseDecoder.MAX_RESPONSE_BYTES))
         append("\nTask contract: ")
         appendSkillContract(request.skill)
+        appendContextWindowContract(request)
         if (includeInlineContract) {
             append('\n')
             appendInlinePatchContract(request)
@@ -377,6 +379,17 @@ internal object OpenAiRequestFactory {
                 EditorIntent.NO_CHANGE ->
                     error("no_change is not a runnable editor skill")
             },
+        )
+    }
+
+    private fun StringBuilder.appendContextWindowContract(request: HarnessRequestV1) {
+        if (request.snapshot.target != io.github.ethanbird.senseime.ai.protocol.PatchTarget.CONTEXT_WINDOW) {
+            return
+        }
+        append(
+            "\nThe context_window is one complete but limited editing unit, not the whole field. " +
+                "Replace that entire unit with a self-contained result; if unseen text would be " +
+                "needed to do so safely, return no_change.",
         )
     }
 
@@ -482,7 +495,7 @@ internal object OpenAiRequestFactory {
                   "required":["type","target","text","selection_after"],
                   "properties":{
                     "type":{"type":"string","enum":["replace"]},
-                    "target":{"type":"string","enum":["whole_field","selection"]},
+                    "target":{"type":"string","enum":["whole_field","selection","context_window"]},
                     "text":{"type":"string"},
                     "selection_after":{"type":"string","enum":["start","end","select_replacement"]}
                   }

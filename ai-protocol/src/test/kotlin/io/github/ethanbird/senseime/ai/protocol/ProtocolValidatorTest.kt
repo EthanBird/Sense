@@ -69,6 +69,39 @@ class ProtocolValidatorTest {
     }
 
     @Test
+    fun surroundingWindowCanAuthorizeOnlyItsFrozenContextTarget() {
+        val context = snapshot(
+            capability = SnapshotCapability.SURROUNDING_WINDOW,
+            text = "上下文窗口",
+            selection = TextSelectionV1(102, 102),
+            target = PatchTarget.CONTEXT_WINDOW,
+        ).copy(textStartOffset = 100)
+        val patch = EditorPatchV1(
+            requestId = context.requestId,
+            snapshotId = context.snapshotId,
+            baseSha256 = context.baseSha256,
+            intent = EditorIntent.REWRITE,
+            operation = PatchOperationV1(
+                type = PatchOperationType.REPLACE,
+                target = PatchTarget.CONTEXT_WINDOW,
+                text = "安全替换",
+                selectionAfter = SelectionAfter.END,
+            ),
+        )
+
+        assertTrue(ProtocolValidator.validate(context).isValid)
+        assertTrue(ProtocolValidator.validate(patch, context).isValid)
+        assertError(
+            ProtocolValidator.validate(
+                patch.copy(operation = patch.operation.copy(target = PatchTarget.WHOLE_FIELD)),
+                context,
+            ),
+            ProtocolErrorCode.TARGET_NOT_SUPPORTED,
+            "$.operation.target",
+        )
+    }
+
+    @Test
     fun selectionOffsetsUseUtf16AndMustRemainInRange() {
         val valid = snapshot(
             text = "A😀B",

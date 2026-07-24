@@ -1,21 +1,20 @@
 package io.github.ethanbird.senseime.service
 
-import android.content.ActivityNotFoundException
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
 import android.content.res.Configuration
 import android.inputmethodservice.InputMethodService
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
-import android.speech.RecognizerIntent
 import android.text.InputType
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
 import io.github.ethanbird.senseime.ai.protocol.TextSelectionV1
 import io.github.ethanbird.senseime.core.AdaptivePinyinDecoder
@@ -39,9 +38,25 @@ import io.github.ethanbird.senseime.core.UserLexicon
 import io.github.ethanbird.senseime.core.editorComposingTextUpdate
 import io.github.ethanbird.senseime.service.ai.SenseAiEditorCoordinator
 import io.github.ethanbird.senseime.service.ai.editor.EditorStaleReason
+import io.github.ethanbird.senseime.speech.AndroidSpeechRecognizerController
+import io.github.ethanbird.senseime.speech.CloudSpeechRecognitionController
+import io.github.ethanbird.senseime.speech.CloudSpeechRecognitionListener
+import io.github.ethanbird.senseime.speech.SpeechProviderProfile
+import io.github.ethanbird.senseime.speech.SpeechProviderProtocol
+import io.github.ethanbird.senseime.speech.SpeechProviderPresetCatalog
+import io.github.ethanbird.senseime.speech.SpeechProviderSettingsStore
+import io.github.ethanbird.senseime.speech.SpeechRecognitionEvent
+import io.github.ethanbird.senseime.speech.SpeechRecognitionFailure
+import io.github.ethanbird.senseime.speech.SpeechRecognitionFailureKind
+import io.github.ethanbird.senseime.speech.SpeechRecognitionPhase
+import io.github.ethanbird.senseime.speech.SpeechRecognitionReducer
+import io.github.ethanbird.senseime.speech.SpeechRecognitionState
+import io.github.ethanbird.senseime.speech.SpeechSessionIdSequence
 import io.github.ethanbird.senseime.ui.KeyCodes
 import io.github.ethanbird.senseime.ui.KeyboardLayoutContract
 import io.github.ethanbird.senseime.ui.SenseKeyboardView
+import io.github.ethanbird.senseime.ui.VoiceSurfacePhase
+import io.github.ethanbird.senseime.ui.VoiceSurfaceState
 import java.util.ArrayDeque
 import org.json.JSONArray
 
@@ -62,13 +77,20 @@ class SenseInputMethodService : InputMethodService() {
     private val deferredInputs = ArrayDeque<DeferredInput>()
     private var drainingDeferredInputs = false
     private var destroyed = false
-    private var editorSelectionActive = false
+    private var editorSelectionState = EditorSelectionState()
     private var selectionStart = -1
     private var selectionEnd = -1
     private var learningAllowed = true
     private var clipboardHistoryAllowed = false
     private lateinit var clipboardManager: ClipboardManager
     private lateinit var aiCoordinator: SenseAiEditorCoordinator
+    private lateinit var speechController: AndroidSpeechRecognizerController
+    private lateinit var cloudSpeechController: CloudSpeechRecognitionController
+    private lateinit var speechSettingsStore: SpeechProviderSettingsStore
+    private val voiceSessionIds = SpeechSessionIdSequence()
+    private var cloudSpeechState = SpeechRecognitionState()
+    private var activeVoiceSession: ActiveVoiceSession? = null
+    private var voiceLaunchGeneration = 0L
     private var currentEditorInfo: EditorInfo? = null
     private var editorGeneration = 0L
     private var editorSessionId = 0L
@@ -78,6 +100,7 @@ class SenseInputMethodService : InputMethodService() {
 
     private val clipboardListener = ClipboardManager.OnPrimaryClipChangedListener {
         if (clipboardHistoryAllowed) capturePrimaryClipboard()
+        publishEditorSelectionState()
     }
     private val pendingCommitTimeout = Runnable {
         val revision = pendingSpaceRevision ?: return@Runnable
@@ -184,6 +207,16 @@ class SenseInputMethodService : InputMethodService() {
                 aiApplicationToken = if (active) token else null
             },
         )
+        speechSettingsStore = SpeechProviderSettingsStore(this)
+        speechController = AndroidSpeechRecognizerController(
+            context = this,
+            listener = ::handleSystemSpeechRecognitionState,
+        )
+        cloudSpeechController = CloudSpeechRecognitionController(
+            callbackExecutor = java.util.concurrent.Executor { command ->
+                mainHandler.post(command)
+            },
+        )
     }
 
     override fun onCreateInputView(): View = SenseKeyboardView(this).also { view ->
@@ -206,13 +239,23 @@ class SenseInputMethodService : InputMethodService() {
             override fun onAiHoldCancelled(generation: Long) {
                 aiCoordinator.cancel(generation, HarnessCancelReason.POINTER_RELEASED)
             }
+
+            override fun onAiStopRequested(generation: Long) {
+                aiCoordinator.cancel(generation, HarnessCancelReason.CALLER_REQUESTED)
+            }
         }
         view.setChineseMode(chineseMode)
+        view.setEditorSelectionState(
+            hasSelection = editorSelectionState.hasSelection,
+            selectionMode = editorSelectionState.selectionMode,
+            canPaste = clipboardManager.hasPrimaryClip(),
+        )
         keyboardView = view
         render()
     }
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
+        cancelVoiceSession(exitSurface = true)
         invalidateAiForEditorChange(EditorStaleReason.START_INPUT)
         super.onStartInput(attribute, restarting)
         currentEditorInfo = attribute
@@ -222,10 +265,12 @@ class SenseInputMethodService : InputMethodService() {
         val persistenceAllowed = allowsLocalPersistence(attribute)
         learningAllowed = persistenceAllowed
         clipboardHistoryAllowed = persistenceAllowed
-        editorSelectionActive = false
         selectionStart = attribute?.initialSelStart ?: -1
         selectionEnd = attribute?.initialSelEnd ?: -1
-        keyboardView?.setEditorSelectionActive(false)
+        editorSelectionState = EditorSelectionState(
+            hasSelection = hasHostSelection(selectionStart, selectionEnd),
+        )
+        publishEditorSelectionState()
         resetComposition(finishConnection = true)
         keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
         if (clipboardHistoryAllowed) {
@@ -236,6 +281,7 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
+        cancelVoiceSession(exitSurface = true)
         super.onStartInputView(info, restarting)
         keyboardView?.setChineseMode(chineseMode)
         keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
@@ -243,6 +289,7 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     override fun onFinishInput() {
+        cancelVoiceSession(exitSurface = true)
         invalidateAiForEditorChange(EditorStaleReason.FINISH_INPUT)
         clipboardHistoryAllowed = false
         resetComposition(finishConnection = true)
@@ -280,6 +327,9 @@ class SenseInputMethodService : InputMethodService() {
             if (aiCoordinator.markSelectionChanged(normalizedSelection, ownToken)) {
                 editorGeneration = nextGeneration(editorGeneration)
             }
+            if (activeVoiceSession != null) {
+                cancelVoiceSession(exitSurface = true)
+            }
         }
         selectionStart = newSelStart
         selectionEnd = newSelEnd
@@ -301,14 +351,12 @@ class SenseInputMethodService : InputMethodService() {
             // synchronous selection callback cannot observe the stale session.
             resetComposition(finishConnection = true)
         }
-        val nextSelectionActive = when {
-            newSelStart >= 0 && newSelEnd >= 0 && newSelStart != newSelEnd -> true
-            oldSelStart >= 0 && oldSelEnd >= 0 && oldSelStart != oldSelEnd -> false
-            else -> editorSelectionActive
-        }
-        if (nextSelectionActive != editorSelectionActive) {
-            editorSelectionActive = nextSelectionActive
-            keyboardView?.setEditorSelectionActive(nextSelectionActive)
+        val nextSelectionState = editorSelectionState.withHostSelection(
+            hasHostSelection(newSelStart, newSelEnd),
+        )
+        if (nextSelectionState != editorSelectionState) {
+            editorSelectionState = nextSelectionState
+            publishEditorSelectionState()
         }
     }
 
@@ -324,6 +372,11 @@ class SenseInputMethodService : InputMethodService() {
         userLexicon?.close()
         userLexicon = null
         adaptiveDecoder = null
+        val voiceSession = activeVoiceSession
+        activeVoiceSession = null
+        cancelVoiceBackend(voiceSession)
+        if (::speechController.isInitialized) speechController.destroy()
+        if (::cloudSpeechController.isInitialized) cloudSpeechController.close()
         if (::aiCoordinator.isInitialized) aiCoordinator.close()
         aiApplicationToken = null
         keyboardView = null
@@ -331,13 +384,21 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     override fun onWindowHidden() {
+        cancelVoiceSession(exitSurface = true)
         cancelAndExitAi(HarnessCancelReason.WINDOW_HIDDEN)
         super.onWindowHidden()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
+        cancelVoiceSession(exitSurface = true)
         cancelAndExitAi(HarnessCancelReason.CONFIGURATION_CHANGED)
         super.onConfigurationChanged(newConfig)
+    }
+
+    override fun onFinishInputView(finishingInput: Boolean) {
+        cancelVoiceSession(exitSurface = true)
+        cancelAndExitAi(HarnessCancelReason.WINDOW_HIDDEN)
+        super.onFinishInputView(finishingInput)
     }
 
     private fun beginAiHold(generation: Long) {
@@ -403,6 +464,31 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun handleKey(code: Int) {
+        when (code) {
+            KeyCodes.VOICE -> {
+                openVoiceInput()
+                return
+            }
+
+            KeyCodes.VOICE_DONE -> {
+                stopVoiceRecognition()
+                return
+            }
+
+            KeyCodes.VOICE_CANCEL -> {
+                cancelVoiceSession(exitSurface = true)
+                return
+            }
+
+            KeyCodes.VOICE_RETRY -> {
+                cancelVoiceSession(exitSurface = true)
+                openVoiceInput()
+                return
+            }
+        }
+        if (activeVoiceSession != null || keyboardView?.isVoiceSurfaceActive() == true) {
+            cancelVoiceSession(exitSurface = true)
+        }
         if (deferIfSpacePending(DeferredInput.Key(code))) return
         when (code) {
             KeyCodes.SHIFT -> {
@@ -419,7 +505,6 @@ class SenseInputMethodService : InputMethodService() {
             KeyCodes.CLIPBOARD -> showClipboard()
             KeyCodes.HIDE -> requestHideSelf(0)
             KeyCodes.EDITOR -> showEditor()
-            KeyCodes.VOICE -> openVoiceInput()
             KeyCodes.ENTER -> handleEnter()
 
             else -> if (code > 0) handleCharacter(code.toChar())
@@ -579,22 +664,24 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun showEditor() {
         commitActiveRawComposition()
-        editorSelectionActive = selectionStart >= 0 && selectionStart != selectionEnd
-        keyboardView?.setEditorSelectionActive(editorSelectionActive)
+        editorSelectionState = EditorSelectionState(
+            hasSelection = hasHostSelection(selectionStart, selectionEnd),
+        )
+        publishEditorSelectionState()
         keyboardView?.setPanel(SenseKeyboardView.Panel.EDITOR)
     }
 
     private fun handleEditorAction(action: SenseKeyboardView.EditorAction) {
         when (action) {
             SenseKeyboardView.EditorAction.BACK -> {
-                editorSelectionActive = false
-                keyboardView?.setEditorSelectionActive(false)
+                editorSelectionState = editorSelectionState.resetSelectionMode()
+                publishEditorSelectionState()
                 keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
             }
 
             SenseKeyboardView.EditorAction.TOGGLE_SELECTION -> {
-                editorSelectionActive = !editorSelectionActive
-                keyboardView?.setEditorSelectionActive(editorSelectionActive)
+                editorSelectionState = editorSelectionState.toggleSelectionMode()
+                publishEditorSelectionState()
             }
 
             SenseKeyboardView.EditorAction.UP -> sendDirectionalKey(KeyEvent.KEYCODE_DPAD_UP)
@@ -604,17 +691,14 @@ class SenseInputMethodService : InputMethodService() {
             SenseKeyboardView.EditorAction.HOME -> sendDirectionalKey(KeyEvent.KEYCODE_MOVE_HOME)
             SenseKeyboardView.EditorAction.END -> sendDirectionalKey(KeyEvent.KEYCODE_MOVE_END)
             SenseKeyboardView.EditorAction.DELETE -> deleteOneCodePointOrSelection()
-            SenseKeyboardView.EditorAction.COPY -> {
-                currentInputConnection?.performContextMenuAction(android.R.id.copy)
-            }
+            SenseKeyboardView.EditorAction.COPY ->
+                performEditorContextCommand(EditorContextCommand.COPY, android.R.id.copy)
 
-            SenseKeyboardView.EditorAction.CUT -> {
-                currentInputConnection?.performContextMenuAction(android.R.id.cut)
-            }
+            SenseKeyboardView.EditorAction.CUT ->
+                performEditorContextCommand(EditorContextCommand.CUT, android.R.id.cut)
 
-            SenseKeyboardView.EditorAction.PASTE -> {
-                currentInputConnection?.performContextMenuAction(android.R.id.paste)
-            }
+            SenseKeyboardView.EditorAction.PASTE ->
+                performEditorContextCommand(EditorContextCommand.PASTE, android.R.id.paste)
 
             SenseKeyboardView.EditorAction.SELECT_ALL -> {
                 currentInputConnection?.performContextMenuAction(android.R.id.selectAll)
@@ -624,7 +708,7 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun sendDirectionalKey(keyCode: Int) {
         val now = SystemClock.uptimeMillis()
-        val metaState = if (editorSelectionActive) KeyEvent.META_SHIFT_ON else 0
+        val metaState = if (editorSelectionState.selectionMode) KeyEvent.META_SHIFT_ON else 0
         currentInputConnection?.sendKeyEvent(
             KeyEvent(now, now, KeyEvent.ACTION_DOWN, keyCode, 0, metaState),
         )
@@ -633,16 +717,66 @@ class SenseInputMethodService : InputMethodService() {
         )
     }
 
-    private fun deleteOneCodePointOrSelection() {
-        val connection = currentInputConnection ?: return
-        if (selectionStart >= 0 && selectionEnd >= 0 && selectionStart != selectionEnd) {
-            val now = SystemClock.uptimeMillis()
-            connection.sendKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL, 0))
-            connection.sendKeyEvent(KeyEvent(now, now, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL, 0))
-        } else {
-            connection.deleteSurroundingTextInCodePoints(1, 0)
+    private fun deleteOneCodePointOrSelection(): Boolean {
+        val connection = currentInputConnection ?: return false
+        if (hasHostSelection(selectionStart, selectionEnd)) {
+            if (sendDeleteKeyEvents(connection)) return true
+            // commitText replaces an active selection and is the most broadly
+            // implemented fallback for editors that reject hardware key events.
+            return connection.commitText("", 1)
+        }
+        if (connection.deleteSurroundingTextInCodePoints(1, 0)) return true
+        return sendDeleteKeyEvents(connection)
+    }
+
+    private fun sendDeleteKeyEvents(connection: InputConnection): Boolean {
+        val now = SystemClock.uptimeMillis()
+        val downAccepted = connection.sendKeyEvent(
+            KeyEvent(now, now, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL, 0),
+        )
+        val upAccepted = connection.sendKeyEvent(
+            KeyEvent(now, now, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL, 0),
+        )
+        return downAccepted && upAccepted
+    }
+
+    private fun performEditorContextCommand(command: EditorContextCommand, actionId: Int) {
+        val accepted = currentInputConnection?.performContextMenuAction(actionId) == true
+        val outcome = EditorContextActionPolicy.resolve(command, accepted)
+        if (outcome.resetSelectionMode) {
+            editorSelectionState = editorSelectionState.resetSelectionMode()
+            publishEditorSelectionState()
+        }
+        when (outcome.feedback) {
+            EditorFeedback.COPIED -> Toast.makeText(
+                this,
+                R.string.editor_copied,
+                Toast.LENGTH_SHORT,
+            ).show()
+
+            EditorFeedback.CUT -> Toast.makeText(
+                this,
+                R.string.editor_cut,
+                Toast.LENGTH_SHORT,
+            ).show()
+
+            null -> Unit
+        }
+        if (outcome.leaveEditor) {
+            keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
         }
     }
+
+    private fun publishEditorSelectionState() {
+        keyboardView?.setEditorSelectionState(
+            hasSelection = editorSelectionState.hasSelection,
+            selectionMode = editorSelectionState.selectionMode,
+            canPaste = ::clipboardManager.isInitialized && clipboardManager.hasPrimaryClip(),
+        )
+    }
+
+    private fun hasHostSelection(start: Int, end: Int): Boolean =
+        start >= 0 && end >= 0 && start != end
 
     private fun handleClipboardAction(action: SenseKeyboardView.ClipboardAction, index: Int) {
         if (!clipboardHistoryAllowed) return
@@ -694,15 +828,327 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun openVoiceInput() {
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, if (chineseMode) "zh-CN" else "en-US")
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        if (!::speechController.isInitialized || currentInputConnection == null) return
+        cancelVoiceSession(exitSurface = true)
+        commitActiveRawComposition()
+        val launchGeneration = nextGeneration(voiceLaunchGeneration)
+        voiceLaunchGeneration = launchGeneration
+        // As with AI snapshots, let a composing-text commit reach the host before binding the
+        // speech session to editor generation/connection identity.
+        mainHandler.post {
+            if (
+                !destroyed &&
+                voiceLaunchGeneration == launchGeneration &&
+                activeVoiceSession == null &&
+                currentInputConnection != null
+            ) {
+                startVoiceInputNow()
+            }
         }
-        try {
-            startActivity(intent)
-        } catch (_: ActivityNotFoundException) {
-            // Voice recognition is optional and not present on every Android build.
+    }
+
+    private fun startVoiceInputNow() {
+        val connection = currentInputConnection ?: return
+        val storedResult = speechSettingsStore.load()
+        val settingsReadFailed = storedResult.isFailure
+        val stored = storedResult.getOrNull()
+        val profile = stored?.profile
+            ?: SpeechProviderPresetCatalog
+                .require(SpeechProviderPresetCatalog.SYSTEM)
+                .defaultProfile(if (chineseMode) "zh-CN" else "en-US")
+        val preset = SpeechProviderPresetCatalog.find(profile.presetId)
+        val providerName = if (settingsReadFailed) {
+            "语音配置"
+        } else {
+            preset?.displayName ?: profile.displayName
+        }
+        val selection = ConfiguredSpeechProvider(
+            profile = profile,
+            apiKey = stored?.apiKey?.toCharArray(),
+            displayName = providerName,
+        )
+        val backend = VoiceRecognitionBackend.forProfile(profile)
+        val sessionId = voiceSessionIds.next()
+        val session = ActiveVoiceSession(
+            id = sessionId,
+            editorGeneration = editorGeneration,
+            connectionIdentity = System.identityHashCode(connection),
+            providerName = selection.displayName,
+            backend = backend,
+        )
+        activeVoiceSession = session
+        keyboardView?.showVoiceSurface(
+            VoiceSurfaceState(
+                sessionId = sessionId,
+                revision = initialVoiceRevision(backend),
+                phase = VoiceSurfacePhase.STARTING,
+                providerName = selection.displayName,
+                statusText = "正在准备语音识别",
+            ),
+        )
+        if (settingsReadFailed) {
+            selection.eraseCredential()
+            publishVoiceStartFailure(
+                session = session,
+                status = "语音配置无法读取，请到设置重新保存",
+            )
+            return
+        }
+        val safeFailureStatus = selection.safeStartFailureStatus()
+        val started = try {
+            startConfiguredSpeechRecognition(
+                sessionId = sessionId,
+                selection = selection,
+                backend = backend,
+            )
+        } finally {
+            selection.eraseCredential()
+        }
+        if (started.isFailure) {
+            publishVoiceStartFailure(session, safeFailureStatus)
+        }
+    }
+
+    /**
+     * Sole dispatch point for speech provider execution. The credential stays inside the service
+     * process and is never copied into VoiceSurfaceState, UI text, Toasts, or logs.
+     */
+    private fun startConfiguredSpeechRecognition(
+        sessionId: Long,
+        selection: ConfiguredSpeechProvider,
+        backend: VoiceRecognitionBackend,
+    ): Result<Unit> = when (backend) {
+        VoiceRecognitionBackend.SYSTEM -> runCatching {
+            speechController.start(sessionId, selection.profile)
+            Unit
+        }
+
+        VoiceRecognitionBackend.CLOUD -> {
+            val credential = selection.consumeCredential() ?: CharArray(0)
+            try {
+                cloudSpeechController.start(
+                    sessionId = sessionId,
+                    profile = selection.profile,
+                    apiKey = credential,
+                    listener = CloudSpeechRecognitionListener(
+                        ::handleCloudSpeechRecognitionEvent,
+                    ),
+                )
+            } finally {
+                credential.fill('\u0000')
+            }
+        }
+    }
+
+    private fun initialVoiceRevision(backend: VoiceRecognitionBackend): Long = when (backend) {
+        VoiceRecognitionBackend.SYSTEM -> speechController.state.revision
+        VoiceRecognitionBackend.CLOUD -> cloudSpeechState.revision
+    }
+
+    private fun publishVoiceStartFailure(
+        session: ActiveVoiceSession,
+        status: String,
+    ) {
+        val started = SpeechRecognitionEvent.Started(
+            sessionId = session.id,
+            usingOnDeviceRecognizer = false,
+        )
+        val failed = SpeechRecognitionEvent.Failed(
+            sessionId = session.id,
+            failure = SpeechRecognitionFailure(
+                kind = SpeechRecognitionFailureKind.CLIENT,
+                message = status,
+            ),
+        )
+        when (session.backend) {
+            VoiceRecognitionBackend.CLOUD -> {
+                handleCloudSpeechRecognitionEvent(started)
+                handleCloudSpeechRecognitionEvent(failed)
+            }
+            VoiceRecognitionBackend.SYSTEM -> {
+                val starting = SpeechRecognitionReducer.reduce(speechController.state, started)
+                val terminal = SpeechRecognitionReducer.reduce(starting, failed)
+                handleSpeechRecognitionState(terminal, VoiceRecognitionBackend.SYSTEM)
+            }
+        }
+    }
+
+    private fun handleSystemSpeechRecognitionState(state: SpeechRecognitionState) {
+        handleSpeechRecognitionState(state, VoiceRecognitionBackend.SYSTEM)
+    }
+
+    private fun handleCloudSpeechRecognitionEvent(event: SpeechRecognitionEvent) {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            mainHandler.post { handleCloudSpeechRecognitionEvent(event) }
+            return
+        }
+        val session = activeVoiceSession ?: return
+        if (
+            destroyed ||
+            session.backend != VoiceRecognitionBackend.CLOUD ||
+            event is SpeechRecognitionEvent.Destroyed ||
+            event.sessionId != session.id
+        ) {
+            return
+        }
+        val next = SpeechRecognitionReducer.reduce(cloudSpeechState, event)
+        if (next === cloudSpeechState || next == cloudSpeechState) return
+        cloudSpeechState = next
+        handleSpeechRecognitionState(next, VoiceRecognitionBackend.CLOUD)
+    }
+
+    private fun handleSpeechRecognitionState(
+        state: SpeechRecognitionState,
+        backend: VoiceRecognitionBackend,
+    ) {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            mainHandler.post { handleSpeechRecognitionState(state, backend) }
+            return
+        }
+        val session = activeVoiceSession ?: return
+        if (
+            state.sessionId != session.id ||
+            session.backend != backend ||
+            destroyed
+        ) {
+            return
+        }
+        val connection = currentInputConnection
+        if (
+            connection == null ||
+            editorGeneration != session.editorGeneration ||
+            System.identityHashCode(connection) != session.connectionIdentity
+        ) {
+            cancelVoiceSession(exitSurface = true)
+            return
+        }
+
+        when (state.phase) {
+            SpeechRecognitionPhase.IDLE -> Unit
+            SpeechRecognitionPhase.STARTING -> publishVoiceState(
+                session = session,
+                state = state,
+                phase = VoiceSurfacePhase.STARTING,
+                status = when {
+                    state.usingOnDeviceRecognizer -> "正在启动设备端识别"
+                    backend == VoiceRecognitionBackend.CLOUD ->
+                        "正在连接${session.providerName}"
+                    else -> "正在连接系统语音识别"
+                },
+            )
+
+            SpeechRecognitionPhase.LISTENING -> publishVoiceState(
+                session = session,
+                state = state,
+                phase = VoiceSurfacePhase.LISTENING,
+                status = when {
+                    state.usingOnDeviceRecognizer -> "正在聆听 · 设备端"
+                    backend == VoiceRecognitionBackend.CLOUD ->
+                        "正在聆听 · ${session.providerName}"
+                    else -> "正在聆听"
+                },
+            )
+
+            SpeechRecognitionPhase.PROCESSING -> publishVoiceState(
+                session = session,
+                state = state,
+                phase = VoiceSurfacePhase.PROCESSING,
+                status = "正在整理识别结果",
+            )
+
+            SpeechRecognitionPhase.ERROR -> publishVoiceState(
+                session = session,
+                state = state,
+                phase = VoiceSurfacePhase.ERROR,
+                status = state.failure?.message ?: "语音识别失败",
+            )
+
+            SpeechRecognitionPhase.COMPLETED -> completeVoiceInput(session, state)
+            SpeechRecognitionPhase.CANCELLED,
+            SpeechRecognitionPhase.DESTROYED,
+            -> {
+                activeVoiceSession = null
+                keyboardView?.exitVoiceSurface(session.id)
+            }
+        }
+    }
+
+    private fun stopVoiceRecognition() {
+        val session = activeVoiceSession ?: return
+        when (session.backend) {
+            VoiceRecognitionBackend.SYSTEM -> speechController.stop()
+            VoiceRecognitionBackend.CLOUD -> cloudSpeechController.stop(session.id)
+        }
+    }
+
+    private fun publishVoiceState(
+        session: ActiveVoiceSession,
+        state: SpeechRecognitionState,
+        phase: VoiceSurfacePhase,
+        status: String,
+    ) {
+        keyboardView?.updateVoiceSurface(
+            VoiceSurfaceState(
+                sessionId = session.id,
+                revision = state.revision,
+                phase = phase,
+                providerName = session.providerName,
+                visibleText = state.visibleText.take(MAX_VOICE_PREVIEW_CHARS),
+                statusText = status,
+                waveformLevel = state.waveformLevel,
+                usingOnDeviceRecognizer = state.usingOnDeviceRecognizer,
+            ),
+        )
+    }
+
+    private fun completeVoiceInput(
+        session: ActiveVoiceSession,
+        state: SpeechRecognitionState,
+    ) {
+        val text = state.finalText.orEmpty()
+        if (text.isBlank()) {
+            publishVoiceState(
+                session = session,
+                state = state.copy(revision = state.revision + 1L),
+                phase = VoiceSurfacePhase.ERROR,
+                status = "没有识别到可输入的文字",
+            )
+            return
+        }
+        val committed = currentInputConnection?.commitText(text, 1) == true
+        if (committed) {
+            activeVoiceSession = null
+            keyboardView?.exitVoiceSurface(session.id)
+        } else {
+            publishVoiceState(
+                session = session,
+                state = state.copy(revision = state.revision + 1L),
+                phase = VoiceSurfacePhase.ERROR,
+                status = "输入框拒绝写入，请重试",
+            )
+        }
+    }
+
+    private fun cancelVoiceSession(exitSurface: Boolean) {
+        voiceLaunchGeneration = nextGeneration(voiceLaunchGeneration)
+        val sessionId = activeVoiceSession?.id ?: keyboardView?.activeVoiceSessionId()
+        val session = activeVoiceSession
+        activeVoiceSession = null
+        cancelVoiceBackend(session)
+        if (exitSurface && sessionId != null) {
+            keyboardView?.exitVoiceSurface(sessionId)
+        }
+    }
+
+    private fun cancelVoiceBackend(session: ActiveVoiceSession?) {
+        when (session?.backend) {
+            VoiceRecognitionBackend.SYSTEM ->
+                if (::speechController.isInitialized) speechController.cancel()
+            VoiceRecognitionBackend.CLOUD ->
+                if (::cloudSpeechController.isInitialized) {
+                    cloudSpeechController.cancel(session.id)
+                }
+            null -> Unit
         }
     }
 
@@ -939,6 +1385,7 @@ class SenseInputMethodService : InputMethodService() {
         const val PRESENTATION_CANDIDATE_LIMIT = DECODE_CANDIDATE_LIMIT + MAX_PROGRESSIVE_PREFIX_CANDIDATES
         const val CLIPBOARD_HISTORY_LIMIT = 30
         const val MAX_CLIPBOARD_TEXT_LENGTH = 4096
+        const val MAX_VOICE_PREVIEW_CHARS = 1024
         const val MAX_DEFERRED_INPUT_EVENTS = 512
         const val PENDING_COMMIT_TIMEOUT_MS = 120L
         const val CLIPBOARD_PREFERENCES = "sense_clipboard_history"
@@ -959,4 +1406,51 @@ private data class CandidateDecodeRequest(
 private sealed interface DeferredInput {
     data class Key(val code: Int) : DeferredInput
     data class Text(val text: String) : DeferredInput
+}
+
+private data class ActiveVoiceSession(
+    val id: Long,
+    val editorGeneration: Long,
+    val connectionIdentity: Int,
+    val providerName: String,
+    val backend: VoiceRecognitionBackend,
+)
+
+private class ConfiguredSpeechProvider(
+    val profile: SpeechProviderProfile,
+    apiKey: CharArray?,
+    val displayName: String,
+) {
+    private var credential: CharArray? = apiKey
+    private val hadCredential = apiKey?.isNotEmpty() == true
+
+    fun consumeCredential(): CharArray? =
+        credential.also { credential = null }
+
+    fun eraseCredential() {
+        credential?.fill('\u0000')
+        credential = null
+    }
+
+    fun safeStartFailureStatus(): String {
+        val preset = SpeechProviderPresetCatalog.find(profile.presetId)
+        return when {
+            preset?.canTranscribe == false ->
+                preset.capabilityNotice ?: "当前语音提供商尚未启用"
+            profile.protocol != SpeechProviderProtocol.ANDROID_SYSTEM && !hadCredential ->
+                "请先在设置中配置语音 API Key"
+            else -> "无法启动${displayName}，请检查语音配置后重试"
+        }
+    }
+}
+
+private enum class VoiceRecognitionBackend {
+    SYSTEM,
+    CLOUD,
+    ;
+
+    companion object {
+        fun forProfile(profile: SpeechProviderProfile): VoiceRecognitionBackend =
+            if (profile.protocol == SpeechProviderProtocol.ANDROID_SYSTEM) SYSTEM else CLOUD
+    }
 }

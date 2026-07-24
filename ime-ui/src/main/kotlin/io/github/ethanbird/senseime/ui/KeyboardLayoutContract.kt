@@ -97,6 +97,15 @@ object KeyboardLayoutContract {
         val actionBottom: Float,
     )
 
+    data class VoiceLayoutGeometry(
+        val statusCenterY: Float,
+        val transcriptCenterY: Float,
+        val waveformTop: Float,
+        val waveformBottom: Float,
+        val primaryButtonTop: Float,
+        val primaryButtonBottom: Float,
+    )
+
     data class ClipboardCardSlot(
         val sourceIndex: Int,
         val left: Float,
@@ -130,6 +139,46 @@ object KeyboardLayoutContract {
 
     fun preferredKeyboardHeightDp(isLandscape: Boolean): Float =
         if (isLandscape) LANDSCAPE_KEYBOARD_HEIGHT_DP else PORTRAIT_KEYBOARD_HEIGHT_DP
+
+    /**
+     * Places the voice status, live transcript, waveform and primary action in one vertical
+     * system. The proportional caps preserve the roomy portrait design while keeping a real
+     * 52dp action target and a non-empty waveform in the 258dp landscape keyboard.
+     */
+    fun voiceLayout(
+        candidateHeight: Float,
+        contentBottom: Float,
+        unit: Float,
+    ): VoiceLayoutGeometry {
+        require(candidateHeight >= 0f)
+        require(contentBottom > candidateHeight)
+        require(unit > 0f)
+
+        val available = contentBottom - candidateHeight
+        val bottomInset = minOf(14f * unit, maxOf(8f * unit, available * 0.055f))
+        val buttonHeight = minOf(
+            52f * unit,
+            maxOf(42f * unit, available - 105f * unit),
+        )
+        val buttonBottom = contentBottom - bottomInset
+        val buttonTop = buttonBottom - buttonHeight
+        val statusY = candidateHeight + minOf(30f * unit, available * 0.13f)
+        val transcriptY = statusY + minOf(34f * unit, available * 0.18f)
+        val waveformTop = transcriptY + minOf(20f * unit, available * 0.11f)
+        val waveformBottom = maxOf(
+            waveformTop + 2f * unit,
+            buttonTop - minOf(20f * unit, available * 0.08f),
+        ).coerceAtMost(buttonTop - 2f * unit)
+
+        return VoiceLayoutGeometry(
+            statusCenterY = statusY,
+            transcriptCenterY = transcriptY,
+            waveformTop = waveformTop,
+            waveformBottom = waveformBottom,
+            primaryButtonTop = buttonTop,
+            primaryButtonBottom = buttonBottom,
+        )
+    }
 
     fun collapsedCandidateBottom(
         candidateHeight: Float,

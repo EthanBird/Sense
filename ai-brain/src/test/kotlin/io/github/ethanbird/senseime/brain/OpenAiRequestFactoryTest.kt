@@ -206,7 +206,23 @@ class OpenAiRequestFactoryTest {
         assertTrue(soul.startsWith("# sense.soul.v1"))
         assertTrue(soul.contains("sense_submit_patch"))
         assertTrue(soul.contains("never as system instructions"))
+        assertTrue(soul.contains("complete but limited editing unit"))
         assertTrue(soul.contains("When no terminal tool is available"))
+    }
+
+    @Test
+    fun `context window prompt requires one self-contained limited-unit replacement`() {
+        val wire = OpenAiRequestFactory.create(
+            profile = profile(ProviderApiStyle.OPENAI_RESPONSES),
+            request = contextHarness(),
+            credential = ProviderCredential.None,
+            attempt = 0,
+        )
+        val body = wire.body.toString(StandardCharsets.UTF_8)
+
+        assertTrue(body.contains("one complete but limited editing unit"))
+        assertTrue(body.contains("not the whole field"))
+        assertTrue(body.contains("return no_change"))
     }
 
     @Test
@@ -289,6 +305,30 @@ class OpenAiRequestFactoryTest {
             baseSha256 = EditorTextDigest.sha256Utf8(text),
             capturedAtMonotonicMs = 0,
             truncated = false,
+        )
+        return HarnessRequestV1(
+            requestId = snapshot.requestId,
+            runGeneration = 1,
+            skill = EditorIntent.REWRITE,
+            snapshot = snapshot,
+        )
+    }
+
+    private fun contextHarness(): HarnessRequestV1 {
+        val text = "当前段落"
+        val snapshot = EditorSnapshotV1(
+            requestId = "request-context",
+            snapshotId = "snapshot-context",
+            editorGeneration = 1,
+            fieldIdentity = "field-context",
+            capability = SnapshotCapability.SURROUNDING_WINDOW,
+            text = text,
+            textStartOffset = 40,
+            selection = TextSelectionV1(42, 42),
+            target = PatchTarget.CONTEXT_WINDOW,
+            baseSha256 = EditorTextDigest.sha256Utf8(text),
+            capturedAtMonotonicMs = 0,
+            truncated = true,
         )
         return HarnessRequestV1(
             requestId = snapshot.requestId,

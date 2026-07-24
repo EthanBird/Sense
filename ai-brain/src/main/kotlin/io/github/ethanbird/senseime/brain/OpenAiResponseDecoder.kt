@@ -272,7 +272,10 @@ internal class OpenAiResponseDecoder(
  */
 internal class StreamingPatchPreview {
     private val document = StringBuilder()
-    private var emittedChars = 0
+    private val visibleFields = IncrementalJsonStringFieldScanner(setOf(TEXT_FIELD))
+
+    internal val scannedCharCount: Long
+        get() = visibleFields.scannedCharCount
 
     fun append(fragment: String): String {
         if (document.length.toLong() + fragment.length > ProviderJson.MAX_DOCUMENT_CHARS) {
@@ -281,117 +284,12 @@ internal class StreamingPatchPreview {
             )
         }
         document.append(fragment)
-        val preview = extractTextPrefix(document)
-        if (preview.length <= emittedChars) return ""
-        return preview.substring(emittedChars).also { emittedChars = preview.length }
+        return visibleFields.append(fragment)[TEXT_FIELD].orEmpty()
     }
 
     fun fullDocument(): String = document.toString()
 
-    private fun extractTextPrefix(source: CharSequence): String {
-        var index = 0
-        while (index < source.length) {
-            if (source[index] != '"') {
-                index += 1
-                continue
-            }
-            val token = readCompleteString(source, index) ?: return ""
-            index = token.next
-            if (token.value != "text") continue
-            while (index < source.length && source[index].isWhitespace()) index += 1
-            if (index >= source.length || source[index] != ':') continue
-            index += 1
-            while (index < source.length && source[index].isWhitespace()) index += 1
-            if (index >= source.length || source[index] != '"') continue
-            return readStringPrefix(source, index + 1)
-        }
-        return ""
-    }
-
-    private data class Token(val value: String, val next: Int)
-
-    private fun readCompleteString(source: CharSequence, quote: Int): Token? {
-        val value = StringBuilder()
-        var index = quote + 1
-        while (index < source.length) {
-            when (val char = source[index++]) {
-                '"' -> return Token(value.toString(), index)
-                '\\' -> {
-                    if (index >= source.length) return null
-                    when (val escaped = source[index++]) {
-                        '"', '\\', '/' -> value.append(escaped)
-                        'b' -> value.append('\b')
-                        'f' -> value.append('\u000c')
-                        'n' -> value.append('\n')
-                        'r' -> value.append('\r')
-                        't' -> value.append('\t')
-                        'u' -> {
-                            if (index + 4 > source.length) return null
-                            val code = source.subSequence(index, index + 4)
-                                .toString()
-                                .toIntOrNull(16) ?: return null
-                            value.append(code.toChar())
-                            index += 4
-                        }
-                    }
-                }
-                else -> value.append(char)
-            }
-        }
-        return null
-    }
-
-    private fun readStringPrefix(source: CharSequence, start: Int): String {
-        val value = StringBuilder()
-        var index = start
-        while (index < source.length) {
-            when (val char = source[index++]) {
-                '"' -> return value.toSafeUnicodePrefix()
-                '\\' -> {
-                    if (index >= source.length) return value.toSafeUnicodePrefix()
-                    when (val escaped = source[index++]) {
-                        '"', '\\', '/' -> value.append(escaped)
-                        'b' -> value.append('\b')
-                        'f' -> value.append('\u000c')
-                        'n' -> value.append('\n')
-                        'r' -> value.append('\r')
-                        't' -> value.append('\t')
-                        'u' -> {
-                            if (index + 4 > source.length) return value.toSafeUnicodePrefix()
-                            val code = source.subSequence(index, index + 4)
-                                .toString()
-                                .toIntOrNull(16) ?: return value.toSafeUnicodePrefix()
-                            value.append(code.toChar())
-                            index += 4
-                        }
-                        else -> return value.toSafeUnicodePrefix()
-                    }
-                }
-                else -> value.append(char)
-            }
-        }
-        return value.toSafeUnicodePrefix()
-    }
-
-    /**
-     * Never expose half a surrogate pair to AiEvent's strict Unicode gate. A pair split between
-     * model deltas remains buffered until both escaped UTF-16 units have arrived.
-     */
-    private fun StringBuilder.toSafeUnicodePrefix(): String {
-        var index = 0
-        while (index < length) {
-            val char = this[index]
-            when {
-                char.isHighSurrogate() -> {
-                    if (index + 1 >= length || !this[index + 1].isLowSurrogate()) {
-                        return substring(0, index)
-                    }
-                    index += 2
-                }
-                char.isLowSurrogate() -> return substring(0, index)
-                else -> index += 1
-            }
-        }
-        return toString()
+    private companion object {
+        const val TEXT_FIELD = "text"
     }
 }

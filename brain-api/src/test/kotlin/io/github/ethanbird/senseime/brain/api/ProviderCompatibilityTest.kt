@@ -94,6 +94,31 @@ class ProviderCompatibilityTest {
     }
 
     @Test
+    fun `retired DeepSeek aliases migrate only on the official endpoint`() {
+        assertEquals(
+            "deepseek-v4-flash",
+            ProviderCompatibility.activeModelForSavedProfile(
+                "https://api.deepseek.com/v1",
+                "deepseek-chat",
+            ),
+        )
+        assertEquals(
+            "account-model",
+            ProviderCompatibility.activeModelForSavedProfile(
+                "https://api.deepseek.com/v1",
+                "account-model",
+            ),
+        )
+        assertEquals(
+            "deepseek-chat",
+            ProviderCompatibility.activeModelForSavedProfile(
+                "https://gateway.example/v1",
+                "deepseek-chat",
+            ),
+        )
+    }
+
+    @Test
     fun `compatible gateways are not guessed to be official DeepSeek`() {
         val profile = profile(
             apiStyle = ProviderApiStyle.OPENAI_RESPONSES,

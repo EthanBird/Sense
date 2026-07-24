@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 env:
-  RELEASE_TAG: v0.3.7-m8
-  RELEASE_APK: Sense-v0.3.7-m8.apk
+  RELEASE_TAG: v0.4.0
+  RELEASE_APK: Sense-v0.4.0.apk
   LEXICON_SHA256: ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6
   BIGRAM_SHA256: db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c
   ENGLISH_SHA256: 1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624
@@ -76,7 +76,7 @@ jobs:
           cmp licenses/popular-english-words-ISC.txt ime-service/src/main/assets/POPULAR-ENGLISH-WORDS-ISC.txt
           cmp licenses/chinese-idiom-chengyu-MIT.txt ime-service/src/main/assets/CHINESE-IDIOM-CHENGYU-MIT.txt
 
-      - name: Verify 0.3.7 M8 agent and provider regressions
+      - name: Verify 0.4.0 AI, speech, editor, and provider regressions
         run: >-
           ./gradlew
           :ai-protocol:test
@@ -204,7 +204,7 @@ jobs:
             :core-input:m5MixedInputBenchmark \
             :core-input:m6InputPolishBenchmark
 
-      - name: Verify assembled 0.3.7 M8 APK
+      - name: Verify assembled 0.4.0 APK
         shell: bash
         run: |
           set -euo pipefail
@@ -273,7 +273,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='14' versionName='0.3.7-m8'" /tmp/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='15' versionName='0.4.0'" /tmp/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" /tmp/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" /tmp/apk-badging.txt
           declared_permissions=$(
@@ -286,8 +286,15 @@ jobs:
             echo 'Release gate failed: AI build is missing android.permission.INTERNET.' >&2
             exit 1
           fi
+          if ! grep -Fxq 'android.permission.RECORD_AUDIO' <<<"$declared_permissions"; then
+            echo 'Release gate failed: speech input is missing android.permission.RECORD_AUDIO.' >&2
+            exit 1
+          fi
           unexpected_permissions=$(
-            grep -Fvx 'android.permission.INTERNET' <<<"$declared_permissions" || true
+            grep -Fvx \
+              -e 'android.permission.INTERNET' \
+              -e 'android.permission.RECORD_AUDIO' \
+              <<<"$declared_permissions" || true
           )
           test -z "$unexpected_permissions"
           unzip -p "$apk" assets/NOTICE.txt | cmp - NOTICE
@@ -308,7 +315,7 @@ jobs:
       - name: Upload debug APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.3.7-m8-apks
+          name: sense-v0.4.0-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -318,7 +325,7 @@ jobs:
             benchmarks/results/m6-input-polish.json
           if-no-files-found: error
 
-  release-0-3-7-m8:
+  release-0-4-0:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -330,7 +337,7 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: sense-v0.3.7-m8-apks
+          name: sense-v0.4.0-apks
           path: artifacts
 
       - name: Prepare release assets
@@ -403,7 +410,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='14' versionName='0.3.7-m8'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='15' versionName='0.4.0'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           declared_permissions=$(
@@ -416,8 +423,15 @@ jobs:
             echo 'Release gate failed: AI build is missing android.permission.INTERNET.' >&2
             exit 1
           fi
+          if ! grep -Fxq 'android.permission.RECORD_AUDIO' <<<"$declared_permissions"; then
+            echo 'Release gate failed: speech input is missing android.permission.RECORD_AUDIO.' >&2
+            exit 1
+          fi
           unexpected_permissions=$(
-            grep -Fvx 'android.permission.INTERNET' <<<"$declared_permissions" || true
+            grep -Fvx \
+              -e 'android.permission.INTERNET' \
+              -e 'android.permission.RECORD_AUDIO' \
+              <<<"$declared_permissions" || true
           )
           test -z "$unexpected_permissions"
           unzip -p "$apk" assets/NOTICE.txt | cmp - NOTICE
@@ -438,7 +452,7 @@ jobs:
           cd release
           sha256sum "$RELEASE_APK" > SHA256SUMS.txt
 
-      - name: Create 0.3.7 M8 prerelease
+      - name: Create Sense 0.4.0 release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -472,9 +486,8 @@ jobs:
             fi
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
-              --title "Sense v0.3.7-m8 · Agent Soul 与 DeepSeek 稳定性" \
-              --notes-file docs/releases/v0.3.7-m8.md \
-              --prerelease \
+              --title "Sense v0.4.0 · AI 锁定、兼容覆盖与语音输入" \
+              --notes-file docs/releases/v0.4.0.md \
               "release/$RELEASE_APK" \
               release/SHA256SUMS.txt
           fi

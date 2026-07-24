@@ -139,6 +139,80 @@ class AiHoldGestureSessionTest {
     }
 
     @Test
+    fun activeSwipeReportsContinuousProgressBeforeReleaseCancels() {
+        val session = session()
+        val arm = requireNotNull(session.begin(2, 40f, 100f, 0L))
+        session.tryActivate(2, arm.generation, arm.activationAtMillis + 1L)
+
+        assertEquals(
+            AiHoldGestureSession.Outcome.LOCK_PROGRESS,
+            session.move(2, 40f, 76f),
+        )
+        assertEquals(0.5f, session.lockProgress(), 0.001f)
+        assertEquals(
+            AiHoldGestureSession.Outcome.ACTIVE_CANCELLED,
+            session.pointerUp(2, arm.activationAtMillis + 20L),
+        )
+    }
+
+    @Test
+    fun crossingLockThresholdMakesOwnerReleaseNonTerminal() {
+        val session = session()
+        val arm = requireNotNull(session.begin(2, 40f, 100f, 0L))
+        session.tryActivate(2, arm.generation, arm.activationAtMillis + 1L)
+
+        assertEquals(
+            AiHoldGestureSession.Outcome.LOCKED,
+            session.move(2, 39f, 50f),
+        )
+        assertTrue(session.isLocked())
+        assertEquals(1f, session.lockProgress(), 0.001f)
+        assertEquals(
+            AiHoldGestureSession.Outcome.LOCKED_RELEASED,
+            session.pointerUp(2, arm.activationAtMillis + 20L),
+        )
+        assertEquals(arm.generation, session.activeGeneration())
+        assertTrue(session.isLocked())
+    }
+
+    @Test
+    fun explicitCancellationStillStopsAReleasedLockedRun() {
+        val session = session()
+        val arm = requireNotNull(session.begin(2, 40f, 100f, 0L))
+        session.tryActivate(2, arm.generation, arm.activationAtMillis + 1L)
+        session.move(2, 40f, 40f)
+        session.pointerUp(2, arm.activationAtMillis + 20L)
+
+        assertEquals(
+            AiHoldGestureSession.Outcome.ACTIVE_CANCELLED,
+            session.cancelAll(),
+        )
+        assertNull(session.activeGeneration())
+    }
+
+    @Test
+    fun actionCancelDetachesLockedPointerWithoutCancellingGeneration() {
+        val session = session()
+        val arm = requireNotNull(session.begin(2, 40f, 100f, 0L))
+        session.tryActivate(2, arm.generation, arm.activationAtMillis + 1L)
+        session.move(2, 40f, 40f)
+
+        assertTrue(session.owns(2))
+        assertEquals(
+            AiHoldGestureSession.Outcome.LOCKED_RELEASED,
+            session.releaseLockedPointerOwnership(),
+        )
+        assertFalse(session.owns(2))
+        assertTrue(session.isLocked())
+        assertEquals(arm.generation, session.activeGeneration())
+        assertNull(session.begin(2, 40f, 100f, eventTimeMillis = 1_000L))
+        assertEquals(
+            AiHoldGestureSession.Outcome.NONE,
+            session.releaseLockedPointerOwnership(),
+        )
+    }
+
+    @Test
     fun nonOwnerCancelCannotInterruptActiveSession() {
         val session = session()
         val arm = requireNotNull(session.begin(2, 0f, 0f, 0L))
@@ -191,8 +265,19 @@ class AiHoldGestureSessionTest {
 
         val bounded = AiSurfaceContract.appendBounded(prefix, emoji)
 
-        assertEquals(AiSurfaceContract.MAX_PREVIEW_CHARS - 1, bounded.length)
+        assertEquals(AiSurfaceContract.MAX_PREVIEW_CHARS, bounded.length)
+        assertTrue(bounded.startsWith("…"))
+        assertTrue(bounded.endsWith(emoji))
         assertFalse(bounded.last().isHighSurrogate())
-        assertTrue(AiSurfaceContract.boundedPreview("x".repeat(5_000)).length <= 4_096)
+        val tail = AiSurfaceContract.boundedPreview("x".repeat(5_000) + "最新")
+        assertTrue(tail.length <= 4_096)
+        assertTrue(tail.endsWith("最新"))
+    }
+
+    @Test
+    fun lockAnimationUsesAStableSmoothStepCurve() {
+        assertEquals(0f, AiSurfaceContract.lockVisualProgress(-1f), 0f)
+        assertEquals(0.5f, AiSurfaceContract.lockVisualProgress(0.5f), 0.001f)
+        assertEquals(1f, AiSurfaceContract.lockVisualProgress(2f), 0f)
     }
 }

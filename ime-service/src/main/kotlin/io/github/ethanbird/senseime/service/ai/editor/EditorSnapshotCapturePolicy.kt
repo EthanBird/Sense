@@ -65,6 +65,29 @@ data class ExtractedEditorText(
         )
 }
 
+/**
+ * Android's explicit full-text contract for `ExtractedText`.
+ *
+ * `partialStartOffset == -1` marks a full payload. Optional cursor-context calls are allowed to
+ * return a shorter window, so they must not be used as a second full-document requirement.
+ */
+object EditorExtractedTextContract {
+    fun isCompleteDocument(
+        startOffset: Int,
+        partialStartOffset: Int,
+        partialEndOffset: Int,
+        selectionStartInText: Int,
+        selectionEndInText: Int,
+        textLength: Int,
+    ): Boolean =
+        startOffset == 0 &&
+            partialStartOffset < 0 &&
+            partialEndOffset < 0 &&
+            selectionStartInText >= 0 &&
+            selectionEndInText >= selectionStartInText &&
+            selectionEndInText <= textLength
+}
+
 /** Result of calling InputConnection.getSelectedText(). */
 data class SelectedEditorText(
     /** False when the call failed or the InputConnection disappeared. */
@@ -172,15 +195,24 @@ object EditorSnapshotCapturePolicy {
                         }
                         PatchTarget.SELECTION
                     }
+                    PatchTarget.CONTEXT_WINDOW -> PatchTarget.CONTEXT_WINDOW
+                }
+                val capability = if (target == PatchTarget.CONTEXT_WINDOW) {
+                    // A later verification read is allowed to expose more text than the original
+                    // bounded context read. Keep the originally authorized target kind stable:
+                    // context authority must never silently widen into whole-field authority.
+                    SnapshotCapability.SURROUNDING_WINDOW
+                } else {
+                    SnapshotCapability.FULL_DOCUMENT
                 }
                 return captured(
                     input = input,
-                    capability = SnapshotCapability.FULL_DOCUMENT,
+                    capability = capability,
                     text = extracted.text,
                     textStartOffset = 0,
                     selection = selection,
                     target = target,
-                    truncated = false,
+                    truncated = capability == SnapshotCapability.SURROUNDING_WINDOW,
                 )
             }
         }
@@ -238,7 +270,7 @@ object EditorSnapshotCapturePolicy {
                 text = partial.text,
                 textStartOffset = partial.startOffset,
                 selection = partial.absoluteSelection,
-                target = null,
+                target = PatchTarget.CONTEXT_WINDOW,
                 truncated = true,
             )
         }
@@ -258,16 +290,30 @@ object EditorSnapshotCapturePolicy {
             if (startOffset < 0) {
                 return unavailable(input, EditorCaptureUnavailableReason.INVALID_EXTRACTED_TEXT)
             }
-            if (text.length > SenseAiProtocol.ABSOLUTE_MAX_SNAPSHOT_CHARS) {
+            val boundedContext = EditorContextWindowPolicy.constrain(
+                context = ExtractedEditorText(
+                    text = text,
+                    startOffset = startOffset,
+                    selectionStartInText = surrounding.beforeCursor.length,
+                    selectionEndInText =
+                        surrounding.beforeCursor.length + selectedText.length,
+                    completeDocument = false,
+                ),
+                maxContextChars = minOf(
+                    EditorContextWindowPolicy.DEFAULT_MAX_CONTEXT_CHARS,
+                    input.maxOutputChars,
+                ),
+            )
+            if (boundedContext.text.length > SenseAiProtocol.ABSOLUTE_MAX_SNAPSHOT_CHARS) {
                 return unavailable(input, EditorCaptureUnavailableReason.TEXT_LIMIT_EXCEEDED)
             }
             return captured(
                 input = input,
                 capability = SnapshotCapability.SURROUNDING_WINDOW,
-                text = text,
-                textStartOffset = startOffset,
-                selection = selection,
-                target = null,
+                text = boundedContext.text,
+                textStartOffset = boundedContext.startOffset,
+                selection = boundedContext.absoluteSelection,
+                target = PatchTarget.CONTEXT_WINDOW,
                 truncated = true,
             )
         }

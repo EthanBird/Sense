@@ -20,6 +20,7 @@ import android.view.View
 import android.view.ViewConfiguration
 import android.widget.OverScroller
 import kotlin.math.max
+import kotlin.math.sin
 
 class SenseKeyboardView @JvmOverloads constructor(
     context: Context,
@@ -34,6 +35,10 @@ class SenseKeyboardView @JvmOverloads constructor(
         fun onAiHoldStarted(generation: Long)
 
         fun onAiHoldCancelled(generation: Long)
+
+        fun onAiStopRequested(generation: Long) {
+            onAiHoldCancelled(generation)
+        }
     }
 
     enum class Panel {
@@ -43,6 +48,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         EMOJI,
         CLIPBOARD,
         EDITOR,
+        VOICE,
     }
 
     enum class ClipboardAction {
@@ -80,6 +86,8 @@ class SenseKeyboardView @JvmOverloads constructor(
         RAIL,
         EDITOR_DIRECTION,
         EDITOR_PRIMARY,
+        EDITOR_ACTION,
+        VOICE_PRIMARY,
     }
 
     private enum class ScrollPanel {
@@ -244,10 +252,21 @@ class SenseKeyboardView @JvmOverloads constructor(
     private val backspaceRepeatSession = BackspaceRepeatSession()
     private val aiHoldGestureSession = AiHoldGestureSession(
         maximumStationaryDistance = maxOf(scaledTouchSlop, dp(10f)),
+        lockDistance = dp(AiSurfaceContract.LOCK_DISTANCE_DP),
     )
     private var scheduledAiHoldPointerId = NO_POINTER
     private var scheduledAiHoldGeneration = 0L
     private var aiSurfaceState: AiSurfaceState? = null
+    private val aiPreviewLineLayoutCache = AiPreviewLineLayoutCache()
+    private val aiStopBounds = RectF()
+    private var aiStopPointerId = NO_POINTER
+    private var voiceSurfaceState: VoiceSurfaceState? = null
+    private val voiceWaveformBuffer = VoiceWaveformBuffer()
+    private val voiceWaveformSamples = FloatArray(voiceWaveformBuffer.capacity)
+    private val voiceWaveformBounds = RectF()
+    private var voiceWaveformShader: Shader? = null
+    private var voiceStatusCenterY = 0f
+    private var voiceTranscriptCenterY = 0f
     private var emojiGroupIndex = 0
     private val emojiScrollState = ContinuousVerticalScrollState()
     private var emojiGridBounds: RectF? = null
@@ -258,7 +277,9 @@ class SenseKeyboardView @JvmOverloads constructor(
     private var symbolGridBounds: RectF? = null
     private var clipboardPageIndex = 0
     private var clipboardPageLabel = ""
-    private var editorSelectionActive = false
+    private var editorHasSelection = false
+    private var editorSelectionMode = false
+    private var editorCanPaste = false
     private var editorMainBounds: RectF? = null
     private var editorBottomTop = 0f
     private var editorBottomSeparators = FloatArray(0)
@@ -315,8 +336,8 @@ class SenseKeyboardView @JvmOverloads constructor(
             val pointerId = backspaceRepeatSession.activePointerId() ?: return
             if (!touchReducer.isPressed(pointerId)) return
             val target = touchReducer.target(pointerId) as? FrozenTouchTarget.KeyValue ?: return
-            if (target.key.code != KeyCodes.DELETE) return
-            enqueueKey(KeyCodes.DELETE)
+            if (deleteRepeatTarget(target.key) == null) return
+            dispatchDelete(target.key)
             val held = backspaceRepeatSession.heldMillis(SystemClock.uptimeMillis())
             postDelayed(this, BackspaceRepeatPolicy.intervalMillis(held))
         }
@@ -431,6 +452,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         if (panel == value && !wasExpanded) return
         cancelAllTouches()
         collapseCandidates()
+        if (panel == Panel.VOICE && value != Panel.VOICE) clearVoiceSurfaceState()
         panel = value
         if (value == Panel.EMOJI) emojiScrollState.reset()
         if (value == Panel.SYMBOLS) {
@@ -440,6 +462,60 @@ class SenseKeyboardView @JvmOverloads constructor(
         }
         rebuildKeys(width, height)
         invalidate()
+    }
+
+    fun showVoiceSurface(initialState: VoiceSurfaceState) {
+        require(initialState.sessionId > 0L)
+        cancelAllTouches()
+        collapseCandidates()
+        clearVoiceSurfaceState()
+        voiceSurfaceState = initialState
+        voiceWaveformBuffer.clear()
+        panel = Panel.VOICE
+        rebuildKeys(width, height)
+        invalidate()
+    }
+
+    /**
+     * Publishes a newer frame for the active speech session.
+     *
+     * Session and revision checks are local as well as in the controller, so a late binder callback
+     * cannot resurrect or overwrite the next editor's voice surface.
+     */
+    fun updateVoiceSurface(nextState: VoiceSurfaceState): Boolean {
+        val current = voiceSurfaceState ?: return false
+        if (!VoiceSurfaceUpdatePolicy.accepts(current, nextState)) return false
+        val phaseChanged = current.phase != nextState.phase
+        voiceSurfaceState = nextState
+        if (nextState.phase == VoiceSurfacePhase.LISTENING) {
+            voiceWaveformBuffer.append(nextState.waveformLevel)
+        }
+        if (phaseChanged) rebuildKeys(width, height)
+        invalidate()
+        return true
+    }
+
+    fun exitVoiceSurface(sessionId: Long): Boolean {
+        val current = voiceSurfaceState ?: return false
+        if (current.sessionId != sessionId) return false
+        clearVoiceSurfaceState()
+        if (panel == Panel.VOICE) panel = Panel.LETTERS
+        cancelOrdinaryTouches()
+        rebuildCandidateLayout(width, height)
+        rebuildKeys(width, height)
+        invalidate()
+        return true
+    }
+
+    fun isVoiceSurfaceActive(): Boolean =
+        panel == Panel.VOICE && voiceSurfaceState != null
+
+    fun activeVoiceSessionId(): Long? = voiceSurfaceState?.sessionId
+
+    private fun clearVoiceSurfaceState() {
+        voiceSurfaceState = null
+        voiceWaveformBuffer.clear()
+        voiceWaveformBounds.setEmpty()
     }
 
     fun showClipboard(values: List<String>) {
@@ -463,13 +539,38 @@ class SenseKeyboardView @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Compatibility shim for callers compiled against the M7 editor surface.
+     * New code should update host selection and selection-extension mode
+     * independently through [setEditorSelectionState].
+     */
     fun setEditorSelectionActive(value: Boolean) {
-        if (editorSelectionActive == value) return
-        editorSelectionActive = value
-        if (panel == Panel.EDITOR) {
-            rebuildKeys(width, height)
-            invalidate()
+        setEditorSelectionState(
+            hasSelection = value,
+            selectionMode = value,
+            canPaste = editorCanPaste,
+        )
+    }
+
+    fun setEditorSelectionState(
+        hasSelection: Boolean,
+        selectionMode: Boolean,
+        canPaste: Boolean = editorCanPaste,
+    ) {
+        if (
+            editorHasSelection == hasSelection &&
+            editorSelectionMode == selectionMode &&
+            editorCanPaste == canPaste
+        ) {
+            return
         }
+        editorHasSelection = hasSelection
+        editorSelectionMode = selectionMode
+        editorCanPaste = canPaste
+        // Labels, enabled states and colors are resolved at draw/hit-test time.
+        // Keeping the stable Key objects preserves a held pointer and its repeat
+        // stream when the host reports a selection update.
+        if (panel == Panel.EDITOR) invalidate()
     }
 
     /**
@@ -523,6 +624,8 @@ class SenseKeyboardView @JvmOverloads constructor(
         aiHoldGestureSession.cancelAll()
         clearScheduledAiHold()
         aiSurfaceState = null
+        aiStopPointerId = NO_POINTER
+        aiStopBounds.setEmpty()
         rebuildCandidateLayout(width, height)
         rebuildKeys(width, height)
         invalidate()
@@ -554,6 +657,19 @@ class SenseKeyboardView @JvmOverloads constructor(
             color(0xFFE6EDF6.toInt(), 0xFF111213.toInt()),
             Shader.TileMode.CLAMP,
         )
+        voiceWaveformShader = LinearGradient(
+            dp(22f),
+            0f,
+            maxOf(dp(23f), w - dp(22f)),
+            0f,
+            intArrayOf(
+                color(0xFF20C7EE.toInt(), 0xFF34D9FF.toInt()),
+                color(0xFF557EF7.toInt(), 0xFF7A89FF.toInt()),
+                color(0xFFA24DF4.toInt(), 0xFFC05CFF.toInt()),
+            ),
+            null,
+            Shader.TileMode.CLAMP,
+        )
         rebuildCandidateLayout(w, h)
         rebuildKeys(w, h)
     }
@@ -564,6 +680,11 @@ class SenseKeyboardView @JvmOverloads constructor(
         val aiState = aiSurfaceState
         if (aiState != null) {
             drawAiSurface(canvas, aiState)
+            return
+        }
+        if (panel == Panel.VOICE) {
+            drawVoiceSurface(canvas)
+            drawKeys(canvas)
             return
         }
         if (panel == Panel.EDITOR) {
@@ -637,20 +758,276 @@ class SenseKeyboardView @JvmOverloads constructor(
             )
         }
 
-        paint.color = color(0xFF667085.toInt(), 0xFFAAADB5.toInt())
-        paint.textSize = sp(12f)
+        drawAiLockAffordance(canvas, state, accent)
+    }
+
+    private fun drawVoiceSurface(canvas: Canvas) {
+        val state = voiceSurfaceState ?: return
+        val contentBottom = height - systemBarHeight
+        if (contentBottom <= candidateHeight) return
+
+        paint.style = Paint.Style.FILL
+        paint.shader = null
+        paint.color = color(0x14FFFFFF, 0x0FFFFFFF)
+        canvas.drawRect(0f, 0f, width.toFloat(), candidateHeight, paint)
+        paint.color = color(0xFF263247.toInt(), 0xFFF1F2F5.toInt())
+        paint.textSize = sp(15.5f)
+        paint.textAlign = Paint.Align.LEFT
+        drawCenteredText(canvas, "语音转文字", dp(15f), candidateHeight / 2f)
+
+        val providerLeft = dp(106f)
+        val providerRight = minOf(width - dp(58f), providerLeft + dp(126f))
+        paint.color = color(0x15557EF7, 0x28557EF7)
+        canvas.drawRoundRect(
+            providerLeft,
+            dp(9f),
+            providerRight,
+            candidateHeight - dp(9f),
+            dp(12f),
+            dp(12f),
+            paint,
+        )
+        paint.color = color(0xFF52627B.toInt(), 0xFFBFC4CE.toInt())
+        paint.textSize = sp(10.5f)
         paint.textAlign = Paint.Align.CENTER
+        val providerSave = canvas.save()
+        canvas.clipRect(providerLeft + dp(6f), 0f, providerRight - dp(6f), candidateHeight)
+        drawCenteredText(canvas, state.providerName, (providerLeft + providerRight) / 2f, candidateHeight / 2f)
+        canvas.restoreToCount(providerSave)
+
+        paint.color = color(0x1820C7EE, 0x1620C7EE)
+        canvas.drawCircle(width * 0.18f, candidateHeight + dp(92f), dp(76f), paint)
+        paint.color = color(0x16A24DF4, 0x18A24DF4)
+        canvas.drawCircle(width * 0.82f, candidateHeight + dp(126f), dp(88f), paint)
+
+        val statusY = voiceStatusCenterY.takeIf { it > candidateHeight }
+            ?: (candidateHeight + dp(30f))
+        paint.color = when (state.phase) {
+            VoiceSurfacePhase.ERROR -> color(0xFFC23E4A.toInt(), 0xFFFF8F98.toInt())
+            else -> color(0xFF516078.toInt(), 0xFFC2C6CF.toInt())
+        }
+        paint.textSize = sp(13f)
+        paint.textAlign = Paint.Align.CENTER
+        val statusSave = canvas.save()
+        canvas.clipRect(dp(16f), candidateHeight, width - dp(16f), statusY + dp(17f))
+        drawCenteredText(canvas, state.statusText, width / 2f, statusY)
+        canvas.restoreToCount(statusSave)
+
+        val visibleText = state.visibleText.ifBlank {
+            when (state.phase) {
+                VoiceSurfacePhase.STARTING -> "正在准备麦克风…"
+                VoiceSurfacePhase.LISTENING -> "请开始说话"
+                VoiceSurfacePhase.PROCESSING -> "正在整理识别结果"
+                VoiceSurfacePhase.ERROR -> "可重试或返回键盘"
+            }
+        }
+        paint.color = color(0xFF192337.toInt(), 0xFFF2F3F6.toInt())
+        paint.textSize = sp(16f)
+        paint.textAlign = Paint.Align.CENTER
+        val transcriptY = voiceTranscriptCenterY.takeIf { it > statusY }
+            ?: (statusY + dp(34f))
+        val transcriptSave = canvas.save()
+        canvas.clipRect(dp(22f), transcriptY - dp(16f), width - dp(22f), transcriptY + dp(16f))
+        drawCenteredText(canvas, visibleText, width / 2f, transcriptY)
+        canvas.restoreToCount(transcriptSave)
+
+        drawVoiceWaveform(canvas, state)
+        if (
+            state.phase == VoiceSurfacePhase.STARTING ||
+            state.phase == VoiceSurfacePhase.LISTENING ||
+            state.phase == VoiceSurfacePhase.PROCESSING
+        ) {
+            postInvalidateOnAnimation()
+        }
+    }
+
+    private fun drawVoiceWaveform(canvas: Canvas, state: VoiceSurfaceState) {
+        if (voiceWaveformBounds.isEmpty) return
+        val sampleCount = voiceWaveformBuffer.copyInto(voiceWaveformSamples)
+        var hasRealSignal = false
+        repeat(sampleCount) { index ->
+            if (voiceWaveformSamples[index] > 0.015f) hasRealSignal = true
+        }
+        val barCount = VoiceWaveformBuffer.DEFAULT_CAPACITY
+        val step = voiceWaveformBounds.width() / (barCount - 1).coerceAtLeast(1)
+        val nowPhase = (SystemClock.uptimeMillis() % 1_800L) / 1_800f
+        val centerY = voiceWaveformBounds.centerY()
+        val maximumHalfHeight = voiceWaveformBounds.height() * 0.46f
+
+        paint.shader = voiceWaveformShader
+        paint.strokeCap = Paint.Cap.ROUND
+        drawVoiceWaveformPass(
+            canvas = canvas,
+            state = state,
+            sampleCount = sampleCount,
+            hasRealSignal = hasRealSignal,
+            barCount = barCount,
+            step = step,
+            nowPhase = nowPhase,
+            centerY = centerY,
+            maximumHalfHeight = maximumHalfHeight,
+            strokeWidth = dp(5.5f),
+            alpha = 46,
+        )
+        drawVoiceWaveformPass(
+            canvas = canvas,
+            state = state,
+            sampleCount = sampleCount,
+            hasRealSignal = hasRealSignal,
+            barCount = barCount,
+            step = step,
+            nowPhase = nowPhase,
+            centerY = centerY,
+            maximumHalfHeight = maximumHalfHeight,
+            strokeWidth = max(1.5f, density * 1.4f),
+            alpha = 235,
+        )
+        paint.alpha = 255
+        paint.shader = null
+        paint.strokeCap = Paint.Cap.BUTT
+    }
+
+    private fun drawVoiceWaveformPass(
+        canvas: Canvas,
+        state: VoiceSurfaceState,
+        sampleCount: Int,
+        hasRealSignal: Boolean,
+        barCount: Int,
+        step: Float,
+        nowPhase: Float,
+        centerY: Float,
+        maximumHalfHeight: Float,
+        strokeWidth: Float,
+        alpha: Int,
+    ) {
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = strokeWidth
+        paint.alpha = alpha
+        repeat(barCount) { index ->
+            val normalizedX = index / (barCount - 1f)
+            val envelope = 0.45f + (1f - kotlin.math.abs(normalizedX * 2f - 1f)) * 0.55f
+            val rawLevel = if (hasRealSignal && sampleCount > 0) {
+                val sampleIndex = ((sampleCount - 1) * normalizedX).toInt()
+                voiceWaveformSamples[sampleIndex]
+            } else {
+                val wave = (sin(index * 0.41f + nowPhase * 6.28318f) + 1f) * 0.5f
+                val phaseScale = when (state.phase) {
+                    VoiceSurfacePhase.STARTING -> 0.18f
+                    VoiceSurfacePhase.LISTENING -> 0.27f
+                    VoiceSurfacePhase.PROCESSING -> 0.13f
+                    VoiceSurfacePhase.ERROR -> 0.04f
+                }
+                0.05f + wave * phaseScale
+            }
+            val halfHeight = maxOf(dp(1.5f), rawLevel * envelope * maximumHalfHeight)
+            val x = voiceWaveformBounds.left + index * step
+            canvas.drawLine(x, centerY - halfHeight, x, centerY + halfHeight, paint)
+        }
+    }
+
+    private fun drawAiLockAffordance(canvas: Canvas, state: AiSurfaceState, accent: Int) {
+        val barTop = height - systemBarHeight
+        val centerY = barTop + systemBarHeight / 2f
+        if (state.locked) {
+            val pill = RectF(
+                dp(14f),
+                barTop + dp(7f),
+                width - dp(68f),
+                height - dp(7f),
+            )
+            paint.style = Paint.Style.FILL
+            paint.color = color(0x165B72E8, 0x269C8CFF)
+            canvas.drawRoundRect(pill, pill.height() / 2f, pill.height() / 2f, paint)
+            paint.color = accent
+            canvas.drawCircle(pill.left + dp(18f), centerY, dp(4f), paint)
+            paint.color = color(0xFF42526A.toInt(), 0xFFE1E3E8.toInt())
+            paint.textSize = sp(12.5f)
+            paint.textAlign = Paint.Align.LEFT
+            drawCenteredText(canvas, "AI 已锁定 · 可松手", pill.left + dp(31f), centerY)
+
+            aiStopBounds.set(
+                width - dp(58f),
+                barTop + dp(5f),
+                width - dp(10f),
+                height - dp(5f),
+            )
+            val pressed = aiStopPointerId != NO_POINTER
+            paint.color = if (pressed) {
+                color(0xFFE34B58.toInt(), 0xFFFF6D78.toInt())
+            } else {
+                color(0x22D14D58, 0x36FF7C86)
+            }
+            canvas.drawRoundRect(
+                aiStopBounds,
+                aiStopBounds.height() / 2f,
+                aiStopBounds.height() / 2f,
+                paint,
+            )
+            paint.color = color(0xFFD14D58.toInt(), 0xFFFFA1A8.toInt())
+            val square = dp(if (pressed) 11f else 10f)
+            canvas.drawRoundRect(
+                RectF(
+                    aiStopBounds.centerX() - square / 2f,
+                    aiStopBounds.centerY() - square / 2f,
+                    aiStopBounds.centerX() + square / 2f,
+                    aiStopBounds.centerY() + square / 2f,
+                ),
+                dp(2f),
+                dp(2f),
+                paint,
+            )
+            return
+        }
+
+        aiStopBounds.setEmpty()
+        val progress = AiSurfaceContract.lockVisualProgress(state.lockProgress)
+        val pillWidth = dp(150f)
+        val pill = RectF(
+            width / 2f - pillWidth / 2f,
+            barTop + dp(7f),
+            width / 2f + pillWidth / 2f,
+            height - dp(7f),
+        )
+        paint.style = Paint.Style.FILL
+        paint.color = color(0x145B72E8, 0x229C8CFF)
+        canvas.drawRoundRect(pill, pill.height() / 2f, pill.height() / 2f, paint)
+        val arrowX = pill.left + dp(22f)
+        val arrowLift = dp(7f) * progress
+        paint.color = accent
+        paint.strokeWidth = max(1.8f * density, 2f)
+        paint.style = Paint.Style.STROKE
+        paint.strokeCap = Paint.Cap.ROUND
+        canvas.drawLine(
+            arrowX,
+            centerY + dp(5f) - arrowLift,
+            arrowX,
+            centerY - dp(6f) - arrowLift,
+            paint,
+        )
+        canvas.drawLine(
+            arrowX,
+            centerY - dp(6f) - arrowLift,
+            arrowX - dp(4f),
+            centerY - dp(2f) - arrowLift,
+            paint,
+        )
+        canvas.drawLine(
+            arrowX,
+            centerY - dp(6f) - arrowLift,
+            arrowX + dp(4f),
+            centerY - dp(2f) - arrowLift,
+            paint,
+        )
+        paint.style = Paint.Style.FILL
+        paint.strokeCap = Paint.Cap.BUTT
+        paint.color = color(0xFF667085.toInt(), 0xFFCACCD2.toInt())
+        paint.textSize = sp(12.5f)
+        paint.textAlign = Paint.Align.LEFT
         drawCenteredText(
             canvas,
-            if (state.phase == AiSurfacePhase.STARTING ||
-                state.phase == AiSurfacePhase.STREAMING
-            ) {
-                "松开空格取消"
-            } else {
-                "松开空格返回"
-            },
-            width / 2f,
-            height - systemBarHeight / 2f,
+            if (progress >= 0.72f) "继续上滑即可锁定" else "上滑锁定 · 松开取消",
+            pill.left + dp(39f),
+            centerY,
         )
     }
 
@@ -670,42 +1047,20 @@ class SenseKeyboardView @JvmOverloads constructor(
         paint.textAlign = Paint.Align.LEFT
         paint.getFontMetrics(fontMetrics)
         val lineHeight = (fontMetrics.descent - fontMetrics.ascent) + dp(5f)
-        val lines = mutableListOf<Pair<Int, Int>>()
-        var index = 0
-        while (index < text.length) {
-            if (text[index] == '\n') {
-                lines += index to index
-                index++
-                continue
-            }
-            val newline = text.indexOf('\n', index).let { if (it < 0) text.length else it }
-            var count = paint.breakText(
-                text,
-                index,
-                newline,
-                true,
-                right - left,
-                null,
-            )
-            if (count <= 0) count = 1
-            if (
-                index + count < text.length &&
-                text[index + count - 1].isHighSurrogate() &&
-                text[index + count].isLowSurrogate()
-            ) {
-                count--
-            }
-            if (count <= 0) count = minOf(2, text.length - index)
-            lines += index to index + count
-            index += count
-            if (index == newline) index++
+        aiPreviewLineLayoutCache.ensure(
+            text = text,
+            width = right - left,
+            textSize = paint.textSize,
+        ) { value, start, end, maximumWidth ->
+            paint.breakText(value, start, end, true, maximumWidth, null)
         }
         val maxLines = maxOf(1, ((bottom - top) / lineHeight).toInt())
-        val firstLine = maxOf(0, lines.size - maxLines)
+        val firstLine = maxOf(0, aiPreviewLineLayoutCache.lineCount - maxLines)
         var baseline = top - fontMetrics.ascent
-        for (lineIndex in firstLine until lines.size) {
+        for (lineIndex in firstLine until aiPreviewLineLayoutCache.lineCount) {
             if (baseline + fontMetrics.descent > bottom) break
-            val (start, end) = lines[lineIndex]
+            val start = aiPreviewLineLayoutCache.startAt(lineIndex)
+            val end = aiPreviewLineLayoutCache.endAt(lineIndex)
             if (end > start) canvas.drawText(text, start, end, left, baseline, paint)
             baseline += lineHeight
         }
@@ -876,10 +1231,10 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private fun drawEditorHeader(canvas: Canvas) {
         paint.style = Paint.Style.FILL
-        paint.color = color(0x22FFFFFF, 0x0FFFFFFF)
+        paint.color = color(0x16FFFFFF, 0x0AFFFFFF)
         canvas.drawRect(0f, 0f, width.toFloat(), candidateHeight, paint)
-        paint.color = color(0xFF263247.toInt(), 0xFFF0F1F4.toInt())
-        paint.textSize = sp(16f)
+        paint.color = color(0xFF344054.toInt(), 0xFFE7E9EE.toInt())
+        paint.textSize = sp(15f)
         paint.textAlign = Paint.Align.LEFT
         drawCenteredText(canvas, "文字编辑", dp(14f), candidateHeight / 2f)
         paint.color = color(0x1F172033, 0x35FFFFFF)
@@ -889,9 +1244,14 @@ class SenseKeyboardView @JvmOverloads constructor(
     private fun drawEditorPanelBackground(canvas: Canvas) {
         val bounds = editorMainBounds ?: return
         paint.style = Paint.Style.FILL
-        paint.color = color(0xF7FFFFFF.toInt(), 0xFF292A2C.toInt())
-        canvas.drawRoundRect(bounds, dp(10f), dp(10f), paint)
-        paint.color = color(0x18172033, 0x28FFFFFF)
+        paint.color = color(0xCFFFFFFF.toInt(), 0xFF252628.toInt())
+        canvas.drawRoundRect(bounds, dp(14f), dp(14f), paint)
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = max(1f, density)
+        paint.color = color(0x17172033, 0x2AFFFFFF)
+        canvas.drawRoundRect(bounds, dp(14f), dp(14f), paint)
+        paint.style = Paint.Style.FILL
+        paint.color = color(0x12172033, 0x22FFFFFF)
         val divider = max(1f, density)
         canvas.drawRect(bounds.left, editorBottomTop, bounds.right, editorBottomTop + divider, paint)
         editorBottomSeparators.forEach { x ->
@@ -913,9 +1273,36 @@ class SenseKeyboardView @JvmOverloads constructor(
                 KeyStyle.RAIL -> drawRailKey(canvas, key, pressed)
                 KeyStyle.EDITOR_DIRECTION -> drawEditorDirectionKey(canvas, key, pressed)
                 KeyStyle.EDITOR_PRIMARY -> drawEditorPrimaryKey(canvas, key, pressed)
+                KeyStyle.EDITOR_ACTION -> drawEditorActionKey(canvas, key, pressed)
+                KeyStyle.VOICE_PRIMARY -> drawVoicePrimaryKey(canvas, key, pressed)
                 else -> drawKeyboardKey(canvas, key, pressed)
             }
         }
+    }
+
+    private fun drawVoicePrimaryKey(canvas: Canvas, key: Key, pressed: Boolean) {
+        val enabled = isKeyEnabled(key)
+        paint.style = Paint.Style.FILL
+        paint.shader = if (enabled) voiceWaveformShader else null
+        paint.alpha = when {
+            !enabled -> 255
+            pressed -> 195
+            else -> 245
+        }
+        if (!enabled) {
+            paint.color = color(0xFFD7DEE9.toInt(), 0xFF303238.toInt())
+        }
+        canvas.drawRoundRect(key.bounds, dp(14f), dp(14f), paint)
+        paint.shader = null
+        paint.alpha = 255
+        paint.color = if (enabled) {
+            Color.WHITE
+        } else {
+            color(0xFF788397.toInt(), 0xFF989DA7.toInt())
+        }
+        paint.textSize = sp(16.5f)
+        paint.textAlign = Paint.Align.CENTER
+        drawCenteredText(canvas, key.label, key.bounds.centerX(), key.bounds.centerY())
     }
 
     private fun drawKeyboardKey(canvas: Canvas, key: Key, pressed: Boolean) {
@@ -1120,27 +1507,63 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private fun drawEditorPrimaryKey(canvas: Canvas, key: Key, pressed: Boolean) {
         paint.style = Paint.Style.FILL
-        paint.color = if (pressed || editorSelectionActive) {
+        paint.color = if (pressed || editorSelectionMode) {
             color(0xFF5B7DF0.toInt(), 0xFF6D61D8.toInt())
         } else {
-            color(0xE6FFFFFF.toInt(), 0xFF303132.toInt())
+            color(0xE8F5F7FB.toInt(), 0xFF303134.toInt())
         }
         canvas.drawRoundRect(key.bounds, dp(10f), dp(10f), paint)
-        if (!pressed && !editorSelectionActive) {
+        if (!pressed && !editorSelectionMode) {
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = max(1f, density)
             paint.color = color(0x30172033, 0x45FFFFFF)
             canvas.drawRoundRect(key.bounds, dp(10f), dp(10f), paint)
         }
-        paint.color = if (pressed || editorSelectionActive) {
+        paint.color = if (pressed || editorSelectionMode) {
             Color.WHITE
         } else {
             color(0xFF172033.toInt(), 0xFFF3F4F7.toInt())
         }
         paint.textSize = sp(15f)
         paint.textAlign = Paint.Align.CENTER
-        drawCenteredText(canvas, key.label, key.bounds.centerX(), key.bounds.centerY())
+        drawCenteredText(
+            canvas,
+            if (editorSelectionMode) "取消选择" else "开始选择",
+            key.bounds.centerX(),
+            key.bounds.centerY(),
+        )
         paint.style = Paint.Style.FILL
+    }
+
+    private fun drawEditorActionKey(canvas: Canvas, key: Key, pressed: Boolean) {
+        val enabled = isKeyEnabled(key)
+        paint.style = Paint.Style.FILL
+        paint.color = when {
+            !enabled -> color(0x5CE1E6EE, 0x66303336)
+            pressed -> color(0xFF5B7DF0.toInt(), 0xFF6D61D8.toInt())
+            else -> color(0xD9E2E8F1.toInt(), 0xFF303134.toInt())
+        }
+        canvas.drawRoundRect(key.bounds, dp(8f), dp(8f), paint)
+        if (enabled && !pressed) {
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = max(1f, density)
+            paint.color = color(0x15172033, 0x24FFFFFF)
+            canvas.drawRoundRect(key.bounds, dp(8f), dp(8f), paint)
+        }
+        paint.style = Paint.Style.FILL
+        val tint = when {
+            !enabled -> color(0x66717B8C, 0x668C9098)
+            pressed -> Color.WHITE
+            else -> color(0xFF344054.toInt(), 0xFFE8EAF0.toInt())
+        }
+        if (key.icon != null) {
+            drawIcon(canvas, key.icon, key.bounds, tint)
+        } else {
+            paint.color = tint
+            paint.textSize = sp(14.5f)
+            paint.textAlign = Paint.Align.CENTER
+            drawCenteredText(canvas, key.label, key.bounds.centerX(), key.bounds.centerY())
+        }
     }
 
     private fun drawEditorDirectionKey(canvas: Canvas, key: Key, pressed: Boolean) {
@@ -1566,9 +1989,18 @@ class SenseKeyboardView @JvmOverloads constructor(
         symbolGridBounds = null
         editorMainBounds = null
         editorBottomSeparators = FloatArray(0)
+        voiceWaveformBounds.setEmpty()
+        voiceStatusCenterY = 0f
+        voiceTranscriptCenterY = 0f
         if (viewWidth <= 0 || viewHeight <= 0) return
         if (!candidatesExpanded) {
-            if (!candidateTakesToolbar() && panel != Panel.EDITOR) layoutToolbar(viewWidth)
+            if (
+                !candidateTakesToolbar() &&
+                panel != Panel.EDITOR &&
+                panel != Panel.VOICE
+            ) {
+                layoutToolbar(viewWidth)
+            }
             when (panel) {
                 Panel.LETTERS -> layoutLetters(viewWidth, viewHeight)
                 Panel.NUMBERS -> layoutNumbers(viewWidth, viewHeight)
@@ -1576,6 +2008,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 Panel.EMOJI -> layoutEmoji(viewWidth, viewHeight)
                 Panel.CLIPBOARD -> layoutClipboard(viewWidth, viewHeight)
                 Panel.EDITOR -> layoutEditor(viewWidth, viewHeight)
+                Panel.VOICE -> layoutVoice(viewWidth, viewHeight)
             }
         }
         layoutSystemBar(viewWidth, viewHeight)
@@ -1980,8 +2413,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 else -> null
             }
             val label = when (slot.role) {
-                KeyboardLayoutContract.EditorKeyRole.TOGGLE_SELECTION ->
-                    if (editorSelectionActive) "取消选择" else "开始选择"
+                KeyboardLayoutContract.EditorKeyRole.TOGGLE_SELECTION -> "开始选择"
                 KeyboardLayoutContract.EditorKeyRole.COPY -> "复制"
                 KeyboardLayoutContract.EditorKeyRole.CUT -> "剪切"
                 KeyboardLayoutContract.EditorKeyRole.PASTE -> "粘贴"
@@ -1993,7 +2425,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 KeyboardLayoutContract.EditorKeyRole.DELETE,
                 KeyboardLayoutContract.EditorKeyRole.COPY,
                 KeyboardLayoutContract.EditorKeyRole.CUT,
-                KeyboardLayoutContract.EditorKeyRole.PASTE -> KeyStyle.ACTION
+                KeyboardLayoutContract.EditorKeyRole.PASTE -> KeyStyle.EDITOR_ACTION
                 else -> KeyStyle.EDITOR_DIRECTION
             }
             keys += Key(
@@ -2005,6 +2437,49 @@ class SenseKeyboardView @JvmOverloads constructor(
                 editorAction = action,
             )
         }
+    }
+
+    private fun layoutVoice(viewWidth: Int, viewHeight: Int) {
+        val state = voiceSurfaceState ?: return
+        keys += Key(
+            label = "",
+            code = KeyCodes.VOICE_CANCEL,
+            bounds = RectF(
+                viewWidth - dp(58f),
+                dp(3f),
+                viewWidth - dp(5f),
+                candidateHeight - dp(3f),
+            ),
+            style = KeyStyle.TOOL,
+            icon = Icon.BACK,
+        )
+        val contentBottom = viewHeight - systemBarHeight
+        if (contentBottom <= candidateHeight) return
+        val geometry = KeyboardLayoutContract.voiceLayout(
+            candidateHeight = candidateHeight,
+            contentBottom = contentBottom,
+            unit = density,
+        )
+        voiceStatusCenterY = geometry.statusCenterY
+        voiceTranscriptCenterY = geometry.transcriptCenterY
+        val buttonWidth = minOf(dp(296f), viewWidth - dp(54f))
+        keys += Key(
+            label = VoiceSurfaceControlPolicy.primaryLabel(state.phase),
+            code = VoiceSurfaceControlPolicy.primaryKeyCode(state.phase),
+            bounds = RectF(
+                viewWidth / 2f - buttonWidth / 2f,
+                geometry.primaryButtonTop,
+                viewWidth / 2f + buttonWidth / 2f,
+                geometry.primaryButtonBottom,
+            ),
+            style = KeyStyle.VOICE_PRIMARY,
+        )
+        voiceWaveformBounds.set(
+            dp(28f),
+            geometry.waveformTop,
+            viewWidth - dp(28f),
+            geometry.waveformBottom,
+        )
     }
 
     private fun KeyboardLayoutContract.EditorKeyRole.toEditorAction(): EditorAction = when (this) {
@@ -2240,8 +2715,8 @@ class SenseKeyboardView @JvmOverloads constructor(
             startPanelScroll(pointerId, scrollPanel, y, event)
         }
         val key = (target as? FrozenTouchTarget.KeyValue)?.key
-        if (key?.code == KeyCodes.DELETE) {
-            enqueueKey(KeyCodes.DELETE)
+        if (key != null && deleteRepeatTarget(key) != null) {
+            dispatchDelete(key)
             startBackspaceRepeat(pointerId)
         }
         if (key?.code == KeyCodes.SPACE) {
@@ -2333,7 +2808,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun touchTargetAt(x: Float, y: Float): FrozenTouchTarget? {
-        if (panel != Panel.EDITOR) {
+        if (showsCandidates()) {
             for (index in candidateControls.indices) {
                 val slot = candidateControls[index]
                 if (slot.enabled && slot.bounds.contains(x, y)) {
@@ -2345,7 +2820,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 }
             }
         }
-        if (panel != Panel.EDITOR && candidateRevision == compositionRevision) {
+        if (showsCandidates() && candidateRevision == compositionRevision) {
             for (index in visibleCandidates.indices) {
                 val candidate = visibleCandidates[index]
                 if (candidate.bounds.contains(x, y)) {
@@ -2358,7 +2833,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 }
             }
         }
-        if (!candidatesExpanded && panel != Panel.EDITOR) {
+        if (!candidatesExpanded && showsCandidates()) {
             collapsedCandidateViewportBounds?.let { bounds ->
                 if (
                     collapsedCandidateLayout?.hasOverflow == true &&
@@ -2371,7 +2846,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 }
             }
         }
-        if (panel != Panel.EDITOR) {
+        if (showsCandidates()) {
             expandedCandidateGridBounds?.let { bounds ->
                 if (bounds.contains(x, y)) {
                     return FrozenTouchTarget.CandidatePageArea(
@@ -2385,6 +2860,10 @@ class SenseKeyboardView @JvmOverloads constructor(
             val key = keys[index]
             val hitBounds = hitBoundsForKey(key)
             if (hitBounds.contains(x, y)) {
+                // A disabled action owns its visible rectangle as a dead zone.
+                // Falling through to gap resolution could otherwise turn a tap
+                // near disabled COPY into the adjacent DELETE action.
+                if (!isKeyEnabled(key)) return null
                 return FrozenTouchTarget.KeyValue(
                     key = key,
                     gesturePolicy = gesturePolicyForKey(key),
@@ -2399,7 +2878,9 @@ class SenseKeyboardView @JvmOverloads constructor(
             targetCount = keys.size,
             isEligible = { index ->
                 val key = keys[index]
-                key.scrollPanel == null && key.style != KeyStyle.CARD
+                key.scrollPanel == null &&
+                    key.style != KeyStyle.CARD &&
+                    isKeyEnabled(key)
             },
             left = { index -> keys[index].bounds.left },
             top = { index -> keys[index].bounds.top },
@@ -2508,7 +2989,8 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun activateGesture(key: Key, gesture: TouchInputReducer.Gesture) {
-        if (key.code == KeyCodes.DELETE) return // DELETE is emitted immediately on DOWN.
+        if (!isKeyEnabled(key)) return
+        if (deleteRepeatTarget(key) != null) return // Repeatable DELETE is emitted immediately on DOWN.
         when {
             key.scrollPanel != null && gesture != TouchInputReducer.Gesture.TAP -> Unit
             key.style == KeyStyle.CARD && gesture != TouchInputReducer.Gesture.TAP && clipboardItems.isNotEmpty() -> {
@@ -2521,6 +3003,34 @@ class SenseKeyboardView @JvmOverloads constructor(
                 }
             }
             gesture == TouchInputReducer.Gesture.TAP -> activateKey(key)
+        }
+    }
+
+    private fun deleteRepeatTarget(key: Key): DeleteRepeatTarget? =
+        DeleteRepeatTargetPolicy.resolve(
+            keyCode = key.code,
+            editorActionIsDelete = key.editorAction == EditorAction.DELETE,
+        )
+
+    private fun dispatchDelete(key: Key) {
+        when (deleteRepeatTarget(key)) {
+            DeleteRepeatTarget.KEY -> enqueueKey(KeyCodes.DELETE)
+            DeleteRepeatTarget.EDITOR -> {
+                dispatchQueuedKeysNow()
+                editorActionListener?.invoke(EditorAction.DELETE)
+            }
+            null -> Unit
+        }
+    }
+
+    private fun isKeyEnabled(key: Key): Boolean {
+        if (key.style == KeyStyle.VOICE_PRIMARY && key.code == 0) return false
+        return when (key.editorAction) {
+            EditorAction.COPY,
+            EditorAction.CUT -> editorHasSelection
+
+            EditorAction.PASTE -> editorCanPaste
+            else -> true
         }
     }
 
@@ -2592,6 +3102,8 @@ class SenseKeyboardView @JvmOverloads constructor(
         val aiOutcome = aiHoldGestureSession.cancelAll()
         clearScheduledAiHold()
         aiSurfaceState = null
+        aiStopPointerId = NO_POINTER
+        aiStopBounds.setEmpty()
         cancelOrdinaryTouches()
         if (
             aiOutcome == AiHoldGestureSession.Outcome.ACTIVE_CANCELLED &&
@@ -2640,46 +3152,159 @@ class SenseKeyboardView @JvmOverloads constructor(
             phase = AiSurfacePhase.STARTING,
             preview = "",
             statusText = defaultAiStatus(AiSurfacePhase.STARTING),
+            lockProgress = 0f,
+            locked = false,
         )
+        aiStopPointerId = NO_POINTER
+        aiStopBounds.setEmpty()
         performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
         invalidate()
         aiHoldListener?.onAiHoldStarted(generation)
     }
 
     private fun handleAiSurfaceTouch(event: MotionEvent): Boolean {
+        val state = aiSurfaceState ?: return true
+        if (state.locked) {
+            return handleLockedAiSurfaceTouch(event)
+        }
         when (event.actionMasked) {
+            MotionEvent.ACTION_MOVE -> {
+                repeat(event.pointerCount) { pointerIndex ->
+                    val pointerId = event.getPointerId(pointerIndex)
+                    if (!aiHoldGestureSession.owns(pointerId)) return@repeat
+                    val outcome = aiHoldGestureSession.move(
+                        pointerId,
+                        event.getX(pointerIndex),
+                        event.getY(pointerIndex),
+                    )
+                    val locked = aiHoldGestureSession.isLocked()
+                    aiSurfaceState = aiSurfaceState?.copy(
+                        lockProgress = aiHoldGestureSession.lockProgress(),
+                        locked = locked,
+                    )
+                    if (outcome == AiHoldGestureSession.Outcome.LOCKED) {
+                        performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                    }
+                    if (
+                        outcome == AiHoldGestureSession.Outcome.LOCK_PROGRESS ||
+                        locked
+                    ) {
+                        invalidate()
+                    }
+                }
+            }
+
             MotionEvent.ACTION_UP,
             MotionEvent.ACTION_POINTER_UP -> {
                 val pointerId = event.getPointerId(event.actionIndex)
                 if (aiHoldGestureSession.owns(pointerId)) {
-                    cancelActiveAi(pointerId)
-                    performClick()
+                    when (aiHoldGestureSession.pointerUp(pointerId, event.eventTime)) {
+                        AiHoldGestureSession.Outcome.ACTIVE_CANCELLED -> {
+                            exitAndCancelAi(forceStop = false)
+                            performClick()
+                        }
+                        AiHoldGestureSession.Outcome.LOCKED_RELEASED -> {
+                            aiSurfaceState = aiSurfaceState?.copy(
+                                lockProgress = 1f,
+                                locked = true,
+                            )
+                            invalidate()
+                        }
+                        else -> Unit
+                    }
                 }
             }
-            MotionEvent.ACTION_CANCEL -> cancelActiveAi(pointerId = null)
+            MotionEvent.ACTION_CANCEL -> {
+                exitAndCancelAi(forceStop = false)
+            }
             MotionEvent.ACTION_DOWN -> {
                 // A fresh stream means the owner terminal event was lost.
-                cancelActiveAi(pointerId = null)
+                exitAndCancelAi(forceStop = false)
             }
         }
         return true
     }
 
-    private fun cancelActiveAi(pointerId: Int?) {
-        val generation = aiSurfaceState?.generation ?: return
-        val outcome = if (pointerId == null) {
-            aiHoldGestureSession.cancelAll()
-        } else {
-            aiHoldGestureSession.pointerCancel(pointerId)
+    private fun handleLockedAiSurfaceTouch(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN,
+            MotionEvent.ACTION_POINTER_DOWN,
+            -> {
+                val index = event.actionIndex
+                if (aiStopBounds.contains(event.getX(index), event.getY(index))) {
+                    aiStopPointerId = event.getPointerId(index)
+                    performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                    invalidate()
+                }
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                val pointerId = aiStopPointerId
+                if (pointerId != NO_POINTER) {
+                    val index = event.findPointerIndex(pointerId)
+                    if (
+                        index < 0 ||
+                        !aiStopBounds.contains(event.getX(index), event.getY(index))
+                    ) {
+                        aiStopPointerId = NO_POINTER
+                        invalidate()
+                    }
+                }
+            }
+
+            MotionEvent.ACTION_UP,
+            MotionEvent.ACTION_POINTER_UP,
+            -> {
+                val index = event.actionIndex
+                val pointerId = event.getPointerId(index)
+                if (aiHoldGestureSession.owns(pointerId)) {
+                    // Locking transfers authority from the physical pointer to the local
+                    // generation token. Releasing the original finger must not cancel the run,
+                    // but the state machine should no longer retain that pointer as its owner.
+                    aiHoldGestureSession.pointerUp(pointerId, event.eventTime)
+                }
+                if (pointerId == aiStopPointerId) {
+                    val activate = aiStopBounds.contains(event.getX(index), event.getY(index))
+                    aiStopPointerId = NO_POINTER
+                    if (activate) {
+                        performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                        exitAndCancelAi(forceStop = true)
+                        performClick()
+                    } else {
+                        invalidate()
+                    }
+                }
+            }
+
+            MotionEvent.ACTION_CANCEL -> {
+                // Android cancelled the physical gesture stream (for example
+                // because a parent/window intercepted it). The locked AI run is
+                // generation-owned and must continue, while the stale pointer
+                // owner must be detached so a reused pointer id cannot affect it.
+                aiHoldGestureSession.releaseLockedPointerOwnership()
+                aiStopPointerId = NO_POINTER
+                invalidate()
+            }
         }
-        if (outcome != AiHoldGestureSession.Outcome.ACTIVE_CANCELLED) return
+        return true
+    }
+
+    private fun exitAndCancelAi(forceStop: Boolean) {
+        val generation = aiSurfaceState?.generation ?: return
+        aiHoldGestureSession.cancelAll()
         clearScheduledAiHold()
         aiSurfaceState = null
+        aiStopPointerId = NO_POINTER
+        aiStopBounds.setEmpty()
         cancelOrdinaryTouches()
         rebuildCandidateLayout(width, height)
         rebuildKeys(width, height)
         invalidate()
-        aiHoldListener?.onAiHoldCancelled(generation)
+        if (forceStop) {
+            aiHoldListener?.onAiStopRequested(generation)
+        } else {
+            aiHoldListener?.onAiHoldCancelled(generation)
+        }
     }
 
     private fun defaultAiStatus(phase: AiSurfacePhase): String = when (phase) {
@@ -2990,8 +3615,11 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private fun candidateTakesToolbar(): Boolean = CandidatePresentationPolicy.takesToolbar(
         composing = composing,
-        editorPanelVisible = panel == Panel.EDITOR,
+        editorPanelVisible = panel == Panel.EDITOR || panel == Panel.VOICE,
     )
+
+    private fun showsCandidates(): Boolean =
+        panel != Panel.EDITOR && panel != Panel.VOICE
 
     /** Toolbar and collapsed candidates replace each other inside one fixed row. */
     private fun keyboardChromeBottom(): Float = KeyboardLayoutContract.topChromeBottom(

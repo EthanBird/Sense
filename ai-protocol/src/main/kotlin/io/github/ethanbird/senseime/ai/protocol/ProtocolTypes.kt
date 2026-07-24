@@ -26,6 +26,7 @@ enum class SnapshotCapability(override val wireValue: String) : WireEnum {
 enum class PatchTarget(override val wireValue: String) : WireEnum {
     WHOLE_FIELD("whole_field"),
     SELECTION("selection"),
+    CONTEXT_WINDOW("context_window"),
 }
 
 enum class PatchOperationType(override val wireValue: String) : WireEnum {
