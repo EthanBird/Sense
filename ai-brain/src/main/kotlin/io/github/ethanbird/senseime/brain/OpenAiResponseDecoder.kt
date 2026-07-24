@@ -10,7 +10,13 @@ internal sealed interface ProviderContentEvent {
     data class TextDelta(val text: String) : ProviderContentEvent
     data class Usage(val inputTokens: Long, val outputTokens: Long) : ProviderContentEvent
     data class Completed(val finalText: String? = null) : ProviderContentEvent
-    data class Error(val message: String, val retryable: Boolean = false) : ProviderContentEvent
+    data class Error(
+        val message: String,
+        val retryable: Boolean = false,
+        val type: String? = null,
+        val providerCode: String? = null,
+        val statusCode: Int? = null,
+    ) : ProviderContentEvent
 }
 
 /**
@@ -83,6 +89,11 @@ internal class OpenAiResponseDecoder(
                 ProviderContentEvent.Error(
                     message = errorRoot.string("message") ?: type ?: "provider error",
                     retryable = errorRoot.boolean("retryable") ?: false,
+                    type = errorRoot.string("type"),
+                    providerCode = errorRoot.scalarText("code"),
+                    statusCode = (errorRoot.long("status") ?: root.long("status"))
+                        ?.takeIf { it in 100..599 }
+                        ?.toInt(),
                 ),
             )
         }
@@ -166,6 +177,14 @@ internal class OpenAiResponseDecoder(
 
     private fun JsonValue.ObjectValue.long(name: String): Long? =
         (members[name] as? JsonValue.NumberValue)?.value?.toLongOrNull()
+
+    private fun JsonValue.ObjectValue.scalarText(name: String): String? = when (
+        val value = members[name]
+    ) {
+        is JsonValue.StringValue -> value.value
+        is JsonValue.NumberValue -> value.value
+        else -> null
+    }
 
     private fun JsonValue.ObjectValue.boolean(name: String): Boolean? =
         (members[name] as? JsonValue.BooleanValue)?.value
