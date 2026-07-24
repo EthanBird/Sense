@@ -79,12 +79,77 @@ class OpenAiRequestFactoryTest {
         assertTrue(body.contains("\"text\":{\"format\":{\"type\":\"json_object\"}}"))
         assertTrue(body.contains("\"store\":false"))
         assertFalse(body.contains("\"response_format\""))
+        assertTrue(body.contains("Closed output JSON contract"))
+        assertTrue(body.contains("Valid no_change example"))
+    }
+
+    @Test
+    fun `DeepSeek chat JSON object request uses compatible endpoint and inline patch contract`() {
+        val wire = OpenAiRequestFactory.create(
+            profile = ProviderProfile(
+                id = "deepseek",
+                displayName = "DeepSeek",
+                apiStyle = ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+                baseUrl = "https://api.deepseek.com/v1",
+                model = "deepseek-v4-pro",
+                structuredOutput = StructuredOutputMode.JSON_OBJECT,
+            ),
+            request = harness(),
+            credential = ProviderCredential.None,
+            attempt = 0,
+        )
+        val body = wire.body.toString(StandardCharsets.UTF_8)
+
+        assertEquals("https://api.deepseek.com/v1/chat/completions", wire.url)
+        assertTrue(body.contains("\"response_format\":{\"type\":\"json_object\"}"))
+        assertFalse(body.contains("\"type\":\"json_schema\""))
+        assertTrue(body.contains("Closed output JSON contract"))
+        assertTrue(body.contains("Root keys are exactly protocol, request_id, snapshot_id"))
+        assertTrue(body.contains("Valid replace example for this request"))
+        assertTrue(body.contains("Valid no_change example"))
+        assertTrue(body.contains("\\\"selection_after\\\":\\\"end\\\""))
+        assertTrue(body.contains("\\\"operation\\\":{\\\"type\\\":\\\"no_change\\\"}"))
+    }
+
+    @Test
+    fun `prompt-only request also receives closed inline patch contract`() {
+        val wire = OpenAiRequestFactory.create(
+            profile = profile(
+                ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+                structuredOutput = StructuredOutputMode.PROMPT_ONLY,
+            ),
+            request = harness(),
+            credential = ProviderCredential.None,
+            attempt = 0,
+        )
+        val body = wire.body.toString(StandardCharsets.UTF_8)
+
+        assertFalse(body.contains("\"response_format\""))
+        assertTrue(body.contains("Closed output JSON contract"))
+        assertTrue(body.contains("no Markdown, comments, or extra keys"))
+    }
+
+    @Test
+    fun `native schema mode does not duplicate schema inside prompt`() {
+        val wire = OpenAiRequestFactory.create(
+            profile = profile(ProviderApiStyle.OPENAI_RESPONSES),
+            request = harness(),
+            credential = ProviderCredential.None,
+            attempt = 0,
+        )
+        val body = wire.body.toString(StandardCharsets.UTF_8)
+
+        assertTrue(body.contains("\"type\":\"json_schema\""))
+        assertFalse(body.contains("Closed output JSON contract"))
     }
 
     @Test
     fun `repair request is explicitly one shot and includes rejected document`() {
         val wire = OpenAiRequestFactory.create(
-            profile = profile(ProviderApiStyle.OPENAI_RESPONSES),
+            profile = profile(
+                ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+                structuredOutput = StructuredOutputMode.JSON_OBJECT,
+            ),
             request = harness(),
             credential = ProviderCredential.None,
             attempt = 1,
@@ -96,6 +161,7 @@ class OpenAiRequestFactoryTest {
         assertTrue(body.contains("only repair attempt"))
         assertTrue(body.contains("{bad}"))
         assertTrue(body.contains("$.protocol: wrong"))
+        assertTrue(body.contains("Closed output JSON contract"))
     }
 
     private fun profile(
