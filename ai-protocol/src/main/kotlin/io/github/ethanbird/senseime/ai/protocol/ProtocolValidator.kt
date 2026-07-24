@@ -198,6 +198,16 @@ object ProtocolValidator {
                 }
             }
 
+            PatchTarget.CONTEXT_WINDOW -> if (
+                snapshot.capability != SnapshotCapability.SURROUNDING_WINDOW
+            ) {
+                error(
+                    ProtocolErrorCode.TARGET_NOT_SUPPORTED,
+                    "$.target",
+                    "context_window requires SURROUNDING_WINDOW",
+                )
+            }
+
             null -> if (
                 snapshot.capability == SnapshotCapability.FULL_DOCUMENT ||
                 snapshot.capability == SnapshotCapability.SELECTION_ONLY
@@ -291,6 +301,16 @@ object ProtocolValidator {
                             "selection requires a non-empty frozen selection",
                         )
                     }
+                }
+
+                PatchTarget.CONTEXT_WINDOW -> if (
+                    snapshot.capability != SnapshotCapability.SURROUNDING_WINDOW
+                ) {
+                    error(
+                        ProtocolErrorCode.TARGET_NOT_SUPPORTED,
+                        "$.operation.target",
+                        "context_window requires SURROUNDING_WINDOW",
+                    )
                 }
 
                 null -> Unit

@@ -15,6 +15,9 @@ object KeyCodes {
     const val EDITOR = -13
     const val VOICE = -14
     const val HIDE = -15
+    const val VOICE_DONE = -16
+    const val VOICE_CANCEL = -17
+    const val VOICE_RETRY = -18
     const val SPACE = 32
     const val ENTER = 10
 }

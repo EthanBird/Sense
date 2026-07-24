@@ -185,7 +185,10 @@ class ProviderSettingsStore(context: Context) {
             displayName = json.getString("display_name"),
             apiStyle = ProviderApiStyle.valueOf(json.getString("api_style")),
             baseUrl = baseUrl,
-            model = json.getString("model"),
+            model = ProviderCompatibility.activeModelForSavedProfile(
+                baseUrl = baseUrl,
+                model = json.getString("model"),
+            ),
             thinkingMode = thinkingMode,
             reasoningEffort = ReasoningEffort.valueOf(json.getString("reasoning_effort")),
             streaming = json.getBoolean("streaming"),

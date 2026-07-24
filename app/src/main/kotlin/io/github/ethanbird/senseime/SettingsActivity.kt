@@ -1,12 +1,15 @@
 package io.github.ethanbird.senseime
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -16,29 +19,41 @@ import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.Spinner
-import android.widget.ArrayAdapter
 import android.widget.Switch
 import android.widget.TextView
+import io.github.ethanbird.senseime.brain.api.CredentialEndpointScope
+import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
 import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
 import io.github.ethanbird.senseime.brain.api.ProviderCompatibilityIssue
-import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
 import io.github.ethanbird.senseime.brain.api.ProviderCredential
 import io.github.ethanbird.senseime.brain.api.ProviderProfile
+import io.github.ethanbird.senseime.brain.api.ProviderPreset
+import io.github.ethanbird.senseime.brain.api.ProviderPresetCatalog
+import io.github.ethanbird.senseime.brain.api.ProviderPresetId
+import io.github.ethanbird.senseime.brain.api.ProviderReasoningStrength
 import io.github.ethanbird.senseime.brain.api.StructuredOutputMode
-import io.github.ethanbird.senseime.brain.api.ThinkingMode
 import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestEvent
 import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestFailure
 import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestPhase
 import io.github.ethanbird.senseime.brain.runtime.ProviderSettingsStore
 import io.github.ethanbird.senseime.brain.runtime.SenseAiProviderTestClient
+import io.github.ethanbird.senseime.speech.SpeechProviderCredentialRequirement
+import io.github.ethanbird.senseime.speech.SpeechProviderCredentialPolicy
+import io.github.ethanbird.senseime.speech.SpeechProviderPreset
+import io.github.ethanbird.senseime.speech.SpeechProviderPresetCatalog
+import io.github.ethanbird.senseime.speech.SpeechProviderRuntimeCapability
+import io.github.ethanbird.senseime.speech.SpeechProviderSettingsStore
 
 class SettingsActivity : Activity() {
     private lateinit var statusText: TextView
+    private lateinit var providerPreset: Spinner
     private lateinit var providerName: EditText
     private lateinit var providerBaseUrl: EditText
     private lateinit var providerModel: EditText
@@ -47,11 +62,31 @@ class SettingsActivity : Activity() {
     private lateinit var providerStructuredOutput: Spinner
     private lateinit var providerThinkingMode: Spinner
     private lateinit var providerStreaming: Switch
+    private lateinit var providerAdvanced: Switch
+    private lateinit var providerAdvancedFields: LinearLayout
     private lateinit var providerStatus: TextView
     private lateinit var providerTestButton: Button
     private val providerStore by lazy { ProviderSettingsStore(this) }
     private lateinit var providerTestClient: SenseAiProviderTestClient
     private var providerTestRunning = false
+    private var providerUiLoaded = false
+    private var selectedProviderPresetPosition = 0
+    private var loadedProviderCredentialScope: String? = null
+    private lateinit var speechPreset: Spinner
+    private lateinit var speechLanguage: Spinner
+    private lateinit var speechApiKey: EditText
+    private lateinit var speechEndpoint: EditText
+    private lateinit var speechModel: EditText
+    private lateinit var speechAdvanced: Switch
+    private lateinit var speechAdvancedFields: LinearLayout
+    private lateinit var speechPermissionButton: Button
+    private lateinit var speechStatus: TextView
+    private val speechStore by lazy { SpeechProviderSettingsStore(this) }
+    private var speechUiLoaded = false
+    private var selectedSpeechPresetPosition = 0
+    private var loadedSpeechCredentialScope: String? = null
+    private var speechPermissionRequestInFlight = false
+    private var speechPermissionDeniedOnce = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,7 +104,9 @@ class SettingsActivity : Activity() {
     override fun onResume() {
         super.onResume()
         updateStatus()
-        loadProviderSettings()
+        if (!providerUiLoaded) loadProviderSettings()
+        if (!speechUiLoaded) loadSpeechSettings()
+        updateSpeechPermissionButton()
     }
 
     override fun onStop() {
@@ -106,6 +143,7 @@ class SettingsActivity : Activity() {
         }.withTop(dp(10)))
 
         content.addView(card(R.string.ai_provider_title, providerForm()).withTop(dp(24)))
+        content.addView(card(R.string.speech_provider_title, speechProviderForm()).withTop(dp(12)))
         content.addView(
             card(
                 R.string.m0_title,
@@ -156,6 +194,13 @@ class SettingsActivity : Activity() {
         orientation = LinearLayout.VERTICAL
 
         addView(text(R.string.ai_provider_body, 13f, R.color.sense_secondary))
+        providerPreset = Spinner(this@SettingsActivity).apply {
+            adapter = ArrayAdapter(
+                this@SettingsActivity,
+                android.R.layout.simple_spinner_dropdown_item,
+                ProviderPresetCatalog.presets.map(ProviderPreset::displayName),
+            )
+        }
         providerName = editField(R.string.ai_provider_name, "OpenAI")
         providerBaseUrl = editField(R.string.ai_provider_base_url, ProviderProfile.DEFAULT_OPENAI_BASE_URL)
         providerModel = editField(R.string.ai_provider_model, DEFAULT_PROVIDER_MODEL)
@@ -190,9 +235,9 @@ class SettingsActivity : Activity() {
                 this@SettingsActivity,
                 android.R.layout.simple_spinner_dropdown_item,
                 listOf(
-                    "快速（关闭思考，推荐）",
-                    "自动（由 Provider 决定）",
-                    "深度（开启思考）",
+                    "快速 · 最低延迟",
+                    "均衡 · Provider 自动判断",
+                    "深度 · 更强推理",
                 ),
             )
         }
@@ -201,25 +246,36 @@ class SettingsActivity : Activity() {
             isChecked = true
             setTextColor(getColor(R.color.sense_primary))
         }
+        providerAdvanced = Switch(this@SettingsActivity).apply {
+            setText(R.string.ai_provider_advanced)
+            setTextColor(getColor(R.color.sense_primary))
+            setOnCheckedChangeListener { _, _ -> updateProviderAdvancedVisibility() }
+        }
+        providerAdvancedFields = LinearLayout(this@SettingsActivity).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(labeledField(R.string.ai_provider_name, providerName))
+            addView(labeledField(R.string.ai_provider_base_url, providerBaseUrl).withTop(dp(10)))
+            addView(labeledField(R.string.ai_provider_model, providerModel).withTop(dp(10)))
+            addView(labeledField(R.string.ai_provider_style, providerApiStyle).withTop(dp(10)))
+            addView(
+                labeledField(
+                    R.string.ai_provider_structured_output,
+                    providerStructuredOutput,
+                ).withTop(dp(10)),
+            )
+            addView(providerStreaming.withTop(dp(10)))
+        }
 
-        addView(labeledField(R.string.ai_provider_name, providerName).withTop(dp(14)))
-        addView(labeledField(R.string.ai_provider_base_url, providerBaseUrl).withTop(dp(10)))
-        addView(labeledField(R.string.ai_provider_model, providerModel).withTop(dp(10)))
-        addView(labeledField(R.string.ai_provider_style, providerApiStyle).withTop(dp(10)))
+        addView(labeledField(R.string.ai_provider_preset, providerPreset).withTop(dp(14)))
+        addView(labeledField(R.string.ai_provider_key, providerApiKey).withTop(dp(10)))
         addView(
             labeledField(
-                R.string.ai_provider_structured_output,
-                providerStructuredOutput,
-            ).withTop(dp(10)),
-        )
-        addView(
-            labeledField(
-                R.string.ai_provider_thinking_mode,
+                R.string.ai_provider_reasoning_strength,
                 providerThinkingMode,
             ).withTop(dp(10)),
         )
-        addView(labeledField(R.string.ai_provider_key, providerApiKey).withTop(dp(10)))
-        addView(providerStreaming.withTop(dp(10)))
+        addView(providerAdvanced.withTop(dp(10)))
+        addView(providerAdvancedFields.withTop(dp(10)))
 
         addView(secondaryButton(R.string.ai_provider_save, ::saveProviderSettings).withTop(dp(12)))
         providerTestButton = primaryButton(
@@ -236,6 +292,419 @@ class SettingsActivity : Activity() {
         )
         providerStatus = text(R.string.ai_provider_not_configured, 12f, R.color.sense_secondary)
         addView(providerStatus.withTop(dp(10)))
+
+        providerPreset.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long,
+            ) {
+                val changed = position != selectedProviderPresetPosition
+                selectedProviderPresetPosition = position
+                if (!providerUiLoaded || !changed) {
+                    updateProviderAdvancedVisibility()
+                    return
+                }
+                providerApiKey.text.clear()
+                val preset = ProviderPresetCatalog.presets[position]
+                if (preset.isCustom) {
+                    providerAdvanced.isChecked = true
+                } else {
+                    providerAdvanced.isChecked = false
+                    applyProviderPresetFields(preset)
+                }
+                updateProviderAdvancedVisibility()
+                updateProviderKeyHint()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+        }
+        updateProviderAdvancedVisibility()
+    }
+
+    private fun speechProviderForm(): View = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        addView(text(R.string.speech_provider_body, 13f, R.color.sense_secondary))
+
+        speechPreset = Spinner(this@SettingsActivity).apply {
+            adapter = ArrayAdapter(
+                this@SettingsActivity,
+                android.R.layout.simple_spinner_dropdown_item,
+                SpeechProviderPresetCatalog.all.map(SpeechProviderPreset::displayName),
+            )
+        }
+        speechLanguage = Spinner(this@SettingsActivity).apply {
+            adapter = ArrayAdapter(
+                this@SettingsActivity,
+                android.R.layout.simple_spinner_dropdown_item,
+                SPEECH_LANGUAGES.map { it.first },
+            )
+        }
+        speechApiKey = editField(R.string.speech_provider_key, "可选；系统模式无需 Key").apply {
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD or
+                android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+            importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+            imeOptions = imeOptions or EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
+            isSaveEnabled = false
+        }
+        speechEndpoint = editField(R.string.speech_provider_endpoint, "https://…")
+        speechModel = editField(R.string.speech_provider_model, "model")
+        speechAdvanced = Switch(this@SettingsActivity).apply {
+            setText(R.string.speech_provider_advanced)
+            setTextColor(getColor(R.color.sense_primary))
+            setOnCheckedChangeListener { _, _ -> updateSpeechAdvancedVisibility() }
+        }
+        speechAdvancedFields = LinearLayout(this@SettingsActivity).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(labeledField(R.string.speech_provider_endpoint, speechEndpoint))
+            addView(labeledField(R.string.speech_provider_model, speechModel).withTop(dp(10)))
+        }
+
+        addView(labeledField(R.string.speech_provider_preset, speechPreset).withTop(dp(14)))
+        addView(labeledField(R.string.speech_provider_language, speechLanguage).withTop(dp(10)))
+        addView(labeledField(R.string.speech_provider_key, speechApiKey).withTop(dp(10)))
+        addView(speechAdvanced.withTop(dp(10)))
+        addView(speechAdvancedFields.withTop(dp(10)))
+        addView(secondaryButton(R.string.speech_provider_save, ::saveSpeechSettings).withTop(dp(12)))
+        addView(
+            secondaryButton(
+                R.string.speech_provider_clear_key,
+                ::clearSpeechCredential,
+            ).withTop(dp(8)),
+        )
+        speechPermissionButton = primaryButton(
+            R.string.speech_permission_grant,
+            ::requestSpeechPermission,
+        )
+        addView(speechPermissionButton.withTop(dp(8)))
+        speechStatus = text(R.string.speech_provider_not_configured, 12f, R.color.sense_secondary)
+        addView(speechStatus.withTop(dp(10)))
+
+        speechPreset.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long,
+            ) {
+                val changed = position != selectedSpeechPresetPosition
+                selectedSpeechPresetPosition = position
+                if (speechUiLoaded && changed) {
+                    speechApiKey.text.clear()
+                    applySpeechPresetFields(selectedSpeechPreset())
+                    speechAdvanced.isChecked = false
+                }
+                updateSpeechAdvancedVisibility()
+                updateSpeechKeyHint()
+                updateSpeechCapabilityStatus()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+        }
+        updateSpeechAdvancedVisibility()
+    }
+
+    private fun selectedSpeechPreset(): SpeechProviderPreset =
+        SpeechProviderPresetCatalog.all[
+            speechPreset.selectedItemPosition.coerceIn(
+                0,
+                SpeechProviderPresetCatalog.all.lastIndex,
+            )
+        ]
+
+    private fun applySpeechPresetFields(preset: SpeechProviderPreset) {
+        speechEndpoint.setText(preset.defaultEndpointUrl.orEmpty())
+        speechModel.setText(preset.defaultModel.orEmpty())
+    }
+
+    private fun updateSpeechAdvancedVisibility() {
+        if (!::speechAdvancedFields.isInitialized || !::speechPreset.isInitialized) return
+        val cloud = selectedSpeechPreset().defaultEndpointUrl != null
+        speechAdvanced.isEnabled = cloud
+        if (!cloud && speechAdvanced.isChecked) {
+            speechAdvanced.isChecked = false
+            return
+        }
+        speechAdvancedFields.visibility =
+            if (cloud && speechAdvanced.isChecked) View.VISIBLE else View.GONE
+    }
+
+    private fun updateSpeechCapabilityStatus() {
+        if (!::speechStatus.isInitialized || !::speechPreset.isInitialized) return
+        val preset = selectedSpeechPreset()
+        if (preset.runtimeCapability == SpeechProviderRuntimeCapability.AVAILABLE) {
+            speechStatus.setText(
+                when {
+                    !hasSpeechPermission() ->
+                        R.string.speech_provider_permission_needed
+                    preset.id == SpeechProviderPresetCatalog.SYSTEM ->
+                        R.string.speech_provider_system_ready
+                    else ->
+                        R.string.speech_provider_cloud_ready
+                },
+            )
+            speechStatus.setTextColor(
+                getColor(
+                    if (hasSpeechPermission()) R.color.sense_success
+                    else R.color.sense_secondary,
+                ),
+            )
+        } else {
+            speechStatus.text = preset.capabilityNotice
+                ?: getString(R.string.speech_provider_configuration_only)
+            speechStatus.setTextColor(getColor(R.color.sense_secondary))
+        }
+    }
+
+    private fun speechCredentialScope(
+        preset: SpeechProviderPreset,
+        endpointUrl: String?,
+    ): String =
+        "${preset.id}:${CredentialEndpointScope.normalize(endpointUrl.orEmpty())}"
+
+    private fun updateSpeechKeyHint() {
+        if (!::speechApiKey.isInitialized || !::speechPreset.isInitialized) return
+        val preset = selectedSpeechPreset()
+        if (preset.credentialRequirement == SpeechProviderCredentialRequirement.NONE) {
+            speechApiKey.text.clear()
+            speechApiKey.isEnabled = false
+            speechApiKey.hint = getString(R.string.speech_provider_key_not_required)
+            return
+        }
+        speechApiKey.isEnabled = true
+        val currentScope = speechCredentialScope(
+            preset = preset,
+            endpointUrl = speechEndpoint.text.toString(),
+        )
+        val canPreserve = speechStore.hasCredential() &&
+            loadedSpeechCredentialScope == currentScope
+        speechApiKey.hint = getString(
+            if (canPreserve) {
+                R.string.speech_provider_key_saved
+            } else {
+                R.string.speech_provider_key_required
+            },
+        )
+    }
+
+    private fun saveSpeechSettings() {
+        val preset = selectedSpeechPreset()
+        val profile = preset.defaultProfile(selectedSpeechLanguageTag()).copy(
+            endpointUrl = if (preset.defaultEndpointUrl == null) {
+                null
+            } else {
+                speechEndpoint.text.toString().trim()
+            },
+            model = if (preset.defaultModel == null) {
+                null
+            } else {
+                speechModel.text.toString().trim()
+            },
+        )
+        val validation = profile.validate()
+        if (!validation.isValid) {
+            speechStatus.text = validation.errors.joinToString("\n") {
+                "${it.path}: ${it.message}"
+            }
+            speechStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+            return
+        }
+
+        val enteredKey = speechApiKey.text.toString()
+        val currentScope = speechCredentialScope(preset, profile.endpointUrl)
+        val hasSavedCredential = speechStore.hasCredential()
+        val canPreserveCredential =
+            hasSavedCredential && loadedSpeechCredentialScope == currentScope
+        val apiKey = when {
+            preset.credentialRequirement == SpeechProviderCredentialRequirement.NONE ->
+                CharArray(0)
+            enteredKey.isEmpty() && !canPreserveCredential -> {
+                speechStatus.setText(
+                    if (hasSavedCredential) {
+                        R.string.speech_provider_key_provider_changed
+                    } else {
+                        R.string.speech_provider_key_required_to_save
+                    },
+                )
+                speechStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+                return
+            }
+            enteredKey.isEmpty() -> null
+            !SpeechProviderCredentialPolicy.isValid(enteredKey) -> {
+                speechStatus.setText(R.string.speech_provider_key_invalid)
+                speechStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+                return
+            }
+            else -> enteredKey.toCharArray()
+        }
+        speechStore.save(profile, apiKey)
+            .onSuccess {
+                loadedSpeechCredentialScope = currentScope
+                speechApiKey.text.clear()
+                updateSpeechKeyHint()
+                speechStatus.setText(
+                    if (preset.runtimeCapability == SpeechProviderRuntimeCapability.AVAILABLE) {
+                        R.string.speech_provider_saved
+                    } else {
+                        R.string.speech_provider_saved_configuration_only
+                    },
+                )
+                speechStatus.setTextColor(
+                    getColor(
+                        if (preset.runtimeCapability == SpeechProviderRuntimeCapability.AVAILABLE) {
+                            R.color.sense_success
+                        } else {
+                            R.color.sense_secondary
+                        },
+                    ),
+                )
+            }
+            .onFailure {
+                speechStatus.setText(R.string.speech_provider_save_failed)
+                speechStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+            }
+    }
+
+    private fun clearSpeechCredential() {
+        speechStore.loadProfile()
+            .onSuccess { profile ->
+                if (profile == null) {
+                    speechStatus.setText(R.string.speech_provider_not_configured)
+                    speechStatus.setTextColor(getColor(R.color.sense_secondary))
+                    return@onSuccess
+                }
+                speechStore.save(profile, CharArray(0))
+                    .onSuccess {
+                        speechApiKey.text.clear()
+                        updateSpeechKeyHint()
+                        speechStatus.setText(R.string.speech_provider_key_cleared)
+                        speechStatus.setTextColor(getColor(R.color.sense_success))
+                    }
+                    .onFailure {
+                        speechStatus.setText(R.string.speech_provider_save_failed)
+                        speechStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+                    }
+            }
+            .onFailure {
+                speechStatus.setText(R.string.speech_provider_invalid)
+                speechStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+            }
+    }
+
+    private fun loadSpeechSettings() {
+        if (!::speechStatus.isInitialized) return
+        speechStore.loadProfile()
+            .onSuccess { profile ->
+                val preset = profile?.let {
+                    SpeechProviderPresetCatalog.find(it.presetId)
+                } ?: SpeechProviderPresetCatalog.require(SpeechProviderPresetCatalog.SYSTEM)
+                selectedSpeechPresetPosition = SpeechProviderPresetCatalog.all.indexOf(preset)
+                    .coerceAtLeast(0)
+                speechPreset.setSelection(selectedSpeechPresetPosition)
+                applySpeechPresetFields(preset)
+                if (profile != null) {
+                    speechEndpoint.setText(profile.endpointUrl.orEmpty())
+                    speechModel.setText(profile.model.orEmpty())
+                    val languageIndex = SPEECH_LANGUAGES.indexOfFirst {
+                        it.second == profile.languageTag
+                    }
+                    speechLanguage.setSelection(languageIndex.coerceAtLeast(0))
+                }
+                loadedSpeechCredentialScope = profile?.let {
+                    speechCredentialScope(preset, it.endpointUrl)
+                }
+                speechAdvanced.isChecked = false
+                speechUiLoaded = true
+                updateSpeechAdvancedVisibility()
+                updateSpeechKeyHint()
+                updateSpeechCapabilityStatus()
+            }
+            .onFailure {
+                loadedSpeechCredentialScope = null
+                val preset =
+                    SpeechProviderPresetCatalog.require(SpeechProviderPresetCatalog.SYSTEM)
+                selectedSpeechPresetPosition = SpeechProviderPresetCatalog.all.indexOf(preset)
+                    .coerceAtLeast(0)
+                speechPreset.setSelection(selectedSpeechPresetPosition)
+                applySpeechPresetFields(preset)
+                speechAdvanced.isChecked = false
+                speechUiLoaded = true
+                updateSpeechAdvancedVisibility()
+                updateSpeechKeyHint()
+                speechStatus.setText(R.string.speech_provider_invalid)
+                speechStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+            }
+    }
+
+    private fun selectedSpeechLanguageTag(): String =
+        SPEECH_LANGUAGES[
+            speechLanguage.selectedItemPosition.coerceIn(0, SPEECH_LANGUAGES.lastIndex)
+        ].second
+
+    private fun requestSpeechPermission() {
+        if (hasSpeechPermission()) {
+            updateSpeechPermissionButton()
+            return
+        }
+        if (
+            speechPermissionDeniedOnce &&
+            !shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO)
+        ) {
+            startActivity(
+                Intent(
+                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:$packageName"),
+                ),
+            )
+            return
+        }
+        speechPermissionRequestInFlight = true
+        updateSpeechPermissionButton()
+        requestPermissions(
+            arrayOf(Manifest.permission.RECORD_AUDIO),
+            REQUEST_RECORD_AUDIO,
+        )
+    }
+
+    private fun hasSpeechPermission(): Boolean =
+        checkSelfPermission(Manifest.permission.RECORD_AUDIO) ==
+            PackageManager.PERMISSION_GRANTED
+
+    private fun updateSpeechPermissionButton() {
+        if (!::speechPermissionButton.isInitialized) return
+        val granted = hasSpeechPermission()
+        speechPermissionButton.setText(
+            when {
+                granted -> R.string.speech_permission_granted
+                speechPermissionDeniedOnce &&
+                    !shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) ->
+                    R.string.speech_permission_open_settings
+                else -> R.string.speech_permission_grant
+            },
+        )
+        speechPermissionButton.isEnabled = !granted && !speechPermissionRequestInFlight
+        updateSpeechCapabilityStatus()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_RECORD_AUDIO) {
+            speechPermissionRequestInFlight = false
+            speechPermissionDeniedOnce =
+                grantResults.isEmpty() ||
+                grantResults.firstOrNull() != PackageManager.PERMISSION_GRANTED
+            updateSpeechPermissionButton()
+            if (!hasSpeechPermission()) {
+                speechStatus.setText(R.string.speech_permission_denied)
+                speechStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+            }
+        }
     }
 
     private fun saveProviderSettings() {
@@ -263,21 +732,39 @@ class SettingsActivity : Activity() {
         if (!showProfileErrors(profile)) return
 
         val enteredKey = providerApiKey.text.toString()
-        val key = if (enteredKey.isEmpty()) {
-            null
-        } else {
-            val valid = runCatching { ProviderCredential.Bearer(enteredKey) }.isSuccess
-            if (!valid) {
+        val currentScope = providerCredentialScope(profile)
+        val hasSavedCredential = providerStore.hasCredential()
+        val canPreserveCredential =
+            hasSavedCredential && loadedProviderCredentialScope == currentScope
+        val key = when {
+            enteredKey.isEmpty() &&
+                !selectedProviderPreset().isCustom &&
+                !canPreserveCredential -> {
+                providerStatus.setText(
+                    if (hasSavedCredential) {
+                        R.string.ai_provider_key_provider_changed
+                    } else {
+                        R.string.ai_provider_key_required
+                    },
+                )
+                providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+                return
+            }
+            enteredKey.isEmpty() && !canPreserveCredential ->
+                if (hasSavedCredential) CharArray(0) else null
+            enteredKey.isEmpty() -> null
+            runCatching { ProviderCredential.Bearer(enteredKey) }.isFailure -> {
                 providerStatus.setText(R.string.ai_provider_key_invalid)
                 providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
                 return
             }
-            enteredKey.toCharArray()
+            else -> enteredKey.toCharArray()
         }
         providerStore.save(profile, key)
             .onSuccess {
+                loadedProviderCredentialScope = currentScope
                 providerApiKey.text.clear()
-                providerApiKey.hint = getString(R.string.ai_provider_key_saved)
+                updateProviderKeyHint()
                 providerStatus.setText(R.string.ai_provider_saved)
                 providerStatus.setTextColor(getColor(R.color.sense_success))
                 onSaved?.invoke()
@@ -288,8 +775,16 @@ class SettingsActivity : Activity() {
             }
     }
 
-    private fun currentProviderProfile(): ProviderProfile =
-        ProviderProfile(
+    private fun currentProviderProfile(): ProviderProfile {
+        val baseUrl = providerBaseUrl.text.toString().trim()
+        val model = ProviderCompatibility.activeModelForSavedProfile(
+            baseUrl = baseUrl,
+            model = providerModel.text.toString().trim(),
+        )
+        if (model != providerModel.text.toString().trim()) {
+            providerModel.setText(model)
+        }
+        val profile = ProviderProfile(
             id = "primary",
             displayName = providerName.text.toString().trim(),
             apiStyle = if (providerApiStyle.selectedItemPosition == 0) {
@@ -297,13 +792,8 @@ class SettingsActivity : Activity() {
             } else {
                 ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS
             },
-            baseUrl = providerBaseUrl.text.toString().trim(),
-            model = providerModel.text.toString().trim(),
-            thinkingMode = when (providerThinkingMode.selectedItemPosition) {
-                1 -> ThinkingMode.AUTO
-                2 -> ThinkingMode.ENABLED
-                else -> ThinkingMode.DISABLED
-            },
+            baseUrl = baseUrl,
+            model = model,
             streaming = providerStreaming.isChecked,
             structuredOutput = when (providerStructuredOutput.selectedItemPosition) {
                 0 -> StructuredOutputMode.JSON_SCHEMA
@@ -311,6 +801,71 @@ class SettingsActivity : Activity() {
                 else -> StructuredOutputMode.PROMPT_ONLY
             },
         )
+        return selectedReasoningStrength().applyTo(profile)
+    }
+
+    private fun providerCredentialScope(profile: ProviderProfile): String =
+        CredentialEndpointScope.normalize(profile.baseUrl)
+
+    private fun updateProviderKeyHint() {
+        if (!::providerApiKey.isInitialized || !::providerPreset.isInitialized) return
+        val profile = currentProviderProfile()
+        val canPreserve = providerStore.hasCredential() &&
+            loadedProviderCredentialScope == providerCredentialScope(profile)
+        providerApiKey.hint = getString(
+            when {
+                canPreserve -> R.string.ai_provider_key_saved
+                selectedProviderPreset().isCustom -> R.string.ai_provider_key_optional
+                else -> R.string.ai_provider_key_required
+            },
+        )
+    }
+
+    private fun selectedReasoningStrength(): ProviderReasoningStrength =
+        ProviderReasoningStrength.entries[
+            providerThinkingMode.selectedItemPosition.coerceIn(
+                0,
+                ProviderReasoningStrength.entries.lastIndex,
+            )
+        ]
+
+    private fun selectedProviderPreset(): ProviderPreset =
+        ProviderPresetCatalog.presets[
+            providerPreset.selectedItemPosition.coerceIn(
+                0,
+                ProviderPresetCatalog.presets.lastIndex,
+            )
+        ]
+
+    private fun applyProviderPresetFields(preset: ProviderPreset) {
+        providerName.setText(preset.providerName)
+        providerBaseUrl.setText(preset.baseUrl)
+        providerModel.setText(preset.model)
+        providerApiStyle.setSelection(
+            if (preset.apiStyle == ProviderApiStyle.OPENAI_RESPONSES) 0 else 1,
+        )
+        providerStructuredOutput.setSelection(
+            when (preset.structuredOutput) {
+                StructuredOutputMode.JSON_SCHEMA -> 0
+                StructuredOutputMode.JSON_OBJECT -> 1
+                StructuredOutputMode.PROMPT_ONLY -> 2
+            },
+        )
+        providerStreaming.isChecked = true
+    }
+
+    private fun updateProviderAdvancedVisibility() {
+        if (!::providerAdvancedFields.isInitialized) return
+        val custom = ::providerPreset.isInitialized &&
+            selectedProviderPreset().id == ProviderPresetId.CUSTOM
+        if (custom && !providerAdvanced.isChecked) {
+            providerAdvanced.isChecked = true
+            return
+        }
+        providerAdvancedFields.visibility =
+            if (providerAdvanced.isChecked || custom) View.VISIBLE else View.GONE
+        providerAdvanced.isEnabled = !custom
+    }
 
     /**
      * Applies the protocol required by a known official endpoint before Save/Test validation.
@@ -472,7 +1027,7 @@ class SettingsActivity : Activity() {
                 providerStore.save(profile, CharArray(0))
                     .onSuccess {
                         providerApiKey.text.clear()
-                        providerApiKey.hint = getString(R.string.ai_provider_key_optional)
+                        updateProviderKeyHint()
                         providerStatus.setText(R.string.ai_provider_key_cleared)
                         providerStatus.setTextColor(getColor(R.color.sense_success))
                     }
@@ -492,17 +1047,25 @@ class SettingsActivity : Activity() {
         providerStore.loadProfile()
             .onSuccess { profile ->
                 if (profile == null) {
-                    providerName.setText("OpenAI")
-                    providerBaseUrl.setText(ProviderProfile.DEFAULT_OPENAI_BASE_URL)
-                    providerModel.setText(DEFAULT_PROVIDER_MODEL)
-                    providerApiStyle.setSelection(0)
-                    providerStructuredOutput.setSelection(0)
+                    loadedProviderCredentialScope = null
+                    val preset = ProviderPresetCatalog.default
+                    selectedProviderPresetPosition =
+                        ProviderPresetCatalog.presets.indexOf(preset)
+                    providerPreset.setSelection(selectedProviderPresetPosition)
+                    applyProviderPresetFields(preset)
                     providerThinkingMode.setSelection(0)
-                    providerStreaming.isChecked = true
-                    providerApiKey.hint = getString(R.string.ai_provider_key_optional)
+                    providerAdvanced.isChecked = false
+                    providerUiLoaded = true
+                    updateProviderAdvancedVisibility()
+                    updateProviderKeyHint()
                     providerStatus.setText(R.string.ai_provider_not_configured)
+                    providerStatus.setTextColor(getColor(R.color.sense_secondary))
                     return@onSuccess
                 }
+                val preset = ProviderPresetCatalog.detect(profile)
+                selectedProviderPresetPosition =
+                    ProviderPresetCatalog.presets.indexOf(preset)
+                providerPreset.setSelection(selectedProviderPresetPosition)
                 providerName.setText(profile.displayName)
                 providerBaseUrl.setText(profile.baseUrl)
                 providerModel.setText(profile.model)
@@ -517,21 +1080,28 @@ class SettingsActivity : Activity() {
                     },
                 )
                 providerThinkingMode.setSelection(
-                    when (profile.thinkingMode) {
-                        ThinkingMode.DISABLED -> 0
-                        ThinkingMode.AUTO -> 1
-                        ThinkingMode.ENABLED -> 2
-                    },
+                    ProviderReasoningStrength.from(profile).ordinal,
                 )
                 providerStreaming.isChecked = profile.streaming
-                providerApiKey.hint = getString(
-                    if (providerStore.hasCredential()) R.string.ai_provider_key_saved
-                    else R.string.ai_provider_key_optional,
-                )
+                providerAdvanced.isChecked = preset.isCustom
+                loadedProviderCredentialScope = providerCredentialScope(profile)
+                providerUiLoaded = true
+                updateProviderAdvancedVisibility()
+                updateProviderKeyHint()
                 providerStatus.setText(R.string.ai_provider_saved)
                 providerStatus.setTextColor(getColor(R.color.sense_success))
             }
             .onFailure {
+                loadedProviderCredentialScope = null
+                val preset = ProviderPresetCatalog.default
+                selectedProviderPresetPosition = ProviderPresetCatalog.presets.indexOf(preset)
+                providerPreset.setSelection(selectedProviderPresetPosition)
+                applyProviderPresetFields(preset)
+                providerThinkingMode.setSelection(0)
+                providerAdvanced.isChecked = false
+                providerUiLoaded = true
+                updateProviderAdvancedVisibility()
+                updateProviderKeyHint()
                 providerStatus.setText(R.string.ai_provider_invalid)
                 providerStatus.setTextColor(getColor(android.R.color.holo_red_dark))
             }
@@ -663,5 +1233,12 @@ class SettingsActivity : Activity() {
 
     companion object {
         private const val DEFAULT_PROVIDER_MODEL = "gpt-4.1-mini"
+        private const val REQUEST_RECORD_AUDIO = 40
+        private val SPEECH_LANGUAGES = listOf(
+            "普通话（中国大陆）" to "zh-CN",
+            "粤语（香港）" to "zh-HK",
+            "中文（台湾）" to "zh-TW",
+            "English (US)" to "en-US",
+        )
     }
 }

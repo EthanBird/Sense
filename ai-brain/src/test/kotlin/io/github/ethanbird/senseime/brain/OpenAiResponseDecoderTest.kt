@@ -233,6 +233,18 @@ class OpenAiResponseDecoderTest {
     }
 
     @Test
+    fun `streaming preview scans one-character fragments exactly once`() {
+        val preview = StreamingPatchPreview()
+        val source = """{"operation":{"type":"replace","text":"先\n\ud83e\udde0思"}}"""
+        val visible = buildString {
+            source.forEach { char -> append(preview.append(char.toString())) }
+        }
+
+        assertEquals("先\n🧠思", visible)
+        assertEquals(source.length.toLong(), preview.scannedCharCount)
+    }
+
+    @Test
     fun `native tool accumulator streams public description and patch text then closes contract`() {
         val accumulator = NativePatchToolAccumulator()
         val first = accumulator.append(
@@ -247,6 +259,28 @@ class OpenAiResponseDecoderTest {
         assertEquals("思", second.patchText)
         assertEquals("已润色", submission.description)
         assertTrue(submission.patchDocument.contains("\"text\":\"先思\""))
+    }
+
+    @Test
+    fun `native tool accumulator supports reordered fields with one-character fragments`() {
+        val accumulator = NativePatchToolAccumulator()
+        val source =
+            """{"patch":{"protocol":"sense.editor.patch.v1","text":"先\ud83e\udde0思"},"description":"后置描述"}"""
+        val description = StringBuilder()
+        val patch = StringBuilder()
+
+        source.forEach { char ->
+            val delta = accumulator.append(char.toString())
+            description.append(delta.description)
+            patch.append(delta.patchText)
+        }
+        val submission = accumulator.finish()
+
+        assertEquals("后置描述", description.toString())
+        assertEquals("先🧠思", patch.toString())
+        assertEquals("后置描述", submission.description)
+        assertTrue(submission.patchDocument.contains("\"text\":\"先🧠思\""))
+        assertEquals(source.length.toLong(), accumulator.scannedCharCount)
     }
 
     @Test(expected = ProviderPayloadException::class)

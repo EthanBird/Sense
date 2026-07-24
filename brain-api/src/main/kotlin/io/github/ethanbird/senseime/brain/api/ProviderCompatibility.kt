@@ -49,12 +49,30 @@ object ProviderCompatibility {
     fun thinkingModeForLegacyProfile(baseUrl: String): ThinkingMode =
         if (isOfficialDeepSeek(baseUrl)) ThinkingMode.DISABLED else ThinkingMode.AUTO
 
+    /**
+     * DeepSeek retired both historical aliases on 2026-07-24. Migrate only those exact aliases on
+     * the official host; account-specific models and compatible gateways remain untouched.
+     */
+    fun activeModelForSavedProfile(baseUrl: String, model: String): String =
+        if (
+            isOfficialDeepSeek(baseUrl) &&
+            model.lowercase(Locale.ROOT) in RETIRED_DEEPSEEK_MODEL_ALIASES
+        ) {
+            "deepseek-v4-flash"
+        } else {
+            model
+        }
+
     fun isOfficialDeepSeek(baseUrl: String): Boolean {
         val host = runCatching { URI(baseUrl).host }.getOrNull() ?: return false
         return host.lowercase(Locale.ROOT) == OFFICIAL_DEEPSEEK_HOST
     }
 
     private const val OFFICIAL_DEEPSEEK_HOST = "api.deepseek.com"
+    private val RETIRED_DEEPSEEK_MODEL_ALIASES = setOf(
+        "deepseek-chat",
+        "deepseek-reasoner",
+    )
 }
 
 enum class ProviderCompatibilityIssue {

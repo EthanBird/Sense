@@ -2,5 +2,6 @@
 <resources>
     <string name="ime_name">先思输入法</string>
     <string name="subtype_zh_cn">中文（简体）</string>
+    <string name="editor_copied">已复制</string>
+    <string name="editor_cut">已剪切</string>
 </resources>
-

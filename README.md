@@ -2,9 +2,9 @@
 
 > Android 原生高性能中文输入法：普通输入完全本地运行，AI、记忆与工具能力通过可配置的长按方向 Skill 显式触发。
 
-**项目状态：** M8 AI 编辑 Agent 与 Provider 稳定性收敛；完整保留 M7 输入能力
+**项目状态：** `v0.4.0` AI 交互、宿主兼容与键盘内语音
 
-**目标预览：** `v0.3.7-m8`（`versionCode 14`，prerelease）
+**当前版本：** `v0.4.0`（`versionCode 15`）
 
 **更新日期：** 2026-07-24
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
@@ -22,60 +22,49 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.3.7-m8 Agent Soul 与 DeepSeek 稳定性
+## 0. 当前迭代：v0.4.0 AI 锁定、兼容覆盖与语音输入
 
-`v0.3.6-m8` 已完成 Provider 端到端测试与键盘缝隙命中。本轮继续保持
-M8 架构与 0.3.x 版本线，修复 DeepSeek 默认思考耗尽旧输出预算所造成的假超时，
-并把一次 AI 编辑收敛为有版本的 Soul、可公开的一句话进度和本地严格验证的终止工具；
-Android `versionCode` 单调增加到 14，tag 固定为 `v0.3.7-m8`。
+`v0.4.0` 完整保留本地中文输入、候选学习、混输、剪贴板、Emoji、符号和文字编辑能力，
+重点把 AI 从“可以调用”推进到可长时间使用、可中断、可验证的输入法交互：
 
-本轮完整保留 M7 输入能力，并加入：
+- 长按空格启动 AI；激活后上滑 56 dp 可锁定，松手继续运行，右下停止会立即撤销本地
+  generation 并取消 Brain 请求；
+- Provider 单字符流经过单遍 JSON 扫描、16 ms IPC/UI 合帧和 Canvas 断行缓存，避免长
+  输出或手势重绘阻塞输入法主线程；
+- 完整全文与选区继续走 hash/CAS 原子 Patch；宿主只开放光标附近文本时，降级为
+  `context_window` 当前编辑单元，并在写入前后校验；
+- 宿主不提供绝对位置时不猜测覆盖范围，提示用户先选择文字；
+- 设置页内置 OpenAI、DeepSeek、Gemini、OpenRouter、硅基流动、Kimi、智谱、通义百炼
+  与自定义预设，常用界面仅需 Provider、API Key、思考强度；
+- API Key 使用 Android Keystore 加密并按 Provider endpoint 隔离；连接测试发送固定
+  无隐私文本，显示耗时与 Token；
+- 语音按钮打开固定高度键盘内 Voice Surface，展示实时声纹、阶段和 Provider；系统识别
+  可显示临时转写并优先设备端能力，OpenAI-compatible 与 Deepgram 在停止短时录音后
+  通过 HTTPS 返回最终转写；阿里云实时 ASR 在 `0.4.0` 仅提供配置预览；
+- 文字编辑页加入连续加速删除、复制/剪切 Toast、粘贴后返回，并修复无效操作缝隙误触。
 
-- Provider Profile 新增快速、自动、深度三档思考模式；移动端默认快速，连接测试固定
-  关闭思考，避免用推理 Token 测连通性；
-- 纯 Kotlin `brain-api` / `ai-brain` 与私有 `:brain` Android Service；
-- 长按空格 dead-man switch 和固定高度流式 AI Surface；
-- 全文/选区快照、generation/stale/hash 门禁与原子 Patch；
-- OpenAI Responses 和 OpenAI-compatible Chat Completions；
-- Responses 固定 `store=false`，Provider 快照剔除本地字段身份与编辑器时序元数据；
-- 内置并按 UTF-8 校验 `sense/soul.md`，明确快照是不可信数据、工具权限、输出上限、
-  单次终止语义和不暴露思维链；
-- DeepSeek 官方 Chat Completions 使用原生 `sense_submit_patch` 工具；工具参数携带
-  一句话公开描述与 `sense.editor.patch.v1`，普通 assistant 文本不能直接改编辑器；
-- `DescriptionDelta` 只传输不超过 160 字符的安全进度描述；Provider 的
-  `reasoning_content` 只映射为阶段状态，不展示或保存私有推理；
-- SSE、15 / 30 / 30 / 120 秒连接/首事件/流空闲/总超时、松手中断和最多一次格式修复；
-- AI 网络只存在于 Brain，普通逐键、候选与上屏热路径不访问网络或配置文件。
-- DeepSeek 官方端点在联网前校验 Chat Completions、思考模式和 reasoning effort
-  组合；
-- 设置页端到端连通性测试显示耗时与 Token，用固定无隐私快照走完整原生工具与本地
-  Patch 门禁；
-- Provider 认证、余额、端点/模型、限流与服务异常分别给出安全提示，不显示响应正文；
-- 按键保留 5dp 视觉间距，但触控层会把缝隙 DOWN 事件确定性分配给最近键。
+AI 最终结果仍只能通过 `sense_submit_patch` / `sense.editor.patch.v1` 提议；普通模型文本、
+流式预览、私有推理和迟到回调都没有写入权限。完整设计见
+[`ADR 0012`](docs/adr/0012-v0.4.0-interruptible-ai-and-speech-surface.md)。
 
-真实 DeepSeek V4-Pro 探针确认：旧 512 Token 思考路径 `0/3` 产生终止结果；最终
-Soul + 动态冻结工具 schema 在连续压力下 `19/20` HTTP 成功且 `19/19` 响应通过协议，
-间隔 1 秒时 `10/10` 成功。最终协议首工具参数 p50 `4.701s`，总耗时 p50 `6.512s`、
-p95 `8.389s`。连续压力中的一次 HTTP 层拒绝被保留并与提示词/结构错误分开统计。
-探针不记录 API Key、响应正文或输入框内容。
-
-只有 GitHub Actions 的 `verify` 作业全部通过，工作流才会创建 `v0.3.7-m8`
-prerelease；未实际执行的 Kotlin、Lint、APK 或真机检查不会写成“已通过”。
+只有 GitHub Actions 的 `verify` 作业全部通过，工作流才会创建 `v0.4.0` Release；
+未实际执行的 Kotlin、Lint、APK 或真机检查不会写成“已通过”。
 
 | 门禁 | 当前状态 |
 |---|---|
-| M8 协议与 Brain | 版本化 Soul、原生终止工具、公开描述、严格 Patch、SSE、取消、超时与迟到事件 |
-| M8 编辑事务 | 快照能力、隐私拒绝、request/generation/pointer/stale/hash CAS 与 API 29–36 应用计划 |
-| M8 交互 | 短按空格无回归、长按唤醒、松手同步取消、固定高度流式界面 |
+| AI 协议与 Brain | 版本化 Soul、原生终止工具、单遍流解析、IPC 合帧、严格 Patch、取消与迟到事件 |
+| AI 编辑事务 | 全文、选区、受限上下文、隐私拒绝、generation/hash CAS 与写后校验 |
+| AI 交互 | 短按空格无回归、长按唤醒、上滑锁定、未锁定松手取消、锁定后松手继续、右下强制停止 |
+| Voice Surface | 系统/设备端 ASR、云端语音配置、会话隔离、声纹缓冲、取消与最终一次提交 |
 | M4/M5 生产资产 Python 回归 | 词典与 Bigram 继续做 fresh-checkout 字节级重建 |
 | 生成资产 | 拼音 429,901 keys / SHA `ef2fac…cce6`；Bigram 46,657 / SHA `db00a1…18c`；英文 20,000 词 / SHA `1a1823…5624` |
 | 既有 Kotlin 正确性 | core、service、UI 全量回归继续阻断发布；Android View、Lint 与正式 Gradle 任务以 Actions 结果为准 |
 | M7 输入基线 | 顶部固定 45dp、竖/横屏总高 358/258dp；生产资产首候选 `scxt → 上窜下跳`、`ssyw → 蛇鼠一窝` |
 | M0–M6 Host 门禁 | 所有既有正确性与延迟基准必须无回归 |
 | Android Lint 与编译 | GitHub Actions 构建 Debug、Benchmark 与 Macrobenchmark APK |
-| APK 元数据门禁 | `versionCode 14`、`versionName 0.3.7-m8`、`minSdk 29`、`targetSdk 36` |
-| APK 完整性门禁 | zipalign、签名、三项模型哈希、20,000 英文词、内置许可、仅新增 `INTERNET` |
-| Android 真机 | 长按/松手竞态、宿主全文覆盖、Brain 进程、Provider 与 M7 OEM 矩阵待实机验收 |
+| APK 元数据门禁 | `versionCode 15`、`versionName 0.4.0`、`minSdk 29`、`targetSdk 36` |
+| APK 完整性门禁 | zipalign、签名、模型哈希、20,000 英文词、许可、仅 `INTERNET` / `RECORD_AUDIO` |
+| Android 真机 | AI 锁定、宿主上下文、系统 ASR、云端语音、Brain 进程与 OEM 矩阵仍需持续验收 |
 
 标准工程验证命令：
 
@@ -117,7 +106,12 @@ SENSE_GRADLE_HOME=/path/to/gradle-8.13 \
 tools/offline_verify.sh
 ```
 
-本次仍是工程预览。固定发布签名尚未建立，每次 GitHub runner 生成的 debug 证书可能不同，因此即使 `versionCode` 增加也不保证覆盖安装旧 APK。签名不一致时卸载旧版会同时清除本地 SQLite 用户词库、剪贴板历史和 Provider 配置。AI 编辑基础威胁模型见 [`ADR 0010`](docs/adr/0010-v0.3.5-m8-ai-editor-harness.md)，本轮 Soul、原生工具与 Provider 延迟决策见 [`ADR 0011`](docs/adr/0011-v0.3.7-m8-agent-soul-provider-latency.md)。
+固定发布签名尚未建立，每次 GitHub runner 生成的 debug 证书可能不同，因此即使
+`versionCode` 增加也不保证覆盖安装旧 APK。签名不一致时卸载旧版会同时清除本地
+SQLite 用户词库、剪贴板历史和 Provider 配置。AI 编辑基础威胁模型见
+[`ADR 0010`](docs/adr/0010-v0.3.5-m8-ai-editor-harness.md)，Soul 与 Provider 延迟决策见
+[`ADR 0011`](docs/adr/0011-v0.3.7-m8-agent-soul-provider-latency.md)，本轮锁定、受限上下文
+和语音设计见 [`ADR 0012`](docs/adr/0012-v0.4.0-interruptible-ai-and-speech-surface.md)。
 
 ## 1. 项目结论
 
@@ -340,8 +334,8 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.3.7-m8` Agent Soul 与 Provider
-稳定性预览。现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
+以下保留 M0 的实施记录；当前代码位于 `v0.4.0` AI 交互、宿主兼容与语音输入阶段。
+现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。
 
 ### 12.1 实施清单

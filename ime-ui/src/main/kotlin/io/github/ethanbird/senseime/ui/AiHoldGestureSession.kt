@@ -1,6 +1,5 @@
 package io.github.ethanbird.senseime.ui
 
-import kotlin.math.min
 
 /**
  * Android-free state machine for the press-and-hold Space AI gesture.
@@ -13,11 +12,13 @@ class AiHoldGestureSession(
     private val longPressTimeoutMillis: Long = DEFAULT_LONG_PRESS_TIMEOUT_MILLIS,
     private val activationConfirmationMillis: Long = DEFAULT_ACTIVATION_CONFIRMATION_MILLIS,
     private val maximumStationaryDistance: Float,
+    private val lockDistance: Float = maximumStationaryDistance * 4f,
 ) {
     init {
         require(longPressTimeoutMillis > 0L)
         require(activationConfirmationMillis >= 0L)
         require(maximumStationaryDistance > 0f && maximumStationaryDistance.isFinite())
+        require(lockDistance > maximumStationaryDistance && lockDistance.isFinite())
     }
 
     enum class Outcome {
@@ -26,6 +27,9 @@ class AiHoldGestureSession(
         HOLD_RELEASED,
         ELIGIBILITY_CANCELLED,
         ACTIVATED,
+        LOCK_PROGRESS,
+        LOCKED,
+        LOCKED_RELEASED,
         ACTIVE_CANCELLED,
     }
 
@@ -39,6 +43,7 @@ class AiHoldGestureSession(
         IDLE,
         ARMED,
         ACTIVE,
+        LOCKED,
     }
 
     private var state = State.IDLE
@@ -47,6 +52,7 @@ class AiHoldGestureSession(
     private var downX = 0f
     private var downY = 0f
     private var activationAtMillis = 0L
+    private var currentLockProgress = 0f
 
     /**
      * Arms only an idle session. A second pointer can never steal ownership.
@@ -78,13 +84,39 @@ class AiHoldGestureSession(
      */
     fun move(pointerId: Int, x: Float, y: Float): Outcome {
         require(x.isFinite() && y.isFinite())
-        if (state != State.ARMED || pointerId != ownerPointerId) return Outcome.NONE
-        val deltaX = x - downX
-        val deltaY = y - downY
-        val maximumDistanceSquared = maximumStationaryDistance * maximumStationaryDistance
-        if (deltaX * deltaX + deltaY * deltaY <= maximumDistanceSquared) return Outcome.NONE
-        clear()
-        return Outcome.ELIGIBILITY_CANCELLED
+        if (pointerId != ownerPointerId) return Outcome.NONE
+        return when (state) {
+            State.IDLE,
+            State.LOCKED,
+            -> Outcome.NONE
+
+            State.ARMED -> {
+                val deltaX = x - downX
+                val deltaY = y - downY
+                val maximumDistanceSquared =
+                    maximumStationaryDistance * maximumStationaryDistance
+                if (deltaX * deltaX + deltaY * deltaY <= maximumDistanceSquared) {
+                    Outcome.NONE
+                } else {
+                    clear()
+                    Outcome.ELIGIBILITY_CANCELLED
+                }
+            }
+
+            State.ACTIVE -> {
+                val next = ((downY - y) / lockDistance).coerceIn(0f, 1f)
+                val changed = next != currentLockProgress
+                currentLockProgress = next
+                if (next >= 1f) {
+                    state = State.LOCKED
+                    Outcome.LOCKED
+                } else if (changed) {
+                    Outcome.LOCK_PROGRESS
+                } else {
+                    Outcome.NONE
+                }
+            }
+        }
     }
 
     /**
@@ -132,12 +164,34 @@ class AiHoldGestureSession(
                 clear()
                 Outcome.ACTIVE_CANCELLED
             }
+            State.LOCKED -> {
+                ownerPointerId = NO_POINTER
+                Outcome.LOCKED_RELEASED
+            }
         }
     }
 
     fun pointerCancel(pointerId: Int): Outcome {
         if (pointerId != ownerPointerId) return Outcome.NONE
+        if (state == State.LOCKED) {
+            return releaseLockedPointerOwnership()
+        }
         return cancelAll()
+    }
+
+    /**
+     * Detaches the physical pointer after Android cancels its gesture stream.
+     *
+     * A locked run is owned by its generation token, not by the finger that
+     * performed the upward swipe. ACTION_CANCEL therefore must not terminate
+     * the run, but it also must not leave a stale pointer id attached to it.
+     */
+    fun releaseLockedPointerOwnership(): Outcome {
+        if (state != State.LOCKED || ownerPointerId == NO_POINTER) {
+            return Outcome.NONE
+        }
+        ownerPointerId = NO_POINTER
+        return Outcome.LOCKED_RELEASED
     }
 
     fun cancelAll(): Outcome {
@@ -145,6 +199,7 @@ class AiHoldGestureSession(
             State.IDLE -> Outcome.NONE
             State.ARMED -> Outcome.ELIGIBILITY_CANCELLED
             State.ACTIVE -> Outcome.ACTIVE_CANCELLED
+            State.LOCKED -> Outcome.ACTIVE_CANCELLED
         }
         clear()
         return result
@@ -154,10 +209,15 @@ class AiHoldGestureSession(
         state != State.IDLE && ownerPointerId == pointerId
 
     fun activeGeneration(): Long? =
-        generation.takeIf { state == State.ACTIVE }
+        generation.takeIf { state == State.ACTIVE || state == State.LOCKED }
 
     fun armedGeneration(): Long? =
         generation.takeIf { state == State.ARMED }
+
+    fun isLocked(): Boolean = state == State.LOCKED
+
+    fun lockProgress(): Float =
+        if (state == State.ACTIVE || state == State.LOCKED) currentLockProgress else 0f
 
     fun millisUntilActivation(nowMillis: Long): Long {
         require(nowMillis >= 0L)
@@ -178,6 +238,7 @@ class AiHoldGestureSession(
         downX = 0f
         downY = 0f
         activationAtMillis = 0L
+        currentLockProgress = 0f
     }
 
     private fun saturatingAdd(left: Long, right: Long): Long =
@@ -202,6 +263,8 @@ data class AiSurfaceState(
     val phase: AiSurfacePhase,
     val preview: String,
     val statusText: String,
+    val lockProgress: Float = 0f,
+    val locked: Boolean = false,
 )
 
 /**
@@ -209,6 +272,7 @@ data class AiSurfaceState(
  */
 object AiSurfaceContract {
     const val MAX_PREVIEW_CHARS = 4_096
+    const val LOCK_DISTANCE_DP = 56f
 
     data class Bounds(
         val top: Float,
@@ -235,26 +299,31 @@ object AiSurfaceContract {
 
     fun boundedPreview(text: String): String {
         if (text.length <= MAX_PREVIEW_CHARS) return text
-        val end = safeUtf16Boundary(text, MAX_PREVIEW_CHARS)
-        return text.substring(0, end)
+        val proposedStart = text.length - (MAX_PREVIEW_CHARS - ELLIPSIS.length)
+        val start = safeUtf16Start(text, proposedStart)
+        return ELLIPSIS + text.substring(start)
     }
 
     fun appendBounded(current: String, delta: String): String {
         if (delta.isEmpty()) return boundedPreview(current)
-        if (current.length >= MAX_PREVIEW_CHARS) return boundedPreview(current)
-        val remaining = MAX_PREVIEW_CHARS - current.length
-        val end = safeUtf16Boundary(delta, min(delta.length, remaining))
-        return current + delta.substring(0, end)
+        return boundedPreview(current + delta)
     }
 
-    private fun safeUtf16Boundary(text: String, proposedEnd: Int): Int {
-        if (
-            proposedEnd in 1 until text.length &&
-            text[proposedEnd - 1].isHighSurrogate() &&
-            text[proposedEnd].isLowSurrogate()
-        ) {
-            return proposedEnd - 1
-        }
-        return proposedEnd
+    fun lockVisualProgress(rawProgress: Float): Float {
+        val value = rawProgress.coerceIn(0f, 1f)
+        return value * value * (3f - 2f * value)
     }
+
+    private fun safeUtf16Start(text: String, proposedStart: Int): Int {
+        if (
+            proposedStart in 1 until text.length &&
+            text[proposedStart - 1].isHighSurrogate() &&
+            text[proposedStart].isLowSurrogate()
+        ) {
+            return proposedStart + 1
+        }
+        return proposedStart
+    }
+
+    private const val ELLIPSIS = "…"
 }

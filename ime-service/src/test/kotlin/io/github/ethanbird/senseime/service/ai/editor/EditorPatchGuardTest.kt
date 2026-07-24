@@ -192,6 +192,35 @@ class EditorPatchGuardTest {
     }
 
     @Test
+    fun contextWindowPatchCanOnlyReplaceTheFrozenAbsoluteWindow() {
+        val text = "附近的上下文"
+        val snapshot = EditorSnapshotV1(
+            requestId = EditorAiTestFixtures.REQUEST_ID,
+            snapshotId = EditorAiTestFixtures.SNAPSHOT_ID,
+            editorGeneration = EditorAiTestFixtures.EDITOR_GENERATION,
+            fieldIdentity = EditorAiTestFixtures.FIELD_ID,
+            capability = SnapshotCapability.SURROUNDING_WINDOW,
+            text = text,
+            textStartOffset = 40,
+            selection = TextSelectionV1(43, 43),
+            target = PatchTarget.CONTEXT_WINDOW,
+            baseSha256 = EditorTextDigest.sha256Utf8(text),
+            capturedAtMonotonicMs = 100,
+            truncated = true,
+        )
+        val patch = EditorAiTestFixtures.replacePatch(snapshot, text = "已安全替换")
+
+        val guarded = (
+            EditorPatchGuard.evaluate(
+                EditorAiTestFixtures.guardInput(snapshot = snapshot, patch = patch),
+            ) as EditorPatchGuardDecision.Accepted
+            ).guardedPatch
+
+        assertEquals(TextSelectionV1(40, 40 + text.length), guarded.targetRange)
+        assertEquals(text, guarded.originalTargetText)
+    }
+
+    @Test
     fun emptyReplacementCannotSilentlyDeleteWholeFieldOrSelection() {
         val whole = EditorAiTestFixtures.fullSnapshot()
         assertRejected(

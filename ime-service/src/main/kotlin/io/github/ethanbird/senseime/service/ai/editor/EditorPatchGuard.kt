@@ -222,6 +222,21 @@ object EditorPatchGuard {
                 }
             }
 
+            PatchTarget.CONTEXT_WINDOW -> {
+                if (live.capability != SnapshotCapability.SURROUNDING_WINDOW) {
+                    reasons += EditorPatchRejectReason.CAPABILITY_NOT_EDITABLE
+                }
+                val end = live.textStartOffset.toLong() + live.text.length
+                if (end > Int.MAX_VALUE.toLong()) {
+                    reasons += EditorPatchRejectReason.INVALID_TARGET_RANGE
+                    return null
+                }
+                TextSelectionV1(
+                    live.textStartOffset,
+                    end.toInt(),
+                )
+            }
+
             null -> {
                 reasons += EditorPatchRejectReason.CAPABILITY_NOT_EDITABLE
                 return null

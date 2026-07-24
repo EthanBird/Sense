@@ -7,11 +7,34 @@ import io.github.ethanbird.senseime.ai.protocol.SnapshotCapability
 import io.github.ethanbird.senseime.ai.protocol.TextSelectionV1
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class EditorSnapshotCapturePolicyTest {
+    @Test
+    fun androidFullTextMarkerDoesNotDependOnOptionalCursorContextLength() {
+        assertTrue(
+            EditorExtractedTextContract.isCompleteDocument(
+                startOffset = 0,
+                partialStartOffset = -1,
+                partialEndOffset = -1,
+                selectionStartInText = 5,
+                selectionEndInText = 5,
+                textLength = 40_000,
+            ),
+        )
+        assertFalse(
+            EditorExtractedTextContract.isCompleteDocument(
+                startOffset = 0,
+                partialStartOffset = 20,
+                partialEndOffset = 24,
+                selectionStartInText = 5,
+                selectionEndInText = 5,
+                textLength = 40_000,
+            ),
+        )
+    }
+
     @Test
     fun completeExtractedTextCreatesWholeFieldSnapshot() {
         val decision = EditorSnapshotCapturePolicy.capture(input())
@@ -178,7 +201,7 @@ class EditorSnapshotCapturePolicyTest {
     }
 
     @Test
-    fun partialExtractedTextIsPreviewOnly() {
+    fun partialExtractedTextAuthorizesOnlyTheFrozenContextWindow() {
         val partial = ExtractedEditorText(
             text = "context",
             startOffset = 40,
@@ -196,7 +219,7 @@ class EditorSnapshotCapturePolicyTest {
 
         val snapshot = (decision as EditorCaptureDecision.Captured).snapshot
         assertEquals(SnapshotCapability.SURROUNDING_WINDOW, snapshot.capability)
-        assertNull(snapshot.target)
+        assertEquals(PatchTarget.CONTEXT_WINDOW, snapshot.target)
         assertTrue(snapshot.truncated)
         assertTrue(ProtocolValidator.validate(snapshot).isValid)
     }
@@ -220,7 +243,7 @@ class EditorSnapshotCapturePolicyTest {
 
         val snapshot = (decision as EditorCaptureDecision.Captured).snapshot
         assertEquals(SnapshotCapability.SURROUNDING_WINDOW, snapshot.capability)
-        assertNull(snapshot.target)
+        assertEquals(PatchTarget.CONTEXT_WINDOW, snapshot.target)
     }
 
     @Test
@@ -257,7 +280,42 @@ class EditorSnapshotCapturePolicyTest {
         assertEquals(4, snapshot.textStartOffset)
         assertEquals("beforeafter", snapshot.text)
         assertEquals(selection, snapshot.selection)
-        assertNull(snapshot.target)
+        assertEquals(PatchTarget.CONTEXT_WINDOW, snapshot.target)
+        assertTrue(ProtocolValidator.validate(snapshot).isValid)
+    }
+
+    @Test
+    fun collapsedBeforeAfterFallbackAuthorizesOnlyTheCurrentParagraph() {
+        val selection = TextSelectionV1(105, 105)
+        val decision = EditorSnapshotCapturePolicy.capture(
+            input(
+                currentSelection = selection,
+                extracted = null,
+                selected = SelectedEditorText(true, null),
+                surrounding = SurroundingEditorText("上段\n当前", "段\n下段"),
+            ),
+        )
+
+        val snapshot = (decision as EditorCaptureDecision.Captured).snapshot
+        assertEquals("当前段", snapshot.text)
+        assertEquals(103, snapshot.textStartOffset)
+        assertEquals(selection, snapshot.selection)
+        assertEquals(PatchTarget.CONTEXT_WINDOW, snapshot.target)
+        assertTrue(ProtocolValidator.validate(snapshot).isValid)
+    }
+
+    @Test
+    fun preferredContextTargetNeverWidensIntoWholeFieldAuthority() {
+        val decision = EditorSnapshotCapturePolicy.capture(
+            input(preferredTarget = PatchTarget.CONTEXT_WINDOW),
+        )
+
+        val snapshot = (decision as EditorCaptureDecision.Captured).snapshot
+        assertEquals(SnapshotCapability.SURROUNDING_WINDOW, snapshot.capability)
+        assertEquals(PatchTarget.CONTEXT_WINDOW, snapshot.target)
+        assertEquals("hello world", snapshot.text)
+        assertTrue(snapshot.truncated)
+        assertTrue(ProtocolValidator.validate(snapshot).isValid)
     }
 
     @Test
@@ -273,26 +331,29 @@ class EditorSnapshotCapturePolicyTest {
     }
 
     @Test
-    fun oversizedSurroundingWindowIsUnavailable() {
+    fun oversizedSurroundingReadIsReducedToABoundedContextWindow() {
+        val cursor = SenseAiProtocol.ABSOLUTE_MAX_SNAPSHOT_CHARS + 1
         val decision = EditorSnapshotCapturePolicy.capture(
             input(
-                currentSelection = TextSelectionV1(
-                    SenseAiProtocol.ABSOLUTE_MAX_SNAPSHOT_CHARS + 1,
-                    SenseAiProtocol.ABSOLUTE_MAX_SNAPSHOT_CHARS + 1,
-                ),
+                currentSelection = TextSelectionV1(cursor, cursor),
                 extracted = null,
                 selected = SelectedEditorText(true, null),
                 surrounding = SurroundingEditorText(
-                    "a".repeat(SenseAiProtocol.ABSOLUTE_MAX_SNAPSHOT_CHARS + 1),
+                    "a".repeat(cursor),
                     "",
                 ),
             ),
         )
 
+        val snapshot = (decision as EditorCaptureDecision.Captured).snapshot
+        assertEquals(SnapshotCapability.SURROUNDING_WINDOW, snapshot.capability)
+        assertEquals(EditorContextWindowPolicy.DEFAULT_MAX_CONTEXT_CHARS, snapshot.text.length)
+        assertEquals(cursor, snapshot.selection?.start)
         assertEquals(
-            EditorCaptureUnavailableReason.TEXT_LIMIT_EXCEEDED,
-            (decision as EditorCaptureDecision.Unavailable).reason,
+            cursor - EditorContextWindowPolicy.DEFAULT_MAX_CONTEXT_CHARS,
+            snapshot.textStartOffset,
         )
+        assertTrue(ProtocolValidator.validate(snapshot).isValid)
     }
 
     @Test

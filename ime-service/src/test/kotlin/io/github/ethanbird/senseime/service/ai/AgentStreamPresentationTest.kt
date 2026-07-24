@@ -33,7 +33,7 @@ class AgentStreamPresentationTest {
     }
 
     @Test
-    fun presentationBuffersRemainBounded() {
+    fun previewKeepsMovingAsABoundedTailWhileDescriptionKeepsItsHead() {
         val presentation = AgentStreamPresentation(
             maxPreviewChars = 4,
             maxDescriptionChars = 3,
@@ -42,7 +42,17 @@ class AgentStreamPresentationTest {
         presentation.appendPreview("123456")
         presentation.appendDescription("ABCDE")
 
-        assertEquals("1234", presentation.preview)
+        assertEquals("…456", presentation.preview)
         assertEquals("ABC", presentation.description)
+    }
+
+    @Test
+    fun rollingPreviewNeverSplitsASurrogatePair() {
+        val presentation = AgentStreamPresentation(maxPreviewChars = 4)
+
+        presentation.appendPreview("1234")
+        presentation.appendPreview("🐔")
+
+        assertEquals("…4🐔", presentation.preview)
     }
 }
