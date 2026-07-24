@@ -73,5 +73,6 @@ include(
     ":ime-service",
     ":ime-ui",
     ":core-input",
+    ":ai-protocol",
     ":benchmark",
 )

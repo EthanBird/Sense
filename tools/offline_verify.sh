@@ -18,9 +18,9 @@ fi
 BUILD_TOOLS="$SDK/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK/platforms/android-36/android.jar"
 KOTLIN_LIB="$GRADLE_DIST/lib"
-OUT="$ROOT/build/offline-v0.3.4-m7"
+OUT="$ROOT/build/offline-v0.3.5-m8-a"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
-APK="$APK_DIR/Sense-v0.3.4-m7-debug.apk"
+APK="$APK_DIR/Sense-v0.3.5-m8-a-debug.apk"
 LEXICON_ASSET="$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin"
 LEXICON_SHA256="ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
 BIGRAM_ASSET="$ROOT/ime-service/src/main/assets/pinyin_bigrams.bin"
@@ -31,7 +31,7 @@ ENGLISH_WORD_COUNT="20000"
 export ANDROID_USER_HOME=${ANDROID_USER_HOME:-$OUT/android-user-home}
 
 find "$OUT" -mindepth 1 -delete 2>/dev/null || true
-mkdir -p "$OUT/core-main" "$OUT/core-test" "$OUT/ui-main" "$OUT/ui-test" "$OUT/service-main" "$OUT/service-test" "$OUT/generated" "$OUT/app-classes" "$OUT/dex" "$ANDROID_USER_HOME" "$APK_DIR"
+mkdir -p "$OUT/protocol-main" "$OUT/protocol-test" "$OUT/core-main" "$OUT/core-test" "$OUT/ui-main" "$OUT/ui-test" "$OUT/service-main" "$OUT/service-test" "$OUT/generated" "$OUT/app-classes" "$OUT/dex" "$ANDROID_USER_HOME" "$APK_DIR"
 
 python3 "$ROOT/tools/test_build_pinyin_lexicon.py" 2>&1 | tee "$OUT/lexicon-builder-tests.txt"
 python3 "$ROOT/tools/test_build_bigram_model.py" 2>&1 | tee "$OUT/bigram-builder-tests.txt"
@@ -67,6 +67,8 @@ STDLIB="$KOTLIN_LIB/kotlin-stdlib-2.0.21.jar"
 JUNIT="$KOTLIN_LIB/junit-4.13.2.jar"
 HAMCREST="$KOTLIN_LIB/hamcrest-core-1.3.jar"
 
+mapfile -t PROTOCOL_SOURCES < <(find "$ROOT/ai-protocol/src/main/kotlin" -name '*.kt' -print | sort)
+mapfile -t PROTOCOL_TEST_SOURCES < <(find "$ROOT/ai-protocol/src/test/kotlin" -name '*.kt' -print | sort)
 mapfile -t CORE_SOURCES < <(find "$ROOT/core-input/src/main/kotlin" -name '*.kt' -print | sort)
 mapfile -t TEST_SOURCES < <(find "$ROOT/core-input/src/test/kotlin" -name '*.kt' -print | sort)
 mapfile -t UI_LAYOUT_SOURCES < <(printf '%s\n' \
@@ -88,6 +90,22 @@ mapfile -t SERVICE_PURE_SOURCES < <(printf '%s\n' \
     "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/LatestOnlyTaskRunner.kt" \
     "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ProgressiveCandidateSnapshot.kt")
 mapfile -t SERVICE_TEST_SOURCES < <(find "$ROOT/ime-service/src/test/kotlin" -name '*.kt' -print | sort)
+
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect -classpath "$STDLIB" \
+    -d "$OUT/protocol-main" "${PROTOCOL_SOURCES[@]}"
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main" \
+    -d "$OUT/protocol-test" "${PROTOCOL_TEST_SOURCES[@]}"
+PROTOCOL_TEST_CLASSES=()
+for source in "${PROTOCOL_TEST_SOURCES[@]}"; do
+    [[ "$source" == *Test.kt ]] || continue
+    file_name=${source##*/}
+    PROTOCOL_TEST_CLASSES+=("io.github.ethanbird.senseime.ai.protocol.${file_name%.kt}")
+done
+java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/protocol-test" \
+    org.junit.runner.JUnitCore "${PROTOCOL_TEST_CLASSES[@]}" | tee "$OUT/protocol-unit-tests.txt"
 
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect -classpath "$STDLIB" \
@@ -189,8 +207,8 @@ java -cp "$STDLIB:$OUT/core-main" \
     --manifest "$ROOT/tools/offline/AndroidManifest.xml" \
     --min-sdk-version 29 \
     --target-sdk-version 36 \
-    --version-code 10 \
-    --version-name 0.3.4-m7 \
+    --version-code 11 \
+    --version-name 0.3.5-m8-a \
     --auto-add-overlay \
     --output-text-symbols "$OUT/R.txt" \
     -A "$ROOT/ime-service/src/main/assets" \
@@ -259,7 +277,7 @@ keytool -genkeypair \
 "$BUILD_TOOLS/zipalign" -c -P 16 4 "$APK"
 "$BUILD_TOOLS/aapt2" dump badging "$APK" | tee "$OUT/apk-badging.txt"
 "$BUILD_TOOLS/aapt2" dump permissions "$APK" | tee "$OUT/apk-permissions.txt"
-grep -F "package: name='io.github.ethanbird.senseime' versionCode='10' versionName='0.3.4-m7'" "$OUT/apk-badging.txt"
+grep -F "package: name='io.github.ethanbird.senseime' versionCode='11' versionName='0.3.5-m8-a'" "$OUT/apk-badging.txt"
 grep -Fx "minSdkVersion:'29'" "$OUT/apk-badging.txt"
 grep -Fx "targetSdkVersion:'36'" "$OUT/apk-badging.txt"
 if grep -Fq "android.permission.INTERNET" "$OUT/apk-permissions.txt"; then
@@ -302,9 +320,10 @@ HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --sources "$ROOT/ime-service/src/main/kotlin" \
     --sources "$ROOT/ime-ui/src/main/kotlin" \
     --sources "$ROOT/core-input/src/main/kotlin" \
+    --sources "$ROOT/ai-protocol/src/main/kotlin" \
     --classpath "$OUT/app-classes" \
     --libraries "$ANDROID_JAR" \
     --text "$OUT/lint.txt" \
     "$ROOT/tools/offline"
 
-echo "v0.3.4-m7 verification complete: $APK"
+echo "v0.3.5-m8-a verification complete: $APK"
