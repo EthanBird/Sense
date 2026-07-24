@@ -4,7 +4,7 @@
     <string name="brand_english">SENSE</string>
     <string name="brand_chinese">先思输入法</string>
     <string name="brand_tagline">先输入，再思考；需要时，让 AI 接住下一步。</string>
-    <string name="stage_badge">M4 修复预览 · 候选、手势与学习</string>
+    <string name="stage_badge">M8-A 协议预览 · AI Harness 基础</string>
     <string name="ime_status_title">输入法状态</string>
     <string name="ime_enabled">Sense 已在系统输入法列表中启用</string>
     <string name="ime_disabled">Sense 尚未启用，先完成系统设置</string>
@@ -18,5 +18,5 @@
     <string name="dictionary_notice_body">基础词频来自 Rime pinyin-simp（Apache-2.0）；补充词条来自 MDBG 发布的 CC-CEDICT。合并词典及派生句级模型按 CC BY-SA 4.0 资产边界提供。点击离线查看完整署名与许可。</string>
     <string name="dictionary_notice_load_error">无法读取随应用打包的许可文件。</string>
     <string name="close">关闭</string>
-    <string name="version_label">版本 0.3.1-m4 · Android 10+</string>
+    <string name="version_label">版本 0.3.5-m8-a · Android 10+</string>
 </resources>
