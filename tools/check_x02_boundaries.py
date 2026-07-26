@@ -1685,10 +1685,23 @@ def _check_app_apks(root: Path, explicit_apks: Sequence[Path] | None = None) -> 
                 dex_names = [
                     name
                     for name in names
-                    if re.fullmatch(r"(?:.*/)?classes[0-9]*\.dex", name)
+                    if re.fullmatch(
+                        r"classes(?:[2-9]|[1-9][0-9]+)?\.dex",
+                        name,
+                    )
                 ]
                 if not dex_names:
                     raise BoundaryError(f"{apk}: APK contains no classes*.dex")
+                dex_indices = sorted(
+                    1
+                    if name == "classes.dex"
+                    else int(name.removeprefix("classes").removesuffix(".dex"))
+                    for name in dex_names
+                )
+                if dex_indices != list(range(1, dex_indices[-1] + 1)):
+                    raise BoundaryError(
+                        f"{apk}: non-canonical multidex sequence: {dex_names!r}"
+                    )
                 for name in names:
                     lowered = name.lower()
                     if lowered.endswith(".dex") and name not in dex_names:
