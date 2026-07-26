@@ -525,6 +525,18 @@ volume。上面的 sum在 v1恰有一项；保留带 `v` 记号只为了让 file
 volume、或任一 checked sum overflow都使 profile INVALID/BLOCKED。F023/F024/F025也都直接
 作用于这个唯一 volume，所以 §5.3 的 scalar hysteresis不会被另一卷 free bytes掩盖。
 
+WorkManager 自有数据库、WorkSpec/InputData/progress/output、AndroidX Startup state与
+system scheduler bookkeeping不位于上述 `sense-memory/v1` root，也不能伪装成 INDEX、
+MANIFEST、temp或 F010/F019/F020 三类中的 inode。schema 1.0 的 99 fields没有为这些
+**external supporting allocations** 冻结 current/peak byte cap、retained completed-row
+cap、prune authority或 physical census mapping；F087 的 whole-device block-write分子即使
+会观察其写放大，也不能替代 current/peak storage bound。因此任何依赖 WorkManager 的
+`MaintenancePeakCapacityGateV1`/M9C-04 路径在本 profile schema下保持 BLOCKED。启用前
+必须提升 BudgetProfile schema并冻结 closed WorkManager path/sidecar/row/WorkSpec/input
+registry、active+completed retention/prune上限、external physical charge/census规则与
+crash contingency，或由新 Accepted ADR选择另一种有可证明固定 external bound的触发器；
+不得把系统“通常会自动 prune”当 hard cap。
+
 对每个受支持 volume `v`：
 
 ```text

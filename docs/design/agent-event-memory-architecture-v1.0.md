@@ -6,12 +6,22 @@
 **研究快照：** 2026-07-26<br>
 **适用基线：** Sense v0.4.2<br>
 **文档性质：** 架构方案，不是下一版本功能清单，也不授权本轮修改运行时代码<br>
+**决策状态：** 架构原则 Accepted；M9.1+ 语义 schema 仍为 Proposed；Gate 0 实施细节以
+ADR 0015–0018 为 authority；Release Identity/Owner/Signing Authority、Platform
+Certification、Root Bootstrap 与 Memory runtime operational gates 均未通过<br>
 **仓库路径：** `docs/design/agent-event-memory-architecture-v1.0.md`<br>
 **研究方法：** Agent 生态、事件/证据记忆、Android 输入法落地三条并行研究；再分别进行事实、认识论和移动端实现的独立反向审查。所有外部链接按研究快照日期核对。
 
 ---
 
 ## 0. 结论先行
+
+> **Gate 0 解释边界：** 本文的 Event 模型从 M9.1 phase gate 才成立；M9.0 只写
+> `record_id` 明确的 Journal/Session record，两类身份永不混用。Blob 使用稳定随机 logical
+> ID 与 authenticated locator，不是内容寻址对象。当前
+> `ReleaseOwnerContinuityGateV1`、release identity、
+> `LocalErasureControlPhaseGateV1` 与 `LocalErasureCapabilityGateV1` 均未通过，
+> effective stage 为 `SCHEMA_ONLY`，不持久化任何 Memory（包括 synthetic `DARK`）。
 
 Sense 不应在输入法里复刻某个现有 Agent 框架，也不应把“长期记忆”交给摘要、向量数据库或另一个大模型。适合输入法、且能承受未来模型和协议变化的内核应是：
 
@@ -251,7 +261,8 @@ flowchart TD
 
 4. **召回平面**
    - 查询契约、候选生成、闭包、预算打包、Session 回退；
-   - 输出 Memory Frame 和 Completeness Receipt；
+   - M9.1 只输出 local Memory Frame 和 `AssemblyCompletenessReceipt`；
+   - M9.2 才增加 Provider handoff audit；它不能反向成为 M9.1 completeness 的组成部分；
    - “未找到”永不自动解释成“事实为假”。
 
 5. **执行平面**
@@ -267,8 +278,8 @@ flowchart TD
 
 | 进程 | 负责 | 明确禁止 |
 |---|---|---|
-| `:ime` | InputMethodService、渲染、候选、编辑器租约、固定开销事件入队、只读 `HotSnapshotPort` | Room、FTS、图闭包、压缩、网络、Provider、后台维护 |
-| `:brain` | Agent 状态机、Provider、可信内置工具、MemoryBroker 客户端、自己的进程 Journal writer | 直接打开记忆数据库、跨进程共享追加文件 |
+| `:ime` | InputMethodService、渲染、候选、编辑器租约、固定开销事件入队、只读 `HotSnapshotPort`；off-main host recall coordinator，也是 Agent 路径唯一的 `MemoryBroker` client | Room、FTS、图闭包、压缩、网络、Provider、主线程 Broker 调用 |
+| `:brain` | Agent 状态机、Provider、可信内置工具、自己的进程 Journal writer；M92-06 后仅接收 host 授权的 `AuthorizedProviderMemoryFrameV1`，并由自己的 final request factory 物化 Provider request | 查询/绑定 MemoryBroker、直接打开记忆数据库、依赖 Room/WorkManager/memory-runtime、跨进程共享追加文件、接受裸 MemoryFrame |
 | 主进程 | 设置、单一 `MemoryBroker`、Room/FTS、索引、归档、WorkManager | 执行 Provider 流、阻塞 IME |
 | 可选 `:tool_sandbox` | 将来的纯计算不可信工具 | 网络、密钥、任意应用文件和应用权限 |
 
@@ -279,17 +290,23 @@ flowchart TD
 ### 7.2 每个进程拥有独立追加段
 
 ```text
+journal/open/ime/owner.lease
 journal/open/ime/<writer-epoch>/{segment,frontier-a,frontier-b,lease,recovered-seal.<content-digest>?}
+journal/open/brain/owner.lease
 journal/open/brain/<writer-epoch>/{segment,frontier-a,frontier-b,lease,recovered-seal.<content-digest>?}
+journal/open/main/owner.lease
 journal/open/main/<writer-epoch>/{segment,frontier-a,frontier-b,lease,recovered-seal.<content-digest>?}
 ```
 
 - 进程主线程只入队，专用 writer 批量追加；
 - 多进程绝不同时写同一个文件；
 - Broker 常规导入 seal 段，也可以按已发布 durable offset 安全读取 open 段前缀；
-- 正常追加不依赖共享文件锁；每个 epoch 只有其 writer 写入，跨进程锁/lease 仅用于证明
-  orphan reaper 已取得该 epoch 的只读 recovery ownership 并可发布 recovered-seal
-  sidecar；该 ownership 不是 writer ownership，reaper 不原地截短或续写旧段；
+- 每个 writer kind 先取得 installation-scoped `owner.lease` exclusive lock，再取得目标
+  epoch `lease`；两个原 inode/handle 在整个 live epoch 持有。锁只串行化 ownership，不让
+  多进程共享追加同一 segment；
+- orphan reaper 也必须按 `owner.lease → epoch lease` 同一顺序取得锁，之后仅获得旧 epoch
+  的只读 recovery ownership并可发布 recovered-seal sidecar；该 ownership 不是 writer
+  ownership，reaper 不原地截短或续写旧段；
 - 每个 writer 用局部序列与 durable frontier 证明已持久化范围的连续性；
 - 跨 writer 仅通过显式 `RelationAssertion(DEPENDS_ON)` 形成偏序。
 
@@ -308,18 +325,25 @@ memory-runtime    // Broker、Room、FTS、PFD、WorkManager
 
 ```text
 memory-ipc    → memory-protocol
-ai-runtime    → ai-protocol + memory-protocol + memory-ipc + event-journal
-ime-service   → memory-protocol + event-journal
+ai-runtime    → ai-protocol + memory-protocol + event-journal
+ime-service   → memory-protocol + memory-ipc + event-journal
 memory-runtime→ memory-protocol + memory-ipc + event-journal
 app           → memory-runtime + 既有组装依赖
 ```
 
 protobuf bytes 和协议版本属于 `memory-protocol`；`memory-ipc` 只封装 Android component、Binder/PFD codec 和 death/cancel plumbing，不复制 schema 或引用 Broker 实现。所有 `Application` 初始化按进程守卫，避免 Room、WorkManager 和索引代码在 `:ime`、`:brain` 被意外初始化。
 
+这里的 owner 边界是双层的：主进程 `memory-runtime` 独占 Broker service、Room 和
+WorkManager；Agent recall 的唯一 client/请求 owner 是 `:ime` 内 off-main host
+coordinator。`:brain` 的 production/runtime classpath 不得出现
+`MemoryBrokerClient`、Room、WorkManager 或 `memory-runtime`；它不能因为 host 死亡或
+Binder 失败而自行 bind、open 或初始化这些组件。
+
 ### 7.4 MemoryBroker 生命周期
 
 - 非 exported、默认主进程、非 direct-boot 的绑定服务；
-- Brain 按 Run 懒绑定，Run 结束后解绑，不为了记忆长期拉起主进程；
+- 只有 IME/host recall coordinator按 Run懒绑定，Run结束后解绑，不为了记忆长期拉起主
+  进程；Brain不持有 Broker Binder、PFD cursor或重绑权；
 - DB、FTS、PFD 和闭包计算运行在 Broker I/O executor，不占 Binder/主 Looper；
 - 协议携带 requestId/generation、major/minor、取消和 Binder death；
 - 只允许一次有界重绑；
@@ -329,15 +353,61 @@ protobuf bytes 和协议版本属于 `memory-protocol`；`memory-ipc` 只封装 
   package/service 漂移且不让 IPC 模块反向依赖 runtime class；
 - pipe 写入使用独立有界 `PfdPumpExecutor`；容量耗尽返回 `BROKER_BUSY`，Stop/Binder death
   从独立 control path 关闭两端，不能让慢 reader 占满 Broker I/O executor；
-- Broker 进程不可用时，Brain 只能使用当前 Run 的内存 transcript 与已经加载的热快照，并返回 `MEMORY_UNAVAILABLE`；不能绕过边界自行打开 Room/Journal。
+- Broker 进程不可用时，host给 Run返回 `MEMORY_UNAVAILABLE`，Brain只使用当前 Run的内存
+  transcript；它不能绕过 host边界自行打开 Room/Journal。HotSnapshot只服务 IME的非敏感
+  本地路由，不是 Provider Memory。
 
-### 7.5 Release identity 是长期记忆的 Gate 0
+### 7.5 Release identity 与 owner continuity 是长期记忆的 Gate 0
 
-当前 v0.4.2 发布链仍使用 runner 生成的 debug signing identity。签名变化会使 APK 无法覆盖
-安装；用户被迫卸载后，Android Keystore、Journal、SQLite 用户词库和 Provider 配置都会
-随应用数据消失。因此，在固定 production signing identity、托管/轮换、Android signing
-lineage 和灾难恢复演练完成前，Memory 只能停留在开发者 `DARK`，不能宣称长期连续，也不能
-进入用户 `CANARY` 或 `DEFAULT`。
+ADR 0015 把稳定 `DataOwnerIdentityV1` 与可演进 `ReleaseIdentityV1` 分开，并把
+artifact `ReleaseIdentityGateV1`、local owner `ReleaseOwnerContinuityGateV1`、
+release-entry `ReleaseSigningAuthorityGateV1` 与 device/real-data
+`PlatformCertificationGateV1` 分成独立输出。当前均为 `BLOCKED`。单有固定 production
+signing identity 仍不足以证明 owner manifest、升级、lineage rotation、实体设备验收与灾难
+恢复连续性。
+
+release policy 在 ADR 0015 中仍只是由 revision/length/digest 约束的 opaque continuity
+blob。identity/owner 可以验证 exact bytes 与单调性，但 publication/capability 不能解释其
+内容；`ReleasePolicySemanticsPhaseGateV1=BLOCKED`，只有 closed schema/evaluator/caps/
+unknown-field rules 接受后才可能 PASS。
+
+owner local A/B 自己又需要一个目录，因此不能用“没有 local state”自证 owner gate PASS。
+future `RootBootstrapControlPhaseGateV1` 必须先冻结一次性
+`AuthorityBootstrapPermitV1`：它不是 FeatureStage，只能在 external owner/installed APK、
+clean namespace 与 `LocalErasureControlPhaseGateV1=PASS` 时创建 root shell、bootstrap
+lock 和 owner-signed local A/B；不创建 Keyring/data key、record、Journal、Blob 或读取
+正文。local owner state durable reopen 后 owner gate 才可能 PASS，再进入独立 Keyring
+bootstrap。当前 bootstrap/control phase 也为 `BLOCKED`，所以仍禁止创建任何 root。
+
+normal product `DARK` 与 real-data 路径还要求
+`LocalErasureCapabilityGateV1=PASS`。在它尚未建立时，唯一可能触碰持久化 synthetic bytes
+的是 ADR 0018 的一次性 `SyntheticMeasurementPermitV1`；该许可不是 FeatureStage/DARK。
+被测对象仍是 signer-WORM 中 exact production APK/applicationId/code path，只是由不可转正
+的 candidate authority/root/run taint、已知语料、预承诺 attempts与 external zero-census
+隔离；另一个 applicationId只允许作为 companion harness，不能替代被测 app。
+
+应用的 `minSdk=29` 不等于 persistent Memory 的 capability floor。Android API 29–30 因
+官方 documented symmetric-key unlocked-device exception，persistent Memory 固定
+`SCHEMA_ONLY`；API 31–36.0 只有 exact build fingerprint/OEM 的锁定行为证据与同步 runtime
+fence 都 PASS 才可能启用；API 36.1+ 还必须同时验证
+`KeyInfo.isUnlockedDeviceRequired()` getter 与行为证据。IME/AI 的非 Memory 功能仍可在
+minSdk 29 运行。
+
+APK 只能内置 stable DataOwner/root/discovery pin。绑定当前 full signed APK digest 的
+ReleaseIdentity、BuildSubject、BudgetProfileSet、Classifier、
+ProfileAcceptanceReceipt、OwnerManifest 与 PlatformCertification必须在签名后由 external
+owner ledger发布；把它们写回 APK 会形成不可实现的 self-hash。sidecar dependency必须是
+canonical present-tuple DAG，任何 digest cycle、self-reference或 half-present profile group
+均拒绝。设备从 installed `sourceDir` 计算 exact
+APK bytes 并与 owner-signed inner bundle cache 比较；cache 可以继续证明已安装 immutable
+artifact 的 scoped identity/owner binding，但 baseline owner wrapper 不能证明 selected
+single/pair globally latest。resolver 临时离线不会伪造签名失效，却会让独立 freshness gate
+保持非 PASS，因此 real-data path 降为 `SCHEMA_ONLY`。
+
+无硬件/外部单调锚点时，old-valid owner single/pair（其无密钥 wrapper 可重算）以及完整旧
+data-plane/stage A/B pair 连同旧 app/dependency 的一致回放，都无法仅靠本地 generation
+检出；real-data `SHADOW+` 必须等待后续
+`StageRevocationFreshnessGateV1`。
 
 现有 `PersistentUserLexicon` 继续是 `:ime` 内独立的输入排序资产。它不迁移到 Agent
 Memory，也不能被解释成用户陈述或事件证据。
@@ -345,6 +415,10 @@ Memory，也不能被解释成用户陈述或事件证据。
 ---
 
 ## 8. 事件模型
+
+本章定义 M9.1 及以后的事件语义，不是 Gate 0 已冻结的 M9.0 wire。M9.0 的 Journal record
+只保留产生后续 Event 所需的原始 provenance；`record_id` 不升级、别名或转换为
+`event_id`。
 
 ### 8.1 不可变事件信封
 
@@ -355,15 +429,6 @@ EventEnvelope {
   event_id                 // 随机、稳定、无时间语义
   schema_uri
   schema_version
-
-  origin {
-    installation_id
-    writer_id
-    writer_epoch
-    writer_sequence
-    boot_id?
-    elapsed_realtime_nanos?
-  }
 
   correlation_id?
   branch_id?
@@ -393,6 +458,11 @@ EventEnvelope {
 
   payload | payload_ref
 
+  producer_diagnostics? {
+    boot_id?
+    elapsed_realtime_nanos?
+  }
+
   occurred_at?             // 来源明确给出时才填写
   recorded_at              // 审计属性，不用于单独推断因果
   time_precision?
@@ -406,9 +476,65 @@ EventEnvelope {
 }
 ```
 
+`EventEnvelope` 是先于 writer dequeue/sequence allocation 冻结的 persisted payload，因此
+它**不自存**自己的 `writer`、`writer_epoch` 或 `writer_sequence`。否则 producer 必须先
+猜 sequence再序列化，而 ADR 0016 又要求 writer dequeue后才分配 sequence，形成不可实现的
+self-reference。事件自身的 canonical origin由 reader在验证外层 Journal后构造，且不写回
+payload：
+
+```text
+EventOriginCoordinateV1 {
+  writer                    // authenticated segment header +
+                            // installation/owner continuity 映射出的 WriterRefV1
+  writer_sequence           // enclosing accepted Journal frame 的 sequence
+  record_id                 // enclosing validated SessionRecordV1
+}
+```
+
+该 coordinate 只有在 frame 位于 selected durable cut、segment/header/frame/AEAD 与
+`SessionRecordV1` 全部通过 ADR 0016 validator后成立。Projection保存 coordinate时只能复制
+这个已验证结果，并把自己的 projection generation/watermark与 source frame绑定；不得从
+目录字符串、payload字段、mtime或模型输出重建。
+
+compaction/relocation不能改变这个逻辑 origin。若 future archive用新 physical segment与新
+DEK重写 durable prefix，必须先由独立 phase ADR冻结 authenticated relocation envelope：
+它逐字节保留 source `WriterRefV1 + writer_sequence + record_id`、exact record bytes与
+record commitment；compactor自己的 epoch/sequence只属于 physical attempt provenance，
+不得成为 Event origin。发布 manifest的 fixed cut在任一时刻必须使 old或new恰一份逻辑
+record可达；双可达、双不可达、commitment变化或 coordinate变化全部 fail closed。在该
+relocation wire/selector/kill matrix接受前，event-bearing Journal只能保留原 physical
+record，不能用“重建索引”名义重包。
+
+事件引用**已经持久化的其他来源**时使用不同类型，不能把自己的 outer coordinate塞回
+payload，也不能只存一个裸 sequence：
+
+```text
+PersistedRecordProvenanceLocatorV1 {
+  writer                    // full WriterRefV1
+  writer_sequence
+  record_id
+  exact_record_commitment
+}
+```
+
+`PersistedRecordProvenanceLocatorV1` 只能定位在引用事件序列化前已经进入 selected durable
+frontier的 record；跨 writer必须携带完整 WriterRef。`source_event_ids[]` 继续表达语义
+Event引用，`evidence_locators[]` 可携带上述 typed locator；二者都不是事件自身 origin。
+若 source coordinate不可验证，Event只能带显式 GAP/UNRESOLVED provenance，不能用当前
+writer coordinate、墙上时间或相邻 sequence替补。
+
+`ime/brain/main` 只是在路径中的 canonical directory token，唯一映射自
+`WriterKindV1.IME/BRAIN/MAIN`；Event schema不接受自由文本 `writer_id`、字符串 kind别名
+或从目录名反推 authority。negative fixtures必须拒绝这些 alias、unknown enum和
+WriterRef/segment不一致。
+
 设计约束：
 
 - `event_id` 与内容 hash 分开：同内容可以发生两次，同一事件也可以有新的解释；
+- producer/API 传入任何“本事件 writer/epoch/sequence”字段都必须被 schema或 validator
+  拒绝，不能静默忽略后再造成签名/审计歧义；
+- queue/retry持有的 `EventEnvelope` exact bytes不可变；epoch在 dequeue前退休时，新的
+  writer只改变 enclosing frame的 `EventOriginCoordinateV1`，不得重写 payload；
 - `original_narrative` 只保存事件产生时的原始文字，不随 renderer 升级而改写；
 - Protobuf field number 永不复用，删除字段必须 reserve；
 - 未识别 payload 必须以 opaque bytes 原样保存；
@@ -466,10 +592,71 @@ revision_relation:
 
 不是每个事件都需要拆成三元组；只有需要跨 Session 推理、冲突和当前状态计算的命题才进入 Claim 层。
 
+模型只可输出不带 canonical identity 的 `ClaimProposalV1`。host
+`ClaimNormalizerV1` 先生成 canonical normalized proposition bytes，再由 host 用独立
+CSPRNG铸造 canonical `claim_id`。`claim_id` 是非零随机 id128，不编码文字、时间或内容
+hash；相同 proposition是否复用已有 identity，只能由 host projection查候选并在解密后对
+canonical bytes逐字节复验，不能由 digest相等直接裁决。
+
+用于 exact match、lineage 和 conflict discovery 的三个索引 key是 host-only、
+domain-separated purpose-3 keyed projection，不是 canonical Claim ID，也不得让模型或
+Provider看到：
+
+```text
+claim_match_token = HMAC-SHA-256(
+  K_INDEX_WRAP,
+  "sense-memory-claim-match-v1" || normalizer_generation ||
+  exact_normalized_proposition_bytes
+)
+
+claim_lineage_token = HMAC-SHA-256(
+  K_INDEX_WRAP,
+  "sense-memory-claim-lineage-v1" || registry_generation ||
+  exact_normalized_lineage_dimensions
+)
+
+claim_conflict_token = HMAC-SHA-256(
+  K_INDEX_WRAP,
+  "sense-memory-claim-conflict-v1" || registry_generation ||
+  exact_normalized_exclusivity_dimensions
+)
+```
+
+三者输入域分别是完整 proposition、predicate registry声明的 revision dimensions和
+exclusivity dimensions；公式中的 `||` 表示 schema-versioned、type-tagged、
+length-prefixed injective tuple encoding，不是歧义裸拼接。不能复用 token或把粗 conflict
+token当 match。Room只保存 token、
+opaque CSPRNG ID与 generation；canonical normalized bytes和 Claim value仍只在加密
+Journal/Blob。HMAC hit只是候选，host必须解密并 byte-equal verify；collision、缺 key或
+无法复验都不能合并 identity。
+
+token miss也不是 mint authority。只有
+`ClaimIdentityProjectionCompletenessReceiptV1(purpose3_key_generation,
+fixed_canonical_cut)` 对 match/lineage/conflict三类 projection均为 `COMPLETE`，且当前
+没有 `STALE/GAPPED/ROTATING/REBUILDING/ERASING`，host才可考虑新 ID。host单 writer事务
+持 Claim mint authority后，preflight receipt cut必须逐字节等于当前 selected source head，
+并重新查询 `(token,key_generation)`、解密全部 candidate canonical bytes逐字节比较：
+
+- exact hit复用既有 CSPRNG `claim_id/lineage_id/conflict_key`，只 append新的
+  derivation/evidence assertion；
+- complete miss才各自铸造所需的新 CSPRNG ID；canonical Claim
+  identity/assertion进入 Journal并取得 DurableAck是唯一线性化点，随后 Room projection按
+  record ID幂等 apply，绝不声称 Journal+Room跨 store原子提交；
+- 同 token允许多个 collision candidate，禁止用 SQL unique-token约束把它们误合并；强制
+  collision时逐个 byte-equal，出现多个不同 ID却相同 canonical bytes是 identity fork并
+  fail closed；
+- projection缺失/被删、rotation switch中、receipt cut落后或无法解密时返回
+  `PARTIAL/IDENTITY_PROJECTION_UNAVAILABLE`，不能把 miss升级成“全新 Claim”。
+
+若在 Journal Ack后、Room apply/watermark前 kill，canonical identity已经存在；Room
+watermark机械落后 selected source head，因此即使没有机会另写“STALE”标志也必须视为
+stale并从 Journal重放。Ack前 kill则没有 canonical mint，重试仍须重新取得 current-cut
+completeness receipt与事务内二次查询。
+
 ```text
 ClaimAssertion {
   claim_id
-  lineage_id
+  lineage_id               // host CSPRNG opaque id128；由 keyed lineage projection解析
   subject
   predicate
   object_or_value
@@ -490,7 +677,7 @@ EvidenceEdgePayload {
 }
 
 ConflictConstraint {
-  conflict_key
+  conflict_key             // host CSPRNG opaque id128；由 keyed conflict projection解析
   predicate
   exclusivity_rule         // SINGLE_VALUE / MUTUALLY_EXCLUSIVE /
                            // EXPLICIT_ONLY
@@ -499,6 +686,26 @@ ConflictConstraint {
   registry_version
 }
 ```
+
+provider/model不能选择 `claim_id/lineage_id/conflict_key` 或 purpose-3 token，也不能通过换
+lineage逃避已有 correction、refutation或 exclusivity constraint。normalizer
+version/policy generation与 encrypted、per-assertion salted proposal commitment进入不可变
+assertion provenance；该 commitment也不能以裸 proposal digest出现在 clear domain。新
+normalizer产生并行 generation或显式 append-only normalization decision，绝不原地改旧
+Claim。
+
+`claim_id`、`lineage_id`、`conflict_key`、proposal commitment和三个 keyed token统一分类为
+`SENSITIVE_DERIVED_COMMITMENT`：不得进入 HotSnapshot、日志、UI、telemetry、崩溃报告或
+默认 export；debug只能显示不可关联的本次运行 ordinal。purpose-3 rotation时 canonical
+CSPRNG IDs保持不变，Broker从仍可读取的加密 canonical cut构建全新 generation的三类
+token projection，完整复验并原子发布后才 drain/删除旧 generation。选择性擦除必须从新
+cut重建并销毁旧 projection/token generation；旧 key缺失或 canonical source不可读时返回
+`PARTIAL/KEY_UNAVAILABLE`，不得沿用 stale match、lineage或 conflict结论。
+
+`SENSITIVE_DERIVED_COMMITMENT` 在本文只是 M9.2 security-policy design label，不是 ADR
+0017/Gate 0 已接受的 wire token或 classification enum。M92-03/M92-06 security
+descriptor/ADR尚未冻结 closed enum、unknown handling、retention/erasure与 reader policy
+前，不得持久化该类工件，Gate 0 reader也不得“提前认识”这个名字。
 
 Claim 和承载证据的 `RelationAssertion` 都不可变；`EvidenceEdgePayload` 只是 `SUPPORTS/REFUTES/MENTIONS` 边的类型化附加信息，不形成第二套边模型。支持/反驳集合由 Projection 计算，不嵌入并不断修改 Claim。每个规范化 Claim 的证据状态与生命周期也必须分开：
 
@@ -543,13 +750,27 @@ RelationAssertion {
   scope
   temporal_constraint?
   registry_version
-  validation_state          // HOST_CONFIRMED /
-                            // STRUCTURALLY_VALID_UNVERIFIED /
-                            // EFFECT_VALIDATED / REJECTED
   payload?                  // 例如 EvidenceEdgePayload
+}
+
+RelationValidationDecision {
+  decision_id
+  relation_id
+  verifier_id
+  verifier_version
+  registry_version
+  decision                 // HOST_CONFIRMED /
+                           // STRUCTURALLY_VALID_UNVERIFIED /
+                           // EFFECT_VALIDATED / REJECTED
+  evidence_refs[]
+  predecessor_decision_digest?
+  decision_provenance
 }
 ```
 
+Assertion 与 validation decision都不可变；Projection按 closed successor规则推导当前
+validation view，不能回填 assertion字段。模型不能确认自己的 relation、选择 verifier、
+制造 predecessor fork或把 `REJECTED/EFFECT_VALIDATED` 降级成较弱状态。
 `HOST_CONFIRMED` 只用于宿主直接知道的运行时依赖/配对；结构校验只证明端点、方向、类型、作用域和来源满足 registry，它不能把 `INFERRED` 升格成 `OBSERVED`，也不能把模型关系变成现实事实。`EFFECT_VALIDATED` 只允许由该 ToolDescriptor 指定的效果 verifier 产生。
 
 第一版应冻结少量关系类型：
@@ -648,11 +869,17 @@ EventCapsule {
   renderer_version
   language
   text
-  projection_hash
+  projection_commitment    // encrypted、per-capsule salted；不是公开裸 text hash
 }
 ```
 
-自然语言有推理作用，但不是唯一真相。未来模型偏好的措辞发生变化时，可以升级 renderer 并重新生成事件卡，不触碰原始证据和结构化关系。某次 Run 真正读取过的事件卡必须由该 Run 记录 `projection_hash`，必要时保存对应输入 Blob，确保以后能够解释“模型当时看到了什么”。
+自然语言有推理作用，但不是唯一真相。未来模型偏好的措辞发生变化时，可以升级 renderer
+并重新生成事件卡，不触碰原始证据和结构化关系。某次 Run装配过的事件卡必须记录 ordered
+component manifest、renderer version、encrypted `projection_commitment` 与 assembly
+receipt digest；默认
+不另存 Provider input Blob。M9.1到 local assembly receipt为止；M9.2实际 handoff只以
+encrypted per-attempt salted commitment、disclosure binding和 §13.4.1 local body-sink
+terminal审计，不保存裸 input digest，也不把 sink close误称为远端已接收。
 
 ---
 
@@ -660,7 +887,7 @@ EventCapsule {
 
 ### 10.1 确定性捕获路径
 
-M9 默认只持久化**用户显式唤醒的 Sense AI Session**及其执行边界，不把普通输入法变成跨应用原文记录器。以下边界由程序直接生成事件，不让 LLM 判断“值不值得记”：
+M9 默认只持久化**用户显式唤醒的 Sense AI Session**及其执行边界，不把普通输入法变成跨应用原文记录器。M9.0 由程序直接生成 record；M9.1 phase gate 后才从保留 provenance 的 record 产生 Event，不让 LLM 判断“值不值得记”：
 
 - AI run 开始、暂停、停止、失败和完成；
 - 用户明确确认、拒绝、纠正和撤销；
@@ -673,9 +900,15 @@ M9 默认只持久化**用户显式唤醒的 Sense AI Session**及其执行边�
 - Skill 加载、版本、调用、结果和迁移；
 - 显式 AI 编辑的接受、撤销和再次采用等行为反馈。
 
-普通键入默认只产生经显式 allowlist 定义、不可逆且不含原文的聚合计数；跨应用原文记忆必须由设置中的显式 opt-in/allowlist 开启。`CapturePolicy` 一旦命中密码变体、`IME_FLAG_NO_PERSONALIZED_LEARNING`、无痕模式、应用拒绝列表或“禁止个性化”，就同时禁止所有内容派生聚合，包括 n-gram、罕见词、按应用词频和可用于重识别的稀疏统计；不能以“已经聚合”为由绕过排除。app/package 和字段标识只能作为本地 opaque scope，不进入 Provider Memory Frame；继续冻结 v0.4.2 不向 Brain/Provider 暴露宿主 package 元数据的边界。
+M9 基线不捕获普通键入；任何未来普通输入聚合都必须另过 phase ADR、显式 allowlist，并证明不可逆且不含原文。`CapturePolicy` 一旦命中密码变体、`IME_FLAG_NO_PERSONALIZED_LEARNING`、无痕模式、应用拒绝列表或“禁止个性化”，就同时禁止所有内容派生聚合，包括 n-gram、罕见词、按应用词频和可用于重识别的稀疏统计；不能以“已经聚合”为由绕过排除。app/package 和字段标识只能作为本地 opaque scope，不进入 Provider Memory Frame；继续冻结 v0.4.2 不向 Brain/Provider 暴露宿主 package 元数据的边界。
 
-`CapturePolicy` 必须在事件对象和 writer sequence 创建**之前**执行，至少覆盖密码变体、数字密码、`IME_FLAG_NO_PERSONALIZED_LEARNING`、无痕模式和应用拒绝列表。Android 无法可靠识别所有 OTP/支付字段；无法确定时保守地不持久化原文。其他捕获范围由设置中的固定策略决定，不在键盘运行时弹窗询问。
+`CapturePolicy` 使用两阶段判定：metadata-only preflight 在读取正文、创建 ID/token、占用
+queue、分配 writer sequence、创建 Blob、初始化 Cipher 或任何内容派生**之前**执行；
+只有 preflight 返回有界 read permit 才对来源读取一次，finalize 只消费该 bounded body。
+任一阶段 deny 都不留下持久/稀疏痕迹。策略至少覆盖密码变体、数字密码、
+`IME_FLAG_NO_PERSONALIZED_LEARNING`、无痕模式和应用拒绝列表。Android 无法可靠识别所有
+OTP/支付字段；无法确定时保守地不读取/持久化原文。其他捕获范围由设置中的固定策略决定，
+不在键盘运行时弹窗询问。
 
 对公开语义文本，流式 delta 可以合并为稳定 chunk/blob；这不承诺保留 SSE ID、分包和异常点等传输级细节。Provider 内容诊断默认关闭，只保留无正文指标。后台语义提取默认使用确定性或本地提取器；把历史原文发送给云端提取器必须单独显式授权。
 
@@ -686,7 +919,7 @@ M9 默认只持久化**用户显式唤醒的 Sense AI Session**及其执行边�
 ```text
 Raw records
   → 确定性分段
-  → 模型提出 Event narrative / Claims / entities / relations
+  → 模型提出无 canonical ID 的 EventProposal / ClaimProposal / RelationProposal
   → EvidenceLocator、否定、modality、实体和调用配对校验
   → 追加 DERIVATION / RELATION_PROPOSED
   → 更新工作投影
@@ -694,8 +927,45 @@ Raw records
 
 约束：
 
+- host按 derivation attempt/batch ordinal、normalized content/edge与 provenance分配
+  `event_id/relation_id`；模型不得自选、复用或碰撞 canonical ID。relation endpoint与
+  registry validation在铸造 assertion前完成；
 - 每个模型派生物必须引用一个或多个 typed `EvidenceLocator`；
-- 提取任务以 `(source_hash, extractor_version)` 幂等；
+- 提取 attempt 的唯一键是：
+
+```text
+DerivationAttemptKeyV1 {
+  source_snapshot_id
+  source_id
+  coordinate_system
+  exact_source_range
+  range_hash
+  processor_id
+  processor_version
+  policy_version
+  relation_registry_generation
+  claim_normalizer_generation
+}
+
+DerivationAttemptIdentityV1 {
+  work_key_digest
+  attempt_ordinal
+  precommitted_retry_schedule_digest
+}
+```
+
+- 每个 attempt ordinal调用模型前先 durable append intent；输出经 canonical encoding后先提交 output
+  commitment，再以一个有界原子 `EventBatchV1` 同时追加 proposed events、claims、
+  relations与 ProcessingCoverage，最后提交 receipt。状态只允许
+  `INTENT_COMMITTED -> OUTPUT_COMMITMENT_COMMITTED -> BATCH_COMMITTED`；
+- same attempt identity + same canonical output bytes是幂等 exact resume；同一 attempt
+  identity出现不同 bytes是永久 fork，不能覆盖或择优；
+- 只有证明旧 attempt在任何 output commitment前已 durable
+  `CLOSED_FAILED/CANCELLED`，才可按结果前预承诺的 retry schedule消费下一 ordinal。旧 attempt
+  永久保留，迟到 output按 ordinal拒绝；传输失败本身不要求伪造新的 processor version；
+  已产生 output后若算法/规范需改变，才提升 processor/registry generation形成新 work key；
+- crash/unknown commit先按 attempt identity、commitment与 batch receipt精确 reconcile，绝不因为模型
+  “大概率给相同答案”而再次调用随机模型；
 - 提取失败不影响原文读取；
 - 新提取器生成新派生版本，旧版本可审计；
 - 模型输出本身以不可变 `DERIVATION_RECORDED` 保存；Room/Claim Projection 从已记录派生事件重建，而不是通过重新调用模型假装确定性重放；
@@ -736,7 +1006,7 @@ ProcessingCoverage {
 Coverage 之前先冻结来源清单：
 
 ```text
-SourceManifest {
+ProcessingCoverageSourceManifestV1 {
   source_snapshot_id
   source_id
   content_hash
@@ -749,6 +1019,14 @@ SourceManifest {
 
 只有来源 cut 内每个范围都有 disposition，系统才能声称“该输入范围已被处理或明确分类”。它**不能**证明模型正确发现了所有语义事件，也不能证明分类本身正确。
 
+- manifest的 `declared_ranges` 必须在其 coordinate system中 canonical sort、互不重叠且
+  boundary合法；Coverage ranges对每个
+  `(source_snapshot_id,source_id,processor/version,policy/registry generation)` 必须
+  canonical sort、无 overlap/duplicate/gap，并且 exact union byte-equal declared union。
+  gap、重复、冲突 disposition、UTF-8 byte/code-point boundary混用或越界使该 coverage
+  generation INVALID，不能取“最新一条”掩盖；
+- `ERASED/REDACTED` 只能以 append-only successor decision累计收紧；旧 range/disposition
+  不被修改，Projection按 source erasure authority推导 current view；
 - `NON_SEMANTIC` 仍需保留来源范围、判定器和版本；
 - 如果 `NON_SEMANTIC` 来自模型，它只是可重跑的派生判断；
 - ledger 采用紧凑块/区间表示，只对明确进入事件抽取的来源启用；
@@ -865,10 +1143,11 @@ EventLine {
 |---|---|---|
 | **capture admission** | 冻结 CapturePolicy 枚举了哪些准入/排除来源 | 未捕获的现实经历不存在 |
 | **durability/reference** | 已 DurableAck 的 frame、Blob、引用和段在 cut 内连续，缺口显式 | DurableAck 之前的进程死亡窗口 |
-| **processing accounting** | SourceManifest 范围被指定提取器处理或分类 | 所有语义均被正确发现 |
+| **processing accounting** | ProcessingCoverageSourceManifestV1 范围被指定提取器处理或分类 | 所有语义均被正确发现 |
 | **discovery enumeration** | exact predicate 或 exhaustive scan 枚举了 cut 内满足条件的记录 | 启发式 FTS/向量/模型 anchors 没漏 |
 | **dependency/conflict closure** | 已发现种子的指定关系、修订和 conflict registry 闭包完成 | 所有自然语言矛盾都已发现 |
-| **model materialization** | 哪些正文真正进入本轮模型上下文 | 仅有 handle 的内容已被模型读取或理解 |
+| **local materialization** | 哪些正文真正进入 host-local Memory Frame | 仅有 handle 的内容已展开；或 Provider/模型已读取、理解 |
+| **Provider body binding（M9.2）** | 哪个 authorized provider view进入 exact application request body | socket/远端已接收，或模型已读取、理解 |
 | **replayability** | 能否从已记录事件重建 reducer/projection | 重调模型、工具或新 Skill 会得到相同结果 |
 
 这些维度不能压成 C0–C5 标量。例如，一个 Raw Journal 可以完全可重放，却没有 Claim 冲突层；一个 Claim 闭包可以精确完成，但其他 writer 仍有 gap。
@@ -901,22 +1180,26 @@ HEURISTIC_DISCOVERY_WITH_COMPLETE_CLOSURE
 
 闭包证明不等于发现证明；conflict closure 也只对指定 conflict registry 成立，不能证明所有自然语言语义冲突均被发现。
 
-### 13.3 模型实际读取与“可继续读取”分开
+### 13.3 本地装配、Provider 绑定与“可继续读取”分开
 
 对已计算的闭合组件：
 
-- 正文完整内联并进入模型输入，才可将该组件标为 `MATERIALIZED`；
+- 正文完整内联进 host-local Memory Frame，才可将该组件标为
+  `LOCALLY_MATERIALIZED`；
 - 仅提供 handle/digest 时，它只是 `ADDRESSABLE`；
 - 如果任务契约要求理解该组件，必须展开后再继续；
 - 图尚未计算完时：`verdict=PARTIAL` 且 limitation 包含 `CLOSURE_FRONTIER_REMAINS`；
-- 图已算完但必要正文未进入模型时：`verdict=PARTIAL` 且 limitation 包含 `NECESSARY_COMPONENT_NOT_MATERIALIZED`；
+- 图已算完但必要正文未进入 local frame时：`verdict=PARTIAL` 且 limitation 包含
+  `NECESSARY_COMPONENT_NOT_MATERIALIZED`；
 - 未完成图遍历时不能伪造节点数或 closure digest；
-- digest 只证明已计算集合的身份，不证明没有遗漏，更不证明模型理解。
+- digest 只证明已计算集合的身份，不证明没有遗漏，更不证明模型理解。M9.1只能声明 local
+  assembly；M9.2 encrypted intent才证明 exact application body绑定了哪个 authorized
+  provider view，而 body-sink terminal仍不证明远端或模型实际读取/理解。
 
-### 13.4 Completeness Receipt
+### 13.4 Assembly Completeness Receipt
 
 ```text
-CompletenessReceipt {
+AssemblyCompletenessReceipt {
   verdict                 // COMPLETE_FOR_DECLARED_CONTRACT /
                           // PARTIAL / FAILED
   limitations[]           // 可并存：GAPPED / STALE /
@@ -971,19 +1254,167 @@ CompletenessReceipt {
     complete
   }
 
-  materialization {
-    model_input_digest
-    materialized_ranges[]
+  local_materialization {
+    memory_frame_body_length
+    memory_frame_body_digest
+    locally_materialized_ranges[]
     addressable_components[]
     uncomputed_frontier[]
   }
 
+  ordered_component_manifest_digest
   unresolved_references[]
   known_gaps[]
   next_cursor?
   verifier_version
 }
 ```
+
+`memory_frame_body_digest` 只覆盖 renderer输出的 exact MemoryFrame body bytes，明确排除该
+receipt自身与 transport/Provider envelope，因此 receipt可以嵌入 frame而不形成 self-hash。
+它证明 assembly cut、闭包、冲突、ordered components和本地 materialization，不证明最终
+Provider request实际包含了哪些其它 system/user/tool bytes。M9.1 的 receipt边界到此为止；
+它不定义、产生或依赖下面的 Provider attempt record。
+
+#### 13.4.1 M9.2 Provider input handoff
+
+M9.2 中，host/IME coordinator只把通过 disclosure/erasure read gate的
+`AuthorizedProviderMemoryFrameV1` 交给 Brain；host不拼最终 Provider body，也不持有
+Provider adapter的 serializer。`:brain` 的 versioned final request factory把该 frame与
+本轮 system/user/tool bytes、Provider schema物化成一份有界、不可变的 exact
+**application request-body bytes**，并另生成 canonical non-secret envelope descriptor
+（method、已授权 destination、content type和允许的非秘密 header shape；不含
+Authorization/cookie/secret value）。此处绝不声称冻结 HTTP/2 frame、HPACK、TLS record、
+socket write或其它 network bytes。最终 application body只有这个 factory拥有，任何
+adapter不得二次 JSON round-trip、重排字段或在 intent后注入隐藏 prompt。
+
+factory完成 exact bytes后、创建 HTTP call/request-body sink或发出首个 network byte前，
+`:brain` 必须先向自己的 encrypted Brain Journal追加：
+
+```text
+ModelInputMaterializationIntentV1 {
+  intent_id
+  run_id
+  provider_operation_id
+  attempt_id
+  attempt_ordinal
+  non_secret_envelope_descriptor_commitment
+  assembly_receipt_digest
+  disclosure_grant_digest
+  provider_attempt_lease_digest
+  erasure_read_binding_digest
+  application_request_body_length
+  commitment_salt             // per-intent CSPRNG 256-bit；只存在于 encrypted record
+  application_request_body_commitment
+  renderer_and_request_factory_versions
+}
+```
+
+`non_secret_envelope_descriptor_commitment` 对上述 canonical descriptor exact bytes，
+`application_request_body_commitment` 对
+`domain || intent_id || commitment_salt || exact_final_body_bytes` 的 versioned、
+length-delimited SHA-256；二者使用同一 salt但不同 domain。禁止保存裸
+`SHA-256(body)` 或可跨 attempt比较的稳定 digest：低熵 prompt/目的地会形成离线字典与
+相等性 oracle。salt、commitment、length以及下面的 receipt整体分类为
+`SENSITIVE_DERIVED_COMMITMENT`，只可位于 AEAD加密 Journal payload；不得复制到 clear
+frame/header/AAD、Room/WAL/FTS、HotSnapshot、文件名、日志、UI、telemetry、崩溃报告或
+默认 export。获准解密 intent的 verifier本来就位于 plaintext read authority内；该 salted
+commitment不得离开此域。
+
+salt只消除 public/precomputed dictionary与跨 attempt稳定 equality；它**不能**阻止一个
+已经获准解密 salt+commitment的 reader对单条低熵候选逐个猜测。因此 decrypt reader固定为
+持 current erasure/read lease的 Brain attempt reducer/verifier最小集合，不向一般
+diagnostics、Broker projection或 UI开放。intent/receipt的 retention不得长于它绑定的
+source/disclosure/Provider attempt审计寿命；source选择性擦除、retention compaction或
+whole-run擦除必须把该派生 commitment纳入同一 manifest并物理移除，不能留下“无正文但可猜”
+的孤儿 commitment。
+
+如果未来 commitment、salt或destination binding需要离开 encrypted Journal domain，
+或产品要求比上述 residual per-record guessing更强的承诺，M9.2 security ADR必须先在
+ADR 0017 registry中新增独立 purpose并完成 key
+authorization/rotation/erasure/budget gate；V1不能借用 purpose-3、frontier MAC或任何
+Provider API key充当该密钥。
+
+intent必须取得 `DURABLE_REQUIRED` Ack；Ack为 failed/indeterminate时不得构造 HTTP call、
+sink或发送。Provider attempt不是 Tool effect，不写未来 M10 Effect Ledger，也不让 M9.2
+反向依赖 M10。attempt收敛后，Brain向同一 encrypted Journal追加以下 terminal receipt并
+取得 DurableAck；receipt**绝不嵌回模型输入**：
+
+```text
+ModelInputMaterializationReceiptV1 {
+  receipt_id
+  intent_id
+  intent_digest
+  predecessor_state_digest       // V1恰等于 intent_digest
+  run_id
+  provider_operation_id
+  attempt_id
+  attempt_ordinal
+  non_secret_envelope_descriptor_commitment
+  assembly_receipt_digest
+  disclosure_grant_digest
+  provider_attempt_lease_digest
+  erasure_read_binding_digest
+  application_request_body_length
+  commitment_salt
+  application_request_body_commitment
+  renderer_and_request_factory_versions
+  terminal              // CLOSED_WITHOUT_SEND |
+                        // CANCELLED_BEFORE_SEND |
+                        // REQUEST_BODY_TRANSPORT_ACCEPTED |
+                        // SEND_INDETERMINATE
+  verifier_version
+}
+```
+
+receipt中的 duplicated binding必须与 intent逐字节相等；每 intent恰有一个 committed
+terminal successor，同 predecessor双 successor/fork拒绝。`CLOSED_WITHOUT_SEND` 只表示
+live Brain在尚未创建 call/sink时明确关闭了该 attempt；`CANCELLED_BEFORE_SEND` 还要求
+同一 live attempt观察到用户取消且可证明 call/sink从未创建。二者都不是可继续的
+“MATERIALIZED”状态。
+`REQUEST_BODY_TRANSPORT_ACCEPTED` 的 exact boundary只是本地 HTTP adapter确认 exact
+`application_request_body_length` bytes全部写入并正常关闭 request-body sink；response headers
+不能替代该证明，因为服务端可能在未读完 body时提前响应。它不证明远端完整接收、推理或
+产生效果，也不证明 socket write、HTTP/2/TLS bytes或网络交付。仅创建 call、写入零或部分
+bytes、body close异常、callback丢失、完整性计数不符或 body正常关闭前收到 response
+headers都收敛到 `SEND_INDETERMINATE`。
+
+closed attempt reducer固定为：
+
+```text
+FACTORY_MATERIALIZED_VOLATILE
+  → INTENT_DURABLE
+  → {CLOSED_WITHOUT_SEND | CANCELLED_BEFORE_SEND
+     | SINK_CREATED → BODY_WRITING → BODY_CLOSED_EXACT
+     | SEND_INDETERMINATE}
+  → TERMINAL_DURABLE
+
+BODY_CLOSED_EXACT → REQUEST_BODY_TRANSPORT_ACCEPTED → TERMINAL_DURABLE
+```
+
+任何 network/call/sink状态都不能出现在 `INTENT_DURABLE` 前；任何 product success/failure
+都不能出现在 `TERMINAL_DURABLE` 前。恢复看到 durable intent但没有 durable terminal时，
+不利用“没有记录”证明 sink未创建：统一追加 `SEND_INDETERMINATE`。在 intent Ack后但
+call创建前杀进程也故意得到 indeterminate；这是消除盲重发所付的保守代价。terminal frame
+可能已 durable但 callback未到时，恢复按 predecessor选择唯一 terminal，不能再追加第二个。
+
+cancel、进程死、早到 headers或 callback丢失不能让 attempt消失，也不能 blind retry同一
+attempt/lease。需要再次请求时，Reducer必须先完成旧 attempt的 terminal与用户/策略允许的
+retry decision，再生成新的 `intent_id`、attempt ordinal、Provider lease、salt和 exact
+bytes；logical `provider_operation_id` 保持不变，但 `attempt_id`、intent、ordinal、
+lease与salt全部必须新建；旧 lease或旧 commitment一律拒绝。非幂等 Provider POST不因连接失败、429/5xx或
+“看起来没收到响应”自动重放。
+
+默认禁用 HTTP automatic redirect。未来若某 Provider确需 redirect，每个 hop必须重新做
+destination/disclosure检查，并持有新的 Provider operation lease、intent和 terminal；
+Authorization不得跨 origin继承，原 hop不能因 redirect response被改写成“未发送”。没有
+这套 per-hop contract就 fail closed，而不是让 HTTP client自动重发 body。
+
+两种 record默认不复制或长期持久化 Provider body/MemoryFrame正文。以后若要保存 exact
+body，必须另立 retention/erasure/disclosure phase ADR；不能把 commitment当作可恢复正文。
+[RFC 9110 §9.2.2](https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.2) 对非幂等请求
+自动重试保持保守，[RFC 9112 §8](https://www.rfc-editor.org/rfc/rfc9112.html#section-8)
+也说明不完整消息必须按不完整处理。
 
 ID 列表本身可能超过 Binder 预算，因此优先使用连续范围、数量、digest 和固定-cut cursor。
 
@@ -998,7 +1429,7 @@ closure.complete == true
 conflict.complete == true              // Contract 要求冲突闭包时
 required unresolved_references == empty
 closure.frontier_handles == empty
-materialization.uncomputed_frontier == empty
+local_materialization.uncomputed_frontier == empty
 known_gaps == empty
 ```
 
@@ -1103,15 +1534,34 @@ MemoryFrame {
   tool_effects[]
   event_capsules[]
   source_handles[]
-  completeness_receipt
+  assembly_completeness_receipt
 }
 ```
 
 打包顺序优先考虑目标、硬约束、纠正和冲突，而不是简单的“最近优先”。关键约束置于稳定位置，避免长上下文中的 lost-in-the-middle。
 
-Memory Frame 在 Provider 输入中必须被标记为**历史数据**而非指令。导入网页、邮件、文档或旧对话中的命令句不继承系统权限；Policy、Tool grant 和当前用户意图位于独立控制通道，不能被历史事件卡覆盖。
+M9/M91 的 MemoryFrame是 host-local assembly，不得交给 Provider。只有 M91-00D冻结
+disclosure authority、M92-05通过 capability/evidence、M92-06接线后，host才可将它封装成
+不可伪造的 `AuthorizedProviderMemoryFrameV1`。此时 Provider输入中的 frame必须被标记为
+**历史数据**而非指令。导入网页、邮件、文档或旧对话中的命令句不继承系统权限；Policy、
+Tool grant 和当前用户意图位于独立控制通道，不能被历史事件卡覆盖。
 
-为审计历史 Run，Journal 记录当时实际 materialize 的组件顺序、EventCapsule renderer version、Receipt、模型输入 Blob/hash 和 Skill/runtime artifact hash。历史 replay 指从这些已记录事件重建状态，不指重新调用模型、工具或提取器。
+handoff不是把 host-local DTO原样序列化。host保留完整
+`AssemblyCompletenessReceipt`、Claim/source handles和 purpose-3 token，只向 authorized
+frame写入获准正文、限制枚举与 per-attempt non-linkable ordinal组成的
+`ProviderCompletenessSummaryV1`；禁止 stable
+claim/lineage/conflict/event/session/record ID、keyed token、source cursor或其 digest进入
+Brain/Provider。Brain只能把该 sealed provider view交给 final request factory，不能从摘要
+反查 Broker。local intent通过 assembly/disclosure commitment审计两者绑定，不向 Provider
+暴露 host-only identity。
+
+为审计历史 Run，M9.1 Journal只记录 local assembly的 ordered-component manifest、
+EventCapsule renderer version、assembly receipt与 Skill/runtime artifact binding；不记录
+Provider materialization。M9.2 才由 Brain按 §13.4.1 在 encrypted Journal中记录
+disclosure/attempt binding、final body length和 salted per-intent commitment，禁止裸
+input digest；默认仍不持久化 exact Provider body/MemoryFrame Blob。历史 replay指从已记录的
+canonical events/effects重建状态，或在同一授权明文域对后来提供的候选 bytes复验
+commitment，不指重新调用模型、工具或提取器，也不声称 commitment可重建正文。
 
 ---
 
@@ -1283,13 +1733,24 @@ Grant {
   approval_policy
   issued_by
   decision_policy_revision
-  issued_at
-  expires_at?
-  revoked_at?
+  authority_id
+  authority_epoch
+  issue_frontier_ordinal
+  valid_from_frontier_inclusive
+  valid_until_frontier_exclusive?
+  consume_ordinal
+  revoke_frontier_ordinal
+  audit_wall_time?          // 仅展示/取证，不参与授权判断
 }
 ```
 
 Capability 声明不能自行授予权限；Skill 中的 `required_tools/allowed-tools` 也只能作为需求或导入提示，不能等价为 Grant。已批准 Grant 精确绑定版本、descriptor digest 与 effect-surface digest；升级后只要效果面扩大、数据范围增加或约束放松，就必须重新授权，不能沿用旧 Grant 静默扩权。Tool、Capability constraint、Grant、宿主策略冲突时取最严格交集；任何一层都不能单独扩大权限。
+
+授权先后、有效区间、consume与 revoke只由 owner/policy的 authenticated monotonic frontier
+决定，不能用系统墙钟、文件 mtime或客户端时间。每个实际 operation从 grant铸造不可延长的
+`OperationValidityLeaseV1`，绑定 boot id、当前 authority frontier、consume ordinal与
+elapsed-realtime deadline；reboot或 boot-id变化立即失效并要求新 grant。墙钟只作审计/UX，
+回拨、未知或网络校时不能延长权限。每个 effect/byte前重验 lease与 revoke frontier。
 
 每次调用至少产生：
 
@@ -1425,52 +1886,42 @@ Manifest 中的 `required_*` 与 memory namespace 只是声明需求；每次调
 
 加密边界不能只覆盖 Journal/Blob，却把原消息重新明文写进 Room、WAL、临时文件和 FTS shadow table。M9 的默认基线是：
 
-- 每个 segment 使用独立数据密钥，逐 frame/chunk AEAD；nonce 由唯一 segment identity 与
-  frame sequence 按安全 ADR 的固定规则生成；
-- 任何 crash、write 异常/结果不确定或 `force` 失败都会永久退休旧 open segment：恢复
+- 每个 segment 使用独立数据密钥，逐 frame/chunk AEAD；Journal V1 frame nonce恰为
+  `ASCII("SMF1") || writer_sequence_u64_be`，segment separation来自独立 per-segment
+  DEK，segment-header digest另进入 AAD。唯一性依赖
+  `(independent segment DEK, injective writer sequence nonce)`，不得把 segment identity
+  偷偷加入或替换 exact nonce bytes；
+- 任何 crash、write 异常/结果不确定或 fsync-equivalent 失败都会永久退休旧 open segment：恢复
   只可按 durable frontier 发布 recovered-seal sidecar 或 quarantine，不原地截短也不续写；
   后续写入必须创建新 writer epoch、新 segment identity 与新 segment DEK，从结构上保证
-  `(key, nonce)` 不复用；物理裁剪只能由 compaction/GC 写入新 DEK 后回收旧文件；
+  同一 DEK handle/ordinal不被恢复重用；per-DEK nonce按 sequence注入。跨独立随机 256-bit
+  DEK的相等风险按 ADR 0017 V1 lifetime cap给出 birthday bound，不能声称数学上的零概率；
+  物理裁剪只能由 compaction/GC 写入新 DEK 后回收旧文件；
 - segment key 由 Android Keystore 包装并带 key epoch；逐 frame 边界必须兼容 open-tail、随机恢复和 durable offset；
 - EventCapsule、Session 原文和敏感 Claim value 只保存在加密 Blob/Journal，Broker 按需解密；
-- Room/FTS 只存 opaque ID、非敏感结构字段和 keyed normalized bigram token；查询端用同一 key 生成 token，避免原文字词进入 WAL/FTS；
+- Room/FTS 只存 opaque ID、非敏感结构字段、keyed normalized bigram token，以及 §8.3
+  host-only purpose-3 Claim projection；查询端用同一 key generation生成 token并对命中
+  canonical bytes复验，避免原文字词进入 WAL/FTS；
 - 这仍可能泄露记录数量、访问模式和 token 频率，安全 ADR 必须明确残余风险；
-- 任何临时 PFD 文件同样加密或采用内存 pipe，并受 Run 生命周期清理。
+- 跨进程大页只走 reliable pipe/PFD，不创建 file-backed PFD temp。
+- `ModelInputMaterializationIntentV1/Receipt` 即使没有正文也属于
+  `SENSITIVE_DERIVED_COMMITMENT`，只能进入加密 Brain Journal，不进入上述任何投影或
+  HotSnapshot。
 
 ### 19.1 Journal frame
 
-建议外层格式：
-
-```text
-magic(4)
-format_major(2)
-format_minor(2)
-header_length(2)
-flags(2)
-ciphertext_length(4)
-writer_sequence(8)
-header_extensions(header_length - 24)
-ciphertext(N)              // plaintext = protobuf payload
-aead_tag(16)
-commit_magic(4)
-crc32c(4)
-```
-
-固定头为 24 bytes，多字节整数固定 big-endian。段头记录 segment identity、writer/epoch、
-protocol major/minor、payload schema major/minor、required feature 与 key epoch；AEAD AAD
-覆盖段身份和原始 frame header，nonce 由安全 ADR 规定的唯一 segment identity + writer
-sequence 派生。reader 在分配内存前先验证 header/ciphertext length 的无符号溢出、协议上限
-和 required feature，再依次检查 commit marker、覆盖 `magic..commit_magic` 的 CRC32C、
-AEAD、Proto 与 validator。commit marker 只表示物理 frame 完整，不能证明 durable。段尾记录
-事件数、末序列和 SHA-256。CRC、segment digest 和 payload hash 仍只用于快速发现意外损坏、
-寻址和幂等；AEAD 才提供该加密边界内的机密性与完整性，但也不把同 UID 进程自动变成可信
-安全域。payload hash 必须对原始存储 bytes 计算；Proto 不是 canonical encoding，不得
-parse 后重序列化再计算。跨版本透明扩展使用带 type/schema id 的 opaque bytes，不能经过
-JSON round-trip，也不能依赖开放 `oneof` 保留未知 payload。
+ADR 0016 是 segment header、frame、normal footer、256-byte frontier slot 与 256-byte
+`RecoveredSealV1` 的唯一 normative physical/canonical authority；本架构不维护第二份 offset
+镜像。实现仍必须遵守：hand-rolled integer 采用 ADR 指定的 big-endian，而 Proto
+`fixed32/fixed64` 使用标准 little-endian；reader 在分配前做 checked length/cap/feature
+验证，再依次验证 commit marker、CRC32C、AEAD、Proto 与 validator；commit marker、CRC 或
+有效 AEAD 都不能把 durable frontier 后的 bytes 升格。payload hash 对原始存储 bytes
+计算，不能 parse 后重新序列化 Proto；跨版本透明扩展使用显式 type/schema id 的 opaque
+bytes，不经 JSON round-trip，也不依赖开放 `oneof` 保留未知 payload。
 
 同一 segment/DEK 下每个 writer sequence 只能初始化一次 AEAD。`writeFully` 遇到有进展的
 短写时可以继续写同一次初始化产生的 immutable ciphertext；短写本身不退休 segment。
-write 抛错/结果不确定、进程崩溃、`force` 失败或需要重新初始化同 key/nonce 时才永久退休。
+write 抛错/结果不确定、进程崩溃、fsync-equivalent 失败或需要重新初始化同 key/nonce 时才永久退休。
 recovered segment 不产生新 frame；orphan seal 只写 sidecar，不用旧 DEK 向原段追加 footer。
 
 段大小、flush batch 和 seal 阈值不在架构宪法中冻结，由设备基准 ADR 决定。除了容量阈值，每个 AI turn、工具效果前后和 Run 终态都发布语义 checkpoint/durable offset，避免近期 Session 长期困在 `.open`。
@@ -1488,85 +1939,124 @@ CREATED
 
 - 只有已达到 `DURABLE_LOCAL` 的记录，且 cut 不超过对应 durable head，才能声明 ledger continuity；
 - `VOLATILE_ACCEPTED` 到 durable ack 之间的进程死亡窗口不能承诺无遗漏；
-- writer 队列固定容量，关键 Session/Tool/Effect 事件有保留通道，但保留通道也允许耗尽；
-- admission 只返回 event id/ack token；writer dequeue 后才分配 sequence，避免 `offer`
+- writer 队列固定容量，关键 Session/Tool/Effect record 有优先级，但所有容量都允许耗尽；
+- admission 按 durability 返回 record id/可选 ack token；writer dequeue 后才分配 sequence，避免 `offer`
   拒绝形成假空洞或 consumer 读到未初始化 sequence；
 - 非语义 progress 可以合并或丢弃，但必须按策略计数；关键事件不能静默丢弃；
 - 队列满不能阻塞 IME 主线程；系统先暴露 degraded 状态，恢复写入后补记可确认的 gap；
 - 低频事件除了 size/count batch，还需要 bounded flush deadline；具体值由 ADR 和设备测试决定；
-- Blob 必须在同目录临时写入、file fsync、校验、原子发布并 parent directory fsync，之后
-  才能 DurableAck 引用它的 Event；
+- Blob 使用稳定随机 logical ID；物理对象同目录临时写入、file fsync、close/reopen 校验、
+  publish-no-replace、parent directory fsync 并从 final path 全量复读；随后 locator 必须
+  完成 `PREPARED → peer ACTIVE → original ACTIVE`、close/reopen 后得到 adjacent-generation
+  same-mapping `ACTIVE/ACTIVE`，之后 record 才能引用；
 - 外部非幂等效果的 intent 与结果使用专门 durable protocol，不能停在普通异步队列。
+
+`DurableAck` 的 fixed proof order 唯一导入 ADR 0016，并在本节后文随 admission/Ack
+contract 只展开一次；这里不维护第二份摘要。任一步不确定都不能用“磁盘上看得到 bytes”
+降格成成功；frontier durable 而 callback 丢失则进入 exact record/commitment
+reconciliation。
 
 durable frontier 使用预创建的固定大小 A/B 双槽。segment bootstrap 在
 `journal/open/<writer>` 下创建同文件系统临时 epoch 目录，写 segment header，A 写
-generation=0 empty frontier、B 写 UNUSED；对 segment/A/B 分别 file fsync，并在临时目录
-仍不可见时打开 `lease` 的 `FileChannel`、取得 exclusive lock。writer 必须从取得该锁起
+generation=0 empty COMMITTED frontier，B 写与 A byte-identical 的 generation=0 empty
+COMMITTED mirror；对 segment/A/B 分别 file fsync，并在临时目录
+仍不可见时通过 `LeaseLockPortV1` 从 pinned dirfd/openat no-follow取得并复验 `lease` 的
+opaque descriptor、取得 exclusive handle。writer 必须从取得该 handle起
 持续持有同一 inode/handle，经过临时 epoch directory fsync、原子 rename 为最终
 `<epoch>`、`journal/open/<writer>` parent fsync 和最终路径复读，直到正常关闭或进程死亡；
 取得锁失败则不发布目录。只有保持锁且全部步骤验证成功才返回 writable handle。Memory root
 与固定 writer parents 必须在根初始化时逐层持久化。任意 bootstrap kill-point 只会产生
 未发布 temp 或 recovered/uncertain final segment，不得恢复 writable。
 
-每次 checkpoint 只覆写 invalid/较低 generation 槽，写入 segment id、writer/key epoch、
-frontier、prefix digest、checksum 和 keyed MAC 后对该槽 file fsync。恢复 candidate 必须
+每次 checkpoint 先向 deterministic first target写 generation `g+1`，file fsync、
+close/reopen/full-reread，并验证它与未改 peer组成 exact adjacent `(g,g+1)`；再把同一
+canonical `g+1` bytes写入 peer，file fsync、close/reopen/full-reread。只有两槽成为
+same-generation byte-identical committed mirror后才可回调 DurableAck。恢复 candidate 必须
 同时通过 fixed header/reserved/checksum/MAC、segment/header/owner 绑定、generation 规则、
 `byte_offset ≤ file length`、完整 frame 边界、末 frame writer sequence 一致，以及对精确
-prefix bytes 重算 digest；同 generation 内容分歧 fail closed。只从 candidates 选择最高
-generation，另一槽保留上一代。没有 current pointer、slot rename 或 checkpoint directory
-mutation/fsync。目录持久化失败只阻断 bootstrap、Blob/new manifest/new sidecar 等目录项
+prefix bytes 重算 digest；同 generation 内容分歧 fail closed。crash/reopen/unknown后，
+无论 single、adjacent或 exact mirrored pair都不得镜像 peer或恢复旧 segment/DEK的 writable
+ownership。只读 reconcile、发布 recovered seal、永久退休旧 epoch/segment/DEK后，以新
+epoch/segment/DEK继续。只有同一连续 writer lifetime、lease、last-committed frontier与
+DEK-usage witness完整时，才可完成一次 live interrupted mirror。完整旧 A/B pair rollback仍是显式 freshness
+限制。没有 current pointer、slot rename 或 checkpoint directory mutation/fsync。目录持久化
+失败只阻断 bootstrap、Blob/new manifest/new sidecar 等目录项
 发布，不是普通 checkpoint 的错误。
 
-临时文件按所有权分区：`temp/blob/<writer>/<epoch>` 只由持 writer lease 的进程清理，
-`temp/pfd/<broker-instance>` 只由对应 Broker transfer lifecycle 清理，
-`temp/projection/main` 只归主进程。Broker 冷启动不能无条件清空共享 temp。keyring 同样由
-跨进程 `KeyEpochCoordinator` 和 A/B manifest 管理：任一 writer 可在锁内 bootstrap，只有
-main/Broker 可发起 rotation。
+临时文件按所有权分区：Blob temp只允许同目录；live writer只能凭 exact attempt ownership
+清理本次 known-aborted temp，writer epoch lease单独绝不授权 unlink。crash residual只有
+主进程 Broker同时持 canonical physical-attempt cleanup lease、
+`blobs/.sense-memory.namespace.lock` 与 durable terminal/locator census时，才能按 exact
+inode unlink、parent fsync、reopen验证；live/unknown attempt不得删。projection 的
+DB/WAL/SHM/rollback/staging只在 `index/projection` closed grammar内，禁止建立第二份
+projection authority或跨 parent staging；PFD 使用 reliable pipe，不落 file-backed temp。Broker
+冷启动不能无条件清空任何共享 temp。owner state 先由 future root-bootstrap control lock串行
+建立；它 durable 后，Keyring 只能在 `KeyringBootstrapControlPhaseGateV1` 冻结且
+`KeyringBootstrapCapabilityGateV1` 以独立实体 kill/reopen 证据通过的 canonical
+intent/recovery transaction 中 bootstrap。只有 main/Broker 可发起 rotation，任何 writer
+都不能再以“看见空目录”为依据各自生成 installation/keyring。
 
 ```text
 AppendAdmission {
   status                    // ACCEPTED_VOLATILE /
                             // REJECTED_BACKPRESSURE /
                             // STORAGE_UNAVAILABLE
-  event_id?
+  record_id?
   ack_token?
 }
 
-DurableAck {
-  writer_sequence
-  durable_head
+JournalAck {
+  status                    // DURABLE / FAILED / INDETERMINATE
+  ack_token
+  record_id
+  record_commitment
+  durable_frontier?
+  closed_reason_code?
 }
 ```
 
 producer 入队对象不含 sequence；`offer` 成功后，writer dequeue 才分配 sequence。admission
-不返回 sequence，拒绝不制造虚假的 durable 序号，consumer 也不会看到未初始化值。关键
+不返回 sequence。`DURABLE_REQUIRED` accepted 必须有 `record_id + ack_token`；
+`BEST_EFFORT` accepted 只有 `record_id` 且永不产生 Ack；rejected 两者都缺失。拒绝不制造
+虚假的 durable 序号，consumer 也不会看到未初始化值。关键
 Tool/Effect/turn checkpoint 收到 `REJECTED_*` 时，Run 进入 `PERSISTENCE_BLOCKED` 并暂停或
 失败，不能继续外部效果。若无法回滚的编辑效果已经发生而回执未持久化，只能在 volatile
 health 中标为 unknown，并在存储恢复后追加可确认的 gap，不能宣称完整。
 
 DurableAck 顺序固定为：
 
-1. 引用 Blob 已 file fsync、复读校验、同目录原子发布并 parent directory fsync；
-2. frame `writeFully` 并 force；
-3. 定位覆写预建的 invalid/较低 generation frontier A/B 固定槽并 file fsync；
-4. 才向调用方返回 Ack。
+1. 引用 Blob 已 file fsync、temp 全量复读、同目录 publish-no-replace、parent directory
+   fsync，并从 final path 再次全量复读；
+2. locator 依次完成 `PREPARED → peer ACTIVE → original ACTIVE`，每步 slot fsync、
+   close/reopen、A/B 全量复读，最终 selector 必须选到相邻 generation、mapping 完全相同的
+   双 `ACTIVE`；
+3. frame `writeFully` 并执行明确的 file-data fsync-equivalent；
+4. 以 deterministic target写 canonical generation `g+1` frontier，file fsync、
+   close/reopen/full-pair read必须得到并验证 exact adjacent `(g,g+1)` 与 predecessor/cut；
+5. 把**同一份** `g+1` bytes写入 peer，file fsync、close/reopen后分别全量验证 A/B，
+   必须得到 same-generation、byte-identical mirrored pair且 selected cut覆盖该 record；
+6. 才向调用方返回 Ack。
 
 checkpoint 不创建/rename 文件、不写 pointer、不改变目录项。统一不变量为：
 
 ```text
-AckObserved ⇒ FrontierCommitted；反向不成立。
+DurableAckObserved ⇒ FrontierCommitted；反向不成立。
 RecoveredOrUncertain(segment) ⇒ PermanentlyReadOnly(segment, DEK)。
 NextWriter ⇒ NewWriterEpoch ∧ NewSegmentIdentity ∧ IndependentDEK。
-Checkpoint ⇒ DataForce → InactiveFixedSlotWrite → SlotFsync；
+Checkpoint ⇒ DataForce → FirstTargetWrite/Fsync/Reopen/AdjacentVerify →
+              ExactPeerMirror/Fsync/Reopen/ByteIdenticalPairVerify →
+              SelectedFrontierCoversRecord；
               no pointer, no rename, no directory mutation。
 ```
 
 slot 可以在 callback 前已经 durable；进程此时死亡，恢复能读到 record 而调用方没收到 Ack。
-因此重试复用稳定 event ID 并幂等去重，不能用 callback 缺失推断“事件没有落盘”。
+只有 producer 仍持有相同 `record_id`、首次序列化精确 bytes 与 commitment 的 immutable
+`ProducerAppendAttempt` 时才允许幂等重试。attempt 丢失时禁止盲重试或换 ID 重放原效果；
+只能等待恢复、按固定 cut 对账，或追加不声称原尝试存在/不存在的诚实 gap record。
 
 “不静默丢失”的诚实版本是：
 
-> Sense 只对已返回 DurableAck、仍在 retention 内且策略允许读取的记录保证 ledger continuity。关键用户可见事件选择有界 durable acknowledgement；普通低价值信号可以明确采用 best-effort capture。
+> Sense 只对已返回 DurableAck、仍在 retention 内且策略允许读取的记录保证 ledger continuity。关键用户可见 record 选择有界 durable acknowledgement；普通低价值信号可以明确采用 best-effort capture。
 
 ### 19.3 Open tail 与 orphan recovery
 
@@ -1576,11 +2066,12 @@ MemoryBroker 不能只消费 sealed 段：
 - writer 在整个 epoch 生命周期持有独占 ownership lock/lease；reaper 只有成功取得只读
   recovery ownership 后才可验证 frontier、发布 recovered-seal sidecar 或 quarantine；
   recovery ownership 不能变成原 segment 的 writer ownership，不能原地 truncate/append；
-- durable offset 按“数据 force → 覆写较低 generation 的固定 A/B slot → slot file fsync”
+- durable offset 按“segment file-data fsync-equivalent → 覆写较低 generation 的固定 A/B slot → slot file fsync”
   发布；slot 带 generation/checksum/keyed MAC/prefix digest；
 - Broker 可以只读扫描到最后一个长度/CRC 均有效且不超过已发布 durable offset 的前缀；
-- 任一槽损坏时独立验证 A/B 两槽并退回上一已确认 frontier；不能凭有效 CRC、AEAD 或
-  commit marker 推断 durable；
+- 任一槽损坏时独立验证 A/B；唯一 valid survivor只形成
+  `READ_ONLY_SINGLE_FRONTIER_UNCERTAIN` cut用于只读/对账，不镜像、不推断另一个“上一已确认”
+  cut，也不能凭有效 CRC、AEAD 或 commit marker 推断 durable；
 - 只有 I/O 状态确定的 live writer 才能在 turn/checkpoint/终态主动正常 seal 或发布新
   durable offset；orphan reaper 只能 sidecar seal；
 - Broker 启动、绑定和维护任务开始时扫描未消费前沿；
@@ -1597,17 +2088,25 @@ MemoryBroker 不能只消费 sealed 段：
 - 中间损坏：隔离整段并追加 `RECOVERY_GAP`；
 - 序号跳跃：追加 `DROPPED_RANGE`；
 - 索引损坏：从 Journal 重建；
-- 任何缺口都进入 Completeness Receipt，不能由模型补全。
+- 任何缺口都进入 `AssemblyCompletenessReceipt`，不能由模型补全。
 
-`RecoveredSealV1` 是原 segment 之外、确定性且不可覆盖的逻辑封存记录。它绑定
-segment/writer/key epoch、A/B 选定 generation、sequence/offset/prefix digest、观察到的原
-segment length/digest 与 recovery reason，并含 checksum 和 domain-separated keyed MAC；
-不含墙上时间。canonical bytes 的 digest 进入文件名
+`RecoveredSealV1` 是原 segment 之外、确定性且不可覆盖的 256-byte 逻辑封存记录；exact
+offset、reserved bytes、checksum/MAC coverage 与 cap 只以 ADR 0016 为 authority。canonical
+bytes 不含墙上时间，其 digest 进入文件名
 `recovered-seal.<content-digest>`。发布顺序是同 epoch temp `writeFully` → sidecar file
 fsync → publish-no-replace → epoch directory fsync → final path 复读；之后新 writer 才能
-追加 Recovery Event。同名只接受逐字节相同，多个不同的有效 sidecar、绑定不一致、原文件
+追加 Recovery record。同名只接受逐字节相同，多个不同的有效 sidecar、绑定不一致、原文件
 变化或目录持久化不明都 fail closed/quarantine。任何 sidecar kill-point 都可幂等重试，
 原 segment bytes 始终不变。
+
+所有 owner/epoch/namespace ownership只经 `LeaseLockPortV1`：
+输入是 `FileIdentitySafetyPortV1` 产生的 opaque directory/file handle与 closed lock role，
+不是 path/raw fd；`tryAcquireExclusive` 只返回
+`ACQUIRED(handle)|CONTENDED|UNSUPPORTED|INTEGRITY_FAILURE`。`CONTENDED` 是正常 busy且零
+mutation；其它失败或 path↔descriptor inode变化 fail closed。handle持有到显式 close或
+进程死亡，hidden duplicate禁止或纳入同一 ref-count lifetime。Java `FileChannel` 若作为
+内部实现，也只能包裹已验证 descriptor。目录创建使用 dirfd-relative `mkdirat` +
+no-follow reopen/fstat/parent fsync，不能用 canonical String path恢复 authority。
 
 ### 19.4 Room 是可丢弃目录
 
@@ -1632,10 +2131,41 @@ fts_public_text
 
 - `:ime` 和 `:brain` 不打开 Room；
 - Room/SQLite 不是 canonical source；
-- 使用 `JournalMode.AUTOMATIC`，不假定所有 OEM 和 framework SQLite 相同；
-- 单一 writer，短批量事务；
-- 避免长读事务阻塞 checkpoint；
-- WAL 和 checkpoint 参数必须基于实际绑定版本和设备测试。[SQLite WAL](https://www.sqlite.org/wal.html)
+- **首次 open/upgrade 也属于 allocation，不能先打开再测 mode。**
+  `ProjectionWriteCoordinator` 必须先持
+  `index/projection/.sense-memory.namespace.lock`，向 MAIN 自有 Journal durable append
+  `ProjectionStoreBootstrapIntentV1` 并取得 `DurableAck`，再由
+  `ProjectionStorageCapacityPortV1` 原子取得
+  `ProjectionStoreBootstrapReservationV1`。intent绑定 exact APK/Room/SQLite build、F022
+  volume、existing DB header/previous receipt（若有）、目标 schema、closed filename set、
+  page/reader/checkpoint/migration bounds与 success/failure/indeterminate cleanup；
+- 对不存在 DB、首次 WAL激活或无法在零写只读检查中认证 prior mode的情形，pre-open
+  reservation必须取 approved WAL与 rollback两支的 conservative union：main DB、`-wal`、
+  `-shm`、rollback journal、Room identity/schema pages、bounded migration/rebuild scratch及
+  parent-directory positive delta。它同时预留 F013/F014/F019/F020/F022 的 create/replace/
+  orphan terminal；任何 SQLite可能产生但 descriptor未列名的 temp/statement journal使该
+  build/device role BLOCKED；
+- open后立即认证 resolved mode、exact filenames/page size/build与 reservation branch，
+  只能收缩未用额度，不能把 pre-open不足后补记成 PASS。bootstrap/upgrade checkpoint、
+  close/reopen census与 exactly-one terminal receipt完成前，projection不可供查询；
+- existing DB只有在 no-follow read-only header + prior bootstrap receipt足以证明 build/
+  schema/mode未变时才可走较窄 reopen envelope；APK/Room/SQLite/schema/mode/OEM identity
+  任一变化，都必须在 open/upgrade前重新走 union reservation。没有 pre-open durable intent
+  或 reservation时调用 Room builder/open是静态与运行时双重违规；
+- 可以请求 `JournalMode.AUTOMATIC`，但实际 resolved journal mode必须在 open后由
+  `ProjectionStorageCapacityPortV1` 认证；不能假定所有 OEM/framework SQLite相同；
+- port绑定 exact Room/SQLite build、resolved WAL/rollback mode、page/sector size、
+  DB/WAL(or rollback journal)/SHM与 parent directory physical identity；
+- 单一 writer；每 transaction有 closed `max_changed_pages`，每个 reader有 hard lifetime，
+  writer count、reader gap和 checkpoint cadence都有不可绕过上限；
+- transaction前按 resolved mode保守展开 DB + WAL/rollback + SHM +
+  parent-directory transient/final charge，原子 reserve ADR 0018 F013/F014/F019/F020/F022
+  closure；terminal checkpoint/rollback后做 physical reconcile与 close/reopen census；
+- `journal_size_limit`、`max_page_count`、短事务或“通常会 checkpoint”都不是写前 hard cap：
+  WAL reader starvation/大事务无法证明有限上界时，projection/index/HotSnapshot capability
+  保持 BLOCKED，不退回无界 `AUTOMATIC`；
+- power loss、reader泄漏、checkpoint busy/failed、WAL/SHM orphan、ENOSPC与 OEM mode变化都
+  进入 kill/property/device matrix。[SQLite WAL](https://www.sqlite.org/wal.html)
 
 ### 19.5 FTS 优先，向量默认关闭
 
@@ -1653,30 +2183,44 @@ Sense 最低 Android API 和 OEM SQLite 差异决定第一版使用 Room FTS4 �
 
 ### 19.6 HotSnapshotPort：mmap 只是候选实现
 
-内核只冻结 `HotSnapshotPort`：不可变、只读、可重建、带 generation/hash、发布原子、校验失败可退回前一代，并且绝不包含原文或敏感实体。mmap 是当前 Android 上的候选实现，不是 Memory ABI；实现 ADR 可以在设备证据更好时改为普通文件读取、共享内存或其他只读载体。
+内核只冻结 `HotSnapshotPort`：不可变、只读、可重建、带 generation/hash、发布原子、校验失败可退回前一代，并且绝不包含原文、个人数据或可关联用户的派生标识。mmap 是当前 Android 上的候选实现，不是 Memory ABI；实现 ADR 可以在设备证据更好时改为普通文件读取、共享内存或其他只读载体。
 
 热快照只用于读多写少的数据：
 
-- 紧凑偏好 ID、计数和非敏感编译结果；
-- 热 Thread head ID；
-- Skill 路由；
-- 个性化词频和风格快照。
+- closed registry中的 opaque built-in/non-user Skill ID与 route ID；
+- schema、protocol、router和compiled artifact version；
+- 不含用户输入的 compiled route digest；
+- stage enum、generation、artifact hash/length等非个人发布元数据。
+
+下列内容无论是否“只有 ID/hash/count”、是否声称匿名，都禁止进入 HotSnapshot：
+user/installation/session/run/record/event/claim/lineage/conflict/thread/entity ID或其 digest，
+用户偏好 ID与计数、候选/访问/事件 cardinality、token/词频、个性化词典、语言模型、风格
+向量/标签、Provider/应用使用历史，以及任何由用户内容决定的 route。个人 Memory、偏好和
+风格只能由 host coordinator按当前授权 cut向加密 Broker请求有界 page，再经 reliable
+pipe/PFD在本轮消费；不得把 page或其稳定摘要回写 HotSnapshot。既有
+`PersistentUserLexicon` 仍是 `:ime` 内独立输入排序资产，不升级为 Agent Memory或
+HotSnapshot字段。
 
 若采用 mmap，规则是：
 
 - 单代上限由 Budget ADR 和设备矩阵冻结，reader 在映射前按 header 拒绝超限；
-- 写临时文件、force、校验 SHA、原子改名，再切换 manifest；
+- 写同目录临时 generation、file fsync、校验 SHA、publish-no-replace、parent directory
+  fsync并从 final path全量复读；随后才按 accepted StageSnapshot protocol推进预创建的
+  authenticated A/B manifest slots并 close/reopen/full-reread；
 - IME 只读映射；
 - 保留当前和前一代；
 - 不覆盖或截断正在映射的文件；
 - 不把完整事件图映射进 IME；
-- 不把原始偏好文字、事件卡、Session 原文和敏感实体放进 IME 热快照；
-- 只有主进程单一发布者可通过 AtomicFile 切换 current manifest；
+- schema validator采用 closed allowlist；unknown field、user-derived extension、
+  `SENSITIVE_DERIVED_COMMITMENT` 以及任何不在上述四类中的字段一律拒绝整代 snapshot；
+- 只有主进程单一发布者可推进 authenticated manifest A/B；`AtomicFile` 不构成当前
+  authority，exact slot wire在 `StageSnapshotAuthenticationPhaseGateV1` 接受前保持 BLOCKED；
 - 映射通常要等 ByteBuffer 不可达并被 GC 后才解除，因此控制换代频率；校验失败继续使用旧代，不阻塞输入。
 
 ### 19.7 AppSearch 暂缓
 
-AppSearch 是合理的未来 SearchBackend，但第一版同时维护 Room、AppSearch、低版本兼容和 OEM 差异会增加双写与迁移风险。只有在 10 万/100 万事件基准中证明其冷检索 p95、磁盘或功耗显著优于 FTS 后再采用；原始 Journal 无需迁移。
+AppSearch 是合理的未来 SearchBackend，但第一版同时维护 Room、AppSearch、低版本兼容和 OEM 差异会增加双写与迁移风险。只有在 ADR 0018 W4 精确
+100,000/1,000,000 eligible M9 `SessionRecordV1` 基准中证明其冷检索 p95、磁盘或功耗显著优于 FTS 后再采用；原始 Journal 无需迁移。M9.1 Event规模另行 recertify，不能提前借用。
 
 ---
 
@@ -1690,19 +2234,33 @@ AppSearch 是合理的未来 SearchBackend，但第一版同时维护 Room、App
 | IME RSS | 不放宽现有 45/70 MiB 门禁 |
 | Binder 内联 | 单次序列化 payload 硬上限 48 KiB（包含 envelope）；超过即走只读 pipe/PFD 或 Blob ref |
 | Broker 候选包 | 每个固定-cut 逻辑页硬上限 1 MiB；达到上限必须返回 cursor，不能继续膨胀同一响应 |
-| Provider Memory Frame | 默认不超过约 16 KiB 或 4k tokens；只有显式深度任务才扩大 |
+| Provider Memory Frame | ADR 0018-B 前为 `UNSET`；16 KiB/4k tokens 只能是显式、不可晋级的实验参数 |
 | Tool 输出 | 服从 ToolDescriptor 的更小上限；跨 IPC 每页仍不超过 1 MiB，大对象分块写 Blob，不得默认整包送给模型 |
 | HotSnapshotPort | 只含非敏感紧凑数据；单代字节上限由实现时 Budget ADR 冻结，协议必须在加载前可判定并拒绝超限 |
 | 诊断正文 | 默认预算为 0 |
 
-PFD/pipe 协议必须携带 `content_length`、SHA-256、content type、固定 cut/cursor 和 protocol version；reader 在分配前验证长度、读取后验证 digest，并由双方各自关闭持有的 fd。单个 PFD 逻辑页同样不得超过 1 MiB；更大内容只能用分页 Blob ref。若实现使用临时文件，它必须加密、只读发布并登记 `broker-instance/transfer-id`；Broker 只清理自己已终止的 transfer，启动时也只能在 owner lease 失效后回收 orphan，不能清空其他 writer temp。pipe 不产生落盘明文，但同样受长度、取消和关闭协议约束。
+PFD/pipe 协议必须携带 `content_length`、SHA-256、content type、固定 cut/cursor 和 protocol
+version；reader 在分配前验证长度、读取后验证 digest，并由双方各自关闭持有的 fd。单个
+PFD 逻辑页同样不得超过 1 MiB；更大内容只能用分页 Blob ref。M9 基线只允许 reliable
+pipe，不允许 file-backed PFD temp；pipe 不产生落盘明文，但同样受长度、trailing bytes、
+cursor/cut、取消、`closeWithError/checkError`、双端关闭和 exactly-one terminal 协议约束。
 
-M9.0 的 Budget ADR 必须两阶段接受。0018-A 先冻结 Measurement Contract：指标、场景、
-结果 schema、统计、失效条件以及 Pixel、HyperOS、中端与低内存设备角色；所有数值保持
-`UNSET`，只允许 DARK 实现和合成/显式开发测试。暗部署取得实体设备数据后，0018-B
-`BudgetProfileV1` 才冻结总磁盘 soft cap、最低剩余空间、capture 停止点、队列/flush、
-turn checkpoint `DurableAck`、warm/process-cold recall、功耗、写放大和 HotSnapshot 数值。
-任一 required 值仍为 `UNSET` 时不得晋级到 CANARY/DEFAULT。现有 M0–M6 GitHub Host JVM
+M9.0 的 Budget ADR 分三个状态接受。0018-A Semantic Measurement Contract 已 Accepted，
+冻结 metric/profile JSON、workload/required tuple、统计、verdict/reason 与 capability DAG；
+`DeviceSuiteManifest`、raw rows、outcome ledgers、evidence bundle 的 exact schema/cap/
+digest/signature 仍属于 0018-E，`BudgetEvidenceWirePhaseGateV1=BLOCKED`。0018-B
+budget values 仍 Pending：`BudgetProfileV1` 恰有 99 个字段，其中 90 个 required 产品值为 `UNSET`，
+其余 9 个是 FIXED/METHOD/BUILD references（descriptor/security/measurement/build/device/
+statistics），不是可随意解释的产品阈值。正常 product `DARK` 不能在 BudgetProfile PASS 前
+自举预算；只有 owner/root/key-use substrate、local-erasure control、0018-E evidence
+wire、measurement control、attested harness 与专用隔离先行证据通过后，一次性
+`SyntheticMeasurementPermitV1` 才能运行 calibration/confirmatory synthetic suite。
+calibration 只产生 `MEASURED_NO_BUDGET`；完整 profile proposal 预绑定唯一 primary
+confirmatory run 后，第二次完整 S0–S8 证据才可支持 0018-B 冻结总磁盘 soft cap、最低剩余
+空间、capture 停止点、队列/flush、turn checkpoint `DurableAck`、warm/process-cold
+recall、功耗、写放大和 HotSnapshot 数值。
+任一 required 值仍为 `UNSET` 时 overall 至少为 `MEASURED_NO_BUDGET`，不得晋级到
+real-data `SHADOW/CANARY/DEFAULT`。现有 M0–M6 GitHub Host JVM
 基准只负责算法回归，不是 Android 设备预算证据。DurableAck 只能在 writer/Broker I/O
 线程执行；等待期间 UI 显示真实 `MEMORY_RECORDING` 步骤，并受资源 watchdog 保护，绝不能
 卡住 IME 主线程。
@@ -1718,7 +2276,7 @@ turn checkpoint `DurableAck`、warm/process-cold recall、功耗、写放大和 
 3. 压缩/seal 冷段；
 4. 提示设置中的外部归档或导出策略；
 5. 不静默删除仍在 retention 内的 capture record；
-6. 若设备无法继续持久化，先在内存状态和设置页暴露 degraded；恢复写入后再补记可确认的 gap，因为“磁盘已满”时连 gap event 也可能写不进去。
+6. 若设备无法继续持久化，先在内存状态和设置页暴露 degraded；恢复写入后再补记可确认的 gap，因为“磁盘已满”时连 gap record 也可能写不进去。
 
 有限手机磁盘不能承诺无限历史常驻本机。Sense 只对 DurableAck cut 承诺连续性；更长保留需要用户配置的导出或外部冷归档。
 
@@ -1728,7 +2286,7 @@ turn checkpoint `DurableAck`、warm/process-cold recall、功耗、写放大和 
 - M9.0 允许只 seal 原段；是否采用 Deflate 或块压缩由真实数据的磁盘、CPU 和冷召回基准决定；
 - 已压缩音频、图片不二次压缩；
 - 大 Blob 只有预计节省超过阈值才压缩；
-- 删除源段前必须写入、force、复读校验 archive hash，并原子提交 manifest；
+- 删除源段前必须写入、file fsync、复读校验 archive hash，并原子提交 manifest；
 - 只有实测冷召回不达标，才升级到独立压缩块和段内索引。
 
 ### 20.3 测量契约
@@ -1743,13 +2301,20 @@ turn checkpoint `DurableAck`、warm/process-cold recall、功耗、写放大和 
 - Pixel、HyperOS、中端机和低内存设备。
 - 每个正式 ModelPort 使用用户显式提供、仅经进程内注入的真实 Key 做 opt-in 端到端探针，验证多轮工具、公开进度、取消、迟到效果、结构化终态和 Provider 差异；测试不记录 Key、正文或私有 reasoning。
 
-逐操作延迟必须来自单次采样或 Perfetto slice，报告 p50/p90/p95/p99/max；不得把少量
-“批次总耗时 ÷ 操作数”的平均值称作尾延迟。Memory OFF/ON 使用同一 release-like APK、
-corpus 与编译模式随机交错；按 run/boot 聚类估计置信区间。`PASS` 要求单侧置信上界仍在
-预算内，`FAIL` 是单侧置信下界越界或安全不变量失败，区间跨界为 `INCONCLUSIVE` 且 RC
-不得晋级。
+逐操作延迟必须来自 ADR 0018 exact window的单次采样或 Perfetto slice，报告其
+nearest-rank/declared statistic；不得把少量“批次总耗时 ÷ 操作数”的平均值称作尾延迟。
+Gate 0正式 verdict不定义 Memory OFF/ON delta，也不把两个不同执行图相减后冒充某个 F
+field。可选 disabled-control run只作非权威诊断，必须单独标记且不能进入 required tuple、
+threshold、PASS/FAIL或 acceptance policy；若未来要使用 delta，必须先新增版本化 paired
+cohort/window/attribution contract。
+正式 verdict 只使用 ADR 0018 为该 metric 冻结的 nearest-rank/declared statistic 与
+threshold 直接比较：边界相等按 profile 规定的方向判定；任一安全不变量失败为 `FAIL`。
+confidence interval 只用于诊断，不得把 direct-statistic 的 PASS/FAIL 改写为
+`INCONCLUSIVE`。attempt/row/evidence 不完整、样本不足或 outcome 不守恒才是
+`INCONCLUSIVE`，RC 不得把它当通过。
 
-设备端门禁使用 10 万和 100 万事件；1000 万事件只做桌面格式兼容、流式归档和离线重放
+设备端门禁使用精确 100,000 和 1,000,000 eligible M9 `SessionRecordV1`；10,000,000
+records只做桌面格式兼容、流式归档和离线重放
 压力，不要求手机全量索引。冷 Recall 必须区分普通量产机可证明的
 `PROCESS_COLD_PAGE_CACHE_UNKNOWN` 与仅 rooted/userdebug 实验室可做的
 `PROCESS_AND_PAGE_CACHE_COLD`。冷 Recall 期间 UI 立即显示真实 Recall step，而不是空屏等待。
@@ -1769,17 +2334,109 @@ WorkManager 只做可延迟维护：
 
 约束：
 
+- V1 lane registry恰为 `{ALLOCATION_REBUILD, DELETE_ONLY_CLEANUP}`；不接受
+  producer-supplied `frontier_key`、每 source动态 slot、第三 lane或自由任务名。
+  `MaintenanceDispatchStateV1` 的 authority必须是 future phase-accepted、authenticated、
+  fixed A/B non-Room control pair，独立位于 future
+  `manifests/maintenance-dispatch`，并新增相应 namespace lock-map、fixed EOF/cap与
+  create/reopen/census预算。它不能位于或依赖 `index/projection`，否则 Room损坏/重建和
+  low-storage cleanup恰会丢失调度 authority。当前 ADR 0017 closed root/layout没有该
+  parent/pair，ADR 0018也没有覆盖 WorkManager外部 DB，所以 M9C-04 maintenance scheduling
+  保持 `BLOCKED`；实现不得先用 Room row、WorkInfo或 SharedPreferences冒充 durable
+  control；
+- 每 lane generation恰为 `(control_epoch: CSPRNG nonzero id128, ordinal: u64)`。
+  ordinal到 `UINT64_MAX` 时只设置 fixed `overflow_pending`，禁止 wrap/saturating increment；
+  只有 processed追平 requested、旧 worker/WorkSpec全部 terminal且完整 durable-head census
+  闭合后，才可在同一 A/B transaction新建 CSPRNG control epoch并从 ordinal 0开始；
 - 每次 writer 发布新 durable frontier 时，MemoryBroker 的 I/O executor 立即登记该范围并更新当前 Session 的 exact catalog/tail；`session_recall` 可直接扫描 durable Journal，因此近期可见性不依赖 FTS 或 Worker；
 - FTS/Claim 等派生投影可以异步追赶，Receipt 必须报告其 generation/watermark，不能把旧索引的 miss 当成不存在；
 - 活跃 recall、Agent、Tool 不通过 WorkManager 调度；
 - WorkManager 只在主进程初始化，`:ime`/`:brain` 不直接调度，且不使用 expedited work；
 - Broker 与 Worker 任一可在 main 首次触发惰性 `MemoryRuntimeGraph`；两者共享
   `ProjectionWriteCoordinator` 单写 executor/事务 CAS，不能各自打开独立 Room writer；
-- 使用唯一任务 `sense-memory-maintenance`，新 frontier 采用 `APPEND_OR_REPLACE` 追加追赶任务；Worker 每次按 watermark 扫描“尚未处理前沿”，不假设每次通知都成功；
-- Worker 提交 watermark 的最终事务必须重新读取全部 durable heads；若仍有任一 head 在 watermark 之后，则在返回成功前再排入 successor，封死“扫描结束与新段发布同时发生”的漏唤醒窗口；
+- 不把每次 frontier通知变成一条 WorkSpec链，也不依赖
+  `APPEND_OR_REPLACE`“只会追加一个 leaf”的错误假设。每个 closed maintenance lane持有
+  durable、受自己的 future `manifests/maintenance-dispatch` namespace lock保护的
+  `MaintenanceDispatchStateV1 { IDLE | QUEUED | RUNNING,
+  requested_generation, processed_generation, queued_work_id?,
+  running_attempt_id?, active_slice_ordinal?, slice_lease?,
+  slice_terminal?, processed_durable_head_vector_digest,
+  processed_projection_watermarks[], completed_target_coverage_receipt_digest?,
+  dispatch_gate,
+  transient_attempt_count, failure_fence? }`；`dispatch_gate`恰为
+  `ACTIVE | PAUSED_FAILURE | BLOCKED_BUDGET`，与三态正交。requested/processed generation
+  只是 wake/coalescing counter，不是 source coverage、projection watermark或墙上时间。
+  maintenance control lock不能被 `ProjectionWriteCoordinator`/Room lock替代；需要同时提交
+  projection时，future lock map必须冻结两把锁的 rank与 operation lock plan，当前不得猜
+  顺序；
+- notify先在同一 lock/CAS中推进 `requested_generation=max(current, observed)`。只有
+  `dispatch_gate=ACTIVE` 下的 `IDLE→QUEUED` 能预分配一个 CSPRNG `queued_work_id` 并
+  请求 enqueue；暂停/预算阻断时只记录 coalesced wake，状态已是
+  `QUEUED/RUNNING` 时只 coalesce requested generation，不能增加 WorkSpec。enqueue失败、
+  Broker重启或 WorkManager DB恢复后，reconciler用同一个 stable UUID +
+  `ExistingWorkPolicy.KEEP`重试并做 WorkSpec census，不能另造并行请求；`QUEUED`必须先
+  durable再 enqueue；
+- 第一个 Worker incarnation取得 `QUEUED→RUNNING` 时冻结 target generation并 claim
+  `active_slice_ordinal=0` 的 one-shot slice lease，所有 projection transaction都绑定该
+  lease。相同 Work UUID的新 incarnation只有在旧 slice已 durable
+  `RETRY_REQUESTED/STOPPED_CONFIRMED`，或 owner lease/process-death census证明旧执行者死亡
+  且逐 transaction ledger reconcile完成、旧 execution lease已释放后，才可在 control仍为
+  `RUNNING + same Work UUID`时 claim ordinal `+1` 和新的 slice lease；不要求伪造一次
+  `QUEUED→RUNNING`。旧 slice仍 live时 duplicate incarnation必须零业务 mutation退出。
+  `onStopped()` callback本身不是 durable stop证明，不能释放 lease或授权新 slice；
+- Worker按 watermark扫描尚未处理前沿。
+  bounded slice未覆盖 frozen target时只能提交可验证的中间 projection/cleanup watermark，
+  **不得**推进 `processed_generation`。只有 exact durable-head vector与该 lane全部 required
+  projection/cleanup watermarks已证明覆盖 frozen target，才能在同一 control transaction
+  推进 processed counter并绑定 `CompletedTargetCoverageReceiptV1` digest；随后仍须重读
+  全部 durable heads。counter相等、crash恢复、overflow或 WorkInfo状态都不能单独证明
+  source已覆盖。若仍落后且本 WorkSpec可继续，必须先 durable提交
+  `slice_terminal=RETRY_REQUESTED`，再返回 `Result.retry`复用同一个 UUID和 active
+  attempt，不能创建 successor；下一 incarnation按上述 fence取得新 ordinal/lease。
+  transient/permanent failure、Stop或kill前不得把尚未覆盖的 target标成 processed。系统
+  抢占/进程死亡只有在 recovery census与 transaction reconcile后才能追加
+  `STOPPED_CONFIRMED`并重启同 UUID。决定正常 return时先 durable
+  `slice_terminal=COMPLETED`；`RETURNING_SUCCESS`还必须绑定上述 coverage receipt与digest。
+  control state仍保持
+  `RUNNING + same running_attempt_id`，旧 worker绝不能在自己变成 finished前改成
+  `IDLE/QUEUED`或调用 KEEP——未完成的 unique work会让 KEEP丢弃新请求；
+- transient retry只能在 frozen retry classifier命中时使用同 UUID `Result.retry`，并受
+  per-lane attempt ceiling、backoff和WorkSpec/CPU/DB budget约束；超出任一上限先 durable
+  `BLOCKED_BUDGET`或 `PAUSED_FAILURE`，不得继续 retry；
+- main进程 WorkInfo observer只在旧 UUID已呈 finished后触发 reconciler。只有 WorkInfo
+  `SUCCEEDED`、matching `slice_terminal=COMPLETED`且 `dispatch_gate=ACTIVE`时，
+  reconciler才持 maintenance control lock核对 active ID与 durable
+  processed/requested generations：若仍落后，执行一次 `RUNNING→QUEUED`、生成一个新
+  stable UUID并在 durable state提交后用 KEEP enqueue；否则转 `IDLE`。`FAILED/CANCELLED`
+  或 permanent classifier必须 durable写 `failure_fence + PAUSED_FAILURE`，禁止自动
+  successor；只能由新的 authenticated repair/config/authority generation显式解除。
+  notify、boot、Broker bind与每次 WorkInfo变更都调用同一 reconciler，关闭
+  “final scan → worker return → new frontier”窗口。WorkInfo只提供调度触发/finished证据，
+  永不推进 watermark或覆盖 durable heads；
+- `QUEUED`但 WorkSpec缺失时只能用同 UUID补 enqueue；`RUNNING`但 WorkManager DB丢失或
+  状态未知时，必须先证明旧 worker/attempt lease不再 live并 durable关闭该 scheduler
+  attempt，不能把 missing row当 finished。每 lane任一时刻至多一个 queued或一个 running
+  UUID；任意 leaf fan-out、重复 successor、unknown active attempt或 state/WorkSpec census
+  不一致都 fail closed。不得对未知 leaf集合调用 `APPEND_OR_REPLACE`；官方
+  [ExistingWorkPolicy](https://developer.android.com/reference/androidx/work/ExistingWorkPolicy)
+  的 `APPEND_OR_REPLACE` 会向所有 leaf追加，不能充当本地 coalescing primitive；
 - 新 seal 段达到阈值后合并提交一次 work；
-- 普通维护要求 BatteryNotLow + StorageNotLow；
-- 重压缩/全量重建再增加 charging/device-idle；
+- allocation/rebuild lane覆盖投影写入、索引、snapshot、压缩与全量重建，至少要求
+  BatteryNotLow + StorageNotLow；重压缩/全量重建再增加 charging/device-idle；
+- 独立 delete-only cleanup lane**不设置 StorageNotLow**，但每 attempt必须先取得 exact
+  physical-attempt cleanup lease、reader drain、locator/manifest/tombstone authority与
+  ADR 0018预留的 intent/terminal/census字节。它只能 unlink closed census中已不可达的
+  明确 physical file并 fsync/reopen parent；不得建 projection、Blob、temp、迁移文件或
+  借“清理”重写 canonical data。无预留 terminal空间或 authority时宁可报告
+  `CLEANUP_BLOCKED`，不能无回执删除；
+- WorkSpec proto/input、唯一任务 metadata、progress/output、WorkManager自身 Room
+  DB/WAL/SHM、scheduler transaction、重试与 crash orphan位于 ADR 0018 V1
+  `sense-memory` root三 storage class之外，当前预算不能覆盖。M9C-04启用前必须先做
+  Budget schema/minor bump，冻结 external volume/path identity、WorkSpec/input/count hard
+  cap、DB/WAL/SHM增长、prune/checkpoint/rollback/orphan与 close/reopen census，并把
+  IO/RSS/bytes纳入同一 operation reservation/reconcile；不得只计算业务 projection文件。
+  exact WorkManager/SQLite build在 crash/retry/DB-recovery下的 hard bound无法冻结或实测
+  时，maintenance capability保持 BLOCKED；
 - 云端语义提取必须单独 opt-in，并增加 NetworkType、电量和出境约束；默认不发送历史原文；
 - worker 使用 staged output + manifest，分段处理、检查停止、幂等提交，中断后由下次任务恢复；
 - 当前 Session 的 durable checkpoint 和可见索引不能等待 WorkManager；
@@ -1804,7 +2461,9 @@ WorkManager 只做可延迟维护：
 ### 22.2 MemoryBroker 与索引故障必须分开
 
 - Broker 活着、派生索引损坏：Broker 可以扫描 Journal/open durable prefix，提供较慢的 exact Session/Journal 读取；Receipt 标记 `STALE`；
-- Broker 进程死亡或无法绑定：Brain 不直接打开 Room/Journal，只能使用当前 Run 内存 transcript 和已加载热快照，并返回 `MEMORY_UNAVAILABLE`；
+- Broker 进程死亡或无法绑定：Brain 不直接打开 Room/Journal，只能使用当前 Run 内存
+  transcript，并返回 `MEMORY_UNAVAILABLE`；IME的非敏感 HotSnapshot不进入 Brain或
+  Provider，也不能被当作长期记忆 fallback；
 - Journal/Blob 本身损坏或擦除：Receipt 同时标记 `GAPPED/ERASED/POLICY_RESTRICTED`；
 - 后台重建目录、FTS 和投影；
 - 重建前不得以“没有搜到”做否定判断；
@@ -1814,9 +2473,9 @@ WorkManager 只做可延迟维护：
 
 Exactly-once 通常无法对外部系统保证，因此采用：
 
-- 写入并 force `TOOL_EFFECT_INTENT`；
+- 写入并 DurableAck `TOOL_EFFECT_INTENT`；
 - 执行外部动作；
-- 写入并 force `EFFECT_CONFIRMED` 或 `EFFECT_UNKNOWN`；
+- 写入并 DurableAck `EFFECT_CONFIRMED` 或 `EFFECT_UNKNOWN`；
 - 幂等工具使用 idempotency key；
 - 可查询工具在恢复时先查询现状；
 - 必要时追加 `COMPENSATES_EFFECT`。
@@ -1841,20 +2500,40 @@ Broker 每次启动和 Run 恢复时必须扫描“已有 durable `TOOL_EFFECT_I
 - 状态变化、历史纠错、撤回承诺和解释修订互不混淆；
 - 冲突召回同时暴露支持与反驳；
 - 人工删除来源段后必须出现 GAP；
-- 分别在 enqueue 前后、frame append 后、frame force 后、slot 半写、slot 完整但未 fsync、
+- 分别在 enqueue 前后、frame append 后、frame fsync-equivalent 后、slot 半写、slot 完整但未 fsync、
   slot fsync 后 callback 前和 callback 后杀死进程；Receipt 只能承诺 A/B 选定 durable cut，
-  callback 未送达的 event ID 重试必须幂等；
+  callback 未送达时只有精确 `ProducerAppendAttempt` 才能按 record ID 幂等重试；
 - 在 epoch temp mkdir/file fsync/lease-lock/child-dir fsync/rename/parent-dir fsync/复读
   各点杀进程，未确认 bootstrap 绝不产生 writable handle；并在 rename 后到最终复读之间
-  交错启动 reaper，`tryLock()` 必须始终失败，直到原 writer 退出/死亡才可取得 recovery
+  交错启动 reaper，`LeaseLockPortV1.tryAcquireExclusive()` 必须始终返回 `CONTENDED`，
+  直到原 writer退出/死亡才可取得 recovery
   ownership；
 - Session 边界不改变同一 case 的召回；
 - 无明确因果时不得用时间戳强推先后；
-- `PREVIOUS_IN_ORIGIN`/writer sequence 不得自动生成 `CAUSES`；
+- producer-supplied self `writer/epoch/sequence` 必须拒绝；同一 immutable Event payload在
+  enqueue/retry与 writer epoch退休交错中不得重序列化，Projection得到的
+  `EventOriginCoordinateV1` 必须逐字段等于 authenticated enclosing frame，不能等于
+  producer猜值；
+- `PersistedRecordProvenanceLocatorV1` 的 record/commitment/WriterRef/sequence任一错绑都
+  fail closed；Event自身 outer coordinate不能替代 source provenance locator；
+- 对 authorized relocation在 new DEK write、fsync、manifest switch、old drain/unlink各点
+  kill并 round-trip；重写前后所有 `EventOriginCoordinateV1` 与 record commitment必须
+  byte-equal，manifest cut只能 old/new恰一份逻辑可达，compactor epoch替换 source
+  coordinate或双可达一律 fail closed；
+- writer sequence不得自动生成 `CAUSES`；
 - 每条派生 Claim 都能追到 typed EvidenceLocator；
+- Claim proposal携带 canonical ID或 purpose-3 token必须拒绝；同 proposition HMAC hit后仍
+  要求 decrypted canonical bytes逐字节相等。purpose-3 rotation与选择性擦除后从新 cut
+  重建 match/lineage/conflict projection，旧 token generation从 Room/WAL/SHM、snapshot、
+  log、telemetry和默认 export的 byte scan中完全消失；并发相同 proposal、stale cut miss、
+  DB删除/重建、rotation switch和 forced HMAC collision中，只有 complete fixed-cut receipt
+  下的事务内二次 miss可 mint，hit只追加 evidence，identity fork/unique-token误合并拒绝；
+  在 canonical Journal Ack前后与 Room apply/watermark前后 kill，Ack后 projection必须仅凭
+  watermark落后判 STALE并幂等重放，绝不能要求跨 store原子提交或再次 mint；
 - 故意让 FTS 漏掉一条纠正，闭包不得返回 `COMPLETE_FOR_DECLARED_CONTRACT`；
 - 图遍历未完成时不得伪造节点数或 closure digest；
-- 每个已计算但未 materialize 的组件都有范围、digest 和 expand handle，并返回 `PARTIAL + NECESSARY_COMPONENT_NOT_MATERIALIZED`；
+- 每个已计算但未 locally materialize 的组件都有范围、digest 和 expand handle，并返回
+  `PARTIAL + NECESSARY_COMPONENT_NOT_MATERIALIZED`；
 - stale index 不能返回 `COMPLETE_FOR_DECLARED_CONTRACT`；
 - `POLICY_EXCLUDED/ERASED` 不得被 Session fallback 绕过；
 - 导入缺少头尾消息的 Session 必须暴露 source gap；
@@ -1862,8 +2541,27 @@ Broker 每次启动和 Run 恢复时必须扫描“已有 durable `TOOL_EFFECT_I
 - 模型错误抽取不能污染 Observation/Effect；
 - 用户擦除 payload 后，Receipt 和 replayability 必须降级；
 - 在不重新执行 Provider、Tool 和 Skill 的前提下，用已记录事件重建的历史 RunState 与原终态一致；
+- M9.1 fixture只能产生 `AssemblyCompletenessReceipt`，出现任何
+  `ModelInputMaterialization*` record即 phase violation；M9.2必须证明 host只交付
+  `AuthorizedProviderMemoryFrameV1`，而 exact Provider body由 Brain final request
+  factory唯一物化；将 host-local receipt、stable Claim/Event/Session/record ID、
+  purpose-3 token或 source cursor塞进 provider view必须拒绝；
+- 对 Provider attempt在 factory完成、intent append、intent Ack callback前后、call/sink
+  创建、零/部分/全部 body write、body close、早到 headers、cancel、terminal append/fsync
+  与 terminal callback各点 kill；intent未 DurableAck时网络 side effect计数必须为零，
+  intent-only恢复一律 `SEND_INDETERMINATE`，exact body close前不得
+  `REQUEST_BODY_TRANSPORT_ACCEPTED`，同 predecessor不得出现双 terminal；
+- 429/5xx、连接断开、callback丢失和旧 lease不得 blind retry；显式 retry必须使用新
+  intent/ordinal/lease/salt。automatic redirect保持关闭；测试 adapter若开启 redirect，
+  每 hop必须有独立 destination gate、intent/terminal且不跨 origin转发 Authorization；
+- 用低熵 corpus证明裸 body/destination digest被 validator拒绝，并 byte-scan
+  clear Journal header/AAD、Room/WAL/FTS、HotSnapshot、路径、日志、UI、telemetry、crash
+  artifact和默认 export均不存在 `ModelInputMaterialization*` commitment/salt/length；
+  同 body不同 attempt的salt/commitment必须不同，并明确记录已获准 decrypt reader仍能做
+  per-record guessing的 residual risk；source选择性擦除/compaction后对应 encrypted
+  intent/receipt commitment不得残留；
 - 工具崩溃后不重复外部效果；
-- 在 `TOOL_EFFECT_INTENT` force 后、terminal receipt 前杀进程，恢复必须得到 `EFFECT_UNKNOWN_INFERRED`，不得自动重放；
+- 在 `TOOL_EFFECT_INTENT` DurableAck 后、terminal receipt 前杀进程，恢复必须得到 `EFFECT_UNKNOWN_INFERRED`，不得自动重放；
 - 外部 Tool 缺失 repeatability/reversibility/cancellation 元数据时必须落为 `UNKNOWN`，所有自动重试与“已取消”断言均被拒绝；
 - Tool/Capability 升级扩大 effect surface 后，旧 Grant 必须失效；Skill 编译快照仍指向旧 digest；
 - 只发送 MCP cancel notification、不给确认时，只能得到 `CANCEL_DISPATCHED/CANCEL_UNCONFIRMED`；
@@ -1875,9 +2573,41 @@ Broker 每次启动和 Run 恢复时必须扫描“已有 durable `TOOL_EFFECT_I
 - sidecar temp/file-fsync/publish-no-replace/dir-fsync kill-point 与重复 recovery 幂等；
 - frontier slot 的 segment/epoch 错绑、offset 越界/半 frame、末 sequence 不符和精确 prefix
   digest 不符全部 fail closed；
-- 在 Worker 最后一次扫描与新 durable head 发布之间制造竞态，新范围必须由 Broker exact tail 立即可读，并由 successor Worker 最终索引；
-- 扫描 Room/WAL/FTS/temp PFD，不得出现 Session 原文或敏感 Claim value；篡改 AEAD frame 必须失败关闭；
-- 10 万、100 万事件的设备索引、冷启动和召回压力；1000 万只做桌面归档/格式/离线重放；
+- 对每个 maintenance lane并发注入 10^N frontier notify、enqueue失败、WorkManager DB
+  rollback/row loss、Broker/Worker kill，以及
+  `final scan → processed commit → return success → WorkInfo FINISHED → reconcile`每个
+  边界的新 frontier竞态；`requested_generation`最终追上全部 durable heads，旧 worker
+  finished前不能出现新 UUID，任一时刻每 lane至多一个 active queued-or-running UUID，
+  且每次 finished最多生成一个 successor。`Result.retry`必须复用同 UUID；QUEUED enqueue
+  crash只能同 UUID补发；WorkInfo mutation不得推进 watermark。对同 UUID注入 duplicate
+  `ListenableWorker`、`onStopped`后旧 worker继续运行、process death与 retry重建：live
+  slice只能有一个 lease，ordinal严格递增，未 durable
+  `RETRY_REQUESTED/STOPPED_CONFIRMED`或未完成 transaction reconcile时新 incarnation零
+  mutation；未覆盖 frozen target的 failure/Stop/kill不得推进 processed counter，
+  `RETURNING_SUCCESS`必须复验 CompletedTargetCoverageReceipt。长时间 low-storage下
+  allocation lane不运行，delete-only lane仍只能按 cleanup lease/census删除并消耗预留
+  terminal字节；unknown lane/dynamic frontier key拒绝，`UINT64_MAX`只走
+  overflow-pending + full census + new CSPRNG epoch，永不 wrap；
+- 对永久 Room/schema错误、authority revoke、反复 cancel、transient retry ceiling和
+  external DB/CPU cap耗尽分别注入 10^N finished notifications；只能产生一个 durable
+  `PAUSED_FAILURE/BLOCKED_BUDGET` fence，零自动 successor，直到不同的 authenticated
+  repair/config/authority generation解除后才允许一个新 UUID；
+- 在未接受 maintenance A/B control wire和 ADR 0018 external WorkManager DB budget bump时，
+  构造 WorkRequest必须被 phase gate拦截且 filesystem census为零；接受后再覆盖 WorkSpec
+  cap、input超限、DB/WAL/SHM hard-bound、prune/checkpoint、row loss与 orphan reconcile；
+- 在 Worker 最后一次扫描与新 durable head 发布之间制造竞态，新范围必须由 Broker exact
+  tail立即可读，并由 coalesced successor最终索引；
+- 扫描 Room/WAL/FTS/temp，不得出现 Session 原文或敏感 Claim value；断言 file-backed PFD
+  temp 不存在；篡改 AEAD frame 必须失败关闭；
+- 构建期扫描 `:brain` production/runtime dependency graph、merged manifest与 bytecode：
+  出现 Room、WorkManager、`memory-runtime`、`MemoryBrokerClient`或 Broker Binder bind
+  call即失败；运行时在 Brain进程触发对应 initializer也必须 fail closed且测试进程不产生
+  Room/WorkManager文件；
+- 逐字段 fuzz HotSnapshot closed allowlist；任何 user/installation/session/run/record/
+  event/claim/lineage/conflict/thread/entity ID、count、word/style/token频率或 user-derived
+  route使整代拒绝，只有 non-user Skill/route/version/compiled digest/stage metadata通过；
+- 精确 100,000、1,000,000 eligible M9 `SessionRecordV1` 的设备索引、冷启动和召回压力；
+  10,000,000 records只做桌面归档/格式/离线重放；M9.1 Event另行 recertify；
 - 中间 frame 损坏、尾部半写、WAL 损坏和低存储恢复；
 - Pixel、HyperOS、中端机和低内存设备。
 
@@ -1919,9 +2649,20 @@ crash replay determinism
 3. thinking、流式正文和 Tool 运行中的 Stop，以及迟到帧隔离；
 4. 连接中断、断链识别、有界恢复和稳定前缀；
 5. `finish_reason`、usage、结构化错误、空包和超限响应；
-6. 带纠正/冲突/Session 回退的 Memory Frame，且私有 reasoning 不进入 UI 或 Journal。
+6. phase-correct Memory boundary：`M92-06` 前验证 Provider body中 Memory absence、裸
+   MemoryFrame/grant拒绝；`M92-06` 后才用固定 synthetic non-user Memory corpus验证纠正/
+   冲突/Session 回退，并要求 valid parent disclosure grant、每 HTTP attempt新的 one-shot
+   disclosure lease与 current erasure binding；私有 reasoning始终不进入 UI 或 Journal。
 
 Key 只通过进程内短生命周期 secret channel 注入，不写源码、命令历史、fixture、Journal、报告或 CI artifact。探针只持久化 adapter/model 版本、被测 commit/config digest、scenario ids、事件种类、耗时、取消/工具/终态判定和脱敏错误类别；不记录正文、工具敏感参数或私有 reasoning。至少分别验证正常多轮、Stop/迟到隔离、断链恢复、Memory 冲突/Session 回退，并形成绑定被测主体 digest 的脱敏 attestation；不能用一句“真 Key 已通过”代替。外部服务临时不可用可以标记为基础设施阻塞，但不能把未实际通过的 adapter 宣称为正式支持。
+
+探针由被测 subject phase机械选用 closed scenario set：`M92-06` 前是
+`MEMORY_ABSENT_IN_PROVIDER_BODY / RAW_MEMORY_FRAME_REJECTED /
+DISCLOSURE_GRANT_NOT_INPUT`；之后才是
+`SYNTHETIC_AUTHORIZED_MEMORY_FRAME / VALID_PARENT_GRANT /
+FRESH_ATTEMPT_LEASE / CURRENT_ERASURE_BINDING`。后者禁止用户历史和 production Memory
+root，并覆盖 destination/tenant/model/retention mismatch、lease replay、redirect/rebind和
+mid-stream erasure；任一场景缺失都不能提升正式支持等级。
 
 ---
 
@@ -1934,10 +2675,14 @@ SCHEMA_ONLY → DARK → SHADOW → CANARY → DEFAULT
 ```
 
 远端配置只能关闭或降级，不能静默升级阶段；每次晋级绑定 schema、policy、model 与
-benchmark digest。固定 release identity 未建立时，持久化能力最高只能到 `DARK`。
-stage 按 capability 独立计算，并取 build profile、本地 consent、依赖 stage、policy 和
-attestation 的最小值；`local exact recall → capture`、
-`unified Session recall → local exact + Broker + source manifest`、
+benchmark digest。owner continuity 或 `LocalErasureControlPhaseGateV1` 未通过时
+effective stage 固定为 `SCHEMA_ONLY`，不得创建 data-plane root 或 persistent bytes；
+`LocalErasureCapabilityGateV1` 未通过时 normal `DARK` 与 real data 也 blocked，只有前述
+measurement permit 的窄实验旁路。stage 按 capability 独立计算，并机械消费 ADR 0018
+closed GateId registry/capability DAG；本文不维护另一份近似 gate 清单。M9A local exact
+recall仅为 measurement path，不能成为产品 activation捷径；
+`M9A recorder → local-erasure control`、
+`M9B product Session recall → M9A exact path + Broker + WriterSourceAuthorityManifestV1`、
 `semantic → event recall → unified Session recall`、
 `external Tool → Effect Ledger → M9.2 audit boundary` 等依赖缺失时 fail closed。
 `SHADOW` 也不能绕过 CapturePolicy 或用户授权去新增原文捕获。
@@ -1946,26 +2691,47 @@ attestation 的最小值；`local exact recall → capture`、
 M9.0a 起由 `:ime/:brain/main` 各自执行；`memory-runtime` 只在后续负责晋级发布和 rollout
 ledger，不是唯一 enforcement 点。snapshot 缺失、损坏或 unknown major 时一律
 `SCHEMA_ONLY`；Broker 死亡只关闭依赖 Broker 的 capability，不妨碍 M9.0a 的 local exact
-`DARK` 验证。
+codec/内存验证。Budget/erasure capability 尚未 PASS 时，持久化 local exact 只能由
+non-FeatureStage measurement permit在 exact production APK/applicationId中的不可转正
+candidate authority/root/run驱动，不能称为 synthetic/lab `DARK`；另一个 applicationId只
+能是 companion。
 
-每个活跃进程还必须在非主线程运行 `FeatureStageWatcher`，监听 snapshot 父目录的原子
-替换；显式 control broadcast 负责低延迟，watcher 负责广播丢失后的收敛。敏感边界只读取
-验证后的内存快照。generation 回退、同代不同 hash、watcher overflow/失效或验证失败都
+每个活跃进程还必须在非主线程运行 `FeatureStageWatcher`。显式 control broadcast与
+FileObserver事件只作低延迟 signal，不是 authority。watcher在启动、每次 signal、overflow、
+periodic reconciliation与每个敏感 operation admission时都重新打开、完整验证 authenticated
+A/B slots、selected generation和 exact snapshot；不假设 parent-directory replacement具有
+跨进程原子通知语义。敏感边界只读取验证后的内存快照。generation 回退、同代不同 hash、watcher overflow/失效或验证失败都
 立即降为 `SCHEMA_ONLY`；有效降级必须撤销 active Grant、取消依赖能力并在 capture 创建
 ID/sequence/Blob 前生效。
 
 ### M9.0a：显式 AI Session 的单 writer 证据地基
 
-- 先完成 release identity、wire/durability、Security 与 Budget 四份 ADR；固定签名未就绪时
-  只允许开发者 `DARK`，不得默认启用；
-- 建立 `memory-protocol` 与无 Room 的 `event-journal` 模块骨架；
-- 先以 Brain 单 writer、开发者 `DARK` 的 local evidence stream 验证；
+- Gate 0 四份 ADR 先作为决策基线接受；artifact identity、owner continuity、signing
+  authority、release-policy semantics、platform certification、root/keyring bootstrap、
+  local-erasure control/capability、measurement/evidence wire 与 0018-B operational gate
+  均不得冒充已通过；
+- `X-02` 先建立 `memory-protocol`/`event-journal` 最小骨架与 fail-closed stage snapshot，
+  默认 `SCHEMA_ONLY` 且不创建 Memory root/Key/用户数据；
+- `M9A-01` 只增加 Common/Journal/Session record schema、validator 与纯 codec；
+- 先冻结无数据的 local-erasure control schema 与 root-bootstrap control wire，再
+  由 `M9A-02O` 建立 owner-signed local A/B；owner continuity PASS 后才允许
+  `M9A-02K` Keyring bootstrap intent/recovery、purpose-5 attempted-use authority 与
+  key-use safety；
+- 先实现 0018-E evidence wire、measurement control 与 typed
+  `SyntheticMeasurementPermitV1`；它只建立未来运行实验的 control/evidence contract，
+  此时还没有足够的 production-exact subject，不能先跑 calibration；
 - Brain Journal、公开工具边界和 Brain 终态；
 - turn 级 DurableAck checkpoint；
 - 单 writer fixed-cut exact recall；
-- CapturePolicy、备份排除与通过现有 Brain Messenger 串行执行的 local erasure；
+- CapturePolicy、备份排除与独立 typed local-erasure control：host/main coordinator先
+  fence/drain，再按 `owner.lease → epoch lease` 做 delete-only恢复；Brain死亡、Provider或
+  网络失败不影响其继续；
 - segment/blob 加密和 key epoch；
 - Provider 正文诊断默认关闭。
+
+M9.0a 的 recorder/Blob/frontier/Ack/recall/erasure 被测路径必须先完整实现成
+production-exact、normal stage blocked、permit 可驱动的 measurement subject。M9.0a
+结束不表示 calibration/BudgetProfile/normal DARK 已发生。
 
 目标只限定为“已 DurableAck 的单 writer local evidence 可精确读取”，不宣称跨进程完整
 Session。
@@ -1977,7 +2743,7 @@ Session。
 - segment CRC/digest/gap；
 - `memory-protocol / event-journal / memory-ipc / memory-runtime`；
 - 主进程 MemoryBroker、PFD IPC、Broker death 降级；
-- writer-head source manifest、`:brain`/`:ime` fixed cut 聚合与统一 Session recall；
+- writer-head `WriterSourceAuthorityManifestV1`、`:brain`/`:ime` fixed cut 聚合与统一 Session recall；
 - 只有 IME 的 post-apply observation 可形成成功 Session 终态；
 - catalog、导出、忘记和跨 writer 擦除；
 - durable/volatile/indexed/archived 前沿。
@@ -1987,11 +2753,40 @@ Session。
 - Session catalog/search；
 - 版本化 Unicode normalization + bigram 基线；既有确定性分词仅作附加字段；
 - FTS4 candidate index 和本地 scorer；
-- 10 万/100 万设备基准；
+- 精确 100,000/1,000,000 eligible M9 `SessionRecordV1` 设备基准；
 - 总磁盘 soft cap、低存储和 capture degradation；
 - 索引崩溃后的 Journal 扫描与重建。
 
 M9.0 不做 Claim 图、向量、自动摘要或模型事件抽取。
+
+### M9.0a/b/c 共同的证据与激活顺序
+
+完整 S0–S8 不得早于被测实现。顺序唯一为：
+
+1. 先完成 M9.0a recorder/local recall/Blob/frontier/Ack/local-erasure 的
+   production-exact measurement-ready path；这里的 local recall仍只服务 measurement，
+   不构成产品 recall；
+2. 再完成 M9.0b Broker/PFD/export/transfer/multi-writer 的 production-exact
+   measurement-ready path；
+3. 再完成 M9.0c index、HotSnapshot、rebuild/maintenance 的 production-exact
+   measurement-ready path；normal worker/search 仍 blocked；
+4. `M9-08V`、`R-03/R-04` 与 fresh special-evidence/root preflight完成后，
+   `M9-08C` 使用第一个独立 permit 对全部 required capability执行完整 calibration
+   S0–S8，只能得到 candidate/`MEASURED_NO_BUDGET`；
+5. `M9-08P` 独立生成并冻结 volume rules、`BudgetProfileSetV1` proposal、acceptance
+   policy与 SLO envelope；`M9-08K4`重做 fresh special/root preflight后，`M9-08B` 使用
+   第二个唯一 permit/primary run重跑完整 confirmatory
+   S0–S8；calibration rows 不进入 confirmatory statistic；
+6. 只有 confirmatory deterministic verifier、ProfileAcceptanceReceipt、
+   PlatformCertification、final owner manifest与 exact cached publication全部闭合，才执行
+   `M9-ACT-0 → M9-ACT-A-S → M9-ACT-B-S → M9-ACT-C-S`；A-S不开放 recall，第一条产品
+   recall是 B-S。真实数据再独立执行
+   `M9-ACT-A-R → M9-ACT-B-R → M9-ACT-C-R`，每个 operation仍消费 current authority。
+
+Local-erasure、Blob/source/tombstone、transfer、HotSnapshot、capacity 等 gate 都是上述
+suite 的输出，不是 measurement permit 的循环前置。任一路径仍是 stub/mock、required
+tuple 缺失、四 role profile 不完整或任一 required value UNSET，所有 normal activation
+保持 blocked。
 
 ### M9.1：确定性事件旁路
 
@@ -1999,12 +2794,14 @@ M9.0 不做 Claim 图、向量、自动摘要或模型事件抽取。
 - 确定性事件类型；
 - dependency、来源、修订、工具请求—结果五类核心边；
 - Query Contract；
-- Completeness Receipt；
+- `AssemblyCompletenessReceipt`；
 - `event_recall` + Session fallback。
 
 不让 LLM 参与 canonical operational record 生成；EventLine 仍只是显式关系查询视图。
 本阶段的 conflict closure 仅覆盖宿主已记录的纠正、撤回和显式矛盾关系；自然语言
-Claim/ConflictConstraint 的语义冲突属于 M9.2。
+Claim/ConflictConstraint 的语义冲突属于 M9.2。M9.1 不定义
+`ModelInputMaterializationIntentV1/Receipt`，也不因尚无 Provider handoff audit而降低或
+夸大 `AssemblyCompletenessReceipt`。
 
 ### M9.2：派生语义与真值维护
 
@@ -2015,6 +2812,9 @@ Claim/ConflictConstraint 的语义冲突属于 M9.2。
 - 可选 EventLine materialized view；
 - renderer-versioned Event Capsules；
 - extractor version、派生 generation 和从已记录派生事件重建。
+- host授权的 `AuthorizedProviderMemoryFrameV1` handoff，以及 Brain-owned final request
+  factory、encrypted `ModelInputMaterializationIntentV1/Receipt` 和 per-attempt
+  send/redirect/kill reducer。
 
 模型仍不能写 Observation/Effect。
 
@@ -2087,7 +2887,7 @@ Claim/ConflictConstraint 的语义冲突属于 M9.2。
 | 模型误抽取 | 错误记忆被循环强化 | 认识论类型、EvidenceLocator、模型只能提议、派生输出本身入账并可并行重算 |
 | 修订丢失 | 旧结论错误复活 | 修订/冲突闭包是 Recall 的硬要求 |
 | 启发式发现漏种子 | 闭包完整但遗漏关键事件 | discovery guarantee 与 closure 分离；只有 exact enumeration / exhaustive evaluation 才可能达到 `COMPLETE_FOR_DECLARED_CONTRACT` |
-| Ack callback 前崩溃 | 恢复可能选到旧 frontier，也可能选到已提交的新 frontier；调用方不能从 callback 缺失推断 | A/B durable frontier、稳定 event ID 幂等；`AckObserved ⇒ FrontierCommitted` 但反向不成立 |
+| Ack callback 前崩溃 | 恢复可能选到旧 frontier，也可能选到已提交的新 frontier；调用方不能从 callback 缺失推断 | A/B durable frontier；仅精确 ProducerAppendAttempt 可按 record ID 重试；`DurableAckObserved ⇒ FrontierCommitted` 但反向不成立 |
 | open 段孤儿 | 近期 Session 永久不入索引或错误续写导致 nonce 重用 | immutable orphan segment、selected durable frontier、read-only reaper 与 recovered-seal sidecar |
 | 时间去除过度 | 日程、有效期、现实顺序失真 | 时间保留为带精度和来源的属性 |
 | 图关系漂移 | 新模型生成不同图 | extractor version、派生图可删、旧证据不变 |
@@ -2098,10 +2898,10 @@ Claim/ConflictConstraint 的语义冲突属于 M9.2。
 | ABI 被厂商绑死 | Provider/协议变化导致重构 | ModelPort/MCP/A2A/Skills adapters |
 | Memory prompt injection | 历史文本诱导越权 | 记忆是数据，不是 Policy；PolicyAndVerifier 独立 |
 | 实体误合并 | 两个人或两个项目混淆 | provisional alias、支持证据、不可破坏合并 |
-| 输入法过度捕获 | 演变为被动跨应用原文记录器 | 默认仅显式 AI Session；CapturePolicy 在事件创建前执行 |
+| 输入法过度捕获 | 演变为被动跨应用原文记录器 | 默认仅显式 AI Session；CapturePolicy preflight 在 body read/record ID/token/queue/sequence/Blob/Cipher 前执行 |
 | 删除与不可变冲突 | 用户原文残留在派生副本 | retention epoch、擦除清单、物理压实/密钥销毁 |
 | 无限保存承诺 | 设备磁盘耗尽 | 总 soft cap、外部归档、显式 degradation；只承诺 DurableAck cut |
-| 发布签名漂移 | 覆盖安装失败，Keystore 与长期数据被卸载清除 | 固定 production identity、lineage、托管/轮换与灾备演练；未完成时最高 `DARK` |
+| 发布签名或 owner 漂移 | 覆盖安装/owner continuity 失败，Keystore 与长期数据可能不可用 | identity/owner 独立 gate；owner/control 非 PASS 时 `SCHEMA_ONLY`；erasure capability 非 PASS 时仅可受 permit 约束的 measurement |
 | 系统变得过重 | 输入体验退化 | M9 分阶段、性能硬门、任何派生层可关闭 |
 
 ---
@@ -2111,15 +2911,20 @@ Claim/ConflictConstraint 的语义冲突属于 M9.2。
 ### 27.1 应现在冻结
 
 - capture record 在 retention epoch 内 append-only，显式擦除走独立协议；
-- 默认只持久化显式 AI Session，CapturePolicy 在创建事件前执行；
-- 固定 production signing identity 与数据连续性是用户持久化能力的前置条件；
+- 默认只持久化显式 AI Session，CapturePolicy preflight 在读取正文和创建任何 record
+  identity/内容派生前执行；
+- stable data owner continuity 与 local-erasure control 是 root/substrate 前置；
+  local-erasure capability 是 normal DARK/real-data 前置；release identity、policy
+  semantics、budget、freshness、consent/backup 是 real-data 阶段的共享 gate；
 - Event 与 Claim 分离；
 - Observation/Effect 不能由模型伪造；
 - 时间不是 ID 和唯一顺序；
 - 事件修订只追加；
 - 只对 DurableAck cut 声明 ledger continuity；
 - Session/Journal 对已 DurableAck、仍保留且 policy 允许的 transcript 提供字节精确回退；
-- Recall 必须分开 discovery、closure、conflict 和 model materialization，并返回 Completeness Receipt；
+- Recall 必须分开 discovery、closure、conflict 和 local materialization，并返回
+  `AssemblyCompletenessReceipt`；M9.1到此为止。M9.2实际 Provider input另有不递归嵌入、
+  只写加密 Brain Journal的 `ModelInputMaterializationIntentV1/Receipt`；
 - FTS/向量/图/摘要都是可重建派生层；
 - 模型派生输出本身入账；历史 replay 不重新调用模型/Tool/Skill；
 - Tool 必须有 call-id、schema、repeatability、reversibility、取消和效果回执；缺失效果语义默认 `UNKNOWN`；
@@ -2228,6 +3033,9 @@ Sense 最值得做的，不是一个更会“记住用户”的模型，而是�
 - [Microsoft Event Sourcing Pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing)
 - [Microsoft CQRS Pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs)
 - [de Kleer: An Assumption-based TMS](https://dl.acm.org/doi/10.1016/0004-3702%2886%2990080-9)
+- [RFC 2104: HMAC](https://www.rfc-editor.org/rfc/rfc2104.html)
+- [RFC 9110 §9.2.2: Retrying Requests](https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.2)
+- [RFC 9112 §8: Handling Incomplete Messages](https://www.rfc-editor.org/rfc/rfc9112.html#section-8)
 
 ### 开放协议
 
@@ -2252,6 +3060,7 @@ Sense 最值得做的，不是一个更会“记住用户”的模型，而是�
 - [NIST SP 800-38D: GCM and GMAC](https://csrc.nist.gov/pubs/sp/800/38/d/final)
 - [Android `CRC32C`](https://developer.android.com/reference/java/util/zip/CRC32C)
 - [WorkManager](https://developer.android.com/develop/background-work/background-tasks/persistent/getting-started/define-work)
+- [WorkManager `ExistingWorkPolicy`](https://developer.android.com/reference/androidx/work/ExistingWorkPolicy)
 - [Protocol Buffers Encoding](https://protobuf.dev/programming-guides/encoding/)
 - [Protocol Buffers Unknown Fields](https://protobuf.dev/programming-guides/proto3/#unknowns)
 - [ProtoJSON wire-safety limits](https://protobuf.dev/programming-guides/json/)

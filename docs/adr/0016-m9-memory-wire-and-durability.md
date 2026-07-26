@@ -417,12 +417,24 @@ SHA-256(
 
 `exact_record_length` 必须不超过由 M9.0 descriptor、各字段 cap 和
 `MAX_INLINE_RECORD_BYTES_V1` 机械计算的 `MAX_SERIALIZED_SESSION_RECORD_V1_BYTES`。
-writer 还必须在 admission 前用将采用的 `WriterRefV1` 和 fixed-width sequence 机械计算
-最终 `JournalFramePayloadV1`，证明它不超过同样由 descriptor 推导的
-`MAX_SERIALIZED_JOURNAL_FRAME_PAYLOAD_V1_BYTES`。这两个上限不是手填预算数字；CI 从
-冻结 descriptor 与本 ADR field caps 生成并 pin golden，checked u64 后证明结果可放进
-physical u32 length。任一字段不 canonical、digest 不匹配、record 内
-`record_id`/policy digest 不匹配或最终长度证明失败，均在 queue admission 前拒绝。
+writer 还必须在 admission 前计算
+`JournalFramePayloadLengthUpperBoundV1(exact_record_length)`：它只使用冻结 descriptor、
+exact record length、最大合法 `WriterRefV1` canonical length、`fixed64`
+`writer_sequence` 的固定 wire width，以及其它 outer 字段的固定 presence/length cap，
+checked 推导任一后续合法 writer epoch/sequence下的 serialized-length上界，并证明
+`<=MAX_SERIALIZED_JOURNAL_FRAME_PAYLOAD_V1_BYTES`。该 witness **不是最终 payload
+bytes**，不得选择/猜测 writer epoch、分配 sequence、计算 nonce/AAD或把 tentative
+coordinate写回 attempt。
+
+dequeue后才按 §6.2 分配 sequence并选择当前 exact `WriterRefV1`，随后对 outer
+`JournalFramePayloadV1` 一次性 canonical serialize；actual length必须
+`<=` admission保存的 bound与 descriptor maximum。超界表示 descriptor/validator
+不一致，必须 fail closed并按未开始物理写的既有规则退休 tentative epoch，不能重写
+`exact_record_bytes`、换一个 sequence“试到成功”或把记录留在已接受但永远不可 flush 的
+状态。这两个上限不是手填预算数字；CI 从冻结 descriptor 与本 ADR field caps 生成并 pin
+golden，checked u64 后证明结果可放进 physical u32 length。任一字段不 canonical、digest
+不匹配、record 内 `record_id`/policy digest 不匹配或 length-bound证明失败，均在 queue
+admission 前拒绝。
 
 ### 5.6 canonical `ack_token`
 
@@ -2464,6 +2476,10 @@ min/max segment witness；随后删 token、改 presence/cap而未 bump digest�
 ### 21.3 admission/ack model
 
 - status × durability × presence 全笛卡尔积；
+- `JournalFramePayloadLengthUpperBoundV1` 由独立 descriptor实现复算；覆盖 exact record
+  length的 `bound-1/bound/bound+1`、sequence `1/UINT64_MAX` wire length相同、admission后
+  dequeue前 writer epoch退休并由新 epoch消费时 attempt bytes不变，以及 actual serialized
+  length永不超过保存 bound；producer-supplied/tentative epoch或 sequence一律拒绝；
 - rejected 不分配 sequence；
 - best-effort 无 token/ack；
 - ack token canonical id128、CSPRNG/nonzero/unique 与 writer-death invalidation；
