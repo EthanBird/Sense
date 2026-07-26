@@ -133,6 +133,10 @@ Manifest/component、禁止 API/路径与最终 JAR 内容；test-only ByteArray
 production JAR。现阶段这些是**待 Pull Request 执行的门禁**，本文不宣称 GitHub Actions、
 Lint、APK 或发布门禁已经通过。
 
+`tools/offline_verify.sh` 手工调用 Gradle 8.13 随附的 Kotlin 2.0.21 compiler，只提供较旧
+编译器兼容性与无网环境的快速证据；它不等价于项目 Kotlin 2.2.21 Gradle 编译。Pull
+Request 中由 Kotlin Gradle plugin 2.2.21 执行的 test/JAR/Android 构建才是编译语义权威。
+
 ## 5. Checkpoint 退出条件
 
 只有同时满足以下条件，第三个 X-02 checkpoint 才可合并：
