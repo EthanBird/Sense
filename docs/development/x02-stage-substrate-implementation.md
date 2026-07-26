@@ -120,22 +120,47 @@ python3 tools/check_x02_boundaries.py
 
 ./gradlew \
   :memory-protocol:test \
+  :event-journal:test
+```
+
+通过全部测试后，GitHub Actions 必须在另一个全新 checkout、全新 runner 临时
+`GRADLE_USER_HOME` 且不恢复 Gradle cache 的 `package_x02` job 中运行：
+
+```bash
+python3 tools/check_x02_boundaries.py
+
+./gradlew \
+  --no-build-cache \
+  --no-configuration-cache \
   :memory-protocol:jar \
-  :event-journal:test \
   :event-journal:jar \
-  :app:assembleDebug
+  :app:assembleDebug \
+  :app:assembleBenchmark
 
 python3 tools/check_x02_boundaries.py --check-artifacts
 ```
 
+这个隔离 job 禁止执行任何 repository test source，并在边界检查通过后上传独立的 clean
+APK artifact；未来 Release 只能消费该 artifact，不能消费测试 job 的工作目录或 APK。
+因此任一 JUnit 测试即使拥有进程内文件写权限，也不能触碰被发布的 JAR/APK 或后置
+checker。
+
 X-02 boundary checker 必须 fail closed 地检查 production source、Gradle dependency、Android
 Manifest/component、禁止 API/路径与最终 JAR 内容；test-only ByteArray harness 不得进入
-production JAR。现阶段这些是**待 Pull Request 执行的门禁**，本文不宣称 GitHub Actions、
-Lint、APK 或发布门禁已经通过。
+production JAR。APK 检查遍历全部 bounded entries，禁止非标准 DEX、nested JAR/class
+以及任何 entry 中的 X-02 Memory path，而不只检查标准 `classes*.dex`。五个 production
+Kotlin 文件、settings、version catalog、Gradle
+properties、Linux wrapper script/JAR/properties、全部 Gradle build scripts、完整
+Android workflow 与完整 offline release gate 都使用 review-time canonical 内容或 raw
+SHA-256 冻结；任何变化必须同时更新 boundary baseline、mutation 测试并重新人工审查，
+不能用新增 denylist 宣称证明了零副作用。现阶段这些是**待 Pull Request 执行的门禁**，
+本文不宣称 GitHub Actions、Lint、APK 或发布门禁已经通过。
 
 `tools/offline_verify.sh` 手工调用 Gradle 8.13 随附的 Kotlin 2.0.21 compiler，只提供较旧
-编译器兼容性与无网环境的快速证据；它不等价于项目 Kotlin 2.2.21 Gradle 编译。Pull
-Request 中由 Kotlin Gradle plugin 2.2.21 执行的 test/JAR/Android 构建才是编译语义权威。
+编译器兼容性与无网环境的快速证据；它既不等价于项目 Kotlin 2.2.21 Gradle 编译，也不是
+对同一工作目录内任意测试代码的安全 attestation。Pull Request 中由 Kotlin Gradle plugin
+2.2.21 执行的隔离 JAR/Android 构建与 packaged boundary check 才是编译和待发布产物的
+权威证据。
 
 ## 5. Checkpoint 退出条件
 

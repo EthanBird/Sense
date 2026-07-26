@@ -244,9 +244,22 @@ class WorkflowContractTest(unittest.TestCase):
         self.assertIn("python3 tools/test_release_plan.py", workflow)
         self.assertIn("${{ github.event.before }}", workflow)
         self.assertIn("fetch-depth: 0", workflow)
-        self.assertIn("needs: [verify, release_plan]", workflow)
+        self.assertIn("needs: [verify, package_x02]", workflow)
+        self.assertIn(
+            "needs: [verify, package_x02, release_plan]",
+            workflow,
+        )
         self.assertIn(
             "needs.release_plan.outputs.should_release == 'true'",
+            workflow,
+        )
+        self.assertEqual(
+            2,
+            workflow.count("name: sense-v0.4.2-clean-apks"),
+        )
+        self.assertIn(
+            "apk=$(find artifacts -type f "
+            "-path '*/benchmark/*.apk' -print -quit)",
             workflow,
         )
         self.assertNotIn('git show "HEAD^:', workflow)
