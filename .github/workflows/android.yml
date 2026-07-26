@@ -37,6 +37,9 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
+      - name: Verify version-aware release planning
+        run: python3 tools/test_release_plan.py
+
       - name: Verify M4 regressions and M5 mixed assets
         run: |
           set -euo pipefail
@@ -393,9 +396,63 @@ jobs:
             benchmarks/results/m6-input-polish.json
           if-no-files-found: error
 
-  release-0-4-2:
+  release_plan:
+    name: Plan version-aware release
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      should_release: ${{ steps.decision.outputs.should_release }}
+      status: ${{ steps.decision.outputs.status }}
+      version: ${{ steps.decision.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # github.event.before can precede multiple pushed commits. Fetch the
+          # complete history and tags so the comparison and tag peel are exact.
+          fetch-depth: 0
+
+      - name: Compare Android versions and tag target
+        id: decision
+        shell: bash
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$BEFORE_SHA" || "$BEFORE_SHA" =~ ^0+$ ]]; then
+            echo "Release plan cannot prove a baseline commit." >&2
+            exit 1
+          fi
+          git cat-file -e "${BEFORE_SHA}^{commit}"
+          git show "${BEFORE_SHA}:app/build.gradle.kts" \
+            > /tmp/sense-previous-build.gradle.kts
+
+          tag_target=MISSING
+          if git show-ref --verify --quiet "refs/tags/$RELEASE_TAG"; then
+            tag_target=$(
+              git rev-parse --verify "refs/tags/$RELEASE_TAG^{commit}"
+            )
+          fi
+
+          python3 tools/release_plan.py \
+            --previous /tmp/sense-previous-build.gradle.kts \
+            --current app/build.gradle.kts \
+            --release-tag "$RELEASE_TAG" \
+            --release-apk "$RELEASE_APK" \
+            --current-sha "$GITHUB_SHA" \
+            --tag-target "$tag_target" \
+            --github-output "$GITHUB_OUTPUT" \
+            --step-summary "$GITHUB_STEP_SUMMARY"
+
+  release-0-4-2:
+    needs: [verify, release_plan]
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.release_plan.outputs.should_release == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -557,39 +614,100 @@ jobs:
       - name: Create Sense 0.4.2 release
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_PLAN_STATUS: ${{ needs.release_plan.outputs.status }}
         run: |
           set -euo pipefail
-          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            target=$(gh release view "$RELEASE_TAG" --json targetCommitish --jq .targetCommitish)
+
+          remote_tag_state() {
+            local exact_count
+            exact_count=$(
+              gh api \
+                "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/$RELEASE_TAG" \
+                --jq "map(select(.ref == \"refs/tags/$RELEASE_TAG\")) | length"
+            )
+            case "$exact_count" in
+              0) echo "MISSING" ;;
+              1) echo "EXISTS" ;;
+              *)
+                echo "Unexpected exact tag reference count: $exact_count" >&2
+                return 1
+                ;;
+            esac
+          }
+
+          remote_tag_commit() {
+            # The commits endpoint accepts a tag ref and resolves both
+            # lightweight and annotated tags to the underlying commit.
+            gh api \
+              -H "Accept: application/vnd.github+json" \
+              "repos/$GITHUB_REPOSITORY/commits/$RELEASE_TAG" \
+              --jq .sha
+          }
+
+          same_name_branch_count() {
+            gh api \
+              "repos/$GITHUB_REPOSITORY/git/matching-refs/heads/$RELEASE_TAG" \
+              --jq "map(select(.ref == \"refs/heads/$RELEASE_TAG\")) | length"
+          }
+
+          assert_remote_tag_target() {
+            local target
+            target=$(remote_tag_commit)
             if [[ "$target" != "$GITHUB_SHA" ]]; then
-              echo "$RELEASE_TAG already targets $target instead of $GITHUB_SHA" >&2
+              echo "$RELEASE_TAG resolves to $target instead of $GITHUB_SHA" >&2
               exit 1
             fi
-            # Heal an earlier interrupted upload at the same commit before
-            # validating it. This keeps reruns idempotent even if GitHub had
-            # created the release/tag but not every asset.
-            gh release upload "$RELEASE_TAG" \
-              "release/$RELEASE_APK" \
-              release/SHA256SUMS.txt \
-              --clobber
-            mkdir -p existing-release
-            gh release download "$RELEASE_TAG" \
-              --pattern "$RELEASE_APK" \
-              --pattern SHA256SUMS.txt \
-              --dir existing-release
-            (cd existing-release && sha256sum -c SHA256SUMS.txt)
-            echo "$RELEASE_TAG already exists at the expected commit and its checksum is valid."
-          else
-            if existing_tag=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq .object.sha 2>/dev/null); then
-              if [[ "$existing_tag" != "$GITHUB_SHA" ]]; then
-                echo "$RELEASE_TAG already points to $existing_tag instead of $GITHUB_SHA" >&2
+          }
+
+          branch_count=$(same_name_branch_count)
+          if [[ "$branch_count" != "0" ]]; then
+            echo "Branch $RELEASE_TAG makes the release ref ambiguous." >&2
+            exit 1
+          fi
+
+          tag_state=$(remote_tag_state)
+          case "$RELEASE_PLAN_STATUS" in
+            RELEASE_NEW_TAG)
+              if [[ "$tag_state" != "MISSING" ]]; then
+                echo "$RELEASE_TAG appeared after release planning; refusing the race." >&2
                 exit 1
               fi
-            fi
+              ;;
+            RELEASE_IDEMPOTENT_TAG)
+              if [[ "$tag_state" != "EXISTS" ]]; then
+                echo "$RELEASE_TAG disappeared after release planning." >&2
+                exit 1
+              fi
+              assert_remote_tag_target
+              ;;
+            *)
+              echo "Unexpected release plan status: $RELEASE_PLAN_STATUS" >&2
+              exit 1
+              ;;
+          esac
+
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            # Create metadata first. Assets are uploaded only after the newly
+            # created or concurrently observed tag is resolved and verified.
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
               --title "Sense v0.4.2 · Agent 状态机、多轮反馈与新工具箱" \
-              --notes-file docs/releases/v0.4.2.md \
-              "release/$RELEASE_APK" \
-              release/SHA256SUMS.txt
+              --notes-file docs/releases/v0.4.2.md
           fi
+
+          assert_remote_tag_target
+          # Heal an interrupted upload at the same verified commit. A second
+          # target check detects a tag move during the asset operation.
+          gh release upload "$RELEASE_TAG" \
+            "release/$RELEASE_APK" \
+            release/SHA256SUMS.txt \
+            --clobber
+          assert_remote_tag_target
+
+          mkdir -p existing-release
+          gh release download "$RELEASE_TAG" \
+            --pattern "$RELEASE_APK" \
+            --pattern SHA256SUMS.txt \
+            --dir existing-release
+          (cd existing-release && sha256sum -c SHA256SUMS.txt)
+          echo "$RELEASE_TAG targets the expected commit and its checksum is valid."
