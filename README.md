@@ -6,7 +6,7 @@
 
 **当前版本：** `v0.4.2`（`versionCode 17`）
 
-**更新日期：** 2026-07-25
+**更新日期：** 2026-07-26
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
 
 本文基于《GlassIME Android AI 中文输入法产品与技术设计文档 v0.1》重新整理，并统一改名为：
@@ -50,6 +50,18 @@ AI 最终结果仍只能通过 `sense_submit_patch` / `sense.editor.patch.v1` �
 
 只有 GitHub Actions 的 `verify` 作业全部通过，工作流才会创建 `v0.4.2` Release；
 未实际执行的 Kotlin、Lint、APK 或真机检查不会写成“已通过”。
+
+### Agent 架构与工程文档
+
+下一阶段 Agent / Memory / Tool / Skill 的设计已拆成两个层次，当前仅作为评审基线，不代表
+运行时代码已经实现：
+
+- [AI Agent 深度架构：事件记忆、工具、Skills 与长期兼容性](docs/design/agent-event-memory-architecture-v1.0.md)
+- [Agent 工程开发方案：从 Evidence Event Mesh 到可交付的 M9 / M10](docs/development/agent-engineering-plan-v1.0.md)
+
+架构文档冻结证据、事件关系、完整性回执与长期兼容原则；工程文档把它映射到 Android
+模块、Messenger/PFD、Journal/Blob、Room/FTS、状态机、测试、CI 和 issue-ready 交付顺序。
+任何持久化能力默认启用前，必须先解决固定 release signing identity 与数据连续性。
 
 | 门禁 | 当前状态 |
 |---|---|
@@ -120,6 +132,13 @@ SQLite 用户词库、剪贴板历史和 Provider 配置。AI 编辑基础威胁
 状态机与多轮反馈见
 [`ADR 0014`](docs/adr/0014-v0.4.2-agent-session-state-machine.md)。
 
+> **文档权威边界：** 下文第 1–17 节保留了最初的 v0.1 产品/工程构想，用于解释项目来路，
+> 不是当前 Agent / M9 实施规范。它所写的“首版”、固定队列、固定超时、固定 Segment
+> 阈值或无条件完整性承诺均不得直接转成代码。发生冲突时，权威顺序为：当前运行时代码与
+> 已接受 ADR → 上述两份 Agent v1.0 文档 → 本历史档案。当前 `v0.4.2` 尚未实现跨 Session
+> Journal、事件记忆或 Memory Broker；未来实现只对经 CapturePolicy 许可并达到
+> `DurableAck` cut 的事件作连续性承诺，其他缺口必须显式报告。
+
 ## 1. 项目结论
 
 Sense 不是把聊天机器人塞进键盘，而是先做成一款足够快、足够稳定的中文输入法，再把输入法天然拥有的上下文、长期行为数据和即时操作入口编译成三种能力：
@@ -135,12 +154,13 @@ Sense 不是把聊天机器人塞进键盘，而是先做成一款足够快、�
 - **输入优先：** 短按只负责输入；AI 不参与逐键候选生成。
 - **运行时零弹窗：** Provider、模型、工具、输出策略与 Skill 绑定均在设置 App 中预先配置。
 - **显式触发、静默执行：** 长按进入 Skill 层，中心释放保留原数字/符号，四方向执行已绑定 Skill。
-- **全量归档、有限激活：** 这是长期边界；M2 先以内存双索引承载用户词，后续再编译为固定体积快照。
+- **证据化采集、有限激活：** “全量归档”只是历史愿景，不是现行授权。当前不采集跨
+  Session 记忆；未来也只能采集 CapturePolicy 明确许可的事件，并以有界激活集供模型读取。
 - **固定热路径：** M2 逐键不访问 SQLite；冷启动仍会加载用户词，长期档案独立性尚待后续快照阶段完成。
 - **单层玻璃：** 毛玻璃只作用于键盘底板；不对每个键帽重复模糊。
 - **可回放、可测量：** 候选、纠错、Skill、Provider、存储和性能均能通过统一事件重放评估。
 
-## 3. 首版范围
+## 3. 历史 v0.1 规划范围
 
 ### 3.1 纳入 v0.1
 
@@ -165,7 +185,10 @@ Sense 不是把聊天机器人塞进键盘，而是先做成一款足够快、�
 - 大型知识图谱和逐键大模型推理；
 - 数据治理、合规和安全体系的完整产品设计。
 
-暂不纳入不等于破坏未来兼容性。事件从首版开始保留 `schema_version`、`source`、`session_id`、`app_id`、`timestamp` 与 `lineage`，使后续策略能够在不重做数据底座的前提下加入。
+这份 v0.1 构想曾计划让事件从首版开始保留 `schema_version`、`source`、`session_id`、
+`app_id`、`timestamp` 与 `lineage`；它没有在当前 `v0.4.2` 中落地，不能被描述成已有
+历史。新实现以事件关系和证据为主，墙钟时间只作为可缺失、可质疑的属性，且不迁移不存在的
+旧 Session。
 
 ## 4. 成功标准
 
@@ -214,7 +237,8 @@ flowchart TD
 
 - **IME Main：** 触摸、局部绘制、候选 UI、InputConnection；
 - **Decoder：** 增量拼音解码与候选生成；
-- **Journal Writer：** SPSC 队列批量写盘、分段与校验；
+- **Journal Writer（历史构想）：** 曾设想 SPSC 队列；当前 Agent 工程方案先在端口后使用
+  有界 `ArrayBlockingQueue.offer`，是否替换只能由真机预算证据和 ADR 决定；
 - **Brain Engine / HTTP Worker：** Provider 流、结构化 Harness、超时和取消；
 - **Maintenance Worker：** 压缩、索引、Embedding、快照编译和回放。
 
@@ -298,20 +322,24 @@ Sense/
 - AI 结果只有在用户保留、修改或重复使用后才形成学习信号；
 - 每个 App 分别维护语言、词汇、语气和 Skill 质量画像。
 
-## 9. 事件档案与回放
+## 9. 事件档案与回放（历史构想）
 
-事件层采用固定头、变长整数和批量写入。重复文本、Prompt、Response 和工具结果进入内容寻址 Blob，事件仅保存引用。达到 4–16 MiB 的 Journal 被封存为不可变 Segment；索引、Embedding 和模型快照均为可重建派生物。
+历史方案曾设想固定头、变长整数、批量写入和 4–16 MiB 的封段阈值。当前工程规范改为
+版本化 Frame、内容寻址 Blob 和不可变 Segment；封段大小、批量与 flush 策略全部保持
+`UNSET`，只有通过 Android 真机 Measurement Contract 后才能写入 Budget Profile。索引、
+Embedding 和模型快照仍只能是可删除、可重建的派生物。
 
 落盘优先级：输入语义事件 > 编辑与 Skill 事件 > Provider trace > 高频性能采样。队列接近满时仅允许降低非关键性能采样，不允许阻塞 IME Main。
 
 离线回放以同一真实会话比较不同解码器、Ranker 和快照，至少输出：Top-1 命中、平均位次、按键节省、纠错概率、延迟分布与内存峰值。
 
-## 10. Harness、Provider 与工具
+## 10. Harness、Provider 与工具（历史 v0.1 预算）
 
 v0.1 的 Harness 是**有界执行器**，不是自由规划 Agent：
 
 - 默认最多 2 个工具步骤；
-- Provider 连接 / 首事件 / 流空闲 / 总超时固定为 8 / 8 / 8 / 30 秒；
+- 当时曾规划 Provider 连接 / 首事件 / 流空闲 / 总超时为 8 / 8 / 8 / 30 秒；这些数值已被
+  `v0.4.2` 状态机取代，不是当前常量；
 - 单工具超时 3–5 秒；
 - 最多并行 2 个工具；
 - 默认最大返回文本 4 KiB；
@@ -333,7 +361,7 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 | M6 输入精修与候选交互 | 空 composition 修复、英文独立组合态、候选横滑、Emoji 惯性、分类符号与语义候选 | `v0.3.3-m6` CI 通过后，完成 Android 真机宿主兼容、滚动和字体验收 |
 | M7 固定几何与词库扩充 | 输入前后固定键盘高度、单行顶部槽位、成语词库、四字简拼优先 | `v0.3.4-m7` CI 通过后，完成 Android 真机高度、字体与候选质量验收 |
 | M8 AI 编辑 Harness | 协议、Provider、私有 Brain、长按空格、固定高度 AI Surface、快照、原子 Patch 与真实网络一次集成 | 松手取消 0 次误覆盖；旧快照 0 次上屏；Brain 故障不影响普通输入 |
-| M9 事件与记忆底座 | Journal、Segment、Blob、Manifest、词汇/风格快照和回放 | 高负载采集不影响输入；崩溃恢复无逻辑丢段；个性化增益可重复 |
+| M9 事件与记忆底座 | Journal、Segment、Blob、Manifest、词汇/风格快照和回放 | 高负载采集不影响输入；只对已确认 `DurableAck` cut 保证连续，其他损失形成显式 gap；个性化增益可重复 |
 | M10 Skill 与工具 | 可配置 Skill、受限工具、上下文检索、质量回放 | 每个 Skill 可取消、可审计、可回退且不阻塞输入 |
 | M11 稳定化 | 机型矩阵、24h 压测、固定签名、故障降级、发布检查 | 所有 P0 门禁通过，形成首个内测版本 |
 
