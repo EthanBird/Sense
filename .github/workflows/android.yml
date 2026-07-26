@@ -91,6 +91,7 @@ jobs:
           :brain-api:test
           :ai-brain:test
           :ai-runtime:testDebugUnitTest
+          :memory-protocol:test
           :core-input:test
           :ime-service:testDebugUnitTest
           :ime-ui:testDebugUnitTest
