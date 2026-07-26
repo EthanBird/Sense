@@ -39,11 +39,69 @@ enum class X02StageDecisionReasonV1 {
  *
  * The future ADR 0018 NormalStageDecisionV1 ABI remains intentionally undefined here.
  */
-data class X02StageDecisionV1(
+class X02StageDecisionV1 private constructor(
     val effectiveStage: FeatureStageV1,
     val disposition: X02StageDecisionDispositionV1,
-    val reasons: List<X02StageDecisionReasonV1>,
-)
+    reasons: List<X02StageDecisionReasonV1>,
+) {
+    private val stableReasons = reasons.toList()
+
+    init {
+        require(
+            FeatureStageOrderV1.isAtMost(
+                effectiveStage,
+                FeatureStageV1.SCHEMA_ONLY,
+            ),
+        )
+        require(stableReasons.isNotEmpty())
+        require(stableReasons.distinct().size == stableReasons.size)
+        when (disposition) {
+            X02StageDecisionDispositionV1.VALID_OFF_REQUEST -> {
+                require(effectiveStage == FeatureStageV1.OFF)
+                require(
+                    stableReasons ==
+                        listOf(X02StageDecisionReasonV1.REQUESTED_OFF),
+                )
+            }
+
+            X02StageDecisionDispositionV1.VALID_SCHEMA_REQUEST -> {
+                require(X02StageDecisionReasonV1.SCHEMA_CODEC_ONLY in stableReasons)
+                require(X02StageDecisionReasonV1.REQUESTED_OFF !in stableReasons)
+                require(stableReasons.none { it in blockingReasons })
+            }
+
+            X02StageDecisionDispositionV1.BLOCKED_FAIL_CLOSED -> {
+                require(stableReasons.any { it in blockingReasons })
+                require(X02StageDecisionReasonV1.SCHEMA_CODEC_ONLY !in stableReasons)
+            }
+        }
+    }
+
+    val reasons: List<X02StageDecisionReasonV1>
+        get() = stableReasons.toList()
+
+    companion object {
+        internal fun issue(
+            effectiveStage: FeatureStageV1,
+            disposition: X02StageDecisionDispositionV1,
+            reasons: List<X02StageDecisionReasonV1>,
+        ): X02StageDecisionV1 {
+            return X02StageDecisionV1(
+                effectiveStage = effectiveStage,
+                disposition = disposition,
+                reasons = reasons,
+            )
+        }
+
+        private val blockingReasons = setOf(
+            X02StageDecisionReasonV1.X02_HARD_MAXIMUM,
+            X02StageDecisionReasonV1.EXECUTION_CLASS_NOT_SCHEMA_ONLY,
+            X02StageDecisionReasonV1.PERSISTENT_CAPABILITY_BLOCKED,
+            X02StageDecisionReasonV1.GATE_SET_MUST_BE_EMPTY,
+            X02StageDecisionReasonV1.DUPLICATE_GATE_OBSERVATION,
+        )
+    }
+}
 
 /**
  * X-02's executable stage policy.
@@ -54,6 +112,7 @@ data class X02StageDecisionV1(
  */
 object X02FeatureStagePolicyV1 {
     fun reduce(request: X02NormalStageRequestV1): X02StageDecisionV1 {
+        val exactGateObservations = request.exactGateObservations.toList()
         val configuredCeiling = FeatureStageOrderV1.minOf(
             request.requestedStage,
             request.buildProfileMax,
@@ -62,8 +121,8 @@ object X02FeatureStagePolicyV1 {
         )
 
         if (request.requestedStage == FeatureStageV1.OFF) {
-            val gateReasons = gateSetReasons(request.exactGateObservations)
-            return X02StageDecisionV1(
+            val gateReasons = gateSetReasons(exactGateObservations)
+            return X02StageDecisionV1.issue(
                 effectiveStage = FeatureStageV1.OFF,
                 disposition = if (gateReasons.isEmpty()) {
                     X02StageDecisionDispositionV1.VALID_OFF_REQUEST
@@ -84,7 +143,7 @@ object X02FeatureStagePolicyV1 {
         if (request.executionClass != ProfileExecutionClassV1.SCHEMA_ONLY) {
             reasons += X02StageDecisionReasonV1.EXECUTION_CLASS_NOT_SCHEMA_ONLY
         }
-        reasons += gateSetReasons(request.exactGateObservations)
+        reasons += gateSetReasons(exactGateObservations)
 
         val effectiveStage = FeatureStageOrderV1.min(
             configuredCeiling,
@@ -98,7 +157,7 @@ object X02FeatureStagePolicyV1 {
             reasons += X02StageDecisionReasonV1.CONFIGURED_CEILING_CONTRACTED
         }
 
-        return X02StageDecisionV1(
+        return X02StageDecisionV1.issue(
             effectiveStage = effectiveStage,
             disposition = if (validSchemaRequest) {
                 X02StageDecisionDispositionV1.VALID_SCHEMA_REQUEST
