@@ -1,0 +1,255 @@
+{
+  "artifact": "Gate0StatusReportV1",
+  "authoritative": false,
+  "budget_profile": {
+    "field_count": 99,
+    "fixed_or_reference_field_count": 9,
+    "unset_field_count": 90
+  },
+  "contract_source_sha256": {
+    "README.md": "bf1706a42481541ab0378f5a729a3f57e8391156d84aba0ea35c8df8dbd0e24a",
+    "docs/adr/0015-release-identity-and-data-continuity.md": "38a227f32e06b48c66b5b3507239bd6c1c4002d1e8f05a553444b1dc675990a1",
+    "docs/adr/0016-m9-memory-wire-and-durability.md": "02470c2b80958ab235461b29e56f81bb037668e3b8dc21b92fd8be5aee46f5d7",
+    "docs/adr/0017-m9-memory-security-and-erasure.md": "66b608561b72a2c6629fabb5ee8ab19f5b71c21abd65005de6c933dfb2c9c645",
+    "docs/adr/0018-m9-memory-budget.md": "e9d71e5e61617eda0796d6be66d6abe45b05cc25972d417a52c048dafa3cd3fb",
+    "docs/design/agent-event-memory-architecture-v1.0.md": "9dfb2dd8ef542cca9cfce3dfed08c80baf92067e860d4e83f7af7b91174e25f7",
+    "docs/development/agent-engineering-plan-v1.0.md": "e4169c021fbe393c5e30342903a08b56c3d2b076025b90873b50283eebab72ee"
+  },
+  "effective_stage": "SCHEMA_ONLY",
+  "gate_registry": {
+    "count": 45,
+    "entries": [
+      {
+        "gate_id": "WireCompatibilityGateV1",
+        "scope": "RELEASE_BUILD",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "ReleaseIdentityGateV1",
+        "scope": "INSTALLATION_ROOT",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "ReleaseOwnerContinuityGateV1",
+        "scope": "INSTALLATION_ROOT",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "ReleaseSigningAuthorityGateV1",
+        "scope": "RELEASE_BUILD",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "PreCertificationCandidateControlPhaseGateV1",
+        "scope": "SPECIAL_CANDIDATE",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "ReleasePolicySemanticsPhaseGateV1",
+        "scope": "PHASE_SCHEMA",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "PlatformCertificationGateV1",
+        "scope": "RELEASE_BUILD",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "RootBootstrapControlPhaseGateV1",
+        "scope": "PHASE_SCHEMA",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "DataRootContinuityGateV1",
+        "scope": "INSTALLATION_ROOT",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "InstallationKeyringIdentityGateV1",
+        "scope": "INSTALLATION_ROOT",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "KeyAuthorizationProfileGateV1",
+        "scope": "INSTALLATION_ROOT",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "UnlockedKeyBehaviorGateV1",
+        "scope": "DEVICE_CAPABILITY",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "CredentialUnlockedRuntimeGateV1",
+        "scope": "DYNAMIC_OPERATION",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "KeyUseSafetyGateV1",
+        "scope": "DEVICE_CAPABILITY",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "KeyringBootstrapControlPhaseGateV1",
+        "scope": "PHASE_SCHEMA",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "KeyringBootstrapCapabilityGateV1",
+        "scope": "DEVICE_CAPABILITY",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "JournalFrontierDurabilityGateV1",
+        "scope": "DEVICE_CAPABILITY",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "BlobWireLocatorLeaseGateV1",
+        "scope": "DEVICE_CAPABILITY",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "CapturePolicyConsentGateV1",
+        "scope": "DYNAMIC_OPERATION",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "MemoryUsePolicyGateV1",
+        "scope": "DYNAMIC_OPERATION",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "ProviderMemoryDisclosureGateV1",
+        "scope": "DYNAMIC_OPERATION",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "ExportAuthorizationGateV1",
+        "scope": "DYNAMIC_OPERATION",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "BackupExclusionGateV1",
+        "scope": "RELEASE_BUILD",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "SourceManifestPhaseGateV1",
+        "scope": "PHASE_SCHEMA",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "RecordIdentityTombstonePhaseGateV1",
+        "scope": "PHASE_SCHEMA",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "DerivedIndexAuthorityGateV1",
+        "scope": "DEVICE_CAPABILITY",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "HotSnapshotPlaintextExclusionGateV1",
+        "scope": "DEVICE_CAPABILITY",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "MaintenancePeakCapacityGateV1",
+        "scope": "DEVICE_CAPABILITY",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "RotationControlPhaseGateV1",
+        "scope": "PHASE_SCHEMA",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "RotationReceiptCommittedGateV1",
+        "scope": "DEVICE_CAPABILITY",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "LocalErasureControlPhaseGateV1",
+        "scope": "PHASE_SCHEMA",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "LocalErasureCapabilityGateV1",
+        "scope": "DEVICE_CAPABILITY",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "ErasureSafetyReceiptGateV1",
+        "scope": "INSTALLATION_ROOT",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "CumulativeErasureViewGateV1",
+        "scope": "DYNAMIC_OPERATION",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "EgressDrainEvidenceGateV1",
+        "scope": "DEVICE_CAPABILITY",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "RebootNamespaceCensusGateV1",
+        "scope": "DEVICE_CAPABILITY",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "TransferOutcomeConservationGateV1",
+        "scope": "DEVICE_CAPABILITY",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "StageRevocationFreshnessGateV1",
+        "scope": "INSTALLATION_ROOT",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "BudgetProfileGateV1",
+        "scope": "RELEASE_BUILD",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "BudgetEvidenceWirePhaseGateV1",
+        "scope": "PHASE_SCHEMA",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "SyntheticMeasurementControlPhaseGateV1",
+        "scope": "SPECIAL_CANDIDATE",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "BuildAttestationGateV1",
+        "scope": "RELEASE_BUILD",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "StageSnapshotAuthenticationPhaseGateV1",
+        "scope": "PHASE_SCHEMA",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "StageSnapshotAuthenticationCapabilityGateV1",
+        "scope": "DEVICE_CAPABILITY",
+        "verdict": "BLOCKED"
+      },
+      {
+        "gate_id": "SourceErasureAuthorityGateV1",
+        "scope": "DYNAMIC_OPERATION",
+        "verdict": "BLOCKED"
+      }
+    ]
+  },
+  "notice": "Derived CI status only; this artifact is not a runtime, release, measurement, or authorization authority.",
+  "work_packages": {
+    "count": 100,
+    "dependency_edge_count": 201,
+    "graph": "ACYCLIC"
+  }
+}

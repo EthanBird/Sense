@@ -53,15 +53,35 @@ AI 最终结果仍只能通过 `sense_submit_patch` / `sense.editor.patch.v1` �
 
 ### Agent 架构与工程文档
 
-下一阶段 Agent / Memory / Tool / Skill 的设计已拆成两个层次，当前仅作为评审基线，不代表
-运行时代码已经实现：
+下一阶段 Agent / Memory / Tool / Skill 已形成架构、工程计划和 Gate 0 ADR 决策基线；
+这些文档不代表 Memory runtime 已实现：
 
 - [AI Agent 深度架构：事件记忆、工具、Skills 与长期兼容性](docs/design/agent-event-memory-architecture-v1.0.md)
 - [Agent 工程开发方案：从 Evidence Event Mesh 到可交付的 M9 / M10](docs/development/agent-engineering-plan-v1.0.md)
+- [ADR 0015：Release identity 与数据 owner continuity](docs/adr/0015-release-identity-and-data-continuity.md)
+- [ADR 0016：M9 Memory wire 与 durability](docs/adr/0016-m9-memory-wire-and-durability.md)
+- [ADR 0017：M9 Memory security 与 erasure](docs/adr/0017-m9-memory-security-and-erasure.md)
+- [ADR 0018：M9 Memory budget](docs/adr/0018-m9-memory-budget.md)
+- [Gate 0 派生状态报告（非权威）](docs/generated/gate0-status-report.json)
 
 架构文档冻结证据、事件关系、完整性回执与长期兼容原则；工程文档把它映射到 Android
 模块、Messenger/PFD、Journal/Blob、Room/FTS、状态机、测试、CI 和 issue-ready 交付顺序。
-任何持久化能力默认启用前，必须先解决固定 release signing identity 与数据连续性。
+已接受 ADR 的决策优先于架构与工程计划。
+
+| Gate 0 ADR | 决策状态 | 当前 operational 状态 |
+|---|---|---|
+| 0015 | policy Accepted | identity、owner、signing-authority、release-policy semantics、platform-certification 与 root-bootstrap phase 均 `BLOCKED` |
+| 0016 | M9.0 wire/durability 决策 Accepted | descriptor、codec、writer、replay 与 kill evidence 未实现 |
+| 0017 | policy 与 crypto/storage primitive wire Accepted | root/keyring bootstrap、local-erasure control/capability、source/rotation、purpose-5 usage-control 与设备 key-use evidence `BLOCKED` |
+| 0018 | 0018-A Semantic Measurement Contract Accepted | 0018-E evidence wire 与 synthetic-measurement control `BLOCKED`；0018-B Pending；99 字段中 90 个 required 产品值为 `UNSET` |
+
+当前 owner continuity、root-bootstrap、local-erasure control/capability、measurement/evidence-wire gate 都未通过，因此 effective stage 固定为
+`SCHEMA_ONLY`：不创建持久化 Memory，不 capture，连 synthetic `DARK` 数据路径也不开启。
+本次 Gate 0 工作只提交文档，不改运行时代码、版本号或 Release。
+
+应用仍以 `minSdk 29` 运行，但这不代表 persistent Memory 支持 Android 10/11：API 29–30
+因 Android 官方 symmetric-key unlocked-device 例外固定为 `SCHEMA_ONLY`；API 31–36.0
+需要 exact device/OEM 锁定行为证据，API 36.1+ 还需 getter + 行为双重验证。
 
 | 门禁 | 当前状态 |
 |---|---|
@@ -134,10 +154,11 @@ SQLite 用户词库、剪贴板历史和 Provider 配置。AI 编辑基础威胁
 
 > **文档权威边界：** 下文第 1–17 节保留了最初的 v0.1 产品/工程构想，用于解释项目来路，
 > 不是当前 Agent / M9 实施规范。它所写的“首版”、固定队列、固定超时、固定 Segment
-> 阈值或无条件完整性承诺均不得直接转成代码。发生冲突时，权威顺序为：当前运行时代码与
-> 已接受 ADR → 上述两份 Agent v1.0 文档 → 本历史档案。当前 `v0.4.2` 尚未实现跨 Session
+> 阈值或无条件完整性承诺均不得直接转成代码。发生设计冲突时，权威顺序为：已接受 ADR
+> → Agent v1.0 架构 → Agent 工程计划 → 本历史档案；当前运行时代码只证明已经实现的事实，
+> 不能放宽未来 gate。当前 `v0.4.2` 尚未实现跨 Session
 > Journal、事件记忆或 Memory Broker；未来实现只对经 CapturePolicy 许可并达到
-> `DurableAck` cut 的事件作连续性承诺，其他缺口必须显式报告。
+> `DurableAck` cut 的 M9.0 record 作连续性承诺，其他缺口必须显式报告。
 
 ## 1. 项目结论
 
@@ -171,8 +192,10 @@ Sense 不是把聊天机器人塞进键盘，而是先做成一款足够快、�
 - Arctic Glass 真模糊、拟态玻璃和高对比纯色三级回退；
 - OpenAI-compatible Provider，后续通过同一接口扩展其他 Provider；
 - 6 个首批 Skill：润色、简短、扩写、中英翻译、回复建议、记录事项；
-- 二进制 Journal、不可变 Segment、内容寻址 Blob 与离线回放；
-- 词频、纠错、App profile、近期短语与 Skill 质量的用户快照；
+- 二进制 Journal、不可变 Segment、稳定随机 logical Blob、authenticated locator 与离线回放；
+- 输入排序侧的词频、纠错和近期短语继续由独立 `PersistentUserLexicon` 管理；Agent
+  `HotSnapshot` 只允许非用户 Skill/route/schema/version/compiled metadata，不承载用户
+  词汇、偏好或风格；
 - 设置 App、Provider 测试、Skill 键位编辑器、主题预览和性能实验室。
 
 ### 3.2 暂不纳入
@@ -325,7 +348,7 @@ Sense/
 ## 9. 事件档案与回放（历史构想）
 
 历史方案曾设想固定头、变长整数、批量写入和 4–16 MiB 的封段阈值。当前工程规范改为
-版本化 Frame、内容寻址 Blob 和不可变 Segment；封段大小、批量与 flush 策略全部保持
+版本化 Frame、稳定随机 logical Blob、authenticated locator 和不可变 Segment；封段大小、批量与 flush 策略全部保持
 `UNSET`，只有通过 Android 真机 Measurement Contract 后才能写入 Budget Profile。索引、
 Embedding 和模型快照仍只能是可删除、可重建的派生物。
 
@@ -361,7 +384,7 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 | M6 输入精修与候选交互 | 空 composition 修复、英文独立组合态、候选横滑、Emoji 惯性、分类符号与语义候选 | `v0.3.3-m6` CI 通过后，完成 Android 真机宿主兼容、滚动和字体验收 |
 | M7 固定几何与词库扩充 | 输入前后固定键盘高度、单行顶部槽位、成语词库、四字简拼优先 | `v0.3.4-m7` CI 通过后，完成 Android 真机高度、字体与候选质量验收 |
 | M8 AI 编辑 Harness | 协议、Provider、私有 Brain、长按空格、固定高度 AI Surface、快照、原子 Patch 与真实网络一次集成 | 松手取消 0 次误覆盖；旧快照 0 次上屏；Brain 故障不影响普通输入 |
-| M9 事件与记忆底座 | Journal、Segment、Blob、Manifest、词汇/风格快照和回放 | 高负载采集不影响输入；只对已确认 `DurableAck` cut 保证连续，其他损失形成显式 gap；个性化增益可重复 |
+| M9 事件与记忆底座 | Journal、Segment、Blob、Manifest、加密 Recall 与非用户路由快照 | 高负载采集不影响输入；只对已确认 `DurableAck` cut 保证连续，其他损失形成显式 gap；完整性回执和回放结果可重复 |
 | M10 Skill 与工具 | 可配置 Skill、受限工具、上下文检索、质量回放 | 每个 Skill 可取消、可审计、可回退且不阻塞输入 |
 | M11 稳定化 | 机型矩阵、24h 压测、固定签名、故障降级、发布检查 | 所有 P0 门禁通过，形成首个内测版本 |
 
@@ -428,7 +451,7 @@ librime 当前正式版本线已到 1.17.x，但项目不会因为“最新”�
 | librime 包体或首启过重 | M2 前已超冷启动/RSS 预算 | 词典分包、延迟部署；必要时评估替代内核 |
 | 毛玻璃 OEM 差异大 | 真模糊启用率低或频繁掉帧 | Glass B 成为默认视觉，真模糊仅增强 |
 | 模块过多拖慢构建 | 空壳模块多、跨模块改动频繁 | 维持七个稳定边界，按实际依赖拆分 |
-| 事件采集干扰输入 | 队列高水位、CPU/IO 抖动 | 降低非关键采样，输入事件固定结构批量写入 |
+| 事件采集干扰输入 | 队列高水位、CPU/IO 抖动 | CapturePolicy 默认拒绝普通键入；仅 allowlist 事件使用固定上限非阻塞入队，并受 Budget gate 约束 |
 | Skill 异步覆盖新文本 | stale transaction 测试失败 | 禁止自动应用，统一降级到候选或缓存 |
 | AI 输出污染个性化 | AI 短语排名自行升高 | 来源标签强制参与学习权重，AI 默认 0 |
 | Provider 适配失控 | Skill 出现厂商分支 | 以能力快照与逻辑 Profile 隔离厂商协议 |
