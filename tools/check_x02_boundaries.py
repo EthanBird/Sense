@@ -1662,6 +1662,15 @@ def _check_app_apks(root: Path, explicit_apks: Sequence[Path] | None = None) -> 
                     name = info.filename
                     if name.startswith("/") or ".." in Path(name).parts:
                         raise BoundaryError(f"{apk}: unsafe APK entry {name!r}")
+                    encoded_name = name.encode("utf-8")
+                    if any(
+                        forbidden_path in encoded_name
+                        for forbidden_path in DEX_MEMORY_PATHS
+                    ):
+                        raise BoundaryError(
+                            f"{apk}: APK entry name contains X-02 Memory path: "
+                            f"{name}"
+                        )
                     if name.endswith("/"):
                         if info.file_size != 0:
                             raise BoundaryError(

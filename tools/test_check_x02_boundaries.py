@@ -1387,6 +1387,19 @@ rootProject.name = "fixture"
         )
         self.assert_artifact_rejected("contains X-02 Memory path")
 
+    def test_apk_entry_name_memory_path_is_rejected(self) -> None:
+        _, _, debug, _ = _good_artifacts(self.root)
+        _rewrite_zip(
+            debug,
+            lambda entries: entries.__setitem__(
+                "assets/io/github/ethanbird/senseime/memory/payload.bin",
+                b"encoded",
+            ),
+        )
+        self.assert_artifact_rejected(
+            "APK entry name contains X-02 Memory path"
+        )
+
     def test_nonempty_apk_directory_entry_is_rejected(self) -> None:
         _, _, debug, _ = _good_artifacts(self.root)
         _rewrite_zip(

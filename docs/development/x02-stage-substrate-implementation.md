@@ -147,9 +147,9 @@ checker。
 
 X-02 boundary checker 必须 fail closed 地检查 production source、Gradle dependency、Android
 Manifest/component、禁止 API/路径与最终 JAR 内容；test-only ByteArray harness 不得进入
-production JAR。APK 检查遍历全部 bounded entries，禁止非标准 DEX、nested JAR/class
-以及任何 entry 中的 X-02 Memory path，而不只检查标准 `classes*.dex`。五个 production
-Kotlin 文件、settings、version catalog、Gradle
+production JAR。APK 检查遍历全部 bounded entries，禁止可识别的非标准 DEX、JVM class
+与 nested ZIP/JAR payload，并扫描每个 entry 的 raw bytes 中是否存在 X-02 Memory path，
+而不只检查标准 `classes*.dex`。五个 production Kotlin 文件、settings、version catalog、Gradle
 properties、Linux wrapper script/JAR/properties、全部 Gradle build scripts、完整
 Android workflow 与完整 offline release gate 都使用 review-time canonical 内容或 raw
 SHA-256 冻结；任何变化必须同时更新 boundary baseline、mutation 测试并重新人工审查，
