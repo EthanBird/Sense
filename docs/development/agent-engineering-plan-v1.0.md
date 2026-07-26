@@ -9,7 +9,8 @@ runtime 未实现<br>
 **运行时代码基线：** Sense `v0.4.2` / `f3b9e5bf23cfbd714dcd356004f9bc75133770a1`<br>
 **交付工作流基线：** `a20cb9ff834d86a06518e886f23f6fdbdf6ad3bb`<br>
 **上位架构：** [`agent-event-memory-architecture-v1.0.md`](../design/agent-event-memory-architecture-v1.0.md)<br>
-**文档性质：** 工程实施规范；本次提交只落文档，不启用记忆、不改运行时代码、不提升版本号
+**文档性质：** 工程实施规范；Gate 0 基线提交只落文档；当前 X-02 checkpoint 仅增加
+SCHEMA_ONLY 纯 Kotlin substrate，不启用记忆、不改变 APK 行为、不提升版本号
 
 ---
 
@@ -55,7 +56,8 @@ Sense 的 Agent 工程不应从“加一个向量数据库”或“把全部聊�
 
 ### 1.2 本文不授权
 
-- 不在本次文档提交中创建空壳 Gradle 模块；
+- Gate 0 的 docs-only 基线提交不创建空壳 Gradle 模块；后续模块只能按已冻结工作包及
+  fail-closed 门禁逐步落地；
 - 不在没有 Security ADR 和 Budget ADR 时持久化用户原文；
 - 不把 v0.4.2 以前未持久化的 Session 伪装成可恢复历史；
 - 不默认记录普通跨应用输入原文；
@@ -142,8 +144,9 @@ flowchart TD
 强依赖：
 
 - `M9.0a` 不得在 Gate 0 未通过时持久化原文；
-- `X-02` 必须先提供非空 `memory-protocol`/`event-journal` scaffolding 与 fail-closed
-  FeatureStage snapshot；它本身不创建 Memory 数据；
+- `X-02` 必须先提供非空 `memory-protocol`/`event-journal` scaffolding、FeatureStage
+  domain/policy 与 fail-closed safe view；它不定义 production Snapshot wire，也不创建
+  Memory 数据；
 - normal product 在 `ReleaseOwnerContinuityGateV1` 未通过前禁止创建或写入任何 persistent
   Memory 数据。唯一 future exception是 accepted pre-cert candidate decision +
   root-epoch三 permit + pristine zero-root containment的不可转正 measurement-only branch；
@@ -317,7 +320,14 @@ Gate 0 的 DoD 只接受决策文档，不伪造未来实现证据：
 
 ## 5. 新增模块与依赖
 
-### 5.1 模块清单
+本节描述完整 M9 的**未来目标形态**，不是 X-02 当前模块形态。X-02 当前只有两个纯
+Kotlin/JVM 模块：`memory-protocol` 提供 stage domain/policy、exact GateId registry 与
+fail-closed process-local safe view；`event-journal` 只提供 zero-storage schema seam。
+当前唯一模块依赖是 `event-journal → memory-protocol`，`app`、`:ime`、`:brain` 与其它
+运行时模块均未依赖二者。Proto、Receipt、Snapshot、Android adapter、Keystore、A/B、
+writer/recovery 仍须由后续工作包实现并通过各自门禁。
+
+### 5.1 未来目标模块清单
 
 | 模块 | 插件形态 | Android 依赖 | 职责 |
 |---|---|---:|---|
@@ -326,11 +336,12 @@ Gate 0 的 DoD 只接受决策文档，不伪造未来实现证据：
 | `memory-ipc` | Android Library | 是 | Broker Messenger/Binder codec、PFD page、death/cancel plumbing |
 | `memory-runtime` | Android Library | 是 | 主进程 Broker、Room/FTS、Recall、WorkManager、设置用 service API |
 
-`event-journal` 选择 Android Library 是有意的：`:ime`、`:brain` 和 main 都需要同一份
-Keystore、A/B frontier 和进程文件所有权实现。其 `journal.core` package 必须保持纯
-Kotlin/JDK，以便 JVM property/fuzz 测试；Android API 只能出现在 `journal.android` package。
+未来 M9 阶段把 `event-journal` 扩展为 Android Library 是目标设计：`:ime`、`:brain` 和
+main 将需要同一份 Keystore、A/B frontier 和进程文件所有权实现。这不是 X-02 已有能力。
+扩展后其 `journal.core` package 仍必须保持纯 Kotlin/JDK，以便 JVM property/fuzz 测试；
+Android API 只能出现在届时新增的 `journal.android` package。
 
-### 5.2 目标依赖
+### 5.2 未来目标依赖
 
 ```text
 memory-protocol
@@ -3304,7 +3315,7 @@ persistent Memory（包括 synthetic）保持 blocked。
 | `G0-JOINT` | G0-01, G0-02, G0-03, G0-04 | 四 ADR authority/status 交叉审计 | effective stage 恰为 SCHEMA_ONLY |
 | `G0-MECH` | G0-JOINT | repository executable checker 与派生 Gate0StatusReport | 45 GateId、99 fields、依赖 DAG、禁用词与文档链接机械通过 |
 | `X-01` | G0-JOINT | docs-only safe-skip、CI job 与 Release needs | 文档提交不造 tag；产品发布仍 fail closed |
-| `X-02` | G0-MECH | interfaces、in-memory codec harness、absence/corrupt reducer | 只到 SCHEMA_ONLY；绝不写未接受 snapshot、Key、目录或用户数据 |
+| `X-02` | G0-MECH | interfaces、bounded arbitrary-byte fault harness、absence/corrupt reducer | 只到 SCHEMA_ONLY；绝不写未接受 snapshot、Key、目录或用户数据 |
 | `X-02F` | X-02, G0-02, G0-03 | FileIdentitySafetyPort/LeaseLockPort 可行性与最小 JNI seam | API 30+ `*at`/no-replace/lock经 probe可用；API 29 NOREPLACE persistent path unavailable |
 | `X-03K` | X-01, G0-04 | protected physical runner 基础设施 | 只有隔离、日志清洗与 attestation plumbing；尚无真实 key/permit |
 
@@ -3602,11 +3613,34 @@ exact package与 recertification，不能借 `M10-RC` 的抽象接口获得运�
 ```text
 X-02
   minimal memory-protocol / event-journal scaffolding
-  FeatureStagePolicy / Snapshot / Validator
-  三进程 watcher/store
+  FeatureStagePolicy / fail-closed stage view / rejected-input reducer
+  main、:ime、:brain 三角色 process-local safe holder
+  test-only bounded ByteArray channel
   default SCHEMA_ONLY
   no Memory root / no Keystore alias / no user data
 ```
+
+这里原称“三进程 watcher/store”的 X-02 范围，唯一允许的解释是三种 consumer role 的
+process-local safe holder 与 rejected-input 内存模拟：每个 holder 冷启动为
+`SCHEMA_ONLY`，只在堆内用不逃逸的 `AtomicReference` 接收
+`ABSENT/CORRUPT/UNKNOWN/UNAUTHENTICATED` 四种拒绝态。它不是 production watcher，不是
+cross-process store，也不读取或发布 Snapshot。production `FeatureStageSnapshotV1` 的 exact
+wire、static receipt、认证与 freshness authority 延后到 `R-02S`；A/B store、publisher、
+file/transition watcher 与 evaluator 延后到 `M9A-02S`。两项完成前不得用 JSON、
+Preferences、Room、文件或 synthetic-only persistent root 代替。
+
+X-02 实施 checkpoint 已交付的代码范围是：FeatureStage 与相互隔离的 stage/gate/permit/profile
+domains、exact 45 GateId registry、只允许 `SCHEMA_CODEC + SCHEMA_ONLY + empty gate set` 的
+hard-cap reducer、四拒绝态 safe view、三角色 holder、仅测试可见的 bounded ByteArray
+channel，以及无 payload/operation/storage API 的 `event-journal` schema-only scaffold。
+机械门禁覆盖 34,992 个 typed stage 组合、exact registry/scope、holder 并发与隔离、
+forged-decision 负例、禁止依赖/API/Manifest/JAR 边界。完整交付与未交付清单见
+[X-02 Stage Substrate 实施边界](x02-stage-substrate-implementation.md)。
+
+该 checkpoint 仍不包含 Snapshot schema/bytes/parser、auth/generation/A/B、Android store、
+file watcher、Broker/Service、Key、目录、Journal/Blob、用户数据或任何 `DARK+`。所有本地
+描述均为实现范围，不是 gate PASS；必须等待 Pull Request 中 Gate 0 checker、X-02 boundary
+checker、两模块 test/JAR 与既有 Android CI 真实通过，本文不预先宣称 CI 成功。
 
 `X-02` 证明默认与降级路径后，才交付关闭 feature flag 的协议地基 PR：
 

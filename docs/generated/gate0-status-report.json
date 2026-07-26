@@ -7,13 +7,13 @@
     "unset_field_count": 90
   },
   "contract_source_sha256": {
-    "README.md": "bf1706a42481541ab0378f5a729a3f57e8391156d84aba0ea35c8df8dbd0e24a",
+    "README.md": "86ef0e2287f6de7b006da3080aaa73024c9af18d6e86a24df3e3556309a58a1e",
     "docs/adr/0015-release-identity-and-data-continuity.md": "38a227f32e06b48c66b5b3507239bd6c1c4002d1e8f05a553444b1dc675990a1",
     "docs/adr/0016-m9-memory-wire-and-durability.md": "02470c2b80958ab235461b29e56f81bb037668e3b8dc21b92fd8be5aee46f5d7",
     "docs/adr/0017-m9-memory-security-and-erasure.md": "66b608561b72a2c6629fabb5ee8ab19f5b71c21abd65005de6c933dfb2c9c645",
     "docs/adr/0018-m9-memory-budget.md": "e9d71e5e61617eda0796d6be66d6abe45b05cc25972d417a52c048dafa3cd3fb",
     "docs/design/agent-event-memory-architecture-v1.0.md": "9dfb2dd8ef542cca9cfce3dfed08c80baf92067e860d4e83f7af7b91174e25f7",
-    "docs/development/agent-engineering-plan-v1.0.md": "e4169c021fbe393c5e30342903a08b56c3d2b076025b90873b50283eebab72ee"
+    "docs/development/agent-engineering-plan-v1.0.md": "d4bedf9712f9c828783df8382b6b8aadfe0c4433059dee2555e15894a5e3aeb0"
   },
   "effective_stage": "SCHEMA_ONLY",
   "gate_registry": {
