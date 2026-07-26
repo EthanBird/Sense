@@ -904,6 +904,28 @@ rootProject.name = "fixture"
         )
         self.assert_source_rejected("buildSrc is forbidden")
 
+    def test_gradle_work_state_directory_is_not_script_authority(self) -> None:
+        _write(
+            self.root,
+            ".gradle/8.13/fileHashes/fileHashes.bin",
+            "generated state\n",
+        )
+        checker.check_repository(self.root)
+
+    def test_gradle_work_state_script_is_rejected(self) -> None:
+        _write(
+            self.root,
+            ".gradle/hidden.gradle",
+            'println("effect")\n',
+        )
+        self.assert_source_rejected("unexpected Gradle script authority")
+
+    def test_gradle_work_state_script_symlink_is_rejected(self) -> None:
+        _write(self.root, ".gradle/generated-state.txt", "state\n")
+        script = self.root / ".gradle/hidden.gradle.kts"
+        script.symlink_to(self.root / ".gradle/generated-state.txt")
+        self.assert_source_rejected("unexpected Gradle script authority")
+
     def test_parallel_groovy_settings_script_is_rejected(self) -> None:
         _write(self.root, "settings.gradle", 'println("effect")\n')
         self.assert_source_rejected("unexpected Gradle script authority")

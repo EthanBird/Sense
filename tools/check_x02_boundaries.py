@@ -1131,8 +1131,15 @@ def _check_dependency_graph(root: Path) -> None:
     for pattern in ("*.gradle", "*.gradle.kts"):
         for path in root.rglob(pattern):
             relative = path.relative_to(root)
+            # Gradle creates a project-local `.gradle/` state directory during
+            # a clean build.  Its directory name matches `*.gradle`, but a
+            # directory is not executable script authority.  Do not skip
+            # symlinks here: a symlink with a Gradle-script name must still be
+            # reviewed as an unexpected authority path.
+            if path.is_dir() and not path.is_symlink():
+                continue
             if any(
-                part in {".git", ".gradle", "build"}
+                part in {".git", "build"}
                 for part in relative.parts[:-1]
             ):
                 continue
