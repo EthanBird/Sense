@@ -1343,6 +1343,19 @@ rootProject.name = "fixture"
         )
         self.assert_artifact_rejected("non-canonical multidex sequence")
 
+    def test_unbounded_multidex_suffix_is_rejected_without_allocation(
+        self,
+    ) -> None:
+        _, _, debug, _ = _good_artifacts(self.root)
+        _rewrite_zip(
+            debug,
+            lambda entries: entries.__setitem__(
+                "classes1000000000.dex",
+                b"dex\n035\x00safe",
+            ),
+        )
+        self.assert_artifact_rejected("nonstandard DEX payload")
+
     def test_nested_jar_payload_is_rejected(self) -> None:
         _, _, debug, _ = _good_artifacts(self.root)
         _rewrite_zip(

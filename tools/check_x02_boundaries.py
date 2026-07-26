@@ -490,6 +490,7 @@ MAX_JAR_CLASS_BYTES = 1 * 1024 * 1024
 MAX_JAR_METADATA_BYTES = 1 * 1024 * 1024
 MAX_DEX_BYTES = 128 * 1024 * 1024
 MAX_TOTAL_DEX_BYTES = 256 * 1024 * 1024
+MAX_DEX_FILES = 64
 MAX_APK_ENTRY_BYTES = 256 * 1024 * 1024
 MAX_APK_SCAN_BYTES = 512 * 1024 * 1024
 
@@ -1686,7 +1687,7 @@ def _check_app_apks(root: Path, explicit_apks: Sequence[Path] | None = None) -> 
                     name
                     for name in names
                     if re.fullmatch(
-                        r"classes(?:[2-9]|[1-9][0-9]+)?\.dex",
+                        r"classes(?:[2-9]|[1-5][0-9]|6[0-4])?\.dex",
                         name,
                     )
                 ]
@@ -1698,7 +1699,10 @@ def _check_app_apks(root: Path, explicit_apks: Sequence[Path] | None = None) -> 
                     else int(name.removeprefix("classes").removesuffix(".dex"))
                     for name in dex_names
                 )
-                if dex_indices != list(range(1, dex_indices[-1] + 1)):
+                if (
+                    len(dex_indices) > MAX_DEX_FILES
+                    or dex_indices != list(range(1, len(dex_indices) + 1))
+                ):
                     raise BoundaryError(
                         f"{apk}: non-canonical multidex sequence: {dex_names!r}"
                     )
