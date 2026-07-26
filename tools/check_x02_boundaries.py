@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import re
 import sys
 import tomllib
@@ -426,10 +427,10 @@ EXPECTED_VERIFY_JOB_SHA256 = (
     "b7c4fc7f19d236e729b495be22fad42791bd60934e202be814484dd9d9c6f9e9"
 )
 EXPECTED_PACKAGE_JOB_SHA256 = (
-    "b945f468a169a02ce366e6aa31f6b87ae2fced6d6a2043b073d0aaeafa33d941"
+    "e2bddec5ce94f9d9a0fc8a001eb0de7693c07cab246b4a97b4f904e1ca3a4ebd"
 )
 EXPECTED_ANDROID_WORKFLOW_SHA256 = (
-    "f68c12d206a1f4525bc4a15823d1c140e728fbbad7faf4b331f97214441cfad1"
+    "0009564b3cd9e9fe5df13f30d299799f7b27468485dd5d3a3520f2dbb6dd3943"
 )
 EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("settings.gradle.kts"):
@@ -479,6 +480,11 @@ FORBIDDEN_ARTIFACT_NAME_PARTS = ("TestOnly", "Test", "Fake", "Authenticator")
 DEX_MEMORY_PATHS = (
     b"io/github/ethanbird/senseime/memory/",
     b"io.github.ethanbird.senseime.memory.",
+)
+NESTED_ZIP_MAGICS = (
+    b"PK\x03\x04",
+    b"PK\x05\x06",
+    b"PK\x07\x08",
 )
 MAX_JAR_CLASS_BYTES = 1 * 1024 * 1024
 MAX_JAR_METADATA_BYTES = 1 * 1024 * 1024
@@ -1197,12 +1203,6 @@ def _check_ci_and_offline_coverage(root: Path) -> None:
         raise BoundaryError(
             "Android CI package_x02 job must not restore shared Gradle state"
         )
-    if package_job.count(
-        "GRADLE_USER_HOME: ${{ runner.temp }}/sense-x02-gradle-home"
-    ) != 1:
-        raise BoundaryError(
-            "Android CI package_x02 job must use an isolated Gradle user home"
-        )
     if ci.count("name: sense-v0.4.2-clean-apks") != 2:
         raise BoundaryError(
             "Android CI isolated APK artifact must have one producer "
@@ -1305,6 +1305,12 @@ def _check_ci_and_offline_coverage(root: Path) -> None:
             "Android CI isolated package source command is not exact"
         )
     package_build_step = protected_steps["package_build"]
+    if package_build_step.count(
+        "GRADLE_USER_HOME: ${{ runner.temp }}/sense-x02-gradle-home"
+    ) != 1:
+        raise BoundaryError(
+            "Android CI isolated package build must use an isolated Gradle user home"
+        )
     isolated_tasks = (
         "--no-build-cache",
         "--no-configuration-cache",
@@ -1709,6 +1715,29 @@ def _check_app_apks(root: Path, explicit_apks: Sequence[Path] | None = None) -> 
                     if info.filename.endswith("/"):
                         continue
                     payload = archive.read(info)
+                    if info.filename not in dex_names:
+                        if (
+                            len(payload) >= 8
+                            and payload[:4] == b"dex\n"
+                            and payload[4:7].isdigit()
+                            and payload[7] == 0
+                        ):
+                            raise BoundaryError(
+                                f"{apk}: disguised DEX payload is forbidden: "
+                                f"{info.filename}"
+                            )
+                        if payload.startswith(b"\xca\xfe\xba\xbe"):
+                            raise BoundaryError(
+                                f"{apk}: disguised JVM class payload is forbidden: "
+                                f"{info.filename}"
+                            )
+                        if payload.startswith(
+                            NESTED_ZIP_MAGICS
+                        ) or zipfile.is_zipfile(io.BytesIO(payload)):
+                            raise BoundaryError(
+                                f"{apk}: nested archive payload is forbidden: "
+                                f"{info.filename}"
+                            )
                     for forbidden_path in DEX_MEMORY_PATHS:
                         if forbidden_path in payload:
                             raise BoundaryError(

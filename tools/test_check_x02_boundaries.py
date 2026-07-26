@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import tempfile
 import unittest
 import warnings
@@ -235,13 +236,13 @@ jobs:
           :event-journal:test
   package_x02:
     needs: verify
-    env:
-      GRADLE_USER_HOME: ${{ runner.temp }}/sense-x02-gradle-home
     steps:
       - uses: actions/checkout@v6
       - name: Verify frozen X-02 source and build authority
         run: python3 tools/check_x02_boundaries.py
       - name: Build X-02 artifacts without repository tests
+        env:
+          GRADLE_USER_HOME: ${{ runner.temp }}/sense-x02-gradle-home
         run: >-
           ./gradlew
           --no-build-cache
@@ -995,8 +996,8 @@ rootProject.name = "fixture"
     def test_ci_isolated_package_requires_private_gradle_home(self) -> None:
         self.replace(
             ".github/workflows/android.yml",
-            "    env:\n"
-            "      GRADLE_USER_HOME: "
+            "        env:\n"
+            "          GRADLE_USER_HOME: "
             "${{ runner.temp }}/sense-x02-gradle-home\n",
             "",
         )
@@ -1318,6 +1319,62 @@ rootProject.name = "fixture"
             ),
         )
         self.assert_artifact_rejected("nested JVM payload")
+
+    def test_disguised_nested_zip_payload_is_rejected(self) -> None:
+        _, _, debug, _ = _good_artifacts(self.root)
+        nested = io.BytesIO()
+        with zipfile.ZipFile(nested, "w", zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr(
+                "classes.dex",
+                b"dex\n035\x00io/github/ethanbird/senseime/memory/hidden",
+            )
+        _rewrite_zip(
+            debug,
+            lambda entries: entries.__setitem__(
+                "assets/payload.bin",
+                nested.getvalue(),
+            ),
+        )
+        self.assert_artifact_rejected("nested archive payload")
+
+    def test_prefixed_nested_zip_payload_is_rejected(self) -> None:
+        _, _, debug, _ = _good_artifacts(self.root)
+        nested = io.BytesIO()
+        with zipfile.ZipFile(nested, "w", zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr(
+                "classes.dex",
+                b"dex\n035\x00io/github/ethanbird/senseime/memory/hidden",
+            )
+        _rewrite_zip(
+            debug,
+            lambda entries: entries.__setitem__(
+                "assets/payload.bin",
+                b"prefix" + nested.getvalue(),
+            ),
+        )
+        self.assert_artifact_rejected("nested archive payload")
+
+    def test_disguised_dex_payload_is_rejected(self) -> None:
+        _, _, debug, _ = _good_artifacts(self.root)
+        _rewrite_zip(
+            debug,
+            lambda entries: entries.__setitem__(
+                "assets/payload.bin",
+                b"dex\n035\x00safe",
+            ),
+        )
+        self.assert_artifact_rejected("disguised DEX payload")
+
+    def test_disguised_class_payload_is_rejected(self) -> None:
+        _, _, debug, _ = _good_artifacts(self.root)
+        _rewrite_zip(
+            debug,
+            lambda entries: entries.__setitem__(
+                "assets/payload.bin",
+                b"\xca\xfe\xba\xbe-fixture",
+            ),
+        )
+        self.assert_artifact_rejected("disguised JVM class payload")
 
     def test_plain_non_dex_memory_payload_is_rejected(self) -> None:
         _, _, debug, _ = _good_artifacts(self.root)

@@ -412,8 +412,6 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
-    env:
-      GRADLE_USER_HOME: ${{ runner.temp }}/sense-x02-gradle-home
 
     steps:
       - uses: actions/checkout@v6
@@ -427,6 +425,8 @@ jobs:
         run: python3 tools/check_x02_boundaries.py
 
       - name: Build X-02 artifacts without repository tests
+        env:
+          GRADLE_USER_HOME: ${{ runner.temp }}/sense-x02-gradle-home
         run: >-
           ./gradlew
           --no-build-cache
