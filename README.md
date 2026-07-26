@@ -62,6 +62,7 @@ AI 最终结果仍只能通过 `sense_submit_patch` / `sense.editor.patch.v1` �
 - [ADR 0016：M9 Memory wire 与 durability](docs/adr/0016-m9-memory-wire-and-durability.md)
 - [ADR 0017：M9 Memory security 与 erasure](docs/adr/0017-m9-memory-security-and-erasure.md)
 - [ADR 0018：M9 Memory budget](docs/adr/0018-m9-memory-budget.md)
+- [Gate 0 派生状态报告（非权威）](docs/generated/gate0-status-report.json)
 
 架构文档冻结证据、事件关系、完整性回执与长期兼容原则；工程文档把它映射到 Android
 模块、Messenger/PFD、Journal/Blob、Room/FTS、状态机、测试、CI 和 issue-ready 交付顺序。

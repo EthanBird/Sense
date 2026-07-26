@@ -40,6 +40,11 @@ jobs:
       - name: Verify version-aware release planning
         run: python3 tools/test_release_plan.py
 
+      - name: Verify Gate 0 Agent and Memory contracts
+        run: |
+          python3 tools/test_check_gate0_contract.py
+          python3 tools/check_gate0_contract.py --check
+
       - name: Verify M4 regressions and M5 mixed assets
         run: |
           set -euo pipefail
