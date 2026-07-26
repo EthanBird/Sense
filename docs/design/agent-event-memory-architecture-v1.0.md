@@ -2348,7 +2348,15 @@ WorkManager 只做可延迟维护：
   ordinal到 `UINT64_MAX` 时只设置 fixed `overflow_pending`，禁止 wrap/saturating increment；
   只有 processed追平 requested、旧 worker/WorkSpec全部 terminal且完整 durable-head census
   闭合后，才可在同一 A/B transaction新建 CSPRNG control epoch并从 ordinal 0开始；
-- 每次 writer 发布新 durable frontier 时，MemoryBroker 的 I/O executor 立即登记该范围并更新当前 Session 的 exact catalog/tail；`session_recall` 可直接扫描 durable Journal，因此近期可见性不依赖 FTS 或 Worker；
+- writer 发布新 durable frontier 时只提交本 writer 的 canonical durability authority。若
+  host/IME coordinator 此刻已持有有效 Broker binding，可发送 bounded、可丢的 wake hint；
+  Broker I/O executor必须先按 authenticated durable heads验证 hint，再用它加速更新当前
+  Session exact catalog/tail。Broker未运行、未绑定、hint丢失或 Binder death时不得为了通知
+  额外 bind、阻塞 writer/IME或延长 Run；下次 bind或 exact `session_recall` admission必须从
+  authenticated writer source manifest与 selected durable heads幂等补追 catalog，补追后
+  冻结本次 recall cut并直接扫描 durable Journal。若发现 recovery/authority ambiguity，
+  先进入既有 bounded physical census，闭合前 Receipt只能 `PARTIAL`。因此正确性与近期
+  可见性不依赖 wake hint、Broker常驻、FTS或 Worker；
 - FTS/Claim 等派生投影可以异步追赶，Receipt 必须报告其 generation/watermark，不能把旧索引的 miss 当成不存在；
 - 活跃 recall、Agent、Tool 不通过 WorkManager 调度；
 - WorkManager 只在主进程初始化，`:ime`/`:brain` 不直接调度，且不使用 expedited work；

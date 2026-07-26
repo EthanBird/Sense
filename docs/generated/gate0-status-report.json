@@ -12,8 +12,8 @@
     "docs/adr/0016-m9-memory-wire-and-durability.md": "02470c2b80958ab235461b29e56f81bb037668e3b8dc21b92fd8be5aee46f5d7",
     "docs/adr/0017-m9-memory-security-and-erasure.md": "66b608561b72a2c6629fabb5ee8ab19f5b71c21abd65005de6c933dfb2c9c645",
     "docs/adr/0018-m9-memory-budget.md": "e9d71e5e61617eda0796d6be66d6abe45b05cc25972d417a52c048dafa3cd3fb",
-    "docs/design/agent-event-memory-architecture-v1.0.md": "d23d516a9825c825c309eb7228046be93f00eb9cc259b0f83cbceb5d78550c1e",
-    "docs/development/agent-engineering-plan-v1.0.md": "788ca8f63867c5b491fa2e2118b2691912e275e44d24dedd9a25a59c8fa45852"
+    "docs/design/agent-event-memory-architecture-v1.0.md": "9dfb2dd8ef542cca9cfce3dfed08c80baf92067e860d4e83f7af7b91174e25f7",
+    "docs/development/agent-engineering-plan-v1.0.md": "e4169c021fbe393c5e30342903a08b56c3d2b076025b90873b50283eebab72ee"
   },
   "effective_stage": "SCHEMA_ONLY",
   "gate_registry": {

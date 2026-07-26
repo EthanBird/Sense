@@ -1403,6 +1403,12 @@ process 完全一致，避免为类型引用制造模块环。
 - Run 完成后解绑，不常驻拉起主进程；
 - 一次有界重绑；之后返回 `MEMORY_UNAVAILABLE`；
 - IME 不因普通按键绑定 Broker；
+- 绑定已存在时，coordinator 可转发有界、可丢的 frontier wake hint；hint 不是 durable
+  authority，丢失或 Broker 未运行时不得为了投递 hint 额外 bind、阻塞 writer/IME 或延长
+  Run 生命周期；
+- 每次新 bind 上的首个 recall 必须先从 authenticated writer source manifest 与 selected
+  durable heads补追 catalog，再选择本次 fixed cut；只有 recovery/authority ambiguity
+  出现时才进入既有 bounded physical census，未闭合前不得声称 complete；
 - `:brain` 从不 bind/query Broker，也不持有 `MemoryBrokerClient`；
 - Broker 不执行 Provider、不持有 InputConnection。
 - v1 沿用现有 Messenger/Bundle IPC，不引入一套平行 AIDL；只有 profiling 证明 Messenger
@@ -1578,12 +1584,20 @@ scorer_version
 
 该方案仍泄露记录数量、访问模式和 token 频率；Security ADR 必须保留此残余风险，不宣称“搜索加密等于零泄漏”。
 
-### 13.4 即时可见与后台追赶
+### 13.5 即时可见与后台追赶
 
-- writer 发布 durable frontier 后，Broker I/O executor 立即更新 current Session exact catalog/tail；
-- exact `session_recall` 可直接扫描 durable Journal；
+- writer 发布 durable frontier 时只提交自己的 canonical durability authority；若 host
+  coordinator 此刻已有有效 Broker binding，可发送 bounded wake hint，Broker I/O executor
+  必须先按 authenticated durable heads验证后再加速更新 current Session exact catalog/tail；
+- Broker 未运行、未绑定、hint 丢失或 Binder death 都不形成 gap，也不得触发常驻/额外 bind。
+  下次 bind 或 exact `session_recall` admission 从 authenticated writer source manifest
+  与 selected durable heads幂等补追 catalog，并在补追后冻结本次 recall cut；若发现
+  recovery/authority ambiguity，先进入既有 bounded physical census，闭合前 Receipt只能
+  `PARTIAL`；
+- exact `session_recall` 对该 fixed cut 直接扫描 durable Journal；正确性与近期可见性不依赖
+  wake hint、Broker 常驻、FTS 或 Worker；
 - FTS/Claim 投影允许稍后追赶；
-- Receipt 始终返回 index generation/watermark；
+- Receipt 始终返回 chosen durable cut 与 index generation/watermark；
 - WorkManager 不是近期 Session 可见性的前置条件。
 
 ---
