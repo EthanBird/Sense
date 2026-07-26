@@ -1657,6 +1657,10 @@ def _check_app_apks(root: Path, explicit_apks: Sequence[Path] | None = None) -> 
                     if name.startswith("/") or ".." in Path(name).parts:
                         raise BoundaryError(f"{apk}: unsafe APK entry {name!r}")
                     if name.endswith("/"):
+                        if info.file_size != 0:
+                            raise BoundaryError(
+                                f"{apk}: non-empty APK directory entry {name!r}"
+                            )
                         continue
                     if info.file_size > MAX_APK_ENTRY_BYTES:
                         raise BoundaryError(f"{apk}: oversized APK entry {name!r}")

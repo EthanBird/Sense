@@ -1330,6 +1330,17 @@ rootProject.name = "fixture"
         )
         self.assert_artifact_rejected("contains X-02 Memory path")
 
+    def test_nonempty_apk_directory_entry_is_rejected(self) -> None:
+        _, _, debug, _ = _good_artifacts(self.root)
+        _rewrite_zip(
+            debug,
+            lambda entries: entries.__setitem__(
+                "hidden/",
+                b"io/github/ethanbird/senseime/memory/hidden",
+            ),
+        )
+        self.assert_artifact_rejected("non-empty APK directory entry")
+
     def test_duplicate_apk_entry_is_rejected(self) -> None:
         _, _, debug, _ = _good_artifacts(self.root)
         with warnings.catch_warnings():
