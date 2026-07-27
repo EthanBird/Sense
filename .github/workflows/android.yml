@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 env:
-  RELEASE_TAG: v0.4.2
-  RELEASE_APK: Sense-v0.4.2.apk
+  RELEASE_TAG: v0.4.3
+  RELEASE_APK: Sense-v0.4.3.apk
   LEXICON_SHA256: ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6
   BIGRAM_SHA256: db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c
   ENGLISH_SHA256: 1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624
@@ -86,7 +86,7 @@ jobs:
           cmp licenses/popular-english-words-ISC.txt ime-service/src/main/assets/POPULAR-ENGLISH-WORDS-ISC.txt
           cmp licenses/chinese-idiom-chengyu-MIT.txt ime-service/src/main/assets/CHINESE-IDIOM-CHENGYU-MIT.txt
 
-      - name: Verify 0.4.2 Agent state machine, streaming UI, and toolbox regressions
+      - name: Verify 0.4.3 inherited Agent and X-02 regressions
         run: >-
           ./gradlew
           :ai-protocol:test
@@ -250,7 +250,7 @@ jobs:
             :core-input:m5MixedInputBenchmark \
             :core-input:m6InputPolishBenchmark
 
-      - name: Verify assembled 0.4.2 APK
+      - name: Verify assembled 0.4.3 APK
         shell: bash
         run: |
           set -euo pipefail
@@ -353,7 +353,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='17' versionName='0.4.2'" /tmp/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='18' versionName='0.4.3'" /tmp/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" /tmp/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" /tmp/apk-badging.txt
           declared_permissions=$(
@@ -395,7 +395,7 @@ jobs:
       - name: Upload debug APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.4.2-apks
+          name: sense-v0.4.3-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -442,7 +442,7 @@ jobs:
       - name: Upload isolated app APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.4.2-clean-apks
+          name: sense-v0.4.3-clean-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -499,7 +499,7 @@ jobs:
             --github-output "$GITHUB_OUTPUT" \
             --step-summary "$GITHUB_STEP_SUMMARY"
 
-  release-0-4-2:
+  release-0-4-3:
     needs: [verify, package_x02, release_plan]
     if: >-
       github.event_name == 'push' &&
@@ -514,7 +514,7 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: sense-v0.4.2-clean-apks
+          name: sense-v0.4.3-clean-apks
           path: artifacts
 
       - name: Prepare release assets
@@ -621,7 +621,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='17' versionName='0.4.2'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='18' versionName='0.4.3'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           declared_permissions=$(
@@ -663,7 +663,7 @@ jobs:
           cd release
           sha256sum "$RELEASE_APK" > SHA256SUMS.txt
 
-      - name: Create Sense 0.4.2 release
+      - name: Create Sense 0.4.3 release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_PLAN_STATUS: ${{ needs.release_plan.outputs.status }}
@@ -743,8 +743,8 @@ jobs:
             # created or concurrently observed tag is resolved and verified.
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
-              --title "Sense v0.4.2 · Agent 状态机、多轮反馈与新工具箱" \
-              --notes-file docs/releases/v0.4.2.md
+              --title "Sense v0.4.3 · Agent Memory X-02 安全底座" \
+              --notes-file docs/releases/v0.4.3.md
           fi
 
           assert_remote_tag_target

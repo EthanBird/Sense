@@ -421,16 +421,16 @@ EXPECTED_ROOT_BUILD_SCRIPT = """plugins {
 """
 
 EXPECTED_OFFLINE_VERIFY_SHA256 = (
-    "57ea146a06d91931f58d376ec305e8f4c288e198b5a4616806093148dd7668b7"
+    "36e9000c5a81f30046cf1f17991892cb187e2cefe913256aec15b43dc8ba9374"
 )
 EXPECTED_VERIFY_JOB_SHA256 = (
-    "b7c4fc7f19d236e729b495be22fad42791bd60934e202be814484dd9d9c6f9e9"
+    "02446cd1b496d5bff901110846fde8e2113ee59af355c160bde95f2f52edb2ae"
 )
 EXPECTED_PACKAGE_JOB_SHA256 = (
-    "e2bddec5ce94f9d9a0fc8a001eb0de7693c07cab246b4a97b4f904e1ca3a4ebd"
+    "5e0c76c2554880b3aa86192d987187ff4c28983837dbe6aeec9d17a56a6ce19b"
 )
 EXPECTED_ANDROID_WORKFLOW_SHA256 = (
-    "0009564b3cd9e9fe5df13f30d299799f7b27468485dd5d3a3520f2dbb6dd3943"
+    "c3df659b09dd0730d89ed418fa70fc745264bb1530d573ea55e1b8a46ba67584"
 )
 EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("settings.gradle.kts"):
@@ -454,7 +454,7 @@ EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("ai-runtime/build.gradle.kts"):
         "9f1997745054d4fb16f5fcc579dbd347c68b24c7faa5b6f071f8fc452a99df65",
     Path("app/build.gradle.kts"):
-        "261866aefda5b2b6b1fdc0a7a76a82f2b55585c44492808dc3a40961b45f1411",
+        "5935a50a3f00086f0244c672a7ccdb818dabb1f353a6eb8864c539480f4bd698",
     Path("benchmark/build.gradle.kts"):
         "999d9aba8d2813df7e108a9dece00c7f6406b3c5273e59f323d0565e650abf8b",
     Path("brain-api/build.gradle.kts"):
@@ -1211,7 +1211,7 @@ def _check_ci_and_offline_coverage(root: Path) -> None:
         raise BoundaryError(
             "Android CI package_x02 job must not restore shared Gradle state"
         )
-    if ci.count("name: sense-v0.4.2-clean-apks") != 2:
+    if ci.count("name: sense-v0.4.3-clean-apks") != 2:
         raise BoundaryError(
             "Android CI isolated APK artifact must have one producer "
             "and one release consumer"
@@ -1230,7 +1230,7 @@ def _check_ci_and_offline_coverage(root: Path) -> None:
         ":app:assembleDebug",
         ":app:assembleBenchmark",
         "python3 tools/check_x02_boundaries.py --check-artifacts",
-        "sense-v0.4.2-clean-apks",
+        "sense-v0.4.3-clean-apks",
     )
     for snippet in ci_required:
         if snippet not in ci:

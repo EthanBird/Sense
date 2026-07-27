@@ -256,7 +256,7 @@ jobs:
       - name: Upload isolated app APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.4.2-clean-apks
+          name: sense-v0.4.3-clean-apks
   release_plan:
     needs: [verify, package_x02]
     steps:
@@ -266,7 +266,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
         with:
-          name: sense-v0.4.2-clean-apks
+          name: sense-v0.4.3-clean-apks
 """,
     )
     _write(
@@ -1038,7 +1038,7 @@ rootProject.name = "fixture"
         text = path.read_text(encoding="utf-8")
         path.write_text(
             text.replace(
-                "name: sense-v0.4.2-clean-apks",
+                "name: sense-v0.4.3-clean-apks",
                 "name: untrusted-test-apks",
                 1,
             ),
