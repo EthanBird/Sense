@@ -3,6 +3,7 @@ package io.github.ethanbird.senseime.brain
 import io.github.ethanbird.senseime.ai.protocol.EditorSnapshotV1
 import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import io.github.ethanbird.senseime.ai.protocol.HarnessRequestV1
+import io.github.ethanbird.senseime.brain.api.AgentToolId
 import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
 import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
 import io.github.ethanbird.senseime.brain.api.ProviderCredential
@@ -55,6 +56,7 @@ internal object OpenAiRequestFactory {
         secondAttempt: SecondAttemptContext? = null,
         agentConversation: AgentConversationContext? = null,
         requestMode: BrainRequestMode = BrainRequestMode.NORMAL,
+        enabledTools: Set<AgentToolId> = emptySet(),
     ): ProviderWireRequest {
         profile.requireValid()
         require(attempt in 0..1)
@@ -65,7 +67,12 @@ internal object OpenAiRequestFactory {
         val includeInlineContract =
             !nativePatchTool && profile.structuredOutput != StructuredOutputMode.JSON_SCHEMA
         val prompt = when (secondAttempt) {
-            null -> buildHarnessInput(request, includeInlineContract, nativePatchTool)
+            null -> buildHarnessInput(
+                request,
+                includeInlineContract,
+                nativePatchTool,
+                enabledTools,
+            )
             is RepairContext ->
                 buildRepairInput(request, secondAttempt, includeInlineContract, nativePatchTool)
             is StreamRecoveryContext ->
@@ -83,12 +90,13 @@ internal object OpenAiRequestFactory {
                     nativePatchTool,
                     agentConversation,
                     secondAttempt != null,
+                    enabledTools,
                 )
         }
         val headers = linkedMapOf(
             "Accept" to if (profile.streaming) "text/event-stream" else "application/json",
             "Content-Type" to "application/json; charset=utf-8",
-            "User-Agent" to "Sense-IME/0.4.3 AI-Brain",
+            "User-Agent" to "Sense-IME/0.4.4 AI-Brain",
         )
         when (credential) {
             is ProviderCredential.Bearer -> headers["Authorization"] = "Bearer ${credential.token}"
@@ -139,6 +147,7 @@ internal object OpenAiRequestFactory {
         nativePatchTool: Boolean,
         agentConversation: AgentConversationContext?,
         repairOrRecovery: Boolean,
+        enabledTools: Set<AgentToolId>,
     ): String = buildString {
         append('{')
         property("model", profile.model)
@@ -157,6 +166,15 @@ internal object OpenAiRequestFactory {
                     requestMode == BrainRequestMode.NORMAL &&
                         !repairOrRecovery &&
                         agentConversation?.forceTerminalTool != true,
+                enabledTools = if (
+                    requestMode == BrainRequestMode.NORMAL &&
+                    !repairOrRecovery &&
+                    agentConversation?.forceTerminalTool != true
+                ) {
+                    enabledTools
+                } else {
+                    emptySet()
+                },
                 forceChoice =
                     requestMode == BrainRequestMode.CONNECTIVITY_TEST ||
                         (
@@ -232,9 +250,11 @@ internal object OpenAiRequestFactory {
     private fun StringBuilder.appendNativeAgentTools(
         request: HarnessRequestV1,
         includeProgressTool: Boolean,
+        enabledTools: Set<AgentToolId>,
         forceChoice: Boolean,
     ) {
         append(",\"tools\":[")
+        var needsComma = false
         if (includeProgressTool) {
             append("{\"type\":\"function\",\"function\":{")
             property("name", NATIVE_PROGRESS_TOOL_NAME)
@@ -246,8 +266,15 @@ internal object OpenAiRequestFactory {
             append(",\"parameters\":{\"type\":\"object\",\"additionalProperties\":false,")
             append("\"required\":[\"message\"],\"properties\":{")
             append("\"message\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":160}}}")
-            append("}},")
+            append("}}")
+            needsComma = true
         }
+        AgentToolId.entries.filter { it in enabledTools }.forEach { tool ->
+            if (needsComma) append(',')
+            appendAgentToolDefinition(tool)
+            needsComma = true
+        }
+        if (needsComma) append(',')
         append("{\"type\":\"function\",\"function\":{")
         property("name", NATIVE_PATCH_TOOL_NAME)
         append(',')
@@ -263,6 +290,54 @@ internal object OpenAiRequestFactory {
             jsonString(NATIVE_PATCH_TOOL_NAME)
             append("}}")
         }
+    }
+
+    private fun StringBuilder.appendAgentToolDefinition(tool: AgentToolId) {
+        append("{\"type\":\"function\",\"function\":{")
+        property("name", tool.wireValue)
+        append(',')
+        when (tool) {
+            AgentToolId.WEB_SEARCH -> {
+                property(
+                    "description",
+                    "Search the live public web when current or external information is needed.",
+                )
+                append(",\"parameters\":{\"type\":\"object\",\"additionalProperties\":false,")
+                append("\"required\":[\"query\"],\"properties\":{")
+                append("\"query\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512},")
+                append("\"max_results\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":10}}}")
+            }
+            AgentToolId.WEB_FETCH -> {
+                property(
+                    "description",
+                    "Read bounded text from one exact public HTTPS page.",
+                )
+                append(",\"parameters\":{\"type\":\"object\",\"additionalProperties\":false,")
+                append("\"required\":[\"url\"],\"properties\":{")
+                append("\"url\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":2048},")
+                append("\"max_chars\":{\"type\":\"integer\",\"minimum\":256,\"maximum\":12000}}}")
+            }
+            AgentToolId.CALCULATOR -> {
+                property(
+                    "description",
+                    "Evaluate a bounded mathematical expression deterministically.",
+                )
+                append(",\"parameters\":{\"type\":\"object\",\"additionalProperties\":false,")
+                append("\"required\":[\"expression\"],\"properties\":{")
+                append("\"expression\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512}}}")
+            }
+            AgentToolId.MEMORY_SEARCH -> {
+                property(
+                    "description",
+                    "Search retained user memory for relevant prior facts or events.",
+                )
+                append(",\"parameters\":{\"type\":\"object\",\"additionalProperties\":false,")
+                append("\"required\":[\"query\"],\"properties\":{")
+                append("\"query\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512},")
+                append("\"max_results\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":20}}}")
+            }
+        }
+        append("}}")
     }
 
     /**
@@ -351,6 +426,7 @@ internal object OpenAiRequestFactory {
         request: HarnessRequestV1,
         includeInlineContract: Boolean,
         nativePatchTool: Boolean,
+        enabledTools: Set<AgentToolId>,
     ): String = buildString {
         appendSkillContract(request.skill)
         appendContextWindowContract(request)
@@ -360,11 +436,19 @@ internal object OpenAiRequestFactory {
         }
         append('\n')
         if (nativePatchTool) {
-            append(
-                "Use exactly one tool call per turn. First call sense_report_progress with one " +
-                    "useful public update; after its tool result, finish by calling " +
-                    "sense_submit_patch exactly once. Snapshot JSON:\n",
-            )
+            if (enabledTools.isEmpty()) {
+                append(
+                    "Use exactly one tool call per turn. First call sense_report_progress with " +
+                        "one useful public update; after its result, finish by calling " +
+                        "sense_submit_patch exactly once. Snapshot JSON:\n",
+                )
+            } else {
+                append(
+                    "Use exactly one tool call per turn. Call enabled tools only when useful, " +
+                        "continue from every tool result, and finish by calling " +
+                        "sense_submit_patch exactly once. Snapshot JSON:\n",
+                )
+            }
         } else {
             append("Return only one sense.editor.patch.v1 object. Snapshot JSON:\n")
         }

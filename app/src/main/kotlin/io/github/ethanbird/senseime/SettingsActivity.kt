@@ -39,6 +39,8 @@ import io.github.ethanbird.senseime.brain.api.ProviderPresetCatalog
 import io.github.ethanbird.senseime.brain.api.ProviderPresetId
 import io.github.ethanbird.senseime.brain.api.ProviderReasoningStrength
 import io.github.ethanbird.senseime.brain.api.StructuredOutputMode
+import io.github.ethanbird.senseime.brain.runtime.AgentToolSettings
+import io.github.ethanbird.senseime.brain.runtime.AgentToolSettingsStore
 import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestEvent
 import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestFailure
 import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestPhase
@@ -87,6 +89,16 @@ class SettingsActivity : Activity() {
     private var loadedSpeechCredentialScope: String? = null
     private var speechPermissionRequestInFlight = false
     private var speechPermissionDeniedOnce = false
+    private lateinit var agentToolsMaster: Switch
+    private lateinit var agentToolWebSearch: Switch
+    private lateinit var agentToolWebRead: Switch
+    private lateinit var agentToolCalculator: Switch
+    private lateinit var agentToolLocalMemoryRecall: Switch
+    private lateinit var agentToolsStatus: TextView
+    private val agentToolStore by lazy { AgentToolSettingsStore(this) }
+    private var agentToolsUiLoaded = false
+    private var applyingAgentToolSettings = false
+    private var lastSavedAgentToolSettings = AgentToolSettings()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,6 +118,7 @@ class SettingsActivity : Activity() {
         updateStatus()
         if (!providerUiLoaded) loadProviderSettings()
         if (!speechUiLoaded) loadSpeechSettings()
+        if (!agentToolsUiLoaded) loadAgentToolSettings()
         updateSpeechPermissionButton()
     }
 
@@ -143,6 +156,7 @@ class SettingsActivity : Activity() {
         }.withTop(dp(10)))
 
         content.addView(card(R.string.ai_provider_title, providerForm()).withTop(dp(24)))
+        content.addView(card(R.string.agent_tools_title, agentToolsForm()).withTop(dp(12)))
         content.addView(card(R.string.speech_provider_title, speechProviderForm()).withTop(dp(12)))
         content.addView(
             card(
@@ -321,6 +335,131 @@ class SettingsActivity : Activity() {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
         updateProviderAdvancedVisibility()
+    }
+
+    private fun agentToolsForm(): View = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        addView(text(R.string.agent_tools_body, 13f, R.color.sense_secondary))
+
+        agentToolsMaster = agentToolSwitch(R.string.agent_tools_master).apply {
+            typeface = Typeface.DEFAULT_BOLD
+        }
+        agentToolWebSearch = agentToolSwitch(R.string.agent_tool_web_search)
+        agentToolWebRead = agentToolSwitch(R.string.agent_tool_web_read)
+        agentToolCalculator = agentToolSwitch(R.string.agent_tool_calculator)
+        agentToolLocalMemoryRecall = agentToolSwitch(R.string.agent_tool_local_memory_recall)
+
+        addView(agentToolsMaster.withTop(dp(12)))
+        addView(agentToolWebSearch.withTop(dp(8)))
+        addView(agentToolWebRead.withTop(dp(8)))
+        addView(agentToolCalculator.withTop(dp(8)))
+        addView(agentToolLocalMemoryRecall.withTop(dp(8)))
+
+        agentToolsStatus = text(R.string.agent_tools_status_loading, 12f, R.color.sense_secondary)
+        addView(agentToolsStatus.withTop(dp(10)))
+
+        agentToolsMaster.setOnCheckedChangeListener { _, _ -> onAgentToolSwitchChanged() }
+        agentToolWebSearch.setOnCheckedChangeListener { _, _ -> onAgentToolSwitchChanged() }
+        agentToolWebRead.setOnCheckedChangeListener { _, _ -> onAgentToolSwitchChanged() }
+        agentToolCalculator.setOnCheckedChangeListener { _, _ -> onAgentToolSwitchChanged() }
+        agentToolLocalMemoryRecall.setOnCheckedChangeListener { _, _ ->
+            onAgentToolSwitchChanged()
+        }
+        updateAgentToolSwitchAvailability()
+    }
+
+    private fun agentToolSwitch(labelRes: Int): Switch = Switch(this).apply {
+        setText(labelRes)
+        setTextColor(getColor(R.color.sense_primary))
+        isChecked = true
+    }
+
+    private fun onAgentToolSwitchChanged() {
+        if (!agentToolsUiLoaded || applyingAgentToolSettings) return
+        updateAgentToolSwitchAvailability()
+        val settings = agentToolSettingsFromUi()
+        agentToolStore.save(settings)
+            .onSuccess {
+                lastSavedAgentToolSettings = settings
+                updateAgentToolStatus(settings, saved = true)
+            }
+            .onFailure {
+                applyAgentToolSettings(lastSavedAgentToolSettings)
+                agentToolsStatus.setText(R.string.agent_tools_status_save_failed)
+                agentToolsStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+            }
+    }
+
+    private fun loadAgentToolSettings() {
+        if (!::agentToolsStatus.isInitialized) return
+        agentToolStore.load()
+            .onSuccess { settings ->
+                lastSavedAgentToolSettings = settings
+                setAgentToolSwitchesEnabled(true)
+                applyAgentToolSettings(settings)
+                agentToolsUiLoaded = true
+                updateAgentToolStatus(settings, saved = false)
+            }
+            .onFailure {
+                applyAgentToolSettings(AgentToolSettings())
+                agentToolsUiLoaded = false
+                agentToolsStatus.setText(R.string.agent_tools_status_invalid)
+                agentToolsStatus.setTextColor(getColor(android.R.color.holo_red_dark))
+                setAgentToolSwitchesEnabled(false)
+            }
+    }
+
+    private fun applyAgentToolSettings(settings: AgentToolSettings) {
+        applyingAgentToolSettings = true
+        try {
+            agentToolsMaster.isChecked = settings.masterEnabled
+            agentToolWebSearch.isChecked = settings.webSearchEnabled
+            agentToolWebRead.isChecked = settings.webFetchEnabled
+            agentToolCalculator.isChecked = settings.calculatorEnabled
+            agentToolLocalMemoryRecall.isChecked = settings.memorySearchEnabled
+            updateAgentToolSwitchAvailability()
+        } finally {
+            applyingAgentToolSettings = false
+        }
+    }
+
+    private fun agentToolSettingsFromUi(): AgentToolSettings = AgentToolSettings(
+        masterEnabled = agentToolsMaster.isChecked,
+        webSearchEnabled = agentToolWebSearch.isChecked,
+        webFetchEnabled = agentToolWebRead.isChecked,
+        calculatorEnabled = agentToolCalculator.isChecked,
+        memorySearchEnabled = agentToolLocalMemoryRecall.isChecked,
+    )
+
+    private fun updateAgentToolSwitchAvailability() {
+        if (!::agentToolsMaster.isInitialized) return
+        val enabled = agentToolsMaster.isEnabled && agentToolsMaster.isChecked
+        agentToolWebSearch.isEnabled = enabled
+        agentToolWebRead.isEnabled = enabled
+        agentToolCalculator.isEnabled = enabled
+        agentToolLocalMemoryRecall.isEnabled = enabled
+    }
+
+    private fun setAgentToolSwitchesEnabled(enabled: Boolean) {
+        agentToolsMaster.isEnabled = enabled
+        agentToolWebSearch.isEnabled = enabled && agentToolsMaster.isChecked
+        agentToolWebRead.isEnabled = enabled && agentToolsMaster.isChecked
+        agentToolCalculator.isEnabled = enabled && agentToolsMaster.isChecked
+        agentToolLocalMemoryRecall.isEnabled = enabled && agentToolsMaster.isChecked
+    }
+
+    private fun updateAgentToolStatus(settings: AgentToolSettings, saved: Boolean) {
+        if (!settings.masterEnabled) {
+            agentToolsStatus.setText(R.string.agent_tools_status_off)
+        } else {
+            agentToolsStatus.text = getString(
+                if (saved) R.string.agent_tools_status_saved else R.string.agent_tools_status_ready,
+                settings.enabledToolIds().size,
+            )
+        }
+        agentToolsStatus.setTextColor(
+            getColor(if (settings.masterEnabled) R.color.sense_success else R.color.sense_secondary),
+        )
     }
 
     private fun speechProviderForm(): View = LinearLayout(this).apply {

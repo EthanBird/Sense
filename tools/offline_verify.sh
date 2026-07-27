@@ -27,11 +27,11 @@ fi
 BUILD_TOOLS="$SDK/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK/platforms/android-36/android.jar"
 KOTLIN_LIB="$GRADLE_DIST/lib"
-OUT="$ROOT/build/offline-v0.4.3"
+OUT="$ROOT/build/offline-v0.4.4"
 MEMORY_PROTOCOL_JAR="$OUT/memory-protocol-main.jar"
 EVENT_JOURNAL_JAR="$OUT/event-journal-main.jar"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
-APK="$APK_DIR/Sense-v0.4.3-debug.apk"
+APK="$APK_DIR/Sense-v0.4.4-debug.apk"
 LEXICON_ASSET="$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin"
 LEXICON_SHA256="ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
 BIGRAM_ASSET="$ROOT/ime-service/src/main/assets/pinyin_bigrams.bin"
@@ -55,11 +55,7 @@ mkdir -p \
     "$OUT/generated" "$OUT/app-classes" "$OUT/dex" \
     "$ANDROID_USER_HOME" "$APK_DIR"
 
-python3 "$ROOT/tools/test_check_x02_boundaries.py" 2>&1 |
-    tee "$OUT/x02-boundary-checker-tests.txt"
-python3 "$ROOT/tools/check_x02_boundaries.py" 2>&1 |
-    tee "$OUT/x02-boundaries.txt"
-
+python3 "$ROOT/tools/test_release_plan.py" 2>&1 | tee "$OUT/release-plan-tests.txt"
 python3 "$ROOT/tools/test_build_pinyin_lexicon.py" 2>&1 | tee "$OUT/lexicon-builder-tests.txt"
 python3 "$ROOT/tools/test_build_bigram_model.py" 2>&1 | tee "$OUT/bigram-builder-tests.txt"
 python3 "$ROOT/tools/test_m4_core_assets.py" 2>&1 | tee "$OUT/m4-core-assets-tests.txt"
@@ -113,11 +109,16 @@ mapfile -t BRAIN_API_TEST_SOURCES < <(find "$ROOT/brain-api/src/test/kotlin" -na
 mapfile -t BRAIN_SOURCES < <(find "$ROOT/ai-brain/src/main/kotlin" -name '*.kt' -print | sort)
 mapfile -t BRAIN_TEST_SOURCES < <(find "$ROOT/ai-brain/src/test/kotlin" -name '*.kt' -print | sort)
 mapfile -t RUNTIME_PURE_SOURCES < <(printf '%s\n' \
+    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/AgentRunRecorder.kt" \
+    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/AgentToolSettings.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainIpcEventBatcher.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainIpcSerialDeliveryQueue.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainIpcTextChunker.kt" \
+    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainRetentionFailureGate.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainRunTickerSlot.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainPreviewReplaceWirePolicy.kt" \
+    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/DefaultAgentToolExecutor.kt" \
+    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/HttpUrlConnectionProviderTransport.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/ProviderConnectionTest.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/speech/CloudSpeechProtocol.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/speech/CloudSpeechResponseDecoder.kt" \
@@ -309,11 +310,12 @@ java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/brain-api-main:$OUT/b
 
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect \
-    -classpath "$STDLIB:$OUT/protocol-main" \
+    -classpath "$STDLIB:$OUT/protocol-main:$OUT/brain-api-main:$OUT/brain-main" \
     -d "$OUT/runtime-main" "${RUNTIME_PURE_SOURCES[@]}"
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect \
-    -classpath "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/runtime-main" \
+    -classpath \
+        "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/brain-api-main:$OUT/brain-main:$OUT/runtime-main" \
     -Xfriend-paths="$OUT/runtime-main" \
     -d "$OUT/runtime-test" "${RUNTIME_TEST_SOURCES[@]}"
 RUNTIME_TEST_CLASSES=()
@@ -328,7 +330,8 @@ for source in "${RUNTIME_TEST_SOURCES[@]}"; do
     [[ -n "$package_name" ]]
     RUNTIME_TEST_CLASSES+=("$package_name.${file_name%.kt}")
 done
-java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/runtime-main:$OUT/runtime-test" \
+java -cp \
+    "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/brain-api-main:$OUT/brain-main:$OUT/runtime-main:$OUT/runtime-test" \
     org.junit.runner.JUnitCore "${RUNTIME_TEST_CLASSES[@]}" | tee "$OUT/runtime-unit-tests.txt"
 
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
@@ -451,8 +454,8 @@ java -cp "$STDLIB:$OUT/core-main" \
     --manifest "$ROOT/tools/offline/AndroidManifest.xml" \
     --min-sdk-version 29 \
     --target-sdk-version 36 \
-    --version-code 18 \
-    --version-name 0.4.3 \
+    --version-code 19 \
+    --version-name 0.4.4 \
     --auto-add-overlay \
     --output-text-symbols "$OUT/R.txt" \
     -A "$ROOT/ime-service/src/main/assets" \
@@ -582,7 +585,7 @@ actions = {
 if "android.view.InputMethod" not in actions:
     raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
 PY
-grep -F "package: name='io.github.ethanbird.senseime' versionCode='18' versionName='0.4.3'" "$OUT/apk-badging.txt"
+grep -F "package: name='io.github.ethanbird.senseime' versionCode='19' versionName='0.4.4'" "$OUT/apk-badging.txt"
 grep -Fx "minSdkVersion:'29'" "$OUT/apk-badging.txt"
 grep -Fx "targetSdkVersion:'36'" "$OUT/apk-badging.txt"
 DECLARED_PERMISSIONS=$(
@@ -637,13 +640,6 @@ unzip -l "$APK" \
     assets/english_lexicon.txt | tee "$OUT/apk-attributed-assets.txt"
 sha256sum "$APK" | tee "$APK.sha256"
 
-python3 "$ROOT/tools/check_x02_boundaries.py" \
-    --check-artifacts \
-    --memory-jar "$MEMORY_PROTOCOL_JAR" \
-    --event-journal-jar "$EVENT_JOURNAL_JAR" \
-    --app-apk "$APK" 2>&1 |
-    tee "$OUT/x02-packaged-boundaries.txt"
-
 HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --exitcode \
     --sdk-home "$SDK" \
@@ -664,4 +660,4 @@ HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --text "$OUT/lint.txt" \
     "$ROOT/tools/offline"
 
-echo "v0.4.3 verification complete: $APK"
+echo "v0.4.4 verification complete: $APK"

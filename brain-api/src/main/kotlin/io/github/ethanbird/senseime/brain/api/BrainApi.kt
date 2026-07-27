@@ -8,6 +8,20 @@ data class BrainRunSpec(
     val harnessRequest: HarnessRequestV1,
     val provider: ProviderProfile,
     val credential: ProviderCredential,
+    /**
+     * Exact user-enabled tool set captured by the private Brain service at run admission.
+     *
+     * Tool availability is deliberately not part of the editor/Binder protocol. The model only
+     * sees tools in this set, and the Brain router checks the same frozen set again before
+     * execution.
+     */
+    val enabledTools: Set<AgentToolId> = emptySet(),
+    /**
+     * Private execution trace used by the complete-history journal.
+     *
+     * This sink never crosses Binder and is orthogonal to the public [BrainEventSink].
+     */
+    val traceSink: BrainTraceSink = BrainTraceSink.NONE,
 )
 
 fun interface BrainEventSink {
