@@ -19,6 +19,8 @@ from release_plan import (
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "release_plan.py"
 WORKFLOW = ROOT / ".github" / "workflows" / "android.yml"
+APP_BUILD = ROOT / "app" / "build.gradle.kts"
+RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.3.md"
 CURRENT_SHA = "a" * 40
 OLD_SHA = "b" * 40
 
@@ -238,6 +240,25 @@ class ReleasePlanCliTest(unittest.TestCase):
 
 
 class WorkflowContractTest(unittest.TestCase):
+    def test_release_identity_matches_current_android_version(self) -> None:
+        current = parse_android_version(
+            APP_BUILD.read_text(encoding="utf-8"),
+            str(APP_BUILD),
+        )
+        self.assertEqual(AndroidVersion(name="0.4.3", code=18), current)
+
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("RELEASE_TAG: v0.4.3", workflow)
+        self.assertIn("RELEASE_APK: Sense-v0.4.3.apk", workflow)
+        self.assertEqual(
+            2,
+            workflow.count(
+                "versionCode='18' versionName='0.4.3'",
+            ),
+        )
+        self.assertIn("--notes-file docs/releases/v0.4.3.md", workflow)
+        self.assertTrue(RELEASE_NOTES.is_file())
+
     def test_workflow_uses_push_before_and_release_job_output(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("release_plan:", workflow)
@@ -255,7 +276,7 @@ class WorkflowContractTest(unittest.TestCase):
         )
         self.assertEqual(
             2,
-            workflow.count("name: sense-v0.4.2-clean-apks"),
+            workflow.count("name: sense-v0.4.3-clean-apks"),
         )
         self.assertIn(
             "apk=$(find artifacts -type f "
@@ -267,7 +288,7 @@ class WorkflowContractTest(unittest.TestCase):
     def test_publish_path_peels_and_rechecks_the_remote_tag(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         release_step = workflow.split(
-            "      - name: Create Sense 0.4.2 release",
+            "      - name: Create Sense 0.4.3 release",
             maxsplit=1,
         )[1]
         self.assertIn(

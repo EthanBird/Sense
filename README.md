@@ -2,11 +2,11 @@
 
 > Android 原生高性能中文输入法：普通输入完全本地运行，AI、记忆与工具能力通过可配置的长按方向 Skill 显式触发。
 
-**项目状态：** `v0.4.2` Agent 状态机、多轮公开反馈与新工具箱
+**项目状态：** `v0.4.3` Agent Memory X-02 fail-closed 安全底座
 
-**当前版本：** `v0.4.2`（`versionCode 17`）
+**当前版本：** `v0.4.3`（`versionCode 18`）
 
-**更新日期：** 2026-07-26
+**更新日期：** 2026-07-27
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
 
 本文基于《GlassIME Android AI 中文输入法产品与技术设计文档 v0.1》重新整理，并统一改名为：
@@ -22,10 +22,21 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.2 Agent 状态机、多轮反馈与新工具箱
+## 0. 当前迭代：v0.4.3 Agent Memory X-02 安全底座
 
-`v0.4.2` 是 `0.4.x` AI 完善周期内的交互与协议升级，不扩大模型的编辑权限，也不提前升级到
-`0.5.0`：
+`v0.4.3` 在 v0.4.2 Agent 运行时之上发布 X-02 工程 checkpoint，不扩大模型编辑权限，
+不启用跨 Session Memory，也不提前升级到 `0.5.0`：
+
+- `memory-protocol` 冻结 Feature Stage、45-entry Gate registry、Capability 与
+  fail-closed process view 的 closed domain；
+- `event-journal` 仍是 `SCHEMA_ONLY_NO_STORAGE` scaffold，没有 append、read、recall、
+  payload 或 path API；
+- effective stage 固定为 `SCHEMA_ONLY`，45 个 Gate 全部保持 `BLOCKED`，不存在 capture、
+  storage、Recall、Tool/Skill effect 或 `DARK+`；
+- 独立 GitHub runner 证明 X-02 production 类不会进入发布 APK，Release 只消费隔离
+  clean artifact。
+
+本版完整继承 v0.4.2 的 Agent 状态机、多轮公开反馈与工具箱：
 
 - Agent 运行采用显式状态机，区分读取、连接、理解、思考、公开更新、工具调用、生成、
   校验、写入、恢复和终止；上滑锁定只改变手势控制权，不再重置执行状态或可见输出；
@@ -48,13 +59,15 @@ AI 最终结果仍只能通过 `sense_submit_patch` / `sense.editor.patch.v1` �
 [`ADR 0013`](docs/adr/0013-v0.4.1-bounded-stream-and-system-speech-recovery.md)、
 [`ADR 0014`](docs/adr/0014-v0.4.2-agent-session-state-machine.md)。
 
-只有 GitHub Actions 的 `verify` 作业全部通过，工作流才会创建 `v0.4.2` Release；
+只有 GitHub Actions 的 `verify` 与独立 `package_x02` 作业全部通过，工作流才会创建
+`v0.4.3` Release；
 未实际执行的 Kotlin、Lint、APK 或真机检查不会写成“已通过”。
 
 ### Agent 架构与工程文档
 
-下一阶段 Agent / Memory / Tool / Skill 已形成架构、工程计划和 Gate 0 ADR 决策基线；
-这些文档不代表 Memory runtime 已实现：
+Agent / Memory / Tool / Skill 已形成架构、工程计划和 Gate 0 ADR 决策基线；X-02
+checkpoint 已通过 PR #16 的代码、对抗检查与隔离制品门禁，但这仍不代表 Memory runtime
+已实现：
 
 - [AI Agent 深度架构：事件记忆、工具、Skills 与长期兼容性](docs/design/agent-event-memory-architecture-v1.0.md)
 - [Agent 工程开发方案：从 Evidence Event Mesh 到可交付的 M9 / M10](docs/development/agent-engineering-plan-v1.0.md)
@@ -78,11 +91,12 @@ AI 最终结果仍只能通过 `sense_submit_patch` / `sense.editor.patch.v1` �
 
 当前 owner continuity、root-bootstrap、local-erasure control/capability、measurement/evidence-wire gate 都未通过，因此 effective stage 固定为
 `SCHEMA_ONLY`：不创建持久化 Memory，不 capture，连 synthetic `DARK` 数据路径也不开启。
-Gate 0 基线本身是 docs-only；当前 X-02 checkpoint 只新增纯 Kotlin stage domain、
+Gate 0 基线本身是 docs-only；X-02 checkpoint 只新增纯 Kotlin stage domain、
 fail-closed reducer、三角色 process-local safe holder、test-only in-memory harness 与
 zero-storage `event-journal` scaffold。它不创建 Snapshot wire、Memory root、Key、目录、
 用户数据，不改变 APK 行为，也不授权 `DARK+`。该 checkpoint 仍须通过 Pull Request
-机械门禁，README 不预先宣称 CI 已通过。
+机械门禁；PR #16 与 CI #49 已通过，而 v0.4.3 正式 Release 仍必须通过版本提交对应的
+PR 与 main 双重门禁。
 
 应用仍以 `minSdk 29` 运行，但这不代表 persistent Memory 支持 Android 10/11：API 29–30
 因 Android 官方 symmetric-key unlocked-device 例外固定为 `SCHEMA_ONLY`；API 31–36.0
@@ -102,7 +116,7 @@ zero-storage `event-journal` scaffold。它不创建 Snapshot wire、Memory root
 | M7 输入基线 | 顶部固定 45dp、竖/横屏总高 358/258dp；生产资产首候选 `scxt → 上窜下跳`、`ssyw → 蛇鼠一窝` |
 | M0–M6 Host 门禁 | 所有既有正确性与延迟基准必须无回归 |
 | Android Lint 与编译 | GitHub Actions 构建 Debug、Benchmark 与 Macrobenchmark APK |
-| APK 元数据门禁 | `versionCode 17`、`versionName 0.4.2`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据门禁 | `versionCode 18`、`versionName 0.4.3`、`minSdk 29`、`targetSdk 36` |
 | APK 完整性门禁 | zipalign、签名、模型哈希、20,000 英文词、许可、仅 `INTERNET` / `RECORD_AUDIO` |
 | Android 真机 | HyperOS 系统 ASR 回退、AI 弱网/截断恢复、工具箱手感、Brain 进程与 OEM 矩阵仍需验收 |
 
@@ -172,7 +186,7 @@ SQLite 用户词库、剪贴板历史和 Provider 配置。AI 编辑基础威胁
 > 不是当前 Agent / M9 实施规范。它所写的“首版”、固定队列、固定超时、固定 Segment
 > 阈值或无条件完整性承诺均不得直接转成代码。发生设计冲突时，权威顺序为：已接受 ADR
 > → Agent v1.0 架构 → Agent 工程计划 → 本历史档案；当前运行时代码只证明已经实现的事实，
-> 不能放宽未来 gate。当前 `v0.4.2` 尚未实现跨 Session
+> 不能放宽未来 gate。当前 `v0.4.3` 尚未实现跨 Session
 > Journal、事件记忆或 Memory Broker；未来实现只对经 CapturePolicy 许可并达到
 > `DurableAck` cut 的 M9.0 record 作连续性承诺，其他缺口必须显式报告。
 
@@ -225,7 +239,7 @@ Sense 不是把聊天机器人塞进键盘，而是先做成一款足够快、�
 - 数据治理、合规和安全体系的完整产品设计。
 
 这份 v0.1 构想曾计划让事件从首版开始保留 `schema_version`、`source`、`session_id`、
-`app_id`、`timestamp` 与 `lineage`；它没有在当前 `v0.4.2` 中落地，不能被描述成已有
+`app_id`、`timestamp` 与 `lineage`；它没有在当前 `v0.4.3` 中落地，不能被描述成已有
 历史。新实现以事件关系和证据为主，墙钟时间只作为可缺失、可质疑的属性，且不迁移不存在的
 旧 Session。
 
@@ -408,7 +422,7 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.4.2` Agent 状态机、多轮反馈与新工具箱阶段。
+以下保留 M0 的实施记录；当前代码位于 `v0.4.3` Agent Memory X-02 安全底座阶段。
 现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。
 

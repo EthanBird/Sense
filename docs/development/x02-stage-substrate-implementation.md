@@ -1,7 +1,8 @@
 # X-02 Stage Substrate 实施边界
 
-Status: implementation checkpoint；等待 Pull Request 门禁，不是 FeatureStage、release、
-measurement 或数据授权 authority。
+Status: implementation checkpoint；已由 PR #16 与 Android CI #49 验证并合入 `main`。
+它仍不是 FeatureStage、release、measurement 或数据授权 authority；v0.4.3 只发布这套
+fail-closed 工程底座，不启用 Memory runtime。
 
 本文记录工程计划 `X-02` 的可执行收口。权威顺序仍是已接受 ADR、Agent 架构与
 [Agent 工程计划](agent-engineering-plan-v1.0.md)；本文只说明当前代码已经实现什么、明确
@@ -153,8 +154,9 @@ production JAR。APK 检查遍历全部 bounded entries，禁止可识别的非�
 properties、Linux wrapper script/JAR/properties、全部 Gradle build scripts、完整
 Android workflow 与完整 offline release gate 都使用 review-time canonical 内容或 raw
 SHA-256 冻结；任何变化必须同时更新 boundary baseline、mutation 测试并重新人工审查，
-不能用新增 denylist 宣称证明了零副作用。现阶段这些是**待 Pull Request 执行的门禁**，
-本文不宣称 GitHub Actions、Lint、APK 或发布门禁已经通过。
+不能用新增 denylist 宣称证明了零副作用。PR #16 已通过 Kotlin/Android、Lint、APK、
+M0–M6 与独立 `package_x02` 门禁；后续版本或 workflow 变化仍必须重新执行全部门禁，不能
+复用该次结果替代当前提交证据。
 
 `tools/offline_verify.sh` 手工调用 Gradle 8.13 随附的 Kotlin 2.0.21 compiler，只提供较旧
 编译器兼容性与无网环境的快速证据；它既不等价于项目 Kotlin 2.2.21 Gradle 编译，也不是
@@ -164,7 +166,7 @@ SHA-256 冻结；任何变化必须同时更新 boundary baseline、mutation 测
 
 ## 5. Checkpoint 退出条件
 
-只有同时满足以下条件，第三个 X-02 checkpoint 才可合并：
+第三个 X-02 checkpoint 已按以下条件合并；后续 release 与变更必须继续保持：
 
 1. Gate 0 checker 仍生成 non-authoritative、45 gate 全 `BLOCKED`、
    effective stage 恰为 `SCHEMA_ONLY` 的报告；
