@@ -14,6 +14,26 @@ SCHEMA_ONLY 纯 Kotlin substrate，不启用记忆、不改变 APK 行为、不�
 
 ---
 
+## 0A. v0.4.4 执行路线更新
+
+[`ADR 0019`](../adr/0019-v0.4.4-open-agent-tools-and-complete-history.md) 已将默认产品路线
+从 `SCHEMA_ONLY` 调整为开放 Agent profile。本工程文档中的长期协议研究继续保留，但
+实施顺序更新为：
+
+```text
+完整保存 Agent Run
+  → 本地可读取与 memory_search
+  → 设置页 Tool allow-list
+  → web_search / web_fetch / calculator
+  → 多工具 Agent loop
+  → 文件 Tool 与可导入 Skill
+  → 事件图、完整性回执和可替换索引
+```
+
+Android 系统已经授予的能力足以执行对应 Tool；不再用未通过的产品外 Gate 阻断网络、
+应用私有存储或用户明确选择的目录。设置开关只决定模型能否调用 Tool，不能停止记录或
+删除已有历史。与此路线冲突的旧 `SCHEMA_ONLY` 实施限制以 ADR 0019 为准。
+
 ## 0. 交付判断
 
 Sense 的 Agent 工程不应从“加一个向量数据库”或“把全部聊天塞回 Prompt”开始。第一条可交付路径是：

@@ -2,9 +2,9 @@
 
 > Android 原生高性能中文输入法：普通输入完全本地运行，AI、记忆与工具能力通过可配置的长按方向 Skill 显式触发。
 
-**项目状态：** `v0.4.3` Agent Memory X-02 fail-closed 安全底座
+**项目状态：** `v0.4.4` 开放 Agent 工具与完整历史
 
-**当前版本：** `v0.4.3`（`versionCode 18`）
+**当前版本：** `v0.4.4`（`versionCode 19`）
 
 **更新日期：** 2026-07-27
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
@@ -22,112 +22,51 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.3 Agent Memory X-02 安全底座
+## 0. 当前迭代：v0.4.4 开放 Agent 工具与完整历史
 
-`v0.4.3` 在 v0.4.2 Agent 运行时之上发布 X-02 工程 checkpoint，不扩大模型编辑权限，
-不启用跨 Session Memory，也不提前升级到 `0.5.0`：
+`v0.4.4` 把工具、Skills 与记忆提升为 Agent 产品主线，并以
+[`ADR 0019`](docs/adr/0019-v0.4.4-open-agent-tools-and-complete-history.md)
+覆盖 v0.4.3 的 `SCHEMA_ONLY` 产品限制：
 
-- `memory-protocol` 冻结 Feature Stage、45-entry Gate registry、Capability 与
-  fail-closed process view 的 closed domain；
-- `event-journal` 仍是 `SCHEMA_ONLY_NO_STORAGE` scaffold，没有 append、read、recall、
-  payload 或 path API；
-- effective stage 固定为 `SCHEMA_ONLY`，45 个 Gate 全部保持 `BLOCKED`，不存在 capture、
-  storage、Recall、Tool/Skill effect 或 `DARK+`；
-- 独立 GitHub runner 证明 X-02 production 类不会进入发布 APK，Release 只消费隔离
-  clean artifact。
+- `:brain` 单写者以 append-only Journal 完整保留请求快照、Provider 原始输入/输出、
+  公私事件、工具调用/结果、预览、最终 Patch、错误与取消；
+- Journal 使用稳定 sequence、前帧链、CRC、同步落盘和断尾恢复，跨进程重启仍可读取；
+- `memory_search` 使用本地有界词法检索，并排除当前 Run，避免工具查询召回它自己；
+- 设置页是工具开关的唯一写入口，总开关与
+  `web_search`、`web_fetch`、`calculator`、`memory_search` 默认开启；
+- 工具开关只控制模型可见 schema 和执行路由，永远不停止历史写入或删除旧数据；
+- Agent 可在同一 Run 中智能调用最多 6 个工具轮次，再以唯一
+  `sense_submit_patch` 结束；模型猜测已关闭工具的名称也不会执行；
+- `web_search` 提供免 Key 公网搜索，并在 DuckDuckGo 无结果或挑战页时自动回退到
+  Brave Search；两个后端都不可用时明确报错，不伪装成空结果成功。`web_fetch` 读取网页
+  正文，`calculator` 使用本地确定性解析器，`memory_search` 读取完整保留的历史；
+- Android 已经授予的能力就是 Tool 可使用的授权。后续用户目录文件 Tool 将复用系统
+  Storage Access Framework 的持久 URI 权限，不叠加第二套授权系统。
 
-本版完整继承 v0.4.2 的 Agent 状态机、多轮公开反馈与工具箱：
-
-- Agent 运行采用显式状态机，区分读取、连接、理解、思考、公开更新、工具调用、生成、
-  校验、写入、恢复和终止；上滑锁定只改变手势控制权，不再重置执行状态或可见输出；
-- DeepSeek 原生工具模式支持真实的多轮循环：
-  `sense_report_progress → 本地工具结果 → 继续生成 → sense_submit_patch`。工具调用按
-  call id 关联，私有 `reasoning_content` 只在 Brain 内按 Provider 规则回放，绝不显示；
-- 键盘 AI 区以稳定 step id 原位更新最近活动，并保留非空预览。模型暂未产出正文时显示
-  明确的等待状态，不再出现“正常生成”加空白主区域；
-- 有停止键的锁定会话使用更宽松的 45 秒首事件、120 秒流空闲和 300 秒绝对安全上限；
-  本地心跳只负责反馈，不能伪装为远端网络活动或无限续期；
-- 流式预览仍无上屏资格；最终覆盖必须来自完整的
-  `sense_submit_patch` / `sense.editor.patch.v1`，并继续通过本地协议、generation、hash/CAS
-  和写后校验；
-- 工具箱改为四列图标优先的控制中心，第二行居中；符号、文字编辑、语音、剪贴板、
-  Emoji 和“先思首页”使用统一键盘底色、圆角图标底座及完整卡片命中区域。
-
-AI 最终结果仍只能通过 `sense_submit_patch` / `sense.editor.patch.v1` 提议；普通模型文本、
-流式预览、私有推理和迟到回调都没有写入权限。完整设计见
-[`ADR 0012`](docs/adr/0012-v0.4.0-interruptible-ai-and-speech-surface.md) 与
-[`ADR 0013`](docs/adr/0013-v0.4.1-bounded-stream-and-system-speech-recovery.md)、
-[`ADR 0014`](docs/adr/0014-v0.4.2-agent-session-state-machine.md)。
-
-只有 GitHub Actions 的 `verify` 与独立 `package_x02` 作业全部通过，工作流才会创建
-`v0.4.3` Release；
-未实际执行的 Kotlin、Lint、APK 或真机检查不会写成“已通过”。
+现有 Agent 状态机、上滑锁定、停止、流式预览、generation 隔离和编辑器
+hash/CAS/写后验证继续有效；这些边界防止状态错写，但不限制用户已授权的数据能力。
+内置 `smart_edit`、`answer`、`rewrite`、`continue`、`translate`、`format` 继续作为首批
+声明式 Skills。
 
 ### Agent 架构与工程文档
 
-Agent / Memory / Tool / Skill 已形成架构、工程计划和 Gate 0 ADR 决策基线；X-02
-checkpoint 已通过 PR #16 的代码、对抗检查与隔离制品门禁，但这仍不代表 Memory runtime
-已实现：
-
 - [AI Agent 深度架构：事件记忆、工具、Skills 与长期兼容性](docs/design/agent-event-memory-architecture-v1.0.md)
 - [Agent 工程开发方案：从 Evidence Event Mesh 到可交付的 M9 / M10](docs/development/agent-engineering-plan-v1.0.md)
-- [X-02 Stage Substrate 实施边界](docs/development/x02-stage-substrate-implementation.md)
-- [ADR 0015：Release identity 与数据 owner continuity](docs/adr/0015-release-identity-and-data-continuity.md)
-- [ADR 0016：M9 Memory wire 与 durability](docs/adr/0016-m9-memory-wire-and-durability.md)
-- [ADR 0017：M9 Memory security 与 erasure](docs/adr/0017-m9-memory-security-and-erasure.md)
-- [ADR 0018：M9 Memory budget](docs/adr/0018-m9-memory-budget.md)
-- [Gate 0 派生状态报告（非权威）](docs/generated/gate0-status-report.json)
+- [ADR 0019：开放 Agent 工具与完整历史](docs/adr/0019-v0.4.4-open-agent-tools-and-complete-history.md)
+- [X-02 Stage Substrate 实施记录](docs/development/x02-stage-substrate-implementation.md)
 
-架构文档冻结证据、事件关系、完整性回执与长期兼容原则；工程文档把它映射到 Android
-模块、Messenger/PFD、Journal/Blob、Room/FTS、状态机、测试、CI 和 issue-ready 交付顺序。
-已接受 ADR 的决策优先于架构与工程计划。
-
-| Gate 0 ADR | 决策状态 | 当前 operational 状态 |
-|---|---|---|
-| 0015 | policy Accepted | identity、owner、signing-authority、release-policy semantics、platform-certification 与 root-bootstrap phase 均 `BLOCKED` |
-| 0016 | M9.0 wire/durability 决策 Accepted | descriptor、codec、writer、replay 与 kill evidence 未实现 |
-| 0017 | policy 与 crypto/storage primitive wire Accepted | root/keyring bootstrap、local-erasure control/capability、source/rotation、purpose-5 usage-control 与设备 key-use evidence `BLOCKED` |
-| 0018 | 0018-A Semantic Measurement Contract Accepted | 0018-E evidence wire 与 synthetic-measurement control `BLOCKED`；0018-B Pending；99 字段中 90 个 required 产品值为 `UNSET` |
-
-当前 owner continuity、root-bootstrap、local-erasure control/capability、measurement/evidence-wire gate 都未通过，因此 effective stage 固定为
-`SCHEMA_ONLY`：不创建持久化 Memory，不 capture，连 synthetic `DARK` 数据路径也不开启。
-Gate 0 基线本身是 docs-only；X-02 checkpoint 只新增纯 Kotlin stage domain、
-fail-closed reducer、三角色 process-local safe holder、test-only in-memory harness 与
-zero-storage `event-journal` scaffold。它不创建 Snapshot wire、Memory root、Key、目录、
-用户数据，不改变 APK 行为，也不授权 `DARK+`。该 checkpoint 仍须通过 Pull Request
-机械门禁；PR #16 与 CI #49 已通过，而 v0.4.3 正式 Release 仍必须通过版本提交对应的
-PR 与 main 双重门禁。
-
-应用仍以 `minSdk 29` 运行，但这不代表 persistent Memory 支持 Android 10/11：API 29–30
-因 Android 官方 symmetric-key unlocked-device 例外固定为 `SCHEMA_ONLY`；API 31–36.0
-需要 exact device/OEM 锁定行为证据，API 36.1+ 还需 getter + 行为双重验证。
-
-| 门禁 | 当前状态 |
+| 门禁 | v0.4.4 要求 |
 |---|---|
-| AI 协议与 Brain | `sense.soul.v2`、显式状态机、原生进度/终止工具、DeepSeek thinking 工具回放、一次有界流恢复、严格 Patch、取消与迟到事件 |
-| AI 编辑事务 | 全文、选区、受限上下文、隐私拒绝、generation/hash CAS 与写后校验 |
-| AI 交互 | 短按空格无回归、长按唤醒、上滑锁定不重置、活动时间线、非空预览保持、右下强制停止 |
-| Voice Surface | 设备端异步失败后同 session 一次系统服务回退、attempt 隔离、云端语音配置、声纹缓冲、取消与最终一次提交 |
-| 键盘工具箱 | 图标优先 4 + 2 布局、Sense 首页、完整命中区域、横竖屏可达性 |
-| 真实 Provider 探针 | 显式环境变量启用；不记录 Key/正文/私有推理；验证进度工具、多轮继续、工具关联与唯一终止 Patch |
-| M4/M5 生产资产 Python 回归 | 词典与 Bigram 继续做 fresh-checkout 字节级重建 |
-| 生成资产 | 拼音 429,901 keys / SHA `ef2fac…cce6`；Bigram 46,657 / SHA `db00a1…18c`；英文 20,000 词 / SHA `1a1823…5624` |
-| 既有 Kotlin 正确性 | core、service、UI 全量回归继续阻断发布；Android View、Lint 与正式 Gradle 任务以 Actions 结果为准 |
-| M7 输入基线 | 顶部固定 45dp、竖/横屏总高 358/258dp；生产资产首候选 `scxt → 上窜下跳`、`ssyw → 蛇鼠一窝` |
-| M0–M6 Host 门禁 | 所有既有正确性与延迟基准必须无回归 |
-| Android Lint 与编译 | GitHub Actions 构建 Debug、Benchmark 与 Macrobenchmark APK |
-| APK 元数据门禁 | `versionCode 18`、`versionName 0.4.3`、`minSdk 29`、`targetSdk 36` |
-| APK 完整性门禁 | zipalign、签名、模型哈希、20,000 英文词、许可、仅 `INTERNET` / `RECORD_AUDIO` |
-| Android 真机 | HyperOS 系统 ASR 回退、AI 弱网/截断恢复、工具箱手感、Brain 进程与 OEM 矩阵仍需验收 |
+| Agent Tool loop | 开关 schema、执行双门禁、多轮结果回放、唯一终止 Patch |
+| 完整历史 | 成功、Provider 错误、停止、取消与重启路径均可读取 |
+| 本地记忆 | bounded recall、当前 Run 排除、工具关闭不影响写入 |
+| 真实网络 | 显式启用的免 Key公网搜索探针 |
+| 既有质量 | AI、IME、UI、Core、M0–M6、Lint、APK、签名、权限与资产哈希无回退 |
+| APK 元数据 | `versionCode 19`、`versionName 0.4.4`、`minSdk 29`、`targetSdk 36` |
 
 标准工程验证命令：
 
 ```bash
-python3 tools/test_check_gate0_contract.py
-python3 tools/check_gate0_contract.py --check
-python3 tools/test_check_x02_boundaries.py
-python3 tools/check_x02_boundaries.py
-
 python3 tools/test_build_pinyin_lexicon.py
 python3 tools/test_build_bigram_model.py
 python3 tools/test_m4_core_assets.py
@@ -159,8 +98,6 @@ python3 tools/test_m5_mixed_assets.py
   :app:assembleDebug \
   :app:assembleBenchmark \
   :benchmark:assembleBenchmark
-
-python3 tools/check_x02_boundaries.py --check-artifacts
 ```
 
 在 Maven 仓库不可达、但已安装 API 36 SDK 与 Gradle 8.13 的环境，可运行离线门禁并产出工程 debug 签名 APK：
@@ -186,9 +123,8 @@ SQLite 用户词库、剪贴板历史和 Provider 配置。AI 编辑基础威胁
 > 不是当前 Agent / M9 实施规范。它所写的“首版”、固定队列、固定超时、固定 Segment
 > 阈值或无条件完整性承诺均不得直接转成代码。发生设计冲突时，权威顺序为：已接受 ADR
 > → Agent v1.0 架构 → Agent 工程计划 → 本历史档案；当前运行时代码只证明已经实现的事实，
-> 不能放宽未来 gate。当前 `v0.4.3` 尚未实现跨 Session
-> Journal、事件记忆或 Memory Broker；未来实现只对经 CapturePolicy 许可并达到
-> `DurableAck` cut 的 M9.0 record 作连续性承诺，其他缺口必须显式报告。
+> 当前 `v0.4.4` 已实现跨 Session Agent Journal 与本地词法召回；v0.3 的
+> `SCHEMA_ONLY` Gate 资料保留为研究/高保障 profile 记录，不再是默认产品阻断条件。
 
 ## 1. 项目结论
 
@@ -239,9 +175,9 @@ Sense 不是把聊天机器人塞进键盘，而是先做成一款足够快、�
 - 数据治理、合规和安全体系的完整产品设计。
 
 这份 v0.1 构想曾计划让事件从首版开始保留 `schema_version`、`source`、`session_id`、
-`app_id`、`timestamp` 与 `lineage`；它没有在当前 `v0.4.3` 中落地，不能被描述成已有
-历史。新实现以事件关系和证据为主，墙钟时间只作为可缺失、可质疑的属性，且不迁移不存在的
-旧 Session。
+`app_id`、`timestamp` 与 `lineage`。v0.4.4 从 Agent Run 开始完整保留新历史，但不会
+伪造 v0.4.3 以前从未写入的旧 Session。新实现以稳定 sequence 和事件关系为主，墙钟时间
+只作为可缺失、可质疑的属性。
 
 ## 4. 成功标准
 
@@ -422,7 +358,7 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.4.3` Agent Memory X-02 安全底座阶段。
+以下保留 M0 的实施记录；当前代码位于 `v0.4.4` 开放 Agent 工具与完整历史阶段。
 现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。
 

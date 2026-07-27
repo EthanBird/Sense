@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "release_plan.py"
 WORKFLOW = ROOT / ".github" / "workflows" / "android.yml"
 APP_BUILD = ROOT / "app" / "build.gradle.kts"
-RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.3.md"
+RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.4.md"
 CURRENT_SHA = "a" * 40
 OLD_SHA = "b" * 40
 
@@ -245,18 +245,18 @@ class WorkflowContractTest(unittest.TestCase):
             APP_BUILD.read_text(encoding="utf-8"),
             str(APP_BUILD),
         )
-        self.assertEqual(AndroidVersion(name="0.4.3", code=18), current)
+        self.assertEqual(AndroidVersion(name="0.4.4", code=19), current)
 
         workflow = WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn("RELEASE_TAG: v0.4.3", workflow)
-        self.assertIn("RELEASE_APK: Sense-v0.4.3.apk", workflow)
+        self.assertIn("RELEASE_TAG: v0.4.4", workflow)
+        self.assertIn("RELEASE_APK: Sense-v0.4.4.apk", workflow)
         self.assertEqual(
             2,
             workflow.count(
-                "versionCode='18' versionName='0.4.3'",
+                "versionCode='19' versionName='0.4.4'",
             ),
         )
-        self.assertIn("--notes-file docs/releases/v0.4.3.md", workflow)
+        self.assertIn("--notes-file docs/releases/v0.4.4.md", workflow)
         self.assertTrue(RELEASE_NOTES.is_file())
 
     def test_workflow_uses_push_before_and_release_job_output(self) -> None:
@@ -265,9 +265,9 @@ class WorkflowContractTest(unittest.TestCase):
         self.assertIn("python3 tools/test_release_plan.py", workflow)
         self.assertIn("${{ github.event.before }}", workflow)
         self.assertIn("fetch-depth: 0", workflow)
-        self.assertIn("needs: [verify, package_x02]", workflow)
+        self.assertIn("needs: [verify, package_release]", workflow)
         self.assertIn(
-            "needs: [verify, package_x02, release_plan]",
+            "needs: [verify, package_release, release_plan]",
             workflow,
         )
         self.assertIn(
@@ -276,7 +276,7 @@ class WorkflowContractTest(unittest.TestCase):
         )
         self.assertEqual(
             2,
-            workflow.count("name: sense-v0.4.3-clean-apks"),
+            workflow.count("name: sense-v0.4.4-clean-apks"),
         )
         self.assertIn(
             "apk=$(find artifacts -type f "
@@ -288,7 +288,7 @@ class WorkflowContractTest(unittest.TestCase):
     def test_publish_path_peels_and_rechecks_the_remote_tag(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         release_step = workflow.split(
-            "      - name: Create Sense 0.4.3 release",
+            "      - name: Create Sense 0.4.4 release",
             maxsplit=1,
         )[1]
         self.assertIn(

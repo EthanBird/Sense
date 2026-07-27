@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 env:
-  RELEASE_TAG: v0.4.3
-  RELEASE_APK: Sense-v0.4.3.apk
+  RELEASE_TAG: v0.4.4
+  RELEASE_APK: Sense-v0.4.4.apk
   LEXICON_SHA256: ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6
   BIGRAM_SHA256: db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c
   ENGLISH_SHA256: 1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624
@@ -39,13 +39,6 @@ jobs:
 
       - name: Verify version-aware release planning
         run: python3 tools/test_release_plan.py
-
-      - name: Verify Gate 0 Agent and Memory contracts
-        run: |
-          python3 tools/test_check_gate0_contract.py
-          python3 tools/check_gate0_contract.py --check
-          python3 tools/test_check_x02_boundaries.py
-          python3 tools/check_x02_boundaries.py
 
       - name: Verify M4 regressions and M5 mixed assets
         run: |
@@ -86,7 +79,7 @@ jobs:
           cmp licenses/popular-english-words-ISC.txt ime-service/src/main/assets/POPULAR-ENGLISH-WORDS-ISC.txt
           cmp licenses/chinese-idiom-chengyu-MIT.txt ime-service/src/main/assets/CHINESE-IDIOM-CHENGYU-MIT.txt
 
-      - name: Verify 0.4.3 inherited Agent and X-02 regressions
+      - name: Verify 0.4.4 Agent tools, complete history, and inherited regressions
         run: >-
           ./gradlew
           :ai-protocol:test
@@ -250,7 +243,7 @@ jobs:
             :core-input:m5MixedInputBenchmark \
             :core-input:m6InputPolishBenchmark
 
-      - name: Verify assembled 0.4.3 APK
+      - name: Verify assembled 0.4.4 APK
         shell: bash
         run: |
           set -euo pipefail
@@ -353,7 +346,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='18' versionName='0.4.3'" /tmp/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='19' versionName='0.4.4'" /tmp/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" /tmp/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" /tmp/apk-badging.txt
           declared_permissions=$(
@@ -395,7 +388,7 @@ jobs:
       - name: Upload debug APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.4.3-apks
+          name: sense-v0.4.4-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -405,8 +398,8 @@ jobs:
             benchmarks/results/m6-input-polish.json
           if-no-files-found: error
 
-  package_x02:
-    name: Build isolated X-02 artifacts
+  package_release:
+    name: Build clean release artifacts
     needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -421,28 +414,20 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Verify frozen X-02 source and build authority
-        run: python3 tools/check_x02_boundaries.py
-
-      - name: Build X-02 artifacts without repository tests
+      - name: Build clean app artifacts without repository test outputs
         env:
-          GRADLE_USER_HOME: ${{ runner.temp }}/sense-x02-gradle-home
+          GRADLE_USER_HOME: ${{ runner.temp }}/sense-release-gradle-home
         run: >-
           ./gradlew
           --no-build-cache
           --no-configuration-cache
-          :memory-protocol:jar
-          :event-journal:jar
           :app:assembleDebug
           :app:assembleBenchmark
 
-      - name: Verify isolated X-02 packaged boundaries
-        run: python3 tools/check_x02_boundaries.py --check-artifacts
-
-      - name: Upload isolated app APKs
+      - name: Upload clean app APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.4.3-clean-apks
+          name: sense-v0.4.4-clean-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -450,7 +435,7 @@ jobs:
 
   release_plan:
     name: Plan version-aware release
-    needs: [verify, package_x02]
+    needs: [verify, package_release]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
@@ -499,8 +484,8 @@ jobs:
             --github-output "$GITHUB_OUTPUT" \
             --step-summary "$GITHUB_STEP_SUMMARY"
 
-  release-0-4-3:
-    needs: [verify, package_x02, release_plan]
+  release-0-4-4:
+    needs: [verify, package_release, release_plan]
     if: >-
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
@@ -514,7 +499,7 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: sense-v0.4.3-clean-apks
+          name: sense-v0.4.4-clean-apks
           path: artifacts
 
       - name: Prepare release assets
@@ -621,7 +606,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='18' versionName='0.4.3'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='19' versionName='0.4.4'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           declared_permissions=$(
@@ -663,7 +648,7 @@ jobs:
           cd release
           sha256sum "$RELEASE_APK" > SHA256SUMS.txt
 
-      - name: Create Sense 0.4.3 release
+      - name: Create Sense 0.4.4 release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_PLAN_STATUS: ${{ needs.release_plan.outputs.status }}
@@ -743,8 +728,8 @@ jobs:
             # created or concurrently observed tag is resolved and verified.
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
-              --title "Sense v0.4.3 · Agent Memory X-02 安全底座" \
-              --notes-file docs/releases/v0.4.3.md
+              --title "Sense v0.4.4 · 开放 Agent 工具与完整历史" \
+              --notes-file docs/releases/v0.4.4.md
           fi
 
           assert_remote_tag_target

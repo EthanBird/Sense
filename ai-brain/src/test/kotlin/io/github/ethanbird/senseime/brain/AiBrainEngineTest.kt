@@ -16,6 +16,12 @@ import io.github.ethanbird.senseime.ai.protocol.PatchTarget
 import io.github.ethanbird.senseime.ai.protocol.SnapshotCapability
 import io.github.ethanbird.senseime.ai.protocol.TextSelectionV1
 import io.github.ethanbird.senseime.brain.api.BrainRunSpec
+import io.github.ethanbird.senseime.brain.api.BrainTraceEvent
+import io.github.ethanbird.senseime.brain.api.BrainTraceSink
+import io.github.ethanbird.senseime.brain.api.AgentToolCall
+import io.github.ethanbird.senseime.brain.api.AgentToolExecutionResult
+import io.github.ethanbird.senseime.brain.api.AgentToolExecutor
+import io.github.ethanbird.senseime.brain.api.AgentToolId
 import io.github.ethanbird.senseime.brain.api.MonotonicClock
 import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
 import io.github.ethanbird.senseime.brain.api.ProviderCall
@@ -38,6 +44,136 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AiBrainEngineTest {
+    @Test
+    fun `enabled Agent tool executes and is replayed into the next provider turn`() {
+        var executions = 0
+        var executedCall: AgentToolCall? = null
+        val traces = mutableListOf<BrainTraceEvent>()
+        val executor = AgentToolExecutor { call ->
+            executions += 1
+            executedCall = call
+            AgentToolExecutionResult("{\"ok\":true,\"result\":\"42\"}")
+        }
+        val fixture = Fixture(
+            deepSeekNative = true,
+            enabledTools = setOf(AgentToolId.CALCULATOR),
+            toolExecutor = executor,
+            traceSink = { traces += it },
+        )
+        val handle = fixture.start()
+
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            agentToolDelta("calculator", "{\"expression\":\"6*7\"}"),
+        )
+        fixture.transport.bytes(
+            0,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+
+        assertFalse(handle.isTerminal)
+        assertEquals(1, executions)
+        assertEquals("request-1", executedCall?.requestId)
+        assertEquals(1L, executedCall?.runGeneration)
+        assertEquals(2, fixture.transport.requests.size)
+        val continuation = fixture.transport.requests[1].body.toString(StandardCharsets.UTF_8)
+        assertTrue(continuation.contains("\"name\":\"calculator\""))
+        assertTrue(continuation.contains("\\\"result\\\":\\\"42\\\""))
+
+        fixture.transport.open(1)
+        fixture.transport.bytes(
+            1,
+            nativeToolDelta(
+                "{\"description\":\"完成\",\"patch\":${fixture.patch("42")}}",
+                callId = "call-final",
+            ),
+        )
+        fixture.transport.bytes(
+            1,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+        assertTrue(handle.isTerminal)
+        assertEquals("42", fixture.events.filterIsInstance<AiEvent.FinalPatch>().single()
+            .patch.operation.text)
+        assertEquals(2, traces.filterIsInstance<BrainTraceEvent.ProviderInput>().size)
+        assertEquals(2, traces.filterIsInstance<BrainTraceEvent.ProviderCompleted>().size)
+        assertTrue(
+            traces.filterIsInstance<BrainTraceEvent.ProviderOutput>()
+                .flatMap { it.bytes.asIterable() }
+                .isNotEmpty(),
+        )
+        assertEquals(
+            listOf("calculator", "sense_submit_patch"),
+            traces.filterIsInstance<BrainTraceEvent.ToolCall>().map { it.toolName },
+        )
+        assertEquals(
+            listOf(false, false),
+            traces.filterIsInstance<BrainTraceEvent.ToolResult>().map { it.isError },
+        )
+    }
+
+    @Test
+    fun `provider completion trace failure terminates before a patch can be accepted`() {
+        val fixture = Fixture(
+            deepSeekNative = true,
+            traceSink = BrainTraceSink { trace ->
+                if (trace is BrainTraceEvent.ProviderCompleted) {
+                    error("durable trace failed")
+                }
+            },
+        )
+        val handle = fixture.start()
+
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            nativeToolDelta(
+                "{\"description\":\"完成\",\"patch\":${fixture.patch("must-not-commit")}}",
+            ),
+        )
+        fixture.transport.bytes(
+            0,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+
+        assertTrue(handle.isTerminal)
+        assertTrue(fixture.events.none { it is AiEvent.FinalPatch })
+        assertEquals(
+            HarnessErrorCode.INTERNAL_FAILURE,
+            fixture.events.filterIsInstance<AiEvent.Failed>().single().code,
+        )
+    }
+
+    @Test
+    fun `guessing a disabled Agent tool never reaches its executor`() {
+        var executions = 0
+        val fixture = Fixture(
+            deepSeekNative = true,
+            toolExecutor = AgentToolExecutor {
+                executions += 1
+                AgentToolExecutionResult("{}")
+            },
+        )
+        fixture.start()
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            agentToolDelta("web_search", "{\"query\":\"must not run\"}"),
+        )
+        fixture.transport.bytes(
+            0,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+
+        assertEquals(0, executions)
+        assertEquals(2, fixture.transport.requests.size)
+        assertTrue(
+            fixture.events.filterIsInstance<AiEvent.Status>()
+                .any { it.label == "provider_repairing" },
+        )
+    }
+
     @Test
     fun `valid fragmented stream emits human preview then validated patch`() {
         val fixture = Fixture()
@@ -721,6 +857,9 @@ class AiBrainEngineTest {
 
     private class Fixture(
         deepSeekNative: Boolean = false,
+        private val enabledTools: Set<AgentToolId> = emptySet(),
+        private val toolExecutor: AgentToolExecutor = AgentToolExecutor.UNAVAILABLE,
+        private val traceSink: BrainTraceSink = BrainTraceSink.NONE,
     ) {
         val clock = MutableClock()
         val transport = FakeTransport()
@@ -748,8 +887,14 @@ class AiBrainEngineTest {
 
         fun start(
             requestMode: BrainRequestMode = BrainRequestMode.NORMAL,
-        ) = AiBrainEngine(transport, clock).start(
-            BrainRunSpec(request, profile, ProviderCredential.None),
+        ) = AiBrainEngine(transport, clock, toolExecutor).start(
+            BrainRunSpec(
+                request,
+                profile,
+                ProviderCredential.None,
+                enabledTools = enabledTools,
+                traceSink = traceSink,
+            ),
             { events += it },
             requestMode,
         )
@@ -850,6 +995,15 @@ class AiBrainEngineTest {
                 "\"id\":\"$callId\",\"type\":\"function\",\"function\":{" +
                 "\"name\":\"sense_report_progress\",\"arguments\":" +
                 "${jsonString(arguments)}}}]}}]}\n\n"
+
+        private fun agentToolDelta(
+            toolName: String,
+            arguments: String,
+            callId: String = "call-agent-tool",
+        ): String =
+            "data: {\"choices\":[{\"delta\":{\"tool_calls\":[{\"index\":0," +
+                "\"id\":\"$callId\",\"type\":\"function\",\"function\":{" +
+                "\"name\":\"$toolName\",\"arguments\":${jsonString(arguments)}}}]}}]}\n\n"
 
         private fun jsonString(value: String): String =
             JsonWriter().string(value).toString()

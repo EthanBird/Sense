@@ -14,6 +14,24 @@ Certification、Root Bootstrap 与 Memory runtime operational gates 均未通过
 
 ---
 
+## 0A. v0.4.4 产品 Profile 补充决策
+
+2026-07-27 接受的
+[`ADR 0019`](../adr/0019-v0.4.4-open-agent-tools-and-complete-history.md)
+改变了本文原先的默认产品落地方式，但不改变“原始保留、事件优先、派生可重建”的架构
+内核：
+
+- Agent 请求、Provider 输出、Tool 过程、Patch 和各类终态默认完整追加保留；
+- `SCHEMA_ONLY` 继续作为研究/高保障部署 profile，不再阻止默认产品 profile 写入历史；
+- Android 系统已经授予的网络、应用私有存储及用户选择目录权限可直接被 Tool 使用，
+  不要求重复授权；
+- 用户只在 Sense 设置页决定某项 Tool 是否可供 Agent 调用，关闭 Tool 不关闭历史写入；
+- v0.4.4 先交付 `web_search`、`web_fetch`、`calculator`、`memory_search`，再沿同一 ABI
+  扩展用户授权目录的文件工具和声明式 Skills。
+
+本文后续关于证据、可重放、来源、修订、因果关系和完整性回执的长期设计继续有效；与
+“默认不保留”或“产品外 Gate 阻止 Android 已授权能力”冲突的段落，以 ADR 0019 为准。
+
 ## 0. 结论先行
 
 > **Gate 0 解释边界：** 本文的 Event 模型从 M9.1 phase gate 才成立；M9.0 只写

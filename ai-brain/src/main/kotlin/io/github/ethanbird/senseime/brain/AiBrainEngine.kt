@@ -17,6 +17,11 @@ import io.github.ethanbird.senseime.ai.protocol.SenseAiProtocol
 import io.github.ethanbird.senseime.brain.api.BrainEventSink
 import io.github.ethanbird.senseime.brain.api.BrainRunHandle
 import io.github.ethanbird.senseime.brain.api.BrainRunSpec
+import io.github.ethanbird.senseime.brain.api.BrainTraceEvent
+import io.github.ethanbird.senseime.brain.api.AgentToolCall
+import io.github.ethanbird.senseime.brain.api.AgentToolExecutionResult
+import io.github.ethanbird.senseime.brain.api.AgentToolExecutor
+import io.github.ethanbird.senseime.brain.api.AgentToolId
 import io.github.ethanbird.senseime.brain.api.CompletedProviderCall
 import io.github.ethanbird.senseime.brain.api.MonotonicClock
 import io.github.ethanbird.senseime.brain.api.ProviderCall
@@ -26,6 +31,7 @@ import io.github.ethanbird.senseime.brain.api.ProviderResponseMetadata
 import io.github.ethanbird.senseime.brain.api.ProviderStreamSink
 import io.github.ethanbird.senseime.brain.api.ProviderTransport
 import io.github.ethanbird.senseime.brain.api.ProviderTransportFailure
+import java.nio.charset.StandardCharsets
 
 /**
  * Provider-neutral M8 editor harness.
@@ -37,6 +43,7 @@ import io.github.ethanbird.senseime.brain.api.ProviderTransportFailure
 class AiBrainEngine(
     private val transport: ProviderTransport,
     private val clock: MonotonicClock = MonotonicClock.SYSTEM,
+    private val toolExecutor: AgentToolExecutor = AgentToolExecutor.UNAVAILABLE,
 ) {
     fun start(
         spec: BrainRunSpec,
@@ -77,6 +84,9 @@ class AiBrainEngine(
         private var draftingProgressEmitted = false
         private var agentProgressRevision = 0L
         private var agentProgressTurns = 0
+        private var agentToolTurns = 0
+        private var toolExecutionCounter = 0L
+        private var activeToolExecutionToken = -1L
         private var agentConversation = AgentConversationContext(emptyList())
         private val runStartedAtMs = clock.nowMs()
         private var lastHeartbeatAtMs = runStartedAtMs
@@ -184,8 +194,23 @@ class AiBrainEngine(
                     secondAttempt = secondAttempt,
                     agentConversation = continuation?.takeIf { it.exchanges.isNotEmpty() },
                     requestMode = requestMode,
+                    enabledTools = spec.enabledTools,
                 )
             } catch (_: Exception) {
+                failLocally(HarnessErrorCode.INTERNAL_FAILURE, retryable = false)
+                return
+            }
+            if (
+                !recordTrace(
+                    BrainTraceEvent.ProviderInput(
+                        requestId = requestId,
+                        runGeneration = runGeneration,
+                        attempt = attempt,
+                        endpoint = wireRequest.url,
+                        body = String(wireRequest.body, StandardCharsets.UTF_8),
+                    ),
+                )
+            ) {
                 failLocally(HarnessErrorCode.INTERNAL_FAILURE, retryable = false)
                 return
             }
@@ -264,6 +289,20 @@ class AiBrainEngine(
             attempt: Int,
             metadata: ProviderResponseMetadata,
         ) {
+            if (
+                !recordTrace(
+                    BrainTraceEvent.ProviderOpened(
+                        requestId = requestId,
+                        runGeneration = runGeneration,
+                        attempt = attempt,
+                        statusCode = metadata.statusCode,
+                        contentType = metadata.contentType,
+                    ),
+                )
+            ) {
+                failLocally(HarnessErrorCode.INTERNAL_FAILURE, retryable = false)
+                return
+            }
             val outcome = synchronized(lock) {
                 if (!isActive(token, attempt)) return
                 if (metadata.statusCode !in 200..299) {
@@ -335,6 +374,20 @@ class AiBrainEngine(
             offset: Int,
             length: Int,
         ) {
+            if (
+                length > 0 &&
+                !recordTrace(
+                    BrainTraceEvent.ProviderOutput(
+                        requestId = requestId,
+                        runGeneration = runGeneration,
+                        attempt = attempt,
+                        bytes = bytes.copyOfRange(offset, offset + length),
+                    ),
+                )
+            ) {
+                failLocally(HarnessErrorCode.INTERNAL_FAILURE, retryable = false)
+                return
+            }
             val outcome = synchronized(lock) {
                 if (!isActive(token, attempt)) return
                 if (length > 0) {
@@ -391,6 +444,21 @@ class AiBrainEngine(
             attempt: Int,
             failure: ProviderTransportFailure,
         ) {
+            if (
+                !recordTrace(
+                    BrainTraceEvent.ProviderFailed(
+                        requestId = requestId,
+                        runGeneration = runGeneration,
+                        attempt = attempt,
+                        kind = failure.kind,
+                        statusCode = failure.statusCode,
+                        message = failure.message,
+                    ),
+                )
+            ) {
+                failLocally(HarnessErrorCode.INTERNAL_FAILURE, retryable = false)
+                return
+            }
             val outcome = synchronized(lock) {
                 if (!isActive(token, attempt)) return
                 val classified = when (failure.kind) {
@@ -570,6 +638,21 @@ class AiBrainEngine(
                         }
                     }
                     is ProviderContentEvent.Completed -> {
+                        if (
+                            !recordTrace(
+                                BrainTraceEvent.ProviderCompleted(
+                                    requestId = requestId,
+                                    runGeneration = runGeneration,
+                                    attempt = attempt,
+                                ),
+                            )
+                        ) {
+                            return failOutcome(
+                                HarnessErrorCode.INTERNAL_FAILURE,
+                                retryable = false,
+                                prior = dispatches,
+                            )
+                        }
                         if (!usesNativePatchTool &&
                             preview!!.fullDocument().isEmpty() &&
                             !event.finalText.isNullOrEmpty()
@@ -599,6 +682,13 @@ class AiBrainEngine(
             ) {
                 return continueAfterProgressTool(attempt, prior)
             }
+            if (
+                usesNativePatchTool &&
+                nativeToolError == null &&
+                AgentToolId.fromWireValue(nativeToolName.orEmpty()) != null
+            ) {
+                return executeEnabledAgentTool(attempt, prior)
+            }
 
             val nativeFailure = nativeToolError
             val document = if (usesNativePatchTool && nativeFailure == null) {
@@ -616,12 +706,40 @@ class AiBrainEngine(
                         validationSummary = "terminal sense_submit_patch tool call is missing",
                     )
                 }
+                val terminalCallId = nativeToolId.orEmpty()
+                if (
+                    !recordToolCall(
+                        callId = terminalCallId,
+                        toolName = OpenAiRequestFactory.NATIVE_PATCH_TOOL_NAME,
+                        arguments = nativeToolArguments.toString(),
+                    )
+                ) {
+                    return failOutcome(
+                        HarnessErrorCode.INTERNAL_FAILURE,
+                        retryable = false,
+                        prior = prior,
+                    )
+                }
                 try {
                     val patchDocument = nativeTool?.finish()?.patchDocument
                         ?: throw ProviderPayloadException("native patch tool is incomplete")
                     completeNativeToolProgress(prior, succeeded = true)
                     patchDocument
                 } catch (error: ProviderPayloadException) {
+                    if (
+                        !recordToolResult(
+                            callId = terminalCallId,
+                            toolName = OpenAiRequestFactory.NATIVE_PATCH_TOOL_NAME,
+                            content = error.message ?: "invalid native tool arguments",
+                            isError = true,
+                        )
+                    ) {
+                        return failOutcome(
+                            HarnessErrorCode.INTERNAL_FAILURE,
+                            retryable = false,
+                            prior = prior,
+                        )
+                    }
                     completeNativeToolProgress(prior, succeeded = false)
                     return repairOrFail(
                         attempt = attempt,
@@ -672,6 +790,21 @@ class AiBrainEngine(
                         decoded.patch.operation.type == PatchOperationType.NO_CHANGE ||
                             decoded.patch.intent == spec.harnessRequest.skill
                     if (validation.isValid && intentMatches) {
+                        if (
+                            usesNativePatchTool &&
+                            !recordToolResult(
+                                callId = nativeToolId.orEmpty(),
+                                toolName = OpenAiRequestFactory.NATIVE_PATCH_TOOL_NAME,
+                                content = "{\"accepted\":true}",
+                                isError = false,
+                            )
+                        ) {
+                            return failOutcome(
+                                HarnessErrorCode.INTERNAL_FAILURE,
+                                retryable = false,
+                                prior = prior,
+                            )
+                        }
                         prior += emitAgentProgress(
                             kind = AgentProgressKind.VALIDATION,
                             state = AgentProgressState.COMPLETED,
@@ -702,6 +835,22 @@ class AiBrainEngine(
                 }
             }
 
+            if (
+                usesNativePatchTool &&
+                nativeToolName == OpenAiRequestFactory.NATIVE_PATCH_TOOL_NAME &&
+                !recordToolResult(
+                    callId = nativeToolId.orEmpty(),
+                    toolName = OpenAiRequestFactory.NATIVE_PATCH_TOOL_NAME,
+                    content = validationSummary,
+                    isError = true,
+                )
+            ) {
+                return failOutcome(
+                    HarnessErrorCode.INTERNAL_FAILURE,
+                    retryable = false,
+                    prior = prior,
+                )
+            }
             return repairOrFail(
                 attempt = attempt,
                 prior = prior,
@@ -880,6 +1029,28 @@ class AiBrainEngine(
                 )
             }
 
+            val toolResult =
+                "{\"accepted\":true,\"instruction\":\"Continue the task and submit the " +
+                    "final patch with sense_submit_patch.\"}"
+            if (
+                !recordToolCall(
+                    callId = callId,
+                    toolName = toolName,
+                    arguments = nativeToolArguments.toString(),
+                ) ||
+                !recordToolResult(
+                    callId = callId,
+                    toolName = toolName,
+                    content = toolResult,
+                    isError = false,
+                )
+            ) {
+                return failOutcome(
+                    HarnessErrorCode.INTERNAL_FAILURE,
+                    retryable = false,
+                    prior = prior,
+                )
+            }
             completeNativeToolProgress(prior, succeeded = true)
             agentProgressTurns += 1
             prior += emitAgentProgress(
@@ -894,13 +1065,13 @@ class AiBrainEngine(
                 toolCallId = callId,
                 toolName = toolName,
                 toolArguments = nativeToolArguments.toString(),
-                toolResult =
-                    "{\"accepted\":true,\"instruction\":\"Continue the task and submit the " +
-                        "final patch with sense_submit_patch.\"}",
+                toolResult = toolResult,
             )
             val continuation = AgentConversationContext(
                 exchanges = agentConversation.exchanges + exchange,
-                forceTerminalTool = agentProgressTurns >= MAX_AGENT_PROGRESS_TURNS,
+                forceTerminalTool =
+                    agentProgressTurns >= MAX_AGENT_PROGRESS_TURNS ||
+                        agentToolTurns >= AgentToolRouter.MAX_TOOL_TURNS,
             )
             agentConversation = continuation
             heartbeatTitle = "Agent 正在继续处理"
@@ -910,6 +1081,149 @@ class AiBrainEngine(
                 cancelCall = oldCall,
                 continuation = continuation,
             )
+        }
+
+        private fun executeEnabledAgentTool(
+            attempt: Int,
+            prior: MutableList<HarnessDispatch>,
+        ): Outcome {
+            if (attempt != 0 || agentToolTurns >= AgentToolRouter.MAX_TOOL_TURNS) {
+                completeNativeToolProgress(prior, succeeded = false)
+                return repairOrFail(
+                    attempt = attempt,
+                    prior = prior,
+                    rejectedDocument = nativeToolArguments.toString(),
+                    validationSummary = "Agent tool turn is not allowed",
+                )
+            }
+            val callId = nativeToolId
+                ?: return repairOrFail(
+                    attempt,
+                    prior,
+                    nativeToolArguments.toString(),
+                    "Agent tool call identity is incomplete",
+                )
+            val toolName = nativeToolName.orEmpty()
+            val call = try {
+                AgentToolRouter.decode(
+                    callId = callId,
+                    toolName = toolName,
+                    argumentsDocument = nativeToolArguments.toString(),
+                    enabledTools = spec.enabledTools,
+                    requestId = requestId,
+                    runGeneration = runGeneration,
+                )
+            } catch (error: ProviderPayloadException) {
+                completeNativeToolProgress(prior, succeeded = false)
+                return repairOrFail(
+                    attempt,
+                    prior,
+                    nativeToolArguments.toString(),
+                    error.message ?: "invalid Agent tool call",
+                )
+            }
+            if (
+                !recordToolCall(
+                    callId = call.callId,
+                    toolName = toolName,
+                    arguments = nativeToolArguments.toString(),
+                )
+            ) {
+                return failOutcome(
+                    HarnessErrorCode.INTERNAL_FAILURE,
+                    retryable = false,
+                    prior = prior,
+                )
+            }
+            val pending = PendingToolExecution(
+                token = Math.addExact(toolExecutionCounter, 1L),
+                call = call,
+                toolName = toolName,
+                toolArguments = nativeToolArguments.toString(),
+                assistantReasoning = privateReasoning.toString(),
+                assistantContent = assistantContent.toString(),
+                stepId = currentToolStepId(),
+            )
+            toolExecutionCounter = pending.token
+            val oldCall = invalidateActive()
+            activeToolExecutionToken = pending.token
+            heartbeatTitle = "正在执行 ${call.tool.wireValue}"
+            return Outcome(
+                dispatches = prior,
+                cancelCall = oldCall,
+                toolExecution = pending,
+            )
+        }
+
+        private fun executeTool(pending: PendingToolExecution) {
+            val raw = runCatching { toolExecutor.execute(pending.call) }
+                .getOrElse {
+                    AgentToolExecutionResult(
+                        content = "{\"ok\":false,\"error\":\"tool execution failed\"}",
+                        isError = true,
+                    )
+                }
+            val result = if (raw.content.length <= AgentToolRouter.MAX_TOOL_RESULT_CHARS) {
+                raw
+            } else {
+                AgentToolExecutionResult(
+                    content =
+                        "{\"ok\":false,\"error\":\"tool result exceeded the bounded limit\"}",
+                    isError = true,
+                )
+            }
+            if (
+                !recordToolResult(
+                    callId = pending.call.callId,
+                    toolName = pending.toolName,
+                    content = result.content,
+                    isError = result.isError,
+                )
+            ) {
+                failLocally(HarnessErrorCode.INTERNAL_FAILURE, retryable = false)
+                return
+            }
+            val outcome = synchronized(lock) {
+                if (
+                    session.state.isTerminal ||
+                    activeToolExecutionToken != pending.token
+                ) {
+                    return@synchronized null
+                }
+                activeToolExecutionToken = -1L
+                val dispatches = mutableListOf<HarnessDispatch>()
+                dispatches += emitAgentProgress(
+                    kind = AgentProgressKind.TOOL,
+                    state = if (result.isError) {
+                        AgentProgressState.FAILED
+                    } else {
+                        AgentProgressState.COMPLETED
+                    },
+                    stepId = pending.stepId,
+                    title = if (result.isError) "工具返回错误，Agent 正在调整" else "工具调用已完成",
+                    toolCallId = pending.call.callId,
+                    toolName = pending.toolName,
+                )
+                agentToolTurns += 1
+                val exchange = AgentToolExchange(
+                    assistantReasoning = pending.assistantReasoning,
+                    assistantContent = pending.assistantContent,
+                    toolCallId = pending.call.callId,
+                    toolName = pending.toolName,
+                    toolArguments = pending.toolArguments,
+                    toolResult = result.content,
+                )
+                val continuation = AgentConversationContext(
+                    exchanges = agentConversation.exchanges + exchange,
+                    forceTerminalTool =
+                        agentProgressTurns >= MAX_AGENT_PROGRESS_TURNS ||
+                            agentToolTurns >= AgentToolRouter.MAX_TOOL_TURNS,
+                )
+                agentConversation = continuation
+                heartbeatTitle = "Agent 正在根据工具结果继续处理"
+                Outcome(dispatches = dispatches, continuation = continuation)
+            }
+            outcome?.let(::dispatchOutcome)
         }
 
         private fun completeNativeToolProgress(
@@ -939,7 +1253,7 @@ class AiBrainEngine(
             nativeToolProgressStarted = false
         }
 
-        private fun currentToolStepId(): String = "tool-${agentProgressTurns + 1}"
+        private fun currentToolStepId(): String = "tool-${agentConversation.exchanges.size + 1}"
 
         /**
          * Starts the only second provider call while preserving the original harness authority.
@@ -1149,6 +1463,41 @@ class AiBrainEngine(
             return true
         }
 
+        private fun recordToolCall(
+            callId: String,
+            toolName: String,
+            arguments: String,
+        ): Boolean = recordTrace(
+            BrainTraceEvent.ToolCall(
+                requestId = requestId,
+                runGeneration = runGeneration,
+                callId = callId,
+                toolName = toolName,
+                arguments = arguments,
+                privateReasoning = privateReasoning.toString(),
+                assistantContent = assistantContent.toString(),
+            ),
+        )
+
+        private fun recordToolResult(
+            callId: String,
+            toolName: String,
+            content: String,
+            isError: Boolean,
+        ): Boolean = recordTrace(
+            BrainTraceEvent.ToolResult(
+                requestId = requestId,
+                runGeneration = runGeneration,
+                callId = callId,
+                toolName = toolName,
+                content = content,
+                isError = isError,
+            ),
+        )
+
+        private fun recordTrace(event: BrainTraceEvent): Boolean =
+            runCatching { spec.traceSink.onTrace(event) }.isSuccess
+
         private fun dispatchOutcome(outcome: Outcome) {
             outcome.cancelCall?.cancel()
             publish(outcome.dispatches)
@@ -1158,12 +1507,14 @@ class AiBrainEngine(
             outcome.continuation?.let {
                 openAttempt(attempt = 0, secondAttempt = null, continuation = it)
             }
+            outcome.toolExecution?.let(::executeTool)
         }
 
         /**
          * Must be called under [lock]. The token is invalidated before the transport is cancelled.
          */
         private fun invalidateActive(): ProviderCall? {
+            activeToolExecutionToken = -1L
             activeToken = -1L
             activeAttempt = -1
             decoder = null
@@ -1206,6 +1557,17 @@ class AiBrainEngine(
         val cancelCall: ProviderCall? = null,
         val secondAttempt: SecondAttemptContext? = null,
         val continuation: AgentConversationContext? = null,
+        val toolExecution: PendingToolExecution? = null,
+    )
+
+    private data class PendingToolExecution(
+        val token: Long,
+        val call: AgentToolCall,
+        val toolName: String,
+        val toolArguments: String,
+        val assistantReasoning: String,
+        val assistantContent: String,
+        val stepId: String,
     )
 
     private companion object {

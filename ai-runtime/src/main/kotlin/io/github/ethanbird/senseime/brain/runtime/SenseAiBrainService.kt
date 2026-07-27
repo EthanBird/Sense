@@ -13,9 +13,14 @@ import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
 import io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode
 import io.github.ethanbird.senseime.brain.AiBrainEngine
 import io.github.ethanbird.senseime.brain.BrainRequestMode
-import io.github.ethanbird.senseime.brain.api.BrainRunHandle
+import io.github.ethanbird.senseime.brain.api.BrainTraceEvent
 import io.github.ethanbird.senseime.brain.api.BrainRunSpec
 import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
+import io.github.ethanbird.senseime.brain.memory.AgentEventJournal
+import io.github.ethanbird.senseime.brain.memory.AgentMemorySearchAccess
+import io.github.ethanbird.senseime.brain.memory.AgentMemorySearchBounds
+import java.io.File
+import java.nio.charset.StandardCharsets
 
 /**
  * Non-exported process host for Provider networking and model response parsing.
@@ -30,6 +35,9 @@ class SenseAiBrainService : Service() {
     private lateinit var transport: HttpUrlConnectionProviderTransport
     private lateinit var engine: AiBrainEngine
     private lateinit var settings: ProviderSettingsStore
+    private lateinit var toolSettings: AgentToolSettingsStore
+    private var journal: AgentEventJournal? = null
+    private var journalOpenFailure: Throwable? = null
     private var active: ActiveRun? = null
     private val outboundDeliveries =
         BrainIpcSerialDeliveryQueue<OutboundDelivery>()
@@ -43,8 +51,35 @@ class SenseAiBrainService : Service() {
     override fun onCreate() {
         super.onCreate()
         transport = HttpUrlConnectionProviderTransport()
-        engine = AiBrainEngine(transport)
         settings = ProviderSettingsStore(this)
+        toolSettings = AgentToolSettingsStore(this)
+        runCatching {
+            AgentEventJournal.open(File(filesDir, AGENT_HISTORY_DIRECTORY))
+        }.onSuccess {
+            journal = it
+        }.onFailure {
+            journalOpenFailure = it
+        }
+        val memorySource = AgentMemorySearchSource { query, maxResults, excludeId, excludeGeneration ->
+            val source = journal ?: return@AgentMemorySearchSource emptyList()
+            source.search(
+                query = query,
+                access = AgentMemorySearchAccess.ENABLED,
+                bounds = AgentMemorySearchBounds(maxResults = maxResults),
+                excludeRequestId = excludeId,
+                excludeRunGeneration = excludeGeneration,
+            ).hits.map { hit ->
+                AgentMemorySearchHit(
+                    id = hit.sequence.toString(),
+                    text = hit.excerpt,
+                    source = "${hit.kind.name}:${hit.requestId}",
+                )
+            }
+        }
+        engine = AiBrainEngine(
+            transport = transport,
+            toolExecutor = DefaultAgentToolExecutor(memorySource),
+        )
     }
 
     override fun onBind(intent: Intent?): IBinder = messenger.binder
@@ -61,8 +96,11 @@ class SenseAiBrainService : Service() {
         }
         mainHandler.removeCallbacks(deliverOutboundEvents)
         outboundDeliveries.clear()
-        previous?.handle?.cancel(HarnessCancelReason.BRAIN_DIED)
+        previous?.retentionGate?.currentHandle()?.cancel(HarnessCancelReason.BRAIN_DIED)
         transport.close()
+        runCatching { journal?.flush() }
+        runCatching { journal?.close() }
+        journal = null
         super.onDestroy()
     }
 
@@ -75,7 +113,7 @@ class SenseAiBrainService : Service() {
         // Cancellation emits the previous terminal event synchronously. Keep its ActiveRun
         // installed until that callback is captured for its original Messenger; replacing it
         // first would make emit() drop the cancellation as stale and strand the old client's UI.
-        previous?.handle?.cancel(HarnessCancelReason.CALLER_REQUESTED)
+        previous?.retentionGate?.currentHandle()?.cancel(HarnessCancelReason.CALLER_REQUESTED)
         val current = ActiveRun(identity = identity, reply = reply)
         synchronized(activeLock) {
             // A previous run with no installed handle cannot emit its own
@@ -88,6 +126,35 @@ class SenseAiBrainService : Service() {
             }
             active = current
         }
+
+        val activeJournal = journal
+        if (activeJournal == null || journalOpenFailure != null) {
+            emit(
+                current,
+                AiEvent.Failed(
+                    request.requestId,
+                    request.runGeneration,
+                    HarnessErrorCode.INTERNAL_FAILURE,
+                    retryable = false,
+                ),
+            )
+            return
+        }
+        val recorder = runCatching {
+            AgentRunRecorder.begin(activeJournal, request)
+        }.getOrElse {
+            emit(
+                current,
+                AiEvent.Failed(
+                    request.requestId,
+                    request.runGeneration,
+                    HarnessErrorCode.INTERNAL_FAILURE,
+                    retryable = false,
+                ),
+            )
+            return
+        }
+        current.recorder = recorder
 
         val configResult = settings.load()
         if (configResult.isFailure) {
@@ -128,6 +195,19 @@ class SenseAiBrainService : Service() {
             return
         }
 
+        val enabledTools = toolSettings.load().getOrElse {
+            emit(
+                current,
+                AiEvent.Failed(
+                    request.requestId,
+                    request.runGeneration,
+                    HarnessErrorCode.INTERNAL_FAILURE,
+                    retryable = false,
+                ),
+            )
+            return
+        }.enabledToolIds()
+
         val handle = runCatching {
             val requestMode = if (ProviderConnectionTestProtocol.isProbe(request)) {
                 BrainRequestMode.CONNECTIVITY_TEST
@@ -139,6 +219,8 @@ class SenseAiBrainService : Service() {
                     harnessRequest = request,
                     provider = config.profile,
                     credential = config.credential,
+                    enabledTools = enabledTools,
+                    traceSink = { trace -> recordTrace(current, trace) },
                 ),
                 sink = { event -> emit(current, event) },
                 requestMode = requestMode,
@@ -155,12 +237,7 @@ class SenseAiBrainService : Service() {
             return
         }
         val keep = synchronized(activeLock) {
-            if (active === current) {
-                current.handle = handle
-                true
-            } else {
-                false
-            }
+            active === current && current.retentionGate.install(handle)
         }
         if (keep && !handle.isTerminal) {
             scheduleTicker(current)
@@ -182,11 +259,19 @@ class SenseAiBrainService : Service() {
                 it.ipcEvents.clear()
             }
         } ?: return
-        current.handle?.cancel(reason)
+        current.retentionGate.currentHandle()?.cancel(reason)
     }
 
     private fun emit(expectedRun: ActiveRun, event: AiEvent) {
         if ((event.requestId to event.runGeneration) != expectedRun.identity) return
+        val retained = expectedRun.recorder?.let { recorder ->
+            runCatching { recorder.record(event) }.isSuccess
+        } ?: false
+        if (!retained) {
+            expectedRun.retentionGate.markFailed()?.let { handle ->
+                mainHandler.post { handle.cancel(HarnessCancelReason.BRAIN_DIED) }
+            }
+        }
         val terminal =
             event is AiEvent.FinalPatch ||
             event is AiEvent.Cancelled ||
@@ -228,6 +313,82 @@ class SenseAiBrainService : Service() {
         scheduleOutboundDrain(scheduleDrain)
     }
 
+    private fun recordTrace(expectedRun: ActiveRun, trace: BrainTraceEvent) {
+        require((trace.requestId to trace.runGeneration) == expectedRun.identity)
+        val recorder = checkNotNull(expectedRun.recorder) {
+            "Agent trace arrived before its complete-history recorder"
+        }
+        when (trace) {
+            is BrainTraceEvent.ProviderInput -> recorder.recordProviderInput(
+                rawBytes = trace.body.toByteArray(StandardCharsets.UTF_8),
+                attributes = mapOf(
+                    "attempt" to trace.attempt.toString(),
+                    "endpoint" to trace.endpoint,
+                ),
+            )
+            is BrainTraceEvent.ProviderOutput -> recorder.recordProviderOutput(
+                rawBytes = trace.bytes,
+                contentType = "application/octet-stream",
+                attributes = mapOf("attempt" to trace.attempt.toString()),
+            )
+            is BrainTraceEvent.ProviderOpened -> recorder.recordPrivateEvent(
+                eventType = "provider_opened",
+                rawBytes = buildString {
+                    append("attempt=").append(trace.attempt)
+                    append('\n').append("status_code=").append(trace.statusCode)
+                    append('\n').append("content_type=").append(trace.contentType.orEmpty())
+                }.toByteArray(StandardCharsets.UTF_8),
+                attributes = mapOf("attempt" to trace.attempt.toString()),
+            )
+            is BrainTraceEvent.ProviderCompleted -> {
+                recorder.recordPrivateEvent(
+                    eventType = "provider_completed",
+                    rawBytes = "attempt=${trace.attempt}".toByteArray(StandardCharsets.UTF_8),
+                    attributes = mapOf("attempt" to trace.attempt.toString()),
+                )
+                recorder.flush()
+            }
+            is BrainTraceEvent.ProviderFailed -> {
+                recorder.recordPrivateEvent(
+                    eventType = "provider_failed",
+                    rawBytes = buildString {
+                        append("attempt=").append(trace.attempt)
+                        append('\n').append("kind=").append(trace.kind.name)
+                        append('\n').append("status_code=").append(trace.statusCode)
+                        append('\n').append("message=").append(trace.message)
+                    }.toByteArray(StandardCharsets.UTF_8),
+                    attributes = mapOf("attempt" to trace.attempt.toString()),
+                )
+                recorder.flush()
+            }
+            is BrainTraceEvent.ToolCall -> {
+                recorder.recordPrivateEvent(
+                    eventType = "tool_assistant_context",
+                    rawBytes = buildString {
+                        append(trace.privateReasoning)
+                        append("\n--- assistant content ---\n")
+                        append(trace.assistantContent)
+                    }.toByteArray(StandardCharsets.UTF_8),
+                    attributes = mapOf(
+                        "tool_call_id" to trace.callId,
+                        "tool_name" to trace.toolName,
+                    ),
+                )
+                recorder.recordToolCall(
+                    toolCallId = trace.callId,
+                    toolName = trace.toolName,
+                    arguments = trace.arguments,
+                )
+            }
+            is BrainTraceEvent.ToolResult -> recorder.recordToolResult(
+                toolCallId = trace.callId,
+                toolName = trace.toolName,
+                result = trace.content,
+                isError = trace.isError,
+            )
+        }
+    }
+
     /**
      * Runs only on [mainHandler]. Every provider thread first enters the
      * serial delivery queue, so a terminal event can never overtake a frame
@@ -260,7 +421,7 @@ class SenseAiBrainService : Service() {
             }
             outboundDeliveries.removeAll { it.run === current }
             current.ipcEvents.clear()
-            current.handle?.cancel(HarnessCancelReason.BRAIN_DIED)
+            current.retentionGate.currentHandle()?.cancel(HarnessCancelReason.BRAIN_DIED)
         }
     }
 
@@ -282,13 +443,13 @@ class SenseAiBrainService : Service() {
                 ) {
                     return@Runnable
                 }
-                current.handle
+                current.retentionGate.currentHandle()
             }
             handle?.tick()
             val reschedule = synchronized(activeLock) {
                 active === current &&
                     current.ticker.owns(callback) &&
-                    current.handle?.isTerminal != true
+                    current.retentionGate.currentHandle()?.isTerminal != true
             }
             if (reschedule) {
                 mainHandler.postDelayed(callback, TICK_INTERVAL_MS)
@@ -389,7 +550,8 @@ class SenseAiBrainService : Service() {
     private class ActiveRun(
         val identity: Pair<String, Long>,
         val reply: Messenger,
-        var handle: BrainRunHandle? = null,
+        var recorder: AgentRunRecorder? = null,
+        val retentionGate: BrainRetentionFailureGate = BrainRetentionFailureGate(),
         val ticker: BrainRunTickerSlot = BrainRunTickerSlot(),
         val ipcEvents: BrainIpcEventBatcher = BrainIpcEventBatcher(),
         var ipcFlushScheduled: Boolean = false,
@@ -403,6 +565,7 @@ class SenseAiBrainService : Service() {
     )
 
     companion object {
+        private const val AGENT_HISTORY_DIRECTORY = "agent-history"
         private const val TICK_INTERVAL_MS = 100L
         private const val IPC_FRAME_INTERVAL_MS = 16L
     }
