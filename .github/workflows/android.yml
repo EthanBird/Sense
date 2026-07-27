@@ -44,6 +44,8 @@ jobs:
         run: |
           python3 tools/test_check_gate0_contract.py
           python3 tools/check_gate0_contract.py --check
+          python3 tools/test_check_x02_boundaries.py
+          python3 tools/check_x02_boundaries.py
 
       - name: Verify M4 regressions and M5 mixed assets
         run: |
@@ -91,6 +93,8 @@ jobs:
           :brain-api:test
           :ai-brain:test
           :ai-runtime:testDebugUnitTest
+          :memory-protocol:test
+          :event-journal:test
           :core-input:test
           :ime-service:testDebugUnitTest
           :ime-ui:testDebugUnitTest
@@ -401,9 +405,52 @@ jobs:
             benchmarks/results/m6-input-polish.json
           if-no-files-found: error
 
+  package_x02:
+    name: Build isolated X-02 artifacts
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Verify frozen X-02 source and build authority
+        run: python3 tools/check_x02_boundaries.py
+
+      - name: Build X-02 artifacts without repository tests
+        env:
+          GRADLE_USER_HOME: ${{ runner.temp }}/sense-x02-gradle-home
+        run: >-
+          ./gradlew
+          --no-build-cache
+          --no-configuration-cache
+          :memory-protocol:jar
+          :event-journal:jar
+          :app:assembleDebug
+          :app:assembleBenchmark
+
+      - name: Verify isolated X-02 packaged boundaries
+        run: python3 tools/check_x02_boundaries.py --check-artifacts
+
+      - name: Upload isolated app APKs
+        uses: actions/upload-artifact@v7
+        with:
+          name: sense-v0.4.2-clean-apks
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/benchmark/*.apk
+          if-no-files-found: error
+
   release_plan:
     name: Plan version-aware release
-    needs: verify
+    needs: [verify, package_x02]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
@@ -453,7 +500,7 @@ jobs:
             --step-summary "$GITHUB_STEP_SUMMARY"
 
   release-0-4-2:
-    needs: [verify, release_plan]
+    needs: [verify, package_x02, release_plan]
     if: >-
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
@@ -467,7 +514,7 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: sense-v0.4.2-apks
+          name: sense-v0.4.2-clean-apks
           path: artifacts
 
       - name: Prepare release assets
@@ -475,7 +522,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release
-          apk=$(find artifacts -type f -path '*/app/build/outputs/apk/benchmark/*.apk' -print -quit)
+          apk=$(find artifacts -type f -path '*/benchmark/*.apk' -print -quit)
           test -n "$apk"
           sdk=${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}
           test -n "$sdk"

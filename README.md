@@ -58,6 +58,7 @@ AI 最终结果仍只能通过 `sense_submit_patch` / `sense.editor.patch.v1` �
 
 - [AI Agent 深度架构：事件记忆、工具、Skills 与长期兼容性](docs/design/agent-event-memory-architecture-v1.0.md)
 - [Agent 工程开发方案：从 Evidence Event Mesh 到可交付的 M9 / M10](docs/development/agent-engineering-plan-v1.0.md)
+- [X-02 Stage Substrate 实施边界](docs/development/x02-stage-substrate-implementation.md)
 - [ADR 0015：Release identity 与数据 owner continuity](docs/adr/0015-release-identity-and-data-continuity.md)
 - [ADR 0016：M9 Memory wire 与 durability](docs/adr/0016-m9-memory-wire-and-durability.md)
 - [ADR 0017：M9 Memory security 与 erasure](docs/adr/0017-m9-memory-security-and-erasure.md)
@@ -77,7 +78,11 @@ AI 最终结果仍只能通过 `sense_submit_patch` / `sense.editor.patch.v1` �
 
 当前 owner continuity、root-bootstrap、local-erasure control/capability、measurement/evidence-wire gate 都未通过，因此 effective stage 固定为
 `SCHEMA_ONLY`：不创建持久化 Memory，不 capture，连 synthetic `DARK` 数据路径也不开启。
-本次 Gate 0 工作只提交文档，不改运行时代码、版本号或 Release。
+Gate 0 基线本身是 docs-only；当前 X-02 checkpoint 只新增纯 Kotlin stage domain、
+fail-closed reducer、三角色 process-local safe holder、test-only in-memory harness 与
+zero-storage `event-journal` scaffold。它不创建 Snapshot wire、Memory root、Key、目录、
+用户数据，不改变 APK 行为，也不授权 `DARK+`。该 checkpoint 仍须通过 Pull Request
+机械门禁，README 不预先宣称 CI 已通过。
 
 应用仍以 `minSdk 29` 运行，但这不代表 persistent Memory 支持 Android 10/11：API 29–30
 因 Android 官方 symmetric-key unlocked-device 例外固定为 `SCHEMA_ONLY`；API 31–36.0
@@ -104,6 +109,11 @@ AI 最终结果仍只能通过 `sense_submit_patch` / `sense.editor.patch.v1` �
 标准工程验证命令：
 
 ```bash
+python3 tools/test_check_gate0_contract.py
+python3 tools/check_gate0_contract.py --check
+python3 tools/test_check_x02_boundaries.py
+python3 tools/check_x02_boundaries.py
+
 python3 tools/test_build_pinyin_lexicon.py
 python3 tools/test_build_bigram_model.py
 python3 tools/test_m4_core_assets.py
@@ -114,6 +124,10 @@ python3 tools/test_m5_mixed_assets.py
   :brain-api:test \
   :ai-brain:test \
   :ai-runtime:testDebugUnitTest \
+  :memory-protocol:test \
+  :memory-protocol:jar \
+  :event-journal:test \
+  :event-journal:jar \
   :core-input:test \
   :ime-service:testDebugUnitTest \
   :core-input:m0HostBenchmark \
@@ -131,6 +145,8 @@ python3 tools/test_m5_mixed_assets.py
   :app:assembleDebug \
   :app:assembleBenchmark \
   :benchmark:assembleBenchmark
+
+python3 tools/check_x02_boundaries.py --check-artifacts
 ```
 
 在 Maven 仓库不可达、但已安装 API 36 SDK 与 Gradle 8.13 的环境，可运行离线门禁并产出工程 debug 签名 APK：

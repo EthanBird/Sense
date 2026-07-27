@@ -77,5 +77,7 @@ include(
     ":brain-api",
     ":ai-brain",
     ":ai-runtime",
+    ":memory-protocol",
+    ":event-journal",
     ":benchmark",
 )

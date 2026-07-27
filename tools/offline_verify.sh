@@ -14,11 +14,22 @@ if [[ -z "$GRADLE_DIST" || ! -d "$GRADLE_DIST/lib" ]]; then
     echo "Set SENSE_GRADLE_HOME to an unpacked Gradle 8.13 distribution." >&2
     exit 2
 fi
+if [[ -n "${JAVA_HOME:-}" && -x "$JAVA_HOME/bin/jar" ]]; then
+    JAR_TOOL="$JAVA_HOME/bin/jar"
+else
+    JAR_TOOL=$(command -v jar || true)
+fi
+if [[ -z "$JAR_TOOL" ]]; then
+    echo "A JDK jar tool is required for packaged boundary verification." >&2
+    exit 2
+fi
 
 BUILD_TOOLS="$SDK/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK/platforms/android-36/android.jar"
 KOTLIN_LIB="$GRADLE_DIST/lib"
 OUT="$ROOT/build/offline-v0.4.2"
+MEMORY_PROTOCOL_JAR="$OUT/memory-protocol-main.jar"
+EVENT_JOURNAL_JAR="$OUT/event-journal-main.jar"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
 APK="$APK_DIR/Sense-v0.4.2-debug.apk"
 LEXICON_ASSET="$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin"
@@ -33,6 +44,8 @@ export ANDROID_USER_HOME=${ANDROID_USER_HOME:-$OUT/android-user-home}
 find "$OUT" -mindepth 1 -delete 2>/dev/null || true
 mkdir -p \
     "$OUT/protocol-main" "$OUT/protocol-test" \
+    "$OUT/memory-protocol-main" "$OUT/memory-protocol-test" \
+    "$OUT/event-journal-main" "$OUT/event-journal-test" \
     "$OUT/brain-api-main" "$OUT/brain-api-test" \
     "$OUT/brain-main" "$OUT/brain-test" \
     "$OUT/runtime-main" "$OUT/runtime-test" \
@@ -41,6 +54,11 @@ mkdir -p \
     "$OUT/service-main" "$OUT/service-test" \
     "$OUT/generated" "$OUT/app-classes" "$OUT/dex" \
     "$ANDROID_USER_HOME" "$APK_DIR"
+
+python3 "$ROOT/tools/test_check_x02_boundaries.py" 2>&1 |
+    tee "$OUT/x02-boundary-checker-tests.txt"
+python3 "$ROOT/tools/check_x02_boundaries.py" 2>&1 |
+    tee "$OUT/x02-boundaries.txt"
 
 python3 "$ROOT/tools/test_build_pinyin_lexicon.py" 2>&1 | tee "$OUT/lexicon-builder-tests.txt"
 python3 "$ROOT/tools/test_build_bigram_model.py" 2>&1 | tee "$OUT/bigram-builder-tests.txt"
@@ -78,6 +96,18 @@ HAMCREST="$KOTLIN_LIB/hamcrest-core-1.3.jar"
 
 mapfile -t PROTOCOL_SOURCES < <(find "$ROOT/ai-protocol/src/main/kotlin" -name '*.kt' -print | sort)
 mapfile -t PROTOCOL_TEST_SOURCES < <(find "$ROOT/ai-protocol/src/test/kotlin" -name '*.kt' -print | sort)
+mapfile -t MEMORY_PROTOCOL_SOURCES < <(
+    find "$ROOT/memory-protocol/src/main/kotlin" -name '*.kt' -print | sort
+)
+mapfile -t MEMORY_PROTOCOL_TEST_SOURCES < <(
+    find "$ROOT/memory-protocol/src/test/kotlin" -name '*.kt' -print | sort
+)
+mapfile -t EVENT_JOURNAL_SOURCES < <(
+    find "$ROOT/event-journal/src/main/kotlin" -name '*.kt' -print | sort
+)
+mapfile -t EVENT_JOURNAL_TEST_SOURCES < <(
+    find "$ROOT/event-journal/src/test/kotlin" -name '*.kt' -print | sort
+)
 mapfile -t BRAIN_API_SOURCES < <(find "$ROOT/brain-api/src/main/kotlin" -name '*.kt' -print | sort)
 mapfile -t BRAIN_API_TEST_SOURCES < <(find "$ROOT/brain-api/src/test/kotlin" -name '*.kt' -print | sort)
 mapfile -t BRAIN_SOURCES < <(find "$ROOT/ai-brain/src/main/kotlin" -name '*.kt' -print | sort)
@@ -169,6 +199,63 @@ for source in "${PROTOCOL_TEST_SOURCES[@]}"; do
 done
 java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/protocol-test" \
     org.junit.runner.JUnitCore "${PROTOCOL_TEST_CLASSES[@]}" | tee "$OUT/protocol-unit-tests.txt"
+
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect -classpath "$STDLIB" \
+    -d "$OUT/memory-protocol-main" "${MEMORY_PROTOCOL_SOURCES[@]}"
+"$JAR_TOOL" --create \
+    --file "$MEMORY_PROTOCOL_JAR" \
+    -C "$OUT/memory-protocol-main" .
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath "$STDLIB:$JUNIT:$HAMCREST:$OUT/memory-protocol-main" \
+    -Xfriend-paths="$OUT/memory-protocol-main" \
+    -d "$OUT/memory-protocol-test" "${MEMORY_PROTOCOL_TEST_SOURCES[@]}"
+MEMORY_PROTOCOL_TEST_CLASSES=()
+for source in "${MEMORY_PROTOCOL_TEST_SOURCES[@]}"; do
+    [[ "$source" == *Test.kt ]] || continue
+    file_name=${source##*/}
+    package_name=$(
+        sed -n -E \
+            's/^[[:space:]]*package[[:space:]]+([^[:space:]]+).*/\1/p' \
+            "$source"
+    )
+    [[ -n "$package_name" ]]
+    MEMORY_PROTOCOL_TEST_CLASSES+=("$package_name.${file_name%.kt}")
+done
+java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/memory-protocol-main:$OUT/memory-protocol-test" \
+    org.junit.runner.JUnitCore "${MEMORY_PROTOCOL_TEST_CLASSES[@]}" |
+    tee "$OUT/memory-protocol-unit-tests.txt"
+
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath "$STDLIB:$OUT/memory-protocol-main" \
+    -d "$OUT/event-journal-main" "${EVENT_JOURNAL_SOURCES[@]}"
+"$JAR_TOOL" --create \
+    --file "$EVENT_JOURNAL_JAR" \
+    -C "$OUT/event-journal-main" .
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath \
+        "$STDLIB:$JUNIT:$HAMCREST:$OUT/memory-protocol-main:$OUT/event-journal-main" \
+    -Xfriend-paths="$OUT/event-journal-main" \
+    -d "$OUT/event-journal-test" "${EVENT_JOURNAL_TEST_SOURCES[@]}"
+EVENT_JOURNAL_TEST_CLASSES=()
+for source in "${EVENT_JOURNAL_TEST_SOURCES[@]}"; do
+    [[ "$source" == *Test.kt ]] || continue
+    file_name=${source##*/}
+    package_name=$(
+        sed -n -E \
+            's/^[[:space:]]*package[[:space:]]+([^[:space:]]+).*/\1/p' \
+            "$source"
+    )
+    [[ -n "$package_name" ]]
+    EVENT_JOURNAL_TEST_CLASSES+=("$package_name.${file_name%.kt}")
+done
+java -cp \
+    "$STDLIB:$JUNIT:$HAMCREST:$OUT/memory-protocol-main:$OUT/event-journal-main:$OUT/event-journal-test" \
+    org.junit.runner.JUnitCore "${EVENT_JOURNAL_TEST_CLASSES[@]}" |
+    tee "$OUT/event-journal-unit-tests.txt"
 
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect \
@@ -549,6 +636,13 @@ unzip -l "$APK" \
     assets/pinyin_bigrams.bin \
     assets/english_lexicon.txt | tee "$OUT/apk-attributed-assets.txt"
 sha256sum "$APK" | tee "$APK.sha256"
+
+python3 "$ROOT/tools/check_x02_boundaries.py" \
+    --check-artifacts \
+    --memory-jar "$MEMORY_PROTOCOL_JAR" \
+    --event-journal-jar "$EVENT_JOURNAL_JAR" \
+    --app-apk "$APK" 2>&1 |
+    tee "$OUT/x02-packaged-boundaries.txt"
 
 HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --exitcode \
