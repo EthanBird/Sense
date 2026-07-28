@@ -30,6 +30,28 @@ object CandidateStripGeometry {
         gap: Float,
         minimumWidth: Float,
         overflowControlWidth: Float,
+    ): Layout = layout(
+        viewWidth = viewWidth,
+        measuredTextWidths = measuredTextWidths.toFloatArray(),
+        padding = padding,
+        textInset = textInset,
+        gap = gap,
+        minimumWidth = minimumWidth,
+        overflowControlWidth = overflowControlWidth,
+    )
+
+    /**
+     * Primitive-width production path. It avoids boxing every measured width
+     * when a large candidate batch is published.
+     */
+    fun layout(
+        viewWidth: Float,
+        measuredTextWidths: FloatArray,
+        padding: Float,
+        textInset: Float,
+        gap: Float,
+        minimumWidth: Float,
+        overflowControlWidth: Float,
     ): Layout {
         require(viewWidth > 0f)
         require(padding >= 0f)

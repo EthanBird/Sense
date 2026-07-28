@@ -410,7 +410,7 @@ class DefaultAgentToolExecutor(
         const val MAX_MEMORY_HIT_CHARS = 2_000
         const val MOBILE_USER_AGENT =
             "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 " +
-                "(KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36 Sense-IME/0.4.5.beta"
+                "(KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36 Sense-IME/0.4.5.beta.1"
     }
 }
 

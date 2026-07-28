@@ -2,11 +2,11 @@
 
 > Android 原生高性能中文输入法：普通输入完全本地运行，AI、记忆与工具能力通过可配置的长按方向 Skill 显式触发。
 
-**项目状态：** `v0.4.5.beta` Skills 预发布验证
+**项目状态：** `v0.4.5.beta.1` 键盘架构与固定签名预发布
 
-**当前版本：** `v0.4.5.beta`（`versionCode 21`）
+**当前版本：** `v0.4.5.beta.1`（`versionCode 22`）
 
-**更新日期：** 2026-07-28
+**更新日期：** 2026-07-29
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
 
 本文基于《GlassIME Android AI 中文输入法产品与技术设计文档 v0.1》重新整理，并统一改名为：
@@ -22,7 +22,7 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.5 键盘 Skills 与 Agent ABI
+## 0. 当前迭代：v0.4.5.beta.1 键盘架构与固定签名
 
 `v0.4.5` 在 v0.4.4 的开放工具、完整 Agent Journal 和本地记忆之上，把 Skills
 交付为可配置、可修订、可由 Agent 智能读取和管理的长期系统：
@@ -64,6 +64,13 @@ hash/CAS/写后验证继续有效；这些边界防止状态错写，但不限�
 `skill_read` 和 `skill_manage`，且不会删除任何用户数据。完整草稿使用原子 recovery
 snapshot 与有界生命周期 durability handoff。
 
+`v0.4.5.beta.1` 进一步拆分键盘尺寸策略、主布局、图标绘制、颜色、滚动投影与候选栏
+深模块。候选发布、测量缓存、分页、命中检测和横向拖动不再堆叠在 View 中；同一场景
+复用缓存，510 项候选宽度走 primitive path，异步 pending → ready 也会切断旧候选的
+滚动状态。此版本同时建立固定的 Sense release signer v1，后续 GitHub Release 继续使用
+同一证书完成覆盖升级。公开证书 SHA-256 为
+`76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984`。
+
 API 36 x86_64 模拟器已实际运行四个模块的 18 项 AndroidTest：17 项通过，显式
 opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境没有临时 Provider Key，
 4 个真实网络探针均为 `SKIPPED`，固定实体设备 `p95 <= 32 ms` 证据也尚未补齐；
@@ -76,7 +83,7 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
 | Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
 | 既有质量 | AI、IME、UI、Core、M0–M6、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 21`、`versionName 0.4.5.beta`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据 | `versionCode 22`、`versionName 0.4.5.beta.1`、`minSdk 29`、`targetSdk 36` |
 
 标准工程验证命令：
 
@@ -122,9 +129,9 @@ SENSE_GRADLE_HOME=/path/to/gradle-8.13 \
 tools/offline_verify.sh
 ```
 
-固定发布签名尚未建立，每次 GitHub runner 生成的 debug 证书可能不同，因此即使
-`versionCode` 增加也不保证覆盖安装旧 APK。签名不一致时卸载旧版会同时清除本地
-SQLite 用户词库、剪贴板历史和 Provider 配置。AI 编辑基础威胁模型见
+从 `v0.4.5.beta.1` 起，GitHub Release 使用固定的 Sense release signer v1，并通过
+CI 指纹门禁校验；后续版本继续使用同一证书且递增 `versionCode`，即可直接覆盖升级。
+此前由 runner 临时 debug 证书签名的发布资产属于另一条签名链。AI 编辑基础威胁模型见
 [`ADR 0010`](docs/adr/0010-v0.3.5-m8-ai-editor-harness.md)，Soul 与 Provider 延迟决策见
 [`ADR 0011`](docs/adr/0011-v0.3.7-m8-agent-soul-provider-latency.md)，本轮锁定、受限上下文
 和语音设计见 [`ADR 0012`](docs/adr/0012-v0.4.0-interruptible-ai-and-speech-surface.md)，
@@ -373,7 +380,7 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.4.5.beta` Skills 预发布验证阶段。
+以下保留 M0 的实施记录；当前代码位于 `v0.4.5.beta.1` 键盘架构与固定签名预发布阶段。
 现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。
 

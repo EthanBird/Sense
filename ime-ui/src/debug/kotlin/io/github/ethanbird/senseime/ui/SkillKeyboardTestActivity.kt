@@ -26,18 +26,11 @@ class SkillKeyboardTestActivity : Activity() {
         keyboardSurface = SenseKeyboardSurface(this)
         keyboardView = keyboardSurface.keyboardView
         skillAuroraOverlay = keyboardSurface.skillAuroraOverlay
-        val landscape =
-            resources.configuration.orientation ==
-                android.content.res.Configuration.ORIENTATION_LANDSCAPE
-        val height = (
-            KeyboardLayoutContract.preferredKeyboardHeightDp(landscape) *
-                resources.displayMetrics.density
-        ).toInt()
         root.addView(
             keyboardSurface,
             FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
-                height,
+                keyboardSurface.preferredHeightPx(),
                 Gravity.BOTTOM,
             ),
         )

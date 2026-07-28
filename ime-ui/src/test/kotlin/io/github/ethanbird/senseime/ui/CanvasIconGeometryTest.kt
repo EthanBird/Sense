@@ -33,4 +33,34 @@ class CanvasIconGeometryTest {
         assertTrue(mdpi.strokeWidth / 48f in 0.045f..0.06f)
         assertTrue(xxxhdpi.strokeWidth / 144f in 0.045f..0.06f)
     }
+
+    @Test
+    fun mutableResolverMatchesAllocatingReferenceGeometry() {
+        val expected = CanvasIconGeometry.resolve(
+            left = 13f,
+            top = 21f,
+            right = 117f,
+            bottom = 73f,
+            density = 2.75f,
+        )
+        val actual = CanvasIconGeometry.MutableMetrics()
+
+        CanvasIconGeometry.resolveInto(
+            left = 13f,
+            top = 21f,
+            right = 117f,
+            bottom = 73f,
+            density = 2.75f,
+            out = actual,
+        )
+
+        assertEquals(expected.centerX, actual.centerX, 0f)
+        assertEquals(expected.centerY, actual.centerY, 0f)
+        assertEquals(expected.unit, actual.unit, 0f)
+        assertEquals(expected.strokeWidth, actual.strokeWidth, 0f)
+        assertEquals(expected.frameLeft, actual.frameLeft, 0f)
+        assertEquals(expected.frameTop, actual.frameTop, 0f)
+        assertEquals(expected.frameRight, actual.frameRight, 0f)
+        assertEquals(expected.frameBottom, actual.frameBottom, 0f)
+    }
 }

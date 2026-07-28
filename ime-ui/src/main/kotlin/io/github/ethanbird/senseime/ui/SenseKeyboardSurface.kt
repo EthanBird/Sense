@@ -1,6 +1,7 @@
 package io.github.ethanbird.senseime.ui
 
 import android.content.Context
+import android.content.res.Configuration
 import android.util.AttributeSet
 import android.widget.FrameLayout
 
@@ -17,6 +18,8 @@ class SenseKeyboardSurface @JvmOverloads constructor(
 ) : FrameLayout(context, attrs) {
     val keyboardView = SenseKeyboardView(context)
     val skillAuroraOverlay = ActiveSkillAuroraOverlayView(context)
+    var keyboardSizeProfile: KeyboardSizeProfile = KeyboardSizeProfile.DEFAULT
+        private set
 
     init {
         addView(
@@ -34,6 +37,44 @@ class SenseKeyboardSurface @JvmOverloads constructor(
             ),
         )
         keyboardView.attachActiveSkillAuroraOverlay(skillAuroraOverlay)
+    }
+
+    fun setKeyboardSizeProfile(profile: KeyboardSizeProfile) {
+        if (keyboardSizeProfile == profile) return
+        keyboardSizeProfile = profile
+        keyboardView.setKeyboardSizeProfile(profile)
+        applyPreferredHeightToParent()
+    }
+
+    fun preferredHeightPx(): Int = keyboardSizeProfile.preferredHeightPx(
+        isLandscape =
+            resources.configuration.orientation ==
+                android.content.res.Configuration.ORIENTATION_LANDSCAPE,
+        density = resources.displayMetrics.density,
+    )
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyPreferredHeightToParent()
+    }
+
+    /**
+     * The IME window gives this Surface an exact height. Updating only the
+     * child View's desired size would therefore have no effect at runtime.
+     */
+    private fun applyPreferredHeightToParent() {
+        val params = layoutParams
+        if (params == null) {
+            requestLayout()
+            return
+        }
+        val targetHeight = preferredHeightPx()
+        if (params.height == targetHeight) {
+            requestLayout()
+            return
+        }
+        params.height = targetHeight
+        layoutParams = params
     }
 
     /**

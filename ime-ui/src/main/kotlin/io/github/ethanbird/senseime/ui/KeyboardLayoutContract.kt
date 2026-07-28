@@ -14,8 +14,8 @@ object KeyboardLayoutContract {
      * candidate strip took over the toolbar. Keep the M6 composing-state key
      * size while removing that dead row from both orientations.
      */
-    const val PORTRAIT_KEYBOARD_HEIGHT_DP = 358f
-    const val LANDSCAPE_KEYBOARD_HEIGHT_DP = 258f
+    const val PORTRAIT_KEYBOARD_HEIGHT_DP = KeyboardSizeProfile.DEFAULT_PORTRAIT_HEIGHT_DP
+    const val LANDSCAPE_KEYBOARD_HEIGHT_DP = KeyboardSizeProfile.DEFAULT_LANDSCAPE_HEIGHT_DP
 
     data class CandidateSlot(
         val left: Float,
@@ -175,7 +175,7 @@ object KeyboardLayoutContract {
     )
 
     fun preferredKeyboardHeightDp(isLandscape: Boolean): Float =
-        if (isLandscape) LANDSCAPE_KEYBOARD_HEIGHT_DP else PORTRAIT_KEYBOARD_HEIGHT_DP
+        KeyboardSizeProfile.DEFAULT.preferredHeightDp(isLandscape)
 
     /**
      * Places the voice status, live transcript, waveform and primary action in one vertical
@@ -673,6 +673,33 @@ object KeyboardLayoutContract {
         contentTop: Float,
         contentBottom: Float,
         measuredTextWidths: List<Float>,
+        horizontalPadding: Float,
+        textInset: Float,
+        horizontalGap: Float,
+        verticalGap: Float,
+        minimumWidth: Float,
+        rowHeight: Float,
+    ): List<CandidatePage> = pagedCandidateGrid(
+        viewWidth = viewWidth,
+        contentTop = contentTop,
+        contentBottom = contentBottom,
+        measuredTextWidths = measuredTextWidths.toFloatArray(),
+        horizontalPadding = horizontalPadding,
+        textInset = textInset,
+        horizontalGap = horizontalGap,
+        verticalGap = verticalGap,
+        minimumWidth = minimumWidth,
+        rowHeight = rowHeight,
+    )
+
+    /**
+     * Primitive-width production path for large candidate snapshots.
+     */
+    fun pagedCandidateGrid(
+        viewWidth: Float,
+        contentTop: Float,
+        contentBottom: Float,
+        measuredTextWidths: FloatArray,
         horizontalPadding: Float,
         textInset: Float,
         horizontalGap: Float,

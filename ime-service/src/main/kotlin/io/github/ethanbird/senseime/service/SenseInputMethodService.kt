@@ -282,11 +282,9 @@ class SenseInputMethodService : InputMethodService() {
         keyboardSurface = surface
         surface.setImeWindowVisible(imeWindowVisible)
         val view = surface.keyboardView
-        val landscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val preferredHeight = KeyboardLayoutContract.preferredKeyboardHeightDp(landscape)
         surface.layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            (preferredHeight * resources.displayMetrics.density).toInt(),
+            surface.preferredHeightPx(),
         )
         view.keyListener = SenseKeyboardView.KeyListener(::handleKey)
         view.candidateListener = ::commitCandidate

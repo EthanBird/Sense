@@ -11,5 +11,8 @@ captures/
 *.aab
 *.jks
 *.keystore
+*.p12
+*.pfx
+.artifacts/
 __pycache__/
 *.pyc

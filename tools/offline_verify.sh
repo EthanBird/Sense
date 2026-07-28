@@ -27,11 +27,11 @@ fi
 BUILD_TOOLS="$SDK/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK/platforms/android-36/android.jar"
 KOTLIN_LIB="$GRADLE_DIST/lib"
-OUT="$ROOT/build/offline-v0.4.5.beta"
+OUT="$ROOT/build/offline-v0.4.5.beta.1"
 MEMORY_PROTOCOL_JAR="$OUT/memory-protocol-main.jar"
 EVENT_JOURNAL_JAR="$OUT/event-journal-main.jar"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
-APK="$APK_DIR/Sense-v0.4.5.beta-debug.apk"
+APK="$APK_DIR/Sense-v0.4.5.beta.1-debug.apk"
 LEXICON_ASSET="$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin"
 LEXICON_SHA256="ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
 BIGRAM_ASSET="$ROOT/ime-service/src/main/assets/pinyin_bigrams.bin"
@@ -500,8 +500,8 @@ java -cp "$STDLIB:$OUT/core-main" \
     --manifest "$ROOT/tools/offline/AndroidManifest.xml" \
     --min-sdk-version 29 \
     --target-sdk-version 36 \
-    --version-code 21 \
-    --version-name 0.4.5.beta \
+    --version-code 22 \
+    --version-name 0.4.5.beta.1 \
     --auto-add-overlay \
     --output-text-symbols "$OUT/R.txt" \
     -A "$ROOT/ime-service/src/main/assets" \
@@ -638,7 +638,7 @@ actions = {
 if "android.view.InputMethod" not in actions:
     raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
 PY
-grep -F "package: name='io.github.ethanbird.senseime' versionCode='21' versionName='0.4.5.beta'" "$OUT/apk-badging.txt"
+grep -F "package: name='io.github.ethanbird.senseime' versionCode='22' versionName='0.4.5.beta.1'" "$OUT/apk-badging.txt"
 grep -Fx "minSdkVersion:'29'" "$OUT/apk-badging.txt"
 grep -Fx "targetSdkVersion:'36'" "$OUT/apk-badging.txt"
 DECLARED_PERMISSIONS=$(
@@ -720,4 +720,4 @@ HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --text "$OUT/lint.txt" \
     "$ROOT/tools/offline"
 
-echo "v0.4.5.beta verification complete: $APK"
+echo "v0.4.5.beta.1 verification complete: $APK"

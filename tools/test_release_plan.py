@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import base64
+import hashlib
+import re
 import subprocess
 import sys
 import tempfile
@@ -23,7 +26,14 @@ WORKFLOW = ROOT / ".github" / "workflows" / "android.yml"
 APP_BUILD = ROOT / "app" / "build.gradle.kts"
 OFFLINE_VERIFY = ROOT / "tools" / "offline_verify.sh"
 OFFLINE_MANIFEST = ROOT / "tools" / "offline" / "AndroidManifest.xml"
-RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.5.beta.md"
+RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.5.beta.1.md"
+RELEASE_CERT = (
+    ROOT
+    / "docs"
+    / "releases"
+    / "signing"
+    / "sense-release-v1-cert.pem"
+)
 AURORA_DEVICE_TEST = (
     ROOT
     / "ime-ui"
@@ -83,8 +93,8 @@ class AndroidVersionParsingTest(unittest.TestCase):
 
     def test_dotted_prerelease_version_is_supported(self) -> None:
         self.assertEqual(
-            AndroidVersion(name="0.4.5.beta", code=21),
-            parse_android_version(gradle_version(name="0.4.5.beta", code=21)),
+            AndroidVersion(name="0.4.5.beta.1", code=22),
+            parse_android_version(gradle_version(name="0.4.5.beta.1", code=22)),
         )
 
     def test_nonpositive_version_code_is_rejected(self) -> None:
@@ -267,30 +277,76 @@ class WorkflowContractTest(unittest.TestCase):
             APP_BUILD.read_text(encoding="utf-8"),
             str(APP_BUILD),
         )
-        self.assertEqual(AndroidVersion(name="0.4.5.beta", code=21), current)
+        self.assertEqual(AndroidVersion(name="0.4.5.beta.1", code=22), current)
 
         workflow = WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn("RELEASE_TAG: v0.4.5.beta", workflow)
-        self.assertIn("RELEASE_APK: Sense-v0.4.5.beta.apk", workflow)
+        self.assertIn("RELEASE_TAG: v0.4.5.beta.1", workflow)
+        self.assertIn("RELEASE_APK: Sense-v0.4.5.beta.1.apk", workflow)
         self.assertEqual(
             2,
             workflow.count(
-                "versionCode='21' versionName='0.4.5.beta'",
+                "versionCode='22' versionName='0.4.5.beta.1'",
             ),
         )
-        self.assertIn("--notes-file docs/releases/v0.4.5.beta.md", workflow)
+        self.assertIn("--notes-file docs/releases/v0.4.5.beta.1.md", workflow)
         self.assertIn("--prerelease", workflow)
         self.assertTrue(RELEASE_NOTES.is_file())
         offline_verify = OFFLINE_VERIFY.read_text(encoding="utf-8")
-        self.assertIn("--version-code 21", offline_verify)
-        self.assertIn("--version-name 0.4.5.beta", offline_verify)
+        self.assertIn("--version-code 22", offline_verify)
+        self.assertIn("--version-name 0.4.5.beta.1", offline_verify)
         self.assertIn(
-            "versionCode='21' versionName='0.4.5.beta'",
+            "versionCode='22' versionName='0.4.5.beta.1'",
             offline_verify,
+        )
+
+    def test_release_signer_is_persistent_and_pinned(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        app_build = APP_BUILD.read_text(encoding="utf-8")
+        pin_match = re.search(
+            r"^\s*RELEASE_CERT_SHA256:\s*([0-9a-f]{64})\s*$",
+            workflow,
+            flags=re.MULTILINE,
+        )
+        self.assertIsNotNone(pin_match)
+        pinned_digest = pin_match.group(1)
+
+        pem = RELEASE_CERT.read_text(encoding="ascii")
+        certificate_der = base64.b64decode(
+            "".join(
+                line
+                for line in pem.splitlines()
+                if not line.startswith("-----")
+            ),
+            validate=True,
+        )
+        self.assertEqual(
+            pinned_digest,
+            hashlib.sha256(certificate_der).hexdigest(),
+        )
+        for variable in (
+            "SENSE_RELEASE_STORE_FILE",
+            "SENSE_RELEASE_STORE_PASSWORD",
+            "SENSE_RELEASE_KEY_ALIAS",
+            "SENSE_RELEASE_KEY_PASSWORD",
+        ):
+            self.assertIn(variable, app_build)
+        self.assertIn('storeType = "PKCS12"', app_build)
+        self.assertIn(
+            'signingConfig = signingConfigs.getByName("release")',
+            app_build,
+        )
+        self.assertNotIn(
+            "app/build/outputs/apk/benchmark -type f "
+            "-name '*.apk' -print -quit",
+            workflow.split("\n  release-0-4-5-beta-1:\n", 1)[1],
         )
 
     def test_workflow_uses_push_before_and_release_job_output(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
+        release_job = workflow.split(
+            "\n  release-0-4-5-beta-1:\n",
+            1,
+        )[1]
         self.assertIn("release_plan:", workflow)
         self.assertIn("python3 tools/test_release_plan.py", workflow)
         self.assertIn("${{ github.event.before }}", workflow)
@@ -305,13 +361,24 @@ class WorkflowContractTest(unittest.TestCase):
             "needs.release_plan.outputs.should_release == 'true'",
             workflow,
         )
+        self.assertIn("\n    environment: release\n", release_job)
         self.assertEqual(
-            2,
-            workflow.count("name: sense-v0.4.5.beta-clean-apks"),
+            1,
+            workflow.count("name: sense-v0.4.5.beta.1-clean-apks"),
         )
         self.assertIn(
-            "apk=$(find artifacts -type f "
-            "-path '*/benchmark/*.apk' -print -quit)",
+            "apk=$(find app/build/outputs/apk/release "
+            "-type f -name '*.apk' -print -quit)",
+            workflow,
+        )
+        self.assertIn(":app:assembleRelease", workflow)
+        self.assertIn("SENSE_RELEASE_KEYSTORE_BASE64", workflow)
+        self.assertIn("SENSE_RELEASE_STORE_PASSWORD", workflow)
+        self.assertIn("SENSE_RELEASE_KEY_ALIAS", workflow)
+        self.assertIn("SENSE_RELEASE_KEY_PASSWORD", workflow)
+        self.assertIn("RELEASE_CERT_SHA256:", workflow)
+        self.assertIn(
+            "Signer #1 certificate SHA-256 digest: $RELEASE_CERT_SHA256",
             workflow,
         )
         self.assertNotIn('git show "HEAD^:', workflow)
@@ -529,7 +596,7 @@ class WorkflowContractTest(unittest.TestCase):
     def test_publish_path_peels_and_rechecks_the_remote_tag(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         release_step = workflow.split(
-            "      - name: Create Sense 0.4.5.beta prerelease",
+            "      - name: Create Sense 0.4.5.beta.1 prerelease",
             maxsplit=1,
         )[1]
         self.assertIn(

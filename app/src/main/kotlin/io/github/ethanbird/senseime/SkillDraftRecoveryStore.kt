@@ -4,6 +4,7 @@ import android.content.Context
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.channels.FileChannel
+import java.nio.file.AccessDeniedException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
@@ -120,8 +121,15 @@ internal class SkillDraftRecoveryStore internal constructor(
     }
 
     private fun syncDirectory(target: File) {
-        FileChannel.open(target.toPath(), StandardOpenOption.READ).use { channel ->
-            channel.force(true)
+        try {
+            FileChannel.open(target.toPath(), StandardOpenOption.READ).use { channel ->
+                channel.force(true)
+            }
+        } catch (failure: AccessDeniedException) {
+            // The Windows NIO provider has no directory-handle force support.
+            val isWindows =
+                System.getProperty("os.name", "").startsWith("Windows", ignoreCase = true)
+            if (!isWindows) throw failure
         }
     }
 

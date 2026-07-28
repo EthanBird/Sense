@@ -15,8 +15,9 @@ permissions:
   contents: read
 
 env:
-  RELEASE_TAG: v0.4.5.beta
-  RELEASE_APK: Sense-v0.4.5.beta.apk
+  RELEASE_TAG: v0.4.5.beta.1
+  RELEASE_APK: Sense-v0.4.5.beta.1.apk
+  RELEASE_CERT_SHA256: 76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984
   LEXICON_SHA256: ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6
   BIGRAM_SHA256: db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c
   ENGLISH_SHA256: 1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624
@@ -253,7 +254,7 @@ jobs:
             :core-input:m5MixedInputBenchmark \
             :core-input:m6InputPolishBenchmark
 
-      - name: Verify assembled 0.4.5.beta APK
+      - name: Verify assembled 0.4.5.beta.1 benchmark APK
         shell: bash
         run: |
           set -euo pipefail
@@ -362,7 +363,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='21' versionName='0.4.5.beta'" /tmp/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='22' versionName='0.4.5.beta.1'" /tmp/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" /tmp/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" /tmp/apk-badging.txt
           declared_permissions=$(
@@ -415,7 +416,7 @@ jobs:
       - name: Upload debug APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.4.5.beta-apks
+          name: sense-v0.4.5.beta.1-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -518,7 +519,7 @@ jobs:
       - name: Upload clean app APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.4.5.beta-clean-apks
+          name: sense-v0.4.5.beta.1-clean-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -575,30 +576,70 @@ jobs:
             --github-output "$GITHUB_OUTPUT" \
             --step-summary "$GITHUB_STEP_SUMMARY"
 
-  release-0-4-5-beta:
+  release-0-4-5-beta-1:
     needs: [verify, package_release, release_plan]
     if: >-
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
       needs.release_plan.outputs.should_release == 'true'
     runs-on: ubuntu-latest
+    environment: release
     permissions:
       contents: write
 
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/setup-java@v5
         with:
-          name: sense-v0.4.5.beta-clean-apks
-          path: artifacts
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Materialize persistent release signing
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.SENSE_RELEASE_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.SENSE_RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.SENSE_RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.SENSE_RELEASE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for required in \
+            KEYSTORE_BASE64 \
+            STORE_PASSWORD \
+            KEY_ALIAS \
+            KEY_PASSWORD
+          do
+            test -n "${!required}"
+          done
+          keystore="$RUNNER_TEMP/sense-release-v1.p12"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$keystore"
+          test -s "$keystore"
+          chmod 600 "$keystore"
+          {
+            echo "SENSE_RELEASE_STORE_FILE=$keystore"
+            echo "SENSE_RELEASE_STORE_PASSWORD=$STORE_PASSWORD"
+            echo "SENSE_RELEASE_KEY_ALIAS=$KEY_ALIAS"
+            echo "SENSE_RELEASE_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Build signed release APK
+        env:
+          GRADLE_USER_HOME: ${{ runner.temp }}/sense-signed-release-gradle-home
+        run: >-
+          ./gradlew
+          --no-build-cache
+          --no-configuration-cache
+          :app:assembleRelease
 
       - name: Prepare release assets
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p release
-          apk=$(find artifacts -type f -path '*/benchmark/*.apk' -print -quit)
+          apk=$(find app/build/outputs/apk/release -type f -name '*.apk' -print -quit)
           test -n "$apk"
           sdk=${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}
           test -n "$sdk"
@@ -607,6 +648,13 @@ jobs:
           test -x "$build_tools/aapt2"
           test -x "$build_tools/zipalign"
           "$build_tools/apksigner" verify --verbose --print-certs "$apk" | tee release/apksigner.txt
+          test "$(
+            grep -Ec '^Signer #[0-9]+ certificate SHA-256 digest:' \
+              release/apksigner.txt
+          )" = "1"
+          grep -Fx \
+            "Signer #1 certificate SHA-256 digest: $RELEASE_CERT_SHA256" \
+            release/apksigner.txt
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" | tee release/apk-badging.txt
           "$build_tools/aapt2" dump permissions "$apk" | tee release/apk-permissions.txt
@@ -704,7 +752,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='21' versionName='0.4.5.beta'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='22' versionName='0.4.5.beta.1'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           declared_permissions=$(
@@ -757,7 +805,7 @@ jobs:
           cd release
           sha256sum "$RELEASE_APK" > SHA256SUMS.txt
 
-      - name: Create Sense 0.4.5.beta prerelease
+      - name: Create Sense 0.4.5.beta.1 prerelease
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_PLAN_STATUS: ${{ needs.release_plan.outputs.status }}
@@ -838,8 +886,8 @@ jobs:
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
               --prerelease \
-              --title "Sense v0.4.5.beta · Skills 预发布验证" \
-              --notes-file docs/releases/v0.4.5.beta.md
+              --title "Sense v0.4.5.beta.1 · 键盘架构与固定签名" \
+              --notes-file docs/releases/v0.4.5.beta.1.md
           fi
 
           assert_remote_tag_target
@@ -858,3 +906,11 @@ jobs:
             --dir existing-release
           (cd existing-release && sha256sum -c SHA256SUMS.txt)
           echo "$RELEASE_TAG targets the expected commit and its checksum is valid."
+
+      - name: Remove materialized signing key
+        if: always()
+        shell: bash
+        run: |
+          if [[ -n "${SENSE_RELEASE_STORE_FILE:-}" ]]; then
+            rm -f -- "$SENSE_RELEASE_STORE_FILE"
+          fi

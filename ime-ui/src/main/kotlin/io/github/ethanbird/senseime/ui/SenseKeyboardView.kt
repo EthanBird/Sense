@@ -78,134 +78,6 @@ class SenseKeyboardView @JvmOverloads constructor(
         END,
     }
 
-    private enum class KeyStyle {
-        LETTER,
-        ACTION,
-        TOOL,
-        SYSTEM,
-        CARD,
-        EMOJI,
-        CATEGORY,
-        SYMBOL,
-        SYMBOL_CATEGORY,
-        RAIL,
-        EDITOR_DIRECTION,
-        EDITOR_PRIMARY,
-        EDITOR_ACTION,
-        VOICE_PRIMARY,
-        TOOLBOX_CARD,
-    }
-
-    private enum class ScrollPanel {
-        EMOJI,
-        SYMBOL_CATEGORIES,
-        SYMBOL_VALUES,
-    }
-
-    private enum class Icon {
-        TOOLS,
-        SYMBOLS,
-        KEYBOARD,
-        EMOJI,
-        EDITOR,
-        VOICE,
-        SETTINGS,
-        HIDE,
-        DELETE,
-        ENTER,
-        SHIFT,
-        SPACE,
-        BACK,
-        CLEAR,
-        REFRESH,
-        CLIPBOARD,
-        UP,
-        DOWN,
-        RIGHT,
-        HOME,
-        END,
-    }
-
-    private data class Key(
-        val label: String,
-        val code: Int,
-        val bounds: RectF,
-        val hint: String? = null,
-        val style: KeyStyle = KeyStyle.LETTER,
-        val text: String? = null,
-        val icon: Icon? = null,
-        val clipboardAction: ClipboardAction? = null,
-        val clipboardIndex: Int = -1,
-        val secondaryLabel: String? = null,
-        val editorAction: EditorAction? = null,
-        val scrollPanel: ScrollPanel? = null,
-    )
-
-    private data class VisibleCandidate(
-        val sourceIndex: Int,
-        val bounds: RectF,
-        val textAnchor: Float,
-    )
-
-    private enum class CandidateControl {
-        EXPAND,
-        COLLAPSE,
-        PREVIOUS_PAGE,
-        NEXT_PAGE,
-    }
-
-    private data class CandidateControlSlot(
-        val control: CandidateControl,
-        val bounds: RectF,
-        val enabled: Boolean = true,
-    )
-
-    private data class CandidatePageCacheKey(
-        val generation: Long,
-        val viewWidth: Int,
-        val viewHeight: Int,
-    )
-
-    private sealed interface FrozenTouchTarget {
-        val bounds: RectF
-        val gesturePolicy: TouchInputReducer.GesturePolicy
-
-        data class CandidateValue(
-            val revision: Long,
-            val sourceIndex: Int,
-            override val bounds: RectF,
-            override val gesturePolicy: TouchInputReducer.GesturePolicy,
-        ) : FrozenTouchTarget
-
-        data class CandidateControlValue(
-            val value: CandidateControl,
-            override val bounds: RectF,
-            override val gesturePolicy: TouchInputReducer.GesturePolicy,
-        ) : FrozenTouchTarget
-
-        data class CandidatePageArea(
-            override val bounds: RectF,
-            override val gesturePolicy: TouchInputReducer.GesturePolicy,
-        ) : FrozenTouchTarget
-
-        data class CandidateStripArea(
-            override val bounds: RectF,
-            override val gesturePolicy: TouchInputReducer.GesturePolicy,
-        ) : FrozenTouchTarget
-
-        data class PanelScrollArea(
-            val panel: ScrollPanel,
-            override val bounds: RectF,
-            override val gesturePolicy: TouchInputReducer.GesturePolicy,
-        ) : FrozenTouchTarget
-
-        data class KeyValue(
-            val key: Key,
-            override val gesturePolicy: TouchInputReducer.GesturePolicy,
-            override val bounds: RectF = key.bounds,
-        ) : FrozenTouchTarget
-    }
-
     var keyListener: KeyListener? = null
     var candidateListener: ((revision: Long, sourceIndex: Int) -> Unit)? = null
     var textListener: ((text: String) -> Unit)? = null
@@ -216,33 +88,26 @@ class SenseKeyboardView @JvmOverloads constructor(
     var skillSelectionListener: KeyboardSkillSelectionListener? = null
 
     private val density = resources.displayMetrics.density
+    private val metrics = KeyboardMetrics.fromDensity(density)
+    private val primaryLayout = KeyboardPrimaryLayout(metrics)
     private val scaledTouchSlop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val fontMetrics = Paint.FontMetrics()
-    private val iconPath = Path()
-    private val keys = mutableListOf<Key>()
-    private val visibleCandidates = mutableListOf<VisibleCandidate>()
-    private val candidateControls = mutableListOf<CandidateControlSlot>()
-    private var candidatePages: List<KeyboardLayoutContract.CandidatePage> = emptyList()
-    private var candidates: List<String> = emptyList()
-    private var candidateMeasuredWidths = FloatArray(0)
-    private var candidateGeneration = 0L
-    private var candidatePageCacheKey: CandidatePageCacheKey? = null
-    private val candidateStripLayoutCache = CandidateStripLayoutCache()
-    private var expandedCandidateGridBounds: RectF? = null
-    private var collapsedCandidateViewportBounds: RectF? = null
-    private var collapsedCandidateLayout: CandidateStripGeometry.Layout? = null
-    private var candidateStripConfiguredLayout: CandidateStripGeometry.Layout? = null
-    private var clipboardItems: List<String> = emptyList()
-    private var composing: String = ""
-    private var compositionRevision: Long = 0L
-    private var candidateRevision: Long = 0L
-    private var candidatePageIndex = 0
-    private var candidatePageLabel = "1 / 1"
-    private var candidatesExpanded = false
-    private val candidateStripScrollState = CandidateStripScrollState(
-        touchSlop = scaledTouchSlop,
+    private val iconPainter = KeyboardIconPainter(
+        density = density,
+        fontScale = resources.configuration.fontScale,
     )
+    private val sharedPath = Path()
+    private val palette = KeyboardPalette(
+        nightMode = resources.configuration.isNightMode(),
+    )
+    private val keys = mutableListOf<Key>()
+    private val candidatePanel = CandidatePanel(
+        metrics = metrics,
+        touchSlop = scaledTouchSlop,
+        textMeasurer = PaintCandidateTextMeasurer(),
+    )
+    private var clipboardItems: List<String> = emptyList()
     private val touchReducer = TouchInputReducer<FrozenTouchTarget>(
         swipeThreshold = dp(22f),
         maximumHorizontalDrift = dp(34f),
@@ -290,6 +155,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     private val skillAnimationDirtyBounds = RectF()
     private var skillAnimationFrameScheduled = false
     private var renderPassCount = 0L
+    private var keySceneBuildCount = 0L
     private var toolbarKeyStart = 0
     private var toolbarKeyEndExclusive = 0
     private var panelKeyStart = 0
@@ -337,20 +203,17 @@ class SenseKeyboardView @JvmOverloads constructor(
     private var shifted = false
     private var chineseMode = true
     private var panel = Panel.LETTERS
+    private var keyboardSizeProfile = KeyboardSizeProfile.DEFAULT
     private var backgroundShader: Shader? = null
 
-    private val candidateHeight = dp(45f)
-    private val toolbarHeight = dp(42f)
-    private val systemBarHeight = dp(52f)
-    private val keyGap = dp(5f)
-    private val horizontalPadding = dp(6f)
-    private val keyRadius = dp(8f)
-    private val candidateTextInset = dp(9f)
-    private val candidateGap = dp(3f)
-    private val candidateMinimumWidth = dp(44f)
-    private val candidateControlWidth = dp(44f)
-    private val expandedCandidateRowHeight = dp(42f)
-    private val expandedCandidatePagerHeight = dp(38f)
+    private val candidateHeight = metrics.candidateHeight
+    private val toolbarHeight = metrics.toolbarHeight
+    private val systemBarHeight = metrics.systemBarHeight
+    private val keyGap = metrics.keyGap
+    private val horizontalPadding = metrics.horizontalPadding
+    private val keyRadius = metrics.keyRadius
+    private val candidateControlWidth = metrics.candidateControlWidth
+    private val expandedCandidatePagerHeight = metrics.expandedCandidatePagerHeight
     private val tapGesturePolicy = TouchInputReducer.GesturePolicy.tapOnly()
     private val pageScrollGesturePolicy = TouchInputReducer.GesturePolicy.verticalScroll(
         touchSlop = scaledTouchSlop,
@@ -368,9 +231,8 @@ class SenseKeyboardView @JvmOverloads constructor(
                 target = candidateSettleTargetOffset,
                 fraction = fraction,
             )
-            if (candidateStripScrollState.moveTo(next)) {
-                rebuildCandidateLayout(width, height)
-                invalidate()
+            if (candidatePanel.moveTo(next)) {
+                invalidateCandidateViewport()
             }
             if (fraction < 1f) postOnAnimation(this)
         }
@@ -489,48 +351,21 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     /** Atomically publishes a ready candidate batch for [revision]. */
     fun updateComposing(revision: Long, text: String, values: List<String>) {
-        updateCandidateUi(revision, text, values.toList())
+        updateCandidateUi(revision, text, values)
     }
 
     private fun updateCandidateUi(revision: Long, text: String, values: List<String>?) {
-        val wasTakeover = candidateTakesToolbar()
-        val shouldReset = CandidatePresentationPolicy.shouldResetNavigation(
-            previousRevision = compositionRevision,
-            previousComposing = composing,
-            nextRevision = revision,
-            nextComposing = text,
+        val change = candidatePanel.publish(
+            revision = revision,
+            text = text,
+            values = values,
+            viewWidth = width,
+            viewHeight = height,
+            editorPanelVisible = isCandidateToolbarSuppressedByPanel(),
+            fontScale = resources.configuration.fontScale,
         )
-        val wasExpanded = candidatesExpanded
-        if (shouldReset) {
-            stopCandidateSettle()
-            candidateStripScrollState.reset()
-            candidatesExpanded = false
-            candidatePageIndex = 0
-        }
-        val nextCandidates = when {
-            values != null -> values
-            text.isEmpty() -> emptyList()
-            else -> null
-        }
-        if (nextCandidates != null && nextCandidates != candidates) {
-            candidateMeasuredWidths = FloatArray(nextCandidates.size) { Float.NaN }
-            candidateGeneration++
-            candidatePages = emptyList()
-            candidatePageCacheKey = null
-            collapsedCandidateLayout = null
-            candidateStripConfiguredLayout = null
-            candidateStripLayoutCache.invalidate()
-        }
-        compositionRevision = revision
-        composing = text
-        if (nextCandidates != null) {
-            candidateRevision = revision
-            candidates = nextCandidates
-        }
-        rebuildCandidateLayout(width, height)
-        if (wasExpanded != candidatesExpanded || wasTakeover != candidateTakesToolbar()) {
-            rebuildKeys(width, height)
-        }
+        if (change.cancelSettle) stopCandidateSettle()
+        if (change.requiresKeySceneRebuild) rebuildKeys(width, height)
         invalidate()
     }
 
@@ -551,10 +386,9 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     fun setPanel(value: Panel) {
-        val wasExpanded = candidatesExpanded
+        val wasExpanded = candidatePanel.expanded
         if (panel == value && !wasExpanded) return
         cancelAllTouches()
-        collapseCandidates()
         if (panel == Panel.VOICE && value != Panel.VOICE) clearVoiceSurfaceState()
         panel = value
         if (value == Panel.EMOJI) emojiScrollState.reset()
@@ -563,6 +397,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             symbolCategoryScrollState.reset()
             symbolGridScrollState.reset()
         }
+        collapseCandidates()
         rebuildKeys(width, height)
         invalidate()
     }
@@ -661,6 +496,29 @@ class SenseKeyboardView @JvmOverloads constructor(
     /** Monotonic parent-render observation used by the API 36 isolation gate. */
     internal fun renderPassCountForTesting(): Long = renderPassCount
 
+    internal fun keySceneBuildCountForTesting(): Long = keySceneBuildCount
+
+    internal fun candidateSceneBuildCountForTesting(): Long = candidatePanel.sceneBuildCount
+
+    internal fun scrollViewportBoundsForTesting(panel: ScrollPanel): RectF? =
+        panelViewportBounds(panel)?.let(::RectF)
+
+    internal fun scrollOffsetForTesting(panel: ScrollPanel): Float =
+        scrollStateFor(panel).offset
+
+    internal fun candidateViewportBoundsForTesting(): RectF? =
+        candidatePanel.collapsedViewportBounds?.toRectF()
+
+    internal fun candidateScrollOffsetForTesting(): Float =
+        candidatePanel.scrollOffset
+
+    internal fun candidateMaximumOffsetForTesting(): Float =
+        candidatePanel.maximumScrollOffset
+
+    internal fun candidateSourceIndexAtForTesting(x: Float, y: Float): Int? =
+        (candidatePanel.hitTest(x = x, y = y, visible = showsCandidates()) as? CandidateHit.Value)
+            ?.sourceIndex
+
     /**
      * Shows a bounded, transient keyboard-owned failure chip and exposes the same message through
      * the View accessibility description/announcement. The host uses this after an asynchronous
@@ -692,11 +550,11 @@ class SenseKeyboardView @JvmOverloads constructor(
     fun showVoiceSurface(initialState: VoiceSurfaceState) {
         require(initialState.sessionId > 0L)
         cancelAllTouches()
-        collapseCandidates()
         clearVoiceSurfaceState()
         voiceSurfaceState = initialState
         voiceWaveformBuffer.clear()
         panel = Panel.VOICE
+        collapseCandidates()
         rebuildKeys(width, height)
         invalidate()
     }
@@ -726,7 +584,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         clearVoiceSurfaceState()
         if (panel == Panel.VOICE) panel = Panel.LETTERS
         cancelOrdinaryTouches()
-        rebuildCandidateLayout(width, height)
+        relayoutCandidates()
         rebuildKeys(width, height)
         invalidate()
         return true
@@ -863,7 +721,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         aiSurfaceState = null
         aiStopPointerId = NO_POINTER
         aiStopBounds.setEmpty()
-        rebuildCandidateLayout(width, height)
+        relayoutCandidates()
         rebuildKeys(width, height)
         invalidate()
         return true
@@ -873,23 +731,50 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     fun activeAiGeneration(): Long? = aiSurfaceState?.generation
 
+    fun setKeyboardSizeProfile(profile: KeyboardSizeProfile) {
+        if (keyboardSizeProfile == profile) return
+        keyboardSizeProfile = profile
+        requestLayout()
+    }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val desiredHeight = dp(
-            KeyboardLayoutContract.preferredKeyboardHeightDp(
-                isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
-            ),
-        ).toInt()
+        val desiredHeight = keyboardSizeProfile.preferredHeightPx(
+            isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
+            density = density,
+        )
         setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), resolveSize(desiredHeight, heightMeasureSpec))
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         cancelAllTouches()
+        rebuildSurfaceShaders(w, h)
+        relayoutCandidates(w, h)
+        rebuildKeys(w, h)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        cancelOrdinaryTouches()
+        iconPainter.updateFontScale(newConfig.fontScale)
+        val themeChanged = palette.update(newConfig.isNightMode())
+        if (themeChanged) {
+            rebuildSurfaceShaders(width, height)
+        }
+        relayoutCandidates()
+        rebuildKeys(width, height)
+        requestLayout()
+        invalidate()
+    }
+
+    private fun rebuildSurfaceShaders(w: Int, h: Int) {
+        val safeWidth = w.coerceAtLeast(1)
+        val safeHeight = h.coerceAtLeast(1)
         backgroundShader = LinearGradient(
             0f,
             0f,
             0f,
-            h.toFloat(),
+            safeHeight.toFloat(),
             color(0xFFF1F5FA.toInt(), 0xFF171819.toInt()),
             color(0xFFE6EDF6.toInt(), 0xFF111213.toInt()),
             Shader.TileMode.CLAMP,
@@ -897,7 +782,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         voiceWaveformShader = LinearGradient(
             dp(22f),
             0f,
-            maxOf(dp(23f), w - dp(22f)),
+            maxOf(dp(23f), safeWidth - dp(22f)),
             0f,
             intArrayOf(
                 color(0xFF20C7EE.toInt(), 0xFF34D9FF.toInt()),
@@ -920,8 +805,6 @@ class SenseKeyboardView @JvmOverloads constructor(
             ),
             null,
         )
-        rebuildCandidateLayout(w, h)
-        rebuildKeys(w, h)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -945,7 +828,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             drawEditorPanelBackground(canvas)
         } else {
             drawCandidates(canvas)
-            if (!candidatesExpanded) {
+            if (!candidatePanel.expanded) {
                 if (panel == Panel.CLIPBOARD) drawClipboardHeader(canvas)
                 if (panel == Panel.SYMBOLS) drawSymbolPanelBackground(canvas)
                 if (panel == Panel.TOOLBOX) drawToolboxPanelBackground(canvas)
@@ -1120,11 +1003,11 @@ class SenseKeyboardView @JvmOverloads constructor(
                     paint.strokeCap = Paint.Cap.ROUND
                     paint.color = color(0xFF3D9A70.toInt(), 0xFF74D9AA.toInt())
                     canvas.drawCircle(markerX, centerY, dp(5f), paint)
-                    iconPath.reset()
-                    iconPath.moveTo(markerX - dp(2.5f), centerY)
-                    iconPath.lineTo(markerX - dp(0.5f), centerY + dp(2f))
-                    iconPath.lineTo(markerX + dp(3f), centerY - dp(2.5f))
-                    canvas.drawPath(iconPath, paint)
+                    sharedPath.reset()
+                    sharedPath.moveTo(markerX - dp(2.5f), centerY)
+                    sharedPath.lineTo(markerX - dp(0.5f), centerY + dp(2f))
+                    sharedPath.lineTo(markerX + dp(3f), centerY - dp(2.5f))
+                    canvas.drawPath(sharedPath, paint)
                     paint.strokeCap = Paint.Cap.BUTT
                 }
                 AiSurfaceActivityState.FAILED -> {
@@ -1495,37 +1378,37 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun drawCandidates(canvas: Canvas) {
-        if (candidatesExpanded) {
+        if (candidatePanel.expanded) {
             drawExpandedCandidates(canvas)
             return
         }
-        if (composing.isBlank() && candidates.isEmpty()) return
+        if (candidatePanel.composing.isBlank() && candidatePanel.candidates.isEmpty()) return
         paint.style = Paint.Style.FILL
         paint.color = color(0x22FFFFFF, 0x0FFFFFFF)
         canvas.drawRect(0f, 0f, width.toFloat(), collapsedCandidateBottom(), paint)
 
         val headerSpec = CandidatePresentationPolicy.headerSpec(
-            composing = composing,
-            hasCandidates = candidates.isNotEmpty(),
+            composing = candidatePanel.composing,
+            hasCandidates = candidatePanel.candidates.isNotEmpty(),
         )
         if (headerSpec?.role == CandidatePresentationPolicy.HeaderRole.COMPOSING) {
             paint.color = color(0xFF667085.toInt(), 0xFF8F949E.toInt())
             paint.textSize = sp(headerSpec.textSizeSp)
             paint.textAlign = Paint.Align.LEFT
             canvas.drawText(
-                composing,
+                candidatePanel.composing,
                 0,
-                minOf(12, composing.length),
+                minOf(12, candidatePanel.composing.length),
                 dp(headerSpec.xDp),
                 dp(headerSpec.yDp),
                 paint,
             )
         }
 
-        if (candidates.isEmpty()) return
+        if (candidatePanel.candidates.isEmpty()) return
 
         drawVisibleCandidates(canvas)
-        candidateControls.forEach { drawCandidateControl(canvas, it) }
+        candidatePanel.controls.forEach { drawCandidateControl(canvas, it) }
     }
 
     private fun drawExpandedCandidates(canvas: Canvas) {
@@ -1545,7 +1428,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         canvas.clipRect(dp(14f), 0f, headerRight, candidateHeight)
         drawCenteredText(
             canvas,
-            if (composing.isBlank()) "候选" else composing,
+            if (candidatePanel.composing.isBlank()) "候选" else candidatePanel.composing,
             dp(14f),
             candidateHeight / 2f,
         )
@@ -1561,38 +1444,76 @@ class SenseKeyboardView @JvmOverloads constructor(
         paint.textAlign = Paint.Align.CENTER
         drawCenteredText(
             canvas,
-            candidatePageLabel,
+            candidatePanel.pageLabel,
             width / 2f,
             pagerTop + expandedCandidatePagerHeight / 2f,
         )
-        candidateControls.forEach { drawCandidateControl(canvas, it) }
+        candidatePanel.controls.forEach { drawCandidateControl(canvas, it) }
     }
 
     private fun drawVisibleCandidates(canvas: Canvas) {
-        val viewportSave = if (!candidatesExpanded) {
-            collapsedCandidateViewportBounds?.let { bounds ->
-                canvas.save().also { canvas.clipRect(bounds) }
+        if (candidatePanel.expanded) {
+            for (candidate in candidatePanel.visibleCandidates) {
+                drawCandidateValue(canvas, candidate, textSizeSp = 17f)
             }
-        } else {
-            null
+            return
         }
-        visibleCandidates.forEach { candidate ->
-            val text = candidates.getOrNull(candidate.sourceIndex) ?: return@forEach
-            if (isCandidatePressed(candidate)) {
-                paint.style = Paint.Style.FILL
-                paint.color = color(0x294F7CF5, 0x505E63D8)
-                canvas.drawRoundRect(candidate.bounds, dp(7f), dp(7f), paint)
-            }
+
+        val viewport = candidatePanel.collapsedViewportBounds ?: return
+        val offset = candidatePanel.scrollOffset
+        val visibleContentLeft = viewport.left + offset
+        val visibleContentRight = viewport.right + offset
+        val saveCount = canvas.save()
+        canvas.clipRect(viewport.left, viewport.top, viewport.right, viewport.bottom)
+        canvas.translate(-offset, 0f)
+        var candidateIndex = candidatePanel.firstCandidateEndingAfter(visibleContentLeft)
+        val textSize = if (candidateTakesToolbar()) 19f else 17f
+        while (candidateIndex < candidatePanel.visibleCandidates.size) {
+            val candidate = candidatePanel.visibleCandidates[candidateIndex]
+            if (candidate.bounds.left >= visibleContentRight) break
+            drawCandidateValue(canvas, candidate, textSizeSp = textSize)
+            candidateIndex += 1
+        }
+        canvas.restoreToCount(saveCount)
+    }
+
+    private fun drawCandidateValue(
+        canvas: Canvas,
+        candidate: VisibleCandidate,
+        textSizeSp: Float,
+    ) {
+        val text = candidatePanel.candidates.getOrNull(candidate.sourceIndex) ?: return
+        if (isCandidatePressed(candidate)) {
             paint.style = Paint.Style.FILL
-            paint.color = color(0xFF172033.toInt(), 0xFFF3F4F7.toInt())
-            paint.textSize = sp(if (!candidatesExpanded && candidateTakesToolbar()) 19f else 17f)
-            paint.textAlign = Paint.Align.LEFT
-            val saveCount = canvas.save()
-            canvas.clipRect(candidate.bounds)
-            drawCenteredText(canvas, text, candidate.textAnchor, candidate.bounds.centerY() + dp(2f))
-            canvas.restoreToCount(saveCount)
+            paint.color = color(0x294F7CF5, 0x505E63D8)
+            canvas.drawRoundRect(
+                candidate.bounds.left,
+                candidate.bounds.top,
+                candidate.bounds.right,
+                candidate.bounds.bottom,
+                dp(7f),
+                dp(7f),
+                paint,
+            )
         }
-        viewportSave?.let(canvas::restoreToCount)
+        paint.style = Paint.Style.FILL
+        paint.color = color(0xFF172033.toInt(), 0xFFF3F4F7.toInt())
+        paint.textSize = sp(textSizeSp)
+        paint.textAlign = Paint.Align.LEFT
+        val saveCount = canvas.save()
+        canvas.clipRect(
+            candidate.bounds.left,
+            candidate.bounds.top,
+            candidate.bounds.right,
+            candidate.bounds.bottom,
+        )
+        drawCenteredText(
+            canvas,
+            text,
+            candidate.textAnchor,
+            candidate.bounds.centerY + dp(2f),
+        )
+        canvas.restoreToCount(saveCount)
     }
 
     private fun drawCandidateControl(canvas: Canvas, slot: CandidateControlSlot) {
@@ -1600,7 +1521,15 @@ class SenseKeyboardView @JvmOverloads constructor(
         if (pressed) {
             paint.style = Paint.Style.FILL
             paint.color = color(0x254F7CF5, 0x405E63D8)
-            canvas.drawRoundRect(slot.bounds, dp(9f), dp(9f), paint)
+            canvas.drawRoundRect(
+                slot.bounds.left,
+                slot.bounds.top,
+                slot.bounds.right,
+                slot.bounds.bottom,
+                dp(9f),
+                dp(9f),
+                paint,
+            )
         }
         paint.style = Paint.Style.FILL
         paint.color = if (slot.enabled) {
@@ -1616,7 +1545,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             CandidateControl.PREVIOUS_PAGE -> "‹"
             CandidateControl.NEXT_PAGE -> "›"
         }
-        drawCenteredText(canvas, label, slot.bounds.centerX(), slot.bounds.centerY())
+        drawCenteredText(canvas, label, slot.bounds.centerX, slot.bounds.centerY)
     }
 
     private fun drawClipboardHeader(canvas: Canvas) {
@@ -1663,39 +1592,24 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun drawKeys(canvas: Canvas) {
-        keys.forEach { key ->
-            val pressed = isKeyPressed(key)
-            when (key.style) {
-                KeyStyle.TOOL -> drawToolKey(canvas, key, pressed)
-                KeyStyle.SYSTEM -> drawSystemKey(canvas, key, pressed)
-                KeyStyle.CARD -> drawCardKey(canvas, key, pressed)
-                KeyStyle.EMOJI -> drawEmojiKey(canvas, key, pressed)
-                KeyStyle.CATEGORY -> drawCategoryKey(canvas, key, pressed)
-                KeyStyle.SYMBOL -> drawSymbolKey(canvas, key, pressed)
-                KeyStyle.SYMBOL_CATEGORY -> drawSymbolCategoryKey(canvas, key, pressed)
-                KeyStyle.RAIL -> drawRailKey(canvas, key, pressed)
-                KeyStyle.EDITOR_DIRECTION -> drawEditorDirectionKey(canvas, key, pressed)
-                KeyStyle.EDITOR_PRIMARY -> drawEditorPrimaryKey(canvas, key, pressed)
-                KeyStyle.EDITOR_ACTION -> drawEditorActionKey(canvas, key, pressed)
-                KeyStyle.VOICE_PRIMARY -> drawVoicePrimaryKey(canvas, key, pressed)
-                KeyStyle.TOOLBOX_CARD -> drawToolboxCard(canvas, key, pressed)
-                else -> drawKeyboardKey(canvas, key, pressed)
+        var index = 0
+        while (index < keys.size) {
+            val scrollPanel = keys[index].scrollPanel
+            if (scrollPanel == null) {
+                drawKey(canvas, keys[index])
+                index += 1
+                continue
             }
-            if (
-                isActiveSkillSource(key) &&
-                key.style != KeyStyle.LETTER &&
-                key.style != KeyStyle.ACTION &&
-                activeSkillAuroraOverlay == null
-            ) {
-                drawSkillAuroraOverlay(canvas, key.bounds, foregroundOnly = true)
-                drawActiveSkillMarker(canvas, key.bounds)
-            } else if (
-                isActiveSkillSource(key) &&
-                key.style != KeyStyle.LETTER &&
-                key.style != KeyStyle.ACTION
-            ) {
-                drawActiveSkillMarker(canvas, key.bounds)
+            val runStart = index
+            while (index < keys.size && keys[index].scrollPanel == scrollPanel) {
+                index += 1
             }
+            drawScrollableKeyRun(
+                canvas = canvas,
+                panel = scrollPanel,
+                startIndex = runStart,
+                endIndex = index,
+            )
         }
         drawSkillPicker(canvas)
         if (shouldAnimateSkills()) {
@@ -1703,6 +1617,72 @@ class SenseKeyboardView @JvmOverloads constructor(
         } else if (skillAnimationFrameScheduled) {
             removeCallbacks(skillAnimationRunnable)
             skillAnimationFrameScheduled = false
+        }
+    }
+
+    private fun drawScrollableKeyRun(
+        canvas: Canvas,
+        panel: ScrollPanel,
+        startIndex: Int,
+        endIndex: Int,
+    ) {
+        val viewport = panelViewportBounds(panel) ?: return
+        val offset = scrollStateFor(panel).offset
+        val saveCount = canvas.save()
+        canvas.clipRect(viewport)
+        canvas.translate(0f, -offset)
+        val visibleContentTop = viewport.top + offset
+        val visibleContentBottom = viewport.bottom + offset
+        var low = startIndex
+        var high = endIndex
+        while (low < high) {
+            val middle = (low + high) ushr 1
+            if (keys[middle].bounds.bottom <= visibleContentTop) {
+                low = middle + 1
+            } else {
+                high = middle
+            }
+        }
+        for (index in low until endIndex) {
+            val key = keys[index]
+            if (key.bounds.top >= visibleContentBottom) break
+            drawKey(canvas, key)
+        }
+        canvas.restoreToCount(saveCount)
+    }
+
+    private fun drawKey(canvas: Canvas, key: Key) {
+        val pressed = isKeyPressed(key)
+        when (key.style) {
+            KeyStyle.TOOL -> drawToolKey(canvas, key, pressed)
+            KeyStyle.SYSTEM -> drawSystemKey(canvas, key, pressed)
+            KeyStyle.CARD -> drawCardKey(canvas, key, pressed)
+            KeyStyle.EMOJI -> drawEmojiKey(canvas, key, pressed)
+            KeyStyle.CATEGORY -> drawCategoryKey(canvas, key, pressed)
+            KeyStyle.SYMBOL -> drawSymbolKey(canvas, key, pressed)
+            KeyStyle.SYMBOL_CATEGORY -> drawSymbolCategoryKey(canvas, key, pressed)
+            KeyStyle.RAIL -> drawRailKey(canvas, key, pressed)
+            KeyStyle.EDITOR_DIRECTION -> drawEditorDirectionKey(canvas, key, pressed)
+            KeyStyle.EDITOR_PRIMARY -> drawEditorPrimaryKey(canvas, key, pressed)
+            KeyStyle.EDITOR_ACTION -> drawEditorActionKey(canvas, key, pressed)
+            KeyStyle.VOICE_PRIMARY -> drawVoicePrimaryKey(canvas, key, pressed)
+            KeyStyle.TOOLBOX_CARD -> drawToolboxCard(canvas, key, pressed)
+            else -> drawKeyboardKey(canvas, key, pressed)
+        }
+        if (
+            isActiveSkillSource(key) &&
+            key.style != KeyStyle.LETTER &&
+            key.style != KeyStyle.ACTION &&
+            activeSkillAuroraOverlay == null
+        ) {
+            drawSkillAuroraOverlay(canvas, key.bounds, foregroundOnly = true)
+            drawActiveSkillMarker(canvas, key.bounds)
+        } else if (
+            isActiveSkillSource(key) &&
+            key.style != KeyStyle.LETTER &&
+            key.style != KeyStyle.ACTION
+        ) {
+            drawActiveSkillMarker(canvas, key.bounds)
         }
     }
 
@@ -2271,9 +2251,6 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun drawEmojiKey(canvas: Canvas, key: Key, pressed: Boolean) {
-        val clipBounds = emojiGridBounds ?: return
-        val saveCount = canvas.save()
-        canvas.clipRect(clipBounds)
         if (pressed) {
             paint.style = Paint.Style.FILL
             paint.color = color(0x255B7DF0, 0x456D61D8)
@@ -2284,7 +2261,6 @@ class SenseKeyboardView @JvmOverloads constructor(
         paint.textSize = sp(25f)
         paint.textAlign = Paint.Align.CENTER
         drawCenteredText(canvas, key.label, key.bounds.centerX(), key.bounds.centerY())
-        canvas.restoreToCount(saveCount)
     }
 
     private fun drawCategoryKey(canvas: Canvas, key: Key, pressed: Boolean) {
@@ -2308,9 +2284,6 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun drawSymbolCategoryKey(canvas: Canvas, key: Key, pressed: Boolean) {
-        val bounds = symbolCategoryBounds ?: return
-        val saveCount = canvas.save()
-        canvas.clipRect(bounds)
         val selected = key.clipboardIndex == symbolCategoryIndex
         if (selected || pressed) {
             paint.style = Paint.Style.FILL
@@ -2329,13 +2302,9 @@ class SenseKeyboardView @JvmOverloads constructor(
         paint.textSize = sp(13.5f)
         paint.textAlign = Paint.Align.CENTER
         drawCenteredText(canvas, key.label, key.bounds.centerX(), key.bounds.centerY())
-        canvas.restoreToCount(saveCount)
     }
 
     private fun drawSymbolKey(canvas: Canvas, key: Key, pressed: Boolean) {
-        val bounds = symbolGridBounds ?: return
-        val saveCount = canvas.save()
-        canvas.clipRect(bounds)
         paint.style = Paint.Style.FILL
         paint.color = if (pressed) {
             color(0x405B7DF0, 0x556D61D8)
@@ -2366,7 +2335,6 @@ class SenseKeyboardView @JvmOverloads constructor(
         )
         drawCenteredText(canvas, key.label, key.bounds.centerX(), key.bounds.centerY())
         canvas.restoreToCount(textSave)
-        canvas.restoreToCount(saveCount)
     }
 
     private fun drawRailKey(canvas: Canvas, key: Key, pressed: Boolean) {
@@ -2463,229 +2431,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun drawIcon(canvas: Canvas, icon: Icon, bounds: RectF, tint: Int) {
-        val geometry = CanvasIconGeometry.resolve(
-            left = bounds.left,
-            top = bounds.top,
-            right = bounds.right,
-            bottom = bounds.bottom,
-            density = density,
-        )
-        val cx = geometry.centerX
-        val cy = geometry.centerY
-        val unit = geometry.unit
-        paint.shader = null
-        paint.color = tint
-        paint.strokeWidth = geometry.strokeWidth
-        paint.strokeCap = Paint.Cap.ROUND
-        paint.strokeJoin = Paint.Join.ROUND
-        paint.style = Paint.Style.STROKE
-        iconPath.reset()
-        when (icon) {
-            Icon.TOOLS -> {
-                repeat(2) { row ->
-                    repeat(2) { column ->
-                        val x = cx + (column * 2 - 1) * unit * 4f
-                        val y = cy + (row * 2 - 1) * unit * 4f
-                        canvas.drawRoundRect(x - unit * 2f, y - unit * 2f, x + unit * 2f, y + unit * 2f, unit, unit, paint)
-                    }
-                }
-            }
-            Icon.SYMBOLS -> {
-                paint.textAlign = Paint.Align.CENTER
-                paint.textSize = sp(17f)
-                paint.style = Paint.Style.FILL
-                canvas.drawText("Ω", cx - unit * 3.2f, cy + unit * 3.4f, paint)
-                paint.textSize = sp(12f)
-                canvas.drawText("#", cx + unit * 4.2f, cy - unit * 2.2f, paint)
-            }
-            Icon.KEYBOARD -> {
-                canvas.drawRoundRect(cx - unit * 8f, cy - unit * 6f, cx + unit * 8f, cy + unit * 6f, unit * 2f, unit * 2f, paint)
-                repeat(3) { row ->
-                    repeat(5) { column ->
-                        canvas.drawCircle(cx - unit * 5.5f + column * unit * 2.75f, cy - unit * 3.5f + row * unit * 3f, unit * 0.45f, paint)
-                    }
-                }
-                canvas.drawLine(cx - unit * 4f, cy + unit * 3.8f, cx + unit * 4f, cy + unit * 3.8f, paint)
-            }
-            Icon.EMOJI -> {
-                canvas.drawCircle(cx, cy, unit * 8f, paint)
-                canvas.drawCircle(cx - unit * 2.8f, cy - unit * 2f, unit * 0.7f, paint)
-                canvas.drawCircle(cx + unit * 2.8f, cy - unit * 2f, unit * 0.7f, paint)
-                iconPath.moveTo(cx - unit * 3.5f, cy + unit * 2f)
-                iconPath.quadTo(cx, cy + unit * 5.5f, cx + unit * 3.5f, cy + unit * 2f)
-                canvas.drawPath(iconPath, paint)
-            }
-            Icon.EDITOR -> {
-                canvas.drawLine(cx, cy - unit * 7f, cx, cy + unit * 7f, paint)
-                canvas.drawLine(cx - unit * 3f, cy - unit * 7f, cx + unit * 3f, cy - unit * 7f, paint)
-                canvas.drawLine(cx - unit * 3f, cy + unit * 7f, cx + unit * 3f, cy + unit * 7f, paint)
-                iconPath.moveTo(cx - unit * 5f, cy - unit * 2.5f)
-                iconPath.lineTo(cx - unit * 7.5f, cy)
-                iconPath.lineTo(cx - unit * 5f, cy + unit * 2.5f)
-                iconPath.moveTo(cx + unit * 5f, cy - unit * 2.5f)
-                iconPath.lineTo(cx + unit * 7.5f, cy)
-                iconPath.lineTo(cx + unit * 5f, cy + unit * 2.5f)
-                canvas.drawPath(iconPath, paint)
-            }
-            Icon.VOICE -> {
-                canvas.drawRoundRect(cx - unit * 3.2f, cy - unit * 7.5f, cx + unit * 3.2f, cy + unit * 2f, unit * 3.2f, unit * 3.2f, paint)
-                iconPath.moveTo(cx - unit * 6f, cy)
-                iconPath.quadTo(cx - unit * 5.5f, cy + unit * 6f, cx, cy + unit * 6f)
-                iconPath.quadTo(cx + unit * 5.5f, cy + unit * 6f, cx + unit * 6f, cy)
-                canvas.drawPath(iconPath, paint)
-                canvas.drawLine(cx, cy + unit * 6f, cx, cy + unit * 9f, paint)
-            }
-            Icon.SETTINGS -> {
-                canvas.drawCircle(cx, cy, unit * 3.2f, paint)
-                repeat(8) { index ->
-                    val angle = Math.PI * index / 4.0
-                    val innerX = cx + kotlin.math.cos(angle).toFloat() * unit * 5.5f
-                    val innerY = cy + kotlin.math.sin(angle).toFloat() * unit * 5.5f
-                    val outerX = cx + kotlin.math.cos(angle).toFloat() * unit * 8f
-                    val outerY = cy + kotlin.math.sin(angle).toFloat() * unit * 8f
-                    canvas.drawLine(innerX, innerY, outerX, outerY, paint)
-                }
-            }
-            Icon.HIDE -> {
-                iconPath.moveTo(cx - unit * 7f, cy - unit * 2f)
-                iconPath.lineTo(cx, cy + unit * 5f)
-                iconPath.lineTo(cx + unit * 7f, cy - unit * 2f)
-                canvas.drawPath(iconPath, paint)
-            }
-            Icon.DELETE -> {
-                iconPath.moveTo(cx - unit * 8f, cy)
-                iconPath.lineTo(cx - unit * 3f, cy - unit * 6f)
-                iconPath.lineTo(cx + unit * 8f, cy - unit * 6f)
-                iconPath.lineTo(cx + unit * 8f, cy + unit * 6f)
-                iconPath.lineTo(cx - unit * 3f, cy + unit * 6f)
-                iconPath.close()
-                canvas.drawPath(iconPath, paint)
-                canvas.drawLine(cx + unit, cy - unit * 2.8f, cx + unit * 5f, cy + unit * 2.8f, paint)
-                canvas.drawLine(cx + unit * 5f, cy - unit * 2.8f, cx + unit, cy + unit * 2.8f, paint)
-            }
-            Icon.ENTER -> {
-                iconPath.moveTo(cx + unit * 7f, cy - unit * 6f)
-                iconPath.lineTo(cx + unit * 7f, cy + unit * 2f)
-                iconPath.quadTo(cx + unit * 7f, cy + unit * 6f, cx + unit * 3f, cy + unit * 6f)
-                iconPath.lineTo(cx - unit * 7f, cy + unit * 6f)
-                iconPath.moveTo(cx - unit * 3f, cy + unit * 2f)
-                iconPath.lineTo(cx - unit * 7f, cy + unit * 6f)
-                iconPath.lineTo(cx - unit * 3f, cy + unit * 9f)
-                canvas.drawPath(iconPath, paint)
-            }
-            Icon.SHIFT -> {
-                iconPath.moveTo(cx - unit * 7f, cy)
-                iconPath.lineTo(cx, cy - unit * 7f)
-                iconPath.lineTo(cx + unit * 7f, cy)
-                iconPath.lineTo(cx + unit * 3.5f, cy)
-                iconPath.lineTo(cx + unit * 3.5f, cy + unit * 7f)
-                iconPath.lineTo(cx - unit * 3.5f, cy + unit * 7f)
-                iconPath.lineTo(cx - unit * 3.5f, cy)
-                iconPath.close()
-                canvas.drawPath(iconPath, paint)
-            }
-            Icon.SPACE -> {
-                iconPath.moveTo(cx - unit * 8f, cy + unit * 1f)
-                iconPath.lineTo(cx - unit * 8f, cy + unit * 5f)
-                iconPath.lineTo(cx + unit * 8f, cy + unit * 5f)
-                iconPath.lineTo(cx + unit * 8f, cy + unit * 1f)
-                canvas.drawPath(iconPath, paint)
-            }
-            Icon.BACK -> {
-                iconPath.moveTo(cx - unit * 7f, cy)
-                iconPath.lineTo(cx - unit * 2f, cy - unit * 5f)
-                iconPath.moveTo(cx - unit * 7f, cy)
-                iconPath.lineTo(cx - unit * 2f, cy + unit * 5f)
-                iconPath.moveTo(cx - unit * 7f, cy)
-                iconPath.lineTo(cx + unit * 7f, cy)
-                canvas.drawPath(iconPath, paint)
-            }
-            Icon.UP -> {
-                iconPath.moveTo(cx, cy - unit * 7f)
-                iconPath.lineTo(cx - unit * 5f, cy - unit * 2f)
-                iconPath.moveTo(cx, cy - unit * 7f)
-                iconPath.lineTo(cx + unit * 5f, cy - unit * 2f)
-                iconPath.moveTo(cx, cy - unit * 7f)
-                iconPath.lineTo(cx, cy + unit * 7f)
-                canvas.drawPath(iconPath, paint)
-            }
-            Icon.DOWN -> {
-                iconPath.moveTo(cx, cy + unit * 7f)
-                iconPath.lineTo(cx - unit * 5f, cy + unit * 2f)
-                iconPath.moveTo(cx, cy + unit * 7f)
-                iconPath.lineTo(cx + unit * 5f, cy + unit * 2f)
-                iconPath.moveTo(cx, cy + unit * 7f)
-                iconPath.lineTo(cx, cy - unit * 7f)
-                canvas.drawPath(iconPath, paint)
-            }
-            Icon.RIGHT -> {
-                iconPath.moveTo(cx + unit * 7f, cy)
-                iconPath.lineTo(cx + unit * 2f, cy - unit * 5f)
-                iconPath.moveTo(cx + unit * 7f, cy)
-                iconPath.lineTo(cx + unit * 2f, cy + unit * 5f)
-                iconPath.moveTo(cx + unit * 7f, cy)
-                iconPath.lineTo(cx - unit * 7f, cy)
-                canvas.drawPath(iconPath, paint)
-            }
-            Icon.HOME -> {
-                canvas.drawLine(cx - unit * 7f, cy - unit * 7f, cx - unit * 7f, cy + unit * 7f, paint)
-                iconPath.moveTo(cx - unit * 5f, cy)
-                iconPath.lineTo(cx, cy - unit * 5f)
-                iconPath.moveTo(cx - unit * 5f, cy)
-                iconPath.lineTo(cx, cy + unit * 5f)
-                iconPath.moveTo(cx - unit * 5f, cy)
-                iconPath.lineTo(cx + unit * 7f, cy)
-                canvas.drawPath(iconPath, paint)
-            }
-            Icon.END -> {
-                canvas.drawLine(cx + unit * 7f, cy - unit * 7f, cx + unit * 7f, cy + unit * 7f, paint)
-                iconPath.moveTo(cx + unit * 5f, cy)
-                iconPath.lineTo(cx, cy - unit * 5f)
-                iconPath.moveTo(cx + unit * 5f, cy)
-                iconPath.lineTo(cx, cy + unit * 5f)
-                iconPath.moveTo(cx + unit * 5f, cy)
-                iconPath.lineTo(cx - unit * 7f, cy)
-                canvas.drawPath(iconPath, paint)
-            }
-            Icon.CLEAR -> {
-                canvas.drawRoundRect(cx - unit * 5f, cy - unit * 4f, cx + unit * 5f, cy + unit * 7f, unit, unit, paint)
-                canvas.drawLine(cx - unit * 7f, cy - unit * 6f, cx + unit * 7f, cy - unit * 6f, paint)
-                canvas.drawLine(cx - unit * 2.5f, cy - unit * 8f, cx + unit * 2.5f, cy - unit * 8f, paint)
-            }
-            Icon.REFRESH -> {
-                iconPath.moveTo(cx + unit * 6f, cy - unit * 5f)
-                iconPath.lineTo(cx + unit * 6f, cy - unit * 0.5f)
-                iconPath.lineTo(cx + unit * 2f, cy - unit * 2f)
-                iconPath.moveTo(cx + unit * 5f, cy - unit * 3f)
-                iconPath.cubicTo(cx + unit, cy - unit * 8f, cx - unit * 7f, cy - unit * 5f, cx - unit * 7f, cy + unit)
-                iconPath.cubicTo(cx - unit * 7f, cy + unit * 7f, cx + unit * 3f, cy + unit * 9f, cx + unit * 7f, cy + unit * 3f)
-                canvas.drawPath(iconPath, paint)
-            }
-            Icon.CLIPBOARD -> {
-                canvas.drawRoundRect(
-                    cx - unit * 7f,
-                    cy - unit * 6f,
-                    cx + unit * 4f,
-                    cy + unit * 5f,
-                    unit * 1.5f,
-                    unit * 1.5f,
-                    paint,
-                )
-                canvas.drawRoundRect(
-                    cx - unit * 3f,
-                    cy - unit * 3f,
-                    cx + unit * 8f,
-                    cy + unit * 8f,
-                    unit * 1.5f,
-                    unit * 1.5f,
-                    paint,
-                )
-                canvas.drawLine(cx, cy + unit, cx + unit * 5f, cy + unit, paint)
-                canvas.drawLine(cx, cy + unit * 4f, cx + unit * 5f, cy + unit * 4f, paint)
-            }
-        }
-        paint.style = Paint.Style.FILL
-        paint.strokeCap = Paint.Cap.BUTT
+        iconPainter.draw(canvas, icon, bounds, tint)
     }
 
     private fun drawCenteredText(canvas: Canvas, text: String, x: Float, centerY: Float) {
@@ -2694,192 +2440,8 @@ class SenseKeyboardView @JvmOverloads constructor(
         canvas.drawText(text, x, baseline, paint)
     }
 
-    private fun rebuildCandidateLayout(viewWidth: Int, viewHeight: Int) {
-        visibleCandidates.clear()
-        candidateControls.clear()
-        expandedCandidateGridBounds = null
-        collapsedCandidateViewportBounds = null
-        if (viewWidth <= 0) return
-
-        val systemBarTop = viewHeight - systemBarHeight
-        val gridTop = candidateHeight + dp(5f)
-        val pagerTop = systemBarTop - expandedCandidatePagerHeight
-        val gridBottom = pagerTop - dp(4f)
-        val hasExpandedGridRoom = viewHeight > 0 && gridBottom - gridTop >= expandedCandidateRowHeight
-
-        if (candidates.isEmpty()) {
-            collapsedCandidateLayout = null
-            candidateStripConfiguredLayout = null
-            candidateStripLayoutCache.invalidate()
-            candidateStripScrollState.configure(
-                maximumOffset = 0f,
-                viewportExtent = 0f,
-                snapOffsets = listOf(0f),
-            )
-            if (candidatesExpanded && composing.isNotBlank() && hasExpandedGridRoom) {
-                expandedCandidateGridBounds = RectF(0f, gridTop, viewWidth.toFloat(), gridBottom)
-                candidatePageLabel = "…"
-                addExpandedCandidateControls(
-                    viewWidth = viewWidth,
-                    systemBarTop = systemBarTop,
-                    pagerTop = pagerTop,
-                    previousEnabled = false,
-                    nextEnabled = false,
-                )
-            } else {
-                candidatesExpanded = false
-                candidatePageIndex = 0
-                candidatePageLabel = "1 / 1"
-            }
-            return
-        }
-        paint.textSize = sp(if (candidateTakesToolbar()) 19f else 17f)
-        val stripCacheKey = CandidateStripLayoutCache.Key(
-            generation = candidateGeneration,
-            viewWidth = viewWidth,
-            takesToolbar = candidateTakesToolbar(),
-        )
-        collapsedCandidateLayout = candidateStripLayoutCache.getOrBuild(stripCacheKey) {
-            CandidateStripGeometry.layout(
-                viewWidth = viewWidth.toFloat(),
-                measuredTextWidths = List(candidates.size) { measureCandidateWidth(it) },
-                padding = horizontalPadding,
-                textInset = candidateTextInset,
-                gap = candidateGap,
-                minimumWidth = candidateMinimumWidth,
-                overflowControlWidth = candidateControlWidth,
-            )
-        }
-        val collapsed = checkNotNull(collapsedCandidateLayout)
-        if (candidateStripConfiguredLayout !== collapsed) {
-            candidateStripScrollState.configure(
-                maximumOffset = collapsed.maximumOffset,
-                viewportExtent = collapsed.viewportExtent,
-                snapOffsets = collapsed.snapOffsets,
-            )
-            candidateStripConfiguredLayout = collapsed
-        }
-
-        if (!collapsed.hasOverflow) {
-            candidatesExpanded = false
-            candidatePageIndex = 0
-        }
-
-        val canExpand = collapsed.hasOverflow &&
-            hasExpandedGridRoom
-
-        if (candidatesExpanded && canExpand) {
-            val cacheKey = CandidatePageCacheKey(candidateGeneration, viewWidth, viewHeight)
-            if (candidatePageCacheKey != cacheKey) {
-                candidatePages = KeyboardLayoutContract.pagedCandidateGrid(
-                    viewWidth = viewWidth.toFloat(),
-                    contentTop = gridTop,
-                    contentBottom = gridBottom,
-                    measuredTextWidths = List(candidates.size) { measureCandidateWidth(it) },
-                    horizontalPadding = horizontalPadding,
-                    textInset = candidateTextInset,
-                    horizontalGap = candidateGap,
-                    verticalGap = dp(4f),
-                    minimumWidth = candidateMinimumWidth,
-                    rowHeight = expandedCandidateRowHeight,
-                )
-                candidatePageCacheKey = cacheKey
-            }
-            if (candidatePages.isEmpty()) {
-                candidatesExpanded = false
-                candidatePageIndex = 0
-            } else {
-                expandedCandidateGridBounds = RectF(0f, gridTop, viewWidth.toFloat(), gridBottom)
-                candidatePageIndex = candidatePageIndex.coerceIn(0, candidatePages.lastIndex)
-                candidatePageLabel = "${candidatePageIndex + 1} / ${candidatePages.size}"
-                candidatePages[candidatePageIndex].slots.forEach { slot ->
-                    visibleCandidates += VisibleCandidate(
-                        sourceIndex = slot.sourceIndex,
-                        bounds = RectF(slot.left, slot.top, slot.right, slot.bottom),
-                        textAnchor = slot.textAnchor,
-                    )
-                }
-                addExpandedCandidateControls(
-                    viewWidth = viewWidth,
-                    systemBarTop = systemBarTop,
-                    pagerTop = pagerTop,
-                    previousEnabled = candidatePageIndex > 0,
-                    nextEnabled = candidatePageIndex < candidatePages.lastIndex,
-                )
-                return
-            }
-        } else if (candidatesExpanded) {
-            candidatesExpanded = false
-            candidatePageIndex = 0
-        }
-
-        val collapsedBottom = collapsedCandidateBottom()
-        val top = if (composing.isBlank()) dp(3f) else dp(18f)
-        collapsedCandidateViewportBounds = RectF(
-            collapsed.viewportLeft,
-            0f,
-            collapsed.viewportRight,
-            collapsedBottom,
-        )
-        collapsed.slots.forEachIndexed { sourceIndex, slot ->
-            val shiftedLeft = slot.left - candidateStripScrollState.offset
-            val shiftedRight = slot.right - candidateStripScrollState.offset
-            if (shiftedRight <= collapsed.viewportLeft || shiftedLeft >= collapsed.viewportRight) {
-                return@forEachIndexed
-            }
-            visibleCandidates += VisibleCandidate(
-                sourceIndex = sourceIndex,
-                bounds = RectF(
-                    maxOf(shiftedLeft, collapsed.viewportLeft),
-                    top,
-                    minOf(shiftedRight, collapsed.viewportRight),
-                    collapsedBottom - dp(3f),
-                ),
-                textAnchor = slot.textAnchor - candidateStripScrollState.offset,
-            )
-        }
-        if (collapsed.hasOverflow && canExpand) {
-            candidateControls += CandidateControlSlot(
-                CandidateControl.EXPAND,
-                RectF(viewWidth - candidateControlWidth, 0f, viewWidth.toFloat(), collapsedBottom),
-                enabled = candidateRevision == compositionRevision,
-            )
-        }
-    }
-
-    private fun measureCandidateWidth(sourceIndex: Int): Float {
-        val cached = candidateMeasuredWidths[sourceIndex]
-        if (!cached.isNaN()) return cached
-        return paint.measureText(candidates[sourceIndex]).also { measured ->
-            candidateMeasuredWidths[sourceIndex] = measured
-        }
-    }
-
-    private fun addExpandedCandidateControls(
-        viewWidth: Int,
-        systemBarTop: Float,
-        pagerTop: Float,
-        previousEnabled: Boolean,
-        nextEnabled: Boolean,
-    ) {
-        candidateControls += CandidateControlSlot(
-            CandidateControl.COLLAPSE,
-            RectF(viewWidth - candidateControlWidth, 0f, viewWidth.toFloat(), candidateHeight),
-        )
-        val pagerButtonWidth = dp(68f)
-        candidateControls += CandidateControlSlot(
-            CandidateControl.PREVIOUS_PAGE,
-            RectF(horizontalPadding, pagerTop, horizontalPadding + pagerButtonWidth, systemBarTop),
-            enabled = previousEnabled,
-        )
-        candidateControls += CandidateControlSlot(
-            CandidateControl.NEXT_PAGE,
-            RectF(viewWidth - horizontalPadding - pagerButtonWidth, pagerTop, viewWidth - horizontalPadding, systemBarTop),
-            enabled = nextEnabled,
-        )
-    }
-
     private fun rebuildKeys(viewWidth: Int, viewHeight: Int) {
+        keySceneBuildCount += 1L
         keys.clear()
         activeSkillSourceKey = null
         toolbarKeyStart = 0
@@ -2897,21 +2459,45 @@ class SenseKeyboardView @JvmOverloads constructor(
         voiceStatusCenterY = 0f
         voiceTranscriptCenterY = 0f
         if (viewWidth <= 0 || viewHeight <= 0) return
-        if (!candidatesExpanded) {
+        if (!candidatePanel.expanded) {
             if (
                 !candidateTakesToolbar() &&
                 panel != Panel.EDITOR &&
                 panel != Panel.VOICE
             ) {
                 toolbarKeyStart = keys.size
-                layoutToolbar(viewWidth)
+                primaryLayout.appendToolbar(viewWidth, keys)
                 toolbarKeyEndExclusive = keys.size
             }
             panelKeyStart = keys.size
             when (panel) {
-                Panel.LETTERS -> layoutLetters(viewWidth, viewHeight)
-                Panel.NUMBERS -> layoutNumbers(viewWidth, viewHeight)
-                Panel.TOOLBOX -> layoutToolbox(viewWidth, viewHeight)
+                Panel.LETTERS -> primaryLayout.appendLetters(
+                    request = KeyboardLetterLayoutRequest(
+                        viewWidth = viewWidth,
+                        viewHeight = viewHeight,
+                        chromeBottom = keyboardChromeBottom(),
+                        shifted = shifted,
+                        chineseMode = chineseMode,
+                        swipeMode = swipeCharacterMode(),
+                    ),
+                    output = keys,
+                )
+
+                Panel.NUMBERS -> primaryLayout.appendNumbers(
+                    viewWidth = viewWidth,
+                    viewHeight = viewHeight,
+                    chromeBottom = keyboardChromeBottom(),
+                    chineseMode = chineseMode,
+                    output = keys,
+                )
+
+                Panel.TOOLBOX -> primaryLayout.appendToolbox(
+                    viewWidth = viewWidth,
+                    viewHeight = viewHeight,
+                    chromeBottom = keyboardChromeBottom(),
+                    output = keys,
+                )
+
                 Panel.SYMBOLS -> layoutSymbols(viewWidth, viewHeight)
                 Panel.EMOJI -> layoutEmoji(viewWidth, viewHeight)
                 Panel.CLIPBOARD -> layoutClipboard(viewWidth, viewHeight)
@@ -2921,132 +2507,9 @@ class SenseKeyboardView @JvmOverloads constructor(
             panelKeyEndExclusive = keys.size
         }
         systemBarKeyStart = keys.size
-        layoutSystemBar(viewWidth, viewHeight)
+        primaryLayout.appendSystemBar(viewWidth, viewHeight, keys)
         systemBarKeyEndExclusive = keys.size
         resolveActiveSkillSourceKey()
-    }
-
-    private fun layoutToolbar(viewWidth: Int) {
-        val items = listOf(
-            Icon.TOOLS to KeyCodes.TOOLBOX,
-            Icon.KEYBOARD to KeyCodes.LETTERS,
-            Icon.EMOJI to KeyCodes.EMOJI,
-            Icon.EDITOR to KeyCodes.EDITOR,
-            Icon.VOICE to KeyCodes.VOICE,
-            Icon.HIDE to KeyCodes.HIDE,
-        )
-        val slot = viewWidth / items.size.toFloat()
-        items.forEachIndexed { index, (icon, code) ->
-            keys += Key(
-                "",
-                code,
-                RectF(index * slot + dp(5f), dp(3f), (index + 1) * slot - dp(5f), toolbarHeight - dp(3f)),
-                style = KeyStyle.TOOL,
-                icon = icon,
-            )
-        }
-    }
-
-    private fun layoutToolbox(viewWidth: Int, viewHeight: Int) {
-        val top = keyboardChromeBottom() + dp(38f)
-        val bottom = viewHeight - systemBarHeight - dp(6f)
-        if (bottom <= top) return
-        KeyboardLayoutContract.toolboxLayout(
-            viewWidth = viewWidth.toFloat(),
-            contentTop = top,
-            contentBottom = bottom,
-            horizontalPadding = dp(10f),
-            horizontalGap = dp(5f),
-            verticalGap = dp(4f),
-        ).forEach { slot ->
-            val icon = when (slot.item) {
-                KeyboardLayoutContract.ToolboxItem.SYMBOLS -> Icon.SYMBOLS
-                KeyboardLayoutContract.ToolboxItem.EDITOR -> Icon.EDITOR
-                KeyboardLayoutContract.ToolboxItem.VOICE -> Icon.VOICE
-                KeyboardLayoutContract.ToolboxItem.CLIPBOARD -> Icon.CLIPBOARD
-                KeyboardLayoutContract.ToolboxItem.EMOJI -> Icon.EMOJI
-                KeyboardLayoutContract.ToolboxItem.SETTINGS -> Icon.SETTINGS
-            }
-            keys += Key(
-                label = slot.item.label,
-                code = slot.item.keyCode,
-                bounds = RectF(slot.left, slot.top, slot.right, slot.bottom),
-                style = KeyStyle.TOOLBOX_CARD,
-                icon = icon,
-            )
-        }
-    }
-
-    private fun layoutLetters(viewWidth: Int, viewHeight: Int) {
-        val (top, rowHeight) = keyboardGrid(viewHeight)
-        layoutEqualRow(
-            "qwertyuiop".map { character ->
-                KeySpec(
-                    KeyboardLayoutContract.letterLabel(character, chineseMode, shifted),
-                    character.code,
-                    SwipeCharacterMap.forKey(character.code, swipeCharacterMode()),
-                )
-            },
-            top,
-            rowHeight,
-        )
-        layoutEqualRow(
-            "asdfghjkl".map { character ->
-                KeySpec(
-                    KeyboardLayoutContract.letterLabel(character, chineseMode, shifted),
-                    character.code,
-                    SwipeCharacterMap.forKey(character.code, swipeCharacterMode()),
-                )
-            },
-            top + rowHeight + keyGap,
-            rowHeight,
-            dp(18f),
-        )
-        layoutWeightedRow(
-            KeyboardLayoutContract.thirdLetterRow(shifted, chineseMode).map { it.toWeightedSpec() },
-            top + 2 * (rowHeight + keyGap),
-            rowHeight,
-        )
-        layoutBottomRow(top + 3 * (rowHeight + keyGap), rowHeight)
-    }
-
-    private fun layoutNumbers(viewWidth: Int, viewHeight: Int) {
-        val top = keyboardChromeBottom() + dp(7f)
-        val bottom = viewHeight - systemBarHeight - dp(7f)
-        if (
-            bottom - top <= keyGap * 4f ||
-            viewWidth.toFloat() <= horizontalPadding * 2f + keyGap * 4f
-        ) {
-            return
-        }
-        KeyboardLayoutContract.numericPadLayout(
-            viewWidth = viewWidth.toFloat(),
-            contentTop = top,
-            contentBottom = bottom,
-            horizontalPadding = horizontalPadding,
-            gap = keyGap,
-            chineseMode = chineseMode,
-        ).forEach { slot ->
-            val item = slot.key
-            val icon = when (item.code) {
-                KeyCodes.DELETE -> Icon.DELETE
-                KeyCodes.SPACE -> Icon.SPACE
-                KeyCodes.ENTER -> Icon.ENTER
-                else -> null
-            }
-            keys += Key(
-                label = item.label,
-                code = item.code,
-                bounds = RectF(slot.left, slot.top, slot.right, slot.bottom),
-                style = when {
-                    item.column == 0 && item.row < 4 -> KeyStyle.RAIL
-                    item.code < 0 || icon != null -> KeyStyle.ACTION
-                    else -> KeyStyle.LETTER
-                },
-                text = item.text,
-                icon = icon,
-            )
-        }
     }
 
     private fun layoutSymbols(viewWidth: Int, viewHeight: Int) {
@@ -3081,9 +2544,8 @@ class SenseKeyboardView @JvmOverloads constructor(
             viewportExtent = categoryViewport,
         )
         SymbolCatalog.categories.forEachIndexed { index, category ->
-            val itemTop = top + index * categoryHeight - symbolCategoryScrollState.offset
+            val itemTop = top + index * categoryHeight
             val itemBottom = itemTop + categoryHeight
-            if (itemBottom <= top || itemTop >= categoryBottom) return@forEachIndexed
             keys += Key(
                 label = category.label,
                 code = 0,
@@ -3114,9 +2576,8 @@ class SenseKeyboardView @JvmOverloads constructor(
         values.forEachIndexed { index, text ->
             val row = index / columns
             val column = index % columns
-            val itemTop = grid.top + row * itemHeight - symbolGridScrollState.offset
+            val itemTop = grid.top + row * itemHeight
             val itemBottom = itemTop + itemHeight
-            if (itemBottom <= grid.top || itemTop >= grid.bottom) return@forEachIndexed
             keys += Key(
                 label = text,
                 code = 0,
@@ -3142,14 +2603,10 @@ class SenseKeyboardView @JvmOverloads constructor(
         if (bottom <= top) return
         if (bottom - top <= categoryHeight + actionHeight + gridGap * 2f) {
             layoutWeightedRow(
-                listOf(
-                    WeightedSpec("", KeyCodes.LETTERS, 1.05f, KeyStyle.ACTION, icon = Icon.BACK),
-                    WeightedSpec("", KeyCodes.SPACE, 3.3f, KeyStyle.LETTER, icon = Icon.SPACE),
-                    WeightedSpec("", KeyCodes.DELETE, 1.05f, KeyStyle.ACTION, icon = Icon.DELETE),
-                    WeightedSpec("", KeyCodes.ENTER, 1.05f, KeyStyle.ACTION, icon = Icon.ENTER),
-                ),
-                top,
-                bottom - top,
+                items = EMOJI_ACTION_ROW,
+                viewWidth = viewWidth,
+                y = top,
+                rowHeight = bottom - top,
             )
             return
         }
@@ -3192,9 +2649,8 @@ class SenseKeyboardView @JvmOverloads constructor(
         values.forEachIndexed { index, text ->
             val row = index / columns
             val column = index % columns
-            val itemTop = geometry.gridTop + row * itemHeight - emojiScrollState.offset
+            val itemTop = geometry.gridTop + row * itemHeight
             val itemBottom = itemTop + itemHeight
-            if (itemBottom <= geometry.gridTop || itemTop >= geometry.gridBottom) return@forEachIndexed
             keys += Key(
                 text,
                 0,
@@ -3210,14 +2666,10 @@ class SenseKeyboardView @JvmOverloads constructor(
             )
         }
         layoutWeightedRow(
-            listOf(
-                WeightedSpec("", KeyCodes.LETTERS, 1.05f, KeyStyle.ACTION, icon = Icon.BACK),
-                WeightedSpec("", KeyCodes.SPACE, 3.3f, KeyStyle.LETTER, icon = Icon.SPACE),
-                WeightedSpec("", KeyCodes.DELETE, 1.05f, KeyStyle.ACTION, icon = Icon.DELETE),
-                WeightedSpec("", KeyCodes.ENTER, 1.05f, KeyStyle.ACTION, icon = Icon.ENTER),
-            ),
-            geometry.actionTop,
-            geometry.actionBottom - geometry.actionTop,
+            items = EMOJI_ACTION_ROW,
+            viewWidth = viewWidth,
+            y = geometry.actionTop,
+            rowHeight = geometry.actionBottom - geometry.actionTop,
         )
     }
 
@@ -3439,89 +2891,21 @@ class SenseKeyboardView @JvmOverloads constructor(
         KeyboardLayoutContract.EditorKeyRole.END -> EditorAction.END
     }
 
-    private fun layoutBottomRow(y: Float, rowHeight: Float, returnLabel: String? = null) {
-        layoutWeightedRow(
-            KeyboardLayoutContract.functionRow(chineseMode, returnToLetters = returnLabel != null).map { it.toWeightedSpec() },
-            y,
-            rowHeight,
-        )
-    }
-
-    private fun layoutSystemBar(viewWidth: Int, viewHeight: Int) {
-        val top = viewHeight - systemBarHeight
-        KeyboardLayoutContract.systemBar.forEach { item ->
-            val bounds = when (item.side) {
-                KeyboardLayoutContract.Side.LEFT -> RectF(dp(13f), top + dp(5f), dp(73f), viewHeight - dp(5f))
-                KeyboardLayoutContract.Side.RIGHT -> RectF(viewWidth - dp(73f), top + dp(5f), viewWidth - dp(13f), viewHeight - dp(5f))
-            }
-            keys += Key("", item.code, bounds, style = KeyStyle.SYSTEM)
-        }
-    }
-
-    private fun keyboardGrid(viewHeight: Int): Pair<Float, Float> {
-        val top = keyboardChromeBottom() + dp(7f)
-        val bottom = viewHeight - systemBarHeight - dp(7f)
-        return top to (bottom - top - keyGap * 3) / 4f
-    }
-
-    private data class KeySpec(
-        val label: String,
-        val code: Int,
-        val hint: String? = null,
-        val style: KeyStyle = KeyStyle.LETTER,
-        val text: String? = null,
-        val icon: Icon? = null,
-    )
-
-    private data class WeightedSpec(
-        val label: String,
-        val code: Int,
-        val weight: Float,
-        val style: KeyStyle = KeyStyle.LETTER,
-        val text: String? = null,
-        val hint: String? = null,
-        val icon: Icon? = null,
-    )
-
-    private fun KeyboardLayoutContract.WeightedKey.toWeightedSpec(): WeightedSpec = WeightedSpec(
-        label = if (code == KeyCodes.SHIFT || code == KeyCodes.DELETE || code == KeyCodes.SPACE || code == KeyCodes.ENTER) "" else label,
-        code = code,
-        weight = weight,
-        style = if (action) KeyStyle.ACTION else KeyStyle.LETTER,
-        hint = if (code > 0) SwipeCharacterMap.forKey(code, swipeCharacterMode()) else null,
-        icon = when (code) {
-            KeyCodes.SHIFT -> Icon.SHIFT
-            KeyCodes.DELETE -> Icon.DELETE
-            KeyCodes.SPACE -> Icon.SPACE
-            KeyCodes.ENTER -> Icon.ENTER
-            else -> null
-        },
-    )
-
-    private fun layoutEqualRow(
-        items: List<KeySpec>,
+    private fun layoutWeightedRow(
+        items: List<KeyboardLayoutContract.WeightedKey>,
+        viewWidth: Int,
         y: Float,
         rowHeight: Float,
-        extraInset: Float = 0f,
     ) {
-        val left = horizontalPadding + extraInset
-        val right = width - horizontalPadding - extraInset
-        val itemWidth = (right - left - keyGap * (items.size - 1)) / items.size
-        items.forEachIndexed { index, item ->
-            val x = left + index * (itemWidth + keyGap)
-            keys += Key(item.label, item.code, RectF(x, y, x + itemWidth, y + rowHeight), item.hint, item.style, item.text, item.icon)
-        }
-    }
-
-    private fun layoutWeightedRow(items: List<WeightedSpec>, y: Float, rowHeight: Float) {
-        val totalWeight = items.sumOf { it.weight.toDouble() }.toFloat()
-        val usable = width - horizontalPadding * 2 - keyGap * (items.size - 1)
-        var x = horizontalPadding
-        items.forEach { item ->
-            val itemWidth = usable * item.weight / totalWeight
-            keys += Key(item.label, item.code, RectF(x, y, x + itemWidth, y + rowHeight), hint = item.hint, style = item.style, text = item.text, icon = item.icon)
-            x += itemWidth + keyGap
-        }
+        primaryLayout.appendWeightedRow(
+            items = items,
+            viewWidth = viewWidth,
+            y = y,
+            rowHeight = rowHeight,
+            swipeMode = swipeCharacterMode(),
+            output = keys,
+            backToLettersIcon = Icon.BACK,
+        )
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -3541,6 +2925,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_MOVE -> {
+                var invalidateWholeView = false
                 repeat(event.pointerCount) { pointerIndex ->
                     val pointerId = event.getPointerId(pointerIndex)
                     val x = event.getX(pointerIndex)
@@ -3559,9 +2944,13 @@ class SenseKeyboardView @JvmOverloads constructor(
                             pickerLayout = skillPickerLayout,
                         )
                     ) {
-                        KeyboardSkillGestureSession.Outcome.ELIGIBILITY_CANCELLED ->
+                        KeyboardSkillGestureSession.Outcome.ELIGIBILITY_CANCELLED -> {
+                            invalidateWholeView =
+                                invalidateWholeView || skillPickerLayout != null
                             clearScheduledSkillHold(clearPickerProjection = true)
+                        }
                         KeyboardSkillGestureSession.Outcome.HIGHLIGHT_CHANGED -> {
+                            invalidateWholeView = true
                             val direction = skillGestureSession.highlightedDirection()
                             updateSkillAccessibilityDescription()
                             if (
@@ -3590,18 +2979,27 @@ class SenseKeyboardView @JvmOverloads constructor(
                         return@repeat
                     }
                     if (skillGestureSession.blocksOrdinaryPointer(pointerId)) return@repeat
-                    if (candidateStripScrollState.owns(pointerId)) {
-                        val candidateMove = candidateStripScrollState.move(
+                    if (candidatePanel.ownsDrag(pointerId)) {
+                        val candidateMove = candidatePanel.moveDrag(
                             pointerId = pointerId,
                             x = x,
                             y = y,
                             eventTimeMillis = event.eventTime,
                         )
                         if (candidateMove.dragLatched) {
+                            val clearedPressedState =
+                                pressedTargets.indexOfKey(pointerId) >= 0
                             touchReducer.cancel(pointerId)
                             pressedTargets.remove(pointerId)
-                            cancelOtherCandidateStripTouches(pointerId)
-                            if (candidateMove.changed) rebuildCandidateLayout(width, height)
+                            val clearedOtherPressedState =
+                                cancelOtherCandidateStripTouches(pointerId)
+                            if (
+                                candidateMove.changed ||
+                                clearedPressedState ||
+                                clearedOtherPressedState
+                            ) {
+                                invalidateCandidateViewport()
+                            }
                             return@repeat
                         }
                     }
@@ -3632,7 +3030,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                         val currentY = y
                         val previousY = panelPointerYs[pointerId] ?: currentY
                         if (scrollStateFor(scrollPanel).scrollBy(previousY - currentY)) {
-                            rebuildKeys(width, height)
+                            invalidateScrollPanel(scrollPanel)
                         }
                         activePanelScrollLatched = true
                         panelPointerYs.put(pointerId, currentY)
@@ -3641,6 +3039,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                                 ownerPointerId = pointerId,
                                 panel = scrollPanel,
                             )
+                            invalidateScrollPanel(scrollPanel)
                         }
                     } else if (
                         move.verticalScrollLatched &&
@@ -3653,10 +3052,11 @@ class SenseKeyboardView @JvmOverloads constructor(
                     }
                     if (move.canceled || move.tapSuppressed) {
                         pressedTargets.remove(pointerId)
+                        invalidateTouchTarget(target)
                         if (backspaceRepeatSession.owns(pointerId)) stopBackspaceRepeat(pointerId)
                     }
                 }
-                invalidate()
+                if (invalidateWholeView) invalidate()
                 return true
             }
 
@@ -3674,8 +3074,11 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private fun handlePointerDown(event: MotionEvent, pointerIndex: Int, isPrimary: Boolean): Boolean {
         if (isPrimary) {
+            val fullResetRequired =
+                aiSurfaceState != null || skillPickerLayout != null
+            invalidatePressedTargets()
             cancelAllTouches()
-            invalidate()
+            if (fullResetRequired) invalidate()
         }
         val x = event.getX(pointerIndex)
         val y = event.getY(pointerIndex)
@@ -3689,7 +3092,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         pressedTargets.put(pointerId, target)
         if (isCollapsedCandidateScrollTarget(target)) {
             stopCandidateSettle()
-            candidateStripScrollState.begin(
+            candidatePanel.beginDrag(
                 pointerId = pointerId,
                 x = x,
                 y = y,
@@ -3735,7 +3138,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         ) {
             performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
         }
-        invalidate()
+        invalidateTouchTarget(target)
         return true
     }
 
@@ -3785,7 +3188,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             clearSkillPickerProjection()
         }
         val originalTarget = touchReducer.target(pointerId)
-        val candidateSettle = candidateStripScrollState.finish(
+        val candidateSettle = candidatePanel.finishDrag(
             pointerId = pointerId,
             x = x,
             y = y,
@@ -3821,7 +3224,11 @@ class SenseKeyboardView @JvmOverloads constructor(
         pressedTargets.remove(pointerId)
         stopBackspaceRepeat(pointerId)
         panelPointerYs.remove(pointerId)
-        invalidate()
+        if (skillOwned) {
+            invalidate()
+        } else if (originalTarget != null) {
+            invalidateTouchTarget(originalTarget)
+        }
         if (activation != null) {
             activateTouchTarget(activation)
             if (
@@ -3837,58 +3244,35 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun touchTargetAt(x: Float, y: Float): FrozenTouchTarget? {
-        if (showsCandidates()) {
-            for (index in candidateControls.indices) {
-                val slot = candidateControls[index]
-                if (slot.enabled && slot.bounds.contains(x, y)) {
-                    return FrozenTouchTarget.CandidateControlValue(
-                        value = slot.control,
-                        bounds = RectF(slot.bounds),
-                        gesturePolicy = tapGesturePolicy,
-                    )
-                }
-            }
-        }
-        if (showsCandidates() && candidateRevision == compositionRevision) {
-            for (index in visibleCandidates.indices) {
-                val candidate = visibleCandidates[index]
-                if (candidate.bounds.contains(x, y)) {
-                    return FrozenTouchTarget.CandidateValue(
-                        revision = candidateRevision,
-                        sourceIndex = candidate.sourceIndex,
-                        bounds = RectF(candidate.bounds),
-                        gesturePolicy = if (candidatesExpanded) pageScrollGesturePolicy else tapGesturePolicy,
-                    )
-                }
-            }
-        }
-        if (!candidatesExpanded && showsCandidates()) {
-            collapsedCandidateViewportBounds?.let { bounds ->
-                if (
-                    collapsedCandidateLayout?.hasOverflow == true &&
-                    bounds.contains(x, y)
-                ) {
-                    return FrozenTouchTarget.CandidateStripArea(
-                        bounds = RectF(bounds),
-                        gesturePolicy = tapGesturePolicy,
-                    )
-                }
-            }
-        }
-        if (showsCandidates()) {
-            expandedCandidateGridBounds?.let { bounds ->
-                if (bounds.contains(x, y)) {
-                    return FrozenTouchTarget.CandidatePageArea(
-                        bounds = RectF(bounds),
-                        gesturePolicy = pageScrollGesturePolicy,
-                    )
-                }
+        candidatePanel.hitTest(x = x, y = y, visible = showsCandidates())?.let { hit ->
+            return when (hit) {
+                is CandidateHit.Control -> FrozenTouchTarget.CandidateControlValue(
+                    value = hit.control,
+                    bounds = hit.bounds.toRectF(),
+                    gesturePolicy = tapGesturePolicy,
+                )
+
+                is CandidateHit.Value -> FrozenTouchTarget.CandidateValue(
+                    revision = hit.revision,
+                    sourceIndex = hit.sourceIndex,
+                    bounds = hit.bounds.toRectF(),
+                    gesturePolicy = if (hit.expanded) pageScrollGesturePolicy else tapGesturePolicy,
+                )
+
+                is CandidateHit.PageArea -> FrozenTouchTarget.CandidatePageArea(
+                    bounds = hit.bounds.toRectF(),
+                    gesturePolicy = pageScrollGesturePolicy,
+                )
+
+                is CandidateHit.StripArea -> FrozenTouchTarget.CandidateStripArea(
+                    bounds = hit.bounds.toRectF(),
+                    gesturePolicy = tapGesturePolicy,
+                )
             }
         }
         for (index in keys.lastIndex downTo 0) {
             val key = keys[index]
-            val hitBounds = hitBoundsForKey(key)
-            if (hitBounds.contains(x, y)) {
+            if (keyContainsPoint(key, x, y)) {
                 // A disabled action owns its visible rectangle as a dead zone.
                 // Falling through to gap resolution could otherwise turn a tap
                 // near disabled COPY into the adjacent DELETE action.
@@ -3896,7 +3280,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 return FrozenTouchTarget.KeyValue(
                     key = key,
                     gesturePolicy = gesturePolicyForKey(key),
-                    bounds = hitBounds,
+                    bounds = screenHitBoundsForKey(key),
                 )
             }
         }
@@ -3937,13 +3321,32 @@ class SenseKeyboardView @JvmOverloads constructor(
         return null
     }
 
-    private fun hitBoundsForKey(key: Key): RectF {
-        val viewport = key.scrollPanel?.let(::panelViewportBounds) ?: return key.bounds
+    private fun keyContainsPoint(key: Key, x: Float, y: Float): Boolean {
+        val panel = key.scrollPanel ?: return key.bounds.contains(x, y)
+        val viewport = panelViewportBounds(panel) ?: return false
+        if (!viewport.contains(x, y)) return false
+        val contentY = KeyboardScrollProjection.contentCoordinate(
+            screenCoordinate = y,
+            offset = scrollStateFor(panel).offset,
+        )
+        return key.bounds.contains(x, contentY)
+    }
+
+    private fun screenHitBoundsForKey(key: Key): RectF {
+        val panel = key.scrollPanel ?: return key.bounds
+        val viewport = panelViewportBounds(panel) ?: return key.bounds
+        val offset = scrollStateFor(panel).offset
         return RectF(
             maxOf(key.bounds.left, viewport.left),
-            maxOf(key.bounds.top, viewport.top),
+            maxOf(
+                KeyboardScrollProjection.screenCoordinate(key.bounds.top, offset),
+                viewport.top,
+            ),
             minOf(key.bounds.right, viewport.right),
-            minOf(key.bounds.bottom, viewport.bottom),
+            minOf(
+                KeyboardScrollProjection.screenCoordinate(key.bounds.bottom, offset),
+                viewport.bottom,
+            ),
         )
     }
 
@@ -3966,8 +3369,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun isCollapsedCandidateScrollTarget(target: FrozenTouchTarget): Boolean =
-        !candidatesExpanded &&
-            collapsedCandidateLayout?.hasOverflow == true &&
+        candidatePanel.canStartCollapsedDrag() &&
             (target is FrozenTouchTarget.CandidateValue || target is FrozenTouchTarget.CandidateStripArea)
 
     private fun gesturePolicyForKey(key: Key): TouchInputReducer.GesturePolicy = when {
@@ -4002,7 +3404,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             is FrozenTouchTarget.CandidateValue -> if (activation.gesture == TouchInputReducer.Gesture.TAP) {
                 dispatchQueuedKeysNow()
                 candidateListener?.invoke(target.revision, target.sourceIndex)
-            } else if (candidatesExpanded) {
+            } else if (candidatePanel.expanded) {
                 scrollCandidatePage(if (activation.gesture == TouchInputReducer.Gesture.SWIPE_UP) 1 else -1)
             }
             is FrozenTouchTarget.CandidateControlValue -> if (activation.gesture == TouchInputReducer.Gesture.TAP) {
@@ -4079,46 +3481,26 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun activateCandidateControl(control: CandidateControl) {
-        val expansionChanged = when (control) {
-            CandidateControl.EXPAND -> {
-                candidatesExpanded = true
-                candidatePageIndex = 0
-                true
-            }
-
-            CandidateControl.COLLAPSE -> {
-                candidatesExpanded = false
-                candidatePageIndex = 0
-                true
-            }
-
-            CandidateControl.PREVIOUS_PAGE -> {
-                candidatePageIndex = KeyboardLayoutContract.adjacentCandidatePage(
-                    currentPage = candidatePageIndex,
-                    pageCount = candidatePages.size,
-                    delta = -1,
-                )
-                false
-            }
-
-            CandidateControl.NEXT_PAGE -> {
-                candidatePageIndex = KeyboardLayoutContract.adjacentCandidatePage(
-                    currentPage = candidatePageIndex,
-                    pageCount = candidatePages.size,
-                    delta = 1,
-                )
-                false
-            }
-        }
-        rebuildCandidateLayout(width, height)
-        if (expansionChanged) rebuildKeys(width, height)
+        val change = candidatePanel.activate(
+            control = control,
+            viewWidth = width,
+            viewHeight = height,
+            editorPanelVisible = isCandidateToolbarSuppressedByPanel(),
+            fontScale = resources.configuration.fontScale,
+        )
+        if (change.cancelSettle) stopCandidateSettle()
+        if (change.requiresKeySceneRebuild) rebuildKeys(width, height)
         invalidate()
     }
 
     private fun isCandidatePressed(candidate: VisibleCandidate): Boolean {
         repeat(pressedTargets.size()) { index ->
             val target = pressedTargets.valueAt(index)
-            if (target is FrozenTouchTarget.CandidateValue && target.revision == candidateRevision && target.sourceIndex == candidate.sourceIndex) {
+            if (
+                target is FrozenTouchTarget.CandidateValue &&
+                target.revision == candidatePanel.candidateRevision &&
+                target.sourceIndex == candidate.sourceIndex
+            ) {
                 return true
             }
         }
@@ -4139,6 +3521,12 @@ class SenseKeyboardView @JvmOverloads constructor(
             if (target is FrozenTouchTarget.KeyValue && target.key === key) return true
         }
         return false
+    }
+
+    private fun invalidatePressedTargets() {
+        repeat(pressedTargets.size()) { index ->
+            invalidateTouchTarget(pressedTargets.valueAt(index))
+        }
     }
 
     private fun cancelAllTouches() {
@@ -4167,9 +3555,9 @@ class SenseKeyboardView @JvmOverloads constructor(
         stopPanelFling()
         stopBackspaceRepeat()
         stopCandidateSettle()
-        candidateStripScrollState.cancelAll()?.let { settle ->
-            if (candidateStripScrollState.moveTo(settle.targetOffset)) {
-                rebuildCandidateLayout(width, height)
+        candidatePanel.cancelAllDrags()?.let { settle ->
+            if (candidatePanel.moveTo(settle.targetOffset)) {
+                invalidateCandidateViewport()
             }
         }
     }
@@ -4189,9 +3577,9 @@ class SenseKeyboardView @JvmOverloads constructor(
         stopPanelFling()
         stopBackspaceRepeat()
         stopCandidateSettle()
-        candidateStripScrollState.cancelAll()?.let { settle ->
-            if (candidateStripScrollState.moveTo(settle.targetOffset)) {
-                rebuildCandidateLayout(width, height)
+        candidatePanel.cancelAllDrags()?.let { settle ->
+            if (candidatePanel.moveTo(settle.targetOffset)) {
+                invalidateCandidateViewport()
             }
         }
     }
@@ -4514,7 +3902,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         aiStopPointerId = NO_POINTER
         aiStopBounds.setEmpty()
         cancelOrdinaryTouches()
-        rebuildCandidateLayout(width, height)
+        relayoutCandidates()
         rebuildKeys(width, height)
         invalidate()
         if (forceStop) {
@@ -4532,9 +3920,13 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun collapseCandidates() {
-        candidatesExpanded = false
-        candidatePageIndex = 0
-        rebuildCandidateLayout(width, height)
+        stopCandidateSettle()
+        candidatePanel.collapse(
+            viewWidth = width,
+            viewHeight = height,
+            editorPanelVisible = isCandidateToolbarSuppressedByPanel(),
+            fontScale = resources.configuration.fontScale,
+        )
     }
 
     private fun activateKey(key: Key) {
@@ -4625,28 +4017,26 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun scrollCandidatePage(delta: Int) {
-        if (!candidatesExpanded || candidatePages.isEmpty()) return
-        val nextPage = KeyboardLayoutContract.adjacentCandidatePage(
-            currentPage = candidatePageIndex,
-            pageCount = candidatePages.size,
+        val sceneBuildsBefore = candidatePanel.sceneBuildCount
+        candidatePanel.page(
             delta = delta,
+            viewWidth = width,
+            viewHeight = height,
+            editorPanelVisible = isCandidateToolbarSuppressedByPanel(),
+            fontScale = resources.configuration.fontScale,
         )
-        if (nextPage == candidatePageIndex) return
-        candidatePageIndex = nextPage
-        rebuildCandidateLayout(width, height)
-        invalidate()
+        if (candidatePanel.sceneBuildCount != sceneBuildsBefore) invalidate()
     }
 
     private fun startCandidateSettle(settle: CandidateStripScrollState.Settle) {
         stopCandidateSettle()
         if (!settle.animate) {
-            if (candidateStripScrollState.moveTo(settle.targetOffset)) {
-                rebuildCandidateLayout(width, height)
-                invalidate()
+            if (candidatePanel.moveTo(settle.targetOffset)) {
+                invalidateCandidateViewport()
             }
             return
         }
-        candidateSettleStartOffset = candidateStripScrollState.offset
+        candidateSettleStartOffset = candidatePanel.scrollOffset
         candidateSettleTargetOffset = settle.targetOffset
         candidateSettleStartedAtMillis = SystemClock.uptimeMillis()
         postOnAnimation(candidateSettleRunnable)
@@ -4654,6 +4044,52 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private fun stopCandidateSettle() {
         removeCallbacks(candidateSettleRunnable)
+    }
+
+    private fun invalidateCandidateViewport() {
+        val bounds = candidatePanel.collapsedViewportBounds
+        if (bounds == null) {
+            postInvalidateOnAnimation()
+            return
+        }
+        postInvalidateOnAnimation(
+            bounds.left.toInt().coerceAtLeast(0),
+            bounds.top.toInt().coerceAtLeast(0),
+            (bounds.right + 1f).toInt().coerceAtMost(width),
+            (bounds.bottom + 1f).toInt().coerceAtMost(height),
+        )
+    }
+
+    private fun invalidateTouchTarget(target: FrozenTouchTarget) {
+        when (target) {
+            is FrozenTouchTarget.KeyValue -> {
+                val panel = target.key.scrollPanel
+                if (panel == null) {
+                    invalidateDirtyBounds(target.bounds)
+                } else {
+                    invalidateScrollPanel(panel)
+                }
+            }
+
+            is FrozenTouchTarget.CandidateStripArea ->
+                invalidateCandidateViewport()
+
+            is FrozenTouchTarget.PanelScrollArea ->
+                invalidateScrollPanel(target.panel)
+
+            else -> invalidateDirtyBounds(target.bounds)
+        }
+    }
+
+    private fun invalidateDirtyBounds(bounds: RectF) {
+        if (bounds.isEmpty) return
+        val padding = dp(2f)
+        postInvalidateOnAnimation(
+            (bounds.left - padding).toInt().coerceAtLeast(0),
+            (bounds.top - padding).toInt().coerceAtLeast(0),
+            (bounds.right + padding + 1f).toInt().coerceAtMost(width),
+            (bounds.bottom + padding + 1f).toInt().coerceAtMost(height),
+        )
     }
 
     private fun startPanelScroll(
@@ -4708,7 +4144,8 @@ class SenseKeyboardView @JvmOverloads constructor(
         }
     }
 
-    private fun cancelOtherCandidateStripTouches(ownerPointerId: Int) {
+    private fun cancelOtherCandidateStripTouches(ownerPointerId: Int): Boolean {
+        var changed = false
         for (index in pressedTargets.size() - 1 downTo 0) {
             val pointerId = pressedTargets.keyAt(index)
             val target = pressedTargets.valueAt(index)
@@ -4718,8 +4155,10 @@ class SenseKeyboardView @JvmOverloads constructor(
             if (pointerId != ownerPointerId && isCandidateTarget) {
                 touchReducer.cancel(pointerId)
                 pressedTargets.removeAt(index)
+                changed = true
             }
         }
+        return changed
     }
 
     private fun finishPanelScroll(
@@ -4757,17 +4196,15 @@ class SenseKeyboardView @JvmOverloads constructor(
             0,
             state.maximumOffset.toInt(),
         )
-        postInvalidateOnAnimation()
+        invalidateScrollPanel(panel)
     }
 
     override fun computeScroll() {
         super.computeScroll()
         val panel = flingingPanel ?: return
         if (panelScroller.computeScrollOffset()) {
-            if (scrollStateFor(panel).scrollTo(panelScroller.currY.toFloat())) {
-                rebuildKeys(width, height)
-            }
-            postInvalidateOnAnimation()
+            scrollStateFor(panel).scrollTo(panelScroller.currY.toFloat())
+            invalidateScrollPanel(panel)
         } else {
             flingingPanel = null
         }
@@ -4776,6 +4213,20 @@ class SenseKeyboardView @JvmOverloads constructor(
     private fun stopPanelFling() {
         if (!panelScroller.isFinished) panelScroller.forceFinished(true)
         flingingPanel = null
+    }
+
+    private fun invalidateScrollPanel(panel: ScrollPanel) {
+        val bounds = panelViewportBounds(panel)
+        if (bounds == null) {
+            postInvalidateOnAnimation()
+            return
+        }
+        postInvalidateOnAnimation(
+            bounds.left.toInt().coerceAtLeast(0),
+            bounds.top.toInt().coerceAtLeast(0),
+            (bounds.right + 1f).toInt().coerceAtMost(width),
+            (bounds.bottom + 1f).toInt().coerceAtMost(height),
+        )
     }
 
     private fun clearPanelPointer() {
@@ -4852,18 +4303,29 @@ class SenseKeyboardView @JvmOverloads constructor(
         return true
     }
 
-    private fun color(light: Int, dark: Int): Int = if (isNightMode()) dark else light
+    private fun color(light: Int, dark: Int): Int = palette.color(light, dark)
 
-    private fun isNightMode(): Boolean =
-        resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+    private fun Configuration.isNightMode(): Boolean =
+        uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
 
-    private fun candidateTakesToolbar(): Boolean = CandidatePresentationPolicy.takesToolbar(
-        composing = composing,
-        editorPanelVisible = panel == Panel.EDITOR || panel == Panel.VOICE,
-    )
+    private fun candidateTakesToolbar(): Boolean =
+        candidatePanel.takesToolbar(isCandidateToolbarSuppressedByPanel())
 
     private fun showsCandidates(): Boolean =
         panel != Panel.EDITOR && panel != Panel.VOICE
+
+    private fun isCandidateToolbarSuppressedByPanel(): Boolean =
+        panel == Panel.EDITOR || panel == Panel.VOICE
+
+    private fun relayoutCandidates(
+        viewWidth: Int = width,
+        viewHeight: Int = height,
+    ): CandidateChange = candidatePanel.relayout(
+        viewWidth = viewWidth,
+        viewHeight = viewHeight,
+        editorPanelVisible = isCandidateToolbarSuppressedByPanel(),
+        fontScale = resources.configuration.fontScale,
+    )
 
     /** Toolbar and collapsed candidates replace each other inside one fixed row. */
     private fun keyboardChromeBottom(): Float = KeyboardLayoutContract.topChromeBottom(
@@ -4886,8 +4348,35 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private fun sp(value: Float): Float = value * density * resources.configuration.fontScale
 
+    private fun KeyboardRect.toRectF(): RectF = RectF(left, top, right, bottom)
+
     private companion object {
         val SKILL_SELECTION_REQUEST_TOKENS = KeyboardSkillRequestTokenSource()
+        val EMOJI_ACTION_ROW = listOf(
+            KeyboardLayoutContract.WeightedKey(
+                label = "",
+                code = KeyCodes.LETTERS,
+                weight = 1.05f,
+                action = true,
+            ),
+            KeyboardLayoutContract.WeightedKey(
+                label = "",
+                code = KeyCodes.SPACE,
+                weight = 3.3f,
+            ),
+            KeyboardLayoutContract.WeightedKey(
+                label = "",
+                code = KeyCodes.DELETE,
+                weight = 1.05f,
+                action = true,
+            ),
+            KeyboardLayoutContract.WeightedKey(
+                label = "",
+                code = KeyCodes.ENTER,
+                weight = 1.05f,
+                action = true,
+            ),
+        )
         const val CLIPBOARD_ITEMS_PER_PAGE = 3
         const val VERTICAL_GESTURE_DOMINANCE = 1.15f
         const val CANDIDATE_FAST_FLING_VELOCITY_DP_PER_SECOND = 720f

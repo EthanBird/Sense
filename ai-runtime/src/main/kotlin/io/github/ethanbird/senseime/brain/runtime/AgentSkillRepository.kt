@@ -19,6 +19,7 @@ import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.charset.CodingErrorAction
 import java.nio.charset.StandardCharsets
+import java.nio.file.AccessDeniedException
 import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -485,11 +486,23 @@ internal class AgentSkillRepository(
      * the containing directory after every committed directory-entry change.
      */
     private fun syncDirectory(directory: File) {
-        java.nio.channels.FileChannel.open(
-            directory.toPath(),
-            StandardOpenOption.READ,
-        ).use { channel ->
-            channel.force(true)
+        try {
+            java.nio.channels.FileChannel.open(
+                directory.toPath(),
+                StandardOpenOption.READ,
+            ).use { channel ->
+                channel.force(true)
+            }
+        } catch (failure: AccessDeniedException) {
+            /*
+             * Windows' NIO provider rejects opening directory handles even
+             * when the directory is writable. The file bytes are already
+             * fsynced and the rename is atomic; directory force is retained
+             * on Android/Linux where the provider supports it.
+             */
+            val isWindows =
+                System.getProperty("os.name", "").startsWith("Windows", ignoreCase = true)
+            if (!isWindows) throw failure
         }
     }
 
