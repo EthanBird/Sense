@@ -127,6 +127,13 @@ class ReleaseDecisionTest(unittest.TestCase):
         self.assertEqual("SKIPPED_VERSION_UNCHANGED", decision.status)
         self.assertFalse(decision.should_release)
 
+    def test_unchanged_version_with_missing_tag_recovers_interrupted_release(
+        self,
+    ) -> None:
+        decision = self.decide(tag_target=None)
+        self.assertEqual("RELEASE_RECOVER_MISSING_TAG", decision.status)
+        self.assertTrue(decision.should_release)
+
     def test_version_bump_with_missing_tag_releases(self) -> None:
         decision = self.decide(
             current=AndroidVersion("0.4.3", 18),
@@ -269,6 +276,43 @@ class ReleasePlanCliTest(unittest.TestCase):
             self.assertEqual(2, result.returncode)
             self.assertIn("RELEASE_PLAN_REJECTED", result.stderr)
             self.assertFalse(github_output.exists())
+
+    def test_cli_recovers_unchanged_version_when_tag_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            previous = root / "previous.gradle.kts"
+            current = root / "current.gradle.kts"
+            github_output = root / "github-output"
+            previous.write_text(gradle_version(), encoding="utf-8")
+            current.write_text(gradle_version(), encoding="utf-8")
+
+            result = subprocess.run(
+                (
+                    sys.executable,
+                    str(SCRIPT),
+                    "--previous",
+                    str(previous),
+                    "--current",
+                    str(current),
+                    "--release-tag",
+                    "v0.4.2",
+                    "--release-apk",
+                    "Sense-v0.4.2.apk",
+                    "--current-sha",
+                    CURRENT_SHA,
+                    "--tag-target",
+                    "MISSING",
+                    "--github-output",
+                    str(github_output),
+                ),
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertIn("RELEASE_RECOVER_MISSING_TAG", result.stdout)
+            self.assertIn("should_release=true", github_output.read_text())
 
 
 class WorkflowContractTest(unittest.TestCase):

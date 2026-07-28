@@ -159,7 +159,7 @@ class SenseKeyboardViewLayoutDeviceTest {
     fun candidateTapAfterDragUsesTheProjectedSourceIndexWithoutRebuildingTheScene() {
         val revision = 73L
         val values = List(48) { index ->
-            "candidate-${index.toString().padStart(2, '0')}-extended"
+            "cand-${index.toString().padStart(2, '0')}"
         }
         val selections = mutableListOf<Pair<Long, Int>>()
         onMain {

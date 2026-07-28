@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Fail-closed release planning for Sense GitHub Actions.
 
-The Android workflow verifies every pull request and main-branch push, but a
-push must create or update a GitHub Release only when the Android application
-version changes.  This module keeps that decision deterministic and testable
-outside GitHub Actions.
+The Android workflow verifies every pull request and main-branch push. A push
+creates a GitHub Release when the Android application version changes, or
+recovers an interrupted first release while the matching tag is still absent.
+This module keeps that decision deterministic and testable outside GitHub
+Actions.
 """
 
 from __future__ import annotations
@@ -136,6 +137,15 @@ def decide_release(
     code_changed = current.code != previous.code
 
     if not name_changed and not code_changed:
+        if normalized_target == MISSING_TAG:
+            return ReleaseDecision(
+                status="RELEASE_RECOVER_MISSING_TAG",
+                should_release=True,
+                previous_version=f"{previous.name} ({previous.code})",
+                current_version=f"{current.name} ({current.code})",
+                release_tag=release_tag,
+                tag_target=normalized_target,
+            )
         return ReleaseDecision(
             status="SKIPPED_VERSION_UNCHANGED",
             should_release=False,
