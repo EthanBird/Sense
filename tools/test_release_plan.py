@@ -422,7 +422,11 @@ class WorkflowContractTest(unittest.TestCase):
         self.assertIn("SENSE_RELEASE_KEY_PASSWORD", workflow)
         self.assertIn("RELEASE_CERT_SHA256:", workflow)
         self.assertIn(
-            "Signer #1 certificate SHA-256 digest: $RELEASE_CERT_SHA256",
+            '"Number of signers: 1"',
+            workflow,
+        )
+        self.assertIn(
+            '"certificate SHA-256 digest: $RELEASE_CERT_SHA256"',
             workflow,
         )
         self.assertNotIn('git show "HEAD^:', workflow)

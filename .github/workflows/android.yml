@@ -648,13 +648,12 @@ jobs:
           test -x "$build_tools/aapt2"
           test -x "$build_tools/zipalign"
           "$build_tools/apksigner" verify --verbose --print-certs "$apk" | tee release/apksigner.txt
+          grep -Fx "Number of signers: 1" release/apksigner.txt
           test "$(
-            grep -Ec '^Signer #[0-9]+ certificate SHA-256 digest:' \
+            grep -Fc \
+              "certificate SHA-256 digest: $RELEASE_CERT_SHA256" \
               release/apksigner.txt
           )" = "1"
-          grep -Fx \
-            "Signer #1 certificate SHA-256 digest: $RELEASE_CERT_SHA256" \
-            release/apksigner.txt
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" | tee release/apk-badging.txt
           "$build_tools/aapt2" dump permissions "$apk" | tee release/apk-permissions.txt
