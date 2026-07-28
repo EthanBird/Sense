@@ -23,7 +23,7 @@ WORKFLOW = ROOT / ".github" / "workflows" / "android.yml"
 APP_BUILD = ROOT / "app" / "build.gradle.kts"
 OFFLINE_VERIFY = ROOT / "tools" / "offline_verify.sh"
 OFFLINE_MANIFEST = ROOT / "tools" / "offline" / "AndroidManifest.xml"
-RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.5.md"
+RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.5.beta.md"
 AURORA_DEVICE_TEST = (
     ROOT
     / "ime-ui"
@@ -80,6 +80,12 @@ class AndroidVersionParsingTest(unittest.TestCase):
     def test_unsupported_version_name_is_rejected(self) -> None:
         with self.assertRaisesRegex(ReleasePlanError, "not a supported"):
             parse_android_version(gradle_version(name="next"))
+
+    def test_dotted_prerelease_version_is_supported(self) -> None:
+        self.assertEqual(
+            AndroidVersion(name="0.4.5.beta", code=21),
+            parse_android_version(gradle_version(name="0.4.5.beta", code=21)),
+        )
 
     def test_nonpositive_version_code_is_rejected(self) -> None:
         with self.assertRaisesRegex(ReleasePlanError, "must be positive"):
@@ -261,24 +267,25 @@ class WorkflowContractTest(unittest.TestCase):
             APP_BUILD.read_text(encoding="utf-8"),
             str(APP_BUILD),
         )
-        self.assertEqual(AndroidVersion(name="0.4.5", code=20), current)
+        self.assertEqual(AndroidVersion(name="0.4.5.beta", code=21), current)
 
         workflow = WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn("RELEASE_TAG: v0.4.5", workflow)
-        self.assertIn("RELEASE_APK: Sense-v0.4.5.apk", workflow)
+        self.assertIn("RELEASE_TAG: v0.4.5.beta", workflow)
+        self.assertIn("RELEASE_APK: Sense-v0.4.5.beta.apk", workflow)
         self.assertEqual(
             2,
             workflow.count(
-                "versionCode='20' versionName='0.4.5'",
+                "versionCode='21' versionName='0.4.5.beta'",
             ),
         )
-        self.assertIn("--notes-file docs/releases/v0.4.5.md", workflow)
+        self.assertIn("--notes-file docs/releases/v0.4.5.beta.md", workflow)
+        self.assertIn("--prerelease", workflow)
         self.assertTrue(RELEASE_NOTES.is_file())
         offline_verify = OFFLINE_VERIFY.read_text(encoding="utf-8")
-        self.assertIn("--version-code 20", offline_verify)
-        self.assertIn("--version-name 0.4.5", offline_verify)
+        self.assertIn("--version-code 21", offline_verify)
+        self.assertIn("--version-name 0.4.5.beta", offline_verify)
         self.assertIn(
-            "versionCode='20' versionName='0.4.5'",
+            "versionCode='21' versionName='0.4.5.beta'",
             offline_verify,
         )
 
@@ -300,7 +307,7 @@ class WorkflowContractTest(unittest.TestCase):
         )
         self.assertEqual(
             2,
-            workflow.count("name: sense-v0.4.5-clean-apks"),
+            workflow.count("name: sense-v0.4.5.beta-clean-apks"),
         )
         self.assertIn(
             "apk=$(find artifacts -type f "
@@ -522,7 +529,7 @@ class WorkflowContractTest(unittest.TestCase):
     def test_publish_path_peels_and_rechecks_the_remote_tag(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         release_step = workflow.split(
-            "      - name: Create Sense 0.4.5 release",
+            "      - name: Create Sense 0.4.5.beta prerelease",
             maxsplit=1,
         )[1]
         self.assertIn(
