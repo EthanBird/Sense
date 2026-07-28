@@ -2,6 +2,7 @@ package io.github.ethanbird.senseime.brain.runtime
 
 import io.github.ethanbird.senseime.ai.protocol.AgentProgressKind
 import io.github.ethanbird.senseime.ai.protocol.AgentProgressState
+import io.github.ethanbird.senseime.ai.protocol.ActiveSkillInstructionV1
 import io.github.ethanbird.senseime.ai.protocol.AiEvent
 import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import io.github.ethanbird.senseime.ai.protocol.EditorPatchV1
@@ -32,7 +33,7 @@ class AgentRunRecorderTest {
     fun `request codec emits every field in fixed canonical order`() {
         val request = request()
         assertEquals(
-            """{"protocol":"sense.harness.request.v1","request_id":"request-1","run_generation":9,"skill":"translate","snapshot":{"protocol":"sense.editor.snapshot.v1","request_id":"request-1","snapshot_id":"snapshot-1","editor_generation":17,"field_identity":"field\nidentity","capability":"SELECTION_ONLY","text":"完整输入 \"text\" 🧠","text_start_offset":41,"selection":{"start":43,"end":47},"target":"selection","base_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","captured_at_monotonic_ms":123456,"truncated":false,"max_output_chars":8192},"max_output_chars":4096}""",
+            """{"protocol":"sense.harness.request.v1","request_id":"request-1","run_generation":9,"skill":"translate","skill_catalog_generation":null,"active_skill":null,"snapshot":{"protocol":"sense.editor.snapshot.v1","request_id":"request-1","snapshot_id":"snapshot-1","editor_generation":17,"field_identity":"field\nidentity","capability":"SELECTION_ONLY","text":"完整输入 \"text\" 🧠","text_start_offset":41,"selection":{"start":43,"end":47},"target":"selection","base_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","captured_at_monotonic_ms":123456,"truncated":false,"max_output_chars":8192},"max_output_chars":4096}""",
             AgentRunJournalCodec.encodeRequest(request),
         )
 
@@ -43,6 +44,28 @@ class AgentRunRecorderTest {
         assertTrue(encoded.contains("\"selection\":null"))
         assertTrue(encoded.contains("\"target\":null"))
         assertTrue(encoded.endsWith("\"max_output_chars\":4096}"))
+    }
+
+    @Test
+    fun `request journal retains exact selected Skill revision and complete document`() {
+        val encoded = AgentRunJournalCodec.encodeRequest(
+            request().copy(
+                skillCatalogGeneration = 11,
+                activeSkill = ActiveSkillInstructionV1(
+                    id = "weekly_report",
+                    revision = 4,
+                    catalogGeneration = 11,
+                    name = "周报",
+                    description = "整理一周工作",
+                    content = "# 周报\n\n保留数字、负责人和未完成事项。",
+                ),
+            ),
+        )
+
+        assertTrue(encoded.contains("\"id\":\"weekly_report\""))
+        assertTrue(encoded.contains("\"revision\":4"))
+        assertTrue(encoded.contains("\"catalog_generation\":11"))
+        assertTrue(encoded.contains("保留数字、负责人和未完成事项"))
     }
 
     @Test

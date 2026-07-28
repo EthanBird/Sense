@@ -65,6 +65,8 @@ class SenseAiEditorCoordinator(
     private val editorGeneration: () -> Long,
     private val fieldIdentity: () -> String,
     private val pointerStillDown: (Long) -> Boolean,
+    /** Returns the already-loaded immutable catalog snapshot visible to the keyboard. */
+    private val skillSnapshot: () -> AgentSkillRunSnapshot? = { null },
     private val onSurfaceUpdate: (
         generation: Long,
         phase: AiSurfacePhase,
@@ -73,6 +75,8 @@ class SenseAiEditorCoordinator(
         activities: List<AiSurfaceActivity>,
     ) -> Unit,
     private val onOwnApplyWindow: (applicationToken: Long?, active: Boolean) -> Unit,
+    /** Lets the IME refresh bindings after skill_manage may have changed the shared catalog. */
+    private val onAgentRunTerminal: () -> Unit = {},
 ) : AutoCloseable {
     private val brainClient = SenseAiBrainClient(context, ::onBrainEvent)
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -138,10 +142,19 @@ class SenseAiEditorCoordinator(
             return
         }
 
+        val frozenSkills = try {
+            skillSnapshot()
+        } catch (_: Exception) {
+            showError(uiGeneration, "无法读取完整 Skills 数据")
+            return
+        }
+        val frozenSkill = frozenSkills?.activeSkill
         val request = HarnessRequestV1(
             requestId = requestId,
             runGeneration = uiGeneration,
-            skill = EditorIntent.SMART_EDIT,
+            skill = frozenSkill?.baseIntent ?: EditorIntent.SMART_EDIT,
+            skillCatalogGeneration = frozenSkills?.catalogGeneration,
+            activeSkill = frozenSkill?.instruction,
             snapshot = snapshot,
         )
         val run = ActiveRun(
@@ -164,7 +177,7 @@ class SenseAiEditorCoordinator(
             uiGeneration,
             AiSurfacePhase.STARTING,
             "",
-            startingStatus(snapshot.target),
+            startingStatus(snapshot.target, frozenSkill?.instruction?.name),
             run.surfaceActivities(),
         )
         brainClient.start(request)
@@ -185,6 +198,7 @@ class SenseAiEditorCoordinator(
         clearPendingSurfaceFrame()
         active = null
         brainClient.cancel(run.request.requestId, run.request.runGeneration, reason)
+        onAgentRunTerminal()
     }
 
     fun markEditorChanged(
@@ -203,6 +217,7 @@ class SenseAiEditorCoordinator(
             run.request.runGeneration,
             HarnessCancelReason.EDITOR_CHANGED,
         )
+        onAgentRunTerminal()
         onSurfaceUpdate(
             run.uiGeneration,
             AiSurfacePhase.ERROR,
@@ -244,6 +259,7 @@ class SenseAiEditorCoordinator(
             run.request.runGeneration,
             HarnessCancelReason.EDITOR_CHANGED,
         )
+        onAgentRunTerminal()
         onSurfaceUpdate(
             run.uiGeneration,
             AiSurfacePhase.ERROR,
@@ -277,7 +293,10 @@ class SenseAiEditorCoordinator(
                 run.uiGeneration,
                 AiSurfacePhase.STARTING,
                 run.presentation.preview,
-                startingStatus(run.lease.snapshot.target),
+                startingStatus(
+                    run.lease.snapshot.target,
+                    run.request.activeSkill?.name,
+                ),
                 run.surfaceActivities(),
             )
 
@@ -327,10 +346,12 @@ class SenseAiEditorCoordinator(
             is AiEvent.FinalPatch -> {
                 clearPendingSurfaceFrame()
                 applyFinalPatch(run, event)
+                onAgentRunTerminal()
             }
             is AiEvent.Cancelled -> {
                 clearPendingSurfaceFrame()
                 active = null
+                onAgentRunTerminal()
             }
 
             is AiEvent.Failed -> {
@@ -343,6 +364,7 @@ class SenseAiEditorCoordinator(
                     failureLabel(event),
                     run.surfaceActivities(),
                 )
+                onAgentRunTerminal()
             }
 
             is AiEvent.Usage -> Unit
@@ -885,6 +907,8 @@ class SenseAiEditorCoordinator(
     }
 
     private fun failureLabel(event: AiEvent.Failed): String = when (event.code) {
+        io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.IPC_ENVELOPE_TOO_LARGE ->
+            "输入框与 Skill 内容过长，无法安全发送给 Brain"
         io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.FIRST_EVENT_TIMEOUT ->
             "模型连接超时"
         io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode.STREAM_IDLE_TIMEOUT ->
@@ -914,12 +938,14 @@ class SenseAiEditorCoordinator(
         else -> "AI 暂时不可用"
     }
 
-    private fun startingStatus(target: PatchTarget?): String =
-        if (target == PatchTarget.CONTEXT_WINDOW) {
-            "此应用仅开放光标附近文本，正在安全处理该范围…"
+    private fun startingStatus(target: PatchTarget?, activeSkillName: String?): String {
+        val scope = if (target == PatchTarget.CONTEXT_WINDOW) {
+            "此应用仅开放光标附近文本，正在安全处理该范围"
         } else {
-            "正在理解输入框…"
+            "正在理解输入框"
         }
+        return if (activeSkillName == null) "$scope…" else "$scope · Skill：$activeSkillName"
+    }
 
     private data class ActiveRun(
         val uiGeneration: Long,
@@ -932,8 +958,18 @@ class SenseAiEditorCoordinator(
             runGeneration = request.runGeneration,
         ),
     ) {
-        fun surfaceActivities(): List<AiSurfaceActivity> =
-            agentSession.snapshot.steps.map { step ->
+        fun surfaceActivities(): List<AiSurfaceActivity> = buildList {
+            request.activeSkill?.let { skill ->
+                add(
+                    AiSurfaceActivity(
+                        id = "active-skill",
+                        title = "已载入 Skill：${skill.name}",
+                        detail = "${skill.id}@${skill.revision}",
+                        state = AiSurfaceActivityState.COMPLETED,
+                    ),
+                )
+            }
+            addAll(agentSession.snapshot.steps.map { step ->
                 AiSurfaceActivity(
                     id = step.id,
                     title = step.title,
@@ -944,7 +980,8 @@ class SenseAiEditorCoordinator(
                         AgentProgressState.FAILED -> AiSurfaceActivityState.FAILED
                     },
                 )
-            }
+            })
+        }
     }
 
     private data class PendingSurfaceFrame(

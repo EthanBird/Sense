@@ -13,14 +13,19 @@ import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
 import io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode
 import io.github.ethanbird.senseime.brain.AiBrainEngine
 import io.github.ethanbird.senseime.brain.BrainRequestMode
+import io.github.ethanbird.senseime.brain.api.AgentSkillCatalog
+import io.github.ethanbird.senseime.brain.api.AgentSkillDefinition
+import io.github.ethanbird.senseime.brain.api.AgentSkillMutation
 import io.github.ethanbird.senseime.brain.api.BrainTraceEvent
 import io.github.ethanbird.senseime.brain.api.BrainRunSpec
 import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
+import io.github.ethanbird.senseime.brain.api.toSummary
 import io.github.ethanbird.senseime.brain.memory.AgentEventJournal
 import io.github.ethanbird.senseime.brain.memory.AgentMemorySearchAccess
 import io.github.ethanbird.senseime.brain.memory.AgentMemorySearchBounds
 import java.io.File
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.Executors
 
 /**
  * Non-exported process host for Provider networking and model response parsing.
@@ -36,7 +41,18 @@ class SenseAiBrainService : Service() {
     private lateinit var engine: AiBrainEngine
     private lateinit var settings: ProviderSettingsStore
     private lateinit var toolSettings: AgentToolSettingsStore
+    private lateinit var skillStore: AgentSkillStore
+    /*
+     * Shared across Service instances in this :brain process. Android may construct a replacement
+     * Service immediately after onDestroy() returns, while the old instance is still draining a
+     * blocking admission. A process-wide FIFO makes the old journal/transport close happen before
+     * the replacement attempts to acquire the journal writer lock.
+     */
+    private val admissionExecutor = PROCESS_ADMISSION_EXECUTOR
+    private lateinit var admissionLane: BrainAdmissionSerialLane<StartAdmission>
+    @Volatile
     private var journal: AgentEventJournal? = null
+    @Volatile
     private var journalOpenFailure: Throwable? = null
     private var active: ActiveRun? = null
     private val outboundDeliveries =
@@ -51,14 +67,18 @@ class SenseAiBrainService : Service() {
     override fun onCreate() {
         super.onCreate()
         transport = HttpUrlConnectionProviderTransport()
-        settings = ProviderSettingsStore(this)
-        toolSettings = AgentToolSettingsStore(this)
-        runCatching {
-            AgentEventJournal.open(File(filesDir, AGENT_HISTORY_DIRECTORY))
-        }.onSuccess {
-            journal = it
-        }.onFailure {
-            journalOpenFailure = it
+        val application = applicationContext
+        admissionExecutor.execute {
+            settings = ProviderSettingsStore(application)
+            toolSettings = AgentToolSettingsStore(application)
+            skillStore = AgentSkillStore(application)
+            runCatching {
+                AgentEventJournal.open(File(application.filesDir, AGENT_HISTORY_DIRECTORY))
+            }.onSuccess {
+                journal = it
+            }.onFailure {
+                journalOpenFailure = it
+            }
         }
         val memorySource = AgentMemorySearchSource { query, maxResults, excludeId, excludeGeneration ->
             val source = journal ?: return@AgentMemorySearchSource emptyList()
@@ -76,9 +96,23 @@ class SenseAiBrainService : Service() {
                 )
             }
         }
+        val skillSource = object : AgentSkillToolSource {
+            override fun read(skillId: String, revision: Long): AgentSkillDefinition? =
+                skillStore.readRevision(skillId, revision).getOrThrow()
+
+            override fun apply(mutation: AgentSkillMutation): AgentSkillCatalog =
+                skillStore.apply(mutation).getOrThrow()
+        }
         engine = AiBrainEngine(
             transport = transport,
-            toolExecutor = DefaultAgentToolExecutor(memorySource),
+            toolExecutor = DefaultAgentToolExecutor(
+                memorySource = memorySource,
+                skillSource = skillSource,
+            ),
+        )
+        admissionLane = BrainAdmissionSerialLane(
+            executor = admissionExecutor,
+            admit = ::admitStart,
         )
     }
 
@@ -89,6 +123,7 @@ class SenseAiBrainService : Service() {
             active.also {
                 active = null
                 it?.let { current ->
+                    current.admissionCancellation = HarnessCancelReason.BRAIN_DIED
                     cancelTickerLocked(current)
                     cancelVisibleFlushLocked(current)
                 }
@@ -97,10 +132,22 @@ class SenseAiBrainService : Service() {
         mainHandler.removeCallbacks(deliverOutboundEvents)
         outboundDeliveries.clear()
         previous?.retentionGate?.currentHandle()?.cancel(HarnessCancelReason.BRAIN_DIED)
-        transport.close()
-        runCatching { journal?.flush() }
-        runCatching { journal?.close() }
-        journal = null
+        if (::admissionLane.isInitialized) {
+            admissionLane.closeAfterDraining {
+                /*
+                 * A START that was already inside a blocking config/catalog read observes the
+                 * revoked ActiveRun before engine.start. Keeping transport/journal cleanup behind
+                 * that admission also prevents either dependency from closing underneath it.
+                 */
+                transport.close()
+                val closing = journal
+                runCatching { closing?.flush() }
+                runCatching { closing?.close() }
+                journal = null
+            }
+        } else {
+            transport.close()
+        }
         super.onDestroy()
     }
 
@@ -109,7 +156,11 @@ class SenseAiBrainService : Service() {
         val reply = message.replyTo
         if (request == null || reply == null) return
         val identity = request.requestId to request.runGeneration
-        val previous = synchronized(activeLock) { active }
+        val previous = synchronized(activeLock) {
+            active?.also {
+                it.admissionCancellation = HarnessCancelReason.CALLER_REQUESTED
+            }
+        }
         // Cancellation emits the previous terminal event synchronously. Keep its ActiveRun
         // installed until that callback is captured for its original Messenger; replacing it
         // first would make emit() drop the cancellation as stale and strand the old client's UI.
@@ -127,6 +178,23 @@ class SenseAiBrainService : Service() {
             active = current
         }
 
+        val enqueued = admissionLane.submit(StartAdmission(current, request))
+        if (!enqueued) {
+            emit(
+                current,
+                AiEvent.Failed(
+                    request.requestId,
+                    request.runGeneration,
+                    HarnessErrorCode.INTERNAL_FAILURE,
+                    retryable = false,
+                ),
+            )
+        }
+    }
+
+    private fun admitStart(admission: StartAdmission) {
+        val current = admission.run
+        val request = admission.request
         val activeJournal = journal
         if (activeJournal == null || journalOpenFailure != null) {
             emit(
@@ -154,9 +222,13 @@ class SenseAiBrainService : Service() {
             )
             return
         }
-        current.recorder = recorder
+        synchronized(activeLock) {
+            current.recorder = recorder
+        }
+        if (finishCancelledAdmission(current)) return
 
         val configResult = settings.load()
+        if (finishCancelledAdmission(current)) return
         if (configResult.isFailure) {
             emit(
                 current,
@@ -195,7 +267,7 @@ class SenseAiBrainService : Service() {
             return
         }
 
-        val enabledTools = toolSettings.load().getOrElse {
+        val admittedToolSettings = toolSettings.load().getOrElse {
             emit(
                 current,
                 AiEvent.Failed(
@@ -206,7 +278,48 @@ class SenseAiBrainService : Service() {
                 ),
             )
             return
-        }.enabledToolIds()
+        }
+        val enabledTools = AgentToolRunAdmission.freeze(admittedToolSettings)
+        if (finishCancelledAdmission(current)) return
+
+        val requestedSkillGeneration = request.skillCatalogGeneration
+        val skillCatalogResult = if (requestedSkillGeneration == null) {
+            skillStore.loadCatalog()
+        } else {
+            skillStore.readCatalogGeneration(requestedSkillGeneration).mapCatching { catalog ->
+                requireNotNull(catalog) {
+                    "Frozen Skill catalog generation is unavailable"
+                }
+            }
+        }
+        val skillCatalog = skillCatalogResult.getOrElse {
+            emit(
+                current,
+                AiEvent.Failed(
+                    request.requestId,
+                    request.runGeneration,
+                    HarnessErrorCode.INTERNAL_FAILURE,
+                    retryable = false,
+                ),
+            )
+            return
+        }
+        if (finishCancelledAdmission(current)) return
+        runCatching {
+            AgentSkillRunAdmission.requireConsistent(request, skillCatalog)
+        }.getOrElse {
+            emit(
+                current,
+                AiEvent.Failed(
+                    request.requestId,
+                    request.runGeneration,
+                    HarnessErrorCode.INTERNAL_FAILURE,
+                    retryable = false,
+                ),
+            )
+            return
+        }
+        if (finishCancelledAdmission(current)) return
 
         val handle = runCatching {
             val requestMode = if (ProviderConnectionTestProtocol.isProbe(request)) {
@@ -219,6 +332,8 @@ class SenseAiBrainService : Service() {
                     harnessRequest = request,
                     provider = config.profile,
                     credential = config.credential,
+                    skillCatalog = skillCatalog.definitions.map { it.toSummary() },
+                    skillCatalogGeneration = skillCatalog.generation,
                     enabledTools = enabledTools,
                     traceSink = { trace -> recordTrace(current, trace) },
                 ),
@@ -254,12 +369,41 @@ class SenseAiBrainService : Service() {
         val current = synchronized(activeLock) {
             active?.takeIf { it.identity == identity }?.also {
                 active = null
+                it.admissionCancellation = reason
                 cancelTickerLocked(it)
                 cancelVisibleFlushLocked(it)
                 it.ipcEvents.clear()
             }
         } ?: return
         current.retentionGate.currentHandle()?.cancel(reason)
+    }
+
+    /**
+     * Returns true when this admission lost authority before a Brain handle was installed.
+     *
+     * The request was already durably begun, so the cancellation is retained exactly once even
+     * though it is no longer eligible for a Binder callback.
+     */
+    private fun finishCancelledAdmission(current: ActiveRun): Boolean {
+        val reason = synchronized(activeLock) {
+            val lostAuthority = active !== current || current.admissionCancellation != null
+            if (!lostAuthority || current.admissionTerminalRecorded) {
+                null
+            } else {
+                current.admissionTerminalRecorded = true
+                current.admissionCancellation ?: HarnessCancelReason.CALLER_REQUESTED
+            }
+        } ?: return false
+        runCatching {
+            current.recorder?.record(
+                AiEvent.Cancelled(
+                    current.identity.first,
+                    current.identity.second,
+                    reason,
+                ),
+            )
+        }
+        return true
     }
 
     private fun emit(expectedRun: ActiveRun, event: AiEvent) {
@@ -550,13 +694,20 @@ class SenseAiBrainService : Service() {
     private class ActiveRun(
         val identity: Pair<String, Long>,
         val reply: Messenger,
-        var recorder: AgentRunRecorder? = null,
+        @Volatile var recorder: AgentRunRecorder? = null,
         val retentionGate: BrainRetentionFailureGate = BrainRetentionFailureGate(),
         val ticker: BrainRunTickerSlot = BrainRunTickerSlot(),
         val ipcEvents: BrainIpcEventBatcher = BrainIpcEventBatcher(),
         var ipcFlushScheduled: Boolean = false,
         var ipcFlushUrgent: Boolean = false,
         var ipcFlushRunnable: Runnable? = null,
+        var admissionCancellation: HarnessCancelReason? = null,
+        var admissionTerminalRecorded: Boolean = false,
+    )
+
+    private data class StartAdmission(
+        val run: ActiveRun,
+        val request: io.github.ethanbird.senseime.ai.protocol.HarnessRequestV1,
     )
 
     private data class OutboundDelivery(
@@ -568,5 +719,8 @@ class SenseAiBrainService : Service() {
         private const val AGENT_HISTORY_DIRECTORY = "agent-history"
         private const val TICK_INTERVAL_MS = 100L
         private const val IPC_FRAME_INTERVAL_MS = 16L
+        private val PROCESS_ADMISSION_EXECUTOR = Executors.newSingleThreadExecutor { runnable ->
+            Thread(runnable, "sense-brain-admission").apply { isDaemon = true }
+        }
     }
 }

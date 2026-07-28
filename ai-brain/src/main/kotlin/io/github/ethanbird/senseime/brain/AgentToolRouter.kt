@@ -3,6 +3,10 @@ package io.github.ethanbird.senseime.brain
 import io.github.ethanbird.senseime.brain.api.AgentToolArguments
 import io.github.ethanbird.senseime.brain.api.AgentToolCall
 import io.github.ethanbird.senseime.brain.api.AgentToolId
+import io.github.ethanbird.senseime.brain.api.AgentSkillDirection
+import io.github.ethanbird.senseime.brain.api.AgentSkillPolicy
+import io.github.ethanbird.senseime.brain.api.AgentSkillSlot
+import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import java.net.URI
 
 /**
@@ -78,6 +82,29 @@ internal object AgentToolRouter {
                     ),
                 )
             }
+            AgentToolId.SKILL_READ -> {
+                requireKeys(
+                    members,
+                    required = setOf("skill_id", "revision"),
+                    optional = setOf("offset", "max_chars"),
+                )
+                AgentToolArguments.SkillRead(
+                    skillId = members.requiredText("skill_id", AgentSkillPolicy.MAX_ID_CHARS),
+                    revision = members.requiredPositiveLong("revision"),
+                    offset = members.optionalInt(
+                        "offset",
+                        default = 0,
+                        range = 0..AgentSkillPolicy.MAX_CONTENT_CHARS,
+                    ),
+                    maxChars = members.optionalInt(
+                        "max_chars",
+                        default = AgentToolArguments.SkillRead.DEFAULT_MAX_CHARS,
+                        range = AgentToolArguments.SkillRead.MIN_MAX_CHARS..
+                            AgentToolArguments.SkillRead.MAX_MAX_CHARS,
+                    ),
+                )
+            }
+            AgentToolId.SKILL_MANAGE -> decodeSkillManagement(members)
         }
         return AgentToolCall(
             callId = callId,
@@ -86,6 +113,133 @@ internal object AgentToolRouter {
             requestId = requestId,
             runGeneration = runGeneration,
         )
+    }
+
+    private fun decodeSkillManagement(
+        members: Map<String, JsonValue>,
+    ): AgentToolArguments.SkillManage {
+        val operation = members.requiredText("operation", MAX_SKILL_OPERATION_CHARS)
+        return when (operation) {
+            "create" -> {
+                requireKeys(
+                    members,
+                    required = setOf(
+                        "operation",
+                        "expected_catalog_generation",
+                        "skill_id",
+                        "name",
+                        "description",
+                        "content",
+                    ),
+                    optional = setOf("base_intent", "key_code", "direction"),
+                )
+                val binding = members.optionalSlot()
+                AgentToolArguments.SkillManage.Create(
+                    skillId = members.requiredText("skill_id", AgentSkillPolicy.MAX_ID_CHARS),
+                    name = members.requiredText("name", AgentSkillPolicy.MAX_NAME_CHARS),
+                    description = members.requiredText(
+                        "description",
+                        AgentSkillPolicy.MAX_DESCRIPTION_CHARS,
+                    ),
+                    content = members.requiredText(
+                        "content",
+                        AgentSkillPolicy.MAX_CONTENT_CHARS,
+                        trim = false,
+                    ),
+                    baseIntent = members.optionalEditorIntent() ?: EditorIntent.SMART_EDIT,
+                    binding = binding,
+                    expectedCatalogGeneration =
+                        members.requiredPositiveLong("expected_catalog_generation"),
+                )
+            }
+            "update" -> {
+                requireKeys(
+                    members,
+                    required = setOf(
+                        "operation",
+                        "expected_catalog_generation",
+                        "skill_id",
+                    ),
+                    optional = setOf("name", "description", "content", "base_intent"),
+                )
+                val name = members.optionalText("name", AgentSkillPolicy.MAX_NAME_CHARS)
+                val description = members.optionalText(
+                    "description",
+                    AgentSkillPolicy.MAX_DESCRIPTION_CHARS,
+                )
+                val content = members.optionalText(
+                    "content",
+                    AgentSkillPolicy.MAX_CONTENT_CHARS,
+                    trim = false,
+                )
+                val baseIntent = members.optionalEditorIntent()
+                if (name == null && description == null && content == null && baseIntent == null) {
+                    throw ProviderPayloadException("Skill update must change at least one field")
+                }
+                AgentToolArguments.SkillManage.Update(
+                    skillId = members.requiredText("skill_id", AgentSkillPolicy.MAX_ID_CHARS),
+                    name = name,
+                    description = description,
+                    content = content,
+                    baseIntent = baseIntent,
+                    expectedCatalogGeneration =
+                        members.requiredPositiveLong("expected_catalog_generation"),
+                )
+            }
+            "bind" -> {
+                requireKeys(
+                    members,
+                    required = setOf(
+                        "operation",
+                        "expected_catalog_generation",
+                        "skill_id",
+                        "key_code",
+                        "direction",
+                    ),
+                    optional = emptySet(),
+                )
+                AgentToolArguments.SkillManage.Bind(
+                    skillId = members.requiredText("skill_id", AgentSkillPolicy.MAX_ID_CHARS),
+                    slot = members.requiredSlot(),
+                    expectedCatalogGeneration =
+                        members.requiredPositiveLong("expected_catalog_generation"),
+                )
+            }
+            "unbind" -> {
+                requireKeys(
+                    members,
+                    required = setOf(
+                        "operation",
+                        "expected_catalog_generation",
+                        "key_code",
+                        "direction",
+                    ),
+                    optional = emptySet(),
+                )
+                AgentToolArguments.SkillManage.Unbind(
+                    slot = members.requiredSlot(),
+                    expectedCatalogGeneration =
+                        members.requiredPositiveLong("expected_catalog_generation"),
+                )
+            }
+            "unbind_skill" -> {
+                requireKeys(
+                    members,
+                    required = setOf(
+                        "operation",
+                        "expected_catalog_generation",
+                        "skill_id",
+                    ),
+                    optional = emptySet(),
+                )
+                AgentToolArguments.SkillManage.UnbindSkill(
+                    skillId = members.requiredText("skill_id", AgentSkillPolicy.MAX_ID_CHARS),
+                    expectedCatalogGeneration =
+                        members.requiredPositiveLong("expected_catalog_generation"),
+                )
+            }
+            else -> throw ProviderPayloadException("unknown Skill management operation")
+        }
     }
 
     private fun requireKeys(
@@ -99,17 +253,31 @@ internal object AgentToolRouter {
         }
     }
 
-    private fun Map<String, JsonValue>.requiredText(name: String, maxChars: Int): String {
-        val value = (get(name) as? JsonValue.StringValue)?.value?.trim()
+    private fun Map<String, JsonValue>.requiredText(
+        name: String,
+        maxChars: Int,
+        trim: Boolean = true,
+    ): String {
+        val raw = (get(name) as? JsonValue.StringValue)?.value
             ?: throw ProviderPayloadException("$name must be a string")
+        val value = if (trim) raw.trim() else raw
         if (
-            value.isEmpty() ||
+            value.isBlank() ||
             value.length > maxChars ||
             value.any { Character.isISOControl(it) && it !in setOf('\n', '\r', '\t') }
         ) {
             throw ProviderPayloadException("$name is outside its bounded text contract")
         }
         return value
+    }
+
+    private fun Map<String, JsonValue>.optionalText(
+        name: String,
+        maxChars: Int,
+        trim: Boolean = true,
+    ): String? {
+        if (name !in this) return null
+        return requiredText(name, maxChars, trim)
     }
 
     private fun Map<String, JsonValue>.optionalInt(
@@ -126,8 +294,62 @@ internal object AgentToolRouter {
         return value
     }
 
+    private fun Map<String, JsonValue>.optionalPositiveLong(name: String): Long? {
+        val raw = get(name) ?: return null
+        val value = (raw as? JsonValue.NumberValue)?.value?.toLongOrNull()
+            ?: throw ProviderPayloadException("$name must be an integer")
+        if (value <= 0L) {
+            throw ProviderPayloadException("$name must be positive")
+        }
+        return value
+    }
+
+    private fun Map<String, JsonValue>.requiredPositiveLong(name: String): Long =
+        optionalPositiveLong(name)
+            ?: throw ProviderPayloadException("$name is required")
+
+    private fun Map<String, JsonValue>.requiredSlot(): AgentSkillSlot {
+        val keyCode = optionalInt(
+            "key_code",
+            default = Int.MIN_VALUE,
+            range = MIN_SKILL_KEY_CODE..MAX_SKILL_KEY_CODE,
+        )
+        if (keyCode == Int.MIN_VALUE) {
+            throw ProviderPayloadException("key_code is required")
+        }
+        val directionValue = requiredText("direction", MAX_SKILL_DIRECTION_CHARS)
+        val direction = runCatching {
+            AgentSkillDirection.fromWireValue(directionValue)
+        }.getOrElse {
+            throw ProviderPayloadException("direction must be up, right, down, or left")
+        }
+        return runCatching { AgentSkillSlot(keyCode, direction) }.getOrElse {
+            throw ProviderPayloadException("key_code is not a bindable keyboard key")
+        }
+    }
+
+    private fun Map<String, JsonValue>.optionalSlot(): AgentSkillSlot? {
+        val hasKey = "key_code" in this
+        val hasDirection = "direction" in this
+        if (!hasKey && !hasDirection) return null
+        if (hasKey != hasDirection) {
+            throw ProviderPayloadException("key_code and direction must be supplied together")
+        }
+        return requiredSlot()
+    }
+
+    private fun Map<String, JsonValue>.optionalEditorIntent(): EditorIntent? {
+        if ("base_intent" !in this) return null
+        val wireValue = requiredText("base_intent", MAX_BASE_INTENT_CHARS)
+        return EditorIntent.entries.firstOrNull { it.wireValue == wireValue }
+            ?.takeUnless { it == EditorIntent.NO_CHANGE }
+            ?: throw ProviderPayloadException("base_intent is not a runnable editor intent")
+    }
+
     const val MAX_TOOL_RESULT_CHARS = 16_384
-    const val MAX_TOOL_TURNS = 6
+    // Eleven default-sized pages recover the maximum 65,536-char Skill document. Keep one final
+    // bounded turn for another useful tool while still preventing an unbounded provider loop.
+    const val MAX_TOOL_TURNS = 12
     const val MAX_QUERY_CHARS = 512
     const val MAX_URL_CHARS = 2_048
     const val MAX_EXPRESSION_CHARS = 512
@@ -137,4 +359,9 @@ internal object AgentToolRouter {
     const val DEFAULT_FETCH_CHARS = 8_000
     const val DEFAULT_SEARCH_RESULTS = 5
     const val DEFAULT_MEMORY_RESULTS = 8
+    const val MIN_SKILL_KEY_CODE = -1_024
+    const val MAX_SKILL_KEY_CODE = 0x10ffff
+    const val MAX_SKILL_OPERATION_CHARS = 32
+    const val MAX_SKILL_DIRECTION_CHARS = 8
+    const val MAX_BASE_INTENT_CHARS = 32
 }

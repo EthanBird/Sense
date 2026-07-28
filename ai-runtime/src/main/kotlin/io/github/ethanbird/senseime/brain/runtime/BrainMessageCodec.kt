@@ -1,6 +1,7 @@
 package io.github.ethanbird.senseime.brain.runtime
 
 import android.os.Bundle
+import io.github.ethanbird.senseime.ai.protocol.ActiveSkillInstructionV1
 import io.github.ethanbird.senseime.ai.protocol.AiEvent
 import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import io.github.ethanbird.senseime.ai.protocol.EditorPatchV1
@@ -23,24 +24,39 @@ internal object BrainMessageProtocol {
 }
 
 internal object BrainMessageCodec {
-    fun encodeRequest(request: HarnessRequestV1): Bundle = Bundle().apply {
-        putString("request_id", request.requestId)
-        putLong("generation", request.runGeneration)
-        putString("skill", request.skill.name)
-        putInt("max_output", request.maxOutputChars)
-        val snapshot = request.snapshot
-        putString("snapshot_id", snapshot.snapshotId)
-        putLong("editor_generation", snapshot.editorGeneration)
-        putString("field_identity", snapshot.fieldIdentity)
-        putString("capability", snapshot.capability.name)
-        putString("text", snapshot.text)
-        putInt("text_start", snapshot.textStartOffset)
-        putInt("selection_start", snapshot.selection?.start ?: NO_SELECTION)
-        putInt("selection_end", snapshot.selection?.end ?: NO_SELECTION)
-        putString("target", snapshot.target?.name)
-        putString("base_sha256", snapshot.baseSha256)
-        putLong("captured_at", snapshot.capturedAtMonotonicMs)
-        putBoolean("truncated", snapshot.truncated)
+    fun encodeRequest(request: HarnessRequestV1): Bundle {
+        BrainRequestEnvelopePolicy.requireAccepted(request)
+        return Bundle().apply {
+            putString("request_id", request.requestId)
+            putLong("generation", request.runGeneration)
+            putString("skill", request.skill.name)
+            putInt("max_output", request.maxOutputChars)
+            request.skillCatalogGeneration?.let { generation ->
+                putLong("skill_catalog_generation", generation)
+            }
+            request.activeSkill?.let { activeSkill ->
+                putString("active_skill_protocol", activeSkill.protocol)
+                putString("active_skill_id", activeSkill.id)
+                putLong("active_skill_revision", activeSkill.revision)
+                putLong("active_skill_catalog_generation", activeSkill.catalogGeneration)
+                putString("active_skill_name", activeSkill.name)
+                putString("active_skill_description", activeSkill.description)
+                putString("active_skill_content", activeSkill.content)
+            }
+            val snapshot = request.snapshot
+            putString("snapshot_id", snapshot.snapshotId)
+            putLong("editor_generation", snapshot.editorGeneration)
+            putString("field_identity", snapshot.fieldIdentity)
+            putString("capability", snapshot.capability.name)
+            putString("text", snapshot.text)
+            putInt("text_start", snapshot.textStartOffset)
+            putInt("selection_start", snapshot.selection?.start ?: NO_SELECTION)
+            putInt("selection_end", snapshot.selection?.end ?: NO_SELECTION)
+            putString("target", snapshot.target?.name)
+            putString("base_sha256", snapshot.baseSha256)
+            putLong("captured_at", snapshot.capturedAtMonotonicMs)
+            putBoolean("truncated", snapshot.truncated)
+        }
     }
 
     fun decodeRequest(bundle: Bundle): HarnessRequestV1 {
@@ -72,6 +88,22 @@ internal object BrainMessageCodec {
             requestId = requestId,
             runGeneration = bundle.getLong("generation"),
             skill = EditorIntent.valueOf(bundle.requireString("skill")),
+            skillCatalogGeneration = if (bundle.containsKey("skill_catalog_generation")) {
+                bundle.getLong("skill_catalog_generation")
+            } else {
+                null
+            },
+            activeSkill = bundle.getString("active_skill_id")?.let { activeSkillId ->
+                ActiveSkillInstructionV1(
+                    protocol = bundle.requireString("active_skill_protocol"),
+                    id = activeSkillId,
+                    revision = bundle.getLong("active_skill_revision"),
+                    catalogGeneration = bundle.getLong("active_skill_catalog_generation"),
+                    name = bundle.requireString("active_skill_name"),
+                    description = bundle.requireString("active_skill_description"),
+                    content = bundle.requireString("active_skill_content"),
+                )
+            },
             snapshot = snapshot,
             maxOutputChars = maxOutput,
         )

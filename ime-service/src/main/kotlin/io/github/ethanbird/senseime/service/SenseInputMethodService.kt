@@ -16,8 +16,13 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import io.github.ethanbird.senseime.ai.protocol.ActiveSkillInstructionV1
 import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
 import io.github.ethanbird.senseime.ai.protocol.TextSelectionV1
+import io.github.ethanbird.senseime.brain.api.AgentSkillCatalog
+import io.github.ethanbird.senseime.brain.api.AgentSkillDirection
+import io.github.ethanbird.senseime.brain.api.AgentSkillSlot
+import io.github.ethanbird.senseime.brain.runtime.AgentSkillStore
 import io.github.ethanbird.senseime.core.AdaptivePinyinDecoder
 import io.github.ethanbird.senseime.core.BinaryCharacterBigramModel
 import io.github.ethanbird.senseime.core.Candidate
@@ -38,6 +43,8 @@ import io.github.ethanbird.senseime.core.SemanticCandidateMixer
 import io.github.ethanbird.senseime.core.UserLexicon
 import io.github.ethanbird.senseime.core.editorComposingTextUpdate
 import io.github.ethanbird.senseime.service.ai.SenseAiEditorCoordinator
+import io.github.ethanbird.senseime.service.ai.AgentSkillRunSnapshot
+import io.github.ethanbird.senseime.service.ai.SelectedAgentSkill
 import io.github.ethanbird.senseime.service.ai.editor.EditorStaleReason
 import io.github.ethanbird.senseime.speech.AndroidSpeechRecognizerController
 import io.github.ethanbird.senseime.speech.CloudSpeechRecognitionController
@@ -54,11 +61,19 @@ import io.github.ethanbird.senseime.speech.SpeechRecognitionReducer
 import io.github.ethanbird.senseime.speech.SpeechRecognitionState
 import io.github.ethanbird.senseime.speech.SpeechSessionIdSequence
 import io.github.ethanbird.senseime.ui.KeyCodes
+import io.github.ethanbird.senseime.ui.ActiveKeyboardSkill
+import io.github.ethanbird.senseime.ui.KeyboardSkillBinding
+import io.github.ethanbird.senseime.ui.KeyboardSkillDirection
+import io.github.ethanbird.senseime.ui.KeyboardSkillSelection
+import io.github.ethanbird.senseime.ui.KeyboardSkillSelectionListener
+import io.github.ethanbird.senseime.ui.KeyboardSkillToggleAction
 import io.github.ethanbird.senseime.ui.KeyboardLayoutContract
 import io.github.ethanbird.senseime.ui.SenseKeyboardView
+import io.github.ethanbird.senseime.ui.SenseKeyboardSurface
 import io.github.ethanbird.senseime.ui.VoiceSurfacePhase
 import io.github.ethanbird.senseime.ui.VoiceSurfaceState
 import java.util.ArrayDeque
+import java.util.concurrent.Executors
 import org.json.JSONArray
 
 class SenseInputMethodService : InputMethodService() {
@@ -71,12 +86,15 @@ class SenseInputMethodService : InputMethodService() {
     private var shifted = false
     private var chineseMode = true
     private var keyboardView: SenseKeyboardView? = null
+    private var keyboardSurface: SenseKeyboardSurface? = null
+    private var imeWindowVisible = false
     private val mainHandler = Handler(Looper.getMainLooper())
     private val candidateResultToken = Any()
     private var candidateRunner: LatestOnlyTaskRunner<CandidateDecodeRequest, ProgressivePinyinDecoding>? = null
     private var pendingSpaceRevision: Long? = null
     private val deferredInputs = ArrayDeque<DeferredInput>()
     private var drainingDeferredInputs = false
+    @Volatile
     private var destroyed = false
     private var editorSelectionState = EditorSelectionState()
     private var selectionStart = -1
@@ -85,6 +103,14 @@ class SenseInputMethodService : InputMethodService() {
     private var clipboardHistoryAllowed = false
     private lateinit var clipboardManager: ClipboardManager
     private lateinit var aiCoordinator: SenseAiEditorCoordinator
+    private lateinit var agentSkillStore: AgentSkillStore
+    private lateinit var agentSkillDirectoryWatcher: AgentSkillDirectoryWatcher
+    private lateinit var agentSkillProjection: AgentSkillProjectionCoordinator<AgentSkillCatalog>
+    private var agentSkillCatalog: AgentSkillCatalog? = null
+    private var pendingAgentSkillFailureFeedback: String? = null
+    private val agentSkillIo = Executors.newSingleThreadExecutor { runnable ->
+        Thread(runnable, "sense-agent-skills").apply { isDaemon = true }
+    }
     private lateinit var speechController: AndroidSpeechRecognizerController
     private lateinit var cloudSpeechController: CloudSpeechRecognitionController
     private lateinit var speechSettingsStore: SpeechProviderSettingsStore
@@ -180,6 +206,30 @@ class SenseInputMethodService : InputMethodService() {
         clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         loadClipboardHistory()
         clipboardManager.addPrimaryClipChangedListener(clipboardListener)
+        agentSkillStore = AgentSkillStore(this)
+        agentSkillDirectoryWatcher = AgentSkillDirectoryWatcher(
+            directory = filesDir.resolve(AgentSkillStore.DIRECTORY_NAME),
+            ownerIsAlive = { !destroyed },
+        )
+        agentSkillProjection = AgentSkillProjectionCoordinator(
+            backgroundExecutor = agentSkillIo,
+            deliveryExecutor = java.util.concurrent.Executor { command ->
+                mainHandler.post(command)
+            },
+            load = { agentSkillStore.loadCatalog() },
+            registerWatcher = agentSkillDirectoryWatcher::register,
+            unregisterWatcher = agentSkillDirectoryWatcher::unregister,
+            publish = { catalog ->
+                pendingAgentSkillFailureFeedback = null
+                agentSkillCatalog = catalog
+                keyboardView?.let { view ->
+                    view.clearSkillFeedback()
+                    publishAgentSkills(view, catalog)
+                }
+            },
+            reportFailure = ::reportAgentSkillProjectionFailure,
+        )
+        agentSkillProjection.start()
         aiCoordinator = SenseAiEditorCoordinator(
             context = this,
             connection = { currentInputConnection },
@@ -201,6 +251,7 @@ class SenseInputMethodService : InputMethodService() {
                     view.isAiSurfaceActive() && view.activeAiGeneration() == generation
                 } == true
             },
+            skillSnapshot = ::agentSkillSnapshotForRun,
             onSurfaceUpdate = { generation, phase, preview, status, activities ->
                 keyboardView?.updateAiSurface(
                     generation,
@@ -213,6 +264,7 @@ class SenseInputMethodService : InputMethodService() {
             onOwnApplyWindow = { token, active ->
                 aiApplicationToken = if (active) token else null
             },
+            onAgentRunTerminal = ::refreshAgentSkills,
         )
         speechSettingsStore = SpeechProviderSettingsStore(this)
         speechController = AndroidSpeechRecognizerController(
@@ -226,10 +278,13 @@ class SenseInputMethodService : InputMethodService() {
         )
     }
 
-    override fun onCreateInputView(): View = SenseKeyboardView(this).also { view ->
+    override fun onCreateInputView(): View = SenseKeyboardSurface(this).also { surface ->
+        keyboardSurface = surface
+        surface.setImeWindowVisible(imeWindowVisible)
+        val view = surface.keyboardView
         val landscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val preferredHeight = KeyboardLayoutContract.preferredKeyboardHeightDp(landscape)
-        view.layoutParams = ViewGroup.LayoutParams(
+        surface.layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             (preferredHeight * resources.displayMetrics.density).toInt(),
         )
@@ -239,6 +294,7 @@ class SenseInputMethodService : InputMethodService() {
         view.clipboardActionListener = ::handleClipboardAction
         view.editorActionListener = ::handleEditorAction
         view.settingsActionListener = ::openSenseHome
+        view.skillSelectionListener = KeyboardSkillSelectionListener(::handleSkillSelection)
         view.aiHoldListener = object : SenseKeyboardView.AiHoldListener {
             override fun onAiHoldStarted(generation: Long) {
                 beginAiHold(generation)
@@ -259,6 +315,11 @@ class SenseInputMethodService : InputMethodService() {
             canPaste = clipboardManager.hasPrimaryClip(),
         )
         keyboardView = view
+        publishAgentSkills(view)
+        pendingAgentSkillFailureFeedback?.let { message ->
+            pendingAgentSkillFailureFeedback = null
+            view.showSkillFeedback(message)
+        }
         render()
     }
 
@@ -272,6 +333,97 @@ class SenseInputMethodService : InputMethodService() {
             .onFailure {
                 Toast.makeText(this, "无法打开 Sense 设置", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun refreshAgentSkills() {
+        if (!::agentSkillProjection.isInitialized) return
+        agentSkillProjection.refresh()
+    }
+
+    private fun reconcileAgentSkillsAndWatcher() {
+        if (!::agentSkillProjection.isInitialized) return
+        agentSkillProjection.refreshAndRebuildWatcher()
+    }
+
+    private fun publishAgentSkills(
+        view: SenseKeyboardView,
+        catalog: AgentSkillCatalog? = agentSkillCatalog,
+    ) {
+        if (catalog == null) {
+            view.updateKeyboardSkills(emptyList(), null)
+            return
+        }
+        val bindings = catalog.bindings.mapNotNull { binding ->
+            val definition = catalog.definition(binding.skillId) ?: return@mapNotNull null
+            KeyboardSkillBinding(
+                keyCode = binding.slot.keyCode,
+                direction = binding.slot.direction.toKeyboardDirection(),
+                skillId = definition.id,
+                label = definition.name,
+                description = definition.description,
+            )
+        }
+        val active = catalog.active?.let { activation ->
+            ActiveKeyboardSkill(
+                skillId = activation.skillId,
+                sourceKeyCode = activation.slot.keyCode,
+                direction = activation.slot.direction.toKeyboardDirection(),
+            )
+        }
+        view.updateKeyboardSkills(bindings, active)
+    }
+
+    private fun handleSkillSelection(selection: KeyboardSkillSelection) {
+        val requestedSlot = AgentSkillSlot(
+            keyCode = selection.binding.keyCode,
+            direction = selection.binding.direction.toAgentDirection(),
+        )
+        val requestedSkillId = selection.binding.skillId
+        agentSkillProjection.submit(requestToken = selection.requestToken) {
+            agentSkillStore.applySelectionIntent(
+                slot = requestedSlot,
+                selectedSkillId = requestedSkillId,
+                activate = selection.action == KeyboardSkillToggleAction.ACTIVATE,
+            )
+        }
+    }
+
+    private fun reportAgentSkillProjectionFailure(failure: AgentSkillProjectionFailure) {
+        val message = AgentSkillProjectionFailureText.message(failure.operation)
+        val view = keyboardView
+        if (view == null) {
+            pendingAgentSkillFailureFeedback = message
+        } else {
+            pendingAgentSkillFailureFeedback = null
+            failure.requestToken?.let(view::rejectPendingSkillSelection)
+            view.showSkillFeedback(message)
+        }
+    }
+
+    /**
+     * The Space hold path is deliberately disk-free. The exact immutable catalog projected on
+     * screen is captured from memory, so the aurora and the Agent instructions cannot disagree.
+     * Settings and Brain writes refresh this cache through the serial background lane.
+     */
+    private fun agentSkillSnapshotForRun(): AgentSkillRunSnapshot? {
+        val catalog = agentSkillCatalog ?: return null
+        val activeSkill = catalog.activeDefinition()?.let { definition ->
+            SelectedAgentSkill(
+                baseIntent = definition.baseIntent,
+                instruction = ActiveSkillInstructionV1(
+                    id = definition.id,
+                    revision = definition.revision,
+                    catalogGeneration = catalog.generation,
+                    name = definition.name,
+                    description = definition.description,
+                    content = definition.content,
+                ),
+            )
+        }
+        return AgentSkillRunSnapshot(
+            catalogGeneration = catalog.generation,
+            activeSkill = activeSkill,
+        )
     }
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
@@ -305,7 +457,19 @@ class SenseInputMethodService : InputMethodService() {
         super.onStartInputView(info, restarting)
         keyboardView?.setChineseMode(chineseMode)
         keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
+        reconcileAgentSkillsAndWatcher()
         render()
+    }
+
+    override fun onWindowShown() {
+        super.onWindowShown()
+        imeWindowVisible = true
+        keyboardSurface?.setImeWindowVisible(true)
+        /*
+         * onStartInputView owns the watcher epoch rebuild. Window visibility still reconciles a
+         * potentially missed CURRENT event, but must not immediately stop/start the fresh watch.
+         */
+        refreshAgentSkills()
     }
 
     override fun onFinishInput() {
@@ -382,6 +546,8 @@ class SenseInputMethodService : InputMethodService() {
 
     override fun onDestroy() {
         destroyed = true
+        imeWindowVisible = false
+        keyboardSurface?.setImeWindowVisible(false)
         pendingSpaceRevision = null
         mainHandler.removeCallbacks(pendingCommitTimeout)
         deferredInputs.clear()
@@ -398,12 +564,23 @@ class SenseInputMethodService : InputMethodService() {
         if (::speechController.isInitialized) speechController.destroy()
         if (::cloudSpeechController.isInitialized) cloudSpeechController.close()
         if (::aiCoordinator.isInitialized) aiCoordinator.close()
+        if (::agentSkillProjection.isInitialized) {
+            agentSkillProjection.close()
+        }
+        /*
+         * close() appends FileObserver teardown after every already-accepted read/mutation. A
+         * graceful shutdown lets that FIFO drain without waiting on the IME main thread.
+         */
+        agentSkillIo.shutdown()
         aiApplicationToken = null
         keyboardView = null
+        keyboardSurface = null
         super.onDestroy()
     }
 
     override fun onWindowHidden() {
+        imeWindowVisible = false
+        keyboardSurface?.setImeWindowVisible(false)
         cancelVoiceSession(exitSurface = true)
         cancelAndExitAi(HarnessCancelReason.WINDOW_HIDDEN)
         super.onWindowHidden()
@@ -1394,6 +1571,20 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+
+    private fun AgentSkillDirection.toKeyboardDirection(): KeyboardSkillDirection = when (this) {
+        AgentSkillDirection.UP -> KeyboardSkillDirection.UP
+        AgentSkillDirection.RIGHT -> KeyboardSkillDirection.RIGHT
+        AgentSkillDirection.DOWN -> KeyboardSkillDirection.DOWN
+        AgentSkillDirection.LEFT -> KeyboardSkillDirection.LEFT
+    }
+
+    private fun KeyboardSkillDirection.toAgentDirection(): AgentSkillDirection = when (this) {
+        KeyboardSkillDirection.UP -> AgentSkillDirection.UP
+        KeyboardSkillDirection.RIGHT -> AgentSkillDirection.RIGHT
+        KeyboardSkillDirection.DOWN -> AgentSkillDirection.DOWN
+        KeyboardSkillDirection.LEFT -> AgentSkillDirection.LEFT
+    }
 
     private companion object {
         const val SENSE_SETTINGS_ACTIVITY =

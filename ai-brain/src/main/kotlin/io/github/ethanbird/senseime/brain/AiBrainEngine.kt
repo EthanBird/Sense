@@ -18,10 +18,13 @@ import io.github.ethanbird.senseime.brain.api.BrainEventSink
 import io.github.ethanbird.senseime.brain.api.BrainRunHandle
 import io.github.ethanbird.senseime.brain.api.BrainRunSpec
 import io.github.ethanbird.senseime.brain.api.BrainTraceEvent
+import io.github.ethanbird.senseime.brain.api.AgentToolArguments
 import io.github.ethanbird.senseime.brain.api.AgentToolCall
 import io.github.ethanbird.senseime.brain.api.AgentToolExecutionResult
 import io.github.ethanbird.senseime.brain.api.AgentToolExecutor
 import io.github.ethanbird.senseime.brain.api.AgentToolId
+import io.github.ethanbird.senseime.brain.api.AgentSkillCatalogSnapshot
+import io.github.ethanbird.senseime.brain.api.AgentSkillSummary
 import io.github.ethanbird.senseime.brain.api.CompletedProviderCall
 import io.github.ethanbird.senseime.brain.api.MonotonicClock
 import io.github.ethanbird.senseime.brain.api.ProviderCall
@@ -73,6 +76,8 @@ class AiBrainEngine(
         private var nativeTool: NativePatchToolAccumulator? = null
         private val nativeToolArguments = StringBuilder()
         private val privateReasoning = StringBuilder()
+        private val privateResponsesReasoningItems = mutableListOf<String>()
+        private var privateResponsesReasoningChars = 0
         private val assistantContent = StringBuilder()
         private var nativeToolIndex: Int? = null
         private var nativeToolId: String? = null
@@ -87,6 +92,11 @@ class AiBrainEngine(
         private var agentToolTurns = 0
         private var toolExecutionCounter = 0L
         private var activeToolExecutionToken = -1L
+        private var authorizedSkillCatalogGeneration =
+            spec.skillCatalogGeneration
+                ?: spec.harnessRequest.skillCatalogGeneration
+                ?: spec.harnessRequest.activeSkill?.catalogGeneration
+        private var authorizedSkillCatalog = spec.skillCatalog.toList()
         private var agentConversation = AgentConversationContext(emptyList())
         private val runStartedAtMs = clock.nowMs()
         private var lastHeartbeatAtMs = runStartedAtMs
@@ -99,6 +109,16 @@ class AiBrainEngine(
                 io.github.ethanbird.senseime.brain.api.ProviderApiStyle
                     .OPENAI_COMPATIBLE_CHAT_COMPLETIONS &&
                 ProviderCompatibility.isOfficialDeepSeek(spec.provider.baseUrl)
+        private val acceptsAgentToolCalls = OpenAiRequestFactory.exposedAgentTools(
+            enabledTools = spec.enabledTools,
+            requestMode = requestMode,
+            secondAttempt = null,
+            conversation = null,
+            skillCatalogGeneration = spec.skillCatalogGeneration
+                ?: spec.harnessRequest.skillCatalogGeneration
+                ?: spec.harnessRequest.activeSkill?.catalogGeneration,
+            hasReadableSkills = spec.skillCatalog.isNotEmpty(),
+        ).isNotEmpty()
 
         override val requestId: String
             get() = spec.harnessRequest.requestId
@@ -195,6 +215,8 @@ class AiBrainEngine(
                     agentConversation = continuation?.takeIf { it.exchanges.isNotEmpty() },
                     requestMode = requestMode,
                     enabledTools = spec.enabledTools,
+                    skillCatalog = authorizedSkillCatalog,
+                    skillCatalogGeneration = authorizedSkillCatalogGeneration,
                 )
             } catch (_: Exception) {
                 failLocally(HarnessErrorCode.INTERNAL_FAILURE, retryable = false)
@@ -229,6 +251,8 @@ class AiBrainEngine(
                 nativeTool = null
                 nativeToolArguments.setLength(0)
                 privateReasoning.setLength(0)
+                privateResponsesReasoningItems.clear()
+                privateResponsesReasoningChars = 0
                 assistantContent.setLength(0)
                 nativeToolIndex = null
                 nativeToolId = null
@@ -538,8 +562,23 @@ class AiBrainEngine(
                             )
                         }
                     }
+                    is ProviderContentEvent.ResponsesReasoningItem -> {
+                        if (
+                            privateResponsesReasoningItems.size >= MAX_RESPONSES_REASONING_ITEMS ||
+                            privateResponsesReasoningChars.toLong() + event.json.length >
+                            MAX_PRIVATE_REPLAY_CHARS
+                        ) {
+                            return failOutcome(
+                                HarnessErrorCode.PROVIDER_FAILURE,
+                                retryable = false,
+                                prior = dispatches,
+                            )
+                        }
+                        privateResponsesReasoningItems += event.json
+                        privateResponsesReasoningChars += event.json.length
+                    }
                     is ProviderContentEvent.ToolCallDelta -> {
-                        if (!usesNativePatchTool) {
+                        if (!usesNativePatchTool && !acceptsAgentToolCalls) {
                             return failOutcome(
                                 HarnessErrorCode.PROTOCOL_INVALID,
                                 retryable = false,
@@ -683,7 +722,6 @@ class AiBrainEngine(
                 return continueAfterProgressTool(attempt, prior)
             }
             if (
-                usesNativePatchTool &&
                 nativeToolError == null &&
                 AgentToolId.fromWireValue(nativeToolName.orEmpty()) != null
             ) {
@@ -691,6 +729,16 @@ class AiBrainEngine(
             }
 
             val nativeFailure = nativeToolError
+            if (!usesNativePatchTool && nativeToolIndex != null) {
+                completeNativeToolProgress(prior, succeeded = false)
+                return repairOrFail(
+                    attempt = attempt,
+                    prior = prior,
+                    rejectedDocument = nativeToolArguments.toString(),
+                    validationSummary =
+                        nativeFailure ?: "unexpected or disabled Agent tool call",
+                )
+            }
             val document = if (usesNativePatchTool && nativeFailure == null) {
                 if (
                     nativeToolIndex == null ||
@@ -1062,6 +1110,7 @@ class AiBrainEngine(
             val exchange = AgentToolExchange(
                 assistantReasoning = privateReasoning.toString(),
                 assistantContent = assistantContent.toString(),
+                responsesReasoningItems = privateResponsesReasoningItems.toList(),
                 toolCallId = callId,
                 toolName = toolName,
                 toolArguments = nativeToolArguments.toString(),
@@ -1112,7 +1161,31 @@ class AiBrainEngine(
                     enabledTools = spec.enabledTools,
                     requestId = requestId,
                     runGeneration = runGeneration,
-                )
+                ).also { decoded ->
+                    when (val arguments = decoded.arguments) {
+                        is AgentToolArguments.SkillRead -> {
+                            val authorized = authorizedSkillCatalog
+                                .firstOrNull { it.id == arguments.skillId }
+                            if (authorized?.revision != arguments.revision) {
+                                throw ProviderPayloadException(
+                                    "skill_read id/revision is not authorized for this run",
+                                )
+                            }
+                        }
+                        is AgentToolArguments.SkillManage -> {
+                            if (
+                                arguments.expectedCatalogGeneration !=
+                                authorizedSkillCatalogGeneration
+                            ) {
+                                throw ProviderPayloadException(
+                                    "skill_manage expected_catalog_generation is not authorized " +
+                                        "for this run",
+                                )
+                            }
+                        }
+                        else -> Unit
+                    }
+                }
             } catch (error: ProviderPayloadException) {
                 completeNativeToolProgress(prior, succeeded = false)
                 return repairOrFail(
@@ -1142,6 +1215,9 @@ class AiBrainEngine(
                 toolArguments = nativeToolArguments.toString(),
                 assistantReasoning = privateReasoning.toString(),
                 assistantContent = assistantContent.toString(),
+                responsesReasoningItems = privateResponsesReasoningItems.toList(),
+                authorizedSkillCatalogGeneration = authorizedSkillCatalogGeneration,
+                authorizedSkillCatalog = authorizedSkillCatalog,
                 stepId = currentToolStepId(),
             )
             toolExecutionCounter = pending.token
@@ -1156,6 +1232,15 @@ class AiBrainEngine(
         }
 
         private fun executeTool(pending: PendingToolExecution) {
+            // This lock acquisition is the tool-start linearization point. If cancellation won
+            // first, no executor code (and therefore no side effect) may run. If this transition
+            // wins first, the bounded executor is allowed to finish atomically; cancellation can
+            // still invalidate and discard its provider continuation, but cannot roll it back.
+            val executionStarted = synchronized(lock) {
+                !session.state.isTerminal &&
+                    activeToolExecutionToken == pending.token
+            }
+            if (!executionStarted) return
             val raw = runCatching { toolExecutor.execute(pending.call) }
                 .getOrElse {
                     AgentToolExecutionResult(
@@ -1163,15 +1248,8 @@ class AiBrainEngine(
                         isError = true,
                     )
                 }
-            val result = if (raw.content.length <= AgentToolRouter.MAX_TOOL_RESULT_CHARS) {
-                raw
-            } else {
-                AgentToolExecutionResult(
-                    content =
-                        "{\"ok\":false,\"error\":\"tool result exceeded the bounded limit\"}",
-                    isError = true,
-                )
-            }
+            val manage = pending.call.arguments as? AgentToolArguments.SkillManage
+            val result = normalizeToolResult(pending, raw)
             if (
                 !recordToolResult(
                     callId = pending.call.callId,
@@ -1191,6 +1269,21 @@ class AiBrainEngine(
                     return@synchronized null
                 }
                 activeToolExecutionToken = -1L
+                if (manage != null && !result.isError) {
+                    val snapshot = requireNotNull(result.skillCatalogSnapshot)
+                    if (
+                        authorizedSkillCatalogGeneration !=
+                        pending.authorizedSkillCatalogGeneration ||
+                        authorizedSkillCatalog != pending.authorizedSkillCatalog
+                    ) {
+                        return@synchronized failOutcome(
+                            HarnessErrorCode.INTERNAL_FAILURE,
+                            retryable = false,
+                        )
+                    }
+                    authorizedSkillCatalogGeneration = snapshot.generation
+                    authorizedSkillCatalog = snapshot.skills
+                }
                 val dispatches = mutableListOf<HarnessDispatch>()
                 dispatches += emitAgentProgress(
                     kind = AgentProgressKind.TOOL,
@@ -1208,6 +1301,7 @@ class AiBrainEngine(
                 val exchange = AgentToolExchange(
                     assistantReasoning = pending.assistantReasoning,
                     assistantContent = pending.assistantContent,
+                    responsesReasoningItems = pending.responsesReasoningItems,
                     toolCallId = pending.call.callId,
                     toolName = pending.toolName,
                     toolArguments = pending.toolArguments,
@@ -1225,6 +1319,96 @@ class AiBrainEngine(
             }
             outcome?.let(::dispatchOutcome)
         }
+
+        private fun normalizeToolResult(
+            pending: PendingToolExecution,
+            raw: AgentToolExecutionResult,
+        ): AgentToolExecutionResult {
+            if (raw.content.length > AgentToolRouter.MAX_TOOL_RESULT_CHARS) {
+                return invalidToolResult("tool result exceeded the bounded limit")
+            }
+            val manage = pending.call.arguments as? AgentToolArguments.SkillManage
+            if (manage == null) {
+                return if (raw.skillCatalogSnapshot == null) {
+                    raw
+                } else {
+                    invalidToolResult("non-management tool returned Skill catalog authority")
+                }
+            }
+            if (raw.isError) return raw
+            val snapshot = raw.skillCatalogSnapshot
+                ?: return invalidToolResult(
+                    "skill mutation result omitted the authoritative catalog snapshot",
+                )
+            return if (
+                validateSkillMutationSnapshot(
+                    mutation = manage,
+                    before = pending.authorizedSkillCatalog,
+                    beforeGeneration = pending.authorizedSkillCatalogGeneration,
+                    after = snapshot,
+                )
+            ) {
+                raw
+            } else {
+                invalidToolResult("skill mutation returned an invalid catalog snapshot")
+            }
+        }
+
+        private fun validateSkillMutationSnapshot(
+            mutation: AgentToolArguments.SkillManage,
+            before: List<AgentSkillSummary>,
+            beforeGeneration: Long?,
+            after: AgentSkillCatalogSnapshot,
+        ): Boolean {
+            if (
+                beforeGeneration != mutation.expectedCatalogGeneration ||
+                after.generation <= mutation.expectedCatalogGeneration
+            ) {
+                return false
+            }
+            val beforeById = before.associateBy(AgentSkillSummary::id)
+            val afterById = after.skills.associateBy(AgentSkillSummary::id)
+            if (beforeById.size != before.size || afterById.size != after.skills.size) return false
+
+            return when (mutation) {
+                is AgentToolArguments.SkillManage.Create -> {
+                    if (
+                        mutation.skillId in beforeById ||
+                        afterById.keys != beforeById.keys + mutation.skillId
+                    ) {
+                        false
+                    } else {
+                        beforeById.all { (id, summary) -> afterById[id] == summary } &&
+                            afterById[mutation.skillId]?.let { created ->
+                                created.revision > 0L &&
+                                    created.name == mutation.name &&
+                                    created.description == mutation.description
+                            } == true
+                    }
+                }
+                is AgentToolArguments.SkillManage.Update -> {
+                    val prior = beforeById[mutation.skillId] ?: return false
+                    val updated = afterById[mutation.skillId] ?: return false
+                    beforeById.keys == afterById.keys &&
+                        beforeById.all { (id, summary) ->
+                            id == mutation.skillId || afterById[id] == summary
+                        } &&
+                        updated.revision > prior.revision &&
+                        updated.name == (mutation.name ?: prior.name) &&
+                        updated.description == (mutation.description ?: prior.description)
+                }
+                is AgentToolArguments.SkillManage.Bind,
+                is AgentToolArguments.SkillManage.Unbind,
+                is AgentToolArguments.SkillManage.UnbindSkill,
+                -> beforeById == afterById
+            }
+        }
+
+        private fun invalidToolResult(message: String): AgentToolExecutionResult =
+            AgentToolExecutionResult(
+                content = "{\"ok\":false,\"error\":${JsonWriter().string(message)}}",
+                isError = true,
+            )
 
         private fun completeNativeToolProgress(
             dispatches: MutableList<HarnessDispatch>,
@@ -1522,6 +1706,8 @@ class AiBrainEngine(
             nativeTool = null
             nativeToolArguments.setLength(0)
             privateReasoning.setLength(0)
+            privateResponsesReasoningItems.clear()
+            privateResponsesReasoningChars = 0
             assistantContent.setLength(0)
             return activeCall.also { activeCall = null }
         }
@@ -1567,6 +1753,9 @@ class AiBrainEngine(
         val toolArguments: String,
         val assistantReasoning: String,
         val assistantContent: String,
+        val responsesReasoningItems: List<String>,
+        val authorizedSkillCatalogGeneration: Long?,
+        val authorizedSkillCatalog: List<AgentSkillSummary>,
         val stepId: String,
     )
 
@@ -1577,6 +1766,7 @@ class AiBrainEngine(
         const val HEARTBEAT_INTERVAL_MS = 2_500L
         const val MAX_AGENT_PROGRESS_TURNS = 2
         const val MAX_PRIVATE_REPLAY_CHARS = 262_144
+        const val MAX_RESPONSES_REASONING_ITEMS = 8
 
         fun harnessLimits(
             spec: BrainRunSpec,

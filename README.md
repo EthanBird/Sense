@@ -2,11 +2,11 @@
 
 > Android 原生高性能中文输入法：普通输入完全本地运行，AI、记忆与工具能力通过可配置的长按方向 Skill 显式触发。
 
-**项目状态：** `v0.4.4` 开放 Agent 工具与完整历史
+**项目状态：** `v0.4.5` 键盘 Skills、极光交互与完整修订历史
 
-**当前版本：** `v0.4.4`（`versionCode 19`）
+**当前版本：** `v0.4.5`（`versionCode 20`）
 
-**更新日期：** 2026-07-27
+**更新日期：** 2026-07-28
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
 
 本文基于《GlassIME Android AI 中文输入法产品与技术设计文档 v0.1》重新整理，并统一改名为：
@@ -22,47 +22,61 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.4 开放 Agent 工具与完整历史
+## 0. 当前迭代：v0.4.5 键盘 Skills 与 Agent ABI
 
-`v0.4.4` 把工具、Skills 与记忆提升为 Agent 产品主线，并以
-[`ADR 0019`](docs/adr/0019-v0.4.4-open-agent-tools-and-complete-history.md)
-覆盖 v0.4.3 的 `SCHEMA_ONLY` 产品限制：
+`v0.4.5` 在 v0.4.4 的开放工具、完整 Agent Journal 和本地记忆之上，把 Skills
+交付为可配置、可修订、可由 Agent 智能读取和管理的长期系统：
 
-- `:brain` 单写者以 append-only Journal 完整保留请求快照、Provider 原始输入/输出、
-  公私事件、工具调用/结果、预览、最终 Patch、错误与取消；
-- Journal 使用稳定 sequence、前帧链、CRC、同步落盘和断尾恢复，跨进程重启仍可读取；
-- `memory_search` 使用本地有界词法检索，并排除当前 Run，避免工具查询召回它自己；
-- 设置页是工具开关的唯一写入口，总开关与
-  `web_search`、`web_fetch`、`calculator`、`memory_search` 默认开启；
-- 工具开关只控制模型可见 schema 和执行路由，永远不停止历史写入或删除旧数据；
-- Agent 可在同一 Run 中智能调用最多 6 个工具轮次，再以唯一
-  `sense_submit_patch` 结束；模型猜测已关闭工具的名称也不会执行；
-- `web_search` 提供免 Key 公网搜索，并在 DuckDuckGo 无结果或挑战页时自动回退到
-  Brave Search；两个后端都不可用时明确报错，不伪装成空结果成功。`web_fetch` 读取网页
-  正文，`calculator` 使用本地确定性解析器，`memory_search` 读取完整保留的历史；
-- Android 已经授予的能力就是 Tool 可使用的授权。后续用户目录文件 Tool 将复用系统
-  Storage Access Framework 的持久 URI 权限，不叠加第二套授权系统。
+- 长按可绑定按键后向四个方向滑动选择 Skill，Space AI、Delete repeat 和字符 flick
+  保持独立；再次选择当前 Skill 会取消激活；
+- 激活按键使用 exact owner child layer 绘制动态极光，不改变键盘高度、不弹窗，也不
+  让整张键盘跟随动画重绘；
+- 设置首页采用 Provider、记忆（Soul）、工具、Skills 分层结构，每个键位可单独配置；
+- Skill 正文、绑定和激活状态使用不可变 revision/catalog generation，旧版本和崩溃
+  窗口中的完整数据不会被覆盖或删除；
+- 默认 Agent 只看到简短 description，需要正文时调用分页 `skill_read`；用户开启管理
+  后，Agent 可通过 `skill_manage` 创建、修改、绑定和解绑 Skill；
+- 一次 Agent run 冻结 exact catalog generation 和 active Skill revision，避免多轮
+  推理混用设置页刚刚更新的内容；
+- IME 只读取后台内存 projection，目录观察、文件锁和持久化不进入按键主线程；
+- 现有 `web_search`、`web_fetch`、`calculator`、`memory_search`、完整 Agent Journal
+  与联网工具开关继续保留。
 
 现有 Agent 状态机、上滑锁定、停止、流式预览、generation 隔离和编辑器
 hash/CAS/写后验证继续有效；这些边界防止状态错写，但不限制用户已授权的数据能力。
-内置 `smart_edit`、`answer`、`rewrite`、`continue`、`translate`、`format` 继续作为首批
-声明式 Skills。
+内置 `smart_edit`、`answer`、`rewrite`、`continue`、`translate`、`format` 可继续作为
+初始 Skills，并允许用户完整修改或另行创建。
 
 ### Agent 架构与工程文档
 
 - [AI Agent 深度架构：事件记忆、工具、Skills 与长期兼容性](docs/design/agent-event-memory-architecture-v1.0.md)
 - [Agent 工程开发方案：从 Evidence Event Mesh 到可交付的 M9 / M10](docs/development/agent-engineering-plan-v1.0.md)
 - [ADR 0019：开放 Agent 工具与完整历史](docs/adr/0019-v0.4.4-open-agent-tools-and-complete-history.md)
+- [ADR 0020：v0.4.5 Skills 运行时、键盘手势与 Agent ABI](docs/adr/0020-v0.4.5-skills-runtime-and-keyboard.md)
+- [Skills 工程开发文档：交互、不可变存储、工具与设置](docs/development/skills-engineering-plan-v1.0.md)
+- [Skills 互操作与 Android 边界研究记录](docs/research/skills-interop-and-android-boundaries-2026-07-27.md)
 - [X-02 Stage Substrate 实施记录](docs/development/x02-stage-substrate-implementation.md)
 
-| 门禁 | v0.4.4 要求 |
+`v0.4.5` 已交付方向选择器、已提交状态驱动的 Aurora、
+分层设置、不可变 revision/catalog、精确 `skill_read`、有代际门禁的 `skill_manage`
+以及三类 Provider 工具循环。键盘选择以原子 `ACTIVATE|DEACTIVATE` intent 提交，Aurora
+用 request token 与 exact physical owner 等待权威 projection；工具页可以分别关闭
+`skill_read` 和 `skill_manage`，且不会删除任何用户数据。完整草稿使用原子 recovery
+snapshot 与有界生命周期 durability handoff。
+
+API 36 x86_64 模拟器已实际运行四个模块的 18 项 AndroidTest：17 项通过，显式
+opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境没有临时 Provider Key，
+4 个真实网络探针均为 `SKIPPED`，固定实体设备 `p95 <= 32 ms` 证据也尚未补齐；
+这些事实作为 v0.4.5 已知证据边界保留，不会写成通过。
+
+| 门禁 | v0.4.5 要求 |
 |---|---|
-| Agent Tool loop | 开关 schema、执行双门禁、多轮结果回放、唯一终止 Patch |
-| 完整历史 | 成功、Provider 错误、停止、取消与重启路径均可读取 |
-| 本地记忆 | bounded recall、当前 Run 排除、工具关闭不影响写入 |
-| 真实网络 | 显式启用的免 Key公网搜索探针 |
+| Skill 数据 | revision/catalog 完整保留、冲突检测、崩溃恢复与超长正文重载 |
+| 键盘交互 | 四向选择、精确 physical owner、极光隔离、停止与 reduced motion |
+| Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
+| Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
 | 既有质量 | AI、IME、UI、Core、M0–M6、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 19`、`versionName 0.4.4`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据 | `versionCode 20`、`versionName 0.4.5`、`minSdk 29`、`targetSdk 36` |
 
 标准工程验证命令：
 
@@ -123,7 +137,8 @@ SQLite 用户词库、剪贴板历史和 Provider 配置。AI 编辑基础威胁
 > 不是当前 Agent / M9 实施规范。它所写的“首版”、固定队列、固定超时、固定 Segment
 > 阈值或无条件完整性承诺均不得直接转成代码。发生设计冲突时，权威顺序为：已接受 ADR
 > → Agent v1.0 架构 → Agent 工程计划 → 本历史档案；当前运行时代码只证明已经实现的事实，
-> 当前 `v0.4.4` 已实现跨 Session Agent Journal 与本地词法召回；v0.3 的
+> 当前 `v0.4.5` 已继承跨 Session Agent Journal 与本地词法召回，并加入可修订
+> Skills；v0.3 的
 > `SCHEMA_ONLY` Gate 资料保留为研究/高保障 profile 记录，不再是默认产品阻断条件。
 
 ## 1. 项目结论
@@ -358,7 +373,7 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.4.4` 开放 Agent 工具与完整历史阶段。
+以下保留 M0 的实施记录；当前代码位于 `v0.4.5` 键盘 Skills 与 Agent ABI 阶段。
 现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。
 

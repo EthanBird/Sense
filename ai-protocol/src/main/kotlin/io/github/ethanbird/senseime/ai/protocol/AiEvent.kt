@@ -157,6 +157,7 @@ enum class HarnessCancelReason {
 
 enum class HarnessErrorCode {
     REQUEST_INVALID,
+    IPC_ENVELOPE_TOO_LARGE,
     PROTOCOL_INVALID,
     FIRST_EVENT_TIMEOUT,
     STREAM_IDLE_TIMEOUT,

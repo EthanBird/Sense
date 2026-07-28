@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from release_plan import (
@@ -20,7 +21,22 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "release_plan.py"
 WORKFLOW = ROOT / ".github" / "workflows" / "android.yml"
 APP_BUILD = ROOT / "app" / "build.gradle.kts"
-RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.4.md"
+OFFLINE_VERIFY = ROOT / "tools" / "offline_verify.sh"
+OFFLINE_MANIFEST = ROOT / "tools" / "offline" / "AndroidManifest.xml"
+RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.5.md"
+AURORA_DEVICE_TEST = (
+    ROOT
+    / "ime-ui"
+    / "src"
+    / "androidTest"
+    / "kotlin"
+    / "io"
+    / "github"
+    / "ethanbird"
+    / "senseime"
+    / "ui"
+    / "SkillAuroraDevicePerformanceTest.kt"
+)
 CURRENT_SHA = "a" * 40
 OLD_SHA = "b" * 40
 
@@ -245,19 +261,26 @@ class WorkflowContractTest(unittest.TestCase):
             APP_BUILD.read_text(encoding="utf-8"),
             str(APP_BUILD),
         )
-        self.assertEqual(AndroidVersion(name="0.4.4", code=19), current)
+        self.assertEqual(AndroidVersion(name="0.4.5", code=20), current)
 
         workflow = WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn("RELEASE_TAG: v0.4.4", workflow)
-        self.assertIn("RELEASE_APK: Sense-v0.4.4.apk", workflow)
+        self.assertIn("RELEASE_TAG: v0.4.5", workflow)
+        self.assertIn("RELEASE_APK: Sense-v0.4.5.apk", workflow)
         self.assertEqual(
             2,
             workflow.count(
-                "versionCode='19' versionName='0.4.4'",
+                "versionCode='20' versionName='0.4.5'",
             ),
         )
-        self.assertIn("--notes-file docs/releases/v0.4.4.md", workflow)
+        self.assertIn("--notes-file docs/releases/v0.4.5.md", workflow)
         self.assertTrue(RELEASE_NOTES.is_file())
+        offline_verify = OFFLINE_VERIFY.read_text(encoding="utf-8")
+        self.assertIn("--version-code 20", offline_verify)
+        self.assertIn("--version-name 0.4.5", offline_verify)
+        self.assertIn(
+            "versionCode='20' versionName='0.4.5'",
+            offline_verify,
+        )
 
     def test_workflow_uses_push_before_and_release_job_output(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
@@ -265,6 +288,7 @@ class WorkflowContractTest(unittest.TestCase):
         self.assertIn("python3 tools/test_release_plan.py", workflow)
         self.assertIn("${{ github.event.before }}", workflow)
         self.assertIn("fetch-depth: 0", workflow)
+        self.assertIn("needs: [verify, device]", workflow)
         self.assertIn("needs: [verify, package_release]", workflow)
         self.assertIn(
             "needs: [verify, package_release, release_plan]",
@@ -276,7 +300,7 @@ class WorkflowContractTest(unittest.TestCase):
         )
         self.assertEqual(
             2,
-            workflow.count("name: sense-v0.4.4-clean-apks"),
+            workflow.count("name: sense-v0.4.5-clean-apks"),
         )
         self.assertIn(
             "apk=$(find artifacts -type f "
@@ -285,10 +309,220 @@ class WorkflowContractTest(unittest.TestCase):
         )
         self.assertNotIn('git show "HEAD^:', workflow)
 
+    def test_release_path_executes_android_device_gates(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        aurora_gate = AURORA_DEVICE_TEST.read_text(encoding="utf-8")
+        device_job = workflow.split("\n  device:\n", 1)[1].split(
+            "\n  package_release:\n",
+            1,
+        )[0]
+        self.assertIn("device:\n    name: Execute Android device gates", workflow)
+        self.assertIn(
+            "ReactiveCircus/android-emulator-runner@"
+            "e89f39f1abbbd05b1113a29cf4db69e7540cae5a",
+            workflow,
+        )
+        self.assertIn("api-level: 36", workflow)
+        self.assertIn("disable-animations: false", workflow)
+        self.assertIn(":ime-service:assembleDebugAndroidTest", workflow)
+        for task in (
+            ":ai-runtime:connectedDebugAndroidTest",
+            ":ime-service:connectedDebugAndroidTest",
+            ":ime-ui:connectedDebugAndroidTest",
+            ":app:connectedDebugAndroidTest",
+        ):
+            self.assertIn(task, device_job)
+        self.assertIn("--continue", device_job)
+        self.assertNotIn("continue-on-error:", device_job)
+        self.assertNotIn("|| true", device_job)
+        self.assertNotIn("MIN_OVERLAY_DRAWS_PER_SAMPLE", aurora_gate)
+        self.assertNotIn("MIN_WINDOW_FRAMES_PER_SAMPLE", aurora_gate)
+        for contract in (
+            "LIVENESS_CHECKPOINT_MILLIS = 5_000L",
+            "MAX_CALLBACK_DRAW_SKEW_PER_SLICE = 1L",
+            "MAX_DRAW_REPORT_SKEW_PER_SLICE = 2L",
+            "fixedPhysicalAuroraMeetsAbsoluteP95AndFrameRateGate",
+            "MAX_FIXED_DEVICE_TOTAL_P95_NANOS = 32L * NANOS_PER_MILLI",
+            "MIN_FIXED_DEVICE_TARGET_PERCENT = 80L",
+            "instrumentationArguments.getString(ARG_PHYSICAL_GATE) == \"true\"",
+        ):
+            self.assertIn(contract, aurora_gate)
+        self.assertIn(
+            "ime-service/build/outputs/androidTest-results/connected/**",
+            workflow,
+        )
+        self.assertIn(
+            "ime-service/build/reports/androidTests/connected/**",
+            workflow,
+        )
+
+    def test_packaged_permission_allowlist_includes_exact_androidx_signature_permission(
+        self,
+    ) -> None:
+        permission = (
+            "io.github.ethanbird.senseime."
+            "DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        )
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        offline_verify = OFFLINE_VERIFY.read_text(encoding="utf-8")
+
+        self.assertEqual(
+            2,
+            workflow.count(f"-e '{permission}'"),
+        )
+        self.assertEqual(
+            1,
+            offline_verify.count(f'-e "{permission}"'),
+        )
+        self.assertEqual(
+            3,
+            workflow.count("tools/verify_manifest_permissions.py"),
+        )
+        self.assertEqual(
+            1,
+            offline_verify.count("tools/verify_manifest_permissions.py"),
+        )
+        self.assertEqual(
+            2,
+            workflow.count("--packaged"),
+        )
+        self.assertEqual(
+            1,
+            offline_verify.count("--packaged"),
+        )
+        self.assertEqual(
+            1,
+            workflow.count("tools/test_verify_manifest_permissions.py"),
+        )
+        self.assertEqual(
+            1,
+            offline_verify.count("tools/test_verify_manifest_permissions.py"),
+        )
+        self.assertEqual(
+            2,
+            workflow.count("tools/verify_aapt2_manifest_protection.py"),
+        )
+        self.assertEqual(
+            1,
+            offline_verify.count(
+                "tools/verify_aapt2_manifest_protection.py",
+            ),
+        )
+        self.assertEqual(
+            1,
+            workflow.count(
+                "tools/test_verify_aapt2_manifest_protection.py",
+            ),
+        )
+        self.assertEqual(
+            1,
+            offline_verify.count(
+                "tools/test_verify_aapt2_manifest_protection.py",
+            ),
+        )
+        self.assertEqual(
+            2,
+            workflow.count(
+                'dump xmltree "$apk" --file AndroidManifest.xml',
+            ),
+        )
+        self.assertEqual(
+            1,
+            offline_verify.count(
+                'dump xmltree "$APK" --file AndroidManifest.xml',
+            ),
+        )
+        self.assertIn("/tmp/apk-manifest.xmltree", workflow)
+        self.assertIn("release/apk-manifest.xmltree", workflow)
+        self.assertIn('"$OUT/apk-manifest.xmltree"', offline_verify)
+        self.assertEqual(
+            1,
+            workflow.count("--permissions /tmp/apk-permissions.txt"),
+        )
+        self.assertEqual(
+            1,
+            workflow.count("--permissions release/apk-permissions.txt"),
+        )
+        self.assertEqual(
+            1,
+            offline_verify.count(
+                '--permissions "$OUT/apk-permissions.txt"',
+            ),
+        )
+        merged_manifest_step = workflow.split(
+            "      - name: Verify AI process and dependency boundaries\n",
+            maxsplit=1,
+        )[1].split(
+            "      - name: Verify M0 through M6 host benchmarks\n",
+            maxsplit=1,
+        )[0]
+        self.assertIn(
+            'tools/verify_manifest_permissions.py "$merged_manifest"',
+            merged_manifest_step,
+        )
+        self.assertNotIn(
+            "verify_aapt2_manifest_protection.py",
+            merged_manifest_step,
+        )
+        self.assertNotIn("custom_permission_declarations", workflow)
+        self.assertNotIn("custom_permission_declarations", offline_verify)
+        self.assertEqual(
+            2,
+            workflow.count(
+                "AndroidX signature receiver permission is missing",
+            ),
+        )
+        self.assertEqual(
+            1,
+            offline_verify.count(
+                "AndroidX signature receiver permission is missing",
+            ),
+        )
+        self.assertEqual(
+            2,
+            workflow.count("Release gate failed: unexpected APK permissions"),
+        )
+        self.assertEqual(
+            1,
+            offline_verify.count("Release gate failed: unexpected APK permissions"),
+        )
+
+    def test_offline_manifest_declares_exact_permission_triplet(self) -> None:
+        android = "{http://schemas.android.com/apk/res/android}"
+        root = ET.parse(OFFLINE_MANIFEST).getroot()
+        dynamic_receiver_permission = (
+            "io.github.ethanbird.senseime."
+            "DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        )
+        custom_permissions = root.findall("permission")
+        self.assertEqual(1, len(custom_permissions))
+        self.assertEqual(
+            dynamic_receiver_permission,
+            custom_permissions[0].get(android + "name"),
+        )
+        self.assertEqual(
+            "signature",
+            custom_permissions[0].get(android + "protectionLevel"),
+        )
+        used_permissions = [
+            child.get(android + "name")
+            for child in root
+            if child.tag.startswith("uses-permission")
+        ]
+        self.assertEqual(
+            {
+                "android.permission.INTERNET",
+                "android.permission.RECORD_AUDIO",
+                dynamic_receiver_permission,
+            },
+            set(used_permissions),
+        )
+        self.assertEqual(3, len(used_permissions))
+
     def test_publish_path_peels_and_rechecks_the_remote_tag(self) -> None:
         workflow = WORKFLOW.read_text(encoding="utf-8")
         release_step = workflow.split(
-            "      - name: Create Sense 0.4.4 release",
+            "      - name: Create Sense 0.4.5 release",
             maxsplit=1,
         )[1]
         self.assertIn(

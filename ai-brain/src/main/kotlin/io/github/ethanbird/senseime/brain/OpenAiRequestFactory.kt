@@ -3,7 +3,9 @@ package io.github.ethanbird.senseime.brain
 import io.github.ethanbird.senseime.ai.protocol.EditorSnapshotV1
 import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import io.github.ethanbird.senseime.ai.protocol.HarnessRequestV1
+import io.github.ethanbird.senseime.brain.api.AgentToolArguments
 import io.github.ethanbird.senseime.brain.api.AgentToolId
+import io.github.ethanbird.senseime.brain.api.AgentSkillSummary
 import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
 import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
 import io.github.ethanbird.senseime.brain.api.ProviderCredential
@@ -36,6 +38,7 @@ internal data class StreamRecoveryContext(
 internal data class AgentToolExchange(
     val assistantReasoning: String,
     val assistantContent: String,
+    val responsesReasoningItems: List<String> = emptyList(),
     val toolCallId: String,
     val toolName: String,
     val toolArguments: String,
@@ -57,6 +60,8 @@ internal object OpenAiRequestFactory {
         agentConversation: AgentConversationContext? = null,
         requestMode: BrainRequestMode = BrainRequestMode.NORMAL,
         enabledTools: Set<AgentToolId> = emptySet(),
+        skillCatalog: List<AgentSkillSummary> = emptyList(),
+        skillCatalogGeneration: Long? = null,
     ): ProviderWireRequest {
         profile.requireValid()
         require(attempt in 0..1)
@@ -64,6 +69,18 @@ internal object OpenAiRequestFactory {
         require(secondAttempt == null || agentConversation == null)
 
         val nativePatchTool = usesNativePatchTool(profile)
+        val frozenCatalogGeneration =
+            skillCatalogGeneration
+                ?: request.skillCatalogGeneration
+                ?: request.activeSkill?.catalogGeneration
+        val exposedAgentTools = exposedAgentTools(
+            enabledTools = enabledTools,
+            requestMode = requestMode,
+            secondAttempt = secondAttempt,
+            conversation = agentConversation,
+            skillCatalogGeneration = frozenCatalogGeneration,
+            hasReadableSkills = skillCatalog.isNotEmpty(),
+        )
         val includeInlineContract =
             !nativePatchTool && profile.structuredOutput != StructuredOutputMode.JSON_SCHEMA
         val prompt = when (secondAttempt) {
@@ -71,7 +88,9 @@ internal object OpenAiRequestFactory {
                 request,
                 includeInlineContract,
                 nativePatchTool,
-                enabledTools,
+                exposedAgentTools,
+                skillCatalog,
+                frozenCatalogGeneration,
             )
             is RepairContext ->
                 buildRepairInput(request, secondAttempt, includeInlineContract, nativePatchTool)
@@ -80,7 +99,14 @@ internal object OpenAiRequestFactory {
         }
         val body = when (profile.apiStyle) {
             ProviderApiStyle.OPENAI_RESPONSES ->
-                responsesBody(profile, prompt, requestMode)
+                responsesBody(
+                    profile = profile,
+                    prompt = prompt,
+                    requestMode = requestMode,
+                    conversation = agentConversation,
+                    enabledTools = exposedAgentTools,
+                    skillCatalogGeneration = frozenCatalogGeneration,
+                )
             ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS ->
                 chatCompletionsBody(
                     profile,
@@ -90,13 +116,14 @@ internal object OpenAiRequestFactory {
                     nativePatchTool,
                     agentConversation,
                     secondAttempt != null,
-                    enabledTools,
+                    exposedAgentTools,
+                    frozenCatalogGeneration,
                 )
         }
         val headers = linkedMapOf(
             "Accept" to if (profile.streaming) "text/event-stream" else "application/json",
             "Content-Type" to "application/json; charset=utf-8",
-            "User-Agent" to "Sense-IME/0.4.4 AI-Brain",
+            "User-Agent" to "Sense-IME/0.4.5 AI-Brain",
         )
         when (credential) {
             is ProviderCredential.Bearer -> headers["Authorization"] = "Bearer ${credential.token}"
@@ -117,14 +144,16 @@ internal object OpenAiRequestFactory {
         profile: ProviderProfile,
         prompt: String,
         requestMode: BrainRequestMode,
+        conversation: AgentConversationContext?,
+        enabledTools: Set<AgentToolId>,
+        skillCatalogGeneration: Long?,
     ): String = buildString {
         append('{')
         property("model", profile.model)
         append(',')
         property("instructions", SenseSoul.text)
-        append(",\"input\":[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":")
-        jsonString(prompt)
-        append("}]}]")
+        append(",\"input\":")
+        appendResponsesInput(prompt, conversation)
         append(",\"stream\":").append(profile.streaming)
         append(",\"store\":false")
         append(",\"max_output_tokens\":").append(providerTokenBudget(requestMode))
@@ -134,6 +163,10 @@ internal object OpenAiRequestFactory {
                 jsonString(it)
                 append('}')
             }
+        }
+        if (enabledTools.isNotEmpty()) {
+            append(",\"include\":[\"reasoning.encrypted_content\"]")
+            appendResponsesAgentTools(enabledTools, skillCatalogGeneration)
         }
         appendStructuredOutput(profile, responses = true)
         append('}')
@@ -148,6 +181,7 @@ internal object OpenAiRequestFactory {
         agentConversation: AgentConversationContext?,
         repairOrRecovery: Boolean,
         enabledTools: Set<AgentToolId>,
+        skillCatalogGeneration: Long?,
     ): String = buildString {
         append('{')
         property("model", profile.model)
@@ -182,11 +216,17 @@ internal object OpenAiRequestFactory {
                                 effectiveThinkingMode(profile, requestMode) ==
                                 ThinkingMode.DISABLED
                             ),
+                skillCatalogGeneration = skillCatalogGeneration,
             )
-        } else if (requestMode == BrainRequestMode.NORMAL) {
-            profile.reasoningEffort.wireValue?.let {
-                append(",\"reasoning_effort\":")
-                jsonString(it)
+        } else {
+            if (enabledTools.isNotEmpty()) {
+                appendChatAgentTools(enabledTools, skillCatalogGeneration)
+            }
+            if (requestMode == BrainRequestMode.NORMAL) {
+                profile.reasoningEffort.wireValue?.let {
+                    append(",\"reasoning_effort\":")
+                    jsonString(it)
+                }
             }
         }
         if (!nativePatchTool) {
@@ -227,6 +267,42 @@ internal object OpenAiRequestFactory {
         append(']')
     }
 
+    private fun StringBuilder.appendResponsesInput(
+        prompt: String,
+        conversation: AgentConversationContext?,
+    ) {
+        append("[{\"role\":\"user\",\"content\":[{\"type\":\"input_text\",\"text\":")
+        jsonString(prompt)
+        append("}]}]")
+        conversation?.exchanges.orEmpty().forEach { exchange ->
+            // Stateless Responses replay. Function calls/results are immutable provider protocol
+            // items, not natural-language prompt interpolation.
+            insert(length - 1, buildString {
+                exchange.responsesReasoningItems.forEach { itemDocument ->
+                    val item = ProviderJson.parse(itemDocument) as? JsonValue.ObjectValue
+                        ?: error("Responses reasoning replay item must be an object")
+                    require(
+                        item.members["type"] == JsonValue.StringValue("reasoning") &&
+                            item.members["encrypted_content"] is JsonValue.StringValue,
+                    ) { "Responses reasoning replay item is invalid" }
+                    append(',')
+                    append(ProviderJson.stringify(item))
+                }
+                append(",{\"type\":\"function_call\",\"call_id\":")
+                jsonString(exchange.toolCallId)
+                append(",\"name\":")
+                jsonString(exchange.toolName)
+                append(",\"arguments\":")
+                jsonString(exchange.toolArguments)
+                append("},{\"type\":\"function_call_output\",\"call_id\":")
+                jsonString(exchange.toolCallId)
+                append(",\"output\":")
+                jsonString(exchange.toolResult)
+                append('}')
+            })
+        }
+    }
+
     private fun StringBuilder.appendDeepSeekThinking(
         profile: ProviderProfile,
         requestMode: BrainRequestMode,
@@ -252,6 +328,7 @@ internal object OpenAiRequestFactory {
         includeProgressTool: Boolean,
         enabledTools: Set<AgentToolId>,
         forceChoice: Boolean,
+        skillCatalogGeneration: Long?,
     ) {
         append(",\"tools\":[")
         var needsComma = false
@@ -271,7 +348,11 @@ internal object OpenAiRequestFactory {
         }
         AgentToolId.entries.filter { it in enabledTools }.forEach { tool ->
             if (needsComma) append(',')
-            appendAgentToolDefinition(tool)
+            appendAgentToolDefinition(
+                tool = tool,
+                responses = false,
+                skillCatalogGeneration = skillCatalogGeneration,
+            )
             needsComma = true
         }
         if (needsComma) append(',')
@@ -292,8 +373,48 @@ internal object OpenAiRequestFactory {
         }
     }
 
-    private fun StringBuilder.appendAgentToolDefinition(tool: AgentToolId) {
-        append("{\"type\":\"function\",\"function\":{")
+    private fun StringBuilder.appendResponsesAgentTools(
+        enabledTools: Set<AgentToolId>,
+        skillCatalogGeneration: Long?,
+    ) {
+        append(",\"tools\":[")
+        AgentToolId.entries.filter { it in enabledTools }.forEachIndexed { index, tool ->
+            if (index > 0) append(',')
+            appendAgentToolDefinition(
+                tool = tool,
+                responses = true,
+                skillCatalogGeneration = skillCatalogGeneration,
+            )
+        }
+        append(']')
+    }
+
+    private fun StringBuilder.appendChatAgentTools(
+        enabledTools: Set<AgentToolId>,
+        skillCatalogGeneration: Long?,
+    ) {
+        append(",\"tools\":[")
+        AgentToolId.entries.filter { it in enabledTools }.forEachIndexed { index, tool ->
+            if (index > 0) append(',')
+            appendAgentToolDefinition(
+                tool = tool,
+                responses = false,
+                skillCatalogGeneration = skillCatalogGeneration,
+            )
+        }
+        append(']')
+    }
+
+    private fun StringBuilder.appendAgentToolDefinition(
+        tool: AgentToolId,
+        responses: Boolean,
+        skillCatalogGeneration: Long?,
+    ) {
+        if (responses) {
+            append("{\"type\":\"function\",")
+        } else {
+            append("{\"type\":\"function\",\"function\":{")
+        }
         property("name", tool.wireValue)
         append(',')
         when (tool) {
@@ -336,8 +457,57 @@ internal object OpenAiRequestFactory {
                 append("\"query\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512},")
                 append("\"max_results\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":20}}}")
             }
+            AgentToolId.SKILL_READ -> {
+                property(
+                    "description",
+                    "Read one bounded page from the exact immutable revision of a Sense Skill.",
+                )
+                append(",\"parameters\":{\"type\":\"object\",\"additionalProperties\":false,")
+                append("\"required\":[\"skill_id\",\"revision\"],\"properties\":{")
+                append("\"skill_id\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":64},")
+                append("\"revision\":{\"type\":\"integer\",\"minimum\":1},")
+                append("\"offset\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":65536},")
+                append("\"max_chars\":{\"type\":\"integer\",\"minimum\":")
+                append(AgentToolArguments.SkillRead.MIN_MAX_CHARS)
+                append(",\"maximum\":")
+                append(AgentToolArguments.SkillRead.MAX_MAX_CHARS)
+                append("}}}")
+            }
+            AgentToolId.SKILL_MANAGE -> {
+                requireNotNull(skillCatalogGeneration) {
+                    "skill_manage cannot be exposed without a frozen catalog generation"
+                }
+                property(
+                    "description",
+                    "Create or revise a Sense Skill, or bind/unbind it to a keyboard direction. " +
+                        "Every revision and catalog generation is retained. Echo the exact " +
+                        "frozen catalog generation to prevent stale writes.",
+                )
+                append(",\"parameters\":{\"type\":\"object\",\"additionalProperties\":false,")
+                append("\"required\":[\"operation\",\"expected_catalog_generation\"],")
+                append("\"properties\":{")
+                append("\"operation\":{\"type\":\"string\",\"enum\":[")
+                append("\"create\",\"update\",\"bind\",\"unbind\",\"unbind_skill\"]},")
+                append("\"expected_catalog_generation\":{\"type\":\"integer\",\"minimum\":1},")
+                append("\"skill_id\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":64},")
+                append("\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":64},")
+                append("\"description\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":240},")
+                append("\"content\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":65536},")
+                append("\"base_intent\":{\"type\":\"string\",\"enum\":[")
+                append(
+                    "\"smart_edit\",\"answer\",\"rewrite\",\"continue\",\"translate\",\"format\"]},",
+                )
+                append("\"key_code\":{\"type\":\"integer\",\"minimum\":-1024,")
+                append("\"maximum\":1114111},")
+                append("\"direction\":{\"type\":\"string\",\"enum\":[")
+                append("\"up\",\"right\",\"down\",\"left\"]}}}")
+            }
         }
-        append("}}")
+        if (responses) {
+            append('}')
+        } else {
+            append("}}")
+        }
     }
 
     /**
@@ -427,8 +597,16 @@ internal object OpenAiRequestFactory {
         includeInlineContract: Boolean,
         nativePatchTool: Boolean,
         enabledTools: Set<AgentToolId>,
+        skillCatalog: List<AgentSkillSummary>,
+        skillCatalogGeneration: Long?,
     ): String = buildString {
-        appendSkillContract(request.skill)
+        appendSkillContract(request)
+        appendSkillCatalog(
+            catalog = skillCatalog,
+            skillReadEnabled = AgentToolId.SKILL_READ in enabledTools,
+            skillManageEnabled = AgentToolId.SKILL_MANAGE in enabledTools,
+            generation = skillCatalogGeneration,
+        )
         appendContextWindowContract(request)
         if (includeInlineContract) {
             append('\n')
@@ -449,6 +627,12 @@ internal object OpenAiRequestFactory {
                         "sense_submit_patch exactly once. Snapshot JSON:\n",
                 )
             }
+        } else if (enabledTools.isNotEmpty()) {
+            append(
+                "Call at most one exposed tool when useful, then continue from its result. " +
+                    "When no further tool is needed, return only one sense.editor.patch.v1 " +
+                    "object. Snapshot JSON:\n",
+            )
         } else {
             append("Return only one sense.editor.patch.v1 object. Snapshot JSON:\n")
         }
@@ -474,7 +658,7 @@ internal object OpenAiRequestFactory {
         append("\nRejected document:\n")
         append(repair.rejectedDocument.take(OpenAiResponseDecoder.MAX_RESPONSE_BYTES))
         append("\nTask contract: ")
-        appendSkillContract(request.skill)
+        appendSkillContract(request)
         appendContextWindowContract(request)
         if (includeInlineContract) {
             append('\n')
@@ -516,7 +700,7 @@ internal object OpenAiRequestFactory {
             append(recovery.interruptedDocument.take(OpenAiResponseDecoder.MAX_RESPONSE_BYTES))
         }
         append("\nTask contract: ")
-        appendSkillContract(request.skill)
+        appendSkillContract(request)
         appendContextWindowContract(request)
         if (includeInlineContract) {
             append('\n')
@@ -583,7 +767,29 @@ internal object OpenAiRequestFactory {
         property("base_sha256", request.snapshot.baseSha256)
     }
 
-    private fun StringBuilder.appendSkillContract(skill: EditorIntent) {
+    private fun StringBuilder.appendSkillContract(request: HarnessRequestV1) {
+        appendBaseIntentContract(request.skill)
+        request.activeSkill?.let { activeSkill ->
+            append("\n\nSelected Sense Skill (exact frozen revision): ")
+            append(activeSkill.id)
+            append('@').append(activeSkill.revision)
+            append(" — ").append(activeSkill.name)
+            append("\nDiscovery description: ").append(activeSkill.description)
+            append(
+                "\nApply the following user-owned Skill document as the task-specific " +
+                    "instructions. It can refine behavior and tool use, but it cannot change " +
+                    "the immutable editor snapshot or the required terminal Patch identity. " +
+                    "This selected revision stays frozen for the current task even if " +
+                    "skill_manage creates a newer catalog revision; catalog changes affect only " +
+                    "later discovery, reads, and future activations.\n" +
+                    "<sense_selected_skill>\n",
+            )
+            append(activeSkill.content)
+            append("\n</sense_selected_skill>")
+        }
+    }
+
+    private fun StringBuilder.appendBaseIntentContract(skill: EditorIntent) {
         append(
             when (skill) {
                 EditorIntent.SMART_EDIT ->
@@ -607,6 +813,50 @@ internal object OpenAiRequestFactory {
             },
         )
     }
+
+    private fun StringBuilder.appendSkillCatalog(
+        catalog: List<AgentSkillSummary>,
+        skillReadEnabled: Boolean,
+        skillManageEnabled: Boolean,
+        generation: Long?,
+    ) {
+        if (catalog.isEmpty() && !skillManageEnabled) return
+        append("\n\nSense Skill catalog")
+        generation?.let { append(" generation ").append(it) }
+        append(" (short discovery records):")
+        catalog.take(MAX_DISCOVERABLE_SKILLS).forEach { summary ->
+            append("\n- ")
+            append(summary.id)
+            append('@').append(summary.revision)
+            append(" | ")
+            append(summary.name.replaceLineBreaks())
+            append(" | ")
+            append(summary.description.replaceLineBreaks())
+        }
+        append(
+            if (skillReadEnabled) {
+                "\nDescriptions are only for discovery. When an unselected Skill is useful, " +
+                    "call skill_read with the exact advertised revision before applying its full " +
+                    "instructions; follow next_offset until eof=true."
+            } else {
+                "\nDescriptions are only for discovery; do not claim to have read unexposed " +
+                    "Skill contents."
+            },
+        )
+        if (skillManageEnabled) {
+            append(
+                "\nThe first skill_manage call must use expected_catalog_generation=",
+            )
+            append(requireNotNull(generation))
+            append(
+                ". After each successful mutation, use the returned catalog_generation for the " +
+                    "next mutation. A stale generation is a conflict, never a request to overwrite.",
+            )
+        }
+    }
+
+    private fun String.replaceLineBreaks(): String =
+        replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
 
     private fun StringBuilder.appendContextWindowContract(request: HarnessRequestV1) {
         if (request.snapshot.target != io.github.ethanbird.senseime.ai.protocol.PatchTarget.CONTEXT_WINDOW) {
@@ -673,6 +923,30 @@ internal object OpenAiRequestFactory {
 
     private fun Long.toSafeInt(): Int = coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
 
+    internal fun exposedAgentTools(
+        enabledTools: Set<AgentToolId>,
+        requestMode: BrainRequestMode,
+        secondAttempt: SecondAttemptContext?,
+        conversation: AgentConversationContext?,
+        skillCatalogGeneration: Long?,
+        hasReadableSkills: Boolean,
+    ): Set<AgentToolId> {
+        if (
+            requestMode != BrainRequestMode.NORMAL ||
+            secondAttempt != null ||
+            conversation?.forceTerminalTool == true
+        ) {
+            return emptySet()
+        }
+        return enabledTools.filterTo(linkedSetOf()) { tool ->
+            when (tool) {
+                AgentToolId.SKILL_READ -> hasReadableSkills
+                AgentToolId.SKILL_MANAGE -> skillCatalogGeneration != null
+                else -> true
+            }
+        }
+    }
+
     private fun usesNativePatchTool(profile: ProviderProfile): Boolean =
         profile.apiStyle == ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS &&
             ProviderCompatibility.isOfficialDeepSeek(profile.baseUrl)
@@ -697,6 +971,7 @@ internal object OpenAiRequestFactory {
     internal const val CONNECTIVITY_TEST_MAX_TOKENS = 512
     private const val MAX_RECOVERY_PREFIX_CHARS = 4_096
     private const val MAX_RECOVERY_REASON_CHARS = 256
+    private const val MAX_DISCOVERABLE_SKILLS = 64
     private const val NO_CHANGE_OPERATION_SCHEMA =
         "{\"type\":\"object\",\"additionalProperties\":false," +
             "\"required\":[\"type\"],\"properties\":{" +

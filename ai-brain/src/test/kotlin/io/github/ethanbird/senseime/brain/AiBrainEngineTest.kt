@@ -1,6 +1,7 @@
 package io.github.ethanbird.senseime.brain
 
 import io.github.ethanbird.senseime.ai.protocol.AiEvent
+import io.github.ethanbird.senseime.ai.protocol.ActiveSkillInstructionV1
 import io.github.ethanbird.senseime.ai.protocol.AgentProgressKind
 import io.github.ethanbird.senseime.ai.protocol.AgentProgressState
 import io.github.ethanbird.senseime.ai.protocol.AgentSessionStateMachine
@@ -16,12 +17,16 @@ import io.github.ethanbird.senseime.ai.protocol.PatchTarget
 import io.github.ethanbird.senseime.ai.protocol.SnapshotCapability
 import io.github.ethanbird.senseime.ai.protocol.TextSelectionV1
 import io.github.ethanbird.senseime.brain.api.BrainRunSpec
+import io.github.ethanbird.senseime.brain.api.BrainRunHandle
 import io.github.ethanbird.senseime.brain.api.BrainTraceEvent
 import io.github.ethanbird.senseime.brain.api.BrainTraceSink
 import io.github.ethanbird.senseime.brain.api.AgentToolCall
+import io.github.ethanbird.senseime.brain.api.AgentToolArguments
 import io.github.ethanbird.senseime.brain.api.AgentToolExecutionResult
 import io.github.ethanbird.senseime.brain.api.AgentToolExecutor
 import io.github.ethanbird.senseime.brain.api.AgentToolId
+import io.github.ethanbird.senseime.brain.api.AgentSkillCatalogSnapshot
+import io.github.ethanbird.senseime.brain.api.AgentSkillSummary
 import io.github.ethanbird.senseime.brain.api.MonotonicClock
 import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
 import io.github.ethanbird.senseime.brain.api.ProviderCall
@@ -40,10 +45,57 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.CountDownLatch
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AiBrainEngineTest {
+    @Test
+    fun `Brain admission rejects mismatched frozen Skill generations`() {
+        val profile = ProviderProfile(
+            id = "test",
+            displayName = "Test",
+            apiStyle = ProviderApiStyle.OPENAI_RESPONSES,
+            baseUrl = "https://provider.test/v1",
+            model = "test-model",
+        )
+        val request = harness().copy(skillCatalogGeneration = 7)
+
+        assertThrows(IllegalArgumentException::class.java) {
+            BrainRunSpec(
+                harnessRequest = request,
+                provider = profile,
+                credential = ProviderCredential.None,
+                skillCatalogGeneration = 8,
+            )
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            BrainRunSpec(
+                harnessRequest = request.copy(
+                    activeSkill = ActiveSkillInstructionV1(
+                        id = "brief",
+                        revision = 1,
+                        catalogGeneration = 6,
+                        name = "Brief",
+                        description = "Create a brief",
+                        content = "# Brief",
+                    ),
+                ),
+                provider = profile,
+                credential = ProviderCredential.None,
+                skillCatalogGeneration = 7,
+            )
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            BrainRunSpec(
+                harnessRequest = harness(),
+                provider = profile,
+                credential = ProviderCredential.None,
+                skillCatalog = listOf(briefSummary()),
+            )
+        }
+    }
+
     @Test
     fun `enabled Agent tool executes and is replayed into the next provider turn`() {
         var executions = 0
@@ -111,6 +163,447 @@ class AiBrainEngineTest {
             listOf(false, false),
             traces.filterIsInstance<BrainTraceEvent.ToolResult>().map { it.isError },
         )
+    }
+
+    @Test
+    fun `generic Chat executes Skill tool then accepts structured Patch content`() {
+        var executions = 0
+        val fixture = Fixture(
+            enabledTools = setOf(AgentToolId.SKILL_READ),
+            skillCatalog = listOf(briefSummary()),
+            skillCatalogGeneration = 7,
+            toolExecutor = AgentToolExecutor { call ->
+                executions += 1
+                assertEquals(AgentToolId.SKILL_READ, call.tool)
+                AgentToolExecutionResult(
+                    "{\"ok\":true,\"data\":{\"content\":\"# Brief\",\"eof\":true}}",
+                )
+            },
+        )
+        val handle = fixture.start()
+
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            agentToolDelta(
+                "skill_read",
+                "{\"skill_id\":\"brief\",\"revision\":3}",
+            ),
+        )
+        fixture.transport.bytes(
+            0,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+
+        assertEquals(1, executions)
+        assertFalse(handle.isTerminal)
+        assertEquals(2, fixture.transport.requests.size)
+        val continuation = fixture.transport.requests[1].body.toString(StandardCharsets.UTF_8)
+        assertTrue(continuation.contains("\"role\":\"tool\""))
+        assertTrue(continuation.contains("\"tool_call_id\":\"call-agent-tool\""))
+        assertTrue(continuation.contains("\"response_format\":{\"type\":\"json_object\"}"))
+
+        fixture.transport.open(1)
+        fixture.transport.bytes(1, chatDelta(fixture.patch("generic skill result")))
+        fixture.transport.bytes(1, "data: [DONE]\n\n")
+
+        assertTrue(handle.isTerminal)
+        assertEquals(
+            "generic skill result",
+            fixture.events.filterIsInstance<AiEvent.FinalPatch>().single().patch.operation.text,
+        )
+    }
+
+    @Test
+    fun `Responses executes Skill tool and replays function protocol items`() {
+        var executions = 0
+        val fixture = Fixture(
+            apiStyle = ProviderApiStyle.OPENAI_RESPONSES,
+            enabledTools = setOf(AgentToolId.SKILL_READ),
+            skillCatalog = listOf(briefSummary()),
+            skillCatalogGeneration = 7,
+            toolExecutor = AgentToolExecutor {
+                executions += 1
+                AgentToolExecutionResult(
+                    "{\"ok\":true,\"data\":{\"content\":\"# Brief\",\"eof\":true}}",
+                )
+            },
+        )
+        val handle = fixture.start()
+
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            responsesToolCall(
+                name = "skill_read",
+                arguments = "{\"skill_id\":\"brief\",\"revision\":3}",
+            ),
+        )
+
+        assertEquals(1, executions)
+        assertFalse(handle.isTerminal)
+        assertEquals(2, fixture.transport.requests.size)
+        val continuation = fixture.transport.requests[1].body.toString(StandardCharsets.UTF_8)
+        assertTrue(continuation.contains("\"type\":\"function_call\""))
+        assertTrue(continuation.contains("\"type\":\"function_call_output\""))
+        assertTrue(continuation.contains("\"call_id\":\"call-response-tool\""))
+        assertTrue(continuation.contains("\"encrypted_content\":\"opaque-state\""))
+
+        fixture.transport.open(1)
+        fixture.transport.bytes(
+            1,
+            "event: response.output_text.delta\n" +
+                "data: {\"type\":\"response.output_text.delta\",\"delta\":" +
+                "${jsonString(fixture.patch("responses skill result"))}}\n\n" +
+                "event: response.completed\n" +
+                "data: {\"type\":\"response.completed\",\"response\":{}}\n\n",
+        )
+
+        assertTrue(handle.isTerminal)
+        assertEquals(
+            "responses skill result",
+            fixture.events.filterIsInstance<AiEvent.FinalPatch>().single().patch.operation.text,
+        )
+    }
+
+    @Test
+    fun `skill read rejects historical future and unadvertised revisions before executor`() {
+        listOf(
+            "brief" to 2L,
+            "brief" to 4L,
+            "unadvertised" to 1L,
+        ).forEach { (skillId, revision) ->
+            var executions = 0
+            val fixture = Fixture(
+                enabledTools = setOf(AgentToolId.SKILL_READ),
+                skillCatalog = listOf(briefSummary()),
+                skillCatalogGeneration = 7,
+                toolExecutor = AgentToolExecutor {
+                    executions += 1
+                    AgentToolExecutionResult("{}")
+                },
+            )
+            fixture.start()
+            fixture.transport.open(0)
+            fixture.transport.bytes(
+                0,
+                agentToolDelta(
+                    "skill_read",
+                    "{\"skill_id\":\"$skillId\",\"revision\":$revision}",
+                ),
+            )
+            fixture.transport.bytes(
+                0,
+                "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+            )
+
+            assertEquals("$skillId@$revision must not execute", 0, executions)
+            assertEquals(2, fixture.transport.requests.size)
+        }
+    }
+
+    @Test
+    fun `one run accepts skipped generation then authorizes its exact successor`() {
+        val expectedGenerations = mutableListOf<Long>()
+        val fixture = Fixture(
+            enabledTools = setOf(AgentToolId.SKILL_MANAGE),
+            skillCatalogGeneration = 7,
+            toolExecutor = AgentToolExecutor { call ->
+                val mutation = call.arguments as AgentToolArguments.SkillManage.Unbind
+                expectedGenerations += mutation.expectedCatalogGeneration
+                val nextGeneration = if (mutation.expectedCatalogGeneration == 7L) 9L else 12L
+                AgentToolExecutionResult(
+                    "{\"ok\":true,\"data\":{\"expected_catalog_generation\":" +
+                        "${mutation.expectedCatalogGeneration},\"catalog_generation\":" +
+                        "$nextGeneration}}",
+                    skillCatalogSnapshot = AgentSkillCatalogSnapshot(
+                        generation = nextGeneration,
+                        skills = emptyList(),
+                    ),
+                )
+            },
+        )
+        val handle = fixture.start()
+
+        listOf(7L, 9L).forEachIndexed { turn, generation ->
+            fixture.transport.open(turn)
+            fixture.transport.bytes(
+                turn,
+                agentToolDelta(
+                    "skill_manage",
+                    "{\"operation\":\"unbind\",\"expected_catalog_generation\":$generation," +
+                        "\"key_code\":${'a'.code + turn},\"direction\":\"up\"}",
+                    callId = "call-manage-$generation",
+                ),
+            )
+            fixture.transport.bytes(
+                turn,
+                "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+            )
+        }
+
+        assertEquals(listOf(7L, 9L), expectedGenerations)
+        assertEquals(3, fixture.transport.requests.size)
+        val thirdRequest = fixture.transport.requests[2].body.toString(StandardCharsets.UTF_8)
+        assertTrue(thirdRequest.contains("\\\"catalog_generation\\\":12"))
+        assertTrue(thirdRequest.contains("expected_catalog_generation=12"))
+
+        fixture.transport.open(2)
+        fixture.transport.bytes(2, chatDelta(fixture.patch("mutations complete")))
+        fixture.transport.bytes(2, "data: [DONE]\n\n")
+
+        assertTrue(handle.isTerminal)
+        assertEquals(
+            "mutations complete",
+            fixture.events.filterIsInstance<AiEvent.FinalPatch>().single().patch.operation.text,
+        )
+    }
+
+    @Test
+    fun `Skill create and update atomically refresh discovery and exact read authority`() {
+        val calls = mutableListOf<AgentToolCall>()
+        val original = briefSummary()
+        val created = AgentSkillSummary(
+            id = "new_skill",
+            revision = 1,
+            name = "New Skill",
+            description = "Original discovery",
+        )
+        val updated = AgentSkillSummary(
+            id = "new_skill",
+            revision = 2,
+            name = "Updated Skill",
+            description = "Updated discovery",
+        )
+        val fixture = Fixture(
+            enabledTools = setOf(AgentToolId.SKILL_MANAGE, AgentToolId.SKILL_READ),
+            skillCatalog = listOf(original),
+            skillCatalogGeneration = 7,
+            toolExecutor = AgentToolExecutor { call ->
+                calls += call
+                when (val arguments = call.arguments) {
+                    is AgentToolArguments.SkillManage.Create -> {
+                        assertEquals(7L, arguments.expectedCatalogGeneration)
+                        AgentToolExecutionResult(
+                            content = "{\"ok\":true,\"data\":{\"catalog_generation\":9}}",
+                            skillCatalogSnapshot = AgentSkillCatalogSnapshot(
+                                generation = 9,
+                                skills = listOf(original, created),
+                            ),
+                        )
+                    }
+                    is AgentToolArguments.SkillManage.Update -> {
+                        assertEquals(9L, arguments.expectedCatalogGeneration)
+                        AgentToolExecutionResult(
+                            content = "{\"ok\":true,\"data\":{\"catalog_generation\":12}}",
+                            skillCatalogSnapshot = AgentSkillCatalogSnapshot(
+                                generation = 12,
+                                skills = listOf(original, updated),
+                            ),
+                        )
+                    }
+                    is AgentToolArguments.SkillRead -> {
+                        assertEquals("new_skill", arguments.skillId)
+                        assertEquals(2L, arguments.revision)
+                        AgentToolExecutionResult(
+                            "{\"ok\":true,\"data\":{\"content\":\"# Updated\",\"eof\":true}}",
+                        )
+                    }
+                    else -> error("Unexpected call: $arguments")
+                }
+            },
+        )
+        val handle = fixture.start()
+
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            agentToolDelta(
+                "skill_manage",
+                "{\"operation\":\"create\",\"expected_catalog_generation\":7," +
+                    "\"skill_id\":\"new_skill\",\"name\":\"New Skill\"," +
+                    "\"description\":\"Original discovery\",\"content\":\"# Original\"," +
+                    "\"base_intent\":\"rewrite\"}",
+                callId = "call-create",
+            ),
+        )
+        fixture.transport.bytes(
+            0,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+
+        val afterCreate = fixture.transport.requests[1].body.toString(StandardCharsets.UTF_8)
+        assertTrue(afterCreate.contains("\\\"catalog_generation\\\":9"))
+        assertTrue(afterCreate.contains("expected_catalog_generation=9"))
+        assertTrue(afterCreate.contains("new_skill@1 | New Skill | Original discovery"))
+
+        fixture.transport.open(1)
+        fixture.transport.bytes(
+            1,
+            agentToolDelta(
+                "skill_manage",
+                "{\"operation\":\"update\",\"expected_catalog_generation\":9," +
+                    "\"skill_id\":\"new_skill\",\"name\":\"Updated Skill\"," +
+                    "\"description\":\"Updated discovery\",\"content\":\"# Updated\"}",
+                callId = "call-update",
+            ),
+        )
+        fixture.transport.bytes(
+            1,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+
+        val afterUpdate = fixture.transport.requests[2].body.toString(StandardCharsets.UTF_8)
+        assertTrue(afterUpdate.contains("\\\"catalog_generation\\\":12"))
+        assertTrue(afterUpdate.contains("expected_catalog_generation=12"))
+        assertTrue(afterUpdate.contains("new_skill@2 | Updated Skill | Updated discovery"))
+        assertFalse(afterUpdate.contains("new_skill@1 | New Skill | Original discovery"))
+
+        fixture.transport.open(2)
+        fixture.transport.bytes(
+            2,
+            agentToolDelta(
+                "skill_read",
+                "{\"skill_id\":\"new_skill\",\"revision\":2}",
+                callId = "call-read-updated",
+            ),
+        )
+        fixture.transport.bytes(
+            2,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+
+        assertEquals(3, calls.size)
+        assertEquals(4, fixture.transport.requests.size)
+        val afterRead = fixture.transport.requests[3].body.toString(StandardCharsets.UTF_8)
+        assertTrue(afterRead.contains("new_skill@2 | Updated Skill | Updated discovery"))
+        assertFalse(afterRead.contains("new_skill@1 | New Skill | Original discovery"))
+
+        fixture.transport.open(3)
+        fixture.transport.bytes(3, chatDelta(fixture.patch("catalog refreshed")))
+        fixture.transport.bytes(3, "data: [DONE]\n\n")
+
+        assertTrue(handle.isTerminal)
+        assertEquals(
+            "catalog refreshed",
+            fixture.events.filterIsInstance<AiEvent.FinalPatch>().single().patch.operation.text,
+        )
+    }
+
+    @Test
+    fun `Skill mutation cannot relabel stale summaries with a newer generation`() {
+        val original = briefSummary()
+        val fixture = Fixture(
+            enabledTools = setOf(AgentToolId.SKILL_MANAGE),
+            skillCatalog = listOf(original),
+            skillCatalogGeneration = 7,
+            toolExecutor = AgentToolExecutor {
+                AgentToolExecutionResult(
+                    content = "{\"ok\":true,\"data\":{\"catalog_generation\":9}}",
+                    skillCatalogSnapshot = AgentSkillCatalogSnapshot(
+                        generation = 9,
+                        skills = listOf(original),
+                    ),
+                )
+            },
+        )
+        fixture.start()
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            agentToolDelta(
+                "skill_manage",
+                "{\"operation\":\"update\",\"expected_catalog_generation\":7," +
+                    "\"skill_id\":\"brief\",\"description\":\"New discovery\"}",
+                callId = "call-invalid-projection",
+            ),
+        )
+        fixture.transport.bytes(
+            0,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+
+        val continuation = fixture.transport.requests[1].body.toString(StandardCharsets.UTF_8)
+        assertTrue(continuation.contains("Sense Skill catalog generation 7"))
+        assertTrue(continuation.contains("expected_catalog_generation=7"))
+        assertTrue(continuation.contains("brief@3 | Brief | Create a concise brief"))
+        assertFalse(continuation.contains("brief@3 | Brief | New discovery"))
+        assertTrue(continuation.contains("invalid catalog snapshot"))
+    }
+
+    @Test
+    fun `guessed future Skill generation never reaches mutation executor`() {
+        var executions = 0
+        val fixture = Fixture(
+            enabledTools = setOf(AgentToolId.SKILL_MANAGE),
+            skillCatalogGeneration = 7,
+            toolExecutor = AgentToolExecutor {
+                executions += 1
+                AgentToolExecutionResult(
+                    "{}",
+                    skillCatalogSnapshot = AgentSkillCatalogSnapshot(9, emptyList()),
+                )
+            },
+        )
+        fixture.start()
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            agentToolDelta(
+                "skill_manage",
+                "{\"operation\":\"unbind\",\"expected_catalog_generation\":8," +
+                    "\"key_code\":97,\"direction\":\"up\"}",
+            ),
+        )
+        fixture.transport.bytes(
+            0,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+
+        assertEquals(0, executions)
+        assertEquals(2, fixture.transport.requests.size)
+        assertTrue(
+            fixture.events.filterIsInstance<AiEvent.AgentProgress>()
+                .any { it.kind == AgentProgressKind.TOOL && it.state == AgentProgressState.FAILED },
+        )
+    }
+
+    @Test
+    fun `cancellation linearized before tool start prevents executor side effect`() {
+        var executions = 0
+        lateinit var handle: BrainRunHandle
+        val fixture = Fixture(
+            deepSeekNative = true,
+            enabledTools = setOf(AgentToolId.CALCULATOR),
+            toolExecutor = AgentToolExecutor {
+                executions += 1
+                AgentToolExecutionResult("{}")
+            },
+            eventObserver = { event ->
+                if (
+                    event is AiEvent.AgentProgress &&
+                    event.kind == AgentProgressKind.TOOL &&
+                    event.state == AgentProgressState.RUNNING
+                ) {
+                    handle.cancel(HarnessCancelReason.CALLER_REQUESTED)
+                }
+            },
+        )
+        handle = fixture.start()
+        fixture.transport.open(0)
+        fixture.transport.bytes(
+            0,
+            agentToolDelta("calculator", "{\"expression\":\"6*7\"}"),
+        )
+        fixture.transport.bytes(
+            0,
+            "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\"}]}\n\n",
+        )
+
+        assertEquals(0, executions)
+        assertTrue(handle.isTerminal)
+        assertEquals(1, fixture.events.filterIsInstance<AiEvent.Cancelled>().size)
+        assertEquals(1, fixture.transport.requests.size)
     }
 
     @Test
@@ -857,9 +1350,13 @@ class AiBrainEngineTest {
 
     private class Fixture(
         deepSeekNative: Boolean = false,
+        apiStyle: ProviderApiStyle = ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
         private val enabledTools: Set<AgentToolId> = emptySet(),
+        private val skillCatalog: List<AgentSkillSummary> = emptyList(),
+        private val skillCatalogGeneration: Long? = null,
         private val toolExecutor: AgentToolExecutor = AgentToolExecutor.UNAVAILABLE,
         private val traceSink: BrainTraceSink = BrainTraceSink.NONE,
+        private val eventObserver: (AiEvent) -> Unit = {},
     ) {
         val clock = MutableClock()
         val transport = FakeTransport()
@@ -868,7 +1365,7 @@ class AiBrainEngineTest {
         private val profile = ProviderProfile(
             id = if (deepSeekNative) "deepseek" else "test",
             displayName = if (deepSeekNative) "DeepSeek" else "Test",
-            apiStyle = ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+            apiStyle = apiStyle,
             baseUrl = if (deepSeekNative) {
                 "https://api.deepseek.com/v1"
             } else {
@@ -892,10 +1389,15 @@ class AiBrainEngineTest {
                 request,
                 profile,
                 ProviderCredential.None,
+                skillCatalog = skillCatalog,
+                skillCatalogGeneration = skillCatalogGeneration,
                 enabledTools = enabledTools,
                 traceSink = traceSink,
             ),
-            { events += it },
+            {
+                events += it
+                eventObserver(it)
+            },
             requestMode,
         )
 
@@ -953,6 +1455,17 @@ class AiBrainEngineTest {
     }
 
     companion object {
+        private fun briefSummary(
+            revision: Long = 3,
+            name: String = "Brief",
+            description: String = "Create a concise brief",
+        ) = AgentSkillSummary(
+            id = "brief",
+            revision = revision,
+            name = name,
+            description = description,
+        )
+
         private fun harness(): HarnessRequestV1 {
             val text = "原始内容"
             val snapshot = EditorSnapshotV1(
@@ -1004,6 +1517,25 @@ class AiBrainEngineTest {
             "data: {\"choices\":[{\"delta\":{\"tool_calls\":[{\"index\":0," +
                 "\"id\":\"$callId\",\"type\":\"function\",\"function\":{" +
                 "\"name\":\"$toolName\",\"arguments\":${jsonString(arguments)}}}]}}]}\n\n"
+
+        private fun responsesToolCall(
+            name: String,
+            arguments: String,
+            callId: String = "call-response-tool",
+        ): String =
+            "event: response.output_item.done\n" +
+                "data: {\"type\":\"response.output_item.done\",\"output_index\":0," +
+                "\"item\":{\"id\":\"rs_1\",\"type\":\"reasoning\",\"summary\":[]," +
+                "\"encrypted_content\":\"opaque-state\"}}\n\n" +
+                "event: response.output_item.added\n" +
+                "data: {\"type\":\"response.output_item.added\",\"output_index\":1," +
+                "\"item\":{\"type\":\"function_call\",\"call_id\":\"$callId\"," +
+                "\"name\":\"$name\",\"arguments\":\"\"}}\n\n" +
+                "event: response.function_call_arguments.delta\n" +
+                "data: {\"type\":\"response.function_call_arguments.delta\"," +
+                "\"output_index\":1,\"delta\":${jsonString(arguments)}}\n\n" +
+                "event: response.completed\n" +
+                "data: {\"type\":\"response.completed\",\"response\":{\"output\":[]}}\n\n"
 
         private fun jsonString(value: String): String =
             JsonWriter().string(value).toString()

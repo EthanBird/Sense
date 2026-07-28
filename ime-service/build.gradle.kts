@@ -9,6 +9,7 @@ android {
 
     defaultConfig {
         minSdk = 29
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     compileOptions {
@@ -27,4 +28,7 @@ dependencies {
     implementation(project(":core-input"))
     implementation(project(":ime-ui"))
     testImplementation(libs.junit)
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
 }

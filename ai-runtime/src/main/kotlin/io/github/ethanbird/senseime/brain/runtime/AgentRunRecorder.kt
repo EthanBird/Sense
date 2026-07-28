@@ -145,11 +145,22 @@ class AgentRunRecorder private constructor(
                 payload = encoded.toByteArray(StandardCharsets.UTF_8),
                 contentType = JSON_CONTENT_TYPE,
                 lexicalText = encoded,
-                attributes = mapOf(
-                    "protocol" to request.protocol,
-                    "skill" to request.skill.wireValue,
-                    "snapshot_id" to request.snapshot.snapshotId,
-                ),
+                attributes = buildMap {
+                    put("protocol", request.protocol)
+                    put("skill", request.skill.wireValue)
+                    put("snapshot_id", request.snapshot.snapshotId)
+                    request.skillCatalogGeneration?.let { generation ->
+                        put("skill_catalog_generation", generation.toString())
+                    }
+                    request.activeSkill?.let { activeSkill ->
+                        put("active_skill_id", activeSkill.id)
+                        put("active_skill_revision", activeSkill.revision.toString())
+                        put(
+                            "active_skill_catalog_generation",
+                            activeSkill.catalogGeneration.toString(),
+                        )
+                    }
+                },
             )
             return AgentRunRecorder(run)
         }
@@ -163,6 +174,23 @@ object AgentRunJournalCodec {
         string("request_id", request.requestId)
         long("run_generation", request.runGeneration)
         string("skill", request.skill.wireValue)
+        request.skillCatalogGeneration?.let {
+            long("skill_catalog_generation", it)
+        } ?: nullValue("skill_catalog_generation")
+        val activeSkill = request.activeSkill
+        if (activeSkill == null) {
+            nullValue("active_skill")
+        } else {
+            objectValue("active_skill") {
+                string("protocol", activeSkill.protocol)
+                string("id", activeSkill.id)
+                long("revision", activeSkill.revision)
+                long("catalog_generation", activeSkill.catalogGeneration)
+                string("name", activeSkill.name)
+                string("description", activeSkill.description)
+                string("content", activeSkill.content)
+            }
+        }
         objectValue("snapshot") { snapshot(request.snapshot) }
         int("max_output_chars", request.maxOutputChars)
     }

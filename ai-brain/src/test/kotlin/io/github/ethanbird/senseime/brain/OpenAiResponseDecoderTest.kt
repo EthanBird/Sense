@@ -26,6 +26,73 @@ class OpenAiResponseDecoderTest {
     }
 
     @Test
+    fun `Responses SSE normalizes fragmented function call exactly once`() {
+        val decoder = OpenAiResponseDecoder(ProviderApiStyle.OPENAI_RESPONSES, streaming = true)
+        val events = decoder.feed(
+            (
+                "event: response.output_item.added\n" +
+                    "data: {\"type\":\"response.output_item.added\",\"output_index\":0," +
+                    "\"item\":{\"type\":\"function_call\",\"id\":\"fc_1\"," +
+                    "\"call_id\":\"call_1\",\"name\":\"skill_read\",\"arguments\":\"\"}}\n\n" +
+                    "event: response.function_call_arguments.delta\n" +
+                    "data: {\"type\":\"response.function_call_arguments.delta\"," +
+                    "\"output_index\":0,\"delta\":\"{\\\"skill_id\\\":\\\"brief\\\",\"}\n\n" +
+                    "event: response.function_call_arguments.delta\n" +
+                    "data: {\"type\":\"response.function_call_arguments.delta\"," +
+                    "\"output_index\":0,\"delta\":\"\\\"revision\\\":3}\"}\n\n" +
+                    "event: response.completed\n" +
+                    "data: {\"type\":\"response.completed\",\"response\":{\"output\":[{" +
+                    "\"type\":\"function_call\",\"call_id\":\"call_1\",\"name\":\"skill_read\"," +
+                    "\"arguments\":\"{\\\"skill_id\\\":\\\"brief\\\",\\\"revision\\\":3}\"}]}}\n\n"
+                ).toByteArray(),
+        )
+
+        assertEquals(
+            listOf(
+                ProviderContentEvent.ToolCallDelta(
+                    index = 0,
+                    id = "call_1",
+                    name = "skill_read",
+                ),
+                ProviderContentEvent.ToolCallDelta(
+                    index = 0,
+                    arguments = "{\"skill_id\":\"brief\",",
+                ),
+                ProviderContentEvent.ToolCallDelta(
+                    index = 0,
+                    arguments = "\"revision\":3}",
+                ),
+                ProviderContentEvent.Completed(),
+            ),
+            events,
+        )
+    }
+
+    @Test
+    fun `Responses retains only encrypted reasoning item for stateless tool replay`() {
+        val decoder = OpenAiResponseDecoder(ProviderApiStyle.OPENAI_RESPONSES, streaming = true)
+        val events = decoder.feed(
+            (
+                "event: response.output_item.done\n" +
+                    "data: {\"type\":\"response.output_item.done\",\"output_index\":0," +
+                    "\"item\":{\"id\":\"rs_1\",\"type\":\"reasoning\"," +
+                    "\"summary\":[{\"type\":\"summary_text\",\"text\":\"private summary\"}]," +
+                    "\"encrypted_content\":\"opaque-state\"}}\n\n" +
+                    "event: response.completed\n" +
+                    "data: {\"type\":\"response.completed\",\"response\":{\"output\":[{" +
+                    "\"id\":\"rs_1\",\"type\":\"reasoning\",\"summary\":[]," +
+                    "\"encrypted_content\":\"opaque-state\"}]}}\n\n"
+                ).toByteArray(),
+        )
+
+        assertEquals(2, events.size)
+        val replay = events[0] as ProviderContentEvent.ResponsesReasoningItem
+        assertTrue(replay.json.contains("\"encrypted_content\":\"opaque-state\""))
+        assertTrue(events[1] is ProviderContentEvent.Completed)
+        assertTrue(events.none { it is ProviderContentEvent.TextDelta })
+    }
+
+    @Test
     fun `Chat SSE joins content and DONE`() {
         val decoder = OpenAiResponseDecoder(
             ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
@@ -185,6 +252,32 @@ class OpenAiResponseDecoderTest {
             listOf(
                 ProviderContentEvent.Usage(2, 1),
                 ProviderContentEvent.TextDelta("result"),
+                ProviderContentEvent.Completed(),
+            ),
+            decoder.finish(),
+        )
+    }
+
+    @Test
+    fun `non streaming Responses extracts function call`() {
+        val decoder = OpenAiResponseDecoder(ProviderApiStyle.OPENAI_RESPONSES, streaming = false)
+        decoder.feed(
+            """
+            {"output":[{"type":"function_call","id":"fc_1","call_id":"call_1",
+            "name":"skill_read","arguments":"{\"skill_id\":\"brief\",\"revision\":3}"}],
+            "usage":{"input_tokens":5,"output_tokens":2}}
+            """.trimIndent().toByteArray(),
+        )
+
+        assertEquals(
+            listOf(
+                ProviderContentEvent.Usage(5, 2),
+                ProviderContentEvent.ToolCallDelta(
+                    index = 0,
+                    id = "call_1",
+                    name = "skill_read",
+                    arguments = "{\"skill_id\":\"brief\",\"revision\":3}",
+                ),
                 ProviderContentEvent.Completed(),
             ),
             decoder.finish(),

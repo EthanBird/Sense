@@ -14,6 +14,13 @@ internal sealed interface ProviderContentEvent {
      * Brain keeps this bounded and private; it is never forwarded as a protocol event or UI string.
      */
     data class ReasoningDelta(val text: String) : ProviderContentEvent
+    /**
+     * Opaque encrypted Responses reasoning item required for a stateless tool continuation.
+     *
+     * The item has already passed the bounded JSON parser. It remains private and is replayed
+     * only to the same provider; no reasoning text is surfaced to IME events.
+     */
+    data class ResponsesReasoningItem(val json: String) : ProviderContentEvent
     data class ToolCallDelta(
         val index: Int,
         val id: String? = null,
@@ -43,6 +50,8 @@ internal class OpenAiResponseDecoder(
     private val body = if (streaming) null else ByteArrayOutputStream()
     private var completed = false
     private var sawTerminalStreamMarker = false
+    private val responsesToolArgumentChars = mutableMapOf<Int, Int>()
+    private val responsesReasoningIds = mutableSetOf<String>()
 
     fun feed(
         bytes: ByteArray,
@@ -138,12 +147,85 @@ internal class OpenAiResponseDecoder(
                     }
                     "response.completed" -> {
                         sawTerminalStreamMarker = true
-                        usage(root.objectValue("response") ?: root)?.let(result::add)
+                        val response = root.objectValue("response") ?: root
+                        usage(response)?.let(result::add)
+                        result += extractResponsesReasoningItems(response, onlyUnseen = true)
+                        result += extractResponsesToolCalls(response, onlyUnseen = true)
                         if (!completed) {
                             completed = true
                             result += ProviderContentEvent.Completed(
-                                extractResponsesText(root.objectValue("response") ?: root),
+                                extractResponsesText(response),
                             )
+                        }
+                    }
+                    "response.output_item.added" -> {
+                        val index = root.nonNegativeInt("output_index") ?: 0
+                        root.objectValue("item")
+                            ?.takeIf { it.string("type") == "function_call" }
+                            ?.let { item ->
+                                val arguments = item.string("arguments").orEmpty()
+                                responsesToolArgumentChars[index] = arguments.length
+                                result += ProviderContentEvent.ToolCallDelta(
+                                    index = index,
+                                    id = item.string("call_id") ?: item.string("id"),
+                                    name = item.string("name"),
+                                    arguments = arguments,
+                                )
+                            }
+                    }
+                    "response.function_call_arguments.delta" -> {
+                        val index = root.nonNegativeInt("output_index") ?: 0
+                        root.string("delta")?.takeIf(String::isNotEmpty)?.let { delta ->
+                            responsesToolArgumentChars[index] =
+                                Math.addExact(
+                                    responsesToolArgumentChars[index] ?: 0,
+                                    delta.length,
+                                )
+                            result += ProviderContentEvent.ToolCallDelta(
+                                index = index,
+                                arguments = delta,
+                            )
+                        }
+                    }
+                    "response.function_call_arguments.done" -> {
+                        val index = root.nonNegativeInt("output_index") ?: 0
+                        val item = root.objectValue("item")
+                        val arguments =
+                            root.string("arguments") ?: item?.string("arguments").orEmpty()
+                        if (
+                            (responsesToolArgumentChars[index] ?: 0) == 0 &&
+                            arguments.isNotEmpty()
+                        ) {
+                            responsesToolArgumentChars[index] = arguments.length
+                            result += ProviderContentEvent.ToolCallDelta(
+                                index = index,
+                                id = root.string("call_id")
+                                    ?: item?.string("call_id")
+                                    ?: item?.string("id"),
+                                name = root.string("name") ?: item?.string("name"),
+                                arguments = arguments,
+                            )
+                        }
+                    }
+                    "response.output_item.done" -> {
+                        val item = root.objectValue("item")
+                        if (item?.string("type") == "reasoning") {
+                            reasoningReplayItem(item)?.let(result::add)
+                        } else {
+                            val index = root.nonNegativeInt("output_index") ?: 0
+                            val arguments = item?.string("arguments").orEmpty()
+                            if (
+                                (responsesToolArgumentChars[index] ?: 0) == 0 &&
+                                arguments.isNotEmpty()
+                            ) {
+                                responsesToolArgumentChars[index] = arguments.length
+                                result += ProviderContentEvent.ToolCallDelta(
+                                    index = index,
+                                    id = item?.string("call_id") ?: item?.string("id"),
+                                    name = item?.string("name"),
+                                    arguments = arguments,
+                                )
+                            }
                         }
                     }
                     "response.incomplete" -> {
@@ -154,6 +236,8 @@ internal class OpenAiResponseDecoder(
                     }
                     else -> if (terminalDocument) {
                         usage(root)?.let(result::add)
+                        result += extractResponsesReasoningItems(root, onlyUnseen = false)
+                        result += extractResponsesToolCalls(root, onlyUnseen = false)
                         extractResponsesText(root)?.let { result += ProviderContentEvent.TextDelta(it) }
                     }
                 }
@@ -248,6 +332,55 @@ internal class OpenAiResponseDecoder(
         return builder.toString().takeIf(String::isNotEmpty)
     }
 
+    private fun extractResponsesToolCalls(
+        root: JsonValue.ObjectValue,
+        onlyUnseen: Boolean,
+    ): List<ProviderContentEvent.ToolCallDelta> {
+        val calls = mutableListOf<ProviderContentEvent.ToolCallDelta>()
+        root.arrayValue("output").orEmpty().forEachIndexed { index, itemValue ->
+            val item = itemValue as? JsonValue.ObjectValue ?: return@forEachIndexed
+            if (item.string("type") != "function_call") return@forEachIndexed
+            if (onlyUnseen && (responsesToolArgumentChars[index] ?: 0) > 0) {
+                return@forEachIndexed
+            }
+            val arguments = item.string("arguments").orEmpty()
+            responsesToolArgumentChars[index] = arguments.length
+            calls += ProviderContentEvent.ToolCallDelta(
+                index = index,
+                id = item.string("call_id") ?: item.string("id"),
+                name = item.string("name"),
+                arguments = arguments,
+            )
+        }
+        return calls
+    }
+
+    private fun extractResponsesReasoningItems(
+        root: JsonValue.ObjectValue,
+        onlyUnseen: Boolean,
+    ): List<ProviderContentEvent.ResponsesReasoningItem> {
+        val items = mutableListOf<ProviderContentEvent.ResponsesReasoningItem>()
+        root.arrayValue("output").orEmpty().forEach { itemValue ->
+            val item = itemValue as? JsonValue.ObjectValue ?: return@forEach
+            if (item.string("type") != "reasoning") return@forEach
+            val id = item.string("id")
+            if (onlyUnseen && id != null && id in responsesReasoningIds) return@forEach
+            reasoningReplayItem(item)?.let(items::add)
+        }
+        return items
+    }
+
+    private fun reasoningReplayItem(
+        item: JsonValue.ObjectValue,
+    ): ProviderContentEvent.ResponsesReasoningItem? {
+        if (item.string("type") != "reasoning") return null
+        // Without encrypted_content there is no stateless model state to replay. Plain summaries
+        // are intentionally not retained as a substitute for hidden reasoning.
+        if (item.string("encrypted_content").isNullOrEmpty()) return null
+        item.string("id")?.let(responsesReasoningIds::add)
+        return ProviderContentEvent.ResponsesReasoningItem(ProviderJson.stringify(item))
+    }
+
     private fun usage(root: JsonValue.ObjectValue): ProviderContentEvent.Usage? {
         val usage = root.objectValue("usage") ?: return null
         val input = usage.long("input_tokens") ?: usage.long("prompt_tokens") ?: 0L
@@ -260,6 +393,9 @@ internal class OpenAiResponseDecoder(
 
     private fun JsonValue.ObjectValue.long(name: String): Long? =
         (members[name] as? JsonValue.NumberValue)?.value?.toLongOrNull()
+
+    private fun JsonValue.ObjectValue.nonNegativeInt(name: String): Int? =
+        long(name)?.takeIf { it in 0..Int.MAX_VALUE }?.toInt()
 
     private fun JsonValue.ObjectValue.scalarText(name: String): String? = when (
         val value = members[name]

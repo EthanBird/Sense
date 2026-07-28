@@ -53,18 +53,16 @@ class MavenProxyHandler(BaseHTTPRequestHandler):
         cache_path = cache_root / repository / Path(*relative_parts)
         negative_path = cache_path.with_name(f"{cache_path.name}.not-found")
 
-        # Maven Central POM metadata is sufficient for this build. Skipping optional
-        # Gradle module metadata avoids a network round trip for artifacts that do
-        # not publish a .module file.
-        if repository == "central" and relative.endswith(".module"):
-            self.send_error(404)
-            return
-
         if negative_path.is_file():
             self.send_error(404)
             return
 
         with PATH_LOCKS[str(cache_path)]:
+            # A peer request may have learned the real 404 while this request
+            # waited for the per-coordinate lock.
+            if negative_path.is_file():
+                self.send_error(404)
+                return
             if not cache_path.is_file():
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
                 fd, temporary_name = tempfile.mkstemp(prefix="sense-maven-", dir=cache_path.parent)
@@ -85,19 +83,33 @@ class MavenProxyHandler(BaseHTTPRequestHandler):
                                 "30",
                                 "--retry",
                                 "3",
-                                "--retry-all-errors",
+                                "--retry-connrefused",
+                                "--write-out",
+                                "%{http_code}",
                                 "-o",
                                 str(temporary),
                                 upstream,
                             ],
                             check=False,
+                            stdout=subprocess.PIPE,
+                            text=True,
                             timeout=140,
                         )
                     if result.returncode != 0:
                         temporary.unlink(missing_ok=True)
-                        if result.returncode == 22:
+                        upstream_status = _parse_http_status(result.stdout)
+                        if upstream_status == 404:
                             negative_path.touch()
-                        self.send_error(404 if result.returncode == 22 else 503)
+                        self.send_error(
+                            upstream_status
+                            if upstream_status is not None
+                            else 503
+                        )
+                        return
+                    upstream_status = _parse_http_status(result.stdout)
+                    if upstream_status is None or not 200 <= upstream_status < 300:
+                        temporary.unlink(missing_ok=True)
+                        self.send_error(502)
                         return
                     os.replace(temporary, cache_path)
                 except (OSError, subprocess.TimeoutExpired):
@@ -119,6 +131,14 @@ class MavenProxyHandler(BaseHTTPRequestHandler):
 
     def log_message(self, fmt: str, *args: object) -> None:
         print(f"{self.address_string()} {fmt % args}", flush=True)
+
+
+def _parse_http_status(value: str) -> int | None:
+    candidate = value.strip()
+    if len(candidate) != 3 or not candidate.isdigit():
+        return None
+    status = int(candidate)
+    return status if 100 <= status <= 599 else None
 
 
 def main() -> None:
