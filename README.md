@@ -2,9 +2,9 @@
 
 > Android 原生高性能中文输入法：普通输入完全本地运行，AI、记忆与工具能力通过可配置的长按方向 Skill 显式触发。
 
-**项目状态：** `v0.4.5` 键盘 Skills、极光交互与完整修订历史
+**项目状态：** `v0.4.5.beta` Skills 预发布验证
 
-**当前版本：** `v0.4.5`（`versionCode 20`）
+**当前版本：** `v0.4.5.beta`（`versionCode 21`）
 
 **更新日期：** 2026-07-28
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
@@ -76,7 +76,7 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
 | Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
 | 既有质量 | AI、IME、UI、Core、M0–M6、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 20`、`versionName 0.4.5`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据 | `versionCode 21`、`versionName 0.4.5.beta`、`minSdk 29`、`targetSdk 36` |
 
 标准工程验证命令：
 
@@ -373,7 +373,7 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.4.5` 键盘 Skills 与 Agent ABI 阶段。
+以下保留 M0 的实施记录；当前代码位于 `v0.4.5.beta` Skills 预发布验证阶段。
 现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。
 
