@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 env:
-  RELEASE_TAG: v0.4.5
-  RELEASE_APK: Sense-v0.4.5.apk
+  RELEASE_TAG: v0.4.5.beta
+  RELEASE_APK: Sense-v0.4.5.beta.apk
   LEXICON_SHA256: ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6
   BIGRAM_SHA256: db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c
   ENGLISH_SHA256: 1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624
@@ -253,7 +253,7 @@ jobs:
             :core-input:m5MixedInputBenchmark \
             :core-input:m6InputPolishBenchmark
 
-      - name: Verify assembled 0.4.5 APK
+      - name: Verify assembled 0.4.5.beta APK
         shell: bash
         run: |
           set -euo pipefail
@@ -362,7 +362,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='20' versionName='0.4.5'" /tmp/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='21' versionName='0.4.5.beta'" /tmp/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" /tmp/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" /tmp/apk-badging.txt
           declared_permissions=$(
@@ -415,7 +415,7 @@ jobs:
       - name: Upload debug APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.4.5-apks
+          name: sense-v0.4.5.beta-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -518,7 +518,7 @@ jobs:
       - name: Upload clean app APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.4.5-clean-apks
+          name: sense-v0.4.5.beta-clean-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -575,7 +575,7 @@ jobs:
             --github-output "$GITHUB_OUTPUT" \
             --step-summary "$GITHUB_STEP_SUMMARY"
 
-  release-0-4-5:
+  release-0-4-5-beta:
     needs: [verify, package_release, release_plan]
     if: >-
       github.event_name == 'push' &&
@@ -590,7 +590,7 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: sense-v0.4.5-clean-apks
+          name: sense-v0.4.5.beta-clean-apks
           path: artifacts
 
       - name: Prepare release assets
@@ -704,7 +704,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='20' versionName='0.4.5'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='21' versionName='0.4.5.beta'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           declared_permissions=$(
@@ -757,7 +757,7 @@ jobs:
           cd release
           sha256sum "$RELEASE_APK" > SHA256SUMS.txt
 
-      - name: Create Sense 0.4.5 release
+      - name: Create Sense 0.4.5.beta prerelease
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_PLAN_STATUS: ${{ needs.release_plan.outputs.status }}
@@ -837,8 +837,9 @@ jobs:
             # created or concurrently observed tag is resolved and verified.
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
-              --title "Sense v0.4.5 · 键盘 Skills 与极光交互" \
-              --notes-file docs/releases/v0.4.5.md
+              --prerelease \
+              --title "Sense v0.4.5.beta · Skills 预发布验证" \
+              --notes-file docs/releases/v0.4.5.beta.md
           fi
 
           assert_remote_tag_target
