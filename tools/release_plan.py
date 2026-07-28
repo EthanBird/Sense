@@ -19,7 +19,7 @@ from typing import Sequence
 
 
 VERSION_NAME_PATTERN = re.compile(
-    r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$"
+    r"^[0-9]+\.[0-9]+\.[0-9]+(?:[.-][0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$"
 )
 COMMIT_SHA_PATTERN = re.compile(r"^[0-9a-f]{40,64}$")
 VERSION_NAME_LINE = re.compile(
