@@ -27,11 +27,11 @@ fi
 BUILD_TOOLS="$SDK/build-tools/$BUILD_TOOLS_VERSION"
 ANDROID_JAR="$SDK/platforms/android-36/android.jar"
 KOTLIN_LIB="$GRADLE_DIST/lib"
-OUT="$ROOT/build/offline-v0.4.4"
+OUT="$ROOT/build/offline-v0.4.5"
 MEMORY_PROTOCOL_JAR="$OUT/memory-protocol-main.jar"
 EVENT_JOURNAL_JAR="$OUT/event-journal-main.jar"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
-APK="$APK_DIR/Sense-v0.4.4-debug.apk"
+APK="$APK_DIR/Sense-v0.4.5-debug.apk"
 LEXICON_ASSET="$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin"
 LEXICON_SHA256="ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
 BIGRAM_ASSET="$ROOT/ime-service/src/main/assets/pinyin_bigrams.bin"
@@ -52,10 +52,15 @@ mkdir -p \
     "$OUT/core-main" "$OUT/core-test" \
     "$OUT/ui-main" "$OUT/ui-test" \
     "$OUT/service-main" "$OUT/service-test" \
+    "$OUT/settings-main" "$OUT/settings-test" \
     "$OUT/generated" "$OUT/app-classes" "$OUT/dex" \
     "$ANDROID_USER_HOME" "$APK_DIR"
 
 python3 "$ROOT/tools/test_release_plan.py" 2>&1 | tee "$OUT/release-plan-tests.txt"
+python3 "$ROOT/tools/test_verify_manifest_permissions.py" 2>&1 |
+    tee "$OUT/manifest-permission-tests.txt"
+python3 "$ROOT/tools/test_verify_aapt2_manifest_protection.py" 2>&1 |
+    tee "$OUT/aapt2-manifest-protection-tests.txt"
 python3 "$ROOT/tools/test_build_pinyin_lexicon.py" 2>&1 | tee "$OUT/lexicon-builder-tests.txt"
 python3 "$ROOT/tools/test_build_bigram_model.py" 2>&1 | tee "$OUT/bigram-builder-tests.txt"
 python3 "$ROOT/tools/test_m4_core_assets.py" 2>&1 | tee "$OUT/m4-core-assets-tests.txt"
@@ -110,10 +115,14 @@ mapfile -t BRAIN_SOURCES < <(find "$ROOT/ai-brain/src/main/kotlin" -name '*.kt' 
 mapfile -t BRAIN_TEST_SOURCES < <(find "$ROOT/ai-brain/src/test/kotlin" -name '*.kt' -print | sort)
 mapfile -t RUNTIME_PURE_SOURCES < <(printf '%s\n' \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/AgentRunRecorder.kt" \
+    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/AgentSkillRunAdmission.kt" \
+    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/AgentSkillRepository.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/AgentToolSettings.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainIpcEventBatcher.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainIpcSerialDeliveryQueue.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainIpcTextChunker.kt" \
+    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainAdmissionSerialLane.kt" \
+    "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainRequestEnvelopePolicy.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainRetentionFailureGate.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainRunTickerSlot.kt" \
     "$ROOT/ai-runtime/src/main/kotlin/io/github/ethanbird/senseime/brain/runtime/BrainPreviewReplaceWirePolicy.kt" \
@@ -134,6 +143,7 @@ mapfile -t CORE_SOURCES < <(find "$ROOT/core-input/src/main/kotlin" -name '*.kt'
 mapfile -t TEST_SOURCES < <(find "$ROOT/core-input/src/test/kotlin" -name '*.kt' -print | sort)
 mapfile -t UI_LAYOUT_SOURCES < <(printf '%s\n' \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyCodes.kt" \
+    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/ActiveSkillAuroraLoopPolicy.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/AiPreviewLineLayoutCache.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/CandidatePresentationPolicy.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/CanvasIconGeometry.kt" \
@@ -143,6 +153,7 @@ mapfile -t UI_LAYOUT_SOURCES < <(printf '%s\n' \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardLayoutContract.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KineticScrollPolicy.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardGapHitResolver.kt" \
+    "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardSkills.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/SymbolCatalog.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/SwipeCharacterMap.kt" \
     "$ROOT/ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/TouchInputReducer.kt" \
@@ -156,14 +167,22 @@ mapfile -t SERVICE_PURE_SOURCES < <(
             "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/EditorCompositionSelectionPolicy.kt" \
             "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/EditorPanelState.kt" \
             "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/EditorPrivacyPolicy.kt" \
+            "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/AgentSkillProjectionCoordinator.kt" \
             "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/LatestOnlyTaskRunner.kt" \
             "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ProgressiveCandidateSnapshot.kt" \
+            "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ai/AgentSkillRunSnapshot.kt" \
             "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ai/AgentStreamPresentation.kt"
         find "$ROOT/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ai/editor" \
             -name '*.kt' -print
     } | sort -u
 )
 mapfile -t SERVICE_TEST_SOURCES < <(find "$ROOT/ime-service/src/test/kotlin" -name '*.kt' -print | sort)
+mapfile -t SETTINGS_PURE_SOURCES < <(printf '%s\n' \
+    "$ROOT/app/src/main/kotlin/io/github/ethanbird/senseime/SettingsNavigation.kt" \
+    "$ROOT/app/src/main/kotlin/io/github/ethanbird/senseime/SkillDraftRecoveryStore.kt" \
+    "$ROOT/app/src/main/kotlin/io/github/ethanbird/senseime/SkillSettingsIoSession.kt" \
+    "$ROOT/app/src/main/kotlin/io/github/ethanbird/senseime/SkillSettingsModel.kt")
+mapfile -t SETTINGS_TEST_SOURCES < <(find "$ROOT/app/src/test/kotlin" -name '*.kt' -print | sort)
 
 if command -v rg >/dev/null 2>&1; then
     if rg -n 'java\.net\.|javax\.net\.|okhttp|retrofit' \
@@ -280,6 +299,33 @@ for source in "${BRAIN_API_TEST_SOURCES[@]}"; do
 done
 java -cp "$STDLIB:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/brain-api-main:$OUT/brain-api-test" \
     org.junit.runner.JUnitCore "${BRAIN_API_TEST_CLASSES[@]}" | tee "$OUT/brain-api-unit-tests.txt"
+
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath "$STDLIB:$ANDROID_JAR:$OUT/protocol-main:$OUT/brain-api-main" \
+    -d "$OUT/settings-main" "${SETTINGS_PURE_SOURCES[@]}"
+java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
+    -jvm-target 17 -no-stdlib -no-reflect \
+    -classpath \
+        "$STDLIB:$ANDROID_JAR:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/brain-api-main:$OUT/settings-main" \
+    -Xfriend-paths="$OUT/settings-main" \
+    -d "$OUT/settings-test" "${SETTINGS_TEST_SOURCES[@]}"
+SETTINGS_TEST_CLASSES=()
+for source in "${SETTINGS_TEST_SOURCES[@]}"; do
+    [[ "$source" == *Test.kt ]] || continue
+    file_name=${source##*/}
+    package_name=$(
+        sed -n -E \
+            's/^[[:space:]]*package[[:space:]]+([^[:space:]]+).*/\1/p' \
+            "$source"
+    )
+    [[ -n "$package_name" ]]
+    SETTINGS_TEST_CLASSES+=("$package_name.${file_name%.kt}")
+done
+java -cp \
+    "$STDLIB:$ANDROID_JAR:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/brain-api-main:$OUT/settings-main:$OUT/settings-test" \
+    org.junit.runner.JUnitCore "${SETTINGS_TEST_CLASSES[@]}" |
+    tee "$OUT/settings-unit-tests.txt"
 
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect \
@@ -454,8 +500,8 @@ java -cp "$STDLIB:$OUT/core-main" \
     --manifest "$ROOT/tools/offline/AndroidManifest.xml" \
     --min-sdk-version 29 \
     --target-sdk-version 36 \
-    --version-code 19 \
-    --version-name 0.4.4 \
+    --version-code 20 \
+    --version-name 0.4.5 \
     --auto-add-overlay \
     --output-text-symbols "$OUT/R.txt" \
     -A "$ROOT/ime-service/src/main/assets" \
@@ -529,6 +575,11 @@ keytool -genkeypair \
 "$BUILD_TOOLS/zipalign" -c -P 16 4 "$APK"
 "$BUILD_TOOLS/aapt2" dump badging "$APK" | tee "$OUT/apk-badging.txt"
 "$BUILD_TOOLS/aapt2" dump permissions "$APK" | tee "$OUT/apk-permissions.txt"
+"$BUILD_TOOLS/aapt2" dump xmltree "$APK" --file AndroidManifest.xml |
+    tee "$OUT/apk-manifest.xmltree"
+python3 "$ROOT/tools/verify_aapt2_manifest_protection.py" \
+    --permissions "$OUT/apk-permissions.txt" \
+    "$OUT/apk-manifest.xmltree"
 APK_ANALYZER=$(
     find "$SDK/cmdline-tools" -type f -name apkanalyzer -print |
         sort -V |
@@ -539,6 +590,8 @@ if [[ ! -x "$APK_ANALYZER" ]]; then
     exit 2
 fi
 "$APK_ANALYZER" manifest print "$APK" > "$OUT/apk-manifest.xml"
+python3 "$ROOT/tools/verify_manifest_permissions.py" \
+    --packaged "$OUT/apk-manifest.xml"
 python3 - "$OUT/apk-manifest.xml" <<'PY'
 import sys
 import xml.etree.ElementTree as ET
@@ -585,7 +638,7 @@ actions = {
 if "android.view.InputMethod" not in actions:
     raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
 PY
-grep -F "package: name='io.github.ethanbird.senseime' versionCode='19' versionName='0.4.4'" "$OUT/apk-badging.txt"
+grep -F "package: name='io.github.ethanbird.senseime' versionCode='20' versionName='0.4.5'" "$OUT/apk-badging.txt"
 grep -Fx "minSdkVersion:'29'" "$OUT/apk-badging.txt"
 grep -Fx "targetSdkVersion:'36'" "$OUT/apk-badging.txt"
 DECLARED_PERMISSIONS=$(
@@ -602,10 +655,17 @@ if ! grep -Fxq "android.permission.RECORD_AUDIO" <<<"$DECLARED_PERMISSIONS"; the
     echo "Release gate failed: speech input is missing android.permission.RECORD_AUDIO." >&2
     exit 1
 fi
+if ! grep -Fxq \
+    "io.github.ethanbird.senseime.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" \
+    <<<"$DECLARED_PERMISSIONS"; then
+    echo "Release gate failed: AndroidX signature receiver permission is missing." >&2
+    exit 1
+fi
 UNEXPECTED_PERMISSIONS=$(
     grep -Fvx \
         -e "android.permission.INTERNET" \
         -e "android.permission.RECORD_AUDIO" \
+        -e "io.github.ethanbird.senseime.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" \
         <<<"$DECLARED_PERMISSIONS" || true
 )
 if [[ -n "$UNEXPECTED_PERMISSIONS" ]]; then
@@ -660,4 +720,4 @@ HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --text "$OUT/lint.txt" \
     "$ROOT/tools/offline"
 
-echo "v0.4.4 verification complete: $APK"
+echo "v0.4.5 verification complete: $APK"

@@ -4,10 +4,14 @@ object SenseAiProtocol {
     const val SNAPSHOT_V1 = "sense.editor.snapshot.v1"
     const val PATCH_V1 = "sense.editor.patch.v1"
     const val HARNESS_REQUEST_V1 = "sense.harness.request.v1"
+    const val ACTIVE_SKILL_INSTRUCTION_V1 = "sense.skill.instruction.v1"
 
     const val DEFAULT_MAX_OUTPUT_CHARS = 4_096
     const val ABSOLUTE_MAX_OUTPUT_CHARS = 65_536
     const val ABSOLUTE_MAX_SNAPSHOT_CHARS = 65_536
+    const val MAX_SKILL_NAME_CHARS = 64
+    const val MAX_SKILL_DESCRIPTION_CHARS = 240
+    const val MAX_SKILL_CONTENT_CHARS = 65_536
     const val MAX_ID_CHARS = 128
     const val SHA256_HEX_CHARS = 64
 }

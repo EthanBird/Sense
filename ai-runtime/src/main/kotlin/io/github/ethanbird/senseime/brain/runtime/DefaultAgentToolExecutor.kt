@@ -4,6 +4,11 @@ import io.github.ethanbird.senseime.brain.api.AgentToolArguments
 import io.github.ethanbird.senseime.brain.api.AgentToolCall
 import io.github.ethanbird.senseime.brain.api.AgentToolExecutionResult
 import io.github.ethanbird.senseime.brain.api.AgentToolExecutor
+import io.github.ethanbird.senseime.brain.api.AgentSkillCatalog
+import io.github.ethanbird.senseime.brain.api.AgentSkillCatalogSnapshot
+import io.github.ethanbird.senseime.brain.api.AgentSkillDefinition
+import io.github.ethanbird.senseime.brain.api.AgentSkillMutation
+import io.github.ethanbird.senseime.brain.api.toSummary
 import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
 import java.net.URI
@@ -33,6 +38,22 @@ fun interface AgentMemorySearchSource {
     }
 }
 
+interface AgentSkillToolSource {
+    fun read(skillId: String, revision: Long): AgentSkillDefinition?
+
+    fun apply(mutation: AgentSkillMutation): AgentSkillCatalog
+
+    companion object {
+        val UNAVAILABLE = object : AgentSkillToolSource {
+            override fun read(skillId: String, revision: Long): AgentSkillDefinition? =
+                throw IllegalStateException("Skill runtime unavailable")
+
+            override fun apply(mutation: AgentSkillMutation): AgentSkillCatalog =
+                throw IllegalStateException("Skill runtime unavailable")
+        }
+    }
+}
+
 /**
  * Dependency-free Android tool runtime.
  *
@@ -41,6 +62,7 @@ fun interface AgentMemorySearchSource {
  */
 class DefaultAgentToolExecutor(
     private val memorySource: AgentMemorySearchSource = AgentMemorySearchSource.EMPTY,
+    private val skillSource: AgentSkillToolSource = AgentSkillToolSource.UNAVAILABLE,
     private val connectTimeoutMs: Int = 8_000,
     private val readTimeoutMs: Int = 12_000,
     private val documentLoader: ((String) -> String)? = null,
@@ -55,6 +77,8 @@ class DefaultAgentToolExecutor(
                 call.requestId,
                 call.runGeneration,
             )
+            is AgentToolArguments.SkillRead -> skillRead(arguments)
+            is AgentToolArguments.SkillManage -> skillManage(arguments)
         }
     } catch (failure: Exception) {
         failureResult(
@@ -64,6 +88,127 @@ class DefaultAgentToolExecutor(
                     append(": ").append(it)
                 }
             },
+        )
+    }
+
+    private fun skillRead(
+        arguments: AgentToolArguments.SkillRead,
+    ): AgentToolExecutionResult {
+        val skill = skillSource.read(arguments.skillId, arguments.revision)
+            ?: return failureResult("Unknown Skill: ${arguments.skillId}")
+        if (skill.revision != arguments.revision) {
+            return failureResult(
+                "Skill revision mismatch: requested ${arguments.revision}, got ${skill.revision}",
+            )
+        }
+        if (arguments.offset > skill.content.length) {
+            return failureResult(
+                "Skill offset ${arguments.offset} exceeds document length ${skill.content.length}",
+            )
+        }
+        if (
+            arguments.offset in 1 until skill.content.length &&
+            Character.isLowSurrogate(skill.content[arguments.offset]) &&
+            Character.isHighSurrogate(skill.content[arguments.offset - 1])
+        ) {
+            return failureResult("Skill offset splits a Unicode code point")
+        }
+        var nextOffset = (arguments.offset + arguments.maxChars)
+            .coerceAtMost(skill.content.length)
+        if (
+            nextOffset in 1 until skill.content.length &&
+            Character.isLowSurrogate(skill.content[nextOffset]) &&
+            Character.isHighSurrogate(skill.content[nextOffset - 1])
+        ) {
+            nextOffset -= 1
+        }
+        val content = skill.content.substring(arguments.offset, nextOffset)
+        return success(
+            buildString {
+                append("{\"id\":")
+                appendJson(skill.id)
+                append(",\"revision\":").append(skill.revision)
+                append(",\"name\":")
+                appendJson(skill.name)
+                append(",\"description\":")
+                appendJson(skill.description)
+                append(",\"base_intent\":")
+                appendJson(skill.baseIntent.wireValue)
+                append(",\"offset\":").append(arguments.offset)
+                append(",\"next_offset\":").append(nextOffset)
+                append(",\"eof\":").append(nextOffset == skill.content.length)
+                append(",\"content\":")
+                appendJson(content)
+                append('}')
+            },
+        )
+    }
+
+    private fun skillManage(
+        arguments: AgentToolArguments.SkillManage,
+    ): AgentToolExecutionResult {
+        val mutation = when (arguments) {
+            is AgentToolArguments.SkillManage.Create -> AgentSkillMutation.Create(
+                id = arguments.skillId,
+                name = arguments.name,
+                description = arguments.description,
+                content = arguments.content,
+                baseIntent = arguments.baseIntent,
+                binding = arguments.binding,
+                expectedGeneration = arguments.expectedCatalogGeneration,
+            )
+            is AgentToolArguments.SkillManage.Update -> AgentSkillMutation.Update(
+                id = arguments.skillId,
+                name = arguments.name,
+                description = arguments.description,
+                content = arguments.content,
+                baseIntent = arguments.baseIntent,
+                expectedGeneration = arguments.expectedCatalogGeneration,
+            )
+            is AgentToolArguments.SkillManage.Bind -> AgentSkillMutation.Bind(
+                skillId = arguments.skillId,
+                slot = arguments.slot,
+                expectedGeneration = arguments.expectedCatalogGeneration,
+            )
+            is AgentToolArguments.SkillManage.Unbind -> AgentSkillMutation.Unbind(
+                slot = arguments.slot,
+                expectedGeneration = arguments.expectedCatalogGeneration,
+            )
+            is AgentToolArguments.SkillManage.UnbindSkill ->
+                AgentSkillMutation.UnbindSkill(
+                    skillId = arguments.skillId,
+                    expectedGeneration = arguments.expectedCatalogGeneration,
+                )
+        }
+        val catalog = skillSource.apply(mutation)
+        val affectedId = when (arguments) {
+            is AgentToolArguments.SkillManage.Create -> arguments.skillId
+            is AgentToolArguments.SkillManage.Update -> arguments.skillId
+            is AgentToolArguments.SkillManage.Bind -> arguments.skillId
+            is AgentToolArguments.SkillManage.Unbind -> null
+            is AgentToolArguments.SkillManage.UnbindSkill -> arguments.skillId
+        }
+        return success(
+            buildString {
+                append("{\"expected_catalog_generation\":")
+                    .append(arguments.expectedCatalogGeneration)
+                append(",\"catalog_generation\":").append(catalog.generation)
+                affectedId?.let { skillId ->
+                    append(",\"skill_id\":")
+                    appendJson(skillId)
+                    catalog.definition(skillId)?.let { definition ->
+                        append(",\"revision\":").append(definition.revision)
+                    }
+                }
+                append(",\"binding_count\":").append(catalog.bindings.size)
+                append(",\"active_skill_id\":")
+                catalog.active?.skillId?.let { appendJson(it) } ?: append("null")
+                append('}')
+            },
+            skillCatalogSnapshot = AgentSkillCatalogSnapshot(
+                generation = catalog.generation,
+                skills = catalog.definitions.map { it.toSummary() },
+            ),
         )
     }
 
@@ -223,8 +368,12 @@ class DefaultAgentToolExecutor(
         return output.toByteArray()
     }
 
-    private fun success(content: String) = AgentToolExecutionResult(
+    private fun success(
+        content: String,
+        skillCatalogSnapshot: AgentSkillCatalogSnapshot? = null,
+    ) = AgentToolExecutionResult(
         content = "{\"ok\":true,\"data\":$content}",
+        skillCatalogSnapshot = skillCatalogSnapshot,
     )
 
     private fun failureResult(message: String) = AgentToolExecutionResult(
@@ -261,7 +410,7 @@ class DefaultAgentToolExecutor(
         const val MAX_MEMORY_HIT_CHARS = 2_000
         const val MOBILE_USER_AGENT =
             "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 " +
-                "(KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36 Sense-IME/0.4.4"
+                "(KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36 Sense-IME/0.4.5"
     }
 }
 

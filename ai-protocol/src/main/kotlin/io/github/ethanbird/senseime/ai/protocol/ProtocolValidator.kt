@@ -227,12 +227,68 @@ object ProtocolValidator {
         positive(request.runGeneration, "$.run_generation", ProtocolErrorCode.INVALID_GENERATION)
         outputLimit(request.maxOutputChars, "$.max_output_chars")
         include(validate(request.snapshot), "$.snapshot")
+        request.skillCatalogGeneration?.let { generation ->
+            positive(
+                generation,
+                "$.skill_catalog_generation",
+                ProtocolErrorCode.INVALID_GENERATION,
+            )
+        }
 
         if (request.skill == EditorIntent.NO_CHANGE) {
             error(
                 ProtocolErrorCode.INVALID_INTENT,
                 "$.skill",
                 "no_change is a terminal result, not a runnable skill",
+            )
+        }
+        request.activeSkill?.let { activeSkill ->
+            if (request.skillCatalogGeneration == null) {
+                error(
+                    ProtocolErrorCode.REQUIRED_VALUE_MISSING,
+                    "$.skill_catalog_generation",
+                    "an active Skill requires its frozen catalog generation",
+                )
+            } else if (request.skillCatalogGeneration != activeSkill.catalogGeneration) {
+                error(
+                    ProtocolErrorCode.INVALID_GENERATION,
+                    "$.active_skill.catalog_generation",
+                    "active Skill and discovery catalog generations must match",
+                )
+            }
+            exactProtocol(
+                activeSkill.protocol,
+                SenseAiProtocol.ACTIVE_SKILL_INSTRUCTION_V1,
+                "$.active_skill.protocol",
+            )
+            id(activeSkill.id, "$.active_skill.id")
+            positive(
+                activeSkill.revision,
+                "$.active_skill.revision",
+                ProtocolErrorCode.INVALID_GENERATION,
+            )
+            positive(
+                activeSkill.catalogGeneration,
+                "$.active_skill.catalog_generation",
+                ProtocolErrorCode.INVALID_GENERATION,
+            )
+            boundedSkillText(
+                activeSkill.name,
+                "$.active_skill.name",
+                SenseAiProtocol.MAX_SKILL_NAME_CHARS,
+                singleLine = true,
+            )
+            boundedSkillText(
+                activeSkill.description,
+                "$.active_skill.description",
+                SenseAiProtocol.MAX_SKILL_DESCRIPTION_CHARS,
+                singleLine = true,
+            )
+            boundedSkillText(
+                activeSkill.content,
+                "$.active_skill.content",
+                SenseAiProtocol.MAX_SKILL_CONTENT_CHARS,
+                singleLine = false,
             )
         }
         if (request.requestId != request.snapshot.requestId) {
@@ -247,6 +303,39 @@ object ProtocolValidator {
                 ProtocolErrorCode.INVALID_LIMIT,
                 "$.max_output_chars",
                 "harness and snapshot output limits must match",
+            )
+        }
+    }
+
+    private fun ValidationBuilder.boundedSkillText(
+        value: String,
+        path: String,
+        maxChars: Int,
+        singleLine: Boolean,
+    ) {
+        validUnicode(value, path)
+        when {
+            value.isBlank() -> error(
+                ProtocolErrorCode.REQUIRED_VALUE_MISSING,
+                path,
+                "must not be blank",
+            )
+            value.length > maxChars -> error(
+                ProtocolErrorCode.TEXT_TOO_LONG,
+                path,
+                "must not exceed $maxChars UTF-16 code units",
+            )
+            singleLine && value.any {
+                it == '\n' || it == '\r' || it == '\t' || it == '\u2028' || it == '\u2029'
+            } -> error(
+                ProtocolErrorCode.INVALID_TEXT,
+                path,
+                "must be a single line",
+            )
+            value.any { Character.isISOControl(it) && it !in setOf('\n', '\r', '\t') } -> error(
+                ProtocolErrorCode.INVALID_TEXT,
+                path,
+                "contains unsupported control characters",
             )
         }
     }

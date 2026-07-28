@@ -9,6 +9,18 @@ data class BrainRunSpec(
     val provider: ProviderProfile,
     val credential: ProviderCredential,
     /**
+     * Compact, generation-frozen Skill discovery catalog. Full text for the selected Skill lives
+     * in [HarnessRequestV1.activeSkill]; other documents are loaded explicitly with skill_read.
+     */
+    val skillCatalog: List<AgentSkillSummary> = emptyList(),
+    /**
+     * Immutable catalog generation paired with [skillCatalog].
+     *
+     * Brain only exposes `skill_manage` when this token is present, and every mutation must echo
+     * it. This prevents a stale model turn from overwriting a newer settings or Agent mutation.
+     */
+    val skillCatalogGeneration: Long? = null,
+    /**
      * Exact user-enabled tool set captured by the private Brain service at run admission.
      *
      * Tool availability is deliberately not part of the editor/Binder protocol. The model only
@@ -22,7 +34,28 @@ data class BrainRunSpec(
      * This sink never crosses Binder and is orthogonal to the public [BrainEventSink].
      */
     val traceSink: BrainTraceSink = BrainTraceSink.NONE,
-)
+) {
+    init {
+        require(skillCatalogGeneration == null || skillCatalogGeneration > 0L)
+        require(skillCatalog.size <= AgentSkillPolicy.MAX_SKILLS)
+        require(skillCatalog.map(AgentSkillSummary::id).toSet().size == skillCatalog.size) {
+            "Duplicate Skill ids in Brain run catalog"
+        }
+        require(skillCatalog.isEmpty() || skillCatalogGeneration != null) {
+            "Skill summaries require an exact catalog generation"
+        }
+        harnessRequest.skillCatalogGeneration?.let { requestGeneration ->
+            require(requestGeneration == skillCatalogGeneration) {
+                "Harness and Brain Skill catalog generations differ"
+            }
+        }
+        harnessRequest.activeSkill?.let { activeSkill ->
+            require(activeSkill.catalogGeneration == skillCatalogGeneration) {
+                "Active Skill and Brain Skill catalog generations differ"
+            }
+        }
+    }
+}
 
 fun interface BrainEventSink {
     fun onEvent(event: AiEvent)

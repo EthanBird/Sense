@@ -1,15 +1,19 @@
 package io.github.ethanbird.senseime.ui
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.Shader
+import android.graphics.SweepGradient
+import android.os.Build
 import android.os.SystemClock
 import android.util.AttributeSet
 import android.util.SparseArray
@@ -209,6 +213,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     var editorActionListener: ((action: EditorAction) -> Unit)? = null
     var settingsActionListener: (() -> Unit)? = null
     var aiHoldListener: AiHoldListener? = null
+    var skillSelectionListener: KeyboardSkillSelectionListener? = null
 
     private val density = resources.displayMetrics.density
     private val scaledTouchSlop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
@@ -261,6 +266,47 @@ class SenseKeyboardView @JvmOverloads constructor(
     )
     private var scheduledAiHoldPointerId = NO_POINTER
     private var scheduledAiHoldGeneration = 0L
+    private val skillSelectionDistance = maxOf(dp(24f), scaledTouchSlop * 1.8f)
+    private val skillGestureSession = KeyboardSkillGestureSession(
+        maximumStationaryDistance = maxOf(scaledTouchSlop, dp(10f)),
+        selectionDistance = skillSelectionDistance,
+    )
+    private val skillHapticGate = KeyboardSkillHapticGate()
+    private var skillBindings = KeyboardSkillBindingSet.EMPTY
+    private var activeKeyboardSkill: ActiveKeyboardSkill? = null
+    private var activeSkillSourceKey: Key? = null
+    private var activeSkillAuroraOverlay: ActiveSkillAuroraOverlayView? = null
+    private var skillVisualOwnerState = KeyboardSkillVisualOwnerState()
+    private var scheduledSkillPointerId = NO_POINTER
+    private var scheduledSkillGeneration = 0L
+    private val skillPickerSourceBounds = RectF()
+    private var skillPickerSourceOwner: KeyboardSkillPhysicalOwner? = null
+    private var skillPickerOptions: KeyboardSkillOptions? = null
+    private var skillPickerLayout: KeyboardSkillPickerLayout? = null
+    private val skillPickerOptionBounds =
+        Array(KeyboardSkillDirection.entries.size) { RectF() }
+    private val skillPickerVisibleLabels =
+        arrayOfNulls<String>(KeyboardSkillDirection.entries.size)
+    private val skillAnimationDirtyBounds = RectF()
+    private var skillAnimationFrameScheduled = false
+    private var renderPassCount = 0L
+    private var toolbarKeyStart = 0
+    private var toolbarKeyEndExclusive = 0
+    private var panelKeyStart = 0
+    private var panelKeyEndExclusive = 0
+    private var systemBarKeyStart = 0
+    private var systemBarKeyEndExclusive = 0
+    private val skillAuroraMatrix = Matrix()
+    private val skillAuroraPath = Path()
+    private var skillAuroraShader: Shader? = null
+    private var skillFeedbackMessage: String? = null
+    private val clearSkillFeedbackRunnable = Runnable {
+        if (skillFeedbackMessage != null) {
+            skillFeedbackMessage = null
+            updateSkillAccessibilityDescription()
+            invalidate()
+        }
+    }
     private var aiSurfaceState: AiSurfaceState? = null
     private val aiPreviewLineLayoutCache = AiPreviewLineLayoutCache()
     private val aiStopBounds = RectF()
@@ -373,11 +419,63 @@ class SenseKeyboardView @JvmOverloads constructor(
             }
         }
     }
+    private val skillActivationRunnable = object : Runnable {
+        override fun run() {
+            val pointerId = scheduledSkillPointerId
+            if (pointerId == NO_POINTER) return
+            val generation = scheduledSkillGeneration
+            val now = SystemClock.uptimeMillis()
+            val outcome = skillGestureSession.tryActivate(
+                pointerId = pointerId,
+                expectedGeneration = generation,
+                nowMillis = now,
+            )
+            if (outcome == KeyboardSkillGestureSession.Outcome.PICKER_SHOWN) {
+                scheduledSkillPointerId = NO_POINTER
+                scheduledSkillGeneration = 0L
+                suspendOrdinaryInputForSkillPicker()
+                rebuildSkillPickerLayout()
+                skillHapticGate.reset()
+                updateSkillAccessibilityDescription()
+                performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                skillPickerOptions?.let { options ->
+                    announceSkillAccessibility(
+                        KeyboardSkillAccessibilityText.pickerOpened(options),
+                    )
+                }
+                invalidate()
+                return
+            }
+            val remaining = skillGestureSession.millisUntilActivation(now)
+            if (
+                remaining > 0L &&
+                skillGestureSession.armedGeneration() == generation
+            ) {
+                postDelayed(this, remaining)
+            }
+        }
+    }
+    private val skillAnimationRunnable = object : Runnable {
+        override fun run() {
+            skillAnimationFrameScheduled = false
+            if (!shouldAnimateSkills()) return
+            updateSkillAnimationDirtyBounds()
+            if (skillAnimationDirtyBounds.isEmpty) return
+            val margin = dp(4f)
+            invalidate(
+                (skillAnimationDirtyBounds.left - margin).toInt().coerceAtLeast(0),
+                (skillAnimationDirtyBounds.top - margin).toInt().coerceAtLeast(0),
+                (skillAnimationDirtyBounds.right + margin + 1f).toInt().coerceAtMost(width),
+                (skillAnimationDirtyBounds.bottom + margin + 1f).toInt().coerceAtMost(height),
+            )
+        }
+    }
 
     init {
         isFocusable = true
         isFocusableInTouchMode = true
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
+        updateSkillAccessibilityDescription()
     }
 
     /**
@@ -466,6 +564,128 @@ class SenseKeyboardView @JvmOverloads constructor(
             symbolGridScrollState.reset()
         }
         rebuildKeys(width, height)
+        invalidate()
+    }
+
+    /**
+     * Atomically replaces the keyboard projection of Skill bindings and its
+     * active visual owner. Persisting either value remains the host's job.
+     */
+    fun updateKeyboardSkills(
+        bindings: List<KeyboardSkillBinding>,
+        active: ActiveKeyboardSkill?,
+    ) {
+        cancelSkillGesture()
+        val previous = activeKeyboardSkill
+        val previousLabel = skillLabel(previous, skillBindings)
+        val nextBindings = KeyboardSkillBindingSet.from(bindings)
+        val currentLabel = skillLabel(active, nextBindings)
+        skillBindings = nextBindings
+        activeKeyboardSkill = active
+        skillVisualOwnerState = KeyboardSkillVisualOwnerPolicy.project(
+            skillVisualOwnerState,
+            active,
+        )
+        resolveActiveSkillSourceKey()
+        updateSkillAccessibilityDescription()
+        invalidate()
+        KeyboardSkillAccessibilityText.activeChanged(
+            previousSkillId = previous?.skillId,
+            previousLabel = previousLabel,
+            currentSkillId = active?.skillId,
+            currentLabel = currentLabel,
+        )?.let(::announceSkillAccessibility)
+    }
+
+    /** Updates only the active aurora after an external settings/tool change. */
+    fun updateActiveKeyboardSkill(active: ActiveKeyboardSkill?) {
+        if (activeKeyboardSkill == active) return
+        val previous = activeKeyboardSkill
+        val previousLabel = skillLabel(previous, skillBindings)
+        val currentLabel = skillLabel(active, skillBindings)
+        activeKeyboardSkill = active
+        skillVisualOwnerState = KeyboardSkillVisualOwnerPolicy.project(
+            skillVisualOwnerState,
+            active,
+        )
+        resolveActiveSkillSourceKey()
+        updateSkillAccessibilityDescription()
+        invalidate()
+        KeyboardSkillAccessibilityText.activeChanged(
+            previousSkillId = previous?.skillId,
+            previousLabel = previousLabel,
+            currentSkillId = active?.skillId,
+            currentLabel = currentLabel,
+        )?.let(::announceSkillAccessibility)
+    }
+
+    fun activeKeyboardSkill(): ActiveKeyboardSkill? = activeKeyboardSkill
+
+    /**
+     * Moves the long-lived active-Skill animation into a sibling render layer.
+     *
+     * A raw [SenseKeyboardView] keeps the in-view fallback for backwards
+     * compatibility. Production hosts attach exactly one overlay so an Aurora
+     * frame never re-records the entire keyboard display list.
+     */
+    internal fun attachActiveSkillAuroraOverlay(overlay: ActiveSkillAuroraOverlayView?) {
+        if (activeSkillAuroraOverlay === overlay) {
+            publishActiveSkillAurora()
+            return
+        }
+        activeSkillAuroraOverlay?.updateBounds(null, keyRadius)
+        activeSkillAuroraOverlay = overlay
+        publishActiveSkillAurora()
+        invalidate()
+    }
+
+    /**
+     * Rejects only the matching provisional physical owner. A late failure from an older
+     * selection cannot erase the source hint of a newer gesture.
+     */
+    fun rejectPendingSkillSelection(requestToken: Long) {
+        val next = KeyboardSkillVisualOwnerPolicy.reject(
+            skillVisualOwnerState,
+            requestToken,
+        )
+        if (next == skillVisualOwnerState) return
+        skillVisualOwnerState = next
+        resolveActiveSkillSourceKey()
+        invalidate()
+    }
+
+    /** Package-visible device-test observation; no mutable View-owned bounds escape. */
+    internal fun activeSkillSourceBoundsForTesting(): RectF? =
+        activeSkillSourceKey?.bounds?.let(::RectF)
+
+    /** Monotonic parent-render observation used by the API 36 isolation gate. */
+    internal fun renderPassCountForTesting(): Long = renderPassCount
+
+    /**
+     * Shows a bounded, transient keyboard-owned failure chip and exposes the same message through
+     * the View accessibility description/announcement. The host uses this after an asynchronous
+     * Skill mutation or projection read fails, so a failed selection is never silent.
+     */
+    fun showSkillFeedback(message: String) {
+        val bounded = message.trim().take(SKILL_FEEDBACK_MAX_CHARS)
+        if (bounded.isEmpty()) return
+        removeCallbacks(clearSkillFeedbackRunnable)
+        skillFeedbackMessage = bounded
+        updateSkillAccessibilityDescription()
+        invalidate()
+        post {
+            if (skillFeedbackMessage == bounded && isShown) {
+                announceSkillAccessibility(bounded)
+            }
+        }
+        postDelayed(clearSkillFeedbackRunnable, SKILL_FEEDBACK_DURATION_MILLIS)
+    }
+
+    fun clearSkillFeedback() {
+        if (skillFeedbackMessage == null) return
+        removeCallbacks(clearSkillFeedbackRunnable)
+        skillFeedbackMessage = null
+        updateSkillAccessibilityDescription()
         invalidate()
     }
 
@@ -687,21 +907,37 @@ class SenseKeyboardView @JvmOverloads constructor(
             null,
             Shader.TileMode.CLAMP,
         )
+        skillAuroraShader = SweepGradient(
+            0f,
+            0f,
+            intArrayOf(
+                color(0xFF16E6D4.toInt(), 0xFF43F1E1.toInt()),
+                color(0xFF4F7CFF.toInt(), 0xFF7593FF.toInt()),
+                color(0xFFD355FF.toInt(), 0xFFE477FF.toInt()),
+                color(0xFFFF5CB6.toInt(), 0xFFFF72C2.toInt()),
+                color(0xFF77F4A8.toInt(), 0xFF8CFFC0.toInt()),
+                color(0xFF16E6D4.toInt(), 0xFF43F1E1.toInt()),
+            ),
+            null,
+        )
         rebuildCandidateLayout(w, h)
         rebuildKeys(w, h)
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        renderPassCount += 1L
         drawBackground(canvas)
         val aiState = aiSurfaceState
         if (aiState != null) {
             drawAiSurface(canvas, aiState)
+            drawSkillFeedback(canvas)
             return
         }
         if (panel == Panel.VOICE) {
             drawVoiceSurface(canvas)
             drawKeys(canvas)
+            drawSkillFeedback(canvas)
             return
         }
         if (panel == Panel.EDITOR) {
@@ -716,6 +952,34 @@ class SenseKeyboardView @JvmOverloads constructor(
             }
         }
         drawKeys(canvas)
+        drawSkillFeedback(canvas)
+    }
+
+    private fun drawSkillFeedback(canvas: Canvas) {
+        val message = skillFeedbackMessage ?: return
+        val horizontalInset = dp(12f)
+        val top = keyboardChromeBottom() + dp(7f)
+        val bounds = RectF(
+            horizontalInset,
+            top,
+            width.toFloat() - horizontalInset,
+            top + dp(34f),
+        )
+        paint.style = Paint.Style.FILL
+        paint.shader = null
+        paint.alpha = 246
+        paint.color = color(0xFFFDEBED.toInt(), 0xFF49262B.toInt())
+        canvas.drawRoundRect(bounds, dp(10f), dp(10f), paint)
+        paint.alpha = 255
+        paint.color = color(0xFF9F2836.toInt(), 0xFFFFA3AC.toInt())
+        paint.textSize = sp(11.5f)
+        paint.textAlign = Paint.Align.CENTER
+        drawCenteredText(
+            canvas,
+            ellipsizeToWidth(message, bounds.width() - dp(20f)),
+            bounds.centerX(),
+            bounds.centerY(),
+        )
     }
 
     private fun drawAiSurface(canvas: Canvas, state: AiSurfaceState) {
@@ -1417,6 +1681,28 @@ class SenseKeyboardView @JvmOverloads constructor(
                 KeyStyle.TOOLBOX_CARD -> drawToolboxCard(canvas, key, pressed)
                 else -> drawKeyboardKey(canvas, key, pressed)
             }
+            if (
+                isActiveSkillSource(key) &&
+                key.style != KeyStyle.LETTER &&
+                key.style != KeyStyle.ACTION &&
+                activeSkillAuroraOverlay == null
+            ) {
+                drawSkillAuroraOverlay(canvas, key.bounds, foregroundOnly = true)
+                drawActiveSkillMarker(canvas, key.bounds)
+            } else if (
+                isActiveSkillSource(key) &&
+                key.style != KeyStyle.LETTER &&
+                key.style != KeyStyle.ACTION
+            ) {
+                drawActiveSkillMarker(canvas, key.bounds)
+            }
+        }
+        drawSkillPicker(canvas)
+        if (shouldAnimateSkills()) {
+            scheduleSkillAnimationFrame()
+        } else if (skillAnimationFrameScheduled) {
+            removeCallbacks(skillAnimationRunnable)
+            skillAnimationFrameScheduled = false
         }
     }
 
@@ -1532,6 +1818,9 @@ class SenseKeyboardView @JvmOverloads constructor(
             color(0xEFFFFFFF.toInt(), 0xFF303132.toInt())
         }
         canvas.drawRoundRect(key.bounds, keyRadius, keyRadius, paint)
+        if (isActiveSkillSource(key) && activeSkillAuroraOverlay == null) {
+            drawSkillAuroraOverlay(canvas, key.bounds, foregroundOnly = false)
+        }
 
         paint.style = Paint.Style.FILL
         paint.color = if (pressed) Color.WHITE else color(0xFF111827.toInt(), 0xFFF6F7F9.toInt())
@@ -1549,6 +1838,378 @@ class SenseKeyboardView @JvmOverloads constructor(
             paint.textAlign = Paint.Align.CENTER
             canvas.drawText(hint, key.bounds.centerX(), key.bounds.top + dp(10f), paint)
         }
+        if (isActiveSkillSource(key)) {
+            drawActiveSkillMarker(canvas, key.bounds)
+        }
+    }
+
+    private fun isActiveSkillSource(key: Key): Boolean =
+        key === activeSkillSourceKey
+
+    private fun hasVisibleActiveSkillSource(): Boolean =
+        activeSkillSourceKey != null
+
+    /**
+     * Resolve exactly one physical key. Several panels can simultaneously
+     * contain controls with the same semantic code (for example a toolbar and
+     * a panel BACK key); drawing by code alone would light both.
+     */
+    private fun resolveActiveSkillSourceKey() {
+        activeSkillSourceKey = findActiveSkillSourceKey()
+        publishActiveSkillAurora()
+    }
+
+    private fun findActiveSkillSourceKey(): Key? {
+        val active = activeKeyboardSkill ?: return null
+        val binding = skillBindings.binding(active.sourceKeyCode, active.direction)
+            ?.takeIf { it.skillId == active.skillId }
+            ?: return null
+        skillVisualOwnerState.confirmed?.let { confirmed ->
+            if (confirmed.active == active) {
+                // A known owner may be temporarily hidden. Never migrate its Aurora to another
+                // duplicate semantic key; restore it only when the same physical descriptor
+                // becomes visible again.
+                return keyForPhysicalOwner(confirmed.owner)
+            }
+        }
+        var toolbarFallback: Key? = null
+        for (index in keys.indices) {
+            val key = keys[index]
+            if (key.code != binding.keyCode || !canStartSkillGesture(key)) continue
+            if (key.style != KeyStyle.TOOL) {
+                return key
+            }
+            if (toolbarFallback == null) toolbarFallback = key
+        }
+        return toolbarFallback
+    }
+
+    private fun publishActiveSkillAurora() {
+        val overlay = activeSkillAuroraOverlay ?: return
+        val bounds = activeSkillSourceKey
+            ?.takeIf { aiSurfaceState == null }
+            ?.bounds
+        overlay.updateBounds(bounds, keyRadius)
+    }
+
+    private fun physicalOwnerFor(key: Key): KeyboardSkillPhysicalOwner? {
+        var sourceIndex = -1
+        for (index in keys.indices) {
+            if (keys[index] === key) {
+                sourceIndex = index
+                break
+            }
+        }
+        if (sourceIndex < 0) return null
+        val surface = surfaceForKeyIndex(sourceIndex) ?: return null
+        val signature = key.physicalSkillSignature()
+        val range = keyRange(surface)
+        var occurrence = 0
+        for (index in range.first until sourceIndex) {
+            if (keys[index].physicalSkillSignature() == signature) occurrence++
+        }
+        return KeyboardSkillPhysicalOwner(
+            surface = surface,
+            panelToken = panel.name.takeIf {
+                surface == KeyboardSkillPhysicalOwner.Surface.PANEL
+            },
+            signature = signature,
+            occurrence = occurrence,
+        )
+    }
+
+    private fun keyForPhysicalOwner(owner: KeyboardSkillPhysicalOwner): Key? {
+        if (
+            owner.surface == KeyboardSkillPhysicalOwner.Surface.PANEL &&
+            owner.panelToken != panel.name
+        ) {
+            return null
+        }
+        val range = keyRange(owner.surface)
+        var occurrence = 0
+        for (index in range) {
+            val key = keys[index]
+            if (key.physicalSkillSignature() != owner.signature) continue
+            if (occurrence == owner.occurrence) return key
+            occurrence++
+        }
+        return null
+    }
+
+    private fun Key.physicalSkillSignature(): KeyboardSkillPhysicalOwner.Signature =
+        KeyboardSkillPhysicalOwner.Signature(
+            keyCode = code,
+            styleToken = style.name,
+            iconToken = icon?.name,
+            editorActionToken = editorAction?.name,
+            clipboardActionToken = clipboardAction?.name,
+        )
+
+    private fun surfaceForKeyIndex(index: Int): KeyboardSkillPhysicalOwner.Surface? = when {
+        index >= toolbarKeyStart && index < toolbarKeyEndExclusive ->
+            KeyboardSkillPhysicalOwner.Surface.TOOLBAR
+        index >= panelKeyStart && index < panelKeyEndExclusive ->
+            KeyboardSkillPhysicalOwner.Surface.PANEL
+        index >= systemBarKeyStart && index < systemBarKeyEndExclusive ->
+            KeyboardSkillPhysicalOwner.Surface.SYSTEM_BAR
+        else -> null
+    }
+
+    private fun keyRange(surface: KeyboardSkillPhysicalOwner.Surface): IntRange {
+        val (start, endExclusive) = when (surface) {
+            KeyboardSkillPhysicalOwner.Surface.TOOLBAR ->
+                toolbarKeyStart to toolbarKeyEndExclusive
+            KeyboardSkillPhysicalOwner.Surface.PANEL ->
+                panelKeyStart to panelKeyEndExclusive
+            KeyboardSkillPhysicalOwner.Surface.SYSTEM_BAR ->
+                systemBarKeyStart to systemBarKeyEndExclusive
+        }
+        return start until endExclusive
+    }
+
+    private fun shouldAnimateSkills(): Boolean =
+        KeyboardSkillAnimationPolicy.shouldAnimate(
+            activeSkill = activeKeyboardSkill.takeIf {
+                activeSkillAuroraOverlay == null && hasVisibleActiveSkillSource()
+            },
+            pickerVisible = skillGestureSession.isPickerVisible(),
+            isShown = isShown,
+            animatorsEnabled = ValueAnimator.areAnimatorsEnabled(),
+        )
+
+    private fun scheduleSkillAnimationFrame() {
+        if (skillAnimationFrameScheduled) return
+        skillAnimationFrameScheduled = true
+        postOnAnimationDelayed(
+            skillAnimationRunnable,
+            KeyboardSkillAnimationPolicy.FRAME_INTERVAL_MILLIS,
+        )
+    }
+
+    private fun updateSkillAnimationDirtyBounds() {
+        skillAnimationDirtyBounds.setEmpty()
+        if (activeSkillAuroraOverlay == null) {
+            activeSkillSourceKey?.let { skillAnimationDirtyBounds.set(it.bounds) }
+        }
+        if (skillGestureSession.isPickerVisible()) {
+            if (skillAnimationDirtyBounds.isEmpty) {
+                skillAnimationDirtyBounds.set(skillPickerSourceBounds)
+            } else {
+                skillAnimationDirtyBounds.union(skillPickerSourceBounds)
+            }
+            for (slot in skillPickerOptionBounds) {
+                if (!slot.isEmpty) skillAnimationDirtyBounds.union(slot)
+            }
+        }
+    }
+
+    private fun skillAnimationPhase(): Float =
+        if (ValueAnimator.areAnimatorsEnabled()) {
+            val durationScale = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ValueAnimator.getDurationScale().takeIf { it.isFinite() && it > 0f } ?: 1f
+            } else {
+                1f
+            }
+            val period = (SKILL_AURORA_PERIOD_MILLIS * durationScale)
+                .toLong()
+                .coerceAtLeast(1L)
+            (SystemClock.uptimeMillis() % period).toFloat() / period.toFloat()
+        } else {
+            0f
+        }
+
+    /**
+     * A cached sweep shader is transformed instead of recreated each frame.
+     * Only matrix coefficients, paint alpha and the reusable path are mutated.
+     */
+    private fun drawSkillAuroraOverlay(
+        canvas: Canvas,
+        bounds: RectF,
+        foregroundOnly: Boolean,
+    ) {
+        val shader = skillAuroraShader ?: return
+        val phase = skillAnimationPhase()
+        val scale = maxOf(bounds.width(), bounds.height()).coerceAtLeast(1f)
+        skillAuroraMatrix.reset()
+        skillAuroraMatrix.setScale(scale, scale)
+        skillAuroraMatrix.postRotate(phase * 360f)
+        skillAuroraMatrix.postTranslate(bounds.centerX(), bounds.centerY())
+        shader.setLocalMatrix(skillAuroraMatrix)
+
+        val pulse = ((sin(phase * TWO_PI) + 1f) * 0.5f)
+        paint.style = Paint.Style.FILL
+        paint.shader = shader
+        paint.alpha = if (foregroundOnly) {
+            (46f + pulse * 24f).toInt()
+        } else {
+            (92f + pulse * 42f).toInt()
+        }
+        canvas.drawRoundRect(bounds, keyRadius, keyRadius, paint)
+
+        skillAuroraPath.reset()
+        skillAuroraPath.addRoundRect(bounds, keyRadius, keyRadius, Path.Direction.CW)
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = dp(if (foregroundOnly) 1.25f else 1.7f)
+        paint.alpha = (175f + pulse * 65f).toInt()
+        canvas.drawPath(skillAuroraPath, paint)
+        paint.shader = null
+        paint.alpha = 255
+        paint.style = Paint.Style.FILL
+    }
+
+    private fun drawActiveSkillMarker(canvas: Canvas, bounds: RectF) {
+        paint.shader = null
+        paint.style = Paint.Style.FILL
+        paint.color = Color.WHITE
+        canvas.drawCircle(
+            bounds.right - dp(6.5f),
+            bounds.top + dp(6.5f),
+            dp(2.4f),
+            paint,
+        )
+        paint.color = color(0xFF6A5BFF.toInt(), 0xFFB88AFF.toInt())
+        canvas.drawCircle(
+            bounds.right - dp(6.5f),
+            bounds.top + dp(6.5f),
+            dp(1.35f),
+            paint,
+        )
+    }
+
+    private fun drawSkillPicker(canvas: Canvas) {
+        if (!skillGestureSession.isPickerVisible()) return
+        val options = skillPickerOptions ?: return
+        if (skillPickerSourceBounds.isEmpty) return
+        val layout = skillPickerLayout ?: return
+        val sourceX = skillPickerSourceBounds.centerX()
+        val sourceY = skillPickerSourceBounds.centerY()
+
+        // Populate reusable geometry first so connector lines sit below chips.
+        for (direction in KeyboardSkillDirection.entries) {
+            val slot = skillPickerOptionBounds[direction.ordinal]
+            val geometry = layout.slot(direction)
+            if (options.binding(direction) == null || geometry == null) {
+                slot.setEmpty()
+                continue
+            }
+            slot.set(
+                geometry.bounds.left,
+                geometry.bounds.top,
+                geometry.bounds.right,
+                geometry.bounds.bottom,
+            )
+        }
+
+        paint.shader = null
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = maxOf(density, dp(1.2f))
+        paint.color = color(0x664E7DFF, 0x999D82FF.toInt())
+        for (direction in KeyboardSkillDirection.entries) {
+            val slot = skillPickerOptionBounds[direction.ordinal]
+            if (!slot.isEmpty) {
+                canvas.drawLine(sourceX, sourceY, slot.centerX(), slot.centerY(), paint)
+            }
+        }
+
+        val phase = skillAnimationPhase()
+        for (direction in KeyboardSkillDirection.entries) {
+            val binding = options.binding(direction) ?: continue
+            val slot = skillPickerOptionBounds[direction.ordinal]
+            val highlighted = skillGestureSession.highlightedDirection() == direction
+            paint.style = Paint.Style.FILL
+            paint.shader = null
+            paint.alpha = 255
+            paint.color = when {
+                highlighted -> color(0xEE4F70F3.toInt(), 0xEE735FDE.toInt())
+                activeKeyboardSkill?.skillId == binding.skillId ->
+                    color(0xEEDAF3F1.toInt(), 0xEE31343B.toInt())
+                else -> color(0xF5FFFFFF.toInt(), 0xF52A2B2F.toInt())
+            }
+            canvas.drawRoundRect(slot, dp(13f), dp(13f), paint)
+
+            val shader = skillAuroraShader
+            if (shader != null) {
+                skillAuroraMatrix.reset()
+                skillAuroraMatrix.setScale(slot.width(), slot.height())
+                skillAuroraMatrix.postRotate(phase * 360f + direction.ordinal * 40f)
+                skillAuroraMatrix.postTranslate(slot.centerX(), slot.centerY())
+                shader.setLocalMatrix(skillAuroraMatrix)
+                paint.style = Paint.Style.STROKE
+                paint.strokeWidth = dp(if (highlighted) 2.1f else 1.1f)
+                paint.shader = shader
+                paint.alpha = if (highlighted) 255 else 180
+                canvas.drawRoundRect(slot, dp(13f), dp(13f), paint)
+                paint.shader = null
+                paint.alpha = 255
+            }
+
+            paint.style = Paint.Style.FILL
+            paint.color = when {
+                highlighted -> Color.WHITE
+                else -> color(0xFF172033.toInt(), 0xFFF4F5F8.toInt())
+            }
+            paint.textSize = sp(11.5f)
+            paint.textAlign = Paint.Align.CENTER
+            val saveCount = canvas.save()
+            canvas.clipRect(slot)
+            val visibleLabel = skillPickerVisibleLabels[direction.ordinal] ?: binding.label
+            drawCenteredText(canvas, visibleLabel, slot.centerX(), slot.centerY())
+            canvas.restoreToCount(saveCount)
+        }
+        paint.shader = null
+        paint.alpha = 255
+        paint.style = Paint.Style.FILL
+    }
+
+    private fun KeyboardSkillDirection.arrow(): String = when (this) {
+        KeyboardSkillDirection.UP -> "↑"
+        KeyboardSkillDirection.RIGHT -> "→"
+        KeyboardSkillDirection.DOWN -> "↓"
+        KeyboardSkillDirection.LEFT -> "←"
+    }
+
+    private fun skillLabel(
+        active: ActiveKeyboardSkill?,
+        bindings: KeyboardSkillBindingSet,
+    ): String? = active?.let { activeSkill ->
+        bindings.binding(activeSkill.sourceKeyCode, activeSkill.direction)
+            ?.takeIf { it.skillId == activeSkill.skillId }
+            ?.label
+    }
+
+    private fun announceSkillAccessibility(message: String) {
+        if (isShown) announceForAccessibility(message)
+    }
+
+    private fun updateSkillAccessibilityDescription() {
+        val active = activeKeyboardSkill
+        val base = KeyboardSkillAccessibilityText.keyboardContentDescription(
+            activeSkillId = active?.skillId,
+            activeLabel = skillLabel(active, skillBindings),
+            pickerOptions = skillPickerOptions.takeIf {
+                skillGestureSession.isPickerVisible()
+            },
+            highlightedDirection = skillGestureSession.highlightedDirection(),
+        )
+        val next = skillFeedbackMessage?.let { "$base，提示：$it" } ?: base
+        if (contentDescription?.toString() != next) {
+            contentDescription = next
+        }
+    }
+
+    private fun ellipsizeSkillLabel(value: String, maximumWidth: Float): String {
+        if (paint.measureText(value) <= maximumWidth) return value
+        val ellipsis = "…"
+        val available = (maximumWidth - paint.measureText(ellipsis)).coerceAtLeast(0f)
+        var count = paint.breakText(value, true, available, null)
+        if (
+            count in 1 until value.length &&
+            Character.isHighSurrogate(value[count - 1]) &&
+            Character.isLowSurrogate(value[count])
+        ) {
+            count--
+        }
+        return value.take(count) + ellipsis
     }
 
     private fun drawToolKey(canvas: Canvas, key: Key, pressed: Boolean) {
@@ -2220,6 +2881,13 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private fun rebuildKeys(viewWidth: Int, viewHeight: Int) {
         keys.clear()
+        activeSkillSourceKey = null
+        toolbarKeyStart = 0
+        toolbarKeyEndExclusive = 0
+        panelKeyStart = 0
+        panelKeyEndExclusive = 0
+        systemBarKeyStart = 0
+        systemBarKeyEndExclusive = 0
         emojiGridBounds = null
         symbolCategoryBounds = null
         symbolGridBounds = null
@@ -2235,8 +2903,11 @@ class SenseKeyboardView @JvmOverloads constructor(
                 panel != Panel.EDITOR &&
                 panel != Panel.VOICE
             ) {
+                toolbarKeyStart = keys.size
                 layoutToolbar(viewWidth)
+                toolbarKeyEndExclusive = keys.size
             }
+            panelKeyStart = keys.size
             when (panel) {
                 Panel.LETTERS -> layoutLetters(viewWidth, viewHeight)
                 Panel.NUMBERS -> layoutNumbers(viewWidth, viewHeight)
@@ -2247,8 +2918,12 @@ class SenseKeyboardView @JvmOverloads constructor(
                 Panel.EDITOR -> layoutEditor(viewWidth, viewHeight)
                 Panel.VOICE -> layoutVoice(viewWidth, viewHeight)
             }
+            panelKeyEndExclusive = keys.size
         }
+        systemBarKeyStart = keys.size
         layoutSystemBar(viewWidth, viewHeight)
+        systemBarKeyEndExclusive = keys.size
+        resolveActiveSkillSourceKey()
     }
 
     private fun layoutToolbar(viewWidth: Int) {
@@ -2859,7 +3534,11 @@ class SenseKeyboardView @JvmOverloads constructor(
         }
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> handlePointerDown(event, event.actionIndex, isPrimary = true)
-            MotionEvent.ACTION_POINTER_DOWN -> handlePointerDown(event, event.actionIndex, isPrimary = false)
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                if (!skillGestureSession.isPickerVisible()) {
+                    handlePointerDown(event, event.actionIndex, isPrimary = false)
+                }
+            }
 
             MotionEvent.ACTION_MOVE -> {
                 repeat(event.pointerCount) { pointerIndex ->
@@ -2872,6 +3551,45 @@ class SenseKeyboardView @JvmOverloads constructor(
                     ) {
                         clearScheduledAiHold()
                     }
+                    when (
+                        skillGestureSession.move(
+                            pointerId = pointerId,
+                            x = x,
+                            y = y,
+                            pickerLayout = skillPickerLayout,
+                        )
+                    ) {
+                        KeyboardSkillGestureSession.Outcome.ELIGIBILITY_CANCELLED ->
+                            clearScheduledSkillHold(clearPickerProjection = true)
+                        KeyboardSkillGestureSession.Outcome.HIGHLIGHT_CHANGED -> {
+                            val direction = skillGestureSession.highlightedDirection()
+                            updateSkillAccessibilityDescription()
+                            if (
+                                skillHapticGate.shouldEmit(
+                                    event.eventTime,
+                                    direction,
+                                )
+                            ) {
+                                performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                            }
+                            announceSkillAccessibility(
+                                KeyboardSkillAccessibilityText.highlighted(
+                                    direction = direction,
+                                    binding = direction?.let { highlighted ->
+                                        skillPickerOptions?.binding(highlighted)
+                                    },
+                                ),
+                            )
+                        }
+                        else -> Unit
+                    }
+                    if (
+                        skillGestureSession.isPickerVisible() &&
+                        skillGestureSession.owns(pointerId)
+                    ) {
+                        return@repeat
+                    }
+                    if (skillGestureSession.blocksOrdinaryPointer(pointerId)) return@repeat
                     if (candidateStripScrollState.owns(pointerId)) {
                         val candidateMove = candidateStripScrollState.move(
                             pointerId = pointerId,
@@ -2993,6 +3711,22 @@ class SenseKeyboardView @JvmOverloads constructor(
                 y = y,
                 eventTimeMillis = event.eventTime,
             )?.let(::scheduleAiHold)
+        } else if (key != null && canStartSkillGesture(key)) {
+            val options = skillBindings.optionsForKey(key.code)
+            if (options != null && options.count > 0) {
+                skillGestureSession.begin(
+                    pointerId = pointerId,
+                    x = x,
+                    y = y,
+                    eventTimeMillis = event.eventTime,
+                    enabledDirectionMask = options.directionMask,
+                )?.let { arm ->
+                    skillPickerSourceBounds.set(key.bounds)
+                    skillPickerSourceOwner = physicalOwnerFor(key)
+                    skillPickerOptions = options
+                    scheduleSkillHold(arm)
+                }
+            }
         }
         if (
             target !is FrozenTouchTarget.CandidatePageArea &&
@@ -3021,6 +3755,34 @@ class SenseKeyboardView @JvmOverloads constructor(
                 return true
             }
             else -> Unit
+        }
+        val skillOwned = skillGestureSession.owns(pointerId)
+        if (skillOwned) {
+            /*
+             * Android may deliver a final coordinate change only in ACTION_UP. Resolve it before
+             * consuming the picker so the committed direction is never a stale MOVE highlight.
+             * The commit haptic below is sufficient; do not emit an extra highlight tick here.
+             */
+            skillGestureSession.move(
+                pointerId = pointerId,
+                x = x,
+                y = y,
+                pickerLayout = skillPickerLayout,
+            )
+        }
+        val skillFinish = skillGestureSession.pointerUp(pointerId)
+        if (skillOwned) clearScheduledSkillHold(clearPickerProjection = false)
+        if (skillFinish.consumed) {
+            touchReducer.cancel(pointerId)
+            pressedTargets.remove(pointerId)
+            stopBackspaceRepeat(pointerId)
+            panelPointerYs.remove(pointerId)
+            skillFinish.direction?.let(::commitSkillSelection)
+            clearSkillPickerProjection()
+            invalidate()
+            return true
+        } else if (skillOwned) {
+            clearSkillPickerProjection()
         }
         val originalTarget = touchReducer.target(pointerId)
         val candidateSettle = candidateStripScrollState.finish(
@@ -3279,6 +4041,21 @@ class SenseKeyboardView @JvmOverloads constructor(
             editorActionIsDelete = key.editorAction == EditorAction.DELETE,
         )
 
+    /**
+     * Space owns the AI hold gesture and DELETE owns immediate key-repeat.
+     * Every other real, enabled key may expose configured Skill directions.
+     */
+    private fun canStartSkillGesture(key: Key): Boolean =
+        KeyboardSkillKeyPolicy.supportsKeyCode(key.code) &&
+            deleteRepeatTarget(key) == null &&
+            key.style != KeyStyle.CARD &&
+            key.style != KeyStyle.EMOJI &&
+            key.style != KeyStyle.CATEGORY &&
+            key.style != KeyStyle.SYMBOL &&
+            key.style != KeyStyle.SYMBOL_CATEGORY &&
+            key.scrollPanel == null &&
+            isKeyEnabled(key)
+
     private fun dispatchDelete(key: Key) {
         when (deleteRepeatTarget(key)) {
             DeleteRepeatTarget.KEY -> enqueueKey(KeyCodes.DELETE)
@@ -3369,6 +4146,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         val aiOutcome = aiHoldGestureSession.cancelAll()
         clearScheduledAiHold()
         aiSurfaceState = null
+        publishActiveSkillAurora()
         aiStopPointerId = NO_POINTER
         aiStopBounds.setEmpty()
         cancelOrdinaryTouches()
@@ -3381,6 +4159,29 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     private fun cancelOrdinaryTouches() {
+        cancelSkillGesture()
+        touchReducer.cancelAll()
+        pressedTargets.clear()
+        panelPointerYs.clear()
+        clearPanelPointer()
+        stopPanelFling()
+        stopBackspaceRepeat()
+        stopCandidateSettle()
+        candidateStripScrollState.cancelAll()?.let { settle ->
+            if (candidateStripScrollState.moveTo(settle.targetOffset)) {
+                rebuildCandidateLayout(width, height)
+            }
+        }
+    }
+
+    /**
+     * The visible picker has exclusive ownership of the MotionEvent stream.
+     * Secondary pointers that were already down are discarded, and later
+     * pointer-down events remain dead until the owner commits or cancels.
+     */
+    private fun suspendOrdinaryInputForSkillPicker() {
+        aiHoldGestureSession.cancelAll()
+        clearScheduledAiHold()
         touchReducer.cancelAll()
         pressedTargets.clear()
         panelPointerYs.clear()
@@ -3409,6 +4210,148 @@ class SenseKeyboardView @JvmOverloads constructor(
         removeCallbacks(aiHoldActivationRunnable)
     }
 
+    private fun scheduleSkillHold(arm: KeyboardSkillGestureSession.Arm) {
+        scheduledSkillPointerId = arm.pointerId
+        scheduledSkillGeneration = arm.generation
+        removeCallbacks(skillActivationRunnable)
+        val delay = (arm.activationAtMillis - SystemClock.uptimeMillis()).coerceAtLeast(0L)
+        postDelayed(skillActivationRunnable, delay)
+    }
+
+    private fun clearScheduledSkillHold(clearPickerProjection: Boolean) {
+        scheduledSkillPointerId = NO_POINTER
+        scheduledSkillGeneration = 0L
+        removeCallbacks(skillActivationRunnable)
+        if (clearPickerProjection) clearSkillPickerProjection()
+    }
+
+    private fun clearSkillPickerProjection() {
+        skillPickerSourceBounds.setEmpty()
+        skillPickerSourceOwner = null
+        skillPickerOptions = null
+        skillPickerLayout = null
+        for (slot in skillPickerOptionBounds) {
+            slot.setEmpty()
+        }
+        skillPickerVisibleLabels.fill(null)
+        skillHapticGate.reset()
+        updateSkillAccessibilityDescription()
+    }
+
+    private fun rebuildSkillPickerLayout() {
+        val options = skillPickerOptions
+        if (
+            options == null ||
+            skillPickerSourceBounds.isEmpty ||
+            width <= 0 ||
+            height <= 0
+        ) {
+            skillPickerLayout = null
+            return
+        }
+        val horizontalInset = minOf(horizontalPadding, width * 0.1f)
+        val verticalInset = minOf(dp(4f), height * 0.1f)
+        val chipWidth = minOf(
+            dp(76f),
+            width * 0.24f,
+            (width - horizontalInset * 2f).coerceAtLeast(1f),
+        )
+        val chipHeight = minOf(
+            dp(36f),
+            (height - verticalInset * 2f).coerceAtLeast(1f),
+        )
+        skillPickerLayout = KeyboardSkillPickerGeometry.layout(
+            viewportWidth = width.toFloat(),
+            viewportHeight = height.toFloat(),
+            source = KeyboardSkillPickerBounds(
+                left = skillPickerSourceBounds.left,
+                top = skillPickerSourceBounds.top,
+                right = skillPickerSourceBounds.right,
+                bottom = skillPickerSourceBounds.bottom,
+            ),
+            enabledDirectionMask = options.directionMask,
+            chipWidth = chipWidth,
+            chipHeight = chipHeight,
+            horizontalRadius = maxOf(dp(82f), chipWidth + dp(6f)),
+            verticalRadius = maxOf(dp(54f), chipHeight + dp(8f)),
+            horizontalInset = horizontalInset,
+            verticalInset = verticalInset,
+            minimumReachDistance = skillSelectionDistance + dp(4f),
+            gap = dp(4f),
+        )
+        for (direction in KeyboardSkillDirection.entries) {
+            val geometry = skillPickerLayout?.slot(direction)
+            val target = skillPickerOptionBounds[direction.ordinal]
+            if (geometry == null) {
+                target.setEmpty()
+                skillPickerVisibleLabels[direction.ordinal] = null
+            } else {
+                target.set(
+                    geometry.bounds.left,
+                    geometry.bounds.top,
+                    geometry.bounds.right,
+                    geometry.bounds.bottom,
+                )
+                paint.textSize = sp(11.5f)
+                skillPickerVisibleLabels[direction.ordinal] =
+                    options.binding(direction)?.let { binding ->
+                        ellipsizeSkillLabel(
+                            "${direction.arrow()} ${binding.label}",
+                            (target.width() - dp(12f)).coerceAtLeast(1f),
+                        )
+                    }
+            }
+        }
+    }
+
+    private fun cancelSkillGesture() {
+        skillGestureSession.cancelAll()
+        clearScheduledSkillHold(clearPickerProjection = true)
+    }
+
+    private fun commitSkillSelection(direction: KeyboardSkillDirection) {
+        val binding = skillPickerOptions?.binding(direction) ?: return
+        val listener = skillSelectionListener ?: return
+        val action = KeyboardSkillTogglePolicy.resolve(activeKeyboardSkill, binding)
+        val requestToken = SKILL_SELECTION_REQUEST_TOKENS.next()
+        val expectedActive = when (action) {
+            KeyboardSkillToggleAction.ACTIVATE -> ActiveKeyboardSkill(
+                skillId = binding.skillId,
+                sourceKeyCode = binding.keyCode,
+                direction = binding.direction,
+            )
+            KeyboardSkillToggleAction.DEACTIVATE -> null
+        }
+        val physicalOwner = when (action) {
+            KeyboardSkillToggleAction.ACTIVATE -> checkNotNull(skillPickerSourceOwner) {
+                "Visible Skill picker lost its physical source owner"
+            }
+            KeyboardSkillToggleAction.DEACTIVATE -> null
+        }
+        skillVisualOwnerState = KeyboardSkillVisualOwnerPolicy.request(
+            skillVisualOwnerState,
+            KeyboardSkillPendingVisualOwner(
+                requestToken = requestToken,
+                expectedActive = expectedActive,
+                owner = physicalOwner,
+            ),
+        )
+        /*
+         * Do not light an optimistic aurora here. Space hold freezes the authoritative
+         * in-memory catalog in the IME service; showing a pending selection as active would let
+         * the UI claim Skill B while the next run still receives Skill A. The background
+         * mutation publishes updateKeyboardSkills only after its fsync/atomic CURRENT commit.
+         */
+        performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+        listener.onSkillSelection(
+            KeyboardSkillSelection(
+                binding = binding,
+                action = action,
+                requestToken = requestToken,
+            ),
+        )
+    }
+
     private fun beginAiSurface(generation: Long) {
         cancelOrdinaryTouches()
         // Preserve the established FIFO boundary: any key already committed
@@ -3428,6 +4371,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             lockProgress = 0f,
             locked = false,
         )
+        publishActiveSkillAurora()
         aiStopPointerId = NO_POINTER
         aiStopBounds.setEmpty()
         performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
@@ -3884,11 +4828,23 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     override fun onDetachedFromWindow() {
         cancelAllTouches()
+        activeSkillAuroraOverlay?.updateBounds(null, keyRadius)
         removeCallbacks(keyDispatchRunnable)
         removeCallbacks(candidateSettleRunnable)
+        removeCallbacks(skillAnimationRunnable)
+        removeCallbacks(clearSkillFeedbackRunnable)
+        skillFeedbackMessage = null
+        updateSkillAccessibilityDescription()
+        skillAnimationFrameScheduled = false
         keyEventQueue.clear()
         keyDispatchPosted = false
         super.onDetachedFromWindow()
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        publishActiveSkillAurora()
+        activeSkillAuroraOverlay?.refreshMotionPreference()
     }
 
     override fun performClick(): Boolean {
@@ -3931,10 +4887,15 @@ class SenseKeyboardView @JvmOverloads constructor(
     private fun sp(value: Float): Float = value * density * resources.configuration.fontScale
 
     private companion object {
+        val SKILL_SELECTION_REQUEST_TOKENS = KeyboardSkillRequestTokenSource()
         const val CLIPBOARD_ITEMS_PER_PAGE = 3
         const val VERTICAL_GESTURE_DOMINANCE = 1.15f
         const val CANDIDATE_FAST_FLING_VELOCITY_DP_PER_SECOND = 720f
         const val CANDIDATE_SETTLE_DURATION_MILLIS = 180L
+        const val SKILL_AURORA_PERIOD_MILLIS = 4_800L
+        const val SKILL_FEEDBACK_DURATION_MILLIS = 4_000L
+        const val SKILL_FEEDBACK_MAX_CHARS = 120
+        const val TWO_PI = 6.2831855f
         const val NO_POINTER = -1
     }
 }

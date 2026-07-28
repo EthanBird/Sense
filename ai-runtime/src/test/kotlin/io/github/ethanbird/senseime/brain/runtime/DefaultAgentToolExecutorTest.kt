@@ -3,6 +3,11 @@ package io.github.ethanbird.senseime.brain.runtime
 import io.github.ethanbird.senseime.brain.api.AgentToolArguments
 import io.github.ethanbird.senseime.brain.api.AgentToolCall
 import io.github.ethanbird.senseime.brain.api.AgentToolId
+import io.github.ethanbird.senseime.brain.api.AgentSkillCatalog
+import io.github.ethanbird.senseime.brain.api.AgentSkillDefinition
+import io.github.ethanbird.senseime.brain.api.AgentSkillMutation
+import io.github.ethanbird.senseime.ai.protocol.EditorIntent
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -133,6 +138,186 @@ class DefaultAgentToolExecutorTest {
         assertTrue(result.isError)
         assertTrue(result.content.contains("IllegalStateException"))
         assertTrue(result.content.contains("private failure details"))
+    }
+
+    @Test
+    fun skillReadReturnsExactImmutableRevisionWithPagingMetadata() {
+        val runtime = DefaultAgentToolExecutor(
+            skillSource = object : AgentSkillToolSource {
+                override fun read(skillId: String, revision: Long) = AgentSkillDefinition(
+                    id = skillId,
+                    revision = revision,
+                    name = "简报",
+                    description = "生成事实完整的简报",
+                    content = "# 简报\n\n保留数字与来源。",
+                    baseIntent = EditorIntent.FORMAT,
+                )
+
+                override fun apply(mutation: AgentSkillMutation): AgentSkillCatalog =
+                    error("mutation must not be used")
+            },
+            documentLoader = { error("network must not be used") },
+        )
+
+        val result = runtime.execute(
+            call(
+                AgentToolId.SKILL_READ,
+                AgentToolArguments.SkillRead("brief", revision = 7),
+            ),
+        )
+
+        assertFalse(result.content, result.isError)
+        assertTrue(result.content.contains("\"revision\":7"))
+        assertTrue(result.content.contains("保留数字与来源"))
+        assertTrue(result.content.contains("\"base_intent\":\"format\""))
+        assertTrue(result.content.contains("\"offset\":0"))
+        assertTrue(result.content.contains("\"next_offset\":14"))
+        assertTrue(result.content.contains("\"eof\":true"))
+    }
+
+    @Test
+    fun skillReadCanRecoverMaximumDocumentWithoutExceedingToolResultLimit() {
+        val document = "x".repeat(65_536)
+        val runtime = DefaultAgentToolExecutor(
+            skillSource = object : AgentSkillToolSource {
+                override fun read(skillId: String, revision: Long) = AgentSkillDefinition(
+                    id = skillId,
+                    revision = 9,
+                    name = "Long",
+                    description = "Long retained document",
+                    content = document,
+                    baseIntent = EditorIntent.REWRITE,
+                )
+
+                override fun apply(mutation: AgentSkillMutation): AgentSkillCatalog =
+                    error("mutation must not be used")
+            },
+            documentLoader = { error("network must not be used") },
+        )
+
+        var offset = 0
+        var recoveredChars = 0
+        var pages = 0
+        while (offset < document.length) {
+            val result = runtime.execute(
+                call(
+                    AgentToolId.SKILL_READ,
+                    AgentToolArguments.SkillRead(
+                        skillId = "long",
+                        revision = 9,
+                        offset = offset,
+                        maxChars = AgentToolArguments.SkillRead.MAX_MAX_CHARS,
+                    ),
+                ),
+            )
+            assertFalse(result.content, result.isError)
+            assertTrue(result.content.length <= 16_384)
+            val next = Regex("\"next_offset\":(\\d+)")
+                .find(result.content)?.groupValues?.get(1)?.toInt()
+                ?: error("next_offset is missing")
+            recoveredChars += next - offset
+            offset = next
+            pages += 1
+        }
+
+        assertEquals(document.length, recoveredChars)
+        assertEquals(11, pages)
+    }
+
+    @Test
+    fun skillReadNeverSplitsUnicodeCodePointAtPageBoundary() {
+        val document = "x".repeat(255) + "🌌" + "tail"
+        val runtime = DefaultAgentToolExecutor(
+            skillSource = object : AgentSkillToolSource {
+                override fun read(skillId: String, revision: Long) = AgentSkillDefinition(
+                    id = skillId,
+                    revision = revision,
+                    name = "Unicode",
+                    description = "Unicode paging",
+                    content = document,
+                    baseIntent = EditorIntent.REWRITE,
+                )
+
+                override fun apply(mutation: AgentSkillMutation): AgentSkillCatalog =
+                    error("mutation must not be used")
+            },
+        )
+
+        val first = runtime.execute(
+            call(
+                AgentToolId.SKILL_READ,
+                AgentToolArguments.SkillRead("unicode", 1, offset = 0, maxChars = 256),
+            ),
+        )
+        val invalid = runtime.execute(
+            call(
+                AgentToolId.SKILL_READ,
+                AgentToolArguments.SkillRead("unicode", 1, offset = 256, maxChars = 256),
+            ),
+        )
+
+        assertFalse(first.content, first.isError)
+        assertTrue(first.content.contains("\"next_offset\":255"))
+        assertTrue(invalid.isError)
+        assertTrue(invalid.content.contains("splits a Unicode code point"))
+    }
+
+    @Test
+    fun skillManageMapsTypedRequestToOneRetainedCatalogMutation() {
+        var received: AgentSkillMutation? = null
+        val created = AgentSkillDefinition(
+            id = "brief",
+            revision = 1,
+            name = "简报",
+            description = "生成事实完整的简报",
+            content = "# 简报",
+            baseIntent = EditorIntent.FORMAT,
+        )
+        val runtime = DefaultAgentToolExecutor(
+            skillSource = object : AgentSkillToolSource {
+                override fun read(skillId: String, revision: Long): AgentSkillDefinition? = null
+
+                override fun apply(mutation: AgentSkillMutation): AgentSkillCatalog {
+                    received = mutation
+                    return AgentSkillCatalog(
+                        generation = 8,
+                        definitions = listOf(created),
+                        bindings = emptyList(),
+                        active = null,
+                    )
+                }
+            },
+            documentLoader = { error("network must not be used") },
+        )
+
+        val result = runtime.execute(
+            call(
+                AgentToolId.SKILL_MANAGE,
+                AgentToolArguments.SkillManage.Create(
+                    skillId = "brief",
+                    name = "简报",
+                    description = "生成事实完整的简报",
+                    content = "# 简报",
+                    baseIntent = EditorIntent.FORMAT,
+                    binding = null,
+                    expectedCatalogGeneration = 7,
+                ),
+            ),
+        )
+
+        assertFalse(result.content, result.isError)
+        assertEquals(
+            7L,
+            (received as AgentSkillMutation.Create).expectedGeneration,
+        )
+        assertTrue(result.content.contains("\"expected_catalog_generation\":7"))
+        assertTrue(result.content.contains("\"catalog_generation\":8"))
+        assertTrue(result.content.contains("\"revision\":1"))
+        assertEquals(8L, result.skillCatalogSnapshot?.generation)
+        assertEquals(
+            listOf("brief" to 1L),
+            result.skillCatalogSnapshot?.skills?.map { it.id to it.revision },
+        )
     }
 
     private fun executor(loader: (String) -> String = { "" }) =

@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 env:
-  RELEASE_TAG: v0.4.4
-  RELEASE_APK: Sense-v0.4.4.apk
+  RELEASE_TAG: v0.4.5
+  RELEASE_APK: Sense-v0.4.5.apk
   LEXICON_SHA256: ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6
   BIGRAM_SHA256: db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c
   ENGLISH_SHA256: 1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624
@@ -38,7 +38,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Verify version-aware release planning
-        run: python3 tools/test_release_plan.py
+        run: |
+          python3 tools/test_release_plan.py
+          python3 tools/test_verify_manifest_permissions.py
+          python3 tools/test_verify_aapt2_manifest_protection.py
+          python3 tools/test_maven_proxy.py
 
       - name: Verify M4 regressions and M5 mixed assets
         run: |
@@ -79,18 +83,23 @@ jobs:
           cmp licenses/popular-english-words-ISC.txt ime-service/src/main/assets/POPULAR-ENGLISH-WORDS-ISC.txt
           cmp licenses/chinese-idiom-chengyu-MIT.txt ime-service/src/main/assets/CHINESE-IDIOM-CHENGYU-MIT.txt
 
-      - name: Verify 0.4.4 Agent tools, complete history, and inherited regressions
+      - name: Verify Agent tools, Skills, complete history, and inherited regressions
         run: >-
           ./gradlew
           :ai-protocol:test
           :brain-api:test
           :ai-brain:test
           :ai-runtime:testDebugUnitTest
+          :ai-runtime:assembleDebugAndroidTest
           :memory-protocol:test
           :event-journal:test
           :core-input:test
           :ime-service:testDebugUnitTest
+          :ime-service:assembleDebugAndroidTest
           :ime-ui:testDebugUnitTest
+          :ime-ui:assembleDebugAndroidTest
+          :app:testDebugUnitTest
+          :app:assembleDebugAndroidTest
           :ai-runtime:lintDebug
           :ime-service:lintDebug
           :ime-ui:lintDebug
@@ -116,6 +125,7 @@ jobs:
               -print -quit
           )
           test -n "$merged_manifest"
+          python3 tools/verify_manifest_permissions.py "$merged_manifest"
           python3 - "$merged_manifest" <<'PY'
           import sys
           import xml.etree.ElementTree as ET
@@ -243,7 +253,7 @@ jobs:
             :core-input:m5MixedInputBenchmark \
             :core-input:m6InputPolishBenchmark
 
-      - name: Verify assembled 0.4.4 APK
+      - name: Verify assembled 0.4.5 APK
         shell: bash
         run: |
           set -euo pipefail
@@ -259,6 +269,10 @@ jobs:
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" > /tmp/apk-badging.txt
           "$build_tools/aapt2" dump permissions "$apk" > /tmp/apk-permissions.txt
+          "$build_tools/aapt2" dump xmltree "$apk" --file AndroidManifest.xml > /tmp/apk-manifest.xmltree
+          python3 tools/verify_aapt2_manifest_protection.py \
+            --permissions /tmp/apk-permissions.txt \
+            /tmp/apk-manifest.xmltree
           apk_analyzer=$(
             find "$sdk/cmdline-tools" -type f -name apkanalyzer -print |
               sort -V |
@@ -266,6 +280,8 @@ jobs:
           )
           test -x "$apk_analyzer"
           "$apk_analyzer" manifest print "$apk" > /tmp/apk-manifest.xml
+          python3 tools/verify_manifest_permissions.py \
+            --packaged /tmp/apk-manifest.xml
           python3 - /tmp/apk-manifest.xml <<'PY'
           import sys
           import xml.etree.ElementTree as ET
@@ -346,7 +362,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='19' versionName='0.4.4'" /tmp/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='20' versionName='0.4.5'" /tmp/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" /tmp/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" /tmp/apk-badging.txt
           declared_permissions=$(
@@ -363,13 +379,24 @@ jobs:
             echo 'Release gate failed: speech input is missing android.permission.RECORD_AUDIO.' >&2
             exit 1
           fi
+          if ! grep -Fxq \
+            'io.github.ethanbird.senseime.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION' \
+            <<<"$declared_permissions"; then
+            echo 'Release gate failed: AndroidX signature receiver permission is missing.' >&2
+            exit 1
+          fi
           unexpected_permissions=$(
             grep -Fvx \
               -e 'android.permission.INTERNET' \
               -e 'android.permission.RECORD_AUDIO' \
+              -e 'io.github.ethanbird.senseime.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION' \
               <<<"$declared_permissions" || true
           )
-          test -z "$unexpected_permissions"
+          if [[ -n "$unexpected_permissions" ]]; then
+            printf 'Release gate failed: unexpected APK permissions:\n%s\n' \
+              "$unexpected_permissions" >&2
+            exit 1
+          fi
           unzip -p "$apk" assets/NOTICE.txt | cmp - NOTICE
           unzip -p "$apk" assets/LICENSE.txt | cmp - LICENSE
           unzip -p "$apk" assets/RIME-PINYIN-SIMP-LICENSE.txt | cmp - licenses/rime-pinyin-simp-LICENSE
@@ -388,7 +415,7 @@ jobs:
       - name: Upload debug APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.4.4-apks
+          name: sense-v0.4.5-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -398,9 +425,73 @@ jobs:
             benchmarks/results/m6-input-polish.json
           if-no-files-found: error
 
+  device:
+    name: Execute Android device gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Enable KVM acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' |
+            sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Execute Skills lifecycle, gesture, rendering, and IPC tests
+        uses: ReactiveCircus/android-emulator-runner@e89f39f1abbbd05b1113a29cf4db69e7540cae5a
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7_pro
+          cores: 4
+          ram-size: 4096M
+          disable-animations: false
+          emulator-options: >-
+            -no-window
+            -gpu swiftshader_indirect
+            -no-snapshot
+            -noaudio
+            -no-boot-anim
+            -camera-back none
+          script: >-
+            ./gradlew
+            --no-parallel
+            --continue
+            :ai-runtime:connectedDebugAndroidTest
+            :ime-service:connectedDebugAndroidTest
+            :ime-ui:connectedDebugAndroidTest
+            :app:connectedDebugAndroidTest
+
+      - name: Upload Android device results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sense-android-device-results
+          path: |
+            ai-runtime/build/outputs/androidTest-results/connected/**
+            ai-runtime/build/reports/androidTests/connected/**
+            ime-service/build/outputs/androidTest-results/connected/**
+            ime-service/build/reports/androidTests/connected/**
+            ime-ui/build/outputs/androidTest-results/connected/**
+            ime-ui/build/reports/androidTests/connected/**
+            app/build/outputs/androidTest-results/connected/**
+            app/build/reports/androidTests/connected/**
+          if-no-files-found: warn
+
   package_release:
     name: Build clean release artifacts
-    needs: verify
+    needs: [verify, device]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -427,7 +518,7 @@ jobs:
       - name: Upload clean app APKs
         uses: actions/upload-artifact@v7
         with:
-          name: sense-v0.4.4-clean-apks
+          name: sense-v0.4.5-clean-apks
           path: |
             app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/benchmark/*.apk
@@ -484,7 +575,7 @@ jobs:
             --github-output "$GITHUB_OUTPUT" \
             --step-summary "$GITHUB_STEP_SUMMARY"
 
-  release-0-4-4:
+  release-0-4-5:
     needs: [verify, package_release, release_plan]
     if: >-
       github.event_name == 'push' &&
@@ -499,7 +590,7 @@ jobs:
 
       - uses: actions/download-artifact@v8
         with:
-          name: sense-v0.4.4-clean-apks
+          name: sense-v0.4.5-clean-apks
           path: artifacts
 
       - name: Prepare release assets
@@ -519,6 +610,11 @@ jobs:
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" | tee release/apk-badging.txt
           "$build_tools/aapt2" dump permissions "$apk" | tee release/apk-permissions.txt
+          "$build_tools/aapt2" dump xmltree "$apk" --file AndroidManifest.xml \
+            | tee release/apk-manifest.xmltree
+          python3 tools/verify_aapt2_manifest_protection.py \
+            --permissions release/apk-permissions.txt \
+            release/apk-manifest.xmltree
           apk_analyzer=$(
             find "$sdk/cmdline-tools" -type f -name apkanalyzer -print |
               sort -V |
@@ -526,6 +622,8 @@ jobs:
           )
           test -x "$apk_analyzer"
           "$apk_analyzer" manifest print "$apk" > release/apk-manifest.xml
+          python3 tools/verify_manifest_permissions.py \
+            --packaged release/apk-manifest.xml
           python3 - release/apk-manifest.xml <<'PY'
           import sys
           import xml.etree.ElementTree as ET
@@ -606,7 +704,7 @@ jobs:
           if "android.view.InputMethod" not in actions:
               raise SystemExit(f"{manifest_path}: IME service is missing InputMethod action")
           PY
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='19' versionName='0.4.4'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='20' versionName='0.4.5'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           declared_permissions=$(
@@ -623,13 +721,24 @@ jobs:
             echo 'Release gate failed: speech input is missing android.permission.RECORD_AUDIO.' >&2
             exit 1
           fi
+          if ! grep -Fxq \
+            'io.github.ethanbird.senseime.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION' \
+            <<<"$declared_permissions"; then
+            echo 'Release gate failed: AndroidX signature receiver permission is missing.' >&2
+            exit 1
+          fi
           unexpected_permissions=$(
             grep -Fvx \
               -e 'android.permission.INTERNET' \
               -e 'android.permission.RECORD_AUDIO' \
+              -e 'io.github.ethanbird.senseime.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION' \
               <<<"$declared_permissions" || true
           )
-          test -z "$unexpected_permissions"
+          if [[ -n "$unexpected_permissions" ]]; then
+            printf 'Release gate failed: unexpected APK permissions:\n%s\n' \
+              "$unexpected_permissions" >&2
+            exit 1
+          fi
           unzip -p "$apk" assets/NOTICE.txt | cmp - NOTICE
           unzip -p "$apk" assets/LICENSE.txt | cmp - LICENSE
           unzip -p "$apk" assets/RIME-PINYIN-SIMP-LICENSE.txt | cmp - licenses/rime-pinyin-simp-LICENSE
@@ -648,7 +757,7 @@ jobs:
           cd release
           sha256sum "$RELEASE_APK" > SHA256SUMS.txt
 
-      - name: Create Sense 0.4.4 release
+      - name: Create Sense 0.4.5 release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_PLAN_STATUS: ${{ needs.release_plan.outputs.status }}
@@ -728,8 +837,8 @@ jobs:
             # created or concurrently observed tag is resolved and verified.
             gh release create "$RELEASE_TAG" \
               --target "$GITHUB_SHA" \
-              --title "Sense v0.4.4 · 开放 Agent 工具与完整历史" \
-              --notes-file docs/releases/v0.4.4.md
+              --title "Sense v0.4.5 · 键盘 Skills 与极光交互" \
+              --notes-file docs/releases/v0.4.5.md
           fi
 
           assert_remote_tag_target

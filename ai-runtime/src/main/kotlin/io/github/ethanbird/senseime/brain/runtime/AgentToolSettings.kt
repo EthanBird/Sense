@@ -14,6 +14,8 @@ data class AgentToolSettings(
     val webFetchEnabled: Boolean = true,
     val calculatorEnabled: Boolean = true,
     val memorySearchEnabled: Boolean = true,
+    val skillReadEnabled: Boolean = true,
+    val skillManageEnabled: Boolean = true,
 ) {
     fun enabledToolIds(): Set<AgentToolId> {
         if (!masterEnabled) return emptySet()
@@ -22,8 +24,19 @@ data class AgentToolSettings(
             if (webFetchEnabled) add(AgentToolId.WEB_FETCH)
             if (calculatorEnabled) add(AgentToolId.CALCULATOR)
             if (memorySearchEnabled) add(AgentToolId.MEMORY_SEARCH)
+            if (skillReadEnabled) add(AgentToolId.SKILL_READ)
+            if (skillManageEnabled) add(AgentToolId.SKILL_MANAGE)
         }
     }
+}
+
+/**
+ * Captures one immutable tool allow-list for a run. The Brain must not append system tools after
+ * this boundary: every model-visible tool is controlled by the settings snapshot admitted here.
+ */
+internal object AgentToolRunAdmission {
+    fun freeze(settings: AgentToolSettings): Set<AgentToolId> =
+        settings.enabledToolIds().toSet()
 }
 
 /**
@@ -31,8 +44,9 @@ data class AgentToolSettings(
  * be covered by ordinary JVM tests.
  */
 internal object AgentToolSettingsCodec {
-    private const val SCHEMA_VERSION = 1
-    private val REQUIRED_KEYS = setOf(
+    private const val LEGACY_SCHEMA_VERSION = 1
+    private const val CURRENT_SCHEMA_VERSION = 2
+    private val LEGACY_KEYS = setOf(
         "schema_version",
         "master_enabled",
         "web_search_enabled",
@@ -40,14 +54,20 @@ internal object AgentToolSettingsCodec {
         "calculator_enabled",
         "memory_search_enabled",
     )
+    private val CURRENT_KEYS = LEGACY_KEYS + setOf(
+        "skill_read_enabled",
+        "skill_manage_enabled",
+    )
 
     fun encode(settings: AgentToolSettings): String = buildString {
-        appendLine("schema_version=$SCHEMA_VERSION")
+        appendLine("schema_version=$CURRENT_SCHEMA_VERSION")
         appendLine("master_enabled=${settings.masterEnabled}")
         appendLine("web_search_enabled=${settings.webSearchEnabled}")
         appendLine("web_fetch_enabled=${settings.webFetchEnabled}")
         appendLine("calculator_enabled=${settings.calculatorEnabled}")
         appendLine("memory_search_enabled=${settings.memorySearchEnabled}")
+        appendLine("skill_read_enabled=${settings.skillReadEnabled}")
+        appendLine("skill_manage_enabled=${settings.skillManageEnabled}")
     }
 
     fun decode(document: String): AgentToolSettings {
@@ -60,21 +80,38 @@ internal object AgentToolSettingsCodec {
                 "Malformed Agent tool settings at line ${index + 1}"
             }
             val key = line.substring(0, separator)
-            require(key in REQUIRED_KEYS) { "Unknown Agent tool settings field: $key" }
             require(values.put(key, line.substring(separator + 1)) == null) {
                 "Duplicate Agent tool settings field: $key"
             }
         }
-        require(values.keys == REQUIRED_KEYS) { "Incomplete Agent tool settings" }
-        require(values.getValue("schema_version").toIntOrNull() == SCHEMA_VERSION) {
-            "Unsupported Agent tool settings schema"
+        val schemaVersion = values["schema_version"]?.toIntOrNull()
+            ?: throw IllegalArgumentException("Missing Agent tool settings schema")
+        val expectedKeys = when (schemaVersion) {
+            LEGACY_SCHEMA_VERSION -> LEGACY_KEYS
+            CURRENT_SCHEMA_VERSION -> CURRENT_KEYS
+            else -> throw IllegalArgumentException("Unsupported Agent tool settings schema")
         }
+        val unknownKeys = values.keys - expectedKeys
+        require(unknownKeys.isEmpty()) {
+            "Unknown Agent tool settings field: ${unknownKeys.first()}"
+        }
+        require(values.keys == expectedKeys) { "Incomplete Agent tool settings" }
         return AgentToolSettings(
             masterEnabled = values.strictBoolean("master_enabled"),
             webSearchEnabled = values.strictBoolean("web_search_enabled"),
             webFetchEnabled = values.strictBoolean("web_fetch_enabled"),
             calculatorEnabled = values.strictBoolean("calculator_enabled"),
             memorySearchEnabled = values.strictBoolean("memory_search_enabled"),
+            skillReadEnabled = if (schemaVersion >= CURRENT_SCHEMA_VERSION) {
+                values.strictBoolean("skill_read_enabled")
+            } else {
+                true
+            },
+            skillManageEnabled = if (schemaVersion >= CURRENT_SCHEMA_VERSION) {
+                values.strictBoolean("skill_manage_enabled")
+            } else {
+                true
+            },
         )
     }
 

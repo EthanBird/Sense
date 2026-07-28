@@ -269,6 +269,109 @@ class ProtocolValidatorTest {
     }
 
     @Test
+    fun activeSkillRevisionIsAcceptedWhenFrozenWithTheRequest() {
+        val request = HarnessRequestV1(
+            requestId = REQUEST_ID,
+            runGeneration = 3,
+            skill = EditorIntent.REWRITE,
+            skillCatalogGeneration = 9,
+            activeSkill = ActiveSkillInstructionV1(
+                id = "make.concise",
+                revision = 4,
+                catalogGeneration = 9,
+                name = "精简",
+                description = "压缩文字但保留全部事实",
+                content = "# 精简\n\n保留数字、名称与结论。",
+            ),
+            snapshot = snapshot(),
+        )
+
+        assertTrue(ProtocolValidator.validate(request).isValid)
+    }
+
+    @Test
+    fun activeSkillRejectsBlankAndOversizedOrMultilineMetadata() {
+        val invalid = HarnessRequestV1(
+            requestId = REQUEST_ID,
+            runGeneration = 3,
+            skillCatalogGeneration = 0,
+            activeSkill = ActiveSkillInstructionV1(
+                id = "custom",
+                revision = 0,
+                catalogGeneration = 0,
+                name = "第一行\n第二行",
+                description = "",
+                content = "x".repeat(SenseAiProtocol.MAX_SKILL_CONTENT_CHARS + 1),
+            ),
+            snapshot = snapshot(),
+        )
+
+        val result = ProtocolValidator.validate(invalid)
+
+        assertError(result, ProtocolErrorCode.INVALID_GENERATION, "$.active_skill.revision")
+        assertError(
+            result,
+            ProtocolErrorCode.INVALID_GENERATION,
+            "$.active_skill.catalog_generation",
+        )
+        assertError(result, ProtocolErrorCode.INVALID_TEXT, "$.active_skill.name")
+        assertError(
+            result,
+            ProtocolErrorCode.REQUIRED_VALUE_MISSING,
+            "$.active_skill.description",
+        )
+        assertError(result, ProtocolErrorCode.TEXT_TOO_LONG, "$.active_skill.content")
+    }
+
+    @Test
+    fun activeSkillMetadataRejectsTabAndUnicodeLineSeparators() {
+        val request = HarnessRequestV1(
+            requestId = REQUEST_ID,
+            runGeneration = 3,
+            skillCatalogGeneration = 1,
+            activeSkill = ActiveSkillInstructionV1(
+                id = "custom",
+                revision = 1,
+                catalogGeneration = 1,
+                name = "名称\t后缀",
+                description = "第一行\u2028第二行",
+                content = "# 文档\n正文\t可以缩进",
+            ),
+            snapshot = snapshot(),
+        )
+
+        val result = ProtocolValidator.validate(request)
+
+        assertError(result, ProtocolErrorCode.INVALID_TEXT, "$.active_skill.name")
+        assertError(result, ProtocolErrorCode.INVALID_TEXT, "$.active_skill.description")
+        assertFalse(result.errors.any { it.path == "$.active_skill.content" })
+    }
+
+    @Test
+    fun activeSkillAndDiscoveryCatalogMustShareOneFrozenGeneration() {
+        val request = HarnessRequestV1(
+            requestId = REQUEST_ID,
+            runGeneration = 3,
+            skillCatalogGeneration = 8,
+            activeSkill = ActiveSkillInstructionV1(
+                id = "custom",
+                revision = 2,
+                catalogGeneration = 9,
+                name = "自定义",
+                description = "同一运行只能使用同一目录代际",
+                content = "# 自定义\n保持一致。",
+            ),
+            snapshot = snapshot(),
+        )
+
+        assertError(
+            ProtocolValidator.validate(request),
+            ProtocolErrorCode.INVALID_GENERATION,
+            "$.active_skill.catalog_generation",
+        )
+    }
+
+    @Test
     fun patchMustMatchFrozenSnapshotIdentity() {
         val patch = replacePatch().copy(
             requestId = "wrong-request",

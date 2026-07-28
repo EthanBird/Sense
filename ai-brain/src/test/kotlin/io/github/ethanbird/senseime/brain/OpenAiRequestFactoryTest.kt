@@ -1,5 +1,6 @@
 package io.github.ethanbird.senseime.brain
 
+import io.github.ethanbird.senseime.ai.protocol.ActiveSkillInstructionV1
 import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import io.github.ethanbird.senseime.ai.protocol.EditorSnapshotV1
 import io.github.ethanbird.senseime.ai.protocol.EditorTextDigest
@@ -8,6 +9,8 @@ import io.github.ethanbird.senseime.ai.protocol.PatchTarget
 import io.github.ethanbird.senseime.ai.protocol.SnapshotCapability
 import io.github.ethanbird.senseime.ai.protocol.TextSelectionV1
 import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
+import io.github.ethanbird.senseime.brain.api.AgentSkillSummary
+import io.github.ethanbird.senseime.brain.api.AgentToolId
 import io.github.ethanbird.senseime.brain.api.ProviderCredential
 import io.github.ethanbird.senseime.brain.api.ProviderProfile
 import io.github.ethanbird.senseime.brain.api.ReasoningEffort
@@ -149,6 +152,180 @@ class OpenAiRequestFactoryTest {
         assertTrue(body.contains("\"name\":\"sense_report_progress\""))
         assertTrue(body.contains("\"name\":\"sense_submit_patch\""))
         assertFalse(body.contains("\"tool_choice\""))
+    }
+
+    @Test
+    fun `selected Skill stays frozen while a newer catalog remains discovery only`() {
+        val request = harness().copy(
+            activeSkill = ActiveSkillInstructionV1(
+                id = "brief",
+                revision = 3,
+                catalogGeneration = 8,
+                name = "简报",
+                description = "把输入整理为简报",
+                content = "# 简报\n保留全部数字与来源。",
+            ),
+        )
+        val wire = OpenAiRequestFactory.create(
+            profile = ProviderProfile(
+                id = "deepseek",
+                displayName = "DeepSeek",
+                apiStyle = ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+                baseUrl = "https://api.deepseek.com/v1",
+                model = "deepseek-v4-pro",
+                thinkingMode = ThinkingMode.DISABLED,
+                structuredOutput = StructuredOutputMode.JSON_OBJECT,
+            ),
+            request = request,
+            credential = ProviderCredential.None,
+            attempt = 0,
+            enabledTools = setOf(AgentToolId.SKILL_READ, AgentToolId.SKILL_MANAGE),
+            skillCatalog = listOf(
+                AgentSkillSummary(
+                    id = "brief",
+                    revision = 4,
+                    name = "新版简报",
+                    description = "下一次激活时使用新版",
+                ),
+                AgentSkillSummary(
+                    id = "translate.ja",
+                    revision = 2,
+                    name = "日语",
+                    description = "翻译成自然日语",
+                ),
+            ),
+            skillCatalogGeneration = 9,
+        )
+        val body = wire.body.toString(StandardCharsets.UTF_8)
+
+        assertTrue(body.contains("brief@3"))
+        assertTrue(body.contains("保留全部数字与来源"))
+        assertTrue(body.contains("brief@4 | 新版简报 | 下一次激活时使用新版"))
+        assertTrue(body.contains("selected revision stays frozen for the current task"))
+        assertTrue(body.contains("translate.ja@2"))
+        assertTrue(body.contains("Descriptions are only for discovery"))
+        assertTrue(body.contains("\"name\":\"skill_read\""))
+        assertTrue(body.contains("\"name\":\"skill_manage\""))
+        assertTrue(body.contains("\"operation\":{\"type\":\"string\",\"enum\""))
+        assertTrue(body.contains("\"expected_catalog_generation\":{\"type\":\"integer\"," +
+            "\"minimum\":1}"))
+        assertTrue(body.contains("first skill_manage call must use " +
+            "expected_catalog_generation=9"))
+        assertTrue(body.contains("\"required\":[\"skill_id\",\"revision\"]"))
+        assertTrue(body.contains("\"max_chars\":{\"type\":\"integer\",\"minimum\":256," +
+            "\"maximum\":6000}"))
+    }
+
+    @Test
+    fun `generic Chat exposes enabled Skill tools and retains structured Patch output`() {
+        val wire = OpenAiRequestFactory.create(
+            profile = profile(ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS),
+            request = harness(),
+            credential = ProviderCredential.None,
+            attempt = 0,
+            enabledTools = setOf(AgentToolId.SKILL_READ, AgentToolId.SKILL_MANAGE),
+            skillCatalog = listOf(
+                AgentSkillSummary("brief", 3, "简报", "生成简报"),
+            ),
+            skillCatalogGeneration = 12,
+        )
+        val body = wire.body.toString(StandardCharsets.UTF_8)
+
+        assertTrue(ProviderJson.parse(body) is JsonValue.ObjectValue)
+        assertTrue(body.contains("\"tools\":[{\"type\":\"function\",\"function\":{"))
+        assertTrue(body.contains("\"name\":\"skill_read\""))
+        assertTrue(body.contains("\"name\":\"skill_manage\""))
+        assertTrue(body.contains("\"expected_catalog_generation\":{\"type\":\"integer\"," +
+            "\"minimum\":1}"))
+        assertTrue(body.contains("returned catalog_generation for the next mutation"))
+        assertTrue(body.contains("\"response_format\":{\"type\":\"json_schema\""))
+        assertFalse(body.contains("\"name\":\"sense_submit_patch\""))
+        assertTrue(body.contains("Call at most one exposed tool when useful"))
+    }
+
+    @Test
+    fun `Responses exposes direct function tools and replays stateless tool exchange`() {
+        val exchange = AgentToolExchange(
+            assistantReasoning = "",
+            assistantContent = "",
+            responsesReasoningItems = listOf(
+                "{\"id\":\"rs_1\",\"type\":\"reasoning\",\"summary\":[]," +
+                    "\"encrypted_content\":\"opaque\"}",
+            ),
+            toolCallId = "call-skill",
+            toolName = "skill_read",
+            toolArguments = "{\"skill_id\":\"brief\",\"revision\":3}",
+            toolResult = "{\"ok\":true,\"data\":{\"eof\":true}}",
+        )
+        val wire = OpenAiRequestFactory.create(
+            profile = profile(ProviderApiStyle.OPENAI_RESPONSES),
+            request = harness(),
+            credential = ProviderCredential.None,
+            attempt = 0,
+            agentConversation = AgentConversationContext(listOf(exchange)),
+            enabledTools = setOf(AgentToolId.SKILL_READ),
+            skillCatalog = listOf(
+                AgentSkillSummary("brief", 3, "简报", "生成简报"),
+            ),
+            skillCatalogGeneration = 12,
+        )
+        val body = wire.body.toString(StandardCharsets.UTF_8)
+
+        assertTrue(ProviderJson.parse(body) is JsonValue.ObjectValue)
+        assertTrue(body.contains("\"tools\":[{\"type\":\"function\",\"name\":\"skill_read\""))
+        assertFalse(body.contains("\"function\":{\"name\":\"skill_read\""))
+        assertTrue(body.contains("\"type\":\"function_call\",\"call_id\":\"call-skill\""))
+        assertTrue(body.contains("\"type\":\"function_call_output\",\"call_id\":\"call-skill\""))
+        assertTrue(body.contains("\"include\":[\"reasoning.encrypted_content\"]"))
+        assertTrue(body.contains("\"type\":\"reasoning\",\"summary\":[]," +
+            "\"encrypted_content\":\"opaque\""))
+        assertTrue(body.contains("\"text\":{\"format\":{\"type\":\"json_schema\""))
+    }
+
+    @Test
+    fun `skill manage is not advertised without a frozen catalog generation`() {
+        val wire = OpenAiRequestFactory.create(
+            profile = profile(ProviderApiStyle.OPENAI_RESPONSES),
+            request = harness(),
+            credential = ProviderCredential.None,
+            attempt = 0,
+            enabledTools = setOf(AgentToolId.SKILL_MANAGE),
+            skillCatalog = listOf(
+                AgentSkillSummary("brief", 3, "简报", "生成简报"),
+            ),
+        )
+        val body = wire.body.toString(StandardCharsets.UTF_8)
+
+        assertFalse(body.contains("\"name\":\"skill_manage\""))
+        assertFalse(body.contains("expected_catalog_generation="))
+        assertFalse(body.contains("Call at most one exposed tool when useful"))
+    }
+
+    @Test
+    fun `Responses empty catalog exposes create management without Skill read`() {
+        assertEmptyCatalogToolExposure(profile(ProviderApiStyle.OPENAI_RESPONSES))
+    }
+
+    @Test
+    fun `generic Chat empty catalog exposes create management without Skill read`() {
+        assertEmptyCatalogToolExposure(
+            profile(ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS),
+        )
+    }
+
+    @Test
+    fun `DeepSeek empty catalog exposes create management without Skill read`() {
+        assertEmptyCatalogToolExposure(
+            ProviderProfile(
+                id = "deepseek",
+                displayName = "DeepSeek",
+                apiStyle = ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+                baseUrl = "https://api.deepseek.com/v1",
+                model = "deepseek-v4-pro",
+                thinkingMode = ThinkingMode.DISABLED,
+                structuredOutput = StructuredOutputMode.JSON_OBJECT,
+            ),
+        )
     }
 
     @Test
@@ -315,6 +492,24 @@ class OpenAiRequestFactoryTest {
         reasoningEffort = ReasoningEffort.MEDIUM,
         structuredOutput = structuredOutput,
     )
+
+    private fun assertEmptyCatalogToolExposure(profile: ProviderProfile) {
+        val body = OpenAiRequestFactory.create(
+            profile = profile,
+            request = harness(),
+            credential = ProviderCredential.None,
+            attempt = 0,
+            enabledTools = setOf(AgentToolId.SKILL_READ, AgentToolId.SKILL_MANAGE),
+            skillCatalog = emptyList(),
+            skillCatalogGeneration = 1,
+        ).body.toString(StandardCharsets.UTF_8)
+
+        assertTrue(ProviderJson.parse(body) is JsonValue.ObjectValue)
+        assertFalse(body.contains("\"name\":\"skill_read\""))
+        assertFalse(body.contains("call skill_read"))
+        assertTrue(body.contains("\"name\":\"skill_manage\""))
+        assertTrue(body.contains("expected_catalog_generation=1"))
+    }
 
     private fun harness(): HarnessRequestV1 {
         val text = "原始内容"

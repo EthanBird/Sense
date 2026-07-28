@@ -87,6 +87,33 @@ class SenseAiBrainClient(
             )
             return
         }
+        /*
+         * Transport size admission deliberately precedes semantic Brain admission. An invalid
+         * object that is also oversized is rejected locally as IPC_ENVELOPE_TOO_LARGE so it can
+         * never reach Bundle/Binder. Replacing a run still revokes the old remote identity first.
+         * BrainMessageCodec repeats this immutable check as defense for any future direct caller.
+         */
+        if (
+            BrainRequestEnvelopePolicy.assess(request) is
+            BrainRequestEnvelopePolicy.Admission.Rejected
+        ) {
+            activeIdentity?.let { (oldRequest, oldGeneration) ->
+                sendCancel(oldRequest, oldGeneration, HarnessCancelReason.CALLER_REQUESTED)
+            }
+            activeIdentity = null
+            pending = null
+            clearBindingTimeout()
+            if (bound || binding) resetBinding()
+            eventSink(
+                AiEvent.Failed(
+                    request.requestId,
+                    request.runGeneration,
+                    HarnessErrorCode.IPC_ENVELOPE_TOO_LARGE,
+                    retryable = false,
+                ),
+            )
+            return
+        }
         activeIdentity?.let { (oldRequest, oldGeneration) ->
             sendCancel(oldRequest, oldGeneration, HarnessCancelReason.CALLER_REQUESTED)
         }
