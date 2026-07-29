@@ -18,6 +18,7 @@ class M3SentenceBenchmarkTest {
     fun nearestRankUsesTheRequestedPercentile() {
         assertEquals(3, M3SentenceBenchmark.nearestRankIndex(7, 0.5))
         assertEquals(6, M3SentenceBenchmark.nearestRankIndex(7, 0.95))
+        assertEquals(18, M3SentenceBenchmark.nearestRankIndex(20, 0.95))
     }
 
     @Test

@@ -272,8 +272,11 @@ object M3SentenceBenchmark {
     private fun format(value: Double): String = "%.2f".format(Locale.US, value)
 
     private const val CANDIDATE_LIMIT = 32
-    private const val CLEAN_REPEATS = 5
-    private const val SAMPLE_COUNT = 7
+    // Twenty samples make nearest-rank p95 discard one scheduler outlier instead of degenerating
+    // to the maximum value (as it does with seven samples). Two repeats keep total lookup work
+    // comparable to the previous 7 x 5 configuration while making the gate statistically useful.
+    private const val CLEAN_REPEATS = 2
+    private const val SAMPLE_COUNT = 20
     private const val CONTEXT_P95_GATE_MULTIPLIER = 1.2
     private const val CONTEXT_P95_GATE_SLACK_NS = 250_000.0
     private const val CLEAN_SENTENCE_P95_LIMIT_NS = 35_000_000.0
