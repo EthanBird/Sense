@@ -321,6 +321,11 @@ class LocalReleaseContractTest(unittest.TestCase):
         self.assertIn("--notes-file", self.script)
         self.assertIn("--prerelease", self.script)
 
+    def test_latency_sensitive_m3_runs_before_sustained_host_benchmarks(self) -> None:
+        m3 = self.script.index(":core-input:m3SentenceBenchmark")
+        m0 = self.script.index(":core-input:m0HostBenchmark")
+        self.assertLess(m3, m0)
+
     def test_release_signer_is_persistent_and_digest_is_pinned(self) -> None:
         digest = certificate_sha256(RELEASE_CERT)
         self.assertEqual(

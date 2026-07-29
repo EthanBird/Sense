@@ -349,14 +349,8 @@ function Invoke-LocalTests {
     ) | Out-Null
 
     Write-Step "Run M0-M6 host performance gates"
-    Invoke-Checked -FilePath $GradleWrapper -ArgumentList @(
-        "--console=plain",
-        "--no-parallel",
-        ":core-input:m0HostBenchmark",
-        ":core-input:m1PinyinBenchmark",
-        ":core-input:m2AdaptiveBenchmark"
-    ) | Out-Null
-
+    # Run the latency-sensitive M3 gate before the other sustained host benchmarks so its
+    # absolute budget is measured before CPU thermal throttling can bias the local release gate.
     $m3Passes = 0
     foreach ($attempt in 1..3) {
         Write-Host "M3 benchmark attempt $attempt/3"
@@ -376,6 +370,14 @@ function Invoke-LocalTests {
     if ($m3Passes -lt 2) {
         throw "M3 benchmark passed only $m3Passes/3 attempts."
     }
+
+    Invoke-Checked -FilePath $GradleWrapper -ArgumentList @(
+        "--console=plain",
+        "--no-parallel",
+        ":core-input:m0HostBenchmark",
+        ":core-input:m1PinyinBenchmark",
+        ":core-input:m2AdaptiveBenchmark"
+    ) | Out-Null
 
     Invoke-Checked -FilePath $GradleWrapper -ArgumentList @(
         "--console=plain",
