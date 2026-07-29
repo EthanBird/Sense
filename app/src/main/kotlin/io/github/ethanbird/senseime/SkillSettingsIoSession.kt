@@ -16,13 +16,13 @@ import java.util.concurrent.TimeoutException
 internal class SkillSettingsIoSession(
     private val workerExecutor: Executor,
     private val uiExecutor: Executor,
-) : AutoCloseable {
+) : SettingsTaskRunner {
     private val lock = Any()
     private var closed = false
     private var nextSequence = 0L
     private val latestRefreshByChannel = mutableMapOf<String, Long>()
 
-    fun <T> refresh(
+    override fun <T> refresh(
         channel: String,
         operation: () -> T,
         deliver: (Result<T>) -> Unit,
@@ -43,9 +43,9 @@ internal class SkillSettingsIoSession(
         )
     }
 
-    fun <T> execute(
+    override fun <T> execute(
         operation: () -> T,
-        deliver: (Result<T>) -> Unit = {},
+        deliver: (Result<T>) -> Unit,
     ): Boolean {
         synchronized(lock) {
             if (closed) return false
