@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "release_plan.py"
 LOCAL_RELEASE = ROOT / "tools" / "local_release.ps1"
 APP_BUILD = ROOT / "app" / "build.gradle.kts"
-RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.5.beta.1.md"
+RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.5.beta.2.md"
 RELEASE_CERT = (
     ROOT
     / "docs"
@@ -96,9 +96,9 @@ class AndroidVersionParsingTest(unittest.TestCase):
 
     def test_dotted_prerelease_version_is_supported(self) -> None:
         self.assertEqual(
-            AndroidVersion(name="0.4.5.beta.1", code=22),
+            AndroidVersion(name="0.4.5.beta.2", code=23),
             parse_android_version(
-                gradle_version(name="0.4.5.beta.1", code=22)
+                gradle_version(name="0.4.5.beta.2", code=23)
             ),
         )
 
@@ -306,18 +306,18 @@ class LocalReleaseContractTest(unittest.TestCase):
             APP_BUILD.read_text(encoding="utf-8"),
             str(APP_BUILD),
         )
-        self.assertEqual(AndroidVersion(name="0.4.5.beta.1", code=22), current)
+        self.assertEqual(AndroidVersion(name="0.4.5.beta.2", code=23), current)
         self.assertIn(current.tag, self.script)
         self.assertIn(current.apk_name, self.script)
         self.assertRegex(
             self.script,
-            re.compile(r"versionCode\s*(?:=|:)?\s*22", re.IGNORECASE),
+            re.compile(r"versionCode\s*(?:=|:)?\s*23", re.IGNORECASE),
         )
 
     def test_release_notes_are_pinned_and_used_for_prerelease(self) -> None:
         self.assertTrue(RELEASE_NOTES.is_file())
-        self.assertIn("# Sense v0.4.5.beta.1", RELEASE_NOTES.read_text("utf-8"))
-        self.assertIn("v0.4.5.beta.1.md", self.script)
+        self.assertIn("# Sense v0.4.5.beta.2", RELEASE_NOTES.read_text("utf-8"))
+        self.assertIn("v0.4.5.beta.2.md", self.script)
         self.assertIn("--notes-file", self.script)
         self.assertIn("--prerelease", self.script)
 
@@ -406,6 +406,12 @@ class LocalReleaseContractTest(unittest.TestCase):
         self.assertIn("--draft=false", self.script_lower)
         self.assertIn("isdraft", self.script_lower)
         self.assertIn('"remote", "get-url", "origin"', self.script_lower)
+        self.assertIn("$downloadedsha256 -ne $localsha256", self.script_lower)
+        self.assertIn(
+            "-apk $downloadedapk",
+            self.command_text,
+        )
+        self.assertIn("downloaded sha256sums.txt", self.script_lower)
 
     def test_publish_requires_full_gate_and_clean_origin_main(self) -> None:
         self.assertRegex(
