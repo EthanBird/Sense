@@ -7,6 +7,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.RectF
+import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.SystemClock
 import android.view.MotionEvent
@@ -44,6 +45,17 @@ class SenseKeyboardViewSkillDeviceTest {
                 SkillKeyboardTestActivity::class.java.name,
             )
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        }
+        if (Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true)) {
+            /*
+             * HyperOS rejects the instrumentation process's first background Activity start.
+             * A shell prelaunch makes this debug-only test package foreground; startActivitySync
+             * can then recreate and monitor the host normally.
+             */
+            val component =
+                "${instrumentation.targetContext.packageName}/" +
+                    SkillKeyboardTestActivity::class.java.name
+            check(shell("am start -W -n $component").contains("Status: ok"))
         }
         activity = instrumentation.startActivitySync(intent) as SkillKeyboardTestActivity
         instrumentation.waitForIdleSync()
@@ -112,6 +124,47 @@ class SenseKeyboardViewSkillDeviceTest {
         assertEquals(2, selections.size)
         assertEquals(KeyboardSkillToggleAction.DEACTIVATE, selections.last().action)
         assertTrue("Second picker release leaked the original G key", emittedKeys.isEmpty())
+    }
+
+    @Test
+    fun equivalentProjectionRefreshDuringArmedHoldKeepsThePickerScheduled() {
+        val binding = binding(
+            keyCode = 'g'.code,
+            direction = KeyboardSkillDirection.UP,
+            id = "refresh-race",
+            label = "refresh",
+        )
+        onMain {
+            keyboard.updateKeyboardSkills(listOf(binding), active = null)
+        }
+        val source = letterKeyBounds('g')
+        val downTime = SystemClock.uptimeMillis()
+        dispatch(
+            MotionEvent.ACTION_DOWN,
+            source.centerX(),
+            source.centerY(),
+            downTime,
+        )
+        SystemClock.sleep(180L)
+
+        onMain {
+            keyboard.updateKeyboardSkills(listOf(binding.copy()), active = null)
+        }
+
+        assertTrue(
+            "Equivalent lifecycle projection cancelled the armed Skill hold",
+            waitUntil(1_000L) {
+                onMain {
+                    keyboard.skillPickerOptionBoundsForTesting(binding.direction) != null
+                }
+            },
+        )
+        dispatch(
+            MotionEvent.ACTION_CANCEL,
+            source.centerX(),
+            source.centerY(),
+            downTime,
+        )
     }
 
     @Test

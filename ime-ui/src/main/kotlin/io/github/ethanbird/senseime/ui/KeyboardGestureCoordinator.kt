@@ -312,10 +312,16 @@ internal class KeyboardGestureCoordinator(
         bindings: List<KeyboardSkillBinding>,
         active: ActiveKeyboardSkill?,
     ) {
+        val nextBindings = KeyboardSkillBindingSet.from(bindings)
+        if (
+            activeKeyboardSkill == active &&
+            skillBindings.hasSameProjection(nextBindings)
+        ) {
+            return
+        }
         cancelSkillGesture()
         val previous = activeKeyboardSkill
         val previousLabel = skillLabel(previous, skillBindings)
-        val nextBindings = KeyboardSkillBindingSet.from(bindings)
         val currentLabel = skillLabel(active, nextBindings)
         skillBindings = nextBindings
         activeKeyboardSkill = active

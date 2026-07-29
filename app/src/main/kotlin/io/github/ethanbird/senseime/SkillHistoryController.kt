@@ -141,6 +141,7 @@ internal class SkillHistoryController(
 
     fun select(position: Int) {
         val revision = state.revisions.getOrNull(position)
+        if (revision == state.selectedRevision) return
         generation = nextGeneration(generation)
         publish(
             state.copy(

@@ -36,6 +36,39 @@ class SkillControllersTest {
     }
 
     @Test
+    fun historySameRevisionSelectionIsIdempotentDuringReadyAndRead() {
+        val current = definition(revision = 2L, content = "current")
+        val historical = current.copy(revision = 1L, content = "historical")
+        val repository = FakeSkillSettingsRepository(catalog(current))
+        repository.revisions["alpha"] = Result.success(listOf(2L, 1L))
+        repository.documents["alpha" to 1L] = Result.success(historical)
+        val tasks = DeferredSkillTaskRunner()
+        val states = mutableListOf<SkillHistoryState>()
+        val controller = SkillHistoryController(repository, tasks, states::add)
+        controller.attach()
+        controller.load("alpha", currentRevision = 2L)
+        tasks.runNext()
+
+        val readyPublicationCount = states.size
+        controller.select(0)
+        assertEquals(readyPublicationCount, states.size)
+        assertEquals(SkillHistoryPhase.READY, controller.state.phase)
+
+        controller.select(1)
+        assertEquals(SkillHistoryViewAdmission.STARTED, controller.view(current))
+        assertEquals(SkillHistoryPhase.READING_REVISION, controller.state.phase)
+        val readingPublicationCount = states.size
+
+        controller.select(1)
+
+        assertEquals(readingPublicationCount, states.size)
+        assertEquals(SkillHistoryPhase.READING_REVISION, controller.state.phase)
+        tasks.runNext()
+        assertEquals(SkillHistoryPhase.READY, controller.state.phase)
+        assertEquals(historical, controller.state.viewedRevision)
+    }
+
+    @Test
     fun historyDropsSupersededSkillAndRevisionReads() {
         val alpha = definition(id = "alpha", revision = 3L)
         val beta = definition(id = "beta", revision = 4L)

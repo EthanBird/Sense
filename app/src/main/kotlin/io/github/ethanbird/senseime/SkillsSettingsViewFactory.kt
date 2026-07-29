@@ -396,7 +396,7 @@ internal class SkillsSettingsViewFactory(
     ) {
         when (state.phase) {
             SkillHistoryPhase.EMPTY -> {
-                binding.revisionSelector.adapter = historyAdapter(emptyList())
+                renderHistorySelector(binding, emptyList())
                 binding.historyPreview.setText(R.string.skills_history_preview_new)
                 binding.historyPreview.setTextColor(activity.getColor(R.color.sense_secondary))
             }
@@ -408,20 +408,22 @@ internal class SkillsSettingsViewFactory(
             SkillHistoryPhase.READING_REVISION,
             SkillHistoryPhase.READ_FAILED,
             -> {
-                binding.revisionSelector.adapter = historyAdapter(
-                    state.revisions.map { revision ->
-                        activity.getString(
-                            if (revision == state.currentRevision) {
-                                R.string.skills_history_item_current
-                            } else {
-                                R.string.skills_history_item
-                            },
-                            revision,
-                        )
-                    },
-                )
+                val labels = state.revisions.map { revision ->
+                    activity.getString(
+                        if (revision == state.currentRevision) {
+                            R.string.skills_history_item_current
+                        } else {
+                            R.string.skills_history_item
+                        },
+                        revision,
+                    )
+                }
                 val selectedIndex = state.revisions.indexOf(state.selectedRevision)
-                if (selectedIndex >= 0) binding.revisionSelector.setSelection(selectedIndex)
+                renderHistorySelector(
+                    binding = binding,
+                    labels = labels,
+                    selectedIndex = selectedIndex.takeIf { it >= 0 },
+                )
                 val viewed = state.viewedRevision
                 if (state.phase == SkillHistoryPhase.READ_FAILED) {
                     binding.historyPreview.text = activity.getString(
@@ -454,7 +456,7 @@ internal class SkillsSettingsViewFactory(
                 }
             }
             SkillHistoryPhase.LIST_FAILED -> {
-                binding.revisionSelector.adapter = historyAdapter(emptyList())
+                renderHistorySelector(binding, emptyList())
                 binding.status.text = activity.getString(
                     R.string.skills_history_degraded,
                     state.failure?.message.orEmpty(),
@@ -468,6 +470,28 @@ internal class SkillsSettingsViewFactory(
         }
         binding.viewRevisionButton.isEnabled = state.canView && !mutationRunning
         binding.restoreRevisionButton.isEnabled = state.canRestore && !mutationRunning
+    }
+
+    private fun renderHistorySelector(
+        binding: SkillSettingsViewBinding,
+        labels: List<String>,
+        selectedIndex: Int? = null,
+    ) {
+        val selector = binding.revisionSelector
+        val currentAdapter = selector.adapter
+        val itemsUnchanged =
+            currentAdapter != null &&
+                currentAdapter.count == labels.size &&
+                labels.indices.all { index -> currentAdapter.getItem(index) == labels[index] }
+        if (!itemsUnchanged) {
+            selector.adapter = historyAdapter(labels)
+        }
+        if (
+            selectedIndex != null &&
+            selector.selectedItemPosition != selectedIndex
+        ) {
+            selector.setSelection(selectedIndex)
+        }
     }
 
     fun historyDegradedMessage(state: SkillHistoryState): String? = when {

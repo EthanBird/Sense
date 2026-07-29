@@ -132,6 +132,33 @@ class KeyboardSkillsTest {
     }
 
     @Test
+    fun equivalentBindingSetsHaveTheSameResolvedProjection() {
+        val up = binding(skillId = "answer", label = "回答")
+        val right = binding(
+            direction = KeyboardSkillDirection.RIGHT,
+            skillId = "rewrite",
+            label = "改写",
+        )
+
+        val current = KeyboardSkillBindingSet.from(listOf(up, right))
+        val refreshed = KeyboardSkillBindingSet.from(listOf(right.copy(), up.copy()))
+
+        assertTrue(current.hasSameProjection(refreshed))
+    }
+
+    @Test
+    fun changedBindingSetHasADifferentResolvedProjection() {
+        val current = KeyboardSkillBindingSet.from(
+            listOf(binding(skillId = "answer", label = "回答")),
+        )
+        val changed = KeyboardSkillBindingSet.from(
+            listOf(binding(skillId = "rewrite", label = "改写")),
+        )
+
+        assertFalse(current.hasSameProjection(changed))
+    }
+
+    @Test
     fun requestedPhysicalOwnerStaysProvisionalUntilAuthoritativeProjectionMatches() {
         val expected = active("rewrite")
         val owner = physicalOwner(KeyboardSkillPhysicalOwner.Surface.PANEL)

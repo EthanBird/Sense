@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "release_plan.py"
 LOCAL_RELEASE = ROOT / "tools" / "local_release.ps1"
 APP_BUILD = ROOT / "app" / "build.gradle.kts"
-RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.5.beta.3.md"
+RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.5.beta.4.md"
 RELEASE_CERT = (
     ROOT
     / "docs"
@@ -96,9 +96,9 @@ class AndroidVersionParsingTest(unittest.TestCase):
 
     def test_dotted_prerelease_version_is_supported(self) -> None:
         self.assertEqual(
-            AndroidVersion(name="0.4.5.beta.3", code=24),
+            AndroidVersion(name="0.4.5.beta.4", code=25),
             parse_android_version(
-                gradle_version(name="0.4.5.beta.3", code=24)
+                gradle_version(name="0.4.5.beta.4", code=25)
             ),
         )
 
@@ -306,18 +306,18 @@ class LocalReleaseContractTest(unittest.TestCase):
             APP_BUILD.read_text(encoding="utf-8"),
             str(APP_BUILD),
         )
-        self.assertEqual(AndroidVersion(name="0.4.5.beta.3", code=24), current)
+        self.assertEqual(AndroidVersion(name="0.4.5.beta.4", code=25), current)
         self.assertIn(current.tag, self.script)
         self.assertIn(current.apk_name, self.script)
         self.assertRegex(
             self.script,
-            re.compile(r"versionCode\s*(?:=|:)?\s*24", re.IGNORECASE),
+            re.compile(r"versionCode\s*(?:=|:)?\s*25", re.IGNORECASE),
         )
 
     def test_release_notes_are_pinned_and_used_for_prerelease(self) -> None:
         self.assertTrue(RELEASE_NOTES.is_file())
-        self.assertIn("# Sense v0.4.5.beta.3", RELEASE_NOTES.read_text("utf-8"))
-        self.assertIn("v0.4.5.beta.3.md", self.script)
+        self.assertIn("# Sense v0.4.5.beta.4", RELEASE_NOTES.read_text("utf-8"))
+        self.assertIn("v0.4.5.beta.4.md", self.script)
         self.assertIn("--notes-file", self.script)
         self.assertIn("--prerelease", self.script)
 

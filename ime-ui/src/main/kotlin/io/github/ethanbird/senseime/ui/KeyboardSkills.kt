@@ -234,6 +234,15 @@ class KeyboardSkillBindingSet private constructor(
     val keyCount: Int
         get() = byKey.size
 
+    /**
+     * Compares the resolved, bounded keyboard projection rather than the producer's input order.
+     *
+     * Lifecycle refreshes can publish the same catalog while a finger is waiting for the
+     * long-press timeout. Treating those refreshes as changes would cancel the armed gesture.
+     */
+    fun hasSameProjection(other: KeyboardSkillBindingSet): Boolean =
+        this === other || byKey == other.byKey
+
     fun optionsForKey(keyCode: Int): KeyboardSkillOptions? = byKey[keyCode]
 
     fun binding(
