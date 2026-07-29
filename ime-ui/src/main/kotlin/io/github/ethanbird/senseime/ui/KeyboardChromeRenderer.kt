@@ -9,7 +9,8 @@ import kotlin.math.max
 /**
  * Background, candidate chrome and panel-header renderer.
  *
- * It owns one Paint/text layout pair and one size-bound background shader.
+ * Background and system-bar paints are deliberately isolated from the mutable
+ * chrome paint so translucent footer state cannot leak into a later dirty frame.
  */
 internal class KeyboardChromeRenderer(
     private val density: Float,
@@ -18,9 +19,10 @@ internal class KeyboardChromeRenderer(
     private val palette: KeyboardPalette,
 ) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val backgroundPaint = Paint()
+    private val systemBarPaint = Paint()
     private val text = KeyboardCanvasText()
     private var fontScale = fontScale
-    private var backgroundShader: Shader? = null
 
     fun updateSurface(
         width: Int,
@@ -28,7 +30,7 @@ internal class KeyboardChromeRenderer(
         fontScale: Float,
     ) {
         this.fontScale = fontScale
-        backgroundShader = LinearGradient(
+        backgroundPaint.shader = LinearGradient(
             0f,
             0f,
             0f,
@@ -37,23 +39,26 @@ internal class KeyboardChromeRenderer(
             color(0xFFE6EDF6.toInt(), 0xFF111213.toInt()),
             Shader.TileMode.CLAMP,
         )
+        systemBarPaint.color = color(0x18000000, 0x2A000000)
     }
 
     fun drawBackground(
         canvas: Canvas,
         state: KeyboardRendererState,
     ) {
-        paint.style = Paint.Style.FILL
-        paint.shader = backgroundShader
-        canvas.drawRect(0f, 0f, state.viewWidth.toFloat(), state.viewHeight.toFloat(), paint)
-        paint.shader = null
-        paint.color = color(0x18000000, 0x2A000000)
+        canvas.drawRect(
+            0f,
+            0f,
+            state.viewWidth.toFloat(),
+            state.viewHeight.toFloat(),
+            backgroundPaint,
+        )
         canvas.drawRect(
             0f,
             state.viewHeight - metrics.systemBarHeight,
             state.viewWidth.toFloat(),
             state.viewHeight.toFloat(),
-            paint,
+            systemBarPaint,
         )
     }
 

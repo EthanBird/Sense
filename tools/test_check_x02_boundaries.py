@@ -862,7 +862,12 @@ rootProject.name = "fixture"
     def test_gradle_work_state_script_symlink_is_rejected(self) -> None:
         _write(self.root, ".gradle/generated-state.txt", "state\n")
         script = self.root / ".gradle/hidden.gradle.kts"
-        script.symlink_to(self.root / ".gradle/generated-state.txt")
+        try:
+            script.symlink_to(self.root / ".gradle/generated-state.txt")
+        except OSError as error:
+            if getattr(error, "winerror", None) == 1314:
+                self.skipTest("Windows symbolic-link privilege is unavailable")
+            raise
         self.assert_source_rejected("unexpected Gradle script authority")
 
     def test_parallel_groovy_settings_script_is_rejected(self) -> None:

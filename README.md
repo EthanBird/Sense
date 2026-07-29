@@ -2,9 +2,9 @@
 
 > Android 原生高性能中文输入法：普通输入完全本地运行，AI、记忆与工具能力通过可配置的长按方向 Skill 显式触发。
 
-**项目状态：** `v0.4.5.beta.2` 架构拆分与性能等价预发布
+**项目状态：** `v0.4.5.beta.3` 主键盘渲染稳定性修复预发布
 
-**当前版本：** `v0.4.5.beta.2`（`versionCode 23`）
+**当前版本：** `v0.4.5.beta.3`（`versionCode 24`）
 
 **更新日期：** 2026-07-29
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
@@ -22,7 +22,7 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.5.beta.2 架构拆分与性能等价
+## 0. 当前迭代：v0.4.5.beta.3 主键盘渲染稳定性修复
 
 `v0.4.5` 在 v0.4.4 的开放工具、完整 Agent Journal 和本地记忆之上，把 Skills
 交付为可配置、可修订、可由 Agent 智能读取和管理的长期系统：
@@ -64,6 +64,12 @@ hash/CAS/写后验证继续有效；这些边界防止状态错写，但不限�
 `skill_read` 和 `skill_manage`，且不会删除任何用户数据。完整草稿使用原子 recovery
 snapshot 与有界生命周期 durability handoff。
 
+`v0.4.5.beta.3` 修复 Renderer 拆分后 Chrome 私有 `Paint` 的 alpha 跨帧泄漏：
+主背景和半透明系统栏改用独立 `Paint`，避免按键局部刷新时背景 shader 透出宿主窗口，
+从根因消除点击后的主题混色与频闪。修复保留矩形脏区和 VSYNC 合帧，没有退化为按键
+全量重绘；新增 Light/Dark 连续帧与局部 clip 真机像素回归。详细验证见
+[`v0.4.5.beta.3` 预发布说明](docs/releases/v0.4.5.beta.3.md)。
+
 `v0.4.5.beta.2` 继续将 `SenseKeyboardView` 收敛为单 Canvas 平台 facade，并把布局、
 绘制、交互与帧调度落到可独立测试的 controller/renderer/state holder；设置 Activity
 同步收敛为生命周期、导航、权限和装配层，各 section 通过独立 controller、view binding
@@ -91,7 +97,7 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
 | Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
 | 既有质量 | AI、IME、UI、Core、M0–M6、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 23`、`versionName 0.4.5.beta.2`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据 | `versionCode 24`、`versionName 0.4.5.beta.3`、`minSdk 29`、`targetSdk 36` |
 
 仓库不再运行 GitHub Actions；测试、Lint、性能门禁、APK 构建和签名校验统一在 Windows
 本地执行。完整本地验证与构建：
@@ -108,7 +114,7 @@ powershell -ExecutionPolicy Bypass -File tools/local_release.ps1 -Publish
 
 `-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。
 
-> **v0.4.5.beta.2 发布收口：** 本轮源码整合冻结后已重新计算并人工审查 X-02
+> **v0.4.5.beta.3 发布收口：** 本轮源码整合冻结后将重新运行并人工审查 X-02
 > production source、build authority 与 offline gate 的 exact SHA-256，并同步刷新
 > boundary baseline。正式本地发布会在同一 release `HEAD` 上再次执行 source/artifact
 > gate，并把结果与 APK 签名、校验和一起归档。
@@ -408,7 +414,7 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.4.5.beta.2` 架构拆分与性能等价预发布阶段。
+以下保留 M0 的实施记录；当前代码位于 `v0.4.5.beta.3` 主键盘渲染稳定性修复预发布阶段。
 现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。
 
