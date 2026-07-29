@@ -220,53 +220,19 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 
     _write(
         root,
-        ".github/workflows/android.yml",
-        """
-jobs:
-  verify:
-    steps:
-      - name: Verify Gate 0 Agent and Memory contracts
-        run: |
-          python3 tools/test_check_x02_boundaries.py
-          python3 tools/check_x02_boundaries.py
-      - name: Run X-02 tests
-        run: >-
-          ./gradlew
-          :memory-protocol:test
-          :event-journal:test
-  package_x02:
-    needs: verify
-    steps:
-      - uses: actions/checkout@v6
-      - name: Verify frozen X-02 source and build authority
-        run: python3 tools/check_x02_boundaries.py
-      - name: Build X-02 artifacts without repository tests
-        env:
-          GRADLE_USER_HOME: ${{ runner.temp }}/sense-x02-gradle-home
-        run: >-
-          ./gradlew
-          --no-build-cache
-          --no-configuration-cache
-          :memory-protocol:jar
-          :event-journal:jar
-          :app:assembleDebug
-          :app:assembleBenchmark
-      - name: Verify isolated X-02 packaged boundaries
-        run: python3 tools/check_x02_boundaries.py --check-artifacts
-      - name: Upload isolated app APKs
-        uses: actions/upload-artifact@v7
-        with:
-          name: sense-v0.4.3-clean-apks
-  release_plan:
-    needs: [verify, package_x02]
-    steps:
-      - run: echo skipped
-  release:
-    needs: [verify, package_x02, release_plan]
-    steps:
-      - uses: actions/download-artifact@v8
-        with:
-          name: sense-v0.4.3-clean-apks
+        "tools/local_release.ps1",
+        """$ErrorActionPreference = "Stop"
+python tools/test_check_x02_boundaries.py
+python tools/check_x02_boundaries.py
+& .\\gradlew.bat `
+    :memory-protocol:test `
+    :memory-protocol:jar `
+    :event-journal:test `
+    :event-journal:jar `
+    :app:assembleDebug `
+    :app:assembleBenchmark `
+    :app:assembleRelease
+python tools/check_x02_boundaries.py --check-artifacts
 """,
     )
     _write(
@@ -364,27 +330,9 @@ class X02BoundaryMutationTest(unittest.TestCase):
         }
         self.original_offline_sha256 = checker.EXPECTED_OFFLINE_VERIFY_SHA256
         checker.EXPECTED_OFFLINE_VERIFY_SHA256 = hashlib.sha256(
-            (self.root / "tools/offline_verify.sh").read_bytes()
-        ).hexdigest()
-        self.original_verify_job_sha256 = checker.EXPECTED_VERIFY_JOB_SHA256
-        fixture_ci = (
-            self.root / ".github/workflows/android.yml"
-        ).read_text(encoding="utf-8")
-        checker.EXPECTED_VERIFY_JOB_SHA256 = hashlib.sha256(
-            checker._extract_verify_job(fixture_ci).encode("utf-8")
-        ).hexdigest()
-        self.original_package_job_sha256 = checker.EXPECTED_PACKAGE_JOB_SHA256
-        checker.EXPECTED_PACKAGE_JOB_SHA256 = hashlib.sha256(
-            checker._extract_workflow_job(
-                fixture_ci,
-                "package_x02",
-            ).encode("utf-8")
-        ).hexdigest()
-        self.original_android_workflow_sha256 = (
-            checker.EXPECTED_ANDROID_WORKFLOW_SHA256
-        )
-        checker.EXPECTED_ANDROID_WORKFLOW_SHA256 = hashlib.sha256(
-            fixture_ci.encode("utf-8")
+            (self.root / "tools/offline_verify.sh")
+            .read_text(encoding="utf-8")
+            .encode("utf-8")
         ).hexdigest()
         self.original_build_authority_sha256 = (
             checker.EXPECTED_BUILD_AUTHORITY_SHA256
@@ -399,15 +347,6 @@ class X02BoundaryMutationTest(unittest.TestCase):
     def tearDown(self) -> None:
         checker.EXPECTED_MAIN_SHA256 = self.original_main_sha256
         checker.EXPECTED_OFFLINE_VERIFY_SHA256 = self.original_offline_sha256
-        checker.EXPECTED_VERIFY_JOB_SHA256 = (
-            self.original_verify_job_sha256
-        )
-        checker.EXPECTED_PACKAGE_JOB_SHA256 = (
-            self.original_package_job_sha256
-        )
-        checker.EXPECTED_ANDROID_WORKFLOW_SHA256 = (
-            self.original_android_workflow_sha256
-        )
         checker.EXPECTED_BUILD_AUTHORITY_SHA256 = (
             self.original_build_authority_sha256
         )
@@ -945,142 +884,98 @@ rootProject.name = "fixture"
         )
         self.assert_source_rejected("references an X-02 module")
 
-    def test_missing_ci_event_task_is_rejected(self) -> None:
-        self.replace(
+    def test_missing_local_release_script_is_rejected(self) -> None:
+        (self.root / "tools/local_release.ps1").unlink()
+        self.assert_source_rejected("missing required file: tools/local_release.ps1")
+
+    def test_github_workflow_is_not_an_x02_dependency(self) -> None:
+        _write(
+            self.root,
             ".github/workflows/android.yml",
-            "          :event-journal:test\n",
+            "this file is deliberately outside the local X-02 gate\n",
+        )
+        checker.check_repository(self.root)
+
+    def test_missing_local_boundary_test_is_rejected(self) -> None:
+        self.replace(
+            "tools/local_release.ps1",
+            "python tools/test_check_x02_boundaries.py\n",
             "",
         )
-        self.assert_source_rejected("Android CI missing")
-
-    def test_conditional_ci_artifact_step_is_rejected(self) -> None:
-        self.replace(
-            ".github/workflows/android.yml",
-            "      - name: Verify isolated X-02 packaged boundaries\n",
-            "      - name: Verify isolated X-02 packaged boundaries\n"
-            "        if: false\n",
+        self.assert_source_rejected(
+            "local_release.ps1 missing X-02 coverage: "
+            "test_check_x02_boundaries.py"
         )
-        self.assert_source_rejected("non-enforcing control")
 
-    def test_ci_artifact_failure_suppression_is_rejected(self) -> None:
-        self.replace(
-            ".github/workflows/android.yml",
-            "run: python3 tools/check_x02_boundaries.py --check-artifacts\n",
-            "run: python3 tools/check_x02_boundaries.py "
-            "--check-artifacts || true\n",
-        )
-        self.assert_source_rejected("suppresses failure")
-
-    def test_ci_continue_on_error_is_rejected(self) -> None:
-        self.replace(
-            ".github/workflows/android.yml",
-            "      - name: Verify isolated X-02 packaged boundaries\n",
-            "      - name: Verify isolated X-02 packaged boundaries\n"
-            "        continue-on-error: true\n",
-        )
-        self.assert_source_rejected("non-enforcing control")
-
-    def test_ci_custom_shell_is_rejected(self) -> None:
-        self.replace(
-            ".github/workflows/android.yml",
-            "      - name: Verify isolated X-02 packaged boundaries\n",
-            "      - name: Verify isolated X-02 packaged boundaries\n"
-            "        shell: echo {0}\n",
-        )
-        self.assert_source_rejected("non-enforcing control")
-
-    def test_ci_verify_job_condition_is_rejected(self) -> None:
-        self.replace(
-            ".github/workflows/android.yml",
-            "  verify:\n",
-            "  verify:\n    if: false\n",
-        )
-        self.assert_source_rejected("verify job must be unconditional")
-
-    def test_ci_isolated_package_must_not_run_tests(self) -> None:
-        self.replace(
-            ".github/workflows/android.yml",
-            "          :memory-protocol:jar\n",
-            "          :memory-protocol:test\n"
-            "          :memory-protocol:jar\n",
-        )
-        self.assert_source_rejected("must not execute repository tests")
-
-    def test_ci_isolated_package_must_not_restore_gradle_cache(self) -> None:
-        self.replace(
-            ".github/workflows/android.yml",
-            "      - name: Verify frozen X-02 source and build authority\n",
-            "      - uses: gradle/actions/setup-gradle@v6\n"
-            "      - name: Verify frozen X-02 source and build authority\n",
-        )
-        self.assert_source_rejected("must not restore shared Gradle state")
-
-    def test_ci_isolated_package_requires_private_gradle_home(self) -> None:
-        self.replace(
-            ".github/workflows/android.yml",
-            "        env:\n"
-            "          GRADLE_USER_HOME: "
-            "${{ runner.temp }}/sense-x02-gradle-home\n",
-            "",
-        )
-        self.assert_source_rejected("isolated Gradle user home")
-
-    def test_ci_isolated_package_must_depend_on_verify(self) -> None:
-        self.replace(
-            ".github/workflows/android.yml",
-            "    needs: verify\n",
-            "    needs: []\n",
-        )
-        self.assert_source_rejected("must depend exactly on verify")
-
-    def test_ci_release_must_consume_isolated_artifact(self) -> None:
-        path = self.root / ".github/workflows/android.yml"
+    def test_missing_local_source_checker_is_rejected(self) -> None:
+        path = self.root / "tools/local_release.ps1"
         text = path.read_text(encoding="utf-8")
         path.write_text(
             text.replace(
-                "name: sense-v0.4.3-clean-apks",
-                "name: untrusted-test-apks",
-                1,
+                "python tools/check_x02_boundaries.py\n",
+                "",
+            ).replace(
+                "python tools/check_x02_boundaries.py --check-artifacts\n",
+                "python tools/x02_artifact_gate.py --check-artifacts\n",
             ),
             encoding="utf-8",
         )
-        self.assert_source_rejected("one producer and one release consumer")
-
-    def test_ci_build_command_short_circuit_is_rejected_by_fingerprint(
-        self,
-    ) -> None:
-        self.replace(
-            ".github/workflows/android.yml",
-            "          ./gradlew\n",
-            "          true || ./gradlew\n",
+        self.assert_source_rejected(
+            "local_release.ps1 missing X-02 coverage: check_x02_boundaries.py"
         )
-        self.assert_source_rejected("frozen execution fingerprint drift")
 
-    def test_ci_x02_steps_moved_outside_verify_are_rejected_by_fingerprint(
-        self,
-    ) -> None:
-        path = self.root / ".github/workflows/android.yml"
+    def test_missing_local_gradle_tasks_are_rejected(self) -> None:
+        tasks = (
+            ":memory-protocol:test",
+            ":memory-protocol:jar",
+            ":event-journal:test",
+            ":event-journal:jar",
+            ":app:assembleDebug",
+            ":app:assembleBenchmark",
+            ":app:assembleRelease",
+        )
+        path = self.root / "tools/local_release.ps1"
+        original = path.read_text(encoding="utf-8")
+        for task in tasks:
+            with self.subTest(task=task):
+                path.write_text(
+                    original.replace(f"    {task} `\n", "").replace(
+                        f"    {task}\n",
+                        "",
+                    ),
+                    encoding="utf-8",
+                )
+                self.assert_source_rejected(
+                    f"local_release.ps1 missing X-02 coverage: {task}"
+                )
+        path.write_text(original, encoding="utf-8")
+
+    def test_missing_local_artifact_flag_is_rejected(self) -> None:
+        self.replace(
+            "tools/local_release.ps1",
+            " --check-artifacts\n",
+            "\n",
+        )
+        self.assert_source_rejected(
+            "local_release.ps1 missing X-02 coverage: --check-artifacts"
+        )
+
+    def test_local_artifact_check_must_follow_required_builds(self) -> None:
+        path = self.root / "tools/local_release.ps1"
         text = path.read_text(encoding="utf-8")
-        text = text.replace("  verify:\n", "  bypass:\n", 1)
+        artifact_call = (
+            "python tools/check_x02_boundaries.py --check-artifacts\n"
+        )
         path.write_text(
-            text
-            + "\n  verify:\n"
-            + "    runs-on: ubuntu-latest\n"
-            + "    steps:\n"
-            + "      - run: echo skipped\n",
+            text.replace(artifact_call, "").replace(
+                "& .\\gradlew.bat `\n",
+                artifact_call + "& .\\gradlew.bat `\n",
+            ),
             encoding="utf-8",
         )
-        self.assert_source_rejected("missing X-02 command")
-
-    def test_ci_jobs_parent_rename_is_rejected_by_workflow_fingerprint(
-        self,
-    ) -> None:
-        self.replace(
-            ".github/workflows/android.yml",
-            "jobs:\n",
-            "disabled:\n",
+        self.assert_source_rejected(
+            "checks X-02 artifacts before building required output"
         )
-        self.assert_source_rejected("Android CI workflow")
 
     def test_missing_offline_event_tests_is_rejected(self) -> None:
         self.replace(

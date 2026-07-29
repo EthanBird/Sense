@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Fail-closed release planning for Sense GitHub Actions.
+"""Fail-closed release planning for Sense's local release command.
 
-The Android workflow verifies every pull request and main-branch push. A push
-creates a GitHub Release when the Android application version changes, or
-recovers an interrupted first release while the matching tag is still absent.
-This module keeps that decision deterministic and testable outside GitHub
-Actions.
+The local publisher creates a release when the Android application version
+changes and supports idempotent recovery when the matching tag is absent or
+already targets the current commit. This module keeps that decision
+deterministic, auditable, and independent from any hosted automation service.
 """
 
 from __future__ import annotations
@@ -109,7 +108,7 @@ def decide_release(
     current_sha: str,
     tag_target: str | None,
 ) -> ReleaseDecision:
-    """Return the only safe action for a verified main-branch push."""
+    """Return the only safe action for a local release invocation."""
 
     previous.validate("previous")
     current.validate("current")
@@ -138,17 +137,16 @@ def decide_release(
 
     if not name_changed and not code_changed:
         if normalized_target == MISSING_TAG:
-            return ReleaseDecision(
-                status="RELEASE_RECOVER_MISSING_TAG",
-                should_release=True,
-                previous_version=f"{previous.name} ({previous.code})",
-                current_version=f"{current.name} ({current.code})",
-                release_tag=release_tag,
-                tag_target=normalized_target,
+            status = "RELEASE_RECOVER_MISSING_TAG"
+        elif normalized_target == current_sha:
+            status = "RELEASE_IDEMPOTENT_TAG"
+        else:
+            raise ReleasePlanError(
+                f"{release_tag} already targets {normalized_target}, not {current_sha}"
             )
         return ReleaseDecision(
-            status="SKIPPED_VERSION_UNCHANGED",
-            should_release=False,
+            status=status,
+            should_release=True,
             previous_version=f"{previous.name} ({previous.code})",
             current_version=f"{current.name} ({current.code})",
             release_tag=release_tag,
@@ -183,39 +181,6 @@ def decide_release(
     )
 
 
-def _append_lines(path: Path, lines: Sequence[str]) -> None:
-    with path.open("a", encoding="utf-8", newline="\n") as output:
-        for line in lines:
-            output.write(f"{line}\n")
-
-
-def write_github_outputs(path: Path, decision: ReleaseDecision) -> None:
-    _append_lines(
-        path,
-        (
-            f"should_release={'true' if decision.should_release else 'false'}",
-            f"status={decision.status}",
-            f"version={decision.current_version.split(' ', 1)[0]}",
-        ),
-    )
-
-
-def write_step_summary(path: Path, decision: ReleaseDecision) -> None:
-    _append_lines(
-        path,
-        (
-            "## Sense release plan",
-            "",
-            f"- Status: `{decision.status}`",
-            f"- Previous: `{decision.previous_version}`",
-            f"- Current: `{decision.current_version}`",
-            f"- Tag: `{decision.release_tag}`",
-            f"- Existing tag target: `{decision.tag_target}`",
-            f"- Release job enabled: `{'yes' if decision.should_release else 'no'}`",
-        ),
-    )
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--previous", required=True, type=Path)
@@ -224,8 +189,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--release-apk", required=True)
     parser.add_argument("--current-sha", required=True)
     parser.add_argument("--tag-target", default=MISSING_TAG)
-    parser.add_argument("--github-output", type=Path)
-    parser.add_argument("--step-summary", type=Path)
     return parser
 
 
@@ -253,10 +216,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
 
     print(json.dumps(asdict(decision), ensure_ascii=False, sort_keys=True))
-    if args.github_output is not None:
-        write_github_outputs(args.github_output, decision)
-    if args.step_summary is not None:
-        write_step_summary(args.step_summary, decision)
     return 0
 
 

@@ -421,16 +421,7 @@ EXPECTED_ROOT_BUILD_SCRIPT = """plugins {
 """
 
 EXPECTED_OFFLINE_VERIFY_SHA256 = (
-    "36e9000c5a81f30046cf1f17991892cb187e2cefe913256aec15b43dc8ba9374"
-)
-EXPECTED_VERIFY_JOB_SHA256 = (
-    "02446cd1b496d5bff901110846fde8e2113ee59af355c160bde95f2f52edb2ae"
-)
-EXPECTED_PACKAGE_JOB_SHA256 = (
-    "5e0c76c2554880b3aa86192d987187ff4c28983837dbe6aeec9d17a56a6ce19b"
-)
-EXPECTED_ANDROID_WORKFLOW_SHA256 = (
-    "c3df659b09dd0730d89ed418fa70fc745264bb1530d573ea55e1b8a46ba67584"
+    "682c18e4daaad6f33b0aa2535d5324c895ef7958762d0d3477e9a5ed2de7794f"
 )
 EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("settings.gradle.kts"):
@@ -1181,208 +1172,69 @@ def _check_dependency_graph(root: Path) -> None:
             )
 
 
-def _check_ci_and_offline_coverage(root: Path) -> None:
-    ci = _read_text(root, Path(".github/workflows/android.yml"))
-    verify_job = _extract_verify_job(ci)
-    package_job = _extract_workflow_job(ci, "package_x02")
-    for job_name, job in (
-        ("verify", verify_job),
-        ("package_x02", package_job),
-    ):
-        if re.search(
-            r"(?m)^    (?:if|defaults|continue-on-error|uses)\s*:",
-            job,
-        ):
-            raise BoundaryError(
-                f"Android CI {job_name} job must be unconditional, "
-                "non-reusable, and have no shell defaults"
-            )
-    if re.search(r"(?m)^defaults\s*:", ci):
-        raise BoundaryError("Android CI workflow-level shell defaults are forbidden")
-    if package_job.count("    needs: verify\n") != 1:
-        raise BoundaryError(
-            "Android CI package_x02 job must depend exactly on verify"
-        )
-    if package_job.count("actions/checkout@v6") != 1:
-        raise BoundaryError(
-            "Android CI package_x02 job must use one fresh checkout"
-        )
-    if "gradle/actions/setup-gradle" in package_job:
-        raise BoundaryError(
-            "Android CI package_x02 job must not restore shared Gradle state"
-        )
-    if ci.count("name: sense-v0.4.3-clean-apks") != 2:
-        raise BoundaryError(
-            "Android CI isolated APK artifact must have one producer "
-            "and one release consumer"
-        )
-    if "needs: [verify, package_x02]\n" not in ci:
-        raise BoundaryError("Android CI release planning must await package_x02")
-    if "needs: [verify, package_x02, release_plan]\n" not in ci:
-        raise BoundaryError("Android CI release must await package_x02")
-
-    ci_required = (
-        "python3 tools/test_check_x02_boundaries.py",
+def _check_local_and_offline_coverage(root: Path) -> None:
+    local_release = _read_text(root, Path("tools/local_release.ps1"))
+    local_required = (
+        "test_check_x02_boundaries.py",
         ":memory-protocol:test",
         ":memory-protocol:jar",
         ":event-journal:test",
         ":event-journal:jar",
         ":app:assembleDebug",
         ":app:assembleBenchmark",
-        "python3 tools/check_x02_boundaries.py --check-artifacts",
-        "sense-v0.4.3-clean-apks",
+        ":app:assembleRelease",
+        "--check-artifacts",
     )
-    for snippet in ci_required:
-        if snippet not in ci:
-            raise BoundaryError(f"Android CI missing X-02 coverage: {snippet}")
+    for snippet in local_required:
+        if snippet not in local_release:
+            raise BoundaryError(
+                f"local_release.ps1 missing X-02 coverage: {snippet}"
+            )
 
-    def containing_step(document: str, command: str) -> str:
-        lines = document.splitlines()
-        command_line = next(
-            (index for index, line in enumerate(lines) if command in line),
-            None,
+    checker_positions = [
+        match.start()
+        for match in re.finditer(
+            r"(?<!test_)check_x02_boundaries\.py",
+            local_release,
         )
-        if command_line is None:
-            raise BoundaryError(f"Android CI missing X-02 command: {command}")
-        start = None
-        indentation = None
-        for index in range(command_line, -1, -1):
-            match = re.match(r"^(\s*)-\s+(?:name|run|uses)\s*:", lines[index])
-            if match is not None:
-                start = index
-                indentation = len(match.group(1))
-                break
-        if start is None or indentation is None:
-            raise BoundaryError(f"Android CI has unscoped X-02 command: {command}")
-        end = len(lines)
-        for index in range(start + 1, len(lines)):
-            match = re.match(r"^(\s*)-\s+", lines[index])
-            if match is not None and len(match.group(1)) == indentation:
-                end = index
-                break
-        return "\n".join(lines[start:end])
-
-    protected_steps: dict[str, str] = {
-        "verify_source": containing_step(
-            verify_job,
-            "python3 tools/test_check_x02_boundaries.py",
-        ),
-        "package_source": containing_step(
-            package_job,
-            "python3 tools/check_x02_boundaries.py",
-        ),
-        "package_build": containing_step(
-            package_job,
+    ]
+    first_build_position = min(
+        local_release.find(task)
+        for task in (
+            ":memory-protocol:jar",
             ":event-journal:jar",
-        ),
-        "package_artifact": containing_step(
-            package_job,
-            "python3 tools/check_x02_boundaries.py --check-artifacts",
-        ),
-    }
-    for step_name, step in protected_steps.items():
-        if re.search(
-            r"(?m)^\s+(?:if|continue-on-error|shell)\s*:",
-            step,
-        ):
-            raise BoundaryError(
-                f"Android CI X-02 step has non-enforcing control: {step_name}"
-            )
-        if re.search(r"\|\|\s*true\b", step):
-            raise BoundaryError(
-                f"Android CI X-02 step suppresses failure: {step_name}"
-            )
-    source_step = protected_steps["verify_source"]
-    for exact_command in (
-        "python3 tools/test_check_x02_boundaries.py",
-        "python3 tools/check_x02_boundaries.py",
-    ):
-        if re.search(
-            rf"(?m)^\s+{re.escape(exact_command)}\s*$",
-            source_step,
-        ) is None:
-            raise BoundaryError(
-                f"Android CI X-02 source step is not exact: {exact_command}"
-            )
-    package_source_step = protected_steps["package_source"]
-    if re.search(
-        r"(?m)^\s+run:\s*python3 tools/check_x02_boundaries\.py\s*$",
-        package_source_step,
-    ) is None:
-        raise BoundaryError(
-            "Android CI isolated package source command is not exact"
+            ":app:assembleDebug",
+            ":app:assembleBenchmark",
+            ":app:assembleRelease",
         )
-    package_build_step = protected_steps["package_build"]
-    if package_build_step.count(
-        "GRADLE_USER_HOME: ${{ runner.temp }}/sense-x02-gradle-home"
-    ) != 1:
+    )
+    artifact_position = local_release.rfind("--check-artifacts")
+    has_source_checker = any(
+        position < first_build_position
+        for position in checker_positions
+    )
+    has_artifact_checker = any(
+        0 < artifact_position - position < 500
+        for position in checker_positions
+    )
+    if not has_source_checker or not has_artifact_checker:
         raise BoundaryError(
-            "Android CI isolated package build must use an isolated Gradle user home"
+            "local_release.ps1 missing X-02 coverage: "
+            "check_x02_boundaries.py"
         )
-    isolated_tasks = (
-        "--no-build-cache",
-        "--no-configuration-cache",
+
+    for task in (
         ":memory-protocol:jar",
         ":event-journal:jar",
         ":app:assembleDebug",
         ":app:assembleBenchmark",
-    )
-    for task in isolated_tasks:
-        if package_build_step.count(task) != 1:
-            raise BoundaryError(
-                f"Android CI isolated package build task drift: {task}"
-            )
-    if re.search(r"(?i):[^\s]*test", package_build_step):
-        raise BoundaryError(
-            "Android CI isolated package build must not execute repository tests"
-        )
-    artifact_step = protected_steps["package_artifact"]
-    if re.search(
-        r"(?m)^\s+run:\s*"
-        r"python3 tools/check_x02_boundaries\.py --check-artifacts\s*$",
-        artifact_step,
-    ) is None:
-        raise BoundaryError("Android CI X-02 artifact command is not exact")
-    if (
-        re.search(
-            r"(?m)^\s*python3 tools/check_x02_boundaries\.py(?: --check)?\s*$",
-            ci,
-        )
-        is None
+        ":app:assembleRelease",
     ):
-        raise BoundaryError("Android CI missing source-only X-02 boundary check")
-    artifact_position = package_job.find(
-        "python3 tools/check_x02_boundaries.py --check-artifacts"
-    )
-    if artifact_position < package_job.find(":event-journal:jar"):
-        raise BoundaryError("Android CI checks X-02 artifacts before building jars")
-    if artifact_position < package_job.find(":app:assembleDebug"):
-        raise BoundaryError("Android CI checks X-02 artifacts before building APKs")
-    actual_verify_sha256 = hashlib.sha256(
-        verify_job.encode("utf-8")
-    ).hexdigest()
-    if actual_verify_sha256 != EXPECTED_VERIFY_JOB_SHA256:
-        raise BoundaryError(
-            "Android CI verify job: frozen execution fingerprint drift; "
-            f"expected={EXPECTED_VERIFY_JOB_SHA256}, "
-            f"actual={actual_verify_sha256}"
-        )
-    actual_package_sha256 = hashlib.sha256(
-        package_job.encode("utf-8")
-    ).hexdigest()
-    if actual_package_sha256 != EXPECTED_PACKAGE_JOB_SHA256:
-        raise BoundaryError(
-            "Android CI package_x02 job: frozen execution fingerprint drift; "
-            f"expected={EXPECTED_PACKAGE_JOB_SHA256}, "
-            f"actual={actual_package_sha256}"
-        )
-    actual_workflow_sha256 = hashlib.sha256(ci.encode("utf-8")).hexdigest()
-    if actual_workflow_sha256 != EXPECTED_ANDROID_WORKFLOW_SHA256:
-        raise BoundaryError(
-            "Android CI workflow: frozen execution fingerprint drift; "
-            f"expected={EXPECTED_ANDROID_WORKFLOW_SHA256}, "
-            f"actual={actual_workflow_sha256}"
-        )
+        if local_release.rfind(task, 0, artifact_position) < 0:
+            raise BoundaryError(
+                "local_release.ps1 checks X-02 artifacts before building "
+                f"required output: {task}"
+            )
 
     offline = _read_text(root, Path("tools/offline_verify.sh"))
     if offline.count("set -euo pipefail") != 1:
@@ -1495,29 +1347,6 @@ def _check_ci_and_offline_coverage(root: Path) -> None:
             f"expected={EXPECTED_OFFLINE_VERIFY_SHA256}, "
             f"actual={actual_offline_sha256}"
             )
-
-
-def _extract_workflow_job(ci: str, job_name: str) -> str:
-    job_match = re.search(
-        rf"(?m)^  {re.escape(job_name)}:\s*$",
-        ci,
-    )
-    if job_match is None:
-        raise BoundaryError(f"Android CI is missing the {job_name} job")
-    next_job = re.search(
-        r"(?m)^  [A-Za-z0-9_-]+:\s*$",
-        ci[job_match.end():],
-    )
-    job_end = (
-        job_match.end() + next_job.start()
-        if next_job is not None
-        else len(ci)
-    )
-    return ci[job_match.start():job_end]
-
-
-def _extract_verify_job(ci: str) -> str:
-    return _extract_workflow_job(ci, "verify")
 
 
 def _find_single_main_jar(root: Path, module: str) -> Path:
@@ -1830,7 +1659,7 @@ def check_repository(
     _check_production_sources(root)
     _check_main_source_fingerprints(root)
     _check_dependency_graph(root)
-    _check_ci_and_offline_coverage(root)
+    _check_local_and_offline_coverage(root)
     if check_built_artifacts:
         check_artifacts(
             root,

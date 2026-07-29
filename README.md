@@ -85,6 +85,21 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | 既有质量 | AI、IME、UI、Core、M0–M6、Lint、APK、签名、权限与资产哈希无回退 |
 | APK 元数据 | `versionCode 22`、`versionName 0.4.5.beta.1`、`minSdk 29`、`targetSdk 36` |
 
+仓库不再运行 GitHub Actions；测试、Lint、性能门禁、APK 构建和签名校验统一在 Windows
+本地执行。完整本地验证与构建：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/local_release.ps1
+```
+
+当前提交推送到 GitHub 后，由同一脚本创建预发布、上传 APK 与校验和，并下载资产复核：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/local_release.ps1 -Publish
+```
+
+`-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。
+
 标准工程验证命令：
 
 ```bash
@@ -130,7 +145,7 @@ tools/offline_verify.sh
 ```
 
 从 `v0.4.5.beta.1` 起，GitHub Release 使用固定的 Sense release signer v1，并通过
-CI 指纹门禁校验；后续版本继续使用同一证书且递增 `versionCode`，即可直接覆盖升级。
+本地发布脚本的指纹门禁校验；后续版本继续使用同一证书且递增 `versionCode`，即可直接覆盖升级。
 此前由 runner 临时 debug 证书签名的发布资产属于另一条签名链。AI 编辑基础威胁模型见
 [`ADR 0010`](docs/adr/0010-v0.3.5-m8-ai-editor-harness.md)，Soul 与 Provider 延迟决策见
 [`ADR 0011`](docs/adr/0011-v0.3.7-m8-agent-soul-provider-latency.md)，本轮锁定、受限上下文
