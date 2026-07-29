@@ -57,6 +57,10 @@ mkdir -p \
     "$ANDROID_USER_HOME" "$APK_DIR"
 
 python3 "$ROOT/tools/test_release_plan.py" 2>&1 | tee "$OUT/release-plan-tests.txt"
+python3 "$ROOT/tools/test_check_x02_boundaries.py" 2>&1 |
+    tee "$OUT/x02-boundary-checker-tests.txt"
+python3 "$ROOT/tools/check_x02_boundaries.py" 2>&1 |
+    tee "$OUT/x02-boundaries.txt"
 python3 "$ROOT/tools/test_verify_manifest_permissions.py" 2>&1 |
     tee "$OUT/manifest-permission-tests.txt"
 python3 "$ROOT/tools/test_verify_aapt2_manifest_protection.py" 2>&1 |
@@ -699,6 +703,11 @@ unzip -l "$APK" \
     assets/pinyin_bigrams.bin \
     assets/english_lexicon.txt | tee "$OUT/apk-attributed-assets.txt"
 sha256sum "$APK" | tee "$APK.sha256"
+python3 "$ROOT/tools/check_x02_boundaries.py" \
+    --check-artifacts \
+    --memory-jar "$MEMORY_PROTOCOL_JAR" \
+    --event-journal-jar "$EVENT_JOURNAL_JAR" \
+    --app-apk "$APK"
 
 HOME="$ANDROID_USER_HOME" "$SDK/cmdline-tools/latest/bin/lint" \
     --exitcode \

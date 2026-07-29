@@ -421,13 +421,13 @@ EXPECTED_ROOT_BUILD_SCRIPT = """plugins {
 """
 
 EXPECTED_OFFLINE_VERIFY_SHA256 = (
-    "682c18e4daaad6f33b0aa2535d5324c895ef7958762d0d3477e9a5ed2de7794f"
+    "449200bd73e81db2a67bcb3fea034e566e5e7951828da5eb71b0102c52a4985b"
 )
 EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("settings.gradle.kts"):
         "1bd8cae694d3b353d47cd37d146fabbb0a89121cddf854250477c91a317044a4",
     Path("gradle/libs.versions.toml"):
-        "0819b9d7d066ea8e233c5d9d12ce7a77b6b26b553ee7ddc155554919c6c802ac",
+        "f52eac89837941e5beebb8f63fda295b58f273ea043806beef1e35362363ae7e",
     Path("gradle.properties"):
         "b2dd33a40d0083d65d3feda9aa8662013c3cb55e0b0abe2c29e5e0ebbbc19238",
     Path("gradlew"):
@@ -443,9 +443,9 @@ EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("ai-protocol/build.gradle.kts"):
         "b1d9c1acc7f6d19450691e461fa4da6643297fff752d3f9159e7445bc91ad9ab",
     Path("ai-runtime/build.gradle.kts"):
-        "9f1997745054d4fb16f5fcc579dbd347c68b24c7faa5b6f071f8fc452a99df65",
+        "bd40b3ef9e469d36e97becbc1de0a6ddfc3cd62068b7007efe040090330c9e0b",
     Path("app/build.gradle.kts"):
-        "5935a50a3f00086f0244c672a7ccdb818dabb1f353a6eb8864c539480f4bd698",
+        "6e2155f75a8ac6fbd38cddbbd17321e96129c3c079dbe3ff5ab59c770a150890",
     Path("benchmark/build.gradle.kts"):
         "999d9aba8d2813df7e108a9dece00c7f6406b3c5273e59f323d0565e650abf8b",
     Path("brain-api/build.gradle.kts"):
@@ -455,9 +455,9 @@ EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("event-journal/build.gradle.kts"):
         "696b4999da20f0b2def5b6adf5f341f702c46a14d31ee80a0f790561f6bd4930",
     Path("ime-service/build.gradle.kts"):
-        "a105ba4efa040d6026437991c733797bf024d4859b73b4498d1e52b812142dd7",
+        "4b9f67296f4fc0f661900a2cb6c9b50d5d9496f4c546393dc5516cbe53fee5e0",
     Path("ime-ui/build.gradle.kts"):
-        "cb8aaeadaa3450eed3441e5cec29f02c8f727662697477a51c0970aea4acee96",
+        "c733d477f1e5da2a43b6fafaf3fa213b47fe55bb5ed14f99916defd0f96e7c3a",
     Path("memory-protocol/build.gradle.kts"):
         "b1d9c1acc7f6d19450691e461fa4da6643297fff752d3f9159e7445bc91ad9ab",
 }
