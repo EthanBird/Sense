@@ -3,30 +3,6 @@ package io.github.ethanbird.senseime.ui
 import android.graphics.RectF
 
 /**
- * Immutable input for a letter-layout provider.
- *
- * A future nine-key implementation only needs to implement
- * [KeyboardLetterLayout] and can be selected by the View without changing
- * drawing, touch handling, Skill projection, or the surrounding panels.
- */
-internal data class KeyboardLetterLayoutRequest(
-    val viewWidth: Int,
-    val viewHeight: Int,
-    val chromeBottom: Float,
-    val shifted: Boolean,
-    val chineseMode: Boolean,
-    val swipeMode: SwipeCharacterMode,
-)
-
-internal fun interface KeyboardLetterLayout {
-    fun appendKeys(
-        request: KeyboardLetterLayoutRequest,
-        metrics: KeyboardMetrics,
-        output: MutableList<Key>,
-    )
-}
-
-/**
  * Layout owner for the stable keyboard chrome and the primary input panels.
  *
  * The Android View supplies state and receives scene keys; this class owns the
@@ -34,7 +10,8 @@ internal fun interface KeyboardLetterLayout {
  */
 internal class KeyboardPrimaryLayout(
     private val metrics: KeyboardMetrics,
-    private val letterLayout: KeyboardLetterLayout = QwertyKeyboardLetterLayout,
+    private val qwertyLayout: KeyboardLetterLayout = QwertyKeyboardLayout,
+    private val t9Layout: KeyboardLetterLayout? = null,
 ) {
     fun appendToolbar(viewWidth: Int, output: MutableList<Key>) {
         val items = TOOLBAR_ITEMS
@@ -42,7 +19,7 @@ internal class KeyboardPrimaryLayout(
         items.forEachIndexed { index, (icon, code) ->
             output += Key(
                 label = "",
-                code = code,
+                action = KeyAction.EmitKey(code),
                 bounds = RectF(
                     index * slot + metrics.dp(5f),
                     metrics.dp(3f),
@@ -75,7 +52,7 @@ internal class KeyboardPrimaryLayout(
         ).forEach { slot ->
             output += Key(
                 label = slot.item.label,
-                code = slot.item.keyCode,
+                action = KeyAction.EmitKey(slot.item.keyCode),
                 bounds = RectF(slot.left, slot.top, slot.right, slot.bottom),
                 style = KeyStyle.TOOLBOX_CARD,
                 icon = slot.item.icon(),
@@ -84,10 +61,17 @@ internal class KeyboardPrimaryLayout(
     }
 
     fun appendLetters(
+        mode: PrimaryKeyboardMode,
         request: KeyboardLetterLayoutRequest,
         output: MutableList<Key>,
     ) {
-        letterLayout.appendKeys(request, metrics, output)
+        val layout = when (mode) {
+            PrimaryKeyboardMode.QWERTY -> qwertyLayout
+            PrimaryKeyboardMode.T9 -> checkNotNull(t9Layout) {
+                "PrimaryKeyboardMode.T9 requires a registered KeyboardLetterLayout adapter"
+            }
+        }
+        layout.appendKeys(request, metrics, output)
     }
 
     fun appendNumbers(
@@ -118,14 +102,14 @@ internal class KeyboardPrimaryLayout(
             val icon = actionIcon(item.code)
             output += Key(
                 label = item.label,
-                code = item.code,
+                action = item.text?.let(KeyAction::CommitText)
+                    ?: KeyAction.EmitKey(item.code),
                 bounds = RectF(slot.left, slot.top, slot.right, slot.bottom),
                 style = when {
                     item.column == 0 && item.row < 4 -> KeyStyle.RAIL
                     item.code < 0 || icon != null -> KeyStyle.ACTION
                     else -> KeyStyle.LETTER
                 },
-                text = item.text,
                 icon = icon,
             )
         }
@@ -153,7 +137,12 @@ internal class KeyboardPrimaryLayout(
                     viewHeight - metrics.dp(5f),
                 )
             }
-            output += Key("", item.code, bounds, style = KeyStyle.SYSTEM)
+            output += Key(
+                label = "",
+                action = KeyAction.EmitKey(item.code),
+                bounds = bounds,
+                style = KeyStyle.SYSTEM,
+            )
         }
     }
 
@@ -166,7 +155,7 @@ internal class KeyboardPrimaryLayout(
         output: MutableList<Key>,
         backToLettersIcon: Icon? = null,
     ) {
-        appendWeightedRow(
+        appendWeightedRowKeys(
             items = items,
             viewWidth = viewWidth,
             y = y,
@@ -199,100 +188,7 @@ internal class KeyboardPrimaryLayout(
     }
 }
 
-/**
- * Current four-row QWERTY provider. It is deliberately independent from the
- * View so a T9 provider can coexist instead of branching through rendering and
- * touch code.
- */
-private object QwertyKeyboardLetterLayout : KeyboardLetterLayout {
-    override fun appendKeys(
-        request: KeyboardLetterLayoutRequest,
-        metrics: KeyboardMetrics,
-        output: MutableList<Key>,
-    ) {
-        val top = request.chromeBottom + metrics.dp(7f)
-        val bottom = request.viewHeight - metrics.systemBarHeight - metrics.dp(7f)
-        val rowHeight = (bottom - top - metrics.keyGap * 3f) / 4f
-        if (
-            rowHeight <= 0f ||
-            request.viewWidth <= metrics.horizontalPadding * 2f
-        ) {
-            return
-        }
-
-        appendLetterRow(
-            characters = "qwertyuiop",
-            y = top,
-            rowHeight = rowHeight,
-            extraInset = 0f,
-            request = request,
-            metrics = metrics,
-            output = output,
-        )
-        appendLetterRow(
-            characters = "asdfghjkl",
-            y = top + rowHeight + metrics.keyGap,
-            rowHeight = rowHeight,
-            extraInset = metrics.dp(18f),
-            request = request,
-            metrics = metrics,
-            output = output,
-        )
-        appendWeightedRow(
-            items = KeyboardLayoutContract.thirdLetterRow(
-                shifted = request.shifted,
-                chineseMode = request.chineseMode,
-            ),
-            viewWidth = request.viewWidth,
-            y = top + 2f * (rowHeight + metrics.keyGap),
-            rowHeight = rowHeight,
-            swipeMode = request.swipeMode,
-            metrics = metrics,
-            output = output,
-        )
-        appendWeightedRow(
-            items = KeyboardLayoutContract.functionRow(request.chineseMode),
-            viewWidth = request.viewWidth,
-            y = top + 3f * (rowHeight + metrics.keyGap),
-            rowHeight = rowHeight,
-            swipeMode = request.swipeMode,
-            metrics = metrics,
-            output = output,
-        )
-    }
-
-    private fun appendLetterRow(
-        characters: String,
-        y: Float,
-        rowHeight: Float,
-        extraInset: Float,
-        request: KeyboardLetterLayoutRequest,
-        metrics: KeyboardMetrics,
-        output: MutableList<Key>,
-    ) {
-        val left = metrics.horizontalPadding + extraInset
-        val right = request.viewWidth - metrics.horizontalPadding - extraInset
-        val itemWidth =
-            (right - left - metrics.keyGap * (characters.length - 1)) / characters.length
-        if (itemWidth <= 0f) return
-
-        characters.forEachIndexed { index, character ->
-            val x = left + index * (itemWidth + metrics.keyGap)
-            output += Key(
-                label = KeyboardLayoutContract.letterLabel(
-                    character = character,
-                    chineseMode = request.chineseMode,
-                    shifted = request.shifted,
-                ),
-                code = character.code,
-                bounds = RectF(x, y, x + itemWidth, y + rowHeight),
-                hint = SwipeCharacterMap.forKey(character.code, request.swipeMode),
-            )
-        }
-    }
-}
-
-private fun appendWeightedRow(
+internal fun appendWeightedRowKeys(
     items: List<KeyboardLayoutContract.WeightedKey>,
     viewWidth: Int,
     y: Float,
@@ -317,7 +213,7 @@ private fun appendWeightedRow(
         }
         output += Key(
             label = if (icon == null) item.label else "",
-            code = item.code,
+            action = KeyAction.EmitKey(item.code),
             bounds = RectF(x, y, x + itemWidth, y + rowHeight),
             hint = if (item.code > 0) {
                 SwipeCharacterMap.forKey(item.code, swipeMode)
@@ -331,7 +227,7 @@ private fun appendWeightedRow(
     }
 }
 
-private fun actionIcon(code: Int): Icon? = when (code) {
+internal fun actionIcon(code: Int): Icon? = when (code) {
     KeyCodes.SHIFT -> Icon.SHIFT
     KeyCodes.DELETE -> Icon.DELETE
     KeyCodes.SPACE -> Icon.SPACE

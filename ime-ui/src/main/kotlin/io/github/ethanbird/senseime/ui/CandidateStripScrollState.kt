@@ -232,7 +232,21 @@ class CandidateStripScrollState(
         y: Float,
         eventTimeMillis: Long,
     ): DragUpdate {
-        if (!owns(pointerId)) return DragUpdate(changed = false, dragLatched = false)
+        val flags = moveFlags(pointerId, x, y, eventTimeMillis)
+        return DragUpdate(
+            changed = flags and MOVE_CHANGED != 0,
+            dragLatched = flags and MOVE_DRAG_LATCHED != 0,
+        )
+    }
+
+    /** Allocation-free MOVE result for the MotionEvent hot path. */
+    fun moveFlags(
+        pointerId: Int,
+        x: Float,
+        y: Float,
+        eventTimeMillis: Long,
+    ): Int {
+        if (!owns(pointerId)) return 0
 
         if (!dragLatched) {
             val dx = x - downX
@@ -243,16 +257,15 @@ class CandidateStripScrollState(
             ) {
                 dragLatched = true
             } else {
-                return DragUpdate(changed = false, dragLatched = false)
+                return 0
             }
         }
 
         val previousOffset = offset
         sampleAndMove(x, eventTimeMillis)
-        return DragUpdate(
-            changed = offset != previousOffset,
-            dragLatched = true,
-        )
+        var flags = MOVE_DRAG_LATCHED
+        if (offset != previousOffset) flags = flags or MOVE_CHANGED
+        return flags
     }
 
     fun finish(
@@ -363,10 +376,12 @@ class CandidateStripScrollState(
         hasVelocitySample = false
     }
 
-    private companion object {
-        const val NONE = -1
-        const val VELOCITY_PRESERVE_ON_UP_MILLIS = 32L
-        const val VELOCITY_STALE_AFTER_MILLIS = 80L
+    companion object {
+        const val MOVE_CHANGED = 1
+        const val MOVE_DRAG_LATCHED = 1 shl 1
+        private const val NONE = -1
+        private const val VELOCITY_PRESERVE_ON_UP_MILLIS = 32L
+        private const val VELOCITY_STALE_AFTER_MILLIS = 80L
     }
 }
 

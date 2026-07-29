@@ -21,6 +21,8 @@ internal interface CandidateScene {
     val scrollOffset: Float
     val maximumScrollOffset: Float
     val sceneBuildCount: Long
+
+    fun firstCandidateEndingAfter(contentX: Float): Int
 }
 
 internal data class CandidateChange(
@@ -397,7 +399,7 @@ internal class CandidatePanel(
         return null
     }
 
-    fun firstCandidateEndingAfter(contentX: Float): Int {
+    override fun firstCandidateEndingAfter(contentX: Float): Int {
         var low = 0
         var high = mutableVisibleCandidates.size
         while (low < high) {
@@ -429,6 +431,13 @@ internal class CandidatePanel(
         eventTimeMillis: Long,
     ): CandidateStripScrollState.DragUpdate =
         stripScrollState.move(pointerId, x, y, eventTimeMillis)
+
+    fun moveDragFlags(
+        pointerId: Int,
+        x: Float,
+        y: Float,
+        eventTimeMillis: Long,
+    ): Int = stripScrollState.moveFlags(pointerId, x, y, eventTimeMillis)
 
     fun finishDrag(
         pointerId: Int,

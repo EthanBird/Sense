@@ -11,7 +11,7 @@ class AiPreviewLineLayoutCacheTest {
         val cache = AiPreviewLineLayoutCache()
         val text = "Sense AI streaming preview"
         var breakCalls = 0
-        val breaker = { _: String, start: Int, end: Int, _: Float ->
+        val breaker = AiPreviewTextBreaker { _: String, start: Int, end: Int, _: Float ->
             breakCalls++
             minOf(6, end - start)
         }

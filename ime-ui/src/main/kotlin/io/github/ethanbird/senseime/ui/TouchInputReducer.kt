@@ -90,6 +90,22 @@ class TouchInputReducer<T>(
         val verticalScrollLatched: Boolean,
     )
 
+    /**
+     * Primitive result bits for the hot MOVE path. Callers that process
+     * MotionEvent streams should prefer [onMoveFlags] so every sampled pointer
+     * reuses reducer storage instead of allocating a [MoveResult].
+     */
+    companion object {
+        const val MOVE_CANCELED: Int = 1
+        const val MOVE_TAP_SUPPRESSED: Int = 1 shl 1
+        const val MOVE_VERTICAL_SCROLL_LATCHED: Int = 1 shl 2
+
+        private const val NONE = -1
+        private const val NO_GESTURE: Byte = 0
+        private const val SWIPE_UP_GESTURE: Byte = -1
+        private const val SWIPE_DOWN_GESTURE: Byte = 1
+    }
+
     private var pointerIds = IntArray(10) { NONE }
     private var targets = arrayOfNulls<Any>(10)
     private var downXs = FloatArray(10)
@@ -148,23 +164,45 @@ class TouchInputReducer<T>(
         insideTapTarget: Boolean,
         policy: GesturePolicy,
     ): MoveResult {
+        val flags = onMoveFlags(
+            pointerId = pointerId,
+            x = x,
+            y = y,
+            insideTapTarget = insideTapTarget,
+            policy = policy,
+        )
+        return MoveResult(
+            canceled = flags and MOVE_CANCELED != 0,
+            tapSuppressed = flags and MOVE_TAP_SUPPRESSED != 0,
+            verticalScrollLatched = flags and MOVE_VERTICAL_SCROLL_LATCHED != 0,
+        )
+    }
+
+    /**
+     * Allocation-free variant of [onMove]. The returned bit set contains
+     * [MOVE_CANCELED], [MOVE_TAP_SUPPRESSED], and
+     * [MOVE_VERTICAL_SCROLL_LATCHED].
+     */
+    fun onMoveFlags(
+        pointerId: Int,
+        x: Float,
+        y: Float,
+        insideTapTarget: Boolean,
+        policy: GesturePolicy,
+    ): Int {
         val slot = findSlot(pointerId)
-        if (slot < 0) {
-            return MoveResult(
-                canceled = false,
-                tapSuppressed = false,
-                verticalScrollLatched = false,
-            )
-        }
+        if (slot < 0) return 0
         updateGestureTrace(slot, x, y, policy)
         if (policy.kind == GesturePolicy.Kind.TAP_ONLY && !insideTapTarget && !canceled[slot]) {
             canceled[slot] = true
         }
-        return MoveResult(
-            canceled = canceled[slot],
-            tapSuppressed = tapSuppressed[slot],
-            verticalScrollLatched = latchedGestures[slot] != NO_GESTURE,
-        )
+        var flags = 0
+        if (canceled[slot]) flags = flags or MOVE_CANCELED
+        if (tapSuppressed[slot]) flags = flags or MOVE_TAP_SUPPRESSED
+        if (latchedGestures[slot] != NO_GESTURE) {
+            flags = flags or MOVE_VERTICAL_SCROLL_LATCHED
+        }
+        return flags
     }
 
     fun onUp(pointerId: Int, x: Float, y: Float, insideFrozenTarget: Boolean): Activation<T>? {
@@ -196,6 +234,30 @@ class TouchInputReducer<T>(
         if (slot < 0) return null
         @Suppress("UNCHECKED_CAST")
         val target = targets[slot] as T
+        val gesture = onUpGesture(
+            pointerId = pointerId,
+            x = x,
+            y = y,
+            insideTapTarget = insideTapTarget,
+            policy = policy,
+        ) ?: return null
+        return Activation(target, gesture)
+    }
+
+    /**
+     * Allocation-free terminal path. The caller reads [target] before this
+     * method and receives only the enum outcome; reducer ownership is released
+     * exactly as in [onUp].
+     */
+    fun onUpGesture(
+        pointerId: Int,
+        x: Float,
+        y: Float,
+        insideTapTarget: Boolean,
+        policy: GesturePolicy,
+    ): Gesture? {
+        val slot = findSlot(pointerId)
+        if (slot < 0) return null
         updateGestureTrace(slot, x, y, policy)
         val wasCanceled = canceled[slot]
         val wasTapSuppressed = tapSuppressed[slot]
@@ -232,7 +294,7 @@ class TouchInputReducer<T>(
                 }
             }
         }
-        return Activation(target, gesture)
+        return gesture
     }
 
     fun cancel(pointerId: Int): T? {
@@ -319,12 +381,6 @@ class TouchInputReducer<T>(
         }
     }
 
-    private companion object {
-        const val NONE = -1
-        const val NO_GESTURE: Byte = 0
-        const val SWIPE_UP_GESTURE: Byte = -1
-        const val SWIPE_DOWN_GESTURE: Byte = 1
-    }
 }
 
 /**

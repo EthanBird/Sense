@@ -57,26 +57,91 @@ internal enum class Icon {
 }
 
 /**
+ * Exactly one semantic action for a rendered key.
+ *
+ * Actions are allocated only when a scene is rebuilt. Touch and draw paths
+ * retain the same [Key] and [KeyAction] instances for the scene lifetime.
+ */
+internal sealed interface KeyAction {
+    val keyCode: Int
+        get() = 0
+
+    data class EmitKey(
+        override val keyCode: Int,
+    ) : KeyAction
+
+    data class CommitText(
+        val text: String,
+    ) : KeyAction
+
+    data class Clipboard(
+        val action: KeyboardClipboardAction,
+        val index: Int = -1,
+    ) : KeyAction
+
+    data class Editor(
+        val action: KeyboardEditorAction,
+    ) : KeyAction
+
+    data class SelectEmojiCategory(
+        val index: Int,
+    ) : KeyAction
+
+    data class SelectSymbolCategory(
+        val index: Int,
+    ) : KeyAction
+
+    data object None : KeyAction
+}
+
+/**
+ * Scene-stable identity for a physical key.
+ *
+ * Bounds and labels are deliberately excluded: both can change with viewport,
+ * Shift and font configuration while the physical owner remains the same.
+ */
+internal data class PhysicalKeyId(
+    val surface: KeyboardSkillPhysicalOwner.Surface,
+    val panelToken: String?,
+    val signature: KeyboardSkillPhysicalOwner.Signature,
+    val occurrence: Int,
+) {
+    fun toSkillOwner(): KeyboardSkillPhysicalOwner = KeyboardSkillPhysicalOwner(
+        surface = surface,
+        panelToken = panelToken,
+        signature = signature,
+        occurrence = occurrence,
+    )
+
+    fun matches(owner: KeyboardSkillPhysicalOwner): Boolean =
+        surface == owner.surface &&
+            panelToken == owner.panelToken &&
+            signature == owner.signature &&
+            occurrence == owner.occurrence
+}
+
+/**
  * One rendered key in content coordinates.
  *
  * Scrollable panel keys intentionally retain content-space bounds; drawing and
  * hit testing apply the current panel offset. This keeps the scene stable while
  * a drag/fling is in progress.
  */
-internal data class Key(
+internal class Key(
     val label: String,
-    val code: Int,
+    val action: KeyAction,
     val bounds: RectF,
     val hint: String? = null,
     val style: KeyStyle = KeyStyle.LETTER,
-    val text: String? = null,
     val icon: Icon? = null,
-    val clipboardAction: SenseKeyboardView.ClipboardAction? = null,
-    val clipboardIndex: Int = -1,
     val secondaryLabel: String? = null,
-    val editorAction: SenseKeyboardView.EditorAction? = null,
     val scrollPanel: ScrollPanel? = null,
-)
+) {
+    /** Primitive hot-path projection; reading a key code never allocates. */
+    val code: Int = action.keyCode
+
+    internal var physicalId: PhysicalKeyId? = null
+}
 
 internal data class VisibleCandidate(
     val sourceIndex: Int,

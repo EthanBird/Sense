@@ -23,7 +23,7 @@ internal class AiPreviewLineLayoutCache(
         text: String,
         width: Float,
         textSize: Float,
-        breakText: (text: String, start: Int, end: Int, maximumWidth: Float) -> Int,
+        breakText: AiPreviewTextBreaker,
     ): Boolean {
         val widthBits = width.toRawBits()
         val textSizeBits = textSize.toRawBits()
@@ -52,7 +52,7 @@ internal class AiPreviewLineLayoutCache(
             // Reuse the same explicit-line boundary for every wrapped visual line.
             // Re-running indexOf from each visual line makes a 4K line quadratic.
             while (index < newline) {
-                var count = breakText(text, index, newline, width)
+                var count = breakText.breakText(text, index, newline, width)
                 if (count <= 0) count = 1
                 if (
                     index + count < text.length &&
@@ -93,4 +93,13 @@ internal class AiPreviewLineLayoutCache(
         starts = starts.copyOf(next)
         ends = ends.copyOf(next)
     }
+}
+
+internal fun interface AiPreviewTextBreaker {
+    fun breakText(
+        text: String,
+        start: Int,
+        end: Int,
+        maximumWidth: Float,
+    ): Int
 }
