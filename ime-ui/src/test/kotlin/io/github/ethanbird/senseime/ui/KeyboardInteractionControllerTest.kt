@@ -188,6 +188,70 @@ class KeyboardInteractionControllerTest {
         assertTrue(flags and CandidateStripScrollState.MOVE_CHANGED != 0)
     }
 
+    @Test
+    fun `candidate publication fence covers readiness and same revision content changes`() {
+        val current = listOf("旧候选", "第二项")
+
+        assertFalse(
+            CandidatePointerFence.shouldCancel(
+                previousReady = true,
+                previousCandidates = current,
+                nextReady = true,
+                nextCandidates = current.toList(),
+            ),
+        )
+        assertTrue(
+            CandidatePointerFence.shouldCancel(
+                previousReady = true,
+                previousCandidates = current,
+                nextReady = true,
+                nextCandidates = listOf("新候选", "第二项"),
+            ),
+        )
+        assertTrue(
+            CandidatePointerFence.shouldCancel(
+                previousReady = true,
+                previousCandidates = current,
+                nextReady = false,
+                nextCandidates = null,
+            ),
+        )
+        assertTrue(
+            CandidatePointerFence.shouldCancel(
+                previousReady = false,
+                previousCandidates = current,
+                nextReady = true,
+                nextCandidates = current.toList(),
+            ),
+        )
+    }
+
+    @Test
+    fun `candidate pointer classifier covers values controls and both drag surfaces`() {
+        val bounds = RectF(0f, 0f, 40f, 40f)
+        val policy = TouchInputReducer.GesturePolicy.tapOnly()
+        val candidateTargets = listOf(
+            FrozenTouchTarget.CandidateValue(7L, 0, bounds, policy),
+            FrozenTouchTarget.CandidateControlValue(CandidateControl.EXPAND, bounds, policy),
+            FrozenTouchTarget.CandidatePageArea(bounds, policy),
+            FrozenTouchTarget.CandidateStripArea(bounds, policy),
+        )
+        val ordinaryTargets = listOf(
+            FrozenTouchTarget.KeyValue(
+                key = Key(
+                    label = "a",
+                    action = KeyAction.EmitKey('a'.code),
+                    bounds = bounds,
+                ),
+                gesturePolicy = policy,
+            ),
+            FrozenTouchTarget.PanelScrollArea(ScrollPanel.EMOJI, bounds, policy),
+        )
+
+        assertTrue(candidateTargets.all { it.isCandidatePointerTarget() })
+        assertTrue(ordinaryTargets.none { it.isCandidatePointerTarget() })
+    }
+
     private class FakeClock : KeyboardInteractionClock {
         var nowMillis = 0L
 

@@ -44,12 +44,18 @@ data class PinyinComposition(
     val visibleText: String
         get() = acceptedText + remainingPinyin
 
+    /** Raw pinyin retained by the complete reversible composing transaction. */
+    val composingCodeLength: Int
+        get() = remainingPinyin.length +
+            acceptedSegments.sumOf { segment -> segment.consumedPinyin.length }
+
     val isComplete: Boolean
         get() = remainingPinyin.isEmpty()
 
     fun type(character: Char): PinyinComposition {
         val normalized = character.lowercaseChar()
         if (normalized !in 'a'..'z') return this
+        if (composingCodeLength >= PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH) return this
         return copy(remainingPinyin = remainingPinyin + normalized, revision = revision + 1)
     }
 
@@ -105,4 +111,17 @@ interface ProgressivePinyinDecoder : InputDecoder {
         composition: PinyinComposition,
         limit: Int = 5,
     ): ProgressivePinyinDecoding
+
+    /**
+     * Decodes with bounded editor text immediately before the current composing span.
+     *
+     * Implementations that do not model context keep their existing behavior. Context-aware
+     * decoders may prefer [PinyinComposition.acceptedText] because it is newer than
+     * [leftContext] and still belongs to the reversible composing transaction.
+     */
+    fun decodeProgressively(
+        composition: PinyinComposition,
+        leftContext: CharSequence,
+        limit: Int = 5,
+    ): ProgressivePinyinDecoding = decodeProgressively(composition, limit)
 }

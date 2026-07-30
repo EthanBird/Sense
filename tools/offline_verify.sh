@@ -33,9 +33,13 @@ EVENT_JOURNAL_JAR="$OUT/event-journal-main.jar"
 APK_DIR="$ROOT/app/build/outputs/apk/offline"
 APK="$APK_DIR/Sense-v0.4.5.beta.1-debug.apk"
 LEXICON_ASSET="$ROOT/ime-service/src/main/assets/pinyin_lexicon.bin"
-LEXICON_SHA256="ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
+LEXICON_SHA256="71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800"
+LEXICON_MANIFEST="$ROOT/ime-service/src/main/lexicon/sources.json"
+LEXICON_STATS="$ROOT/ime-service/src/main/lexicon/pinyin_lexicon.stats.json"
+SYLLABLES_ASSET="$ROOT/ime-service/src/main/assets/pinyin_syllables.txt"
+SYLLABLES_SHA256="3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3"
 BIGRAM_ASSET="$ROOT/ime-service/src/main/assets/pinyin_bigrams.bin"
-BIGRAM_SHA256="db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c"
+BIGRAM_SHA256="9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d"
 ENGLISH_ASSET="$ROOT/ime-service/src/main/assets/english_lexicon.txt"
 ENGLISH_SHA256="1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624"
 ENGLISH_WORD_COUNT="20000"
@@ -65,18 +69,23 @@ python3 "$ROOT/tools/test_verify_manifest_permissions.py" 2>&1 |
     tee "$OUT/manifest-permission-tests.txt"
 python3 "$ROOT/tools/test_verify_aapt2_manifest_protection.py" 2>&1 |
     tee "$OUT/aapt2-manifest-protection-tests.txt"
+python3 "$ROOT/tools/test_lexicon_sources.py" 2>&1 | tee "$OUT/lexicon-source-tests.txt"
 python3 "$ROOT/tools/test_build_pinyin_lexicon.py" 2>&1 | tee "$OUT/lexicon-builder-tests.txt"
 python3 "$ROOT/tools/test_build_bigram_model.py" 2>&1 | tee "$OUT/bigram-builder-tests.txt"
 python3 "$ROOT/tools/test_m4_core_assets.py" 2>&1 | tee "$OUT/m4-core-assets-tests.txt"
 python3 "$ROOT/tools/test_m5_mixed_assets.py" 2>&1 | tee "$OUT/m5-mixed-assets-tests.txt"
 python3 "$ROOT/tools/build_pinyin_lexicon.py" \
-    "$LEXICON_ASSET" \
+    "$LEXICON_MANIFEST" \
     "$OUT/pinyin_lexicon.bin" \
-    --base-binary \
-    --custom "$ROOT/ime-service/src/main/lexicon/sense_idioms.dict.tsv" \
-    --custom "$ROOT/ime-service/src/main/lexicon/sense_custom.dict.tsv"
+    --manifest \
+    --canonical-output "$OUT/pinyin_lexicon.canonical.tsv" \
+    --syllables-output "$OUT/pinyin_syllables.txt" \
+    --stats-output "$OUT/pinyin_lexicon.stats.json"
 cmp "$LEXICON_ASSET" "$OUT/pinyin_lexicon.bin"
+cmp "$SYLLABLES_ASSET" "$OUT/pinyin_syllables.txt"
+cmp "$LEXICON_STATS" "$OUT/pinyin_lexicon.stats.json"
 printf '%s  %s\n' "$LEXICON_SHA256" "$LEXICON_ASSET" | sha256sum -c -
+printf '%s  %s\n' "$SYLLABLES_SHA256" "$SYLLABLES_ASSET" | sha256sum -c -
 python3 "$ROOT/tools/build_bigram_model.py" \
     "$LEXICON_ASSET" \
     "$OUT/pinyin_bigrams.bin" \
@@ -88,11 +97,9 @@ awk '!/^#/ && NF { count++ } END { print count + 0 }' "$ENGLISH_ASSET" | grep -F
 
 cmp "$ROOT/NOTICE" "$ROOT/ime-service/src/main/assets/NOTICE.txt"
 cmp "$ROOT/LICENSE" "$ROOT/ime-service/src/main/assets/LICENSE.txt"
-cmp "$ROOT/licenses/rime-pinyin-simp-LICENSE" "$ROOT/ime-service/src/main/assets/RIME-PINYIN-SIMP-LICENSE.txt"
-cmp "$ROOT/licenses/CC-CEDICT-NOTICE.md" "$ROOT/ime-service/src/main/assets/CC-CEDICT-NOTICE.txt"
-cmp "$ROOT/licenses/CC-BY-SA-4.0.txt" "$ROOT/ime-service/src/main/assets/CC-BY-SA-4.0.txt"
+cmp "$ROOT/licenses/rime-frost-GPL-3.0.txt" "$ROOT/ime-service/src/main/assets/RIME-FROST-GPL-3.0.txt"
+cmp "$ROOT/licenses/RIME-FROST-NOTICE.md" "$ROOT/ime-service/src/main/assets/RIME-FROST-NOTICE.txt"
 cmp "$ROOT/licenses/popular-english-words-ISC.txt" "$ROOT/ime-service/src/main/assets/POPULAR-ENGLISH-WORDS-ISC.txt"
-cmp "$ROOT/licenses/chinese-idiom-chengyu-MIT.txt" "$ROOT/ime-service/src/main/assets/CHINESE-IDIOM-CHENGYU-MIT.txt"
 
 COMPILER_CP=$(find "$KOTLIN_LIB" -maxdepth 1 -name '*.jar' -print | paste -sd: -)
 STDLIB="$KOTLIN_LIB/kotlin-stdlib-2.0.21.jar"
@@ -679,11 +686,9 @@ if [[ -n "$UNEXPECTED_PERMISSIONS" ]]; then
 fi
 unzip -p "$APK" assets/NOTICE.txt | cmp - "$ROOT/NOTICE"
 unzip -p "$APK" assets/LICENSE.txt | cmp - "$ROOT/LICENSE"
-unzip -p "$APK" assets/RIME-PINYIN-SIMP-LICENSE.txt | cmp - "$ROOT/licenses/rime-pinyin-simp-LICENSE"
-unzip -p "$APK" assets/CC-CEDICT-NOTICE.txt | cmp - "$ROOT/licenses/CC-CEDICT-NOTICE.md"
-unzip -p "$APK" assets/CC-BY-SA-4.0.txt | cmp - "$ROOT/licenses/CC-BY-SA-4.0.txt"
+unzip -p "$APK" assets/RIME-FROST-GPL-3.0.txt | cmp - "$ROOT/licenses/rime-frost-GPL-3.0.txt"
+unzip -p "$APK" assets/RIME-FROST-NOTICE.txt | cmp - "$ROOT/licenses/RIME-FROST-NOTICE.md"
 unzip -p "$APK" assets/POPULAR-ENGLISH-WORDS-ISC.txt | cmp - "$ROOT/licenses/popular-english-words-ISC.txt"
-unzip -p "$APK" assets/CHINESE-IDIOM-CHENGYU-MIT.txt | cmp - "$ROOT/licenses/chinese-idiom-chengyu-MIT.txt"
 unzip -p "$APK" sense/soul.md | cmp - "$ROOT/ai-brain/src/main/resources/sense/soul.md"
 unzip -p "$APK" assets/pinyin_lexicon.bin | sha256sum | awk '{print $1}' | grep -Fx "$LEXICON_SHA256"
 unzip -p "$APK" assets/pinyin_bigrams.bin | sha256sum | awk '{print $1}' | grep -Fx "$BIGRAM_SHA256"
@@ -694,9 +699,8 @@ unzip -p "$APK" assets/english_lexicon.txt |
 unzip -l "$APK" \
     assets/NOTICE.txt \
     assets/LICENSE.txt \
-    assets/RIME-PINYIN-SIMP-LICENSE.txt \
-    assets/CC-CEDICT-NOTICE.txt \
-    assets/CC-BY-SA-4.0.txt \
+    assets/RIME-FROST-GPL-3.0.txt \
+    assets/RIME-FROST-NOTICE.txt \
     assets/POPULAR-ENGLISH-WORDS-ISC.txt \
     sense/soul.md \
     assets/pinyin_lexicon.bin \

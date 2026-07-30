@@ -1,0 +1,78 @@
+{
+  "asset": {
+    "bytes": 35069585,
+    "format": "SPLX/3",
+    "sha256": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800"
+  },
+  "counts": {
+    "exact": {
+      "candidates": 610298,
+      "keys": 524851
+    },
+    "hybrid": {
+      "candidates": 236549,
+      "keys": 213604
+    },
+    "initials": {
+      "candidates": 188151,
+      "keys": 76017
+    },
+    "prefix": {
+      "candidates": 71510,
+      "keys": 9310
+    }
+  },
+  "exact_unique_texts": 608314,
+  "manifest": {
+    "path": "sources.json",
+    "sha256": "4275a03b9130bc06bcaa46dddac2db3ed2c75cc04a314dda4317bb6d06e62829",
+    "sources": [
+      {
+        "accepted": 8527,
+        "id": "rime-frost-8105",
+        "malformed": 0,
+        "path": "vendor/rime-frost/cn_dicts/8105.dict.yaml",
+        "rejected_length": 0,
+        "rejected_non_han": 2,
+        "sha256": "5a6bb545d07140406208728aeed70706e84279daeee132f10b069cd6387a042a"
+      },
+      {
+        "accepted": 365740,
+        "id": "rime-frost-base",
+        "malformed": 0,
+        "path": "vendor/rime-frost/cn_dicts/base.dict.yaml",
+        "rejected_length": 14,
+        "rejected_non_han": 0,
+        "sha256": "449901a9c01f1bc9b0c5be1e98b764506da1e0930fe4f021cacbd4c08157bbea"
+      },
+      {
+        "accepted": 235580,
+        "id": "rime-frost-ext",
+        "malformed": 0,
+        "path": "vendor/rime-frost/cn_dicts/ext.dict.yaml",
+        "rejected_length": 0,
+        "rejected_non_han": 0,
+        "sha256": "44b78e4feb8a3b302298844061626aa4e2194901b8ed4ee6acec84261b6aa90d"
+      },
+      {
+        "accepted": 568,
+        "id": "rime-frost-others",
+        "malformed": 0,
+        "path": "vendor/rime-frost/cn_dicts/others.dict.yaml",
+        "rejected_length": 0,
+        "rejected_non_han": 0,
+        "sha256": "68e4cee36cdf77a05e2abd308cb88b84a4e40038de53d56ecccc1d357509013a"
+      },
+      {
+        "accepted": 6,
+        "id": "sense-product",
+        "malformed": 0,
+        "path": "sense_custom.dict.tsv",
+        "rejected_length": 0,
+        "rejected_non_han": 0,
+        "sha256": "cb8529f7edf7b98713eff61f3404a5e83f2cea0f1cb35aa92768ffbee0e42f25"
+      }
+    ]
+  },
+  "schema_version": 1
+}

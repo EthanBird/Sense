@@ -36,8 +36,12 @@ object M5MixedInputBenchmark {
         check(adaptive.decode("z", 16).firstOrNull()?.text == "在") {
             "Corpus-noise English entries must not displace z -> 在"
         }
-        check(adaptive.decode("hang", 16).firstOrNull()?.matchKind == CandidateMatchKind.BASE_EXACT) {
-            "A hybrid alias must not displace a valid full-pinyin candidate"
+        check(
+            adaptive.decode("hang", 16)
+                .firstOrNull { it.matchKind !in ENGLISH_MATCH_KINDS }
+                ?.matchKind == CandidateMatchKind.BASE_EXACT,
+        ) {
+            "A hybrid alias must not displace a valid full-pinyin candidate among Chinese results"
         }
         check(
             base.decodeAfter("上".codePointAt(0), "hang", 255)
@@ -53,20 +57,53 @@ object M5MixedInputBenchmark {
             "host English order regression: ${host.wholeCandidates.take(8)}"
         }
         val hostPrefix = host.prefixCandidates.firstOrNull {
-            it.candidate.text == "好哦" && it.consumedPinyin == "ho" && it.remainingPinyin == "st"
-        } ?: error("host must expose 好哦|st: ${host.prefixCandidates.take(16)}")
-        check(hostComposition.acceptPrefix(host.revision, hostPrefix).visibleText == "好哦st")
+            it.consumedPinyin == "ho" && it.remainingPinyin == "st"
+        } ?: error("host must expose a selectable production prefix for ho|st: ${host.prefixCandidates.take(16)}")
+        val acceptedHostPrefix = hostComposition.acceptPrefix(host.revision, hostPrefix)
+        check(acceptedHostPrefix.visibleText == hostPrefix.candidate.text + "st") {
+            "host prefix acceptance must preserve the selected text and suffix: $acceptedHostPrefix"
+        }
 
-        val funValues = adaptive.decode("fun", 16).map { it.text }
-        check(funValues.take(6) == listOf("妇女", "👩🏻", "服你", "赋能", "fun", "腐女")) {
-            "fun mixed order regression: $funValues"
+        val funCandidates = adaptive.decode("fun", 64)
+        check(
+            funCandidates.firstOrNull()?.text == "fun" &&
+                funCandidates.firstOrNull()?.matchKind == CandidateMatchKind.ENGLISH_EXACT,
+        ) {
+            "Exact English input must rank by evidence instead of a synthetic fixed slot: ${funCandidates.take(16)}"
+        }
+        val frostFunCandidates = funCandidates.filter { it.text in FROST_FUN_TEXTS }
+        check(frostFunCandidates.map { it.text }.toSet() == FROST_FUN_TEXTS) {
+            "Frost fun hybrid recall regression: ${funCandidates.take(64)}"
+        }
+        check(frostFunCandidates.first().text == "妇女") {
+            "The highest-frequency Frost fun hybrid must lead its production cohort: $frostFunCandidates"
+        }
+        check(
+            frostFunCandidates.indexOfFirst { it.text == "妇女" } <
+                frostFunCandidates.indexOfFirst { it.text == "父女" } &&
+                frostFunCandidates.indexOfFirst { it.text == "父女" } <
+                frostFunCandidates.indexOfFirst { it.text == "腐女" },
+        ) {
+            "Frost fu-nv frequency order regression: $frostFunCandidates"
+        }
+        check(
+            frostFunCandidates.all {
+                it.matchKind == CandidateMatchKind.BASE_HYBRID &&
+                    it.canonicalPinyin in FROST_FUN_CANONICAL_CODES
+            },
+        ) {
+            "Frost fun records must be recalled through typed hybrid evidence: $frostFunCandidates"
         }
         val learnedFun = adaptive.learn(
             "fun",
-            adaptive.decode("fun", 16).first { it.text == "妇女" },
+            frostFunCandidates.first { it.text == "妇女" },
         ) ?: error("fun hybrid selection must be learnable")
         check("fun" in learnedFun.aliases)
-        check(adaptive.decode("fun", 16).first().matchKind == CandidateMatchKind.USER_FULL) {
+        check(
+            adaptive.decode("fun", 64)
+                .firstOrNull { it.matchKind !in ENGLISH_MATCH_KINDS }
+                ?.matchKind == CandidateMatchKind.USER_FULL,
+        ) {
             "fun hybrid alias must be recalled immediately"
         }
         val reloaded = AdaptivePinyinDecoder(
@@ -75,7 +112,11 @@ object M5MixedInputBenchmark {
             PinyinSyllableSegmenter(syllablesFile.readLines()),
             english,
         )
-        check(reloaded.decode("fun", 16).first().matchKind == CandidateMatchKind.USER_FULL) {
+        check(
+            reloaded.decode("fun", 64)
+                .firstOrNull { it.matchKind !in ENGLISH_MATCH_KINDS }
+                ?.matchKind == CandidateMatchKind.USER_FULL,
+        ) {
             "fun hybrid alias must survive user-lexicon reload"
         }
         val hybrid = adaptive.decode("zhongwsrf", 16).firstOrNull()
@@ -122,15 +163,16 @@ object M5MixedInputBenchmark {
         report.writeText(
             """
             {
-              "schemaVersion": 1,
+              "schemaVersion": 2,
               "stage": "M5-mixed-input",
               "generatedAt": "${Instant.now()}",
               "correctness": {
                 "w": "我",
                 "z": "在",
-                "hangFirstSource": "BASE_EXACT",
-                "host": ["host", "hosts", "hostile", "好哦|st"],
-                "fun": ["妇女", "👩🏻", "服你", "赋能", "fun", "腐女"],
+                "hangFirstChineseSource": "BASE_EXACT",
+                "host": ["host", "hosts", "hostile", "${jsonString(hostPrefix.candidate.text)}|st"],
+                "funEnglishExact": "fun",
+                "funFrostHybrid": ${jsonStringArray(frostFunCandidates.map { it.text })},
                 "funLearnedAlias": "fun",
                 "zhongwsrf": "中文输入法",
                 "zhongwensrf": "中文输入法"
@@ -177,6 +219,28 @@ object M5MixedInputBenchmark {
 
     private fun format(value: Double): String = "%.2f".format(Locale.US, value)
 
+    private fun jsonStringArray(values: List<String>): String =
+        values.joinToString(prefix = "[", postfix = "]") { "\"${jsonString(it)}\"" }
+
+    private fun jsonString(value: String): String = buildString(value.length) {
+        value.forEach { character ->
+            when (character) {
+                '\\' -> append("\\\\")
+                '"' -> append("\\\"")
+                '\b' -> append("\\b")
+                '\u000c' -> append("\\f")
+                '\n' -> append("\\n")
+                '\r' -> append("\\r")
+                '\t' -> append("\\t")
+                else -> if (character.code < 0x20) {
+                    append("\\u%04x".format(character.code))
+                } else {
+                    append(character)
+                }
+            }
+        }
+    }
+
     private const val SAMPLE_COUNT = 7
     private const val WARMUP_COUNT = 100
     private const val ENGLISH_LOOKUPS = 5_000
@@ -185,4 +249,10 @@ object M5MixedInputBenchmark {
     private const val ENGLISH_P95_GATE_NS = 500_000.0
     private const val MIXED_P95_GATE_NS = 5_000_000.0
     private const val HYBRID_P95_GATE_NS = 5_000_000.0
+    private val ENGLISH_MATCH_KINDS = setOf(
+        CandidateMatchKind.ENGLISH_EXACT,
+        CandidateMatchKind.ENGLISH_PREFIX,
+    )
+    private val FROST_FUN_TEXTS = linkedSetOf("妇女", "父女", "腐女", "赋能")
+    private val FROST_FUN_CANONICAL_CODES = setOf("funv", "funeng")
 }

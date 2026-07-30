@@ -10,13 +10,20 @@ internal fun interface AboutNoticeRepository {
     fun load(): Result<String>
 }
 
+internal val ABOUT_NOTICE_ASSETS = listOf(
+    "NOTICE" to "NOTICE.txt",
+    "Sense GPL-3.0" to "LICENSE.txt",
+    "Rime Frost NOTICE" to "RIME-FROST-NOTICE.txt",
+    "Rime Frost GPL-3.0" to "RIME-FROST-GPL-3.0.txt",
+)
+
 internal class AssetAboutNoticeRepository(
     activity: Activity,
 ) : AboutNoticeRepository {
     private val applicationContext = activity.applicationContext
 
     override fun load(): Result<String> = runCatching {
-        NOTICE_ASSETS.joinToString("\n\n") { (heading, fileName) ->
+        ABOUT_NOTICE_ASSETS.joinToString("\n\n") { (heading, fileName) ->
             "$heading\n${"=".repeat(heading.length)}\n${readAsset(fileName).trimEnd()}"
         }
     }
@@ -25,16 +32,6 @@ internal class AssetAboutNoticeRepository(
         applicationContext.assets.open(fileName)
             .bufferedReader(Charsets.UTF_8)
             .use { it.readText() }
-
-    private companion object {
-        val NOTICE_ASSETS = listOf(
-            "NOTICE" to "NOTICE.txt",
-            "Sense MIT LICENSE" to "LICENSE.txt",
-            "Rime Apache 2.0" to "RIME-PINYIN-SIMP-LICENSE.txt",
-            "CC-CEDICT NOTICE" to "CC-CEDICT-NOTICE.txt",
-            "CC BY-SA 4.0" to "CC-BY-SA-4.0.txt",
-        )
-    }
 }
 
 /**

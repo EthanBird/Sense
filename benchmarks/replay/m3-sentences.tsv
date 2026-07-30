@@ -1,9 +1,139 @@
-# Deterministic smoke/replay cases; this is not a representative language-quality corpus.
-jintiantianqihenhao	今天天气很好
-womenshizhongguoren	我们是中国人
-womenshiyijiaren	我们是一家人
-tamenshizhongguoren	他们是中国人
-woxihuanzhongguo	我喜欢中国
-wozaibeijinggongzuo	我在北京工作
-zhegeshurufahenhaoyong	这个输入法很好用
-worenweizhegeshuofabudui	我认为这个说法不对
+# Sense deterministic quality replay.
+# query<TAB>expected<TAB>mode<TAB>context<TAB>aliases separated by |<TAB>frequencyBucket
+# Modes are diagnostic labels; every row runs through the same production decoder.
+
+# Full pinyin (20)
+zhongguo	中国	full			head
+renmin	人民	full			head
+shijie	世界	full	全		head
+shenghuo	生活	full			head
+gongzuo	工作	full	开始		head
+xuexi	学习	full	努力		head
+shijian	时间	full			head
+wenti	问题	full			head
+xitong	系统	full			head
+chengshi	城市	full			head
+pengyou	朋友	full			head
+jiating	家庭	full			head
+xiaoxi	消息	full			head
+dianhua	电话	full			head
+diannao	电脑	full			head
+shouji	手机	full	使用		head
+jiaoyu	教育	full			head
+yinyue	音乐	full			head
+dianying	电影	full			head
+tianqi	天气	full			head
+
+# Long sentences (20)
+jintiantianqihenhao	今天天气很好	sentence			head
+womenshizhongguoren	我们是中国人	sentence			head
+womenshiyijiaren	我们是一家人	sentence			head
+tamenshizhongguoren	他们是中国人	sentence			head
+woxihuanzhongguo	我喜欢中国	sentence			head
+wozaibeijinggongzuo	我在北京工作	sentence			head
+zhegeshurufahenhaoyong	这个输入法很好用	sentence			mid
+worenweizhegeshuofabudui	我认为这个说法不对	sentence			mid
+woshizhongguoren	我是中国人	sentence			head
+nizaiganma	你在干嘛	sentence		你在干吗	mid
+womenyiqixuexi	我们一起学习	sentence			head
+qingdengyixia	请等一下	sentence			head
+mingtiankaishigongzuo	明天开始工作	sentence			head
+zhoumoyiqichifan	周末一起吃饭	sentence			head
+zhegeshijiehenshida	这个世界很大	sentence			mid
+xianzaiyoumeiyoushijian	现在有没有时间	sentence			mid
+youwentisuishilianxi	有问题随时联系	sentence			mid
+xiexienidebangzhu	谢谢你的帮助	sentence			head
+zhunishengrikuaile	祝你生日快乐	sentence			head
+womenxiacizaijian	我们下次再见	sentence			head
+
+# Personal names and name-shaped phrases (15)
+zhangsan	张三	name			mid
+lisi	李四	name			mid
+wangwu	王五	name			tail
+xiaoming	小明	name			head
+xiaohong	小红	name			mid
+wanggang	王刚	name			mid
+liujun	刘军	name			tail
+yangfan	杨帆	name			mid
+wuxin	吴昕	name			mid
+sunli	孙俪	name			mid
+machao	马超	name			mid
+tangyan	唐嫣	name			tail
+xuzheng	徐峥	name			mid
+guojing	郭靖	name			mid
+huangrong	黄蓉	name			mid
+
+# Colloquial input (15)
+haode	好的	colloquial			head
+meiwenti	没问题	colloquial			head
+zhende	真的	colloquial			head
+keyiya	可以呀	colloquial			head
+zhidaole	知道了	colloquial			head
+shaodengyixia	稍等一下	colloquial			head
+mashangjiulai	马上就来	colloquial			head
+chifanlema	吃饭了吗	colloquial			head
+zenmeyang	怎么样	colloquial			head
+weishenme	为什么	colloquial			head
+meiguanxi	没关系	colloquial			head
+buhaoyisi	不好意思	colloquial			head
+xiexieni	谢谢你	colloquial			head
+ganma	干嘛	colloquial		干吗	mid
+yihuierjian	一会儿见	colloquial			mid
+
+# Technical vocabulary (15)
+rengongzhineng	人工智能	technical			head
+jiqixuexi	机器学习	technical			head
+shenjingwangluo	神经网络	technical			mid
+caozuoxitong	操作系统	technical			head
+shujuku	数据库	technical			head
+bianchengyuyan	编程语言	technical			mid
+yuandaima	源代码	technical			mid
+kaiyuanruanjian	开源软件	technical			mid
+yonghujiemian	用户界面	technical			mid
+houxuanci	候选词	technical			tail
+shurufa	输入法	technical			mid
+neicunguanli	内存管理	technical			mid
+lajihuishou	垃圾回收	technical			mid
+duoxiancheng	多线程	technical			mid
+yiburenwu	异步任务	technical			tail
+
+# Single-edit or transposition correction (12)
+woshiyigezhongguoern	我是一个中国人	typo			head
+nihaoshijiee	你好世界	typo			head
+jintiantianqihenha	今天天气很好	typo			head
+rengongzhinengg	人工智能	typo			head
+shurufaa	输入法	typo			mid
+shujuk	数据库	typo			head
+bianchengyuyqn	编程语言	typo			mid
+jiqixuex	机器学习	typo			head
+shouj	手机	typo			head
+pengyuo	朋友	typo			head
+gongzup	工作	typo			head
+caoizuoxitong	操作系统	typo			head
+
+# Initials (12)
+zg	中国	initials			head
+rm	人民	initials			head
+sj	世界	initials			head
+gz	工作	initials			head
+xx	学习	initials			head
+xt	系统	initials			head
+cs	城市	initials			head
+py	朋友	initials			head
+jt	家庭	initials			head
+dn	电脑	initials			head
+jy	教育	initials			head
+yy	音乐	initials			head
+
+# Full-pinyin prefix plus remaining syllable initials (11)
+zhongwsrf	中文输入法	hybrid			mid
+zhongwensrf	中文输入法	hybrid			mid
+rengzn	人工智能	hybrid			mid
+rengongzn	人工智能	hybrid			mid
+rengongzhin	人工智能	hybrid			mid
+jiqxx	机器学习	hybrid			mid
+jiqixx	机器学习	hybrid			mid
+jiqixuex	机器学习	hybrid			mid
+caozxt	操作系统	hybrid			mid
+caozuoxt	操作系统	hybrid			mid
+bianchengyy	编程语言	hybrid			mid

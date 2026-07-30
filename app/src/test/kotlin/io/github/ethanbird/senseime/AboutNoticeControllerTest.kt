@@ -8,6 +8,19 @@ import org.junit.Test
 
 class AboutNoticeControllerTest {
     @Test
+    fun noticeAssetCatalogMatchesGplFrostBundle() {
+        assertEquals(
+            listOf(
+                "NOTICE" to "NOTICE.txt",
+                "Sense GPL-3.0" to "LICENSE.txt",
+                "Rime Frost NOTICE" to "RIME-FROST-NOTICE.txt",
+                "Rime Frost GPL-3.0" to "RIME-FROST-GPL-3.0.txt",
+            ),
+            ABOUT_NOTICE_ASSETS,
+        )
+    }
+
+    @Test
     fun noticeReadUsesTaskLaneAndDeliversRepositoryText() {
         val tasks = QueuedTaskRunner()
         var repositoryCalls = 0

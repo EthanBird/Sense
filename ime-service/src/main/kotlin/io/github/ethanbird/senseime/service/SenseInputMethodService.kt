@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.text.InputType
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
@@ -32,6 +33,7 @@ import io.github.ethanbird.senseime.core.EnglishLexicon
 import io.github.ethanbird.senseime.core.EnglishInputSession
 import io.github.ethanbird.senseime.core.FakeDecoder
 import io.github.ethanbird.senseime.core.InputDecoder
+import io.github.ethanbird.senseime.core.LearnedPhrase
 import io.github.ethanbird.senseime.core.MemoryUserLexicon
 import io.github.ethanbird.senseime.core.PinyinComposition
 import io.github.ethanbird.senseime.core.PinyinDecoder
@@ -40,7 +42,10 @@ import io.github.ethanbird.senseime.core.ProgressivePinyinDecoding
 import io.github.ethanbird.senseime.core.PinyinSyllableSegmenter
 import io.github.ethanbird.senseime.core.SemanticCandidateCatalog
 import io.github.ethanbird.senseime.core.SemanticCandidateMixer
+import io.github.ethanbird.senseime.core.UserLearningEvidence
 import io.github.ethanbird.senseime.core.UserLexicon
+import io.github.ethanbird.senseime.core.UserNegativeFeedback
+import io.github.ethanbird.senseime.core.UserSelectionKind
 import io.github.ethanbird.senseime.core.editorComposingTextUpdate
 import io.github.ethanbird.senseime.service.ai.SenseAiEditorCoordinator
 import io.github.ethanbird.senseime.service.ai.AgentSkillRunSnapshot
@@ -77,11 +82,16 @@ import java.util.concurrent.Executors
 import org.json.JSONArray
 
 class SenseInputMethodService : InputMethodService() {
-    private var decoder: InputDecoder = FakeDecoder()
+    @Volatile
+    private var decoderRuntime = CandidateDecoderRuntime(
+        generation = 0L,
+        decoder = FakeDecoder(),
+    )
     private var adaptiveDecoder: AdaptivePinyinDecoder? = null
     private var userLexicon: UserLexicon? = null
     private val candidateSession = CandidateDecodeSession()
     private var composition = PinyinComposition()
+    private var compositionLeftContext = ""
     private var englishInput = EnglishInputSession(EnglishLexicon.EMPTY)
     private var shifted = false
     private var chineseMode = true
@@ -93,13 +103,30 @@ class SenseInputMethodService : InputMethodService() {
     private var candidateRunner: LatestOnlyTaskRunner<CandidateDecodeRequest, ProgressivePinyinDecoding>? = null
     private var pendingSpaceRevision: Long? = null
     private val deferredInputs = ArrayDeque<DeferredInput>()
+    private val progressiveLearnings = ProgressiveLearningQueue()
+    private val personalizationFeedback = PersonalizationFeedbackWindow(SystemClock::elapsedRealtime)
+    private val englishCompositionEdits = EnglishCompositionEditController(
+        object : EnglishCompositionEditHost {
+            override val englishSession: EnglishInputSession
+                get() = englishInput
+            override val editorSessionIdentity: Long
+                get() = editorSessionId
+            override val inputConnectionIdentity: Any?
+                get() = currentInputConnection
+
+            override fun publishEnglishComposition(text: String): Boolean =
+                updateConnectionComposition(text)
+        },
+    )
     private var drainingDeferredInputs = false
     @Volatile
     private var destroyed = false
     private var editorSelectionState = EditorSelectionState()
     private var selectionStart = -1
     private var selectionEnd = -1
-    private var learningAllowed = true
+    private var learningAllowed = false
+    private var productionDecoderReady = false
+    private var decodeContextAllowed = true
     private var clipboardHistoryAllowed = false
     private lateinit var clipboardManager: ClipboardManager
     private lateinit var aiCoordinator: SenseAiEditorCoordinator
@@ -110,6 +137,9 @@ class SenseInputMethodService : InputMethodService() {
     private var pendingAgentSkillFailureFeedback: String? = null
     private val agentSkillIo = Executors.newSingleThreadExecutor { runnable ->
         Thread(runnable, "sense-agent-skills").apply { isDaemon = true }
+    }
+    private val decoderIo = Executors.newSingleThreadExecutor { runnable ->
+        Thread(runnable, "sense-decoder-loader").apply { isDaemon = true }
     }
     private lateinit var speechController: AndroidSpeechRecognizerController
     private lateinit var cloudSpeechController: CloudSpeechRecognitionController
@@ -140,35 +170,26 @@ class SenseInputMethodService : InputMethodService() {
     override fun onCreate() {
         super.onCreate()
         destroyed = false
-        val bigramModel = runCatching<CharacterBigramModel> {
-            assets.open(PINYIN_BIGRAM_ASSET).use(BinaryCharacterBigramModel::load)
-        }.getOrElse { CharacterBigramModel.EMPTY }
-        val baseDecoder = runCatching {
-            assets.open(PINYIN_ASSET).use { PinyinDecoder.load(it, bigramModel) }
-        }.getOrElse { FakeDecoder() }
-        val syllables = runCatching {
-            assets.open(PINYIN_SYLLABLES_ASSET).bufferedReader().useLines { lines -> lines.toSet() }
-        }.getOrElse { FALLBACK_SYLLABLES }
-        val englishLexicon = runCatching {
-            assets.open(ENGLISH_LEXICON_ASSET).use { EnglishLexicon.load(it) }
-        }.getOrElse { EnglishLexicon.EMPTY }
-        englishInput = EnglishInputSession(englishLexicon, DECODE_CANDIDATE_LIMIT)
-        val learned = runCatching<UserLexicon> { PersistentUserLexicon(this) }.getOrElse { MemoryUserLexicon() }
-        userLexicon = learned
+        val bootstrapLexicon = MemoryUserLexicon()
+        userLexicon = bootstrapLexicon
         adaptiveDecoder = AdaptivePinyinDecoder(
-            baseDecoder,
-            learned,
-            PinyinSyllableSegmenter(syllables),
-            englishLexicon,
+            base = FakeDecoder(),
+            userLexicon = bootstrapLexicon,
+            segmenter = PinyinSyllableSegmenter(FALLBACK_SYLLABLES),
         )
-        decoder = adaptiveDecoder ?: baseDecoder
-        val activeDecoder = decoder
+        decoderRuntime = CandidateDecoderRuntime(
+            generation = nextGeneration(decoderRuntime.generation),
+            decoder = requireNotNull(adaptiveDecoder),
+        )
+        englishInput = EnglishInputSession(EnglishLexicon.EMPTY, DECODE_CANDIDATE_LIMIT)
         candidateRunner = LatestOnlyTaskRunner(
             threadName = "sense-candidate-decoder",
             work = { request ->
+                val activeDecoder = request.decoder
                 val decoding = (activeDecoder as? ProgressivePinyinDecoder)?.decodeProgressively(
-                    request.composition,
-                    DECODE_CANDIDATE_LIMIT,
+                    composition = request.composition,
+                    leftContext = request.leftContext,
+                    limit = DECODE_CANDIDATE_LIMIT,
                 ) ?: ProgressivePinyinDecoding(
                     revision = request.composition.revision,
                     remainingPinyin = request.composition.remainingPinyin,
@@ -203,6 +224,7 @@ class SenseInputMethodService : InputMethodService() {
                 )
             },
         )
+        loadProductionDecoderAsync()
         clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         loadClipboardHistory()
         clipboardManager.addPrimaryClipChangedListener(clipboardListener)
@@ -276,6 +298,72 @@ class SenseInputMethodService : InputMethodService() {
                 mainHandler.post(command)
             },
         )
+    }
+
+    /**
+     * Keeps the IME lifecycle callback independent of the 35 MB Frost scan and
+     * SQLite migration. Every candidate request captures one immutable decoder
+     * publication and its generation. Results from the bootstrap generation are
+     * therefore rejected even if they cross the main-thread callback after the
+     * production decoder has already been published.
+     */
+    private fun loadProductionDecoderAsync() {
+        decoderIo.execute {
+            val bigramModel = runCatching<CharacterBigramModel> {
+                assets.open(PINYIN_BIGRAM_ASSET).use(BinaryCharacterBigramModel::load)
+            }.onFailure { error ->
+                Log.e(TAG, "Bigram model load failed", error)
+            }.getOrElse { CharacterBigramModel.EMPTY }
+            val baseDecoder = runCatching<InputDecoder> {
+                assets.open(PINYIN_ASSET).use { PinyinDecoder.load(it, bigramModel) }
+            }.onFailure { error ->
+                Log.e(TAG, "Pinyin lexicon load failed", error)
+            }.getOrElse { FakeDecoder() }
+            val syllables = runCatching {
+                assets.open(PINYIN_SYLLABLES_ASSET)
+                    .bufferedReader()
+                    .useLines { lines -> lines.toSet() }
+            }.onFailure { error ->
+                Log.e(TAG, "Pinyin syllable inventory load failed", error)
+            }.getOrElse { FALLBACK_SYLLABLES }
+            val englishLexicon = runCatching {
+                assets.open(ENGLISH_LEXICON_ASSET).use { EnglishLexicon.load(it) }
+            }.onFailure { error ->
+                Log.e(TAG, "English lexicon load failed", error)
+            }.getOrElse { EnglishLexicon.EMPTY }
+            val learned = runCatching<UserLexicon> {
+                PersistentUserLexicon(this)
+            }.onFailure { error ->
+                Log.e(TAG, "Persistent user lexicon migration/load failed", error)
+            }.getOrElse { MemoryUserLexicon() }
+            val loadedDecoder = AdaptivePinyinDecoder(
+                base = baseDecoder,
+                userLexicon = learned,
+                segmenter = PinyinSyllableSegmenter(syllables),
+                englishLexicon = englishLexicon,
+            )
+            mainHandler.post {
+                if (destroyed) {
+                    learned.close()
+                    return@post
+                }
+                val previousLexicon = userLexicon
+                userLexicon = learned
+                adaptiveDecoder = loadedDecoder
+                decoderRuntime = CandidateDecoderRuntime(
+                    generation = nextGeneration(decoderRuntime.generation),
+                    decoder = loadedDecoder,
+                )
+                productionDecoderReady = true
+                learningAllowed = allowsLocalPersistence(currentEditorInfo)
+
+                val pendingEnglish = englishInput.composing
+                englishInput = EnglishInputSession(englishLexicon, DECODE_CANDIDATE_LIMIT)
+                pendingEnglish.forEach(englishInput::type)
+                previousLexicon?.takeIf { it !== learned }?.close()
+                render(forceDecode = chineseMode && composition.remainingPinyin.isNotEmpty())
+            }
+        }
     }
 
     override fun onCreateInputView(): View = SenseKeyboardSurface(this).also { surface ->
@@ -433,7 +521,8 @@ class SenseInputMethodService : InputMethodService() {
         editorSessionId = nextGeneration(editorSessionId)
         editorFieldIdentity = "editor-$editorSessionId"
         val persistenceAllowed = allowsLocalPersistence(attribute)
-        learningAllowed = persistenceAllowed
+        learningAllowed = persistenceAllowed && productionDecoderReady
+        decodeContextAllowed = allowsTransientDecodeContext(attribute)
         clipboardHistoryAllowed = persistenceAllowed
         selectionStart = attribute?.initialSelStart ?: -1
         selectionEnd = attribute?.initialSelEnd ?: -1
@@ -552,10 +641,13 @@ class SenseInputMethodService : InputMethodService() {
         mainHandler.removeCallbacksAndMessages(candidateResultToken)
         candidateRunner?.close()
         candidateRunner = null
+        decoderIo.shutdownNow()
         clipboardManager.removePrimaryClipChangedListener(clipboardListener)
         userLexicon?.close()
         userLexicon = null
         adaptiveDecoder = null
+        productionDecoderReady = false
+        learningAllowed = false
         val voiceSession = activeVoiceSession
         activeVoiceSession = null
         cancelVoiceBackend(voiceSession)
@@ -707,11 +799,18 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun handleCharacter(character: Char) {
+        val replacementFeedback = if (
+            composition.visibleText.isEmpty() && englishInput.composing.isEmpty()
+        ) {
+            personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
+        } else {
+            null
+        }
         if (!chineseMode) {
             val output = if (shifted) character.uppercaseChar() else character
             if (output.lowercaseChar() in 'a'..'z') {
-                englishInput.type(output)
-                updateConnectionComposition(englishInput.composing)
+                if (!englishCompositionEdits.type(output)) return
+                completeReplacementFeedback(replacementFeedback)
                 render()
             } else {
                 commitText(output.toString())
@@ -728,19 +827,35 @@ class SenseInputMethodService : InputMethodService() {
             return
         }
 
-        composition = composition.type(character)
-        updateConnectionComposition(composition.visibleText)
+        val previous = composition
+        val next = previous.type(character)
+        val nextLeftContext = if (previous.visibleText.isEmpty()) {
+            captureDecodeLeftContext()
+        } else {
+            compositionLeftContext
+        }
+        if (!updateConnectionComposition(next.visibleText)) return
+        if (composition != previous) return
+        composition = next
+        compositionLeftContext = nextLeftContext
+        completeReplacementFeedback(replacementFeedback)
         render()
     }
 
     private fun handleBackspace() {
         if (!chineseMode && englishInput.composing.isNotEmpty()) {
-            englishInput.backspace()
-            updateConnectionComposition(englishInput.composing)
-            render()
+            if (englishCompositionEdits.backspace()) render()
         } else if (composition.visibleText.isNotEmpty()) {
-            composition = composition.backspace()
-            updateConnectionComposition(composition.visibleText)
+            val rollsBackProgressiveSelection =
+                composition.remainingPinyin.isEmpty() && composition.acceptedSegments.isNotEmpty()
+            val previous = composition
+            val next = previous.backspace()
+            if (!updateConnectionComposition(next.visibleText)) return
+            if (composition != previous) return
+            composition = next
+            if (rollsBackProgressiveSelection) {
+                progressiveLearnings.rollbackLast()
+            }
             render()
         } else {
             deleteOneCodePointOrSelection()
@@ -751,12 +866,22 @@ class SenseInputMethodService : InputMethodService() {
         if (!chineseMode) {
             if (englishInput.composing.isNotEmpty()) {
                 if (!commitEnglishComposition(englishInput.defaultCommitCandidate)) return
+                currentInputConnection?.commitText(" ", 1)
+            } else {
+                val feedback =
+                    personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
+                if (currentInputConnection?.commitText(" ", 1) == true) {
+                    completeReplacementFeedback(feedback)
+                }
             }
-            currentInputConnection?.commitText(" ", 1)
             return
         }
         if (composition.visibleText.isEmpty()) {
-            currentInputConnection?.commitText(" ", 1)
+            val feedback =
+                personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
+            if (currentInputConnection?.commitText(" ", 1) == true) {
+                completeReplacementFeedback(feedback)
+            }
             return
         }
         if (composition.remainingPinyin.isEmpty()) {
@@ -782,8 +907,14 @@ class SenseInputMethodService : InputMethodService() {
             // Enter confirms exactly what the user can see. It never auto-selects
             // a Chinese candidate and does not append a newline in this branch.
             commitRawComposition()
-        } else if (!sendDefaultEditorAction(true)) {
-            currentInputConnection?.commitText("\n", 1)
+        } else {
+            val feedback =
+                personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
+            if (sendDefaultEditorAction(true)) {
+                personalizationFeedback.complete(feedback)
+            } else if (currentInputConnection?.commitText("\n", 1) == true) {
+                completeReplacementFeedback(feedback)
+            }
         }
     }
 
@@ -794,12 +925,40 @@ class SenseInputMethodService : InputMethodService() {
         }
         if (composition.visibleText.isEmpty()) return
         when (val choice = candidateSession.select(composition, revision, sourceIndex)) {
-            is ProgressiveCandidateChoice.Whole -> commitPrimary(choice.candidate)
+            is ProgressiveCandidateChoice.Whole -> {
+                val rank = currentDecoding()
+                    ?.wholeCandidates
+                    ?.indexOfFirst { it == choice.candidate }
+                    ?.takeIf { it >= 0 }
+                    ?: sourceIndex.coerceAtLeast(0)
+                commitPrimary(
+                    choice.candidate,
+                    UserLearningEvidence(UserSelectionKind.EXPLICIT_SELECTION, rank),
+                )
+            }
             is ProgressiveCandidateChoice.Prefix -> {
+                val rank = currentDecoding()
+                    ?.prefixCandidates
+                    ?.indexOfFirst { it == choice.value }
+                    ?.takeIf { it >= 0 }
+                    ?: sourceIndex.coerceAtLeast(0)
                 val next = composition.acceptPrefix(revision, choice.value)
                 if (next == composition) return
+                val previous = composition
+                val learning = ProgressiveLearning(
+                    rawInput = choice.value.consumedPinyin,
+                    candidate = choice.candidate,
+                    evidence = UserLearningEvidence(
+                        UserSelectionKind.PROGRESSIVE_SELECTION,
+                        rank,
+                    ),
+                )
+                if (!updateConnectionComposition(next.visibleText)) return
+                // An editor may synchronously invalidate the composition from
+                // setComposingText. Never resurrect that stale transaction.
+                if (composition != previous) return
                 composition = next
-                updateConnectionComposition(composition.visibleText)
+                if (learningAllowed) progressiveLearnings.add(learning)
                 render()
             }
 
@@ -809,8 +968,17 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun commitText(text: String) {
         if (deferIfSpacePending(DeferredInput.Text(text))) return
+        val replacementFeedback = if (
+            composition.visibleText.isEmpty() && englishInput.composing.isEmpty()
+        ) {
+            personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
+        } else {
+            null
+        }
+        var committedComposition = false
         if (!chineseMode && englishInput.composing.isNotEmpty()) {
             if (!commitEnglishComposition(englishInput.defaultCommitCandidate)) return
+            committedComposition = true
         }
         if (composition.visibleText.isNotEmpty()) {
             val decoding = currentDecoding()
@@ -824,9 +992,19 @@ class SenseInputMethodService : InputMethodService() {
                 }
                 return
             }
-            commitPrimary(decoding?.wholeCandidates?.firstOrNull())
+            if (!commitPrimary(decoding?.wholeCandidates?.firstOrNull())) return
+            committedComposition = true
         }
-        currentInputConnection?.commitText(text, 1)
+        val feedback = if (committedComposition) {
+            personalizationFeedback.prepareExpiration()
+        } else {
+            replacementFeedback
+        }
+        if (currentInputConnection?.commitText(text, 1) == true) {
+            completeReplacementFeedback(feedback)
+            // A punctuation/clipboard/tool commit after a learned word becomes the
+            // newest host edit, so a later Backspace must not demote the older word.
+        }
     }
 
     private fun toggleLanguage() {
@@ -914,14 +1092,51 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun deleteOneCodePointOrSelection(): Boolean {
         val connection = currentInputConnection ?: return false
-        if (hasHostSelection(selectionStart, selectionEnd)) {
-            if (sendDeleteKeyEvents(connection)) return true
+        val frozenSelectionStart = selectionStart
+        val frozenSelectionEnd = selectionEnd
+        if (hasHostSelection(frozenSelectionStart, frozenSelectionEnd)) {
+            val feedback = personalizationFeedback.prepareReplacement(
+                frozenSelectionStart,
+                frozenSelectionEnd,
+            )
+            val deleted = if (sendDeleteKeyEvents(connection)) {
+                true
+            } else {
             // commitText replaces an active selection and is the most broadly
             // implemented fallback for editors that reject hardware key events.
-            return connection.commitText("", 1)
+                connection.commitText("", 1)
+            }
+            if (deleted) {
+                completeReplacementFeedback(feedback)
+            }
+            return deleted
         }
-        if (connection.deleteSurroundingTextInCodePoints(1, 0)) return true
-        return sendDeleteKeyEvents(connection)
+        val feedback = personalizationFeedback.prepareQuickDelete(frozenSelectionStart)
+        val deleted =
+            connection.deleteSurroundingTextInCodePoints(1, 0) || sendDeleteKeyEvents(connection)
+        if (deleted) {
+            completePersonalizationFeedback(feedback, UserNegativeFeedback.QUICK_DELETE)
+        }
+        return deleted
+    }
+
+    private fun completeReplacementFeedback(
+        attempt: PersonalizationFeedbackWindow.Attempt?,
+    ) = completePersonalizationFeedback(
+        attempt,
+        UserNegativeFeedback.IMMEDIATE_REPLACEMENT,
+    )
+
+    private fun completePersonalizationFeedback(
+        attempt: PersonalizationFeedbackWindow.Attempt?,
+        feedback: UserNegativeFeedback,
+    ) {
+        val learned = personalizationFeedback.complete(attempt) ?: return
+        runCatching {
+            adaptiveDecoder?.demote(learned, feedback)
+        }.onFailure { error ->
+            Log.e(TAG, "Personalization feedback update failed", error)
+        }
     }
 
     private fun sendDeleteKeyEvents(connection: InputConnection): Boolean {
@@ -936,7 +1151,23 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun performEditorContextCommand(command: EditorContextCommand, actionId: Int) {
+        val feedback = when (command) {
+            EditorContextCommand.CUT,
+            EditorContextCommand.PASTE,
+            -> personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
+
+            EditorContextCommand.COPY -> null
+        }
         val accepted = currentInputConnection?.performContextMenuAction(actionId) == true
+        if (accepted) {
+            when (command) {
+                EditorContextCommand.CUT,
+                EditorContextCommand.PASTE,
+                -> completeReplacementFeedback(feedback)
+
+                EditorContextCommand.COPY -> Unit
+            }
+        }
         val outcome = EditorContextActionPolicy.resolve(command, accepted)
         if (outcome.resetSelectionMode) {
             editorSelectionState = editorSelectionState.resetSelectionMode()
@@ -1310,8 +1541,10 @@ class SenseInputMethodService : InputMethodService() {
             )
             return
         }
+        val feedback = personalizationFeedback.prepareExpiration()
         val committed = currentInputConnection?.commitText(text, 1) == true
         if (committed) {
+            personalizationFeedback.complete(feedback)
             activeVoiceSession = null
             keyboardView?.exitVoiceSurface(session.id)
         } else {
@@ -1349,6 +1582,9 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun resetComposition(finishConnection: Boolean) {
         composition = composition.reset()
+        compositionLeftContext = ""
+        progressiveLearnings.clear()
+        personalizationFeedback.clear()
         englishInput.reset()
         clearPendingCommit()
         deferredInputs.clear()
@@ -1358,7 +1594,7 @@ class SenseInputMethodService : InputMethodService() {
         render()
     }
 
-    private fun render() {
+    private fun render(forceDecode: Boolean = false) {
         if (!chineseMode) {
             keyboardView?.updateComposing(
                 englishInput.revision,
@@ -1367,8 +1603,18 @@ class SenseInputMethodService : InputMethodService() {
             )
             return
         }
-        val request = CandidateDecodeRequest(composition)
-        val launch = candidateSession.begin(request.composition)
+        val runtime = decoderRuntime
+        val request = CandidateDecodeRequest(
+            composition = composition,
+            leftContext = compositionLeftContext,
+            decoderGeneration = runtime.generation,
+            decoder = runtime.decoder,
+        )
+        val launch = candidateSession.begin(
+            composition = request.composition,
+            decoderGeneration = request.decoderGeneration,
+            forceDecode = forceDecode,
+        )
         if (launch.stateChanged) mainHandler.removeCallbacksAndMessages(candidateResultToken)
         if (launch.presentation.pending) {
             keyboardView?.updateComposition(
@@ -1412,6 +1658,7 @@ class SenseInputMethodService : InputMethodService() {
             requestedComposition = request.composition,
             decoding = decoding,
             limit = PRESENTATION_CANDIDATE_LIMIT,
+            decoderGeneration = request.decoderGeneration,
         ) ?: return
 
         if (pendingSpaceRevision == composition.revision) {
@@ -1427,10 +1674,20 @@ class SenseInputMethodService : InputMethodService() {
         )
     }
 
-    private fun currentDecoding(): ProgressivePinyinDecoding? = candidateSession.currentDecoding(composition)
+    private fun currentDecoding(): ProgressivePinyinDecoding? {
+        val runtime = decoderRuntime
+        return candidateSession.currentDecoding(
+            composition = composition,
+            decoderGeneration = runtime.generation,
+        )
+    }
 
-    private fun commitPrimary(candidate: Candidate?): Boolean {
+    private fun commitPrimary(
+        candidate: Candidate?,
+        evidence: UserLearningEvidence = UserLearningEvidence.DEFAULT_ACCEPT,
+    ): Boolean {
         if (composition.visibleText.isEmpty()) return false
+        val composingLength = composition.visibleText.length
         val rawInput = buildString {
             composition.acceptedSegments.forEach { append(it.consumedPinyin) }
             append(composition.remainingPinyin)
@@ -1453,19 +1710,27 @@ class SenseInputMethodService : InputMethodService() {
                 null
             }
         }
-        return commitComposition(output, rawInput, learnable)
+        return commitComposition(output, rawInput, learnable, evidence, composingLength)
     }
 
     private fun commitRawComposition(): Boolean {
         if (composition.visibleText.isEmpty()) return false
-        return commitComposition(composition.confirmRaw(), rawInput = null, learnable = null)
+        return commitComposition(
+            composition.confirmRaw(),
+            rawInput = null,
+            learnable = null,
+            evidence = UserLearningEvidence.DEFAULT_ACCEPT,
+            composingLength = composition.visibleText.length,
+        )
     }
 
     private fun commitEnglishComposition(candidate: Candidate?): Boolean {
         if (englishInput.composing.isEmpty()) return false
         val output = candidate?.text ?: englishInput.composing
+        val feedback = personalizationFeedback.prepareExpiration()
         val committed = currentInputConnection?.commitText(output, 1) == true
         if (!committed) return false
+        personalizationFeedback.complete(feedback)
         englishInput.reset()
         shifted = false
         keyboardView?.setShifted(false)
@@ -1485,26 +1750,81 @@ class SenseInputMethodService : InputMethodService() {
         output: String,
         rawInput: String?,
         learnable: Candidate?,
+        evidence: UserLearningEvidence,
+        composingLength: Int,
     ): Boolean {
-        val committed = currentInputConnection?.commitText(output, 1) == true
+        val committingComposition = composition
+        val stagedProgressiveLearnings = progressiveLearnings.snapshotForCommit()
+        val learningTarget = adaptiveDecoder.takeIf { learningAllowed }
+        val committedEditorSessionId = editorSessionId
+        val connection = currentInputConnection
+        val committedStart = when {
+            hasHostSelection(selectionStart, selectionEnd) -> minOf(selectionStart, selectionEnd)
+            selectionStart >= 0 -> (selectionStart - composingLength).coerceAtLeast(0)
+            else -> -1
+        }
+        val committed = connection?.commitText(output, 1) == true
         if (!committed) {
-            clearPendingCommit()
+            if (composition == committingComposition) clearPendingCommit()
             return false
         }
-        if (learningAllowed && rawInput != null && learnable != null) {
-            adaptiveDecoder?.learn(rawInput, learnable)
+        if (learningTarget != null) {
+            stagedProgressiveLearnings.forEach { pending ->
+                runCatching {
+                    learningTarget.learn(
+                        pending.rawInput,
+                        pending.candidate,
+                        pending.evidence,
+                    )
+                }.onFailure { error ->
+                    Log.e(TAG, "Progressive personalization update failed", error)
+                }
+            }
+            if (rawInput != null && learnable != null) {
+                runCatching {
+                    learningTarget.learn(rawInput, learnable, evidence)
+                }.onFailure { error ->
+                    Log.e(TAG, "Personalization update failed", error)
+                }.getOrNull()?.let { learned ->
+                    val sameEditor =
+                        editorSessionId == committedEditorSessionId &&
+                            currentInputConnection === connection
+                    if (sameEditor) {
+                        personalizationFeedback.remember(
+                            learned,
+                            start = committedStart,
+                            endExclusive =
+                                committedStart.takeIf { it >= 0 }?.plus(output.length) ?: -1,
+                        )
+                    }
+                }
+            }
         }
-        composition = composition.reset()
-        clearPendingCommit()
-        shifted = false
-        keyboardView?.setShifted(false)
-        render()
+        if (composition == committingComposition) {
+            composition = composition.reset()
+            compositionLeftContext = ""
+            progressiveLearnings.clear()
+            clearPendingCommit()
+            shifted = false
+            keyboardView?.setShifted(false)
+            render()
+        }
         return true
     }
 
-    private fun updateConnectionComposition(visibleText: String) {
+    private fun updateConnectionComposition(visibleText: String): Boolean {
         val update = editorComposingTextUpdate(visibleText)
-        currentInputConnection?.setComposingText(update.text, update.newCursorPosition)
+        return currentInputConnection?.setComposingText(update.text, update.newCursorPosition) == true
+    }
+
+    private fun captureDecodeLeftContext(): String {
+        if (!decodeContextAllowed) return ""
+        return runCatching {
+            currentInputConnection
+                ?.getTextBeforeCursor(MAX_DECODE_CONTEXT_CHARS, 0)
+                ?.toString()
+                .orEmpty()
+        }.getOrDefault("")
     }
 
     private fun deferIfSpacePending(input: DeferredInput): Boolean {
@@ -1555,17 +1875,23 @@ class SenseInputMethodService : InputMethodService() {
         if (info == null) return true
         val noPersonalizedLearning =
             info.imeOptions and EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING != 0
+        return EditorPrivacyPolicy.allowsPersistence(
+            noPersonalizedLearning = noPersonalizedLearning,
+            passwordVariation = isPasswordVariation(info),
+        )
+    }
+
+    private fun allowsTransientDecodeContext(info: EditorInfo?): Boolean =
+        info == null || !isPasswordVariation(info)
+
+    private fun isPasswordVariation(info: EditorInfo): Boolean {
         val inputClass = info.inputType and InputType.TYPE_MASK_CLASS
         val variation = info.inputType and InputType.TYPE_MASK_VARIATION
-        val passwordVariation = when (inputClass) {
+        return when (inputClass) {
             InputType.TYPE_CLASS_TEXT -> variation in PASSWORD_TEXT_VARIATIONS
             InputType.TYPE_CLASS_NUMBER -> variation == InputType.TYPE_NUMBER_VARIATION_PASSWORD
             else -> false
         }
-        return EditorPrivacyPolicy.allowsPersistence(
-            noPersonalizedLearning = noPersonalizedLearning,
-            passwordVariation = passwordVariation,
-        )
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
@@ -1587,6 +1913,7 @@ class SenseInputMethodService : InputMethodService() {
     private companion object {
         const val SENSE_SETTINGS_ACTIVITY =
             "io.github.ethanbird.senseime.SettingsActivity"
+        const val TAG = "SenseInputMethod"
         const val PINYIN_ASSET = "pinyin_lexicon.bin"
         const val PINYIN_BIGRAM_ASSET = "pinyin_bigrams.bin"
         const val PINYIN_SYLLABLES_ASSET = "pinyin_syllables.txt"
@@ -1597,6 +1924,7 @@ class SenseInputMethodService : InputMethodService() {
         const val CLIPBOARD_HISTORY_LIMIT = 30
         const val MAX_CLIPBOARD_TEXT_LENGTH = 4096
         const val MAX_VOICE_PREVIEW_CHARS = 1024
+        const val MAX_DECODE_CONTEXT_CHARS = 2
         const val MAX_DEFERRED_INPUT_EVENTS = 512
         const val PENDING_COMMIT_TIMEOUT_MS = 120L
         const val CLIPBOARD_PREFERENCES = "sense_clipboard_history"
@@ -1612,6 +1940,14 @@ class SenseInputMethodService : InputMethodService() {
 
 private data class CandidateDecodeRequest(
     val composition: PinyinComposition,
+    val leftContext: String,
+    val decoderGeneration: Long,
+    val decoder: InputDecoder,
+)
+
+private data class CandidateDecoderRuntime(
+    val generation: Long,
+    val decoder: InputDecoder,
 )
 
 private sealed interface DeferredInput {

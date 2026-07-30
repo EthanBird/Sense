@@ -4,12 +4,23 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import math
 import re
 import struct
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
+
+from lexicon_sources import (
+    LexiconSourceRecord,
+    ManifestLoadResult,
+    is_han_text,
+    load_source_manifest,
+    normalized_syllables,
+    write_canonical_ir,
+)
 
 
 MAGIC = b"SPLX"
@@ -35,36 +46,10 @@ class LexiconCandidate:
     weight: int
     initials: str
     source_tier: int
-
-
-def normalized_syllables(value: str) -> list[str]:
-    normalized = value.lower().replace("u:", "v").replace("ü", "v")
-    if re.search(r"[1-5]", normalized):
-        result: list[str] = []
-        current: list[str] = []
-        for character in normalized:
-            if "a" <= character <= "z":
-                current.append(character)
-            elif character in "12345":
-                if current:
-                    result.append("".join(current))
-                    current.clear()
-            elif current:
-                result.append("".join(current))
-                current.clear()
-        if current:
-            result.append("".join(current))
-        return result
-    return re.findall(r"[a-zv]+", normalized)
-
-
-def is_han_text(value: str) -> bool:
-    return bool(value) and all(
-        "\u3400" <= character <= "\u4dbf"
-        or "\u4e00" <= character <= "\u9fff"
-        or "\uf900" <= character <= "\ufaff"
-        for character in value
-    )
+    source_id: str = "legacy"
+    prefix_eligible: bool = True
+    initials_eligible: bool = True
+    hybrid_eligible: bool = True
 
 
 def add_entry(
@@ -75,6 +60,10 @@ def add_entry(
     syllables: set[str],
     source_tier: int = 0,
     update_syllables: bool = True,
+    source_id: str = "legacy",
+    prefix_eligible: bool = True,
+    initials_eligible: bool = True,
+    hybrid_eligible: bool = True,
 ) -> None:
     tokens = normalized_syllables(raw_code)
     code = "".join(tokens)
@@ -86,7 +75,16 @@ def add_entry(
     encoded_text = text.encode("utf-8")
     if len(code) > 255 or len(encoded_text) > 255 or len(initials) > 255:
         return
-    candidate = LexiconCandidate(text, max(0, weight), initials, source_tier)
+    candidate = LexiconCandidate(
+        text=text,
+        weight=max(0, weight),
+        initials=initials,
+        source_tier=source_tier,
+        source_id=source_id,
+        prefix_eligible=prefix_eligible,
+        initials_eligible=initials_eligible,
+        hybrid_eligible=hybrid_eligible,
+    )
     previous = entries[code].get(text)
     if previous is None or candidate.source_tier < previous.source_tier or (
         candidate.source_tier == previous.source_tier
@@ -189,6 +187,43 @@ def read_dictionary(
     return add_initials_index(hybrid, ranked), syllables
 
 
+def read_manifest_dictionary(
+    manifest_path: Path,
+    canonical_output: Path | None = None,
+) -> tuple[
+    dict[str, list[LexiconCandidate]],
+    set[str],
+    ManifestLoadResult,
+]:
+    """Compile a pinned source manifest through one calibrated exact-key layer."""
+    loaded = load_source_manifest(manifest_path)
+    if canonical_output is not None:
+        write_canonical_ir(canonical_output, loaded.manifest_sha256, loaded.records)
+    entries: defaultdict[str, dict[str, LexiconCandidate]] = defaultdict(dict)
+    syllables: set[str] = set()
+    for record in loaded.records:
+        add_entry(
+            entries=entries,
+            text=record.text,
+            raw_code=" ".join(record.syllables),
+            weight=record.weight,
+            syllables=syllables,
+            source_tier=record.source_tier,
+            source_id=record.source_id,
+            prefix_eligible=record.prefix_eligible,
+            initials_eligible=record.initials_eligible,
+            hybrid_eligible=record.hybrid_eligible,
+        )
+
+    ranked = {
+        code: sorted(values.values(), key=_candidate_sort_key)[:MAX_CANDIDATES]
+        for code, values in entries.items()
+    }
+    prefixed = add_statistical_prefixes(ranked, ranked)
+    hybrid = add_hybrid_index(prefixed, ranked, syllables)
+    return add_initials_index(hybrid, ranked), syllables, loaded
+
+
 def add_statistical_prefixes(
     entries: dict[str, list[LexiconCandidate]],
     prefix_source: dict[str, list[LexiconCandidate]],
@@ -201,8 +236,19 @@ def add_statistical_prefixes(
             completion = len(code) - prefix_length
             decay = math.pow(PREFIX_COMPLETION_DECAY, completion)
             for candidate in candidates:
+                if not candidate.prefix_eligible:
+                    continue
                 adjusted = max(1, round(candidate.weight * decay)) if candidate.weight > 0 else 0
-                value = LexiconCandidate(candidate.text, adjusted, candidate.initials, candidate.source_tier)
+                value = LexiconCandidate(
+                    text=candidate.text,
+                    weight=adjusted,
+                    initials=candidate.initials,
+                    source_tier=candidate.source_tier,
+                    source_id=candidate.source_id,
+                    prefix_eligible=False,
+                    initials_eligible=False,
+                    hybrid_eligible=False,
+                )
                 previous = aggregate[prefix].get(candidate.text)
                 if previous is None or value.weight > previous.weight:
                     aggregate[prefix][candidate.text] = value
@@ -224,6 +270,8 @@ def add_initials_index(
     aggregate: defaultdict[str, dict[str, LexiconCandidate]] = defaultdict(dict)
     for candidates in full_pinyin_source.values():
         for candidate in candidates:
+            if not candidate.initials_eligible:
+                continue
             initials = candidate.initials
             if len(initials) not in range(MIN_INITIALS_LENGTH, MAX_INITIALS_LENGTH + 1):
                 continue
@@ -256,6 +304,8 @@ def add_hybrid_index(
     aggregate: defaultdict[str, dict[str, LexiconCandidate]] = defaultdict(dict)
     for full_code, candidates in full_pinyin_source.items():
         for candidate in candidates:
+            if not candidate.hybrid_eligible:
+                continue
             tokens = split_code_by_initials(full_code, candidate.initials, syllables)
             if not tokens or len(tokens) < 2:
                 continue
@@ -330,6 +380,17 @@ def _candidate_is_better(candidate: LexiconCandidate, previous: LexiconCandidate
             candidate.weight > previous.weight
             or candidate.weight == previous.weight and candidate.initials < previous.initials
         )
+    )
+
+
+def _candidate_sort_key(candidate: LexiconCandidate) -> tuple[int, int, int, str, str, str]:
+    return (
+        candidate.source_tier,
+        -candidate.weight,
+        len(candidate.text),
+        candidate.text,
+        candidate.initials,
+        candidate.source_id,
     )
 
 
@@ -471,6 +532,80 @@ def augment_binary(
     return add_initials_index(hybrid, ranked), syllables
 
 
+def write_build_stats(
+    path: Path,
+    asset: Path,
+    entries: dict[str, list[LexiconCandidate]],
+    loaded_manifest: ManifestLoadResult | None,
+) -> None:
+    """Write a stable machine-readable provenance and size summary."""
+    namespace_names = (
+        ("prefix", PREFIX_NAMESPACE),
+        ("initials", INITIALS_NAMESPACE),
+        ("hybrid", HYBRID_NAMESPACE),
+    )
+    namespace_for_code = {
+        code: next(
+            (
+                name
+                for name, prefix in namespace_names
+                if code.startswith(prefix)
+            ),
+            "exact",
+        )
+        for code in entries
+    }
+    counts = {
+        name: {
+            "keys": sum(namespace == name for namespace in namespace_for_code.values()),
+            "candidates": sum(
+                len(entries[code])
+                for code, namespace in namespace_for_code.items()
+                if namespace == name
+            ),
+        }
+        for name in ("exact", "prefix", "initials", "hybrid")
+    }
+    exact_texts = {
+        candidate.text
+        for code, candidates in entries.items()
+        if namespace_for_code[code] == "exact"
+        for candidate in candidates
+    }
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "asset": {
+            "format": f"SPLX/{VERSION}",
+            "bytes": asset.stat().st_size,
+            "sha256": hashlib.sha256(asset.read_bytes()).hexdigest(),
+        },
+        "counts": counts,
+        "exact_unique_texts": len(exact_texts),
+    }
+    if loaded_manifest is not None:
+        payload["manifest"] = {
+            "path": loaded_manifest.manifest_path.name,
+            "sha256": loaded_manifest.manifest_sha256,
+            "sources": [
+                {
+                    "id": audit.source_id,
+                    "path": audit.path,
+                    "sha256": audit.sha256,
+                    "accepted": audit.accepted,
+                    "malformed": audit.malformed,
+                    "rejected_non_han": audit.rejected_non_han,
+                    "rejected_length": audit.rejected_length,
+                }
+                for audit in loaded_manifest.audits
+            ],
+        }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="\n") as stream:
+        stream.write(
+            json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("source", type=Path)
@@ -479,24 +614,60 @@ def main() -> None:
     parser.add_argument("--cedict", action="append", type=Path, default=[])
     parser.add_argument("--syllables-output", type=Path)
     parser.add_argument(
+        "--manifest",
+        action="store_true",
+        help="Treat source as a pinned JSON source manifest and verify every input hash.",
+    )
+    parser.add_argument(
+        "--canonical-output",
+        type=Path,
+        help="Write the normalized attributed IR (manifest builds only).",
+    )
+    parser.add_argument(
+        "--stats-output",
+        type=Path,
+        help="Write deterministic asset counts, hashes and source audits as JSON.",
+    )
+    parser.add_argument(
         "--base-binary",
         action="store_true",
         help="Treat source as a pinned v3 SPLX asset, overlay --custom files, and rebuild initials.",
     )
     args = parser.parse_args()
 
+    loaded_manifest: ManifestLoadResult | None = None
+    if args.base_binary and args.manifest:
+        parser.error("--base-binary and --manifest are mutually exclusive")
     if args.base_binary:
         if args.cedict:
             parser.error("--cedict cannot be combined with --base-binary")
+        if args.canonical_output:
+            parser.error("--canonical-output requires --manifest")
         entries, syllables = augment_binary(args.source, args.custom)
+    elif args.manifest:
+        if args.custom or args.cedict:
+            parser.error("manifest sources already declare overlays")
+        entries, syllables, loaded_manifest = read_manifest_dictionary(
+            args.source,
+            args.canonical_output,
+        )
     else:
+        if args.canonical_output:
+            parser.error("--canonical-output requires --manifest")
         entries, syllables = read_dictionary([args.source, *args.custom], args.cedict)
     if not entries:
         raise SystemExit("No pinyin entries were read")
     write_binary(entries, args.output)
     if args.syllables_output:
         args.syllables_output.parent.mkdir(parents=True, exist_ok=True)
-        args.syllables_output.write_text("\n".join(sorted(syllables)) + "\n", encoding="utf-8")
+        with args.syllables_output.open(
+            "w",
+            encoding="utf-8",
+            newline="\n",
+        ) as stream:
+            stream.write("\n".join(sorted(syllables)) + "\n")
+    if args.stats_output:
+        write_build_stats(args.stats_output, args.output, entries, loaded_manifest)
     print(f"Wrote {len(entries)} pinyin keys to {args.output} ({args.output.stat().st_size} bytes)")
 
 

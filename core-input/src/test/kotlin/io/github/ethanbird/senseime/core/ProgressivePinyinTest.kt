@@ -2,6 +2,7 @@ package io.github.ethanbird.senseime.core
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -22,6 +23,14 @@ class ProgressivePinyinTest {
     }
 
     @Test
+    fun normalizationReusesAlreadyCanonicalPinyin() {
+        val canonical = String(charArrayOf('p', 'i', 'p', 'e', 'i'))
+
+        assertSame(canonical, PinyinSyllableSegmenter.normalize(canonical))
+        assertEquals("nihao", PinyinSyllableSegmenter.normalize("Ni'Hao"))
+    }
+
+    @Test
     fun progressiveDecodeExposesPiCharactersAndKeepsWholeCandidate() {
         val decoder = AdaptivePinyinDecoder(fixtureDecoder(), MemoryUserLexicon(), segmenter)
         val state = "pipei".fold(PinyinComposition()) { value, character -> value.type(character) }
@@ -31,6 +40,42 @@ class ProgressivePinyinTest {
         assertEquals("匹配", result.wholeCandidates.first().text)
         assertEquals(listOf("匹", "批"), result.prefixCandidates.map { it.candidate.text })
         assertTrue(result.prefixCandidates.all { it.consumedPinyin == "pi" && it.remainingPinyin == "pei" })
+    }
+
+    @Test
+    fun progressiveMergeKeepsARepresentativeFromEverySelectablePrefixGroup() {
+        val decoder = AdaptivePinyinDecoder(
+            base = object : InputDecoder {
+                override fun decode(composing: String, limit: Int): List<Candidate> = when (composing) {
+                    "anan" -> listOf(
+                        Candidate(
+                            text = "\u5B89\u5B89",
+                            canonicalPinyin = "anan",
+                            canonicalInitials = "aa",
+                        ),
+                    )
+                    "a" -> listOf(
+                        Candidate("\u554A", score = 10f, canonicalPinyin = "a", canonicalInitials = "a"),
+                        Candidate("\u963F", score = 9f, canonicalPinyin = "a", canonicalInitials = "a"),
+                    )
+                    "an" -> listOf(
+                        Candidate("\u5B89", score = 1f, canonicalPinyin = "an", canonicalInitials = "a"),
+                        Candidate("\u6309", score = 0f, canonicalPinyin = "an", canonicalInitials = "a"),
+                    )
+                    else -> emptyList()
+                }.take(limit)
+            },
+            userLexicon = MemoryUserLexicon(),
+            segmenter = PinyinSyllableSegmenter(setOf("a", "an", "na", "nan")),
+        )
+
+        val result = decoder.decodeProgressively(
+            PinyinComposition(remainingPinyin = "anan"),
+            limit = 2,
+        )
+
+        assertEquals(listOf("an", "a"), result.prefixCandidates.map { it.consumedPinyin })
+        assertEquals(listOf("\u5B89", "\u554A"), result.prefixCandidates.map { it.candidate.text })
     }
 
     @Test
@@ -106,6 +151,61 @@ class ProgressivePinyinTest {
         assertEquals(80, values.size)
         assertTrue(values.any { it.candidate.text == ('\u4E00'.code + 79).toChar().toString() })
         assertTrue(values.none { it.remainingPinyin.isEmpty() })
+    }
+
+    @Test
+    fun compositionStopsAtTheSharedNinetySixLetterBoundary() {
+        val maximum = "a".repeat(PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH)
+            .fold(PinyinComposition()) { composition, character -> composition.type(character) }
+
+        val overLimit = maximum.type('a')
+
+        assertEquals(PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH, maximum.remainingPinyin.length)
+        assertEquals(maximum, overLimit)
+    }
+
+    @Test
+    fun acceptedPrefixesStillCountTowardTheCompositionBoundary() {
+        val accepted = PinyinComposition(
+            acceptedSegments = listOf(
+                AcceptedPinyinSegment(
+                    text = "已",
+                    consumedPinyin =
+                        "a".repeat(PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH - 1),
+                ),
+            ),
+            remainingPinyin = "b",
+            revision = 9,
+        )
+
+        assertEquals(PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH, accepted.composingCodeLength)
+        assertEquals(accepted, accepted.type('c'))
+    }
+
+    @Test
+    fun progressiveDecodeRejectsAnOverlongDirectlyConstructedComposition() {
+        var decodeCalls = 0
+        val decoder = AdaptivePinyinDecoder(
+            base = object : InputDecoder {
+                override fun decode(composing: String, limit: Int): List<Candidate> {
+                    decodeCalls += 1
+                    return listOf(Candidate("\u4E00", canonicalPinyin = "a", canonicalInitials = "a"))
+                }
+            },
+            userLexicon = MemoryUserLexicon(),
+            segmenter = segmenter,
+        )
+        val overlong = PinyinComposition(
+            remainingPinyin = "a".repeat(PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH + 1),
+            revision = 17,
+        )
+
+        val result = decoder.decodeProgressively(overlong, 8)
+
+        assertEquals(17, result.revision)
+        assertTrue(result.wholeCandidates.isEmpty())
+        assertTrue(result.prefixCandidates.isEmpty())
+        assertEquals(0, decodeCalls)
     }
 
     private fun fixtureDecoder(): InputDecoder = object : ContextualInputDecoder {

@@ -362,6 +362,18 @@ class SenseKeyboardView @JvmOverloads constructor(
         text: String,
         values: List<String>?,
     ) {
+        val nextCandidates = values ?: if (text.isEmpty()) emptyList() else null
+        val nextCandidatesReady = nextCandidates != null
+        if (
+            CandidatePointerFence.shouldCancel(
+                previousReady = candidatePanel.candidatesReady,
+                previousCandidates = candidatePanel.candidates,
+                nextReady = nextCandidatesReady,
+                nextCandidates = nextCandidates,
+            )
+        ) {
+            interaction.cancelCandidatePointers()
+        }
         val change = candidatePanel.publish(
             revision = revision,
             text = text,
@@ -737,4 +749,20 @@ class SenseKeyboardView @JvmOverloads constructor(
     private companion object {
         const val CLIPBOARD_ITEMS_PER_PAGE = 3
     }
+}
+
+/**
+ * Candidate touches freeze a source index on DOWN. A readiness transition or a
+ * content replacement invalidates that index even when the decoder reuses the
+ * same composition revision.
+ */
+internal object CandidatePointerFence {
+    fun shouldCancel(
+        previousReady: Boolean,
+        previousCandidates: List<String>,
+        nextReady: Boolean,
+        nextCandidates: List<String>?,
+    ): Boolean =
+        previousReady != nextReady ||
+            (nextCandidates != null && previousCandidates != nextCandidates)
 }

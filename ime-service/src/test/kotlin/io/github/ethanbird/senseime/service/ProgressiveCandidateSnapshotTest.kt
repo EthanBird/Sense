@@ -54,6 +54,91 @@ class ProgressiveCandidateSnapshotTest {
     }
 
     @Test
+    fun bulkPrefixCharactersCannotBuryTheWholeCandidateTail() {
+        val whole = (0 until 40).map { Candidate("whole-$it") }
+        val prefixes = (0 until 200).map { index ->
+            PinyinPrefixCandidate(Candidate("prefix-$index"), "xi", "an")
+        }
+        val snapshot = ProgressiveCandidateSnapshot.from(
+            ProgressivePinyinDecoding(17, "xian", whole, prefixes),
+            limit = 255,
+        )
+
+        assertEquals((0 until 12).map { "whole-$it" }, snapshot.candidates.take(12).map { it.text })
+        assertEquals((0 until 4).map { "prefix-$it" }, snapshot.candidates.drop(12).take(4).map { it.text })
+        assertEquals((12 until 40).map { "whole-$it" }, snapshot.candidates.drop(16).take(28).map { it.text })
+        assertEquals(43, snapshot.candidates.indexOfFirst { it.text == "whole-39" })
+        assertTrue(snapshot.select(17, 17, 43) is ProgressiveCandidateChoice.Whole)
+    }
+
+    @Test
+    fun exactSingleHanSyllablesExposeOnlyRepresentativeAmbiguousSplitChoices() {
+        listOf("xian" to "先", "jian" to "见").forEachIndexed { caseIndex, (pinyin, han) ->
+            val whole = listOf(
+                Candidate(
+                    text = han,
+                    canonicalPinyin = pinyin,
+                    matchKind = CandidateMatchKind.BASE_EXACT,
+                ),
+                Candidate(
+                    text = "$han$han",
+                    canonicalPinyin = pinyin,
+                    matchKind = CandidateMatchKind.BASE_EXACT,
+                ),
+            )
+            val prefixes = (0 until 80).map { index ->
+                PinyinPrefixCandidate(
+                    candidate = Candidate("prefix-$pinyin-$index"),
+                    consumedPinyin = pinyin.dropLast(2),
+                    remainingPinyin = pinyin.takeLast(2),
+                )
+            }
+            val revision = 31L + caseIndex
+            val snapshot = ProgressiveCandidateSnapshot.from(
+                ProgressivePinyinDecoding(revision, pinyin, whole, prefixes),
+                limit = 510,
+            )
+
+            assertEquals(6, snapshot.candidates.size)
+            assertEquals(listOf(han, "$han$han"), snapshot.candidates.take(2).map { it.text })
+            assertEquals(
+                (0 until 4).map { "prefix-$pinyin-$it" },
+                snapshot.candidates.drop(2).map { it.text },
+            )
+            assertTrue(
+                (2 until 6).all {
+                    snapshot.select(revision, revision, it) is ProgressiveCandidateChoice.Prefix
+                },
+            )
+        }
+    }
+
+    @Test
+    fun representativePrefixesCoverDistinctConsumptionPathsBeforeFilling() {
+        val prefixes = listOf(
+            PinyinPrefixCandidate(Candidate("a-0"), "a", "ng"),
+            PinyinPrefixCandidate(Candidate("a-1"), "a", "ng"),
+            PinyinPrefixCandidate(Candidate("an-0"), "an", "g"),
+            PinyinPrefixCandidate(Candidate("a-2"), "a", "ng"),
+            PinyinPrefixCandidate(Candidate("an-1"), "an", "g"),
+        )
+        val snapshot = ProgressiveCandidateSnapshot.from(
+            ProgressivePinyinDecoding(
+                revision = 37,
+                remainingPinyin = "ang",
+                wholeCandidates = listOf(Candidate("whole")),
+                prefixCandidates = prefixes,
+            ),
+            limit = 16,
+        )
+
+        assertEquals(
+            listOf("whole", "a-0", "an-0", "a-1", "a-2", "an-1"),
+            snapshot.candidates.map { it.text },
+        )
+    }
+
+    @Test
     fun exposesTheEntireBoundedCandidateSetForUiPaging() {
         val whole = (0 until 255).map { Candidate("candidate-$it") }
         val prefixes = (0 until 255).map { index ->
@@ -65,8 +150,10 @@ class ProgressiveCandidateSnapshotTest {
         )
 
         assertEquals(510, snapshot.candidates.size)
-        assertEquals("candidate-254", snapshot.candidates.last().text)
-        assertTrue(snapshot.select(19, 19, 509) is ProgressiveCandidateChoice.Whole)
+        assertEquals("candidate-254", snapshot.candidates[258].text)
+        assertTrue(snapshot.select(19, 19, 258) is ProgressiveCandidateChoice.Whole)
+        assertEquals("prefix-254", snapshot.candidates.last().text)
+        assertTrue(snapshot.select(19, 19, 509) is ProgressiveCandidateChoice.Prefix)
     }
 
     @Test

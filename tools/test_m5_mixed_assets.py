@@ -4,13 +4,13 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
-import tempfile
 import unittest
 from pathlib import Path
 
-import build_bigram_model
 import build_pinyin_lexicon
+from lexicon_sources import is_han_text, load_source_manifest
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -20,14 +20,14 @@ BIGRAMS = ASSETS / "pinyin_bigrams.bin"
 ENGLISH = ASSETS / "english_lexicon.txt"
 ENGLISH_LICENSE = ASSETS / "POPULAR-ENGLISH-WORDS-ISC.txt"
 REPOSITORY_ENGLISH_LICENSE = ROOT / "licenses/popular-english-words-ISC.txt"
-CUSTOM = ROOT / "ime-service/src/main/lexicon/sense_custom.dict.tsv"
-IDIOMS = ROOT / "ime-service/src/main/lexicon/sense_idioms.dict.tsv"
+MANIFEST = ROOT / "ime-service/src/main/lexicon/sources.json"
+BUILD_STATS = ROOT / "ime-service/src/main/lexicon/pinyin_lexicon.stats.json"
 
-LEXICON_RECORDS = 429_901
-BIGRAM_RECORDS = 46_657
+LEXICON_RECORDS = 823_782
 ENGLISH_WORDS = 20_000
-LEXICON_SHA256 = "ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
-BIGRAM_SHA256 = "db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c"
+LEXICON_SHA256 = "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800"
+BIGRAM_SHA256 = "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d"
+MANIFEST_SHA256 = "4275a03b9130bc06bcaa46dddac2db3ed2c75cc04a314dda4317bb6d06e62829"
 ENGLISH_SHA256 = "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624"
 ENGLISH_LICENSE_SHA256 = "f432301e16a48011db30f6fd74d5ec906745d5c9bfcacb91c924e4738d7e4fa7"
 ENGLISH_HEADER = [
@@ -73,36 +73,51 @@ class M5MixedAssetsTest(unittest.TestCase):
             [candidate.text for candidate in entries["}zhongwensrf|zhongwenshurufa"][:1]],
         )
         self.assertEqual(
-            ["妇女", "👩🏻", "腐女", "父女"],
-            [candidate.text for candidate in entries["}fun|funv"][:4]],
+            ["妇女", "父女", "腐女"],
+            [candidate.text for candidate in entries["}fun|funv"]],
         )
         self.assertEqual(
             ["赋能"],
-            [candidate.text for candidate in entries["}fun|funeng"][:1]],
+            [candidate.text for candidate in entries["}fun|funeng"]],
         )
-        self.assertEqual("服你", entries["funi"][0].text)
         self.assertEqual("好哦", entries["haoo"][0].text)
+        self.assertTrue(
+            all(is_han_text(candidate.text) for candidate in entries["}fun|funv"])
+        )
         self.assertEqual(LEXICON_SHA256, self._sha256(LEXICON))
         self.assertEqual(BIGRAM_SHA256, self._sha256(BIGRAMS))
 
-    def test_fresh_checkout_rebuild_is_byte_identical(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            rebuilt_lexicon = root / "pinyin_lexicon.bin"
-            rebuilt_bigrams = root / "pinyin_bigrams.bin"
+    def test_sources_are_hash_pinned_and_product_weights_are_calibrated(self) -> None:
+        loaded = load_source_manifest(MANIFEST)
+        self.assertEqual(MANIFEST_SHA256, loaded.manifest_sha256)
+        self.assertEqual(610_421, len(loaded.records))
+        self.assertEqual(
+            {
+                "rime-frost-8105",
+                "rime-frost-base",
+                "rime-frost-ext",
+                "rime-frost-others",
+                "sense-product",
+            },
+            {audit.source_id for audit in loaded.audits},
+        )
+        product_records = [
+            record for record in loaded.records if record.source_id == "sense-product"
+        ]
+        self.assertTrue(product_records)
+        self.assertTrue(all(is_han_text(record.text) for record in product_records))
+        self.assertLess(max(record.raw_weight for record in product_records), 100_000)
+        self.assertTrue(
+            all("src/test/fixtures" not in audit.path for audit in loaded.audits)
+        )
 
-            entries, _ = build_pinyin_lexicon.augment_binary(LEXICON, [IDIOMS, CUSTOM])
-            build_pinyin_lexicon.write_binary(entries, rebuilt_lexicon)
-            self.assertEqual(LEXICON.read_bytes(), rebuilt_lexicon.read_bytes())
-
-            pair_mass = build_bigram_model.read_pair_mass(rebuilt_lexicon)
-            pairs = build_bigram_model.rank_pairs(
-                pair_mass,
-                build_bigram_model.DEFAULT_MAX_PAIRS,
-            )
-            self.assertEqual(BIGRAM_RECORDS, len(pairs))
-            build_bigram_model.write_model(pairs, rebuilt_bigrams)
-            self.assertEqual(BIGRAMS.read_bytes(), rebuilt_bigrams.read_bytes())
+    def test_committed_build_stats_match_packaged_asset(self) -> None:
+        stats = json.loads(BUILD_STATS.read_text(encoding="utf-8"))
+        self.assertEqual(LEXICON_SHA256, stats["asset"]["sha256"])
+        self.assertEqual(35_069_585, stats["asset"]["bytes"])
+        self.assertEqual(610_298, stats["counts"]["exact"]["candidates"])
+        self.assertEqual(608_314, stats["exact_unique_texts"])
+        self.assertEqual(MANIFEST_SHA256, stats["manifest"]["sha256"])
 
     @staticmethod
     def _sha256(path: Path) -> str:

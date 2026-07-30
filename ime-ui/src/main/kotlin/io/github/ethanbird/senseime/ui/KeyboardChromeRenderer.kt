@@ -249,7 +249,10 @@ internal class KeyboardChromeRenderer(
     ) {
         val value = state.candidates.candidates.getOrNull(candidate.sourceIndex) ?: return
         val bounds = candidate.bounds
-        if (state.isCandidatePressed(candidate.sourceIndex)) {
+        if (
+            state.candidates.candidatesReady &&
+            state.isCandidatePressed(candidate.sourceIndex)
+        ) {
             paint.style = Paint.Style.FILL
             paint.color = color(0x294F7CF5, 0x505E63D8)
             canvas.drawRoundRect(
@@ -263,6 +266,10 @@ internal class KeyboardChromeRenderer(
             )
         }
         paint.style = Paint.Style.FILL
+        // Keep the retained batch visually identical while the next async
+        // decode is pending. Readiness is an interaction contract rather than
+        // a theme state; changing text opacity on every key press looks like
+        // a full candidate-strip flash.
         paint.color = color(0xFF172033.toInt(), 0xFFF3F4F7.toInt())
         paint.textSize = sp(textSizeSp)
         paint.textAlign = Paint.Align.LEFT

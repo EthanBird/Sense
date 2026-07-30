@@ -8,25 +8,24 @@ import android.util.Log
 import io.github.ethanbird.senseime.core.LearnedPhrase
 import io.github.ethanbird.senseime.core.MemoryUserLexicon
 import io.github.ethanbird.senseime.core.SerialPersistenceQueue
+import io.github.ethanbird.senseime.core.UserLearningEvidence
 import io.github.ethanbird.senseime.core.UserLexicon
+import io.github.ethanbird.senseime.core.UserNegativeFeedback
 
 /**
  * Hot lookups stay in a pure Kotlin snapshot; SQLite is only the durable journal.
- * Writes are serialized off the IME main thread and update absolute counters.
+ * Upserts and deletions are serialized off the IME main thread as absolute snapshots.
  */
-class PersistentUserLexicon(context: Context) : UserLexicon {
+class PersistentUserLexicon private constructor(
+    resources: PersistentUserLexiconResources,
+) : UserLexicon {
+    constructor(context: Context) : this(
+        createResources(context.applicationContext),
+    )
+
     private val lifecycleLock = Any()
-    private val database = UserLexiconDatabase(context.applicationContext)
-    private val writer = SerialPersistenceQueue(
-        threadName = "sense-user-lexicon",
-        persist = database::persist,
-        closeStorage = database::close,
-        onError = { error -> Log.e(TAG, "User lexicon persistence failed", error) },
-    )
-    private val memory = MemoryUserLexicon(
-        initial = database.loadAll(),
-        onRecord = { phrase -> check(writer.submit(phrase)) { "User lexicon is closed" } },
-    )
+    private val writer = resources.writer
+    private val memory = resources.memory
     private var closed = false
 
     override fun lookup(code: String, limit: Int): List<LearnedPhrase> = memory.lookup(code, limit)
@@ -36,9 +35,24 @@ class PersistentUserLexicon(context: Context) : UserLexicon {
         initials: String,
         text: String,
         aliases: Set<String>,
+        evidence: UserLearningEvidence,
     ): LearnedPhrase = synchronized(lifecycleLock) {
         check(!closed) { "User lexicon is closed" }
-        memory.record(fullPinyin, initials, text, aliases)
+        memory.record(fullPinyin, initials, text, aliases, evidence)
+    }
+
+    override fun demote(
+        fullPinyin: String,
+        text: String,
+        feedback: UserNegativeFeedback,
+    ): LearnedPhrase? = synchronized(lifecycleLock) {
+        check(!closed) { "User lexicon is closed" }
+        memory.demote(fullPinyin, text, feedback)
+    }
+
+    override fun forget(fullPinyin: String, text: String): Boolean = synchronized(lifecycleLock) {
+        check(!closed) { "User lexicon is closed" }
+        memory.forget(fullPinyin, text)
     }
 
     override fun close() {
@@ -50,8 +64,104 @@ class PersistentUserLexicon(context: Context) : UserLexicon {
     }
 
     private companion object {
+        fun createResources(context: Context): PersistentUserLexiconResources =
+            PersistentUserLexiconResourceInitializer.initialize(
+                openStorage = { UserLexiconDatabase(context) },
+                load = UserLexiconDatabase::loadAll,
+                openWriter = { database ->
+                    SerialPersistenceQueue(
+                        threadName = "sense-user-lexicon",
+                        persist = database::persistMutation,
+                        closeStorage = database::close,
+                        onError = { error ->
+                            Log.e(TAG, "User lexicon persistence failed", error)
+                        },
+                    )
+                },
+                build = { initial, writer ->
+                    PersistentUserLexiconResources(
+                        writer = writer,
+                        memory = MemoryUserLexicon(
+                            initial = initial,
+                            onRecord = { phrase ->
+                                check(
+                                    writer.submit(UserLexiconPersistence.Upsert(phrase)),
+                                ) { "User lexicon is closed" }
+                            },
+                            onForget = { fullPinyin, text ->
+                                check(
+                                    writer.submit(
+                                        UserLexiconPersistence.Delete(fullPinyin, text),
+                                    ),
+                                ) { "User lexicon is closed" }
+                            },
+                        ),
+                    )
+                },
+                closeStorage = UserLexiconDatabase::close,
+                closeWriter = SerialPersistenceQueue<UserLexiconPersistence>::close,
+            )
+
         const val TAG = "SenseUserLexicon"
     }
+}
+
+private data class PersistentUserLexiconResources(
+    val writer: SerialPersistenceQueue<UserLexiconPersistence>,
+    val memory: MemoryUserLexicon,
+)
+
+/**
+ * Transfers storage ownership to the writer only after the initial read
+ * succeeds. Every failure path closes the resource that currently owns storage.
+ */
+internal object PersistentUserLexiconResourceInitializer {
+    fun <Storage : Any, Initial, Writer : Any, Result> initialize(
+        openStorage: () -> Storage,
+        load: (Storage) -> Initial,
+        openWriter: (Storage) -> Writer,
+        build: (Initial, Writer) -> Result,
+        closeStorage: (Storage) -> Unit,
+        closeWriter: (Writer) -> Unit,
+    ): Result {
+        val storage = openStorage()
+        var writer: Writer? = null
+        try {
+            val initial = load(storage)
+            val acquiredWriter = openWriter(storage)
+            writer = acquiredWriter
+            return build(initial, acquiredWriter)
+        } catch (error: Throwable) {
+            val acquiredWriter = writer
+            if (acquiredWriter == null) {
+                closeAfterFailure(error) { closeStorage(storage) }
+            } else {
+                val writerCloseSucceeded = closeAfterFailure(error) {
+                    closeWriter(acquiredWriter)
+                }
+                if (!writerCloseSucceeded) {
+                    closeAfterFailure(error) { closeStorage(storage) }
+                }
+            }
+            throw error
+        }
+    }
+
+    private inline fun closeAfterFailure(
+        primary: Throwable,
+        close: () -> Unit,
+    ): Boolean = try {
+        close()
+        true
+    } catch (closeError: Throwable) {
+        if (closeError !== primary) primary.addSuppressed(closeError)
+        false
+    }
+}
+
+private sealed interface UserLexiconPersistence {
+    data class Upsert(val phrase: LearnedPhrase) : UserLexiconPersistence
+    data class Delete(val fullPinyin: String, val text: String) : UserLexiconPersistence
 }
 
 private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -70,6 +180,10 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
                 created_at_ms INTEGER NOT NULL,
                 last_used_at_ms INTEGER NOT NULL,
                 aliases TEXT NOT NULL DEFAULT '',
+                positive_evidence REAL NOT NULL DEFAULT 0,
+                negative_evidence REAL NOT NULL DEFAULT 0,
+                last_positive_evidence REAL NOT NULL DEFAULT 0.18,
+                last_negative_at_ms INTEGER NOT NULL DEFAULT 0,
                 PRIMARY KEY(full_pinyin, phrase)
             ) WITHOUT ROWID
             """.trimIndent(),
@@ -82,6 +196,13 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 2) {
             db.execSQL("ALTER TABLE $TABLE_PHRASE ADD COLUMN aliases TEXT NOT NULL DEFAULT ''")
+        }
+        if (oldVersion < 3) {
+            db.execSQL("ALTER TABLE $TABLE_PHRASE ADD COLUMN positive_evidence REAL NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE $TABLE_PHRASE ADD COLUMN negative_evidence REAL NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE $TABLE_PHRASE ADD COLUMN last_positive_evidence REAL NOT NULL DEFAULT 0.18")
+            db.execSQL("ALTER TABLE $TABLE_PHRASE ADD COLUMN last_negative_at_ms INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("UPDATE $TABLE_PHRASE SET positive_evidence = use_count")
         }
     }
 
@@ -109,6 +230,10 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
                         .split(',')
                         .filter(String::isNotEmpty)
                         .toSet(),
+                    positiveEvidence = cursor.getFloat(7),
+                    negativeEvidence = cursor.getFloat(8),
+                    lastPositiveEvidence = cursor.getFloat(9),
+                    lastNegativeAtMillis = cursor.getLong(10),
                 )
             }
         } finally {
@@ -117,7 +242,14 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
         return values
     }
 
-    fun persist(phrase: LearnedPhrase) {
+    fun persistMutation(mutation: UserLexiconPersistence) {
+        when (mutation) {
+            is UserLexiconPersistence.Upsert -> persist(mutation.phrase)
+            is UserLexiconPersistence.Delete -> delete(mutation.fullPinyin, mutation.text)
+        }
+    }
+
+    private fun persist(phrase: LearnedPhrase) {
         val db = writableDatabase
         db.beginTransaction()
         try {
@@ -126,6 +258,10 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
                 put("use_count", phrase.useCount)
                 put("last_used_at_ms", phrase.lastUsedAtMillis)
                 put("aliases", phrase.aliases.sorted().joinToString(","))
+                put("positive_evidence", phrase.positiveEvidence)
+                put("negative_evidence", phrase.negativeEvidence)
+                put("last_positive_evidence", phrase.lastPositiveEvidence)
+                put("last_negative_at_ms", phrase.lastNegativeAtMillis)
             }
             val changed = db.update(
                 TABLE_PHRASE,
@@ -147,9 +283,17 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
         }
     }
 
+    private fun delete(fullPinyin: String, text: String) {
+        writableDatabase.delete(
+            TABLE_PHRASE,
+            "full_pinyin = ? AND phrase = ?",
+            arrayOf(fullPinyin, text),
+        )
+    }
+
     private companion object {
         const val DATABASE_NAME = "sense_user_lexicon.db"
-        const val DATABASE_VERSION = 2
+        const val DATABASE_VERSION = 3
         const val TABLE_PHRASE = "user_phrase"
         val COLUMNS = arrayOf(
             "full_pinyin",
@@ -159,6 +303,10 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
             "created_at_ms",
             "last_used_at_ms",
             "aliases",
+            "positive_evidence",
+            "negative_evidence",
+            "last_positive_evidence",
+            "last_negative_at_ms",
         )
     }
 }

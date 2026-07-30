@@ -50,7 +50,35 @@ interface InputDecoder {
     fun decode(composing: String, limit: Int = 5): List<Candidate>
 }
 
+/**
+ * Marker contract for decoders whose results are already filtered, deduplicated,
+ * score-ranked and bounded by the requested limit.
+ *
+ * Adapters may use this contract to avoid running the same candidate set through
+ * [CandidateRanker] a second time when no additional evidence is present. When
+ * combined with [ContextualInputDecoder] or [ProgressivePrefixProbeDecoder], the
+ * same guarantee applies to every decode seam exposed by those interfaces.
+ */
+interface RankedCandidateDecoder : InputDecoder
+
 /** Optional boundary-aware ranking for a previously selected composing segment. */
 interface ContextualInputDecoder : InputDecoder {
     fun decodeAfter(previousCodePoint: Int, composing: String, limit: Int = 5): List<Candidate>
+}
+
+/**
+ * Optional low-allocation seam for progressive prefix selection.
+ *
+ * A selectable prefix is already a concrete portion of the user's spelling,
+ * so callers need canonical, segmented and completion recall but not a second
+ * spelling-correction graph for every prefix boundary.
+ */
+interface ProgressivePrefixProbeDecoder : InputDecoder {
+    fun decodePrefixProbe(composing: String, limit: Int = 5): List<Candidate>
+
+    fun decodePrefixProbeAfter(
+        previousCodePoint: Int,
+        composing: String,
+        limit: Int = 5,
+    ): List<Candidate> = decodePrefixProbe(composing, limit)
 }

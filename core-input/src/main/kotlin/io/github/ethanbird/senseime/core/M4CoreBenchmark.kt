@@ -47,7 +47,7 @@ object M4CoreBenchmark {
             "ygz initials regression: $initials"
         }
         val fourCharacterInitials = linkedMapOf(
-            "scxt" to "上窜下跳",
+            "scxt" to "上蹿下跳",
             "ssyw" to "蛇鼠一窝",
         ).mapValues { (shortCode, expected) ->
             base.decode(shortCode, 8).firstOrNull().also { candidate ->
@@ -264,13 +264,16 @@ object M4CoreBenchmark {
             .takeIf { it >= 0 }
             ?.plus(1)
 
-    private const val SAMPLE_COUNT = 7
+    // Nearest-rank p95 needs at least 20 samples; with seven samples it is the
+    // maximum and turns one scheduler/GC outlier into a false gate failure.
+    // Per-sample lookup counts below retain the previous total work budget.
+    private const val SAMPLE_COUNT = 20
     private const val WARMUP_LOOKUPS = 500
     private const val PRODUCTION_WARMUP_LOOKUPS = 20
-    private const val INITIALS_LOOKUPS = 20_000
-    private const val PROGRESSIVE_LOOKUPS = 5_000
-    private const val PRODUCTION_PROGRESSIVE_LOOKUPS = 100
-    private const val COMPOSITION_LOOKUPS = 100
+    private const val INITIALS_LOOKUPS = 7_000
+    private const val PROGRESSIVE_LOOKUPS = 1_750
+    private const val PRODUCTION_PROGRESSIVE_LOOKUPS = 35
+    private const val COMPOSITION_LOOKUPS = 35
     private const val PRODUCTION_CANDIDATE_LIMIT = 255
     private const val INITIALS_P95_GATE_NS = 250_000.0
     private const val PROGRESSIVE_P95_GATE_NS = 500_000.0

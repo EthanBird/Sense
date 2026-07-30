@@ -23,6 +23,7 @@ class CandidatePanelTest {
         assertEquals(41L, panel.compositionRevision)
         assertEquals(40L, panel.candidateRevision)
         assertEquals(oldValues, panel.candidates)
+        assertFalse(panel.candidatesReady)
         assertTrue(pendingChange.cancelSettle)
 
         val readyValues = listOf("您", "您好", "您们")
@@ -35,6 +36,7 @@ class CandidatePanelTest {
         assertEquals(41L, panel.compositionRevision)
         assertEquals(41L, panel.candidateRevision)
         assertEquals(readyValues, panel.candidates)
+        assertTrue(panel.candidatesReady)
         assertTrue(readyChange.cancelSettle)
         assertFalse(readyChange.requiresKeySceneRebuild)
 
@@ -48,7 +50,7 @@ class CandidatePanelTest {
     }
 
     @Test
-    fun `stale retained candidates and disabled expand control cannot produce actionable hits`() {
+    fun `pending candidates are visibly disabled and expose no stale hit targets`() {
         val panel = panel()
         panel.publishAt(
             revision = 7L,
@@ -69,11 +71,23 @@ class CandidatePanelTest {
             staleCandidate.bounds.centerY,
             visible = true,
         )
-        assertTrue(staleHit is CandidateHit.StripArea)
+        assertFalse(panel.candidatesReady)
+        assertFalse(panel.canStartCollapsedDrag())
+        assertNull(staleHit)
+        assertFalse(
+            panel.beginDrag(
+                pointerId = 3,
+                x = staleCandidate.bounds.centerX,
+                y = staleCandidate.bounds.centerY,
+                eventTimeMillis = 1_000L,
+            ),
+        )
 
         val expand = panel.controls.single { it.control == CandidateControl.EXPAND }
         assertFalse(expand.enabled)
         assertNull(panel.hitTest(expand.bounds.centerX, expand.bounds.centerY, visible = true))
+        assertFalse(panel.activateAt(CandidateControl.EXPAND).requiresKeySceneRebuild)
+        assertFalse(panel.expanded)
         assertNull(
             panel.hitTest(
                 staleCandidate.bounds.centerX,
@@ -81,6 +95,46 @@ class CandidatePanelTest {
                 visible = false,
             ),
         )
+    }
+
+    @Test
+    fun `same revision pending publication disables expanded candidates and paging`() {
+        val panel = panel()
+        panel.publishAt(
+            revision = 10L,
+            text = "xian",
+            values = candidates(80),
+        )
+        panel.activateAt(CandidateControl.EXPAND)
+        panel.pageAt(delta = 1)
+        assertTrue(panel.expanded)
+        assertEquals("2 / 5", panel.pageLabel)
+
+        val pending = panel.publishAt(
+            revision = 10L,
+            text = "xian",
+            values = null,
+        )
+
+        assertFalse(panel.candidatesReady)
+        assertTrue(pending.cancelSettle)
+        val staleCandidate = panel.visibleCandidates.first()
+        assertNull(
+            panel.hitTest(
+                staleCandidate.bounds.centerX,
+                staleCandidate.bounds.centerY,
+                visible = true,
+            ),
+        )
+        assertFalse(
+            panel.controls.single { it.control == CandidateControl.PREVIOUS_PAGE }.enabled,
+        )
+        assertFalse(
+            panel.controls.single { it.control == CandidateControl.NEXT_PAGE }.enabled,
+        )
+        assertEquals("2 / 5", panel.pageLabel)
+        panel.pageAt(delta = 1)
+        assertEquals("2 / 5", panel.pageLabel)
     }
 
     @Test
@@ -163,18 +217,13 @@ class CandidatePanelTest {
     }
 
     @Test
-    fun `ready publication clears drag and offset inherited from stale candidates`() {
+    fun `pending and ready publications clear drag and offset inherited from the prior batch`() {
         val panel = panel()
         val values = candidates(20)
         panel.publishAt(
             revision = 50L,
             text = "old",
             values = values,
-        )
-        panel.publishAt(
-            revision = 51L,
-            text = "new",
-            values = null,
         )
         assertTrue(panel.moveTo(panel.maximumScrollOffset))
         assertTrue(
@@ -185,6 +234,16 @@ class CandidatePanelTest {
                 eventTimeMillis = 1_000L,
             ),
         )
+
+        val pending = panel.publishAt(
+            revision = 51L,
+            text = "new",
+            values = null,
+        )
+
+        assertTrue(pending.cancelSettle)
+        assertEquals(0f, panel.scrollOffset, 0f)
+        assertFalse(panel.ownsDrag(pointerId = 4))
 
         val ready = panel.publishAt(
             revision = 51L,

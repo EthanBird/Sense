@@ -2,11 +2,11 @@
 
 > Android 原生高性能中文输入法：普通输入完全本地运行，AI、记忆与工具能力通过可配置的长按方向 Skill 显式触发。
 
-**项目状态：** `v0.4.5.beta.4` Skill 长按可靠性与设置页性能修复预发布
+**项目状态：** `v0.4.5.beta.5` 解码质量、Frost 词库与个性化排序预发布
 
-**当前版本：** `v0.4.5.beta.4`（`versionCode 25`）
+**当前版本：** `v0.4.5.beta.5`（`versionCode 26`）
 
-**更新日期：** 2026-07-29
+**更新日期：** 2026-07-30
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
 
 本文基于《GlassIME Android AI 中文输入法产品与技术设计文档 v0.1》重新整理，并统一改名为：
@@ -22,7 +22,7 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.5.beta.4 Skill 长按可靠性与设置页性能修复
+## 0. 当前迭代：v0.4.5.beta.5 Decoder quality and Frost lexicon
 
 `v0.4.5` 在 v0.4.4 的开放工具、完整 Agent Journal 和本地记忆之上，把 Skills
 交付为可配置、可修订、可由 Agent 智能读取和管理的长期系统：
@@ -63,6 +63,52 @@ hash/CAS/写后验证继续有效；这些边界防止状态错写，但不限�
 用 request token 与 exact physical owner 等待权威 projection；工具页可以分别关闭
 `skill_read` 和 `skill_manage`，且不会删除任何用户数据。完整草稿使用原子 recovery
 snapshot 与有界生命周期 durability handoff。
+
+`v0.4.5.beta.5` 深入重做中文候选召回和排序：全拼 exact、整句组合、简拼、混拼、
+前缀、英文、用户词与纠错路径进入统一分数域；拼写纠错由穷举查询改为带音节边界和
+编辑代价的有界 spelling graph；动态整句 lattice 扩大音节边与 beam，同时按片段
+归一化长句分数。最终来源先验为 canonical exact/composition `+8/+6`、普通
+exact/composition `+1.2/+0.55`、user `+0.45`、hybrid `+0.55`、initials `+0.1`、
+prefix `-0.75`、English exact/prefix `+0.4/-0.9`；correction 在无 canonical、
+有 exact、有 composition 时分别使用 `-0.25/-13/-8`。所有来源仍按最终分数竞争，
+不保留固定中文或英文槽位。
+
+生产纠错预算按 canonical 证据和输出上限分档：无 canonical 时始终保留 48 条 spelling
+paths 和 4 个 composed probes；已有 exact 或规范组合且 `outputLimit < 64` 时使用
+24/1，`outputLimit >= 64` 时保持 48/3。每路径 exact 48 项、每个 composed probe
+24 项、每段 8 项和 beam 32 保持不变；规范化字母输入上限为 96。生产与测试使用同一
+搜索实现，不再按词库记录数切换。
+图搜索按 cost tier 和首次编辑位置保留多样性，为单字母尾部增删与最近编辑位置预留
+组合 probe；编辑位置记录真实替换/增删字符偏移而非音节起点，48 路生产预算固定
+`nihaoshijiee → 你好世界`。`syllableEnds` 固定 corrected lattice 的音节端点。撇号同时约束
+组合与纠错边，并停用整段 exact、hybrid、initials 和 prefix。
+渐进式前缀选择通过 `ProgressivePrefixProbeDecoder` 复用 canonical、组合与补全能力，
+但不为每个前缀重复构建 spelling-correction graph；整句候选仍走完整解码并保留纠错。
+
+候选快照按“整句 → 代表性渐进路径 → 其余候选”发布。异步 pending 期间保留几何和
+主题颜色、冻结命中，并在 readiness 或内容批次改变前取消候选活动指针，避免旧批次
+按下跨到新批次抬起。个性化模型区分默认提交、显式选词和渐进选词，加入有界频次/
+时间衰减以及快速删除、紧接替换的 signed adjustment；渐进选择仅在完整上屏成功后
+学习。补充平面 Han 按 Unicode code point 参与渐进选择与学习；完整可逆 composition
+（已选片段与待输入拼音合计）共享 96 字母上限。
+
+生产中文词库切换到固定 commit、可离线重建的 Rime Frost 首选源，唯一 exact 文本
+扩展到 608,314；Frost、bigram、英文词表和 SQLite 迁移在专用线程构建完整解码器后
+原子热切换，不阻塞 IME 创建主线程。项目与 APK 许可同步切换为 GPL-3.0-only。
+
+最终 M3 contextual 回放达到 Top-1 `92/120（76.67%）`、Top-3 `83.33%`、Top-10
+`109/120（90.83%）`、Coverage `118/120（98.33%）`、MRR `0.8140`；门禁为
+Top-1/Top-10/Coverage/MRR `70%/85%/93%/0.75`，hybrid 另要求 Top-1 至少
+`10/11` 并保持 `rengzn → 人工智能` sentinel。非 typo、limit 255 的 Host p95/p99
+为 `12.858/15.596 ms`，typo 为 `11.417/11.454 ms`。最新 M4 的 initials、渐进
+limit 16、渐进 limit 255 和组合 p95 分别为 `0.037/0.402/0.839/2.578 ms`，其中
+limit 255 前缀候选数为 51；M5 的英文词典、中英混合渐进解码和 hybrid p95 分别为
+`5.802 µs`、`0.623 ms`、`0.497 ms`。
+
+决策记录见 [ADR 0022](docs/adr/0022-gpl-rime-frost-lexicon-pipeline.md) 与
+[ADR 0023](docs/adr/0023-v0.4.5-beta5-decoder-quality.md)，详细发布门禁见
+[`v0.4.5.beta.5` 预发布说明](docs/releases/v0.4.5.beta.5.md)，最新发布资产见
+[`v0.4.5.beta.5` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.5)。
 
 `v0.4.5.beta.4` 修复键盘刚显示、窗口切换或目录观察 catch-up 时，等价 Skill catalog
 重复发布会撤销已开始长按的问题：解析结果、显示标签与 active Skill 均未变化时保留
@@ -108,7 +154,7 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
 | Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
 | 既有质量 | AI、IME、UI、Core、M0–M6、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 25`、`versionName 0.4.5.beta.4`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据 | `versionCode 26`、`versionName 0.4.5.beta.5`、`minSdk 29`、`targetSdk 36` |
 
 仓库不再运行 GitHub Actions；测试、Lint、性能门禁、APK 构建和签名校验统一在 Windows
 本地执行。完整本地验证与构建：
@@ -125,11 +171,11 @@ powershell -ExecutionPolicy Bypass -File tools/local_release.ps1 -Publish
 
 `-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。
 
-> **v0.4.5.beta.4 发布收口：** 本轮源码整合冻结后将重新运行并人工审查 X-02
+> **v0.4.5.beta.5 发布收口：** 本轮源码整合冻结后将重新运行并人工审查 X-02
 > production source、build authority 与 offline gate 的 exact SHA-256，并同步刷新
 > boundary baseline。正式本地发布会在同一 release `HEAD` 上再次执行 source/artifact
 > gate，并把结果与 APK 签名、校验和一起归档到
-> [`v0.4.5.beta.4` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.4)。
+> [`v0.4.5.beta.5` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.5)。
 
 标准工程验证命令：
 
@@ -211,7 +257,8 @@ Sense 不是把聊天机器人塞进键盘，而是先做成一款足够快、�
 - **显式触发、静默执行：** 长按进入 Skill 层，中心释放保留原数字/符号，四方向执行已绑定 Skill。
 - **证据化采集、有限激活：** “全量归档”只是历史愿景，不是现行授权。当前不采集跨
   Session 记忆；未来也只能采集 CapturePolicy 明确许可的事件，并以有界激活集供模型读取。
-- **固定热路径：** M2 逐键不访问 SQLite；冷启动仍会加载用户词，长期档案独立性尚待后续快照阶段完成。
+- **固定热路径：** 逐键不访问 SQLite；Frost、bigram、英文词表与用户词迁移在专用
+  loader 中完成，完整解码器构建后原子热切换。
 - **单层玻璃：** 毛玻璃只作用于键盘底板；不对每个键帽重复模糊。
 - **可回放、可测量：** 候选、纠错、Skill、Provider、存储和性能均能通过统一事件重放评估。
 
@@ -426,8 +473,8 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.4.5.beta.4` Skill 长按可靠性与设置页性能
-修复预发布阶段。
+以下保留 M0 的实施记录；当前代码位于 `v0.4.5.beta.5` 解码质量、Frost 词库与
+个性化排序预发布阶段。
 现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。
 
@@ -504,6 +551,16 @@ librime 当前正式版本线已到 1.17.x，但项目不会因为“最新”�
 - 没有网络和 AI 服务时普通输入不退化；
 - 文档、ADR、基准结果与实现同步提交；
 - 没有以 TODO 代替会影响下一阶段的核心行为。
+
+### 16.1 许可与中文词库
+
+项目自 2026-07-30 起按 **GPL-3.0-only** 发布。生产中文词库使用固定
+commit 的 [Rime Frost](https://github.com/gaboolic/rime-frost) 首选源格式，
+并通过 `ime-service/src/main/lexicon/sources.json` 固定来源哈希、整数权重
+校准与索引预算。完整来源、转换、产物统计、APK 内许可副本和离线重建命令见
+根目录 [`LICENSE`](LICENSE)、[`NOTICE`](NOTICE) 与
+`docs/adr/0022-gpl-rime-frost-lexicon-pipeline.md`。合成排序 fixture 仅位于
+`ime-service/src/test/fixtures`，不会进入生产 manifest。
 
 ## 17. 参考资料
 

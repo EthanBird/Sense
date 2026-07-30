@@ -33,6 +33,8 @@ class MutableContractRepository:
         self.root = Path(self._temporary_directory.name)
         contract_sources = [
             ROOT / "README.md",
+            ROOT / "LICENSE",
+            ROOT / "NOTICE",
             *sorted((ROOT / "docs").rglob("*.md")),
             ROOT / DEFAULT_REPORT_PATH,
         ]

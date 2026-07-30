@@ -14,104 +14,110 @@ class PinyinDecoder private constructor(
     private val recordOffsets: IntArray,
     private val bigramModel: CharacterBigramModel,
     private val syllableRecordIndicesByInitial: Array<IntArray>,
-) : ContextualInputDecoder {
+    private val spellingGraph: PinyinSpellingGraph,
+    private val correctionBudget: CorrectionSearchBudget,
+) : ContextualInputDecoder, ProgressivePrefixProbeDecoder, RankedCandidateDecoder {
 
-    override fun decode(composing: String, limit: Int): List<Candidate> {
-        if (limit <= 0) return emptyList()
-        val query = normalize(composing)
-        if (query.isEmpty()) return emptyList()
-        val outputLimit = minOf(limit, MAX_DECODE_CANDIDATES)
-        val hybrid = readHybridCandidates(query, outputLimit)
-
-        val exact = findExact(query)
-        if (exact >= 0) {
-            val exactCandidates = readCandidates(exact, outputLimit, CandidateMatchKind.BASE_EXACT, query)
-            val composedCandidates = if (hasCompleteMultiSegmentComposition(query)) {
-                composeCandidates(
-                    query,
-                    outputLimit,
-                    segmentCandidatesPerKey = segmentCandidateLimit(outputLimit),
-                    beamWidth = segmentBeamWidth(outputLimit),
-                )
-            } else {
-                emptyList()
-            }
-            val canonicalFullPinyin = mergeCandidates(
-                exactCandidates + composedCandidates,
-                outputLimit,
-            )
-            // A private hybrid alias must never outrank a valid full-pinyin
-            // spelling merely because the underlying phrase has a larger raw
-            // dictionary weight (`hang` must remain 行/航…, not 韩国).
-            return concatenateCandidateGroups(
-                listOf(canonicalFullPinyin, hybrid),
-                outputLimit,
-            )
-        }
-
-        val initials = readInitialsCandidates(query, outputLimit)
-        val composed = composeCandidates(
-            query,
-            outputLimit,
-            segmentCandidatesPerKey = segmentCandidateLimit(outputLimit),
-            beamWidth = segmentBeamWidth(outputLimit),
-        )
-        val statisticalPrefix = readStatisticalPrefixCandidates(query, outputLimit)
-        val dynamicPrefix = readPrefixCandidates(query, outputLimit)
-        val corrected = readCorrectedCandidates(query, outputLimit)
-        // If the raw query already has a complete pinyin segmentation, a
-        // correction that inserts another letter is only an alternative. Keep
-        // it behind the normal ranker so a newly added `...haoo` phrase cannot
-        // turn exact `...henhao` into `...很好哦`. Same-length substitutions
-        // and transpositions still compete normally; that preserves typo
-        // recovery when a weak accidental segmentation also exists.
-        val (completionCorrections, competitiveCorrections) = if (
-            composed.isNotEmpty() && hasStrongMultiSegmentComposition(query)
-        ) {
-            corrected.partition { isCompletionCorrection(it, query) }
-        } else {
-            emptyList<Candidate>() to corrected
-        }
-        val primary = mergeCandidates(
-            hybrid + initials + composed + statisticalPrefix + dynamicPrefix + competitiveCorrections,
-            outputLimit,
-        )
-        return if (completionCorrections.isEmpty()) {
-            primary
-        } else {
-            concatenateCandidateGroups(
-                listOf(primary, mergeCandidates(completionCorrections, outputLimit)),
-                outputLimit,
-            )
-        }
-    }
+    override fun decode(composing: String, limit: Int): List<Candidate> =
+        decodeInternal(composing, limit, NO_CODE_POINT, includeCorrections = true)
 
     override fun decodeAfter(previousCodePoint: Int, composing: String, limit: Int): List<Candidate> {
-        if (limit <= 0 || !Character.isValidCodePoint(previousCodePoint)) return emptyList()
-        val query = normalize(composing)
-        val hasCanonicalExact = findExact(query) >= 0
-        val hasCanonicalComposition =
-            !hasCanonicalExact && hasStrongMultiSegmentComposition(query)
-        return decode(composing, limit)
-            .map { candidate ->
-                candidate.copy(
-                    score = candidate.score + bigramModel.score(previousCodePoint, candidate.text.codePointAt(0)),
-                )
-            }
-            .sortedWith(
-                compareBy<Candidate> {
-                    when {
-                        hasCanonicalExact -> exactQuerySourceGroup(it.matchKind)
-                        hasCanonicalComposition && isCompletionCorrection(it, query) -> 1
-                        else -> 0
-                    }
-                }
-                    .thenByDescending { it.score }
-                    .thenBy { matchPriority(it.matchKind) }
-                    .thenBy { it.text.length },
-            )
+        if (!Character.isValidCodePoint(previousCodePoint)) return emptyList()
+        return decodeInternal(composing, limit, previousCodePoint, includeCorrections = true)
     }
 
+    override fun decodePrefixProbe(composing: String, limit: Int): List<Candidate> =
+        decodeInternal(composing, limit, NO_CODE_POINT, includeCorrections = false)
+
+    override fun decodePrefixProbeAfter(
+        previousCodePoint: Int,
+        composing: String,
+        limit: Int,
+    ): List<Candidate> {
+        if (!Character.isValidCodePoint(previousCodePoint)) return emptyList()
+        return decodeInternal(composing, limit, previousCodePoint, includeCorrections = false)
+    }
+
+    /**
+     * Collects every viable source before applying one calibrated ranker.
+     *
+     * Canonical exact, composed, hybrid, initials and corrected spellings are
+     * alternatives in one score domain; an exact dictionary hit no longer
+     * terminates typo or segmentation recall.
+     */
+    private fun decodeInternal(
+        composing: String,
+        limit: Int,
+        previousCodePoint: Int,
+        includeCorrections: Boolean,
+    ): List<Candidate> {
+        if (limit <= 0) return emptyList()
+        val parsedQuery = parseQuery(composing)
+        val query = parsedQuery.code
+        if (query.isEmpty() || query.length > PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH) {
+            return emptyList()
+        }
+        val outputLimit = minOf(limit, MAX_DECODE_CANDIDATES)
+        val exactRecord = if (parsedQuery.hasForcedJoints) -1 else findExact(query)
+        val hasCanonicalExact = exactRecord >= 0
+        val hasCanonicalComposition = hasMultiSegmentComposition(
+            query,
+            parsedQuery.forcedJoints,
+        )
+        val candidates = ArrayList<Candidate>(outputLimit * 3)
+
+        if (exactRecord >= 0) {
+            candidates += readCandidates(
+                exactRecord,
+                outputLimit,
+                CandidateMatchKind.BASE_EXACT,
+                query,
+            )
+        }
+        if (hasCanonicalComposition) {
+            candidates += composeCandidates(
+                query,
+                outputLimit,
+                segmentCandidatesPerKey = segmentCandidateLimit(outputLimit),
+                beamWidth = segmentBeamWidth(outputLimit),
+                forcedJoints = parsedQuery.forcedJoints,
+            )
+        }
+        if (!parsedQuery.hasForcedJoints) {
+            candidates += readHybridCandidates(query, outputLimit)
+            candidates += readInitialsCandidates(query, outputLimit)
+            if (!hasCanonicalExact) {
+                candidates += readStatisticalPrefixCandidates(query, outputLimit)
+                candidates += readPrefixCandidates(query, outputLimit)
+            }
+        }
+        if (includeCorrections) {
+            candidates += readSpellingGraphCorrections(
+                rawInput = composing,
+                normalizedQuery = query,
+                limit = outputLimit,
+                allowComposedCorrections = !hasCanonicalExact && !hasCanonicalComposition,
+            )
+        }
+
+        val contextual = if (previousCodePoint == NO_CODE_POINT) {
+            candidates
+        } else {
+            candidates.map { candidate ->
+                candidate.copy(
+                    score = candidate.score +
+                        bigramModel.score(previousCodePoint, candidate.text.codePointAt(0))
+                            .coerceIn(-CONTEXT_SCORE_CAP, CONTEXT_SCORE_CAP),
+                )
+            }
+        }
+        return CandidateRanker.rank(
+            candidates = contextual,
+            limit = outputLimit,
+            hasCanonicalExact = hasCanonicalExact,
+            hasCanonicalComposition = hasCanonicalComposition,
+        )
+    }
     private fun findExact(query: String): Int {
         var low = 0
         var high = recordOffsets.lastIndex
@@ -157,28 +163,50 @@ class PinyinDecoder private constructor(
         limit: Int,
         segmentCandidatesPerKey: Int,
         beamWidth: Int,
+        forcedJoints: BooleanArray? = null,
+        spellingSyllableEnds: List<Int>? = null,
     ): List<Candidate> {
         val beams = arrayOfNulls<MutableList<CompositionPath>>(query.length + 1)
+        val syllableIndexByOffset = spellingSyllableEnds?.let { ends ->
+            IntArray(query.length + 1) { -1 }.also { indices ->
+                indices[0] = 0
+                ends.forEachIndexed { index, end ->
+                    if (end in 1..query.length) indices[end] = index + 1
+                }
+            }
+        }
         beams[0] = mutableListOf(CompositionPath("", "", 0, 0f, NO_CODE_POINT, false))
         query.indices.forEach { start ->
             val paths = beams[start]?.also { pruneBeam(it, beamWidth) } ?: return@forEach
+            val startSyllableIndex = syllableIndexByOffset?.get(start) ?: 0
+            if (syllableIndexByOffset != null && startSyllableIndex < 0) return@forEach
             val maxEnd = minOf(query.length, start + MAX_SEGMENT_CODE_LENGTH)
             for (end in (start + 1)..maxEnd) {
+                if (!isCompositionEdgeAllowed(query, start, end, forcedJoints)) continue
+                val edgeSyllableCount = syllableIndexByOffset?.let { indices ->
+                    val endSyllableIndex = indices[end]
+                    if (endSyllableIndex <= startSyllableIndex) return@let -1
+                    endSyllableIndex - startSyllableIndex
+                }
+                if (edgeSyllableCount != null && edgeSyllableCount < 1) continue
                 val record = findExact(query, start, end)
                 if (record < 0) continue
                 val options = readCandidates(record, segmentCandidatesPerKey)
+                    .filter { option ->
+                        edgeSyllableCount == null ||
+                            option.canonicalInitials?.length == edgeSyllableCount
+                    }
                 val target = beams[end] ?: mutableListOf<CompositionPath>().also { beams[end] = it }
                 paths.forEach { path ->
                     options.forEach { option ->
                         val firstCodePoint = option.text.codePointAt(0)
                         val optionIsSingleCodePoint = option.text.codePointCount(0, option.text.length) == 1
-                        val boundaryScore = if (
-                            path.lastCodePoint == NO_CODE_POINT ||
-                            !path.lastSegmentWasSingleCodePoint && !optionIsSingleCodePoint
-                        ) {
-                            0f
-                        } else {
-                            bigramModel.score(path.lastCodePoint, firstCodePoint)
+                        val boundaryScore = when {
+                            path.lastCodePoint == NO_CODE_POINT -> 0f
+                            !path.lastSegmentWasSingleCodePoint && !optionIsSingleCodePoint ->
+                                bigramModel.score(path.lastCodePoint, firstCodePoint) * COMPOUND_BOUNDARY_SCALE
+
+                            else -> bigramModel.score(path.lastCodePoint, firstCodePoint)
                         }
                         addToBeam(
                             target,
@@ -201,8 +229,8 @@ class PinyinDecoder private constructor(
         pruneBeam(completed, beamWidth)
         return completed
             .filter { it.segments > 1 }
-            .distinctBy { it.text }
             .sortedWith(compositionComparator)
+            .distinctBy { it.text }
             .take(limit)
             .map {
                 Candidate(
@@ -240,39 +268,15 @@ class PinyinDecoder private constructor(
     }
 
     private fun compositionScore(path: CompositionPath): Float =
-        path.score - path.segments * SEGMENT_SCORE_PENALTY
+        (
+            path.score -
+                (path.segments - 1).coerceAtLeast(0) * WORD_BOUNDARY_COST
+        ) / path.segments.coerceAtLeast(1)
 
     private val compositionComparator =
         compareByDescending<CompositionPath>(::compositionScore)
             .thenBy { it.segments }
             .thenBy { it.text }
-
-    private fun matchPriority(kind: CandidateMatchKind): Int = when (kind) {
-        CandidateMatchKind.BASE_EXACT -> 0
-        CandidateMatchKind.BASE_COMPOSED -> 1
-        CandidateMatchKind.BASE_HYBRID -> 1
-        CandidateMatchKind.BASE_INITIALS -> 1
-        CandidateMatchKind.BASE_PREFIX -> 2
-        CandidateMatchKind.CORRECTED -> 4
-        CandidateMatchKind.ENGLISH_EXACT -> 5
-        CandidateMatchKind.ENGLISH_PREFIX -> 6
-        CandidateMatchKind.USER_FULL,
-        CandidateMatchKind.USER_INITIALS
-        -> 0
-    }
-
-    private fun exactQuerySourceGroup(kind: CandidateMatchKind): Int = when (kind) {
-        CandidateMatchKind.BASE_EXACT,
-        CandidateMatchKind.BASE_COMPOSED,
-        -> 0
-
-        CandidateMatchKind.BASE_HYBRID -> 1
-        else -> 2
-    }
-
-    private fun isCompletionCorrection(candidate: Candidate, query: String): Boolean =
-        candidate.matchKind == CandidateMatchKind.CORRECTED &&
-            candidate.canonicalPinyin?.length?.let { it > query.length } == true
 
     /**
      * Small UI/benchmark requests keep a compact search budget. The IME's
@@ -289,63 +293,8 @@ class PinyinDecoder private constructor(
             maxOf(MIN_SEGMENT_BEAM_WIDTH, limit)
         }
 
-    private fun mergeCandidates(candidates: List<Candidate>, limit: Int): List<Candidate> {
-        val bestByText = LinkedHashMap<String, Candidate>()
-        candidates.forEach { candidate ->
-            val previous = bestByText[candidate.text]
-            bestByText[candidate.text] = if (previous == null) {
-                candidate
-            } else {
-                mergeDuplicate(previous, candidate)
-            }
-        }
-        return bestByText.values
-            .sortedWith(
-                compareByDescending<Candidate> { it.score }
-                    .thenBy { matchPriority(it.matchKind) }
-                    .thenBy { it.text.length }
-                    .thenBy { it.text },
-            )
-            .take(limit)
-    }
-
-    private fun concatenateCandidateGroups(
-        groups: List<List<Candidate>>,
-        limit: Int,
-    ): List<Candidate> {
-        val result = ArrayList<Candidate>(limit)
-        val seen = HashSet<String>()
-        groups.forEach { group ->
-            group.forEach { candidate ->
-                if (result.size < limit && seen.add(candidate.text)) result += candidate
-            }
-        }
-        return result
-    }
-
-    /**
-     * Statistical prefix records do not encode their originating full pinyin.
-     * If the same result is found by the normal prefix scan, retain that safe
-     * source metadata even when the statistical score wins the display rank.
-     */
-    private fun mergeDuplicate(previous: Candidate, candidate: Candidate): Candidate {
-        val best = if (
-            candidate.score > previous.score ||
-            candidate.score == previous.score && matchPriority(candidate.matchKind) < matchPriority(previous.matchKind)
-        ) {
-            candidate
-        } else {
-            previous
-        }
-        if (best.matchKind != CandidateMatchKind.BASE_PREFIX || best.canonicalPinyin != null) return best
-        val sourcedPrefix = sequenceOf(previous, candidate).firstOrNull {
-            it.matchKind == CandidateMatchKind.BASE_PREFIX && it.canonicalPinyin != null
-        } ?: return best
-        return best.copy(
-            canonicalPinyin = sourcedPrefix.canonicalPinyin,
-            canonicalInitials = best.canonicalInitials ?: sourcedPrefix.canonicalInitials,
-        )
-    }
+    private fun mergeCandidates(candidates: List<Candidate>, limit: Int): List<Candidate> =
+        CandidateRanker.rank(candidates, limit, hasCanonicalExact = false)
 
     private fun findExact(query: String, start: Int, end: Int): Int {
         var low = 0
@@ -396,7 +345,24 @@ class PinyinDecoder private constructor(
     private fun readHybridCandidates(query: String, limit: Int): List<Candidate> {
         if (query.length < MIN_HYBRID_LENGTH) return emptyList()
         val prefix = HYBRID_NAMESPACE + query + HYBRID_SEPARATOR
-        val values = ArrayList<Candidate>(minOf(limit, 32))
+        val values = LinkedHashMap<String, Candidate>(minOf(limit * 2, 64))
+        val retainedCapacity = maxOf(limit * HYBRID_RETAINED_LIMIT_MULTIPLIER, 32)
+        val pruneThreshold = maxOf(limit * HYBRID_PRUNE_LIMIT_MULTIPLIER, 64)
+        fun add(candidate: Candidate) {
+            val previous = values[candidate.text]
+            if (previous == null || candidate.score > previous.score) {
+                values[candidate.text] = candidate
+            }
+            if (values.size > pruneThreshold) {
+                val retained = CandidateRanker.rank(
+                    values.values,
+                    retainedCapacity,
+                    hasCanonicalExact = false,
+                )
+                values.clear()
+                retained.forEach { values[it.text] = it }
+            }
+        }
         var index = lowerBound(prefix)
         var scanned = 0
         while (
@@ -408,14 +374,14 @@ class PinyinDecoder private constructor(
             val canonical = code.substring(prefix.length)
             readCandidates(
                 index,
-                limit,
+                minOf(limit, HYBRID_CANDIDATES_PER_RECORD),
                 CandidateMatchKind.BASE_HYBRID,
                 canonical,
-            ).forEach(values::add)
+            ).forEach(::add)
             index += 1
             scanned += 1
         }
-        return mergeCandidates(values, limit)
+        return mergeCandidates(values.values.toList(), limit)
     }
 
     private fun readPrefixCandidates(query: String, limit: Int): List<Candidate> {
@@ -451,130 +417,158 @@ class PinyinDecoder private constructor(
             .take(limit)
     }
 
-    private data class CorrectionHit(
-        val text: String,
-        val score: Float,
-        val cost: Float,
-        val canonical: String,
-        val initials: String?,
-    )
-
-    private data class CorrectionQuery(
-        val code: String,
-        val cost: Float,
-    )
-
-    private fun readCorrectedCandidates(query: String, limit: Int): List<Candidate> {
-        if (query.length !in 2..MAX_CORRECTION_QUERY_LENGTH) return emptyList()
-        val values = HashMap<String, CorrectionHit>()
-        correctionQueries(query).forEach { correction ->
-            val exact = findExact(correction.code)
-            val candidates = when {
-                exact >= 0 -> readCandidates(
+    /**
+     * Resolves weighted spelling-graph routes through the same word lattice as
+     * canonical input. This keeps a legal exact spelling and likely typo
+     * alternatives together instead of making correction an early-return
+     * fallback.
+     */
+    private fun readSpellingGraphCorrections(
+        rawInput: String,
+        normalizedQuery: String,
+        limit: Int,
+        allowComposedCorrections: Boolean,
+    ): List<Candidate> {
+        val values = ArrayList<Candidate>()
+        val composedProbes = ArrayList<CorrectionCompositionProbe>()
+        val spellingPathLimit =
+            correctionBudget.spellingPathLimit(allowComposedCorrections, limit)
+        val paths = spellingGraph.paths(rawInput, maxPaths = spellingPathLimit)
+            .asSequence()
+            .filter { it.cost > 0f && it.canonical != normalizedQuery }
+            .toList()
+        paths.forEach { path ->
+            val exact = findExact(path.canonical)
+            if (exact >= 0) {
+                readCandidates(
                     exact,
-                    limit,
+                    minOf(limit, correctionBudget.exactCandidatesPerPath),
                     CandidateMatchKind.CORRECTED,
-                    correction.code,
-                )
-
-                hasCompleteComposition(correction.code) -> composeCandidates(
-                    correction.code,
-                    limit,
-                    segmentCandidatesPerKey = CORRECTION_SEGMENT_CANDIDATES_PER_KEY,
-                    beamWidth = CORRECTION_BEAM_WIDTH,
-                ).map {
-                    it.copy(matchKind = CandidateMatchKind.CORRECTED, canonicalPinyin = correction.code)
-                }
-
-                else -> emptyList()
+                    path.canonical,
+                ).asSequence()
+                    .filter { candidate ->
+                        candidate.canonicalInitials?.length == path.syllableCount
+                    }
+                    .forEach { candidate -> values += candidate.withCorrectionPenalty(path) }
             }
-            candidates.forEach { candidate ->
-                val value = CorrectionHit(
-                    candidate.text,
-                    candidate.score - correction.cost * CORRECTION_PENALTY,
-                    correction.cost,
-                    correction.code,
-                    candidate.canonicalInitials,
+            compositionScoreUpperBound(path.canonical)?.let { upperBound ->
+                composedProbes += CorrectionCompositionProbe(
+                    path = path,
+                    upperBound = upperBound,
+                    hasExactRecord = exact >= 0,
                 )
-                val previous = values[candidate.text]
-                if (previous == null || value.score > previous.score || value.score == previous.score && value.cost < previous.cost) {
-                    values[candidate.text] = value
-                }
             }
         }
-        return values.values
-            .sortedWith(compareByDescending<CorrectionHit> { it.score }.thenBy { it.cost }.thenBy { it.text.length })
-            .take(limit)
-            .map { Candidate(it.text, it.score, it.canonical, CandidateMatchKind.CORRECTED, it.initials) }
+
+        val composedBudget =
+            correctionBudget.composedPathLimit(allowComposedCorrections, limit)
+        val correctionProbeOrder =
+            compareByDescending<CorrectionCompositionProbe> { it.hasExactRecord }
+                .thenByDescending {
+                    it.upperBound - it.path.cost * CORRECTION_PENALTY
+                }
+                .thenBy { it.path.cost }
+                .thenBy { it.path.canonical }
+        val orderedComposedProbes = composedProbes
+            .sortedWith(correctionProbeOrder)
+            .distinctBy { it.path.canonical }
+        val selectedComposedProbes = LinkedHashSet<CorrectionCompositionProbe>(composedBudget)
+        orderedComposedProbes.asSequence()
+            .filter { isSingleCharacterTailExtension(normalizedQuery, it.path.canonical) }
+            .take(minOf(TAIL_EXTENSION_PROBE_LIMIT, composedBudget))
+            .forEach(selectedComposedProbes::add)
+        val latestEditOffset = composedProbes.maxOfOrNull { it.path.firstEditOffset }
+        if (latestEditOffset != null && selectedComposedProbes.size < composedBudget) {
+            orderedComposedProbes.asSequence()
+                .filter { it.path.firstEditOffset >= latestEditOffset - RECENT_EDIT_OFFSET_WINDOW }
+                .firstOrNull()
+                ?.let(selectedComposedProbes::add)
+        }
+        orderedComposedProbes.forEach { probe ->
+            if (selectedComposedProbes.size < composedBudget) selectedComposedProbes += probe
+        }
+        selectedComposedProbes
+            .forEach { probe ->
+                composeCandidates(
+                    probe.path.canonical,
+                    minOf(limit, correctionBudget.composedCandidatesPerPath),
+                    segmentCandidatesPerKey = correctionBudget.segmentCandidatesPerKey,
+                    beamWidth = correctionBudget.segmentBeamWidth,
+                    spellingSyllableEnds = probe.path.syllableEnds,
+                ).asSequence()
+                    .filter { candidate ->
+                        candidate.canonicalInitials?.length == probe.path.syllableCount
+                    }
+                    .forEach { candidate ->
+                        values += candidate.copy(
+                            score = candidate.score - probe.path.cost * CORRECTION_PENALTY,
+                            matchKind = CandidateMatchKind.CORRECTED,
+                            canonicalPinyin = probe.path.canonical,
+                        )
+                    }
+            }
+        return CandidateRanker.rank(values, limit, hasCanonicalExact = false)
     }
 
-    /** Generates all one-edit spellings and ranks mobile-keyboard/fuzzy variants first. */
-    private fun correctionQueries(query: String): List<CorrectionQuery> {
-        val values = HashMap<String, Float>()
-        fun offer(code: String, cost: Float) {
-            if (code != query && code.length <= MAX_CORRECTION_QUERY_LENGTH + 1) {
-                values[code] = minOf(values[code] ?: Float.POSITIVE_INFINITY, cost)
-            }
-        }
+    private fun isSingleCharacterTailExtension(typed: String, canonical: String): Boolean =
+        (canonical.length == typed.length + 1 && canonical.startsWith(typed)) ||
+            (typed.length == canonical.length + 1 && typed.startsWith(canonical))
 
-        query.indices.forEach { index ->
-            val repeatedKey = query.getOrNull(index - 1) == query[index] || query.getOrNull(index + 1) == query[index]
-            val deletionCost = if (repeatedKey) REPEATED_KEY_COST else {
-                insertionDeletionCost(query[index], query.getOrNull(index - 1))
-            }
-            offer(query.removeRange(index, index + 1), deletionCost)
-            if (index < query.lastIndex && query[index] != query[index + 1]) {
-                val swapped = query.toCharArray().also {
-                    val first = it[index]
-                    it[index] = it[index + 1]
-                    it[index + 1] = first
-                }
-                offer(swapped.concatToString(), TRANSPOSITION_COST)
-            }
-            SUBSTITUTION_CANDIDATES[query[index]].orEmpty().forEach { expected ->
-                offer(query.replaceRange(index, index + 1, expected.toString()), substitutionCost(expected, query[index]))
-            }
-        }
-        for (index in 0..query.length) {
-            ('a'..'z').forEach { expected ->
-                offer(
-                    query.substring(0, index) + expected + query.substring(index),
-                    insertionDeletionCost(expected, query.getOrNull(index - 1)),
-                )
-            }
-        }
-        return values.entries
-            .map { CorrectionQuery(it.key, it.value) }
-            .sortedWith(compareBy<CorrectionQuery> { it.cost }.thenBy { it.code })
-    }
+    private data class CorrectionCompositionProbe(
+        val path: PinyinSpellingPath,
+        val upperBound: Float,
+        val hasExactRecord: Boolean,
+    )
 
-    private fun hasCompleteComposition(query: String): Boolean {
-        val reachable = BooleanArray(query.length + 1)
-        reachable[0] = true
+    private fun Candidate.withCorrectionPenalty(path: PinyinSpellingPath): Candidate =
+        copy(
+            score = score - path.cost * CORRECTION_PENALTY,
+            matchKind = CandidateMatchKind.CORRECTED,
+            canonicalPinyin = path.canonical,
+        )
+
+    /**
+     * Cheap lexical upper bound used before spending a full correction beam.
+     *
+     * It reads only the first candidate of each word-lattice edge and keeps one
+     * score per segment count. This lets high-frequency corrected paths win the
+     * bounded expansion budget instead of relying on canonical string order.
+     */
+    private fun compositionScoreUpperBound(query: String): Float? {
+        val scores = Array(query.length + 1) {
+            FloatArray(query.length + 1) { Float.NEGATIVE_INFINITY }
+        }
+        scores[0][0] = 0f
         query.indices.forEach { start ->
-            if (!reachable[start]) return@forEach
             val maxEnd = minOf(query.length, start + MAX_SEGMENT_CODE_LENGTH)
             for (end in (start + 1)..maxEnd) {
-                if (findExact(query, start, end) >= 0) reachable[end] = true
-            }
-        }
-        return reachable.last()
-    }
-
-    /** True when the whole query has an exact path containing at least two records. */
-    private fun hasCompleteMultiSegmentComposition(query: String): Boolean {
-        val maximumSegments = IntArray(query.length + 1) { -1 }
-        maximumSegments[0] = 0
-        query.indices.forEach { start ->
-            if (maximumSegments[start] < 0) return@forEach
-            val maxEnd = minOf(query.length, start + MAX_SEGMENT_CODE_LENGTH)
-            for (end in (start + 1)..maxEnd) {
-                if (findExact(query, start, end) >= 0) {
-                    maximumSegments[end] = maxOf(maximumSegments[end], maximumSegments[start] + 1)
+                if (!isCompositionEdgeAllowed(query, start, end)) continue
+                val record = findExact(query, start, end)
+                if (record < 0) continue
+                val topScore = readCandidates(record, 1).firstOrNull()?.score ?: continue
+                for (segments in 0 until query.length) {
+                    val previous = scores[start][segments]
+                    if (!previous.isFinite()) continue
+                    scores[end][segments + 1] = maxOf(
+                        scores[end][segments + 1],
+                        previous + topScore,
+                    )
                 }
             }
         }
-        return maximumSegments.last() >= 2
+        var best = Float.NEGATIVE_INFINITY
+        for (segments in 2..query.length) {
+            val total = scores[query.length][segments]
+            if (!total.isFinite()) continue
+            best = maxOf(
+                best,
+                (
+                    total -
+                        (segments - 1) * WORD_BOUNDARY_COST
+                    ) / segments,
+            )
+        }
+        return best.takeIf(Float::isFinite)
     }
 
     /**
@@ -583,32 +577,23 @@ class PinyinDecoder private constructor(
      * guard, `fun` can be treated as `fu + n`, and a transposition typo ending
      * in `...ern` can look like a valid sentence.
      */
-    private fun hasStrongMultiSegmentComposition(query: String): Boolean {
+    private fun hasMultiSegmentComposition(
+        query: String,
+        forcedJoints: BooleanArray? = null,
+    ): Boolean {
         val maximumSegments = IntArray(query.length + 1) { -1 }
         maximumSegments[0] = 0
         query.indices.forEach { start ->
             if (maximumSegments[start] < 0) return@forEach
             val maxEnd = minOf(query.length, start + MAX_SEGMENT_CODE_LENGTH)
-            for (end in (start + 2)..maxEnd) {
+            for (end in (start + 1)..maxEnd) {
+                if (!isCompositionEdgeAllowed(query, start, end, forcedJoints)) continue
                 if (findExact(query, start, end) >= 0) {
                     maximumSegments[end] = maxOf(maximumSegments[end], maximumSegments[start] + 1)
                 }
             }
         }
         return maximumSegments.last() >= 2
-    }
-
-    private fun substitutionCost(expected: Char, typed: Char): Float = when {
-        expected == typed -> 0f
-        expected to typed in FUZZY_SUBSTITUTIONS || typed to expected in FUZZY_SUBSTITUTIONS -> FUZZY_COST
-        typed in KEY_NEIGHBORS[expected].orEmpty() -> NEIGHBOR_COST
-        else -> SUBSTITUTION_COST
-    }
-
-    private fun insertionDeletionCost(character: Char, previous: Char?): Float = when {
-        character == 'h' && previous != null && previous in "zcs" -> FUZZY_COST
-        character == 'g' && previous == 'n' -> FUZZY_COST
-        else -> INSERTION_DELETION_COST
     }
 
     private fun readCandidates(
@@ -698,6 +683,55 @@ class PinyinDecoder private constructor(
         }
     }
 
+    private data class ParsedQuery(
+        val code: String,
+        val forcedJoints: BooleanArray,
+    ) {
+        val hasForcedJoints: Boolean
+            get() = forcedJoints.any { it }
+    }
+
+    private fun parseQuery(value: String): ParsedQuery {
+        val code = StringBuilder(value.length)
+        val jointOffsets = ArrayList<Int>()
+        var pendingJoint = false
+        value.forEach { character ->
+            when {
+                character == '\'' -> pendingJoint = code.isNotEmpty()
+                character.lowercaseChar() in 'a'..'z' -> {
+                    if (pendingJoint && code.isNotEmpty()) jointOffsets += code.length
+                    code.append(character.lowercaseChar())
+                    pendingJoint = false
+                }
+            }
+        }
+        val joints = BooleanArray(code.length + 1)
+        jointOffsets.forEach { joints[it] = true }
+        return ParsedQuery(code.toString(), joints)
+    }
+
+    private fun crossesForcedJoint(
+        forcedJoints: BooleanArray?,
+        start: Int,
+        end: Int,
+    ): Boolean {
+        if (forcedJoints == null) return false
+        for (joint in (start + 1) until end) {
+            if (forcedJoints.getOrElse(joint) { false }) return true
+        }
+        return false
+    }
+
+    private fun isCompositionEdgeAllowed(
+        query: String,
+        start: Int,
+        end: Int,
+        forcedJoints: BooleanArray? = null,
+    ): Boolean =
+        end > start &&
+            (end - start > 1 || query[start] in SINGLE_LETTER_SYLLABLES) &&
+            !crossesForcedJoint(forcedJoints, start, end)
+
     companion object {
         private const val HEADER_SIZE = 10
         private const val VERSION = 3
@@ -712,24 +746,19 @@ class PinyinDecoder private constructor(
         private const val WIDE_COMPOSITION_LIMIT = 64
         private const val BEAM_PRUNE_MULTIPLIER = 4
         private const val MAX_PINYIN_SYLLABLE_CODE_LENGTH = 6
-        private const val CORRECTION_SEGMENT_CANDIDATES_PER_KEY = 2
-        private const val CORRECTION_BEAM_WIDTH = 10
-        private const val SEGMENT_SCORE_PENALTY = 20f
-        private const val MAX_CORRECTION_QUERY_LENGTH = 48
+        private const val WORD_BOUNDARY_COST = 0.65f
+        private const val COMPOUND_BOUNDARY_SCALE = 0.04f
+        private const val CONTEXT_SCORE_CAP = 3f
         private const val CORRECTION_PENALTY = 4f
-        private const val FUZZY_COST = 0.25f
-        private const val NEIGHBOR_COST = 0.35f
-        private const val REPEATED_KEY_COST = 0.3f
-        private const val TRANSPOSITION_COST = 0.45f
-        private const val SUBSTITUTION_COST = 0.9f
-        private const val INSERTION_DELETION_COST = 1f
+        private const val RECENT_EDIT_OFFSET_WINDOW = 1
+        private const val TAIL_EXTENSION_PROBE_LIMIT = 2
         private const val NO_CODE_POINT = -1
+        private const val SINGLE_LETTER_SYLLABLES = "aeo"
         private const val FALLBACK_SOURCE_TIER = 1
         // CC-CEDICT fallback entries use weight 1. Penalizing only fallback
         // entries keeps a zero-weight primary entry ahead without rewarding
         // sentences merely for splitting into more primary-source segments.
         private const val FALLBACK_SOURCE_PENALTY = 1f
-        private val FUZZY_SUBSTITUTIONS = setOf('n' to 'l', 'f' to 'h')
         private const val PREFIX_NAMESPACE = "{"
         private const val INITIALS_NAMESPACE = "~"
         private const val HYBRID_NAMESPACE = "}"
@@ -739,35 +768,21 @@ class PinyinDecoder private constructor(
         private const val FOUR_CHARACTER_INITIALS_BONUS = 10f
         private const val MIN_HYBRID_LENGTH = 3
         private const val HYBRID_SCAN_LIMIT = 128
-        private val KEY_NEIGHBORS = mapOf(
-            'q' to "wa", 'w' to "qeas", 'e' to "wrsd", 'r' to "etdf", 't' to "ryfg",
-            'y' to "tugh", 'u' to "yihj", 'i' to "uojk", 'o' to "ipkl", 'p' to "ol",
-            'a' to "qwsz", 's' to "awedxz", 'd' to "serfcx", 'f' to "drtgcv", 'g' to "ftyhbv",
-            'h' to "gyujbn", 'j' to "huiknm", 'k' to "jiolm", 'l' to "kop",
-            'z' to "asx", 'x' to "zsdc", 'c' to "xdfv", 'v' to "cfgb", 'b' to "vghn",
-            'n' to "bhjm", 'm' to "njk",
-        )
-        private val SUBSTITUTION_CANDIDATES: Map<Char, Set<Char>> = ('a'..'z').associateWith { typed ->
-            buildSet {
-                addAll(KEY_NEIGHBORS[typed].orEmpty().asIterable())
-                KEY_NEIGHBORS.forEach { (expected, neighbors) -> if (typed in neighbors) add(expected) }
-                FUZZY_SUBSTITUTIONS.forEach { (left, right) ->
-                    if (typed == left) add(right)
-                    if (typed == right) add(left)
-                }
-                remove(typed)
-            }
-        }
+        private const val HYBRID_CANDIDATES_PER_RECORD = 16
+        private const val HYBRID_RETAINED_LIMIT_MULTIPLIER = 2
+        private const val HYBRID_PRUNE_LIMIT_MULTIPLIER = 3
         private val MAGIC = byteArrayOf('S'.code.toByte(), 'P'.code.toByte(), 'L'.code.toByte(), 'X'.code.toByte())
 
         fun load(
             input: InputStream,
             bigramModel: CharacterBigramModel = CharacterBigramModel.EMPTY,
-        ): PinyinDecoder = fromBytes(input.readBytes(), bigramModel)
+            correctionBudget: CorrectionSearchBudget = CorrectionSearchBudget.PRODUCTION,
+        ): PinyinDecoder = fromBytes(input.readBytes(), bigramModel, correctionBudget)
 
         fun fromBytes(
             data: ByteArray,
             bigramModel: CharacterBigramModel = CharacterBigramModel.EMPTY,
+            correctionBudget: CorrectionSearchBudget = CorrectionSearchBudget.PRODUCTION,
         ): PinyinDecoder {
             require(data.size >= HEADER_SIZE) { "Pinyin lexicon header is truncated" }
             require(MAGIC.indices.all { data[it] == MAGIC[it] }) { "Pinyin lexicon magic is invalid" }
@@ -781,13 +796,18 @@ class PinyinDecoder private constructor(
 
             val offsets = IntArray(count)
             val syllableRecords = Array(26) { ArrayList<Int>() }
+            val syllables = LinkedHashSet<String>()
             var cursor = HEADER_SIZE
             repeat(count) { index ->
                 require(cursor < data.size) { "Pinyin lexicon record $index is truncated" }
                 offsets[index] = cursor
                 val codeLength = data[cursor++].toInt() and 0xFF
                 require(codeLength > 0 && cursor + codeLength < data.size) { "Pinyin code $index is invalid" }
+                val codeStart = cursor
                 val firstCodeByte = data[cursor].toInt() and 0xFF
+                val isCanonicalCode =
+                    firstCodeByte in 'a'.code..'z'.code &&
+                        codeLength <= MAX_SEGMENT_CODE_LENGTH
                 cursor += codeLength
                 val candidateCount = data[cursor++].toInt() and 0xFF
                 require(candidateCount > 0) { "Pinyin code $index has no candidates" }
@@ -810,12 +830,17 @@ class PinyinDecoder private constructor(
                     val sourceTier = data[cursor++].toInt() and 0xFF
                     require(sourceTier in 0..1) { "Pinyin candidate source tier is invalid" }
                 }
-                if (
+                val isSyllableRecord =
                     codeLength <= MAX_PINYIN_SYLLABLE_CODE_LENGTH &&
-                    firstCodeByte in 'a'.code..'z'.code &&
+                    isCanonicalCode &&
                     hasSingleSyllableCandidate
-                ) {
+                if (isSyllableRecord) {
+                    // Production packs contain hundreds of thousands of canonical records but only
+                    // a few hundred syllables. Decode a String only for graph inventory entries;
+                    // the former eager conversion created one short-lived object per record.
+                    val canonicalCode = data.decodeToString(codeStart, codeStart + codeLength)
                     syllableRecords[firstCodeByte - 'a'.code] += index
+                    syllables += canonicalCode
                 }
             }
             require(cursor == data.size) { "Pinyin lexicon has trailing bytes" }
@@ -824,6 +849,8 @@ class PinyinDecoder private constructor(
                 offsets,
                 bigramModel,
                 Array(syllableRecords.size) { syllableRecords[it].toIntArray() },
+                PinyinSpellingGraph(syllables),
+                correctionBudget,
             )
         }
     }

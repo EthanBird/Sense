@@ -25,6 +25,7 @@ can
 cang
 cao
 ce
+cei
 cen
 ceng
 cha
@@ -88,7 +89,6 @@ fang
 fei
 fen
 feng
-fiao
 fo
 fou
 fu
@@ -120,7 +120,6 @@ he
 hei
 hen
 heng
-hm
 hong
 hou
 hu
@@ -145,6 +144,7 @@ ju
 juan
 jue
 jun
+junding
 ka
 kai
 kan
@@ -186,12 +186,10 @@ long
 lou
 lu
 luan
-lue
 lun
 luo
 lv
 lve
-m
 ma
 mai
 man
@@ -211,7 +209,6 @@ miu
 mo
 mou
 mu
-n
 na
 nai
 nan
@@ -221,7 +218,6 @@ ne
 nei
 nen
 neng
-ng
 ni
 nian
 niang
@@ -234,7 +230,6 @@ nong
 nou
 nu
 nuan
-nue
 nuo
 nv
 nve
@@ -281,6 +276,7 @@ ri
 rong
 rou
 ru
+rua
 ruan
 rui
 run
@@ -393,7 +389,6 @@ zhan
 zhang
 zhao
 zhe
-zhei
 zhen
 zheng
 zhi

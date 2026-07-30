@@ -1,6 +1,11 @@
 package io.github.ethanbird.senseime.core
 
-/** Deterministic source interleaving for Chinese-mode bilingual candidates. */
+/**
+ * Merges Chinese and English recall in the same calibrated score domain.
+ *
+ * Exact English is no longer assigned a magic fifth slot, and a fixed number
+ * of English completions no longer jumps ahead of weak Chinese results.
+ */
 object MixedCandidateRanker {
     fun merge(
         chinese: List<Candidate>,
@@ -8,52 +13,37 @@ object MixedCandidateRanker {
         limit: Int,
     ): List<Candidate> {
         if (limit <= 0) return emptyList()
-        if (english.isEmpty()) return chinese.take(limit)
-
-        val result = ArrayList<Candidate>(limit)
-        val seen = HashSet<String>()
-        fun add(candidate: Candidate) {
-            if (result.size < limit && seen.add(candidate.text)) result += candidate
+        if (english.isEmpty()) {
+            return if (chinese.size <= limit) chinese else chinese.take(limit)
         }
-
-        val hasStrongChinese = chinese.any { it.matchKind.isStrongChineseMatch() }
-        val exactEnglish = english.firstOrNull {
-            it.matchKind == CandidateMatchKind.ENGLISH_EXACT
+        val hasCanonicalExact = chinese.any { it.matchKind == CandidateMatchKind.BASE_EXACT }
+        val hasCanonicalComposition = !hasCanonicalExact &&
+            chinese.any { it.matchKind == CandidateMatchKind.BASE_COMPOSED }
+        val calibratedChinese = chinese.map { candidate ->
+            if (candidate.isSingleHanPinyinPrefix()) {
+                candidate.copy(score = candidate.score + SINGLE_HAN_PREFIX_BILINGUAL_PRIOR)
+            } else {
+                candidate
+            }
         }
-        if (hasStrongChinese) {
-            chinese.take(STRONG_CHINESE_HEAD).forEach(::add)
-            exactEnglish?.let(::add)
-            chinese.drop(STRONG_CHINESE_HEAD).forEach(::add)
-            english.forEach(::add)
-        } else if (exactEnglish != null) {
-            english.take(ENGLISH_HEAD).forEach(::add)
-            chinese.forEach(::add)
-            english.drop(ENGLISH_HEAD).forEach(::add)
-        } else {
-            // A partial English completion must not displace the primary
-            // Chinese one-key experience (`w -> 我`, `d -> 的`).
-            chinese.forEach(::add)
-            english.forEach(::add)
-        }
-        return result
+        return CandidateRanker.rank(
+            candidates = calibratedChinese + english,
+            limit = limit,
+            hasCanonicalExact = hasCanonicalExact,
+            hasCanonicalComposition = hasCanonicalComposition,
+        )
     }
 
-    private fun CandidateMatchKind.isStrongChineseMatch(): Boolean = when (this) {
-        CandidateMatchKind.BASE_EXACT,
-        CandidateMatchKind.BASE_COMPOSED,
-        CandidateMatchKind.BASE_HYBRID,
-        CandidateMatchKind.BASE_INITIALS,
-        CandidateMatchKind.USER_FULL,
-        CandidateMatchKind.USER_INITIALS,
-        -> true
+    /**
+     * A single pinyin initial is an explicit Chinese-mode signal, while English
+     * single-letter input is only a broad completion prefix. Calibrate that
+     * evidence in score space instead of reserving a source slot.
+     */
+    private fun Candidate.isSingleHanPinyinPrefix(): Boolean =
+        matchKind == CandidateMatchKind.BASE_PREFIX &&
+            canonicalInitials?.length == 1 &&
+            text.codePointCount(0, text.length) == 1 &&
+            Character.UnicodeScript.of(text.codePointAt(0)) == Character.UnicodeScript.HAN
 
-        CandidateMatchKind.BASE_PREFIX,
-        CandidateMatchKind.CORRECTED,
-        CandidateMatchKind.ENGLISH_EXACT,
-        CandidateMatchKind.ENGLISH_PREFIX,
-        -> false
-    }
-
-    private const val STRONG_CHINESE_HEAD = 4
-    private const val ENGLISH_HEAD = 3
+    private const val SINGLE_HAN_PREFIX_BILINGUAL_PRIOR = 4.5f
 }

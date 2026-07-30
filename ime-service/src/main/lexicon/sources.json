@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "license": "GPL-3.0-only",
+  "upstream": {
+    "repository": "https://github.com/gaboolic/rime-frost",
+    "commit": "69cbcf8937ae03c03792fa285dca7f79f80715bc",
+    "relationship": "Rime Frost derives its maintained core dictionaries from Rime Ice"
+  },
+  "sources": [
+    {
+      "id": "rime-frost-8105",
+      "path": "vendor/rime-frost/cn_dicts/8105.dict.yaml",
+      "format": "rime-dict-yaml",
+      "sha256": "5a6bb545d07140406208728aeed70706e84279daeee132f10b069cd6387a042a",
+      "revision": "69cbcf8937ae03c03792fa285dca7f79f80715bc",
+      "license": "GPL-3.0-only",
+      "source_tier": 0,
+      "weight": {
+        "numerator": 1,
+        "denominator": 1,
+        "offset": 0,
+        "minimum": 1,
+        "maximum": 50000000,
+        "max_text_length": 1
+      },
+      "index": {
+        "prefix_min_weight": 10,
+        "initials_min_weight": 0,
+        "hybrid_min_weight": 50000000
+      }
+    },
+    {
+      "id": "rime-frost-base",
+      "path": "vendor/rime-frost/cn_dicts/base.dict.yaml",
+      "format": "rime-dict-yaml",
+      "sha256": "449901a9c01f1bc9b0c5be1e98b764506da1e0930fe4f021cacbd4c08157bbea",
+      "revision": "69cbcf8937ae03c03792fa285dca7f79f80715bc",
+      "license": "GPL-3.0-only",
+      "source_tier": 0,
+      "weight": {
+        "numerator": 1,
+        "denominator": 1,
+        "offset": 0,
+        "minimum": 2,
+        "maximum": 2000000,
+        "max_text_length": 16
+      },
+      "index": {
+        "prefix_min_weight": 100,
+        "initials_min_weight": 20,
+        "hybrid_min_weight": 100
+      }
+    },
+    {
+      "id": "rime-frost-ext",
+      "path": "vendor/rime-frost/cn_dicts/ext.dict.yaml",
+      "format": "rime-dict-yaml",
+      "sha256": "44b78e4feb8a3b302298844061626aa4e2194901b8ed4ee6acec84261b6aa90d",
+      "revision": "69cbcf8937ae03c03792fa285dca7f79f80715bc",
+      "license": "GPL-3.0-only",
+      "source_tier": 0,
+      "weight": {
+        "numerator": 3,
+        "denominator": 4,
+        "offset": 0,
+        "minimum": 2,
+        "maximum": 1000000,
+        "max_text_length": 16
+      },
+      "index": {
+        "prefix_min_weight": 150,
+        "initials_min_weight": 30,
+        "hybrid_min_weight": 150
+      }
+    },
+    {
+      "id": "rime-frost-others",
+      "path": "vendor/rime-frost/cn_dicts/others.dict.yaml",
+      "format": "rime-dict-yaml",
+      "sha256": "68e4cee36cdf77a05e2abd308cb88b84a4e40038de53d56ecccc1d357509013a",
+      "revision": "69cbcf8937ae03c03792fa285dca7f79f80715bc",
+      "license": "GPL-3.0-only",
+      "source_tier": 0,
+      "weight": {
+        "numerator": 4,
+        "denominator": 5,
+        "offset": 0,
+        "minimum": 2,
+        "maximum": 1000000,
+        "max_text_length": 16
+      },
+      "index": {
+        "prefix_min_weight": 100,
+        "initials_min_weight": 20,
+        "hybrid_min_weight": 100
+      }
+    },
+    {
+      "id": "sense-product",
+      "path": "sense_custom.dict.tsv",
+      "format": "sense-tsv",
+      "sha256": "cb8529f7edf7b98713eff61f3404a5e83f2cea0f1cb35aa92768ffbee0e42f25",
+      "revision": "sense-product-v1",
+      "license": "GPL-3.0-only",
+      "source_tier": 0,
+      "weight": {
+        "numerator": 1,
+        "denominator": 1,
+        "offset": 0,
+        "minimum": 1,
+        "maximum": 1000000,
+        "max_text_length": 16
+      },
+      "index": {
+        "prefix_min_weight": 0,
+        "initials_min_weight": 0,
+        "hybrid_min_weight": 0
+      }
+    }
+  ]
+}

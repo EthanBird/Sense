@@ -17,12 +17,12 @@ class EnglishLexicon private constructor(
     private val alphabeticIndices: IntArray,
 ) {
     fun suggest(composing: String, limit: Int): List<Candidate> {
-        if (limit <= 0) return emptyList()
+        if (limit <= 0 || words.isEmpty()) return emptyList()
         val query = normalize(composing)
         if (query.isEmpty()) return emptyList()
 
         val exactIndex = findExact(query)
-        val matches = ArrayList<Int>(minOf(limit * 4, MAX_PREFIX_MATCHES))
+        val matches = ArrayList<Int>(minOf(limit, MAX_PREFIX_MATCHES))
         val bucket = if (query.length == 1) {
             firstLetterBuckets[query[0] - 'a']
         } else {
@@ -55,11 +55,14 @@ class EnglishLexicon private constructor(
         }
         matches.forEach(::add)
 
-        return ordered.map { index ->
+        return ordered.mapIndexed { displayRank, index ->
             val word = words[index]
             Candidate(
                 text = word,
-                score = ENGLISH_SCORE_BASE - ln(index.toFloat() + 2f),
+                // The lexical/inflection policy above is part of recall
+                // evidence. Encode it in the shared score domain so the
+                // bilingual ranker does not silently restore source-file order.
+                score = ENGLISH_SCORE_BASE - ln(displayRank.toFloat() + 2f),
                 matchKind = if (word == query) {
                     CandidateMatchKind.ENGLISH_EXACT
                 } else {

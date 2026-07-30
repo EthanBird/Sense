@@ -510,6 +510,24 @@ internal class KeyboardInteractionController(
 
     fun cancelAllTouches() = gestureCoordinator.cancelAllTouches()
 
+    /**
+     * Invalidates candidate targets frozen by an earlier publication without
+     * disturbing simultaneous physical-key pointers.
+     */
+    fun cancelCandidatePointers() {
+        var changed = false
+        for (index in pressedTargets.size() - 1 downTo 0) {
+            val target = pressedTargets.valueAt(index)
+            if (!target.isCandidatePointerTarget()) continue
+            val pointerId = pressedTargets.keyAt(index)
+            touchReducer.cancel(pointerId)
+            pressedTargets.removeAt(index)
+            panelScroll.forgetPointer(pointerId)
+            changed = true
+        }
+        if (changed) invalidateCandidateViewport()
+    }
+
     fun cancelOrdinaryTouches() {
         gestureCoordinator.cancelSkillGesture()
         clearOrdinaryPointerCore()
@@ -796,4 +814,16 @@ internal class KeyboardInteractionController(
         const val CANDIDATE_FAST_FLING_VELOCITY_DP_PER_SECOND = 720f
         const val CANDIDATE_SETTLE_DURATION_MILLIS = 180L
     }
+}
+
+internal fun FrozenTouchTarget.isCandidatePointerTarget(): Boolean = when (this) {
+    is FrozenTouchTarget.CandidateValue,
+    is FrozenTouchTarget.CandidateControlValue,
+    is FrozenTouchTarget.CandidatePageArea,
+    is FrozenTouchTarget.CandidateStripArea,
+    -> true
+
+    is FrozenTouchTarget.KeyValue,
+    is FrozenTouchTarget.PanelScrollArea,
+    -> false
 }

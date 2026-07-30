@@ -9,7 +9,10 @@ package io.github.ethanbird.senseime.ui
 internal interface CandidateScene {
     val composing: String
     val compositionRevision: Long
+    /** Revision of [candidates], which may be retained while a newer batch is pending. */
     val candidateRevision: Long
+    /** False means retained candidates are visual continuity only and are inert. */
+    val candidatesReady: Boolean
     val candidates: List<String>
     val visibleCandidates: List<VisibleCandidate>
     val controls: List<CandidateControlSlot>
@@ -96,6 +99,9 @@ internal class CandidatePanel(
     override var candidateRevision: Long = 0L
         private set
 
+    override var candidatesReady: Boolean = true
+        private set
+
     override val candidates: List<String>
         get() = mutableCandidates
 
@@ -151,10 +157,13 @@ internal class CandidatePanel(
             text.isEmpty() -> emptyList()
             else -> null
         }
+        val nextCandidatesReady = nextCandidates != null
         val candidateSnapshotChanged =
             nextCandidates != null && nextCandidates != mutableCandidates
         val candidateBatchBecameCurrent =
             nextCandidates != null && candidateRevision != revision
+        val candidateReadinessChanged =
+            candidatesReady != nextCandidatesReady
         val hadCandidateGeometry = mutableCandidates.isNotEmpty()
         // A ready snapshot owns fresh strip coordinates, even when the
         // composition revision is unchanged. Preserve its expanded page state,
@@ -163,7 +172,11 @@ internal class CandidatePanel(
             shouldResetNavigation ||
                 (
                     hadCandidateGeometry &&
-                        (candidateSnapshotChanged || candidateBatchBecameCurrent)
+                        (
+                            candidateSnapshotChanged ||
+                                candidateBatchBecameCurrent ||
+                                candidateReadinessChanged
+                        )
                 )
         if (shouldResetStripInteraction) {
             stripScrollState.reset()
@@ -186,6 +199,9 @@ internal class CandidatePanel(
         if (nextCandidates != null) {
             candidateRevision = revision
         }
+        // Null is an explicit pending publication. Keep the previous batch only
+        // as inert visual continuity, even if a defensive caller reuses a revision.
+        candidatesReady = nextCandidatesReady
 
         updateViewportConfiguration(
             viewWidth = viewWidth,
@@ -254,6 +270,9 @@ internal class CandidatePanel(
         editorPanelVisible: Boolean,
         fontScale: Float,
     ): CandidateChange {
+        if (!candidatesReady && control != CandidateControl.COLLAPSE) {
+            return CandidateChange(requiresKeySceneRebuild = false)
+        }
         val previousExpanded = expanded
         when (control) {
             CandidateControl.EXPAND -> {
@@ -303,7 +322,7 @@ internal class CandidatePanel(
         editorPanelVisible: Boolean,
         fontScale: Float,
     ): CandidateChange {
-        if (!expanded || candidatePages.isEmpty()) {
+        if (!candidatesReady || !expanded || candidatePages.isEmpty()) {
             return CandidateChange(requiresKeySceneRebuild = false)
         }
         val nextPage = KeyboardLayoutContract.adjacentCandidatePage(
@@ -341,7 +360,7 @@ internal class CandidatePanel(
         val canHitValue =
             expanded ||
                 collapsedViewportBounds?.contains(x, y) == true
-        if (candidateRevision == compositionRevision && canHitValue) {
+        if (candidatesReady && canHitValue) {
             val candidate = if (expanded) {
                 mutableVisibleCandidates.firstOrNull { it.bounds.contains(x, y) }
             } else {
@@ -388,13 +407,15 @@ internal class CandidatePanel(
 
         if (!expanded) {
             collapsedViewportBounds?.let { bounds ->
-                if (hasCollapsedOverflow && bounds.contains(x, y)) {
+                if (candidatesReady && hasCollapsedOverflow && bounds.contains(x, y)) {
                     return CandidateHit.StripArea(bounds)
                 }
             }
         }
         expandedGridBounds?.let { bounds ->
-            if (bounds.contains(x, y)) return CandidateHit.PageArea(bounds)
+            if (candidatesReady && bounds.contains(x, y)) {
+                return CandidateHit.PageArea(bounds)
+            }
         }
         return null
     }
@@ -413,7 +434,8 @@ internal class CandidatePanel(
         return low
     }
 
-    fun canStartCollapsedDrag(): Boolean = !expanded && hasCollapsedOverflow
+    fun canStartCollapsedDrag(): Boolean =
+        candidatesReady && !expanded && hasCollapsedOverflow
 
     fun ownsDrag(pointerId: Int): Boolean = stripScrollState.owns(pointerId)
 
@@ -422,7 +444,8 @@ internal class CandidatePanel(
         x: Float,
         y: Float,
         eventTimeMillis: Long,
-    ): Boolean = stripScrollState.begin(pointerId, x, y, eventTimeMillis)
+    ): Boolean = candidatesReady &&
+        stripScrollState.begin(pointerId, x, y, eventTimeMillis)
 
     fun moveDrag(
         pointerId: Int,
@@ -624,8 +647,8 @@ internal class CandidatePanel(
                 addExpandedControls(
                     systemBarTop = systemBarTop,
                     pagerTop = pagerTop,
-                    previousEnabled = pageIndex > 0,
-                    nextEnabled = pageIndex < candidatePages.lastIndex,
+                    previousEnabled = candidatesReady && pageIndex > 0,
+                    nextEnabled = candidatesReady && pageIndex < candidatePages.lastIndex,
                 )
                 return
             }
@@ -667,14 +690,14 @@ internal class CandidatePanel(
                     right = viewWidth.toFloat(),
                     bottom = collapsedBottom,
                 ),
-                enabled = candidateRevision == compositionRevision,
+                enabled = candidatesReady,
             )
         }
     }
 
     private fun currentSceneCacheKey(): CandidateSceneCacheKey = CandidateSceneCacheKey(
         geometryGeneration = geometryGeneration,
-        candidatesReady = candidateRevision == compositionRevision,
+        candidatesReady = candidatesReady,
         composingBlank = composing.isBlank(),
         expanded = expanded,
         pageIndex = pageIndex,

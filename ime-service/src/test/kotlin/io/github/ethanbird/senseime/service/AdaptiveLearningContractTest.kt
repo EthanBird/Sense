@@ -7,8 +7,12 @@ import io.github.ethanbird.senseime.core.InputDecoder
 import io.github.ethanbird.senseime.core.LearnedPhrase
 import io.github.ethanbird.senseime.core.MemoryUserLexicon
 import io.github.ethanbird.senseime.core.PinyinSyllableSegmenter
+import io.github.ethanbird.senseime.core.UserLearningEvidence
+import io.github.ethanbird.senseime.core.UserNegativeFeedback
+import io.github.ethanbird.senseime.core.UserSelectionKind
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** End-to-end service contract for the in-memory-first, durable user lexicon. */
@@ -37,8 +41,57 @@ class AdaptiveLearningContractTest {
         assertNotNull(firstDecoder.learn("d", selected))
         assertEquals("的", firstDecoder.decode("d", 255).first().text)
 
-        val reloadedDecoder = decoder(MemoryUserLexicon(initial = journal.values))
+        val reloadedDecoder = decoder(MemoryUserLexicon(initial = journal.values, clock = { 1_000L }))
         assertEquals("的", reloadedDecoder.decode("d", 255).first().text)
+    }
+
+    @Test
+    fun negativeFeedbackIsJournaledAndRestoredAfterRestart() {
+        val journal = linkedMapOf<Pair<String, String>, LearnedPhrase>()
+        val firstLexicon = MemoryUserLexicon(
+            clock = { 1_000L },
+            onRecord = { learned -> journal[learned.fullPinyin to learned.text] = learned },
+        )
+        val firstDecoder = decoder(firstLexicon)
+        val selected = firstDecoder.decode("d", 255).first { it.text == "的" }
+        val learned = requireNotNull(
+            firstDecoder.learn(
+                "d",
+                selected,
+                UserLearningEvidence(UserSelectionKind.EXPLICIT_SELECTION, selectedRank = 7),
+            ),
+        )
+        assertEquals("的", firstDecoder.decode("d", 255).first().text)
+
+        firstDecoder.demote(learned, UserNegativeFeedback.QUICK_DELETE)
+
+        assertEquals("地", firstDecoder.decode("d", 255).first().text)
+        val reloadedDecoder = decoder(
+            MemoryUserLexicon(initial = journal.values, clock = { 1_000L }),
+        )
+        assertEquals("地", reloadedDecoder.decode("d", 255).first().text)
+    }
+
+    @Test
+    fun forgetDeletionIsJournaledAcrossRestart() {
+        val journal = linkedMapOf<Pair<String, String>, LearnedPhrase>()
+        val lexicon = MemoryUserLexicon(
+            clock = { 1_000L },
+            onRecord = { learned -> journal[learned.fullPinyin to learned.text] = learned },
+            onForget = { fullPinyin, text -> journal.remove(fullPinyin to text) },
+        )
+        val firstDecoder = decoder(lexicon)
+        val selected = firstDecoder.decode("d", 255).first { it.text == "的" }
+        val learned = requireNotNull(firstDecoder.learn("d", selected))
+
+        assertTrue(firstDecoder.forget(learned))
+        assertTrue(journal.isEmpty())
+
+        val reloaded = decoder(MemoryUserLexicon(initial = journal.values, clock = { 1_000L }))
+        assertEquals(
+            CandidateMatchKind.BASE_PREFIX,
+            reloaded.decode("d", 255).first { it.text == "的" }.matchKind,
+        )
     }
 
     private fun decoder(userLexicon: MemoryUserLexicon): AdaptivePinyinDecoder =

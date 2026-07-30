@@ -1,6 +1,7 @@
 package io.github.ethanbird.senseime.service
 
 import io.github.ethanbird.senseime.core.Candidate
+import io.github.ethanbird.senseime.core.CandidateMatchKind
 import io.github.ethanbird.senseime.core.CandidateSnapshot
 import io.github.ethanbird.senseime.core.PinyinPrefixCandidate
 import io.github.ethanbird.senseime.core.ProgressivePinyinDecoding
@@ -58,10 +59,10 @@ internal class ProgressiveCandidateSnapshot private constructor(
                 if (choices.size < limit && displayedChoices.add(identity)) choices += choice
             }
 
-            // Full-pinyin phrases must not be displaced by the much larger set of
-            // first-syllable characters. Keep a useful whole-candidate head, then
-            // expose segmentation choices, followed by every remaining whole
-            // candidate that fits in the caller's bounded presentation budget.
+            // A small prefix sample keeps progressive character selection close
+            // to the strip head. The complete whole-candidate ranking follows
+            // before the bulk prefix tail, so hundreds of first-syllable
+            // characters cannot push a valid whole phrase several pages away.
             val wholeHeadSize = if (
                 decoding.wholeCandidates.firstOrNull()?.matchKind in ENGLISH_MATCH_KINDS
             ) {
@@ -69,14 +70,23 @@ internal class ProgressiveCandidateSnapshot private constructor(
             } else {
                 WHOLE_CANDIDATE_HEAD_SIZE
             }
+            val orderedPrefixes = prioritizePrefixPaths(decoding.prefixCandidates)
+            val presentedPrefixes = if (decoding.hasExactSingleHanSyllable()) {
+                orderedPrefixes.take(EXACT_SINGLE_SYLLABLE_PREFIX_LIMIT)
+            } else {
+                orderedPrefixes
+            }
             decoding.wholeCandidates.take(wholeHeadSize).forEach { candidate ->
                 add(ProgressiveCandidateChoice.Whole(candidate))
             }
-            decoding.prefixCandidates.forEach { prefix ->
+            presentedPrefixes.take(REPRESENTATIVE_PREFIX_COUNT).forEach { prefix ->
                 add(ProgressiveCandidateChoice.Prefix(prefix))
             }
             decoding.wholeCandidates.drop(wholeHeadSize).forEach { candidate ->
                 add(ProgressiveCandidateChoice.Whole(candidate))
+            }
+            presentedPrefixes.drop(REPRESENTATIVE_PREFIX_COUNT).forEach { prefix ->
+                add(ProgressiveCandidateChoice.Prefix(prefix))
             }
             return ProgressiveCandidateSnapshot(
                 snapshot = CandidateSnapshot(decoding.revision, choices.map { it.candidate }),
@@ -84,11 +94,61 @@ internal class ProgressiveCandidateSnapshot private constructor(
             )
         }
 
+        /**
+         * Reserves one early choice for every distinct consumed-pinyin path,
+         * then fills the representative block in decoder rank order.
+         */
+        private fun prioritizePrefixPaths(
+            prefixes: List<PinyinPrefixCandidate>,
+        ): List<PinyinPrefixCandidate> {
+            if (prefixes.size <= 1) return prefixes
+            val selected = BooleanArray(prefixes.size)
+            val consumedPaths = HashSet<String>()
+            val result = ArrayList<PinyinPrefixCandidate>(prefixes.size)
+            prefixes.forEachIndexed { index, prefix ->
+                if (
+                    result.size < REPRESENTATIVE_PREFIX_COUNT &&
+                    consumedPaths.add(prefix.consumedPinyin)
+                ) {
+                    selected[index] = true
+                    result += prefix
+                }
+            }
+            prefixes.forEachIndexed { index, prefix ->
+                if (
+                    result.size < REPRESENTATIVE_PREFIX_COUNT &&
+                    !selected[index]
+                ) {
+                    selected[index] = true
+                    result += prefix
+                }
+            }
+            prefixes.forEachIndexed { index, prefix ->
+                if (!selected[index]) result += prefix
+            }
+            return result
+        }
+
+        private fun ProgressivePinyinDecoding.hasExactSingleHanSyllable(): Boolean =
+            wholeCandidates.any { candidate ->
+                candidate.matchKind in CHINESE_EXACT_MATCH_KINDS &&
+                    candidate.canonicalPinyin == remainingPinyin &&
+                    candidate.text.codePointCount(0, candidate.text.length) == 1 &&
+                    Character.UnicodeScript.of(candidate.text.codePointAt(0)) ==
+                    Character.UnicodeScript.HAN
+            }
+
         private const val WHOLE_CANDIDATE_HEAD_SIZE = 12
         private const val ENGLISH_WHOLE_CANDIDATE_HEAD_SIZE = 3
+        private const val REPRESENTATIVE_PREFIX_COUNT = 4
+        private const val EXACT_SINGLE_SYLLABLE_PREFIX_LIMIT = 4
         private val ENGLISH_MATCH_KINDS = setOf(
-            io.github.ethanbird.senseime.core.CandidateMatchKind.ENGLISH_EXACT,
-            io.github.ethanbird.senseime.core.CandidateMatchKind.ENGLISH_PREFIX,
+            CandidateMatchKind.ENGLISH_EXACT,
+            CandidateMatchKind.ENGLISH_PREFIX,
+        )
+        private val CHINESE_EXACT_MATCH_KINDS = setOf(
+            CandidateMatchKind.BASE_EXACT,
+            CandidateMatchKind.USER_FULL,
         )
     }
 }

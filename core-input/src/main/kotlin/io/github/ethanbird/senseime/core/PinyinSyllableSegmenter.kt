@@ -117,10 +117,13 @@ class PinyinSyllableSegmenter(syllables: Collection<String>) {
     }
 
     companion object {
-        fun normalize(value: String): String = buildString(value.length) {
-            value.forEach { character ->
-                val lower = character.lowercaseChar()
-                if (lower in 'a'..'z') append(lower)
+        fun normalize(value: String): String {
+            if (value.all { it in 'a'..'z' }) return value
+            return buildString(value.length) {
+                value.forEach { character ->
+                    val lower = character.lowercaseChar()
+                    if (lower in 'a'..'z') append(lower)
+                }
             }
         }
 

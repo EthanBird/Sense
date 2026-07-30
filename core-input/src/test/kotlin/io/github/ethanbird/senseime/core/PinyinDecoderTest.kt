@@ -2,6 +2,7 @@ package io.github.ethanbird.senseime.core
 
 import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -11,6 +12,9 @@ class PinyinDecoderTest {
     private val decoder = PinyinDecoder.fromBytes(
         lexicon(
             "dang" to listOf(item("当", 3000, "d"), item("党", 2000, "d")),
+            "ge" to listOf(item("个", 1, "g")),
+            "guo" to listOf(item("国", 1, "g")),
+            "hao" to listOf(item("好", 1200, "h")),
             "ni" to listOf(item("你", 1000, "n"), item("呢", 400, "n")),
             "nihao" to listOf(item("你好", 5000, "nh"), item("你号", 20, "nh")),
             "ren" to listOf(item("人", 900, "r")),
@@ -21,6 +25,8 @@ class PinyinDecoderTest {
             "xian" to listOf(item("先", 1000, "x"), item("西安", 900, "xa")),
             "xiansi" to listOf(item("先思", 300, "xs")),
             "yige" to listOf(item("一个", 1000, "yg")),
+            "yi" to listOf(item("一", 1, "y")),
+            "zhong" to listOf(item("中", 1, "z")),
             "zhongguo" to listOf(item("中国", 2000, "zg")),
             "{w" to listOf(item("我", 850, "w"), item("为", 300, "w")),
             "{xian" to listOf(item("先思", 500, "xs")),
@@ -35,7 +41,14 @@ class PinyinDecoderTest {
 
     @Test
     fun exactContinuousPinyinReturnsRankedChinese() {
-        assertEquals(listOf("你好", "你号"), decoder.decode("nihao").map { it.text })
+        assertEquals(listOf("你好", "你号"), decoder.decode("nihao").take(2).map { it.text })
+    }
+
+    @Test
+    fun productionDecoderDeclaresItsPreRankedCandidateContract() {
+        val inputDecoder: InputDecoder = decoder
+
+        assertTrue(inputDecoder is RankedCandidateDecoder)
     }
 
     @Test
@@ -57,6 +70,24 @@ class PinyinDecoderTest {
     @Test
     fun apostrophesAndUppercaseAreNormalized() {
         assertEquals("你好", decoder.decode("Ni'Hao").first().text)
+    }
+
+    @Test
+    fun apostropheForcesTheDeclaredSyllableBoundary() {
+        val boundaryDecoder = PinyinDecoder.fromBytes(
+            lexicon(
+                "an" to listOf(item("安", 900, "a")),
+                "xi" to listOf(item("西", 1000, "x")),
+                "xian" to listOf(
+                    item("先", 10_000, "x"),
+                    item("西安", 800, "xa"),
+                ),
+            ),
+        )
+
+        assertEquals("先", boundaryDecoder.decode("xian").first().text)
+        assertEquals("西安", boundaryDecoder.decode("xi'an").first().text)
+        assertEquals(CandidateMatchKind.BASE_COMPOSED, boundaryDecoder.decode("xi'an").first().matchKind)
     }
 
     @Test
@@ -169,6 +200,22 @@ class PinyinDecoderTest {
     }
 
     @Test
+    fun duplicateCompositionTextKeepsTheHigherScoringLaterSegmentation() {
+        val duplicateDecoder = PinyinDecoder.fromBytes(
+            lexicon(
+                "a" to listOf(item("安", 1, "a")),
+                "an" to listOf(item("安", 10_000, "a")),
+                "nan" to listOf(item("安", 1, "n")),
+            ),
+        )
+
+        val candidate = duplicateDecoder.decode("anan", 8)
+            .first { it.text == "安安" && it.matchKind == CandidateMatchKind.BASE_COMPOSED }
+
+        assertTrue(candidate.score > 8f)
+    }
+
+    @Test
     fun primarySourceOutranksAWeightedFallbackEntry() {
         val candidates = decoder.decode("zhu")
         assertEquals(listOf("主", "株"), candidates.map { it.text })
@@ -240,8 +287,9 @@ class PinyinDecoderTest {
     @Test
     fun exactPinyinIsNotPollutedByTheStatisticalPrefixIndex() {
         val values = decoder.decode("xian")
-        assertEquals(listOf("先", "西安"), values.map { it.text })
-        assertEquals(listOf("x", "xa"), values.map { it.canonicalInitials })
+        assertEquals(listOf("先", "西安"), values.take(2).map { it.text })
+        assertEquals(listOf("x", "xa"), values.take(2).map { it.canonicalInitials })
+        assertTrue(values.drop(2).all { it.matchKind == CandidateMatchKind.CORRECTED })
     }
 
     @Test
@@ -335,6 +383,31 @@ class PinyinDecoderTest {
     }
 
     @Test
+    fun progressivePrefixProbeSkipsSpellingCorrectionCandidates() {
+        val full = decoder.decode("nihoa", 16)
+        val prefixProbe = decoder.decodePrefixProbe("nihoa", 16)
+
+        assertTrue(full.any { it.matchKind == CandidateMatchKind.CORRECTED })
+        assertTrue(prefixProbe.none { it.matchKind == CandidateMatchKind.CORRECTED })
+    }
+
+    @Test
+    fun correctedExactRecordDoesNotSuppressItsSegmentedAlternatives() {
+        val qualityDecoder = PinyinDecoder.fromBytes(
+            lexicon(
+                "hao" to listOf(item("好", 10_000, "h")),
+                "ni" to listOf(item("你", 10_000, "n")),
+                "nihao" to listOf(item("你号", 1, "nh")),
+            ),
+        )
+
+        val values = qualityDecoder.decode("nihoa", 16)
+
+        assertTrue(values.any { it.text == "你好" && it.matchKind == CandidateMatchKind.CORRECTED })
+        assertTrue(values.any { it.text == "你号" && it.matchKind == CandidateMatchKind.CORRECTED })
+    }
+
+    @Test
     fun oneTypoInsideALongComposedSentenceIsCorrected() {
         val candidate = decoder.decode("woshiyigezhongguoern").first()
         assertEquals("我是一个中国人", candidate.text)
@@ -352,6 +425,7 @@ class PinyinDecoderTest {
                 "hen" to listOf(item("很", 10, "h")),
                 "jin" to listOf(item("今", 10, "j")),
                 "qi" to listOf(item("气", 10, "q")),
+                "o" to listOf(item("哦", 1, "o")),
                 "tian" to listOf(item("天", 10, "t")),
             ),
         )
@@ -384,6 +458,85 @@ class PinyinDecoderTest {
         assertEquals("你好", values.first().text)
         assertEquals(CandidateMatchKind.BASE_COMPOSED, values.first().matchKind)
         assertTrue(values.any { it.text == "李好" && it.matchKind == CandidateMatchKind.CORRECTED })
+    }
+
+    @Test
+    fun narrowProductionPolicyExpandsTheBestLexicalCorrectionProbe() {
+        val narrowBudget = CorrectionSearchBudget(
+            spellingPathsWithoutCanonical = 24,
+            spellingPathsWithCanonical = 8,
+            exactCandidatesPerPath = 8,
+            composedPathsWithoutCanonical = 1,
+            composedPathsWithCanonical = 1,
+            composedCandidatesPerPath = 8,
+            segmentCandidatesPerKey = 4,
+            segmentBeamWidth = 8,
+        )
+        val qualityDecoder = PinyinDecoder.fromBytes(
+            lexicon(
+                "hao" to listOf(item("低", 10, "h")),
+                "ni" to listOf(item("你", 10, "n")),
+                "xiao" to listOf(item("高", Int.MAX_VALUE, "x")),
+            ),
+            correctionBudget = narrowBudget,
+        )
+
+        val candidate = qualityDecoder.decode("nixao", 8).first()
+
+        assertEquals("你高", candidate.text)
+        assertEquals("nixiao", candidate.canonicalPinyin)
+        assertEquals(CandidateMatchKind.CORRECTED, candidate.matchKind)
+    }
+
+    @Test
+    fun exactHybridEvidenceOutranksANearbyComposedCorrectionWithAndWithoutContext() {
+        val fixture = lexicon(
+            "gan" to listOf(item("感", 21_704, "g"), item("干", 16_397, "g")),
+            "ren" to listOf(item("人", 453_337, "r")),
+            "}rengzn|rengongzhineng" to listOf(item("人工智能", 10_066, "rgzn")),
+        )
+        val baseline = PinyinDecoder.fromBytes(fixture)
+        val contextual = PinyinDecoder.fromBytes(
+            fixture,
+            CharacterBigramModel { previous, next ->
+                when {
+                    previous == '人'.code && next == '感'.code -> 0.402127f
+                    previous == '人'.code && next == '干'.code -> 0.401217f
+                    else -> 0f
+                }
+            },
+        )
+
+        listOf(baseline, contextual).forEach { decoder ->
+            val candidate = decoder.decode("rengzn", 255).first()
+            assertEquals("人工智能", candidate.text)
+            assertEquals(CandidateMatchKind.BASE_HYBRID, candidate.matchKind)
+        }
+    }
+
+    @Test
+    fun overlongInputStopsBeforeAllocatingDecoderSearchState() {
+        assertTrue(
+            decoder.decode("a".repeat(PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH + 1)).isEmpty(),
+        )
+    }
+
+    @Test
+    fun productionDecoderRecoversARepeatedKeyAtTheEndOfTheLastSyllable() {
+        val bigrams = repositoryFile("ime-service/src/main/assets/pinyin_bigrams.bin")
+            .inputStream()
+            .buffered()
+            .use(BinaryCharacterBigramModel::load)
+        val production = repositoryFile("ime-service/src/main/assets/pinyin_lexicon.bin")
+            .inputStream()
+            .buffered()
+            .use { PinyinDecoder.load(it, bigrams) }
+
+        val corrected = production.decode("nihaoshijiee", 255)
+            .firstOrNull { it.text == "\u4F60\u597D\u4E16\u754C" }
+
+        assertEquals(CandidateMatchKind.CORRECTED, corrected?.matchKind)
+        assertEquals("nihaoshijie", corrected?.canonicalPinyin)
     }
 
     @Test
@@ -425,4 +578,10 @@ class PinyinDecoderTest {
         }
         return bytes.toByteArray()
     }
+
+    private fun repositoryFile(relativePath: String): File =
+        generateSequence(File(System.getProperty("user.dir")).absoluteFile) { it.parentFile }
+            .map { File(it, relativePath) }
+            .firstOrNull { it.isFile }
+            ?: error("Repository fixture is missing: $relativePath")
 }

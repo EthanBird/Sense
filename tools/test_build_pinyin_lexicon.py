@@ -2,6 +2,8 @@
 
 import tempfile
 import unittest
+import hashlib
+import json
 from pathlib import Path
 
 import build_pinyin_lexicon as builder
@@ -129,6 +131,66 @@ class PinyinLexiconBuilderTest(unittest.TestCase):
             path.write_bytes(b"SPLX\x00\x03\x00\x00\x00\x01")
             with self.assertRaises(ValueError):
                 builder.read_binary(path)
+
+    def test_manifest_build_applies_bounded_index_policies(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source.dict.yaml"
+            source.write_text(
+                "词典\tci dian\t100\n低频\tdi pin\t2\n我\two\t500\n",
+                encoding="utf-8",
+            )
+            manifest = root / "sources.json"
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "license": "GPL-3.0-only",
+                        "upstream": {"repository": "fixture", "commit": "fixture"},
+                        "sources": [
+                            {
+                                "id": "fixture",
+                                "path": source.name,
+                                "format": "rime-dict-yaml",
+                                "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                                "revision": "fixture-v1",
+                                "license": "GPL-3.0-only",
+                                "source_tier": 0,
+                                "weight": {
+                                    "numerator": 1,
+                                    "denominator": 1,
+                                    "offset": 0,
+                                    "minimum": 2,
+                                    "maximum": 1000,
+                                    "max_text_length": 8,
+                                },
+                                "index": {
+                                    "prefix_min_weight": 50,
+                                    "initials_min_weight": 50,
+                                    "hybrid_min_weight": 50,
+                                },
+                            }
+                        ],
+                    },
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
+            canonical = root / "canonical.tsv"
+
+            entries, syllables, loaded = builder.read_manifest_dictionary(
+                manifest,
+                canonical,
+            )
+
+            self.assertEqual("词典", entries["cidian"][0].text)
+            self.assertEqual("词典", entries["~cd"][0].text)
+            self.assertEqual("词典", entries["}cid|cidian"][0].text)
+            self.assertNotIn("~dp", entries)
+            self.assertNotIn("}dip|dipin", entries)
+            self.assertIn("ci", syllables)
+            self.assertEqual(3, loaded.audits[0].accepted)
+            self.assertIn("\tfixture\t100\tpih", canonical.read_text(encoding="utf-8"))
 
     def _read(self, primary: str, cedict: str):
         with tempfile.TemporaryDirectory() as directory:

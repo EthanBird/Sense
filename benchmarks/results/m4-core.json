@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
   "stage": "M4-core",
-  "generatedAt": "2026-07-23T15:08:16.012792227Z",
+  "generatedAt": "2026-07-30T15:36:16.428681400Z",
   "lexicon": {
-    "keys": 429901,
-    "bytes": 19439754,
-    "sha256": "ef2fac5d3b62ba3d88674e63a9bfbdc907f0a814b1798fbba25f6ac3cadccce6"
+    "keys": 823782,
+    "bytes": 35069585,
+    "sha256": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800"
   },
   "bigrams": {
-    "records": 46657,
-    "bytes": 559894,
-    "sha256": "db00a109dde6d1f471172a7abb53aae30509894d6064897a80a502aab690f18c"
+    "records": 65536,
+    "bytes": 786442,
+    "sha256": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d"
   },
   "correctness": {
     "w": "我",
     "ygz": "一个字",
-    "scxt": "上窜下跳",
+    "scxt": "上蹿下跳",
     "ssyw": "蛇鼠一窝",
     "pipeiPrefix": "匹|pei",
     "enter": "匹pei",
@@ -26,34 +26,34 @@
     "huaRequestedLimit": 64,
     "huaCountAtLimit": 64,
     "huaTarget": "滑",
-    "huaTargetRank": 7,
-    "shanghuaCount": 94,
+    "huaTargetRank": 5,
+    "shanghuaCount": 172,
     "shanghuaTarget": "上滑",
-    "shanghuaTargetRank": 8,
+    "shanghuaTargetRank": 2,
     "learnedShortCode": "d",
     "learnedTopCandidate": "的"
   },
   "initialsLookup": {
-    "lookupsPerSample": 20000,
-    "p95Ns": 117931.07,
+    "lookupsPerSample": 7000,
+    "p95Ns": 37283.54,
     "gateNs": 250000.00
   },
   "progressiveDecode": {
-    "lookupsPerSample": 5000,
-    "p95Ns": 28463.76,
+    "lookupsPerSample": 1750,
+    "p95Ns": 401756.86,
     "gateNs": 500000.00
   },
   "productionLimitProgressiveDecode": {
     "candidateLimit": 255,
-    "prefixCandidateCount": 94,
-    "lookupsPerSample": 100,
-    "p95Ns": 93833.17,
+    "prefixCandidateCount": 51,
+    "lookupsPerSample": 35,
+    "p95Ns": 838691.43,
     "gateNs": 5000000.00
   },
   "segmentedComposition": {
     "candidateLimit": 255,
-    "lookupsPerSample": 100,
-    "p95Ns": 1011419.88,
+    "lookupsPerSample": 35,
+    "p95Ns": 2578202.86,
     "gateNs": 5000000.00
   }
 }

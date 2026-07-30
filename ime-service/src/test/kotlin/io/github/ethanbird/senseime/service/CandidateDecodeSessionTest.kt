@@ -73,6 +73,60 @@ class CandidateDecodeSessionTest {
     }
 
     @Test
+    fun decoderHotSwapCanForceTheSameCompositionThroughPendingAgain() {
+        val session = CandidateDecodeSession()
+        val composition = PinyinComposition().type('d')
+        session.begin(composition, decoderGeneration = 1)
+        session.complete(
+            composition,
+            decoding(composition, "旧"),
+            limit = 255,
+            decoderGeneration = 1,
+        )
+
+        val restarted = session.begin(
+            composition,
+            decoderGeneration = 2,
+            forceDecode = true,
+        )
+
+        assertTrue(restarted.shouldDecode)
+        assertTrue(restarted.stateChanged)
+        assertTrue(restarted.presentation.pending)
+        assertEquals(listOf("旧"), restarted.presentation.snapshot.candidates.map { it.text })
+        assertNull(session.select(composition, composition.revision, 0))
+    }
+
+    @Test
+    fun decoderResultThatPostsAfterHotSwapCannotCompleteTheNewGeneration() {
+        val session = CandidateDecodeSession()
+        val composition = PinyinComposition().type('d')
+        session.begin(composition, decoderGeneration = 1)
+        val publication = session.begin(composition, decoderGeneration = 2)
+
+        assertTrue(publication.shouldDecode)
+        assertTrue(publication.stateChanged)
+        assertNull(
+            session.complete(
+                composition,
+                decoding(composition, "旧"),
+                limit = 255,
+                decoderGeneration = 1,
+            ),
+        )
+        assertTrue(session.current.pending)
+        assertNull(session.currentDecoding(composition, decoderGeneration = 2))
+
+        val current = session.complete(
+            composition,
+            decoding(composition, "新"),
+            limit = 255,
+            decoderGeneration = 2,
+        )
+        assertEquals(listOf("新"), current?.snapshot?.candidates?.map { it.text })
+    }
+
+    @Test
     fun newRevisionRetainsOldVisualBatchButCannotSelectIt() {
         val session = CandidateDecodeSession()
         val first = PinyinComposition().type('h')
@@ -89,6 +143,27 @@ class CandidateDecodeSessionTest {
 
         val ready = session.complete(second, decoding(second, "哈"), limit = 255)
         assertEquals(listOf("哈"), ready?.snapshot?.candidates?.map { it.text })
+    }
+
+    @Test
+    fun pendingCompositionCannotSelectRetainedSnapshotEvenWhenRevisionMatches() {
+        val session = CandidateDecodeSession()
+        val first = PinyinComposition(
+            acceptedSegments = listOf(AcceptedPinyinSegment("匹", "pi")),
+            remainingPinyin = "pei",
+            revision = 7,
+        )
+        session.begin(first)
+        session.complete(first, decoding(first, "配"), limit = 255)
+
+        val second = first.copy(
+            acceptedSegments = listOf(AcceptedPinyinSegment("批", "pi")),
+        )
+        val pending = session.begin(second)
+
+        assertTrue(pending.presentation.pending)
+        assertEquals(listOf("配"), pending.presentation.snapshot.candidates.map { it.text })
+        assertNull(session.select(second, requestedRevision = 7, sourceIndex = 0))
     }
 
     @Test

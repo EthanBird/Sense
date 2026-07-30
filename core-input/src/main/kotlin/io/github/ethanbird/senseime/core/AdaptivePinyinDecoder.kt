@@ -1,133 +1,5 @@
 package io.github.ethanbird.senseime.core
 
-import kotlin.math.ln
-
-data class LearnedPhrase(
-    val fullPinyin: String,
-    val initials: String,
-    val text: String,
-    val useCount: Int,
-    val createdAtMillis: Long,
-    val lastUsedAtMillis: Long,
-    val aliases: Set<String> = emptySet(),
-)
-
-interface UserLexicon : AutoCloseable {
-    fun lookup(code: String, limit: Int): List<LearnedPhrase>
-    fun record(
-        fullPinyin: String,
-        initials: String,
-        text: String,
-        aliases: Set<String> = emptySet(),
-    ): LearnedPhrase
-    override fun close() = Unit
-}
-
-class MemoryUserLexicon(
-    initial: Collection<LearnedPhrase> = emptyList(),
-    private val clock: () -> Long = System::currentTimeMillis,
-    private val onRecord: (LearnedPhrase) -> Unit = {},
-) : UserLexicon {
-    private val records = LinkedHashMap<Pair<String, String>, LearnedPhrase>()
-    private val fullIndex = HashMap<String, MutableSet<Pair<String, String>>>()
-    private val initialsIndex = HashMap<String, MutableSet<Pair<String, String>>>()
-    private val aliasIndex = HashMap<String, MutableSet<Pair<String, String>>>()
-    private var latestAssignedUsedAtMillis = Long.MIN_VALUE
-
-    init {
-        initial.forEach(::restore)
-    }
-
-    @Synchronized
-    override fun lookup(code: String, limit: Int): List<LearnedPhrase> {
-        if (limit <= 0) return emptyList()
-        val normalized = PinyinSyllableSegmenter.normalize(code)
-        val keys = LinkedHashSet<Pair<String, String>>()
-        fullIndex[normalized]?.let(keys::addAll)
-        initialsIndex[normalized]?.let(keys::addAll)
-        aliasIndex[normalized]?.let(keys::addAll)
-        return keys
-            .asSequence()
-            .mapNotNull(records::get)
-            .sortedWith(
-                compareByDescending<LearnedPhrase> { it.initials == normalized }
-                    .thenByDescending { it.lastUsedAtMillis }
-                    .thenByDescending { it.useCount }
-                    .thenBy { it.text },
-            )
-            .take(limit)
-            .toList()
-    }
-
-    @Synchronized
-    override fun record(
-        fullPinyin: String,
-        initials: String,
-        text: String,
-        aliases: Set<String>,
-    ): LearnedPhrase {
-        val full = PinyinSyllableSegmenter.normalize(fullPinyin)
-        val short = PinyinSyllableSegmenter.normalize(initials)
-        require(full.isNotEmpty() && short.isNotEmpty() && text.isNotEmpty())
-        val now = nextUsedAtMillis()
-        val key = full to text
-        val previous = records[key]
-        val normalizedAliases = buildSet {
-            previous?.aliases?.forEach(::add)
-            aliases
-                .asSequence()
-                .map(PinyinSyllableSegmenter::normalize)
-                .filter { it.isNotEmpty() && it != full && it != short }
-                .forEach(::add)
-        }
-        val value = LearnedPhrase(
-            fullPinyin = full,
-            initials = short,
-            text = text,
-            useCount = (previous?.useCount ?: 0) + 1,
-            createdAtMillis = previous?.createdAtMillis ?: now,
-            lastUsedAtMillis = now,
-            aliases = normalizedAliases,
-        )
-        records[key] = value
-        if (previous == null) {
-            fullIndex.getOrPut(full) { LinkedHashSet() } += key
-            initialsIndex.getOrPut(short) { LinkedHashSet() } += key
-        } else if (previous.initials != short) {
-            initialsIndex[previous.initials]?.remove(key)
-            initialsIndex.getOrPut(short) { LinkedHashSet() } += key
-        }
-        normalizedAliases.forEach { alias ->
-            aliasIndex.getOrPut(alias) { LinkedHashSet() } += key
-        }
-        onRecord(value)
-        return value
-    }
-
-    private fun restore(value: LearnedPhrase) {
-        val key = value.fullPinyin to value.text
-        records[key] = value
-        fullIndex.getOrPut(value.fullPinyin) { LinkedHashSet() } += key
-        initialsIndex.getOrPut(value.initials) { LinkedHashSet() } += key
-        value.aliases.forEach { alias ->
-            aliasIndex.getOrPut(alias) { LinkedHashSet() } += key
-        }
-        latestAssignedUsedAtMillis = maxOf(latestAssignedUsedAtMillis, value.lastUsedAtMillis)
-    }
-
-    private fun nextUsedAtMillis(): Long {
-        val observed = clock()
-        val assigned = when {
-            latestAssignedUsedAtMillis == Long.MIN_VALUE -> observed
-            observed > latestAssignedUsedAtMillis -> observed
-            latestAssignedUsedAtMillis < Long.MAX_VALUE -> latestAssignedUsedAtMillis + 1L
-            else -> Long.MAX_VALUE
-        }
-        latestAssignedUsedAtMillis = assigned
-        return assigned
-    }
-}
-
 class AdaptivePinyinDecoder(
     private val base: InputDecoder,
     private val userLexicon: UserLexicon,
@@ -136,22 +8,54 @@ class AdaptivePinyinDecoder(
 ) : ProgressivePinyinDecoder, ContextualInputDecoder {
     override fun decode(composing: String, limit: Int): List<Candidate> {
         if (limit <= 0) return emptyList()
-        val query = PinyinSyllableSegmenter.normalize(composing)
-        if (query.isEmpty()) return emptyList()
+        val decoderInput = normalizeDecoderInput(composing)
+        val query = PinyinSyllableSegmenter.normalize(decoderInput)
+        if (query.isEmpty() || query.length > PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH) {
+            return emptyList()
+        }
 
-        val chinese = mergeUserAndBase(query, limit, base.decode(query, limit))
+        val chinese = decodeChinese(decoderInput, query, limit)
         return MixedCandidateRanker.merge(chinese, englishLexicon.suggest(query, limit), limit)
     }
 
     override fun decodeAfter(previousCodePoint: Int, composing: String, limit: Int): List<Candidate> {
         if (limit <= 0) return emptyList()
-        val query = PinyinSyllableSegmenter.normalize(composing)
-        if (query.isEmpty()) return emptyList()
-        val baseCandidates = (base as? ContextualInputDecoder)
-            ?.decodeAfter(previousCodePoint, query, limit)
-            ?: base.decode(query, limit)
-        val chinese = mergeUserAndBase(query, limit, baseCandidates)
+        val decoderInput = normalizeDecoderInput(composing)
+        val query = PinyinSyllableSegmenter.normalize(decoderInput)
+        if (query.isEmpty() || query.length > PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH) {
+            return emptyList()
+        }
+        val chinese = decodeChinese(decoderInput, query, limit, previousCodePoint)
         return MixedCandidateRanker.merge(chinese, englishLexicon.suggest(query, limit), limit)
+    }
+
+    /**
+     * Chinese-only decode seam used by progressive prefix probes.
+     *
+     * Prefix candidates accept Han text only, so running the English lexicon
+     * for every prefix used to allocate and rank values that were immediately
+     * discarded.
+     */
+    private fun decodeChinese(
+        decoderInput: String,
+        query: String,
+        limit: Int,
+        previousCodePoint: Int? = null,
+        prefixProbe: Boolean = false,
+    ): List<Candidate> {
+        val baseCandidates = when {
+            prefixProbe && base is ProgressivePrefixProbeDecoder && previousCodePoint != null ->
+                base.decodePrefixProbeAfter(previousCodePoint, decoderInput, limit)
+
+            prefixProbe && base is ProgressivePrefixProbeDecoder ->
+                base.decodePrefixProbe(decoderInput, limit)
+
+            previousCodePoint != null && base is ContextualInputDecoder ->
+                base.decodeAfter(previousCodePoint, decoderInput, limit)
+
+            else -> base.decode(decoderInput, limit)
+        }
+        return mergeUserAndBase(query, limit, baseCandidates)
     }
 
     private fun mergeUserAndBase(
@@ -159,28 +63,109 @@ class AdaptivePinyinDecoder(
         limit: Int,
         baseCandidates: List<Candidate>,
     ): List<Candidate> {
-        val user = userLexicon.lookup(query, limit).map { learned ->
-            val initialsMatch = learned.initials == query
-            Candidate(
+        val learnedCandidates = userLexicon.lookup(query, limit)
+        // Production base results already satisfy RankedCandidateDecoder. Most
+        // composing queries have no personalization row, so preserve that result
+        // instead of copying every candidate through adjustment maps and a second
+        // CandidateRanker pass. Generic decoders retain the normalizing path.
+        if (learnedCandidates.isEmpty() && base is RankedCandidateDecoder) return baseCandidates
+        val negativeAdjustmentByText = HashMap<String, Float>()
+        learnedCandidates.forEach { learned ->
+            if (learned.rankingBoost < -MIN_ACTIVE_PERSONALIZATION_ADJUSTMENT) {
+                negativeAdjustmentByText.merge(learned.text, learned.rankingBoost, ::minOf)
+            }
+        }
+        val adjustedBaseCandidates = baseCandidates.map { candidate ->
+            negativeAdjustmentByText[candidate.text]
+                ?.let { candidate.copy(score = candidate.score + it) }
+                ?: candidate
+        }
+        val baseByText = LinkedHashMap<String, Candidate>(adjustedBaseCandidates.size)
+        adjustedBaseCandidates.forEach { candidate ->
+            baseByText.putIfAbsent(candidate.text, candidate)
+        }
+        val candidates = ArrayList<Candidate>(adjustedBaseCandidates.size + limit)
+        candidates.addAll(adjustedBaseCandidates)
+        val hasCanonicalExact =
+            adjustedBaseCandidates.any { it.matchKind == CandidateMatchKind.BASE_EXACT }
+        val hasCanonicalComposition =
+            adjustedBaseCandidates.any { it.matchKind == CandidateMatchKind.BASE_COMPOSED }
+        val topBaseTotal = adjustedBaseCandidates.maxOfOrNull { candidate ->
+            candidate.score + CandidateRanker.sourcePrior(
+                candidate.matchKind,
+                hasCanonicalExact,
+                hasCanonicalComposition,
+            )
+        } ?: 0f
+        learnedCandidates.forEach { learned ->
+            val fullMatch = learned.fullPinyin == query
+            val initialsMatch = !fullMatch && learned.initials == query
+            val userKind =
+                if (initialsMatch) CandidateMatchKind.USER_INITIALS else CandidateMatchKind.USER_FULL
+            val matchPenalty = if (initialsMatch) USER_INITIALS_AMBIGUITY_PENALTY else 0f
+            val personalizationBonus = learned.rankingBoost - matchPenalty
+            if (personalizationBonus <= MIN_ACTIVE_PERSONALIZATION_ADJUSTMENT) return@forEach
+            val baseCandidate = baseByText[learned.text]
+            val priorCompensation = baseCandidate?.let {
+                CandidateRanker.sourcePrior(
+                    it.matchKind,
+                    hasCanonicalExact,
+                    hasCanonicalComposition,
+                ) - CandidateRanker.sourcePrior(
+                    userKind,
+                    hasCanonicalExact,
+                    hasCanonicalComposition,
+                )
+            } ?: 0f
+            val baseScore = baseCandidate?.score ?: (
+                topBaseTotal -
+                    CandidateRanker.sourcePrior(
+                        userKind,
+                        hasCanonicalExact,
+                        hasCanonicalComposition,
+                    ) -
+                    USER_ONLY_BASE_GAP
+            )
+            candidates += Candidate(
                 text = learned.text,
-                score = USER_BONUS + 2f * ln(learned.useCount.toFloat() + 1f),
+                score = baseScore +
+                    priorCompensation +
+                    personalizationBonus,
                 canonicalPinyin = learned.fullPinyin,
-                matchKind = if (initialsMatch) CandidateMatchKind.USER_INITIALS else CandidateMatchKind.USER_FULL,
+                matchKind = userKind,
                 canonicalInitials = learned.initials,
             )
         }
-        val combined = ArrayList<Candidate>(limit)
-        val seen = HashSet<String>()
-        (user + baseCandidates).forEach { candidate ->
-            if (combined.size < limit && seen.add(candidate.text)) combined += candidate
-        }
-        return combined
+        return CandidateRanker.rank(
+            candidates = candidates,
+            limit = limit,
+            hasCanonicalExact = hasCanonicalExact,
+            hasCanonicalComposition = hasCanonicalComposition,
+        )
     }
 
     override fun decodeProgressively(
         composition: PinyinComposition,
         limit: Int,
+    ): ProgressivePinyinDecoding = decodeProgressively(
+        composition = composition,
+        leftContext = "",
+        limit = limit,
+    )
+
+    override fun decodeProgressively(
+        composition: PinyinComposition,
+        leftContext: CharSequence,
+        limit: Int,
     ): ProgressivePinyinDecoding {
+        if (composition.composingCodeLength > PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH) {
+            return ProgressivePinyinDecoding(
+                revision = composition.revision,
+                remainingPinyin = composition.remainingPinyin,
+                wholeCandidates = emptyList(),
+                prefixCandidates = emptyList(),
+            )
+        }
         val query = PinyinSyllableSegmenter.normalize(composition.remainingPinyin)
         if (limit <= 0 || query.isEmpty()) {
             return ProgressivePinyinDecoding(
@@ -191,17 +176,17 @@ class AdaptivePinyinDecoder(
             )
         }
 
-        val wholeCandidates = composition.acceptedSegments
-            .lastOrNull()
-            ?.text
-            ?.takeIf { it.codePointCount(0, it.length) == 1 }
-            ?.let { decodeAfter(it.codePointAt(0), query, limit) }
+        val localContext = composition.acceptedText.ifEmpty { leftContext.toString() }
+        val contextCodePoint = localContext
+            .takeIf { it.isNotEmpty() }
+            ?.let { it.codePointBefore(it.length) }
+        val wholeCandidates = contextCodePoint
+            ?.let { decodeAfter(it, query, limit) }
             ?: decode(query, limit)
-        val wholePrefixRank = HashMap<String, Int>()
+        val wholePrefixRank = HashMap<Int, Int>()
         wholeCandidates.forEachIndexed { index, candidate ->
             if (candidate.text.isEmpty()) return@forEachIndexed
-            val firstEnd = candidate.text.offsetByCodePoints(0, 1)
-            wholePrefixRank.putIfAbsent(candidate.text.substring(0, firstEnd), index)
+            wholePrefixRank.putIfAbsent(candidate.text.codePointAt(0), index)
         }
 
         val prefixLimit = minOf(limit, MAX_PROGRESSIVE_CANDIDATES)
@@ -213,7 +198,7 @@ class AdaptivePinyinDecoder(
                 prefixLengths += length
             }
         }
-        val prefixGroups = ArrayList<List<PinyinPrefixCandidate>>()
+        val prefixGroups = ArrayList<List<RankedPrefixCandidate>>()
         for (length in prefixLengths.sorted()) {
             if (length >= query.length) continue
             val consumed = query.substring(0, length)
@@ -223,16 +208,33 @@ class AdaptivePinyinDecoder(
             } else {
                 MAX_FALLBACK_PREFIX_HAN_CHARACTERS
             }
-            val group = decode(consumed, prefixLimit)
-                .asSequence()
-                .filter { isSelectableHanCandidate(it, maximumHanCharacters) }
-                .distinctBy { it.text }
-                .map { PinyinPrefixCandidate(it, consumed, remaining) }
-                .sortedWith(prefixComparator(wholePrefixRank))
-                .toList()
-            if (group.isNotEmpty()) prefixGroups += group
+            val decoded = contextCodePoint
+                ?.let { decodeChinese(consumed, consumed, prefixLimit, it, prefixProbe = true) }
+                ?: decodeChinese(consumed, consumed, prefixLimit, prefixProbe = true)
+            val group = ArrayList<RankedPrefixCandidate>()
+            val seenTexts = HashSet<String>()
+            decoded.forEach { candidate ->
+                if (
+                    isSelectableHanCandidate(candidate, maximumHanCharacters) &&
+                    seenTexts.add(candidate.text)
+                ) {
+                    val prefix = PinyinPrefixCandidate(candidate, consumed, remaining)
+                    group += RankedPrefixCandidate(
+                        value = prefix,
+                        identity = PrefixIdentity(consumed, candidate.text),
+                        wholeRank = wholePrefixRank[candidate.text.codePointAt(0)] ?: Int.MAX_VALUE,
+                        decodedRank = group.size,
+                    )
+                }
+            }
+            if (group.isNotEmpty()) {
+                prefixGroups += group
+            }
         }
-        val prefixes = mergePrefixGroups(prefixGroups, prefixLimit, wholePrefixRank)
+        val prefixes = mergePrefixGroups(
+            groups = prefixGroups,
+            limit = prefixLimit,
+        )
         return ProgressivePinyinDecoding(
             revision = composition.revision,
             remainingPinyin = query,
@@ -241,43 +243,61 @@ class AdaptivePinyinDecoder(
         )
     }
 
+    private data class PrefixIdentity(
+        val consumedPinyin: String,
+        val text: String,
+    )
+
+    /**
+     * Internal rank metadata computed once per public prefix candidate.
+     *
+     * Keeping it beside the candidate removes substring, Pair and map work from
+     * the sort comparator, which is invoked O(n log n) times.
+     */
+    private data class RankedPrefixCandidate(
+        val value: PinyinPrefixCandidate,
+        val identity: PrefixIdentity,
+        val wholeRank: Int,
+        val decodedRank: Int,
+    )
+
     /** Keeps every valid first-syllable path represented before filling by score. */
     private fun mergePrefixGroups(
-        groups: List<List<PinyinPrefixCandidate>>,
+        groups: List<List<RankedPrefixCandidate>>,
         limit: Int,
-        wholePrefixRank: Map<String, Int>,
     ): List<PinyinPrefixCandidate> {
         if (limit <= 0 || groups.isEmpty()) return emptyList()
-        val values = ArrayList<PinyinPrefixCandidate>(limit)
-        val seen = HashSet<Pair<String, String>>()
+        val values = ArrayList<RankedPrefixCandidate>(limit)
+        val seen = HashSet<PrefixIdentity>()
         groups.forEach { group ->
             val first = group.firstOrNull() ?: return@forEach
-            if (values.size < limit && seen.add(first.consumedPinyin to first.candidate.text)) values += first
+            if (values.size < limit && seen.add(first.identity)) values += first
         }
-        groups.asSequence()
-            .flatten()
-            .sortedWith(prefixComparator(wholePrefixRank))
-            .forEach { candidate ->
-                if (
-                    values.size < limit &&
-                    seen.add(candidate.consumedPinyin to candidate.candidate.text)
-                ) {
-                    values += candidate
-                }
+        val ordered = ArrayList<RankedPrefixCandidate>(
+            groups.sumOf { group -> group.size },
+        )
+        groups.forEach(ordered::addAll)
+        ordered.sortWith(RANKED_PREFIX_ORDER)
+        ordered.forEach { candidate ->
+            if (
+                values.size < limit &&
+                seen.add(candidate.identity)
+            ) {
+                values += candidate
             }
-        values.sortWith(prefixComparator(wholePrefixRank))
-        return values
+        }
+        values.sortWith(RANKED_PREFIX_ORDER)
+        return values.mapTo(ArrayList(values.size)) { it.value }
     }
 
-    private fun prefixComparator(wholePrefixRank: Map<String, Int>) =
-        compareBy<PinyinPrefixCandidate> { wholePrefixRank[it.candidate.text] ?: Int.MAX_VALUE }
-            .thenByDescending { it.candidate.score }
-            .thenBy { it.consumedPinyin.length }
-            .thenBy { it.candidate.text }
-
     /** Records only complete Chinese selections whose pinyin can be split unambiguously by character count. */
-    fun learn(rawInput: String, candidate: Candidate): LearnedPhrase? {
-        if (!candidate.text.any(::isHanCharacter)) return null
+    fun learn(
+        rawInput: String,
+        candidate: Candidate,
+        evidence: UserLearningEvidence = UserLearningEvidence.EXPLICIT_SELECTION,
+    ): LearnedPhrase? {
+        val characterCount = countHanCodePoints(candidate.text)
+        if (characterCount == 0) return null
         if (candidate.matchKind == CandidateMatchKind.BASE_INITIALS) return null
         val normalizedRawInput = PinyinSyllableSegmenter.normalize(rawInput)
         val canonical = when (candidate.matchKind) {
@@ -291,7 +311,6 @@ class AdaptivePinyinDecoder(
             return null
         }
         if (!segmenter.isComplete(canonical)) return null
-        val characterCount = candidate.text.count(::isHanCharacter)
         val suppliedInitials = candidate.canonicalInitials
             ?.let(PinyinSyllableSegmenter::normalize)
             ?.takeIf { it.length == characterCount }
@@ -300,26 +319,77 @@ class AdaptivePinyinDecoder(
             .takeIf { it != canonical && it != initials }
             ?.let(::setOf)
             .orEmpty()
-        return userLexicon.record(canonical, initials, candidate.text, aliases)
+        return userLexicon.record(canonical, initials, candidate.text, aliases, evidence)
     }
 
-    private fun isHanCharacter(character: Char): Boolean =
-        character.code in 0x3400..0x4DBF ||
-            character.code in 0x4E00..0x9FFF ||
-            character.code in 0xF900..0xFAFF
+    fun demote(
+        phrase: LearnedPhrase,
+        feedback: UserNegativeFeedback = UserNegativeFeedback.MANUAL_DEMOTION,
+    ): LearnedPhrase? = userLexicon.demote(phrase.fullPinyin, phrase.text, feedback)
+
+    fun forget(phrase: LearnedPhrase): Boolean = userLexicon.forget(phrase.fullPinyin, phrase.text)
+
+    /** Keeps explicit syllable joints for the base spelling graph while normalizing user lookup. */
+    private fun normalizeDecoderInput(value: String): String {
+        if (value.all { it in 'a'..'z' }) return value
+        return buildString(value.length) {
+            var previousWasApostrophe = false
+            value.forEach { character ->
+                val lower = character.lowercaseChar()
+                when {
+                    lower in 'a'..'z' -> {
+                        append(lower)
+                        previousWasApostrophe = false
+                    }
+
+                    character == '\'' && isNotEmpty() && !previousWasApostrophe -> {
+                        append(character)
+                        previousWasApostrophe = true
+                    }
+                }
+            }
+            if (lastOrNull() == '\'') deleteCharAt(lastIndex)
+        }
+    }
+
+    private fun countHanCodePoints(value: String): Int {
+        var count = 0
+        var offset = 0
+        while (offset < value.length) {
+            val codePoint = value.codePointAt(offset)
+            if (Character.UnicodeScript.of(codePoint) == Character.UnicodeScript.HAN) count += 1
+            offset += Character.charCount(codePoint)
+        }
+        return count
+    }
 
     private fun isSelectableHanCandidate(
         candidate: Candidate,
         maximumHanCharacters: Int,
     ): Boolean {
-        val characterCount = candidate.text.count(::isHanCharacter)
-        return characterCount in 1..maximumHanCharacters &&
-            characterCount == candidate.text.length &&
+        var characterCount = 0
+        var offset = 0
+        while (offset < candidate.text.length) {
+            val codePoint = candidate.text.codePointAt(offset)
+            if (Character.UnicodeScript.of(codePoint) != Character.UnicodeScript.HAN) return false
+            characterCount += 1
+            if (characterCount > maximumHanCharacters) return false
+            offset += Character.charCount(codePoint)
+        }
+        return characterCount > 0 &&
             candidate.canonicalInitials?.length == characterCount
     }
 
     private companion object {
-        const val USER_BONUS = 30f
+        val RANKED_PREFIX_ORDER =
+            compareBy<RankedPrefixCandidate> { it.wholeRank }
+                .thenBy { it.decodedRank }
+                .thenBy { it.value.consumedPinyin.length }
+                .thenBy { it.value.candidate.text }
+
+        const val USER_ONLY_BASE_GAP = 2.25f
+        const val USER_INITIALS_AMBIGUITY_PENALTY = 0.2f
+        const val MIN_ACTIVE_PERSONALIZATION_ADJUSTMENT = 0.001f
         const val MAX_PROGRESSIVE_CANDIDATES = 255
         const val MAX_FALLBACK_PREFIX_LENGTH = 8
         const val MAX_FALLBACK_PREFIX_HAN_CHARACTERS = 4

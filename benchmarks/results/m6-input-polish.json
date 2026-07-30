@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "stage": "M6-input-polish",
-  "generatedAt": "2026-07-23T12:06:37.628759719Z",
+  "generatedAt": "2026-07-30T14:50:44.871177900Z",
   "correctness": {
     "englishHost": ["host", "hosts", "hostile"],
     "finalBackspaceEditorReplacement": "",
@@ -22,15 +22,15 @@
     "primaryPrefixPreserved": 6
   },
   "englishComposition": {
-    "p95Ns": 62979.35,
+    "p95Ns": 63899.00,
     "gateNs": 1000000.00
   },
   "semanticLookup": {
-    "p95Ns": 824.22,
+    "p95Ns": 542.08,
     "gateNs": 250000.00
   },
   "semanticMixer": {
-    "p95Ns": 2483.17,
+    "p95Ns": 2819.14,
     "gateNs": 250000.00
   }
 }
