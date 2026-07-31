@@ -425,11 +425,11 @@ EXPECTED_OFFLINE_VERIFY_SHA256 = (
 )
 EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("settings.gradle.kts"):
-        "1bd8cae694d3b353d47cd37d146fabbb0a89121cddf854250477c91a317044a4",
+        "7a929f9b2c7e790c0ef4d7991c7c5fc0a77e5707330f95ade35c1fb25a5f2b3e",
     Path("gradle/libs.versions.toml"):
-        "f52eac89837941e5beebb8f63fda295b58f273ea043806beef1e35362363ae7e",
+        "0bcda17c3ce477b3ae42c811d9317eef9f1eef7abab03022dd24623c4c5a0be1",
     Path("gradle.properties"):
-        "b2dd33a40d0083d65d3feda9aa8662013c3cb55e0b0abe2c29e5e0ebbbc19238",
+        "43b8f4bb2cd8ab0fbf9fcff552018a723113a5ee4532429ba694a567d225346a",
     Path("gradlew"):
         "734b3879d3501dce471cf0522d3bcbafe76873d9fc5129345b67fb43bd15e933",
     Path("gradle/wrapper/gradle-wrapper.properties"):
@@ -443,9 +443,9 @@ EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("ai-protocol/build.gradle.kts"):
         "b1d9c1acc7f6d19450691e461fa4da6643297fff752d3f9159e7445bc91ad9ab",
     Path("ai-runtime/build.gradle.kts"):
-        "bd40b3ef9e469d36e97becbc1de0a6ddfc3cd62068b7007efe040090330c9e0b",
+        "175f9868685698b2f52a572ff42d4e64413b85d47674e038e1cf9219f3ca349c",
     Path("app/build.gradle.kts"):
-        "5f7d61f6c0a5d0f4084a2707388364710461d6979977db6941187beb20216748",
+        "06f35fcca51acf1b66598066eb345f7aa8b2394a587fac012ea0e5a6c54c205c",
     Path("benchmark/build.gradle.kts"):
         "999d9aba8d2813df7e108a9dece00c7f6406b3c5273e59f323d0565e650abf8b",
     Path("brain-api/build.gradle.kts"):
