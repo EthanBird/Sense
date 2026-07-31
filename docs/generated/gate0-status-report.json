@@ -7,7 +7,7 @@
     "unset_field_count": 90
   },
   "contract_source_sha256": {
-    "README.md": "ec69ed04c2a1f66f7be659b6a400fe75a0265456daf08dba38465c43fb80dc91",
+    "README.md": "a39ba8930a771b1723a38a750441fa558bfad8211cf95c0c5033baf05b0d04d6",
     "docs/adr/0015-release-identity-and-data-continuity.md": "38a227f32e06b48c66b5b3507239bd6c1c4002d1e8f05a553444b1dc675990a1",
     "docs/adr/0016-m9-memory-wire-and-durability.md": "02470c2b80958ab235461b29e56f81bb037668e3b8dc21b92fd8be5aee46f5d7",
     "docs/adr/0017-m9-memory-security-and-erasure.md": "66b608561b72a2c6629fabb5ee8ab19f5b71c21abd65005de6c933dfb2c9c645",
