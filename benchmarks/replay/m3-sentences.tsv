@@ -125,7 +125,7 @@ dn	电脑	initials			head
 jy	教育	initials			head
 yy	音乐	initials			head
 
-# Full-pinyin prefix plus remaining syllable initials (11)
+# Full-pinyin prefix plus remaining syllable initials (17)
 zhongwsrf	中文输入法	hybrid			mid
 zhongwensrf	中文输入法	hybrid			mid
 rengzn	人工智能	hybrid			mid
@@ -137,3 +137,11 @@ jiqixuex	机器学习	hybrid			mid
 caozxt	操作系统	hybrid			mid
 caozuoxt	操作系统	hybrid			mid
 bianchengyy	编程语言	hybrid			mid
+# Exact Frost base entries with source weights 95–99, intentionally below the
+# prebuilt hybrid-index threshold, exercise the bounded runtime lattice.
+hunshenxs	浑身解数	hybrid			tail
+kaiyuanxy	开源协议	hybrid			tail
+suanfafzd	算法复杂度	hybrid			tail
+yemianxs	页面显示	hybrid			tail
+wenjianxz	文件下载	hybrid			tail
+quanxiansz	权限设置	hybrid			tail

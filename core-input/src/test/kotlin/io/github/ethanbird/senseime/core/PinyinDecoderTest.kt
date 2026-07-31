@@ -249,6 +249,71 @@ class PinyinDecoderTest {
     }
 
     @Test
+    fun lowFrequencyMixedSpellingUsesTheGeneralSyllableGraphWithoutAPrebuiltHybridKey() {
+        val mixed = PinyinDecoder.fromBytes(
+            lexicon(
+                "hun" to listOf(item("\u6D51", 301, "h")),
+                "shen" to listOf(item("\u8EAB", 2172, "s")),
+                "shu" to listOf(item("\u6570", 11916, "s")),
+                "xie" to listOf(item("\u89E3", 51, "x")),
+                "hunshenxieshu" to listOf(item("\u6D51\u8EAB\u89E3\u6570", 95, "hsxs")),
+            ),
+        )
+
+        val candidate = mixed.decode("hunshenxs", 16).firstOrNull {
+            it.text == "\u6D51\u8EAB\u89E3\u6570"
+        }
+
+        assertEquals(CandidateMatchKind.BASE_HYBRID, candidate?.matchKind)
+        assertEquals("hunshenxieshu", candidate?.canonicalPinyin)
+        assertEquals("hsxs", candidate?.canonicalInitials)
+    }
+
+    @Test
+    fun weakShortHybridDoesNotSuppressAnAdjacentTranspositionCorrection() {
+        val mixed = PinyinDecoder.fromBytes(
+            lexicon(
+                "da" to listOf(item("\u5927", 32_000, "d")),
+                "dang" to listOf(item("\u5F53", 133_037, "d")),
+                "gu" to listOf(item("\u59D1", 5_000, "g")),
+                "niang" to listOf(item("\u5A18", 4_000, "n")),
+                "daguniang" to listOf(item("\u5927\u59D1\u5A18", 148, "dgn")),
+                "}dagn|daguniang" to listOf(item("\u5927\u59D1\u5A18", 148, "dgn")),
+            ),
+        )
+
+        val candidates = mixed.decode("dagn", 16)
+        val hybrid = candidates.firstOrNull { it.text == "\u5927\u59D1\u5A18" }
+
+        assertEquals("\u5F53", candidates.firstOrNull()?.text)
+        assertEquals(CandidateMatchKind.CORRECTED, candidates.firstOrNull()?.matchKind)
+        assertEquals(CandidateMatchKind.BASE_HYBRID, hybrid?.matchKind)
+    }
+
+    @Test
+    fun aSmallPrebuiltHybridResultDoesNotMaskDynamicLowFrequencyRecall() {
+        val mixed = PinyinDecoder.fromBytes(
+            lexicon(
+                "hun" to listOf(item("\u6D51", 301, "h")),
+                "sheng" to listOf(item("\u751F", 12636, "s")),
+                "shen" to listOf(item("\u8EAB", 2172, "s")),
+                "shu" to listOf(item("\u6570", 11916, "s")),
+                "xian" to listOf(item("\u5148", 2573, "x")),
+                "xie" to listOf(item("\u89E3", 51, "x")),
+                "hunshenxiansheng" to listOf(item("\u6D51\u8EAB\u5148\u751F", 900, "hsxs")),
+                "hunshenxieshu" to listOf(item("\u6D51\u8EAB\u89E3\u6570", 95, "hsxs")),
+                "}hunshenxs|hunshenxiansheng" to
+                    listOf(item("\u6D51\u8EAB\u5148\u751F", 900, "hsxs")),
+            ),
+        )
+
+        val candidates = mixed.decode("hunshenxs", 16)
+
+        assertTrue(candidates.any { it.text == "\u6D51\u8EAB\u5148\u751F" })
+        assertTrue(candidates.any { it.text == "\u6D51\u8EAB\u89E3\u6570" })
+    }
+
+    @Test
     fun hybridAndInitialsSourcesCanCoexistWithoutEarlyReturn() {
         val values = decoder.decode("fun")
 
@@ -522,7 +587,7 @@ class PinyinDecoderTest {
     }
 
     @Test
-    fun productionDecoderRecoversARepeatedKeyAtTheEndOfTheLastSyllable() {
+    fun productionDecoderRecoversRareMixedInputAndARepeatedFinalKey() {
         val bigrams = repositoryFile("ime-service/src/main/assets/pinyin_bigrams.bin")
             .inputStream()
             .buffered()
@@ -537,6 +602,40 @@ class PinyinDecoderTest {
 
         assertEquals(CandidateMatchKind.CORRECTED, corrected?.matchKind)
         assertEquals("nihaoshijie", corrected?.canonicalPinyin)
+
+        val mixedCandidates = production.decode("hunshenxs", 255)
+        val mixed = mixedCandidates
+            .firstOrNull { it.text == "\u6D51\u8EAB\u89E3\u6570" }
+
+        assertEquals("\u6D51\u8EAB\u89E3\u6570", mixedCandidates.firstOrNull()?.text)
+        assertEquals(CandidateMatchKind.BASE_HYBRID, mixed?.matchKind)
+        assertEquals("hunshenxieshu", mixed?.canonicalPinyin)
+        assertEquals("hsxs", mixed?.canonicalInitials)
+
+        val shortTypo = production.decode("dagn", 10)
+        assertEquals("\u5F53", shortTypo.firstOrNull()?.text)
+
+        val artCollection = production.decode("yisscp", 255)
+            .firstOrNull { it.text == "\u827A\u672F\u6536\u85CF\u54C1" }
+        assertEquals("yishushoucangpin", artCollection?.canonicalPinyin)
+        assertEquals(CandidateMatchKind.BASE_HYBRID, artCollection?.matchKind)
+
+        val cityGovernment = production.decode("xiaszf", 255)
+            .firstOrNull { it.text == "\u897F\u5B89\u5E02\u653F\u5E9C" }
+        assertEquals("xianshizhengfu", cityGovernment?.canonicalPinyin)
+        assertEquals(CandidateMatchKind.BASE_HYBRID, cityGovernment?.matchKind)
+
+        val lunarNewYear = production.decode("dancs", 255)
+            .firstOrNull { it.text == "\u5927\u5E74\u521D\u4E09" }
+        assertEquals("danianchusan", lunarNewYear?.canonicalPinyin)
+        assertEquals(CandidateMatchKind.BASE_HYBRID, lunarNewYear?.matchKind)
+
+        val exactCollision = production.decode("gongjijin", 255)
+        assertEquals("\u516C\u79EF\u91D1", exactCollision.firstOrNull()?.text)
+        val attackSkill = exactCollision
+            .firstOrNull { it.text == "\u653B\u51FB\u6280\u80FD" }
+        assertEquals("gongjijineng", attackSkill?.canonicalPinyin)
+        assertEquals(CandidateMatchKind.BASE_HYBRID, attackSkill?.matchKind)
     }
 
     @Test

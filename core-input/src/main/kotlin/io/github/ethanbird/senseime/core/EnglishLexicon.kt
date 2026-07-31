@@ -22,7 +22,12 @@ class EnglishLexicon private constructor(
         if (query.isEmpty()) return emptyList()
 
         val exactIndex = findExact(query)
-        val matches = ArrayList<Int>(minOf(limit, MAX_PREFIX_MATCHES))
+        val prefixMatchBudget = if (query.length == 1) {
+            SINGLE_LETTER_PREFIX_MATCHES
+        } else {
+            MAX_PREFIX_MATCHES
+        }
+        val matches = ArrayList<Int>(minOf(limit, prefixMatchBudget))
         val bucket = if (query.length == 1) {
             firstLetterBuckets[query[0] - 'a']
         } else {
@@ -33,7 +38,7 @@ class EnglishLexicon private constructor(
         for (wordIndex in bucket) {
             if (words[wordIndex].startsWith(query)) {
                 matches += wordIndex
-                if (matches.size >= MAX_PREFIX_MATCHES) break
+                if (matches.size >= prefixMatchBudget) break
             }
         }
 
@@ -55,21 +60,25 @@ class EnglishLexicon private constructor(
         }
         matches.forEach(::add)
 
-        return ordered.mapIndexed { displayRank, index ->
+        val candidates = ordered.mapIndexed { displayRank, index ->
             val word = words[index]
+            val matchKind = if (word == query) {
+                CandidateMatchKind.ENGLISH_EXACT
+            } else {
+                CandidateMatchKind.ENGLISH_PREFIX
+            }
             Candidate(
                 text = word,
                 // The lexical/inflection policy above is part of recall
                 // evidence. Encode it in the shared score domain so the
                 // bilingual ranker does not silently restore source-file order.
-                score = ENGLISH_SCORE_BASE - ln(displayRank.toFloat() + 2f),
-                matchKind = if (word == query) {
-                    CandidateMatchKind.ENGLISH_EXACT
-                } else {
-                    CandidateMatchKind.ENGLISH_PREFIX
-                },
+                score = ENGLISH_SCORE_BASE -
+                    ln(displayRank.toFloat() + 2f) -
+                    shortQueryPenalty(query.length, matchKind),
+                matchKind = matchKind,
             )
         }
+        return EnglishSuggestionBatch(query, candidates)
     }
 
     private fun findExact(query: String): Int {
@@ -149,12 +158,51 @@ class EnglishLexicon private constructor(
             }
         }
 
+        private fun shortQueryPenalty(
+            queryLength: Int,
+            matchKind: CandidateMatchKind,
+        ): Float = when {
+            matchKind == CandidateMatchKind.ENGLISH_EXACT && queryLength == 1 ->
+                SINGLE_LETTER_EXACT_PENALTY
+
+            matchKind == CandidateMatchKind.ENGLISH_PREFIX && queryLength == 1 ->
+                SINGLE_LETTER_PREFIX_PENALTY
+
+            matchKind == CandidateMatchKind.ENGLISH_PREFIX && queryLength == 2 ->
+                TWO_LETTER_PREFIX_PENALTY
+
+            else -> 0f
+        }
+
         private const val ALPHABET_SIZE = 26
         private const val DEFAULT_MAXIMUM_WORDS = 20_000
         private const val MAX_PREFIX_MATCHES = 96
+        private const val SINGLE_LETTER_PREFIX_MATCHES = 32
         private const val MAX_WORD_LENGTH = 32
         private const val ENGLISH_SCORE_BASE = 18f
+        private const val SINGLE_LETTER_PREFIX_PENALTY = 2.4f
+        private const val SINGLE_LETTER_EXACT_PENALTY = 0.75f
+        private const val TWO_LETTER_PREFIX_PENALTY = 0.8f
         private val DEFERRED_INFLECTION_SUFFIXES = setOf("ed", "ing", "er", "ers", "ly")
         private val VALID_SINGLE_LETTER_WORDS = setOf("a", "i")
     }
+}
+
+/**
+ * Carries normalized query evidence across the existing List<Candidate> API.
+ *
+ * Keeping this metadata on the immutable batch avoids overloading Chinese
+ * canonical-pinyin fields on English candidates.
+ */
+internal class EnglishSuggestionBatch(
+    val query: String,
+    private val values: List<Candidate>,
+) : AbstractList<Candidate>() {
+    val queryLength: Int
+        get() = query.length
+
+    override val size: Int
+        get() = values.size
+
+    override fun get(index: Int): Candidate = values[index]
 }

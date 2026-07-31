@@ -183,27 +183,41 @@ class AdaptivePinyinDecoder(
         val wholeCandidates = contextCodePoint
             ?.let { decodeAfter(it, query, limit) }
             ?: decode(query, limit)
-        val wholePrefixRank = HashMap<Int, Int>()
+        val wholePrefixCodePoints = IntArray(wholeCandidates.size) { NO_CODE_POINT }
         wholeCandidates.forEachIndexed { index, candidate ->
-            if (candidate.text.isEmpty()) return@forEachIndexed
-            wholePrefixRank.putIfAbsent(candidate.text.codePointAt(0), index)
+            if (candidate.text.isNotEmpty()) {
+                wholePrefixCodePoints[index] = candidate.text.codePointAt(0)
+            }
         }
 
         val prefixLimit = minOf(limit, MAX_PROGRESSIVE_CANDIDATES)
-        val segmentablePrefixLengths = segmenter.selectablePrefixLengths(query).toSet()
-        val prefixLengths = LinkedHashSet<Int>()
-        prefixLengths.addAll(segmentablePrefixLengths)
-        if (!segmenter.isComplete(query)) {
-            for (length in 1..minOf(query.length - 1, MAX_FALLBACK_PREFIX_LENGTH)) {
-                prefixLengths += length
-            }
+        val segmentablePrefixLengths = segmenter.selectablePrefixLengths(query)
+        val fallbackPrefixLength = if (segmenter.isComplete(query)) {
+            0
+        } else {
+            minOf(query.length - 1, MAX_FALLBACK_PREFIX_LENGTH)
         }
+        val maximumPrefixLength = maxOf(
+            segmentablePrefixLengths.lastOrNull() ?: 0,
+            fallbackPrefixLength,
+        )
         val prefixGroups = ArrayList<List<RankedPrefixCandidate>>()
-        for (length in prefixLengths.sorted()) {
+        var segmentableIndex = 0
+        for (length in 1..maximumPrefixLength) {
             if (length >= query.length) continue
+            while (
+                segmentableIndex < segmentablePrefixLengths.size &&
+                segmentablePrefixLengths[segmentableIndex] < length
+            ) {
+                segmentableIndex += 1
+            }
+            val isSegmentable =
+                segmentableIndex < segmentablePrefixLengths.size &&
+                    segmentablePrefixLengths[segmentableIndex] == length
+            if (!isSegmentable && length > fallbackPrefixLength) continue
             val consumed = query.substring(0, length)
             val remaining = query.substring(length)
-            val maximumHanCharacters = if (length in segmentablePrefixLengths) {
+            val maximumHanCharacters = if (isSegmentable) {
                 1
             } else {
                 MAX_FALLBACK_PREFIX_HAN_CHARACTERS
@@ -222,7 +236,10 @@ class AdaptivePinyinDecoder(
                     group += RankedPrefixCandidate(
                         value = prefix,
                         identity = PrefixIdentity(consumed, candidate.text),
-                        wholeRank = wholePrefixRank[candidate.text.codePointAt(0)] ?: Int.MAX_VALUE,
+                        wholeRank = wholePrefixRank(
+                            wholePrefixCodePoints,
+                            candidate.text.codePointAt(0),
+                        ),
                         decodedRank = group.size,
                     )
                 }
@@ -241,6 +258,16 @@ class AdaptivePinyinDecoder(
             wholeCandidates = wholeCandidates,
             prefixCandidates = prefixes,
         )
+    }
+
+    private fun wholePrefixRank(
+        wholePrefixCodePoints: IntArray,
+        codePoint: Int,
+    ): Int {
+        for (index in wholePrefixCodePoints.indices) {
+            if (wholePrefixCodePoints[index] == codePoint) return index
+        }
+        return Int.MAX_VALUE
     }
 
     private data class PrefixIdentity(
@@ -393,5 +420,6 @@ class AdaptivePinyinDecoder(
         const val MAX_PROGRESSIVE_CANDIDATES = 255
         const val MAX_FALLBACK_PREFIX_LENGTH = 8
         const val MAX_FALLBACK_PREFIX_HAN_CHARACTERS = 4
+        const val NO_CODE_POINT = -1
     }
 }

@@ -5,15 +5,16 @@ Sense provides host and device baselines:
 - `./gradlew :core-input:m0HostBenchmark` writes the deterministic host reducer report to `benchmarks/results/m0-host.json`.
 - `./gradlew :core-input:m1PinyinBenchmark` loads the production lexicon, verifies representative Chinese candidates and writes lookup timing to `benchmarks/results/m1-pinyin.json`.
 - `./gradlew :core-input:m2AdaptiveBenchmark` verifies `w → 我`, exact/prefix isolation, candidate syllable boundaries, short and long-sentence one-edit correction, one-shot initials learning, and 10k-user-entry lookup performance in `benchmarks/results/m2-adaptive.json`.
-- `./gradlew :core-input:m3SentenceBenchmark` loads the production lexicon, `pinyin_bigrams.bin`, and the 120-case `benchmarks/replay/m3-sentences.tsv`; it reports Top-1/3/10, MRR, coverage, mode/frequency buckets, and p50/p95/p99 latency at candidate limits 10/64/255 in `benchmarks/results/m3-sentence.json`.
+- `./gradlew :core-input:m3SentenceBenchmark` loads the production lexicon, `pinyin_bigrams.bin`, and the 126-case `benchmarks/replay/m3-sentences.tsv`; it reports Top-1/3/10, MRR, coverage, mode/frequency buckets, and p50/p95/p99 latency at candidate limits 10/64/255 in `benchmarks/results/m3-sentence.json`.
 - `./gradlew :core-input:m4CoreBenchmark` gates production `w → 我` and `ygz → 一个字`, replays the progressive `pipei → 匹pei → 匹配` state transitions, and writes correctness, candidate coverage and latency results to `benchmarks/results/m4-core.json`.
+- `./gradlew :core-input:m5MixedInputBenchmark` gates Chinese-first one-letter input, reachable English candidates, automatic full-pinyin/initial segmentation, and bounded dynamic hybrid recall in `benchmarks/results/m5-mixed-input.json`.
 - `./gradlew :benchmark:connectedBenchmarkAndroidTest` measures cold and warm settings startup on an attached Android 10+ device.
 
 Device metrics must name the device, API level, refresh rate and build commit. Host numbers are useful for regression detection inside one environment, not for comparing different machines.
 
 ## 拼音质量回放
 
-`benchmarks/replay/m3-sentences.tsv` 是版本化的确定性回归集，不用于估算所有真实用户的总体输入质量。当前 120 条用例覆盖全拼、长句、姓名、口语、技术词、单处拼写错误、简拼和混拼八种模式，每种模式至少 8 条，同时包含头部、中频和长尾词频桶。
+`benchmarks/replay/m3-sentences.tsv` 是版本化的确定性回归集，不用于估算所有真实用户的总体输入质量。当前 126 条用例覆盖全拼、长句、姓名、口语、技术词、单处拼写错误、简拼和混拼八种模式，每种模式至少 8 条，同时包含头部、中频和长尾词频桶。
 
 TSV 支持旧版的两列格式，也支持以下六列格式；空的可选字段仍需保留制表符位置：
 
@@ -40,12 +41,14 @@ TSV 支持旧版的两列格式，也支持以下六列格式；空的可选字�
 
 | 指标 | 下限 |
 |---|---:|
-| Coverage@255 | 60% |
-| Top-10@255 | 50% |
-| Top-1@255 | 25% |
-| MRR@255 | 0.30 |
+| Coverage@255 | 93% |
+| Top-10@255 | 85% |
+| Top-1@255 | 70% |
+| MRR@255 | 0.75 |
 
 contextual 相对 baseline 最多允许损失 1 条 Coverage@255 和 2 条 Top-10@255。该小容差用于容纳上下文模型对少数无上下文固定预期的合理移动，同时仍会阻断大范围召回退化。
+
+混拼分桶额外包含 6 条 Frost base 权重 95–99 的长尾词，均低于预构建 hybrid 索引阈值 100，用于强制覆盖运行时有界音节图而非资产特例。`hunshenxs → 浑身解数` 必须 Top-1，其余 `kaiyuanxy`、`suanfafzd`、`yemianxs`、`wenjianxz`、`quanxiansz` 必须进入 Top-10。
 
 Host 延迟对非 `typo` 用例分别报告候选上限 10/64/255 的 p50、p95、p99；纠错用例单独在生产上限 255 下报告。生产门禁为：
 
@@ -55,6 +58,12 @@ Host 延迟对非 `typo` 用例分别报告候选上限 10/64/255 的 p50、p95�
 | 纠错质量回放，limit 255 | 40 ms | 70 ms |
 
 此外，contextual p95 不得超过同批 baseline p95 的 1.35 倍再加 0.5 ms。质量回放保留合成歧义词典，验证上下文分数确实能够改变全局句子路径，而非只验证模型文件成功加载。
+
+## M5 中英排序与动态混拼门禁
+
+M5 使用与应用相同的 `AdaptivePinyinDecoder` 回放单字母和中英混合输入。`w` 的前 4 项必须均为中文，limit 16 内中文候选数至少是英文的 3 倍，同时至少保留一个可选择的英文候选；完整英文 `host` 和 `fun` 仍按精确证据排序。
+
+动态混拼回放验证自动边界、规范全拼和候选类型三者一致。例如 `hunshenxs` 必须解释为 `hun'shen'x's`，召回规范全拼 `hunshenxieshu` 的 `BASE_HYBRID` 候选“浑身解数”。6 条长尾回放共享原 hybrid 路径的 5 ms p95 Host 预算，不增加新的宽松预算。
 
 ## v0.3.1-m4 阻断门禁
 

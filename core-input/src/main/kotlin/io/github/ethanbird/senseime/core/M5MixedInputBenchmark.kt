@@ -8,6 +8,35 @@ import kotlin.system.measureNanoTime
 
 /** Correctness and bounded-latency gate for bilingual and hybrid-pinyin input. */
 object M5MixedInputBenchmark {
+    private data class DynamicMixedCase(
+        val query: String,
+        val expected: String,
+        val canonicalPinyin: String,
+        val formattedSegmentation: String,
+        val maximumRank: Int,
+    )
+
+    private data class DynamicMixedObservation(
+        val item: DynamicMixedCase,
+        val rank: Int,
+        val matchKind: CandidateMatchKind,
+    )
+
+    private data class DynamicMixedLatency(
+        val query: String,
+        val p95Ns: Double,
+        val maxNs: Long,
+    )
+
+    private data class SingleLetterObservation(
+        val letter: Char,
+        val hasPinyinEvidence: Boolean,
+        val firstChineseRank: Int?,
+        val chineseCandidates: Int,
+        val englishCandidates: Int,
+        val firstEnglishRank: Int?,
+    )
+
     @JvmStatic
     fun main(args: Array<String>) {
         require(args.size == 5) {
@@ -24,17 +53,81 @@ object M5MixedInputBenchmark {
         val base = lexiconFile.inputStream().buffered().use { PinyinDecoder.load(it, bigrams) }
         val english = englishFile.inputStream().buffered().use { EnglishLexicon.load(it) }
         val userLexicon = MemoryUserLexicon()
+        val segmenter = PinyinSyllableSegmenter(syllablesFile.readLines())
         val adaptive = AdaptivePinyinDecoder(
             base,
             userLexicon,
-            PinyinSyllableSegmenter(syllablesFile.readLines()),
+            segmenter,
             english,
         )
-        check(adaptive.decode("w", 16).firstOrNull()?.text == "我") {
+        val wCandidates = adaptive.decode("w", SINGLE_LETTER_REPLAY_LIMIT)
+        check(wCandidates.firstOrNull()?.text == "我") {
             "English prefix suggestions must not displace w -> 我"
+        }
+        check(
+            wCandidates.take(SINGLE_LETTER_CHINESE_HEAD).all {
+                it.matchKind !in ENGLISH_MATCH_KINDS
+            },
+        ) {
+            "A one-letter pinyin initial must keep a Chinese candidate head: ${wCandidates.take(12)}"
+        }
+        val wChineseCount = wCandidates.count { it.matchKind !in ENGLISH_MATCH_KINDS }
+        val wEnglishCount = wCandidates.size - wChineseCount
+        val wFirstEnglishRank =
+            wCandidates.indexOfFirst { it.matchKind in ENGLISH_MATCH_KINDS }
+                .takeIf { it >= 0 }
+                ?.plus(1)
+        check(
+            wChineseCount >= wEnglishCount * SINGLE_LETTER_CHINESE_DOMINANCE_RATIO &&
+                wFirstEnglishRank != null,
+        ) {
+            "w must be Chinese-dominant while preserving reachable English candidates: $wCandidates"
         }
         check(adaptive.decode("z", 16).firstOrNull()?.text == "在") {
             "Corpus-noise English entries must not displace z -> 在"
+        }
+        val singleLetterObservations = ('a'..'z').map { letter ->
+            val candidates = adaptive.decode(letter.toString(), SINGLE_LETTER_REPLAY_LIMIT)
+            val hasPinyinEvidence =
+                segmenter.syllablesStartingWith(letter.toString()).isNotEmpty()
+            val firstChineseRank = candidates
+                .indexOfFirst { it.matchKind !in ENGLISH_MATCH_KINDS }
+                .takeIf { it >= 0 }
+                ?.plus(1)
+            val englishCandidates = candidates.count { it.matchKind in ENGLISH_MATCH_KINDS }
+            val chineseCandidates = candidates.size - englishCandidates
+            val firstEnglishRank = candidates
+                .indexOfFirst { it.matchKind in ENGLISH_MATCH_KINDS }
+                .takeIf { it >= 0 }
+                ?.plus(1)
+            if (hasPinyinEvidence) {
+                val englishBudget = if (
+                    candidates.any { it.matchKind == CandidateMatchKind.ENGLISH_EXACT }
+                ) {
+                    STRONG_PINYIN_ENGLISH_EXACT_BUDGET
+                } else {
+                    STRONG_PINYIN_ENGLISH_PREFIX_BUDGET
+                }
+                check(firstChineseRank == 1) {
+                    "Valid pinyin initial $letter must keep a Chinese Top-1: $candidates"
+                }
+                check(englishCandidates <= englishBudget) {
+                    "Valid pinyin initial $letter exceeded its English doorway budget: $candidates"
+                }
+            }
+            if (letter == 'i' || letter == 'u') {
+                check(!hasPinyinEvidence && englishCandidates > 0) {
+                    "$letter should retain its Latin doorway without synthetic pinyin evidence"
+                }
+            }
+            SingleLetterObservation(
+                letter = letter,
+                hasPinyinEvidence = hasPinyinEvidence,
+                firstChineseRank = firstChineseRank,
+                chineseCandidates = chineseCandidates,
+                englishCandidates = englishCandidates,
+                firstEnglishRank = firstEnglishRank,
+            )
         }
         check(
             adaptive.decode("hang", 16)
@@ -130,11 +223,41 @@ object M5MixedInputBenchmark {
         check(adaptive.decode("zhongwensrf", 16).firstOrNull()?.text == "中文输入法") {
             "zhongwensrf hybrid regression"
         }
+        val dynamicMixedObservations = DYNAMIC_MIXED_CASES.map { item ->
+            val candidates = adaptive.decode(item.query, DYNAMIC_MIXED_CANDIDATE_LIMIT)
+            val index = candidates.indexOfFirst { candidate ->
+                candidate.text == item.expected &&
+                    candidate.canonicalPinyin == item.canonicalPinyin
+            }
+            check(index >= 0 && index + 1 <= item.maximumRank) {
+                "Dynamic mixed-pinyin recall regression for ${item.query}: ${candidates.take(16)}"
+            }
+            val matched = candidates[index]
+            check(matched.matchKind == CandidateMatchKind.BASE_HYBRID) {
+                "Dynamic mixed-pinyin evidence must remain typed as BASE_HYBRID: $matched"
+            }
+            val segmented = segmenter.segmentMixed(
+                item.query,
+                matched.canonicalPinyin,
+                matched.canonicalInitials,
+            )
+            check(segmented?.formatted == item.formattedSegmentation) {
+                "Candidate-aligned mixed segmentation drift for ${item.query}: $segmented"
+            }
+            DynamicMixedObservation(
+                item = item,
+                rank = index + 1,
+                matchKind = matched.matchKind,
+            )
+        }
 
         repeat(WARMUP_COUNT) {
             english.suggest("host", 16)
             adaptive.decodeProgressively(hostComposition, 32)
             adaptive.decode("zhongwsrf", 16)
+            DYNAMIC_MIXED_CASES.forEach { item ->
+                adaptive.decode(item.query, DYNAMIC_MIXED_CANDIDATE_LIMIT)
+            }
         }
         val englishSamples = LongArray(SAMPLE_COUNT) {
             measureNanoTime {
@@ -153,21 +276,50 @@ object M5MixedInputBenchmark {
                 repeat(HYBRID_LOOKUPS) { check(adaptive.decode("zhongwsrf", 16).first().text == "中文输入法") }
             }
         }
+        val dynamicMixedLatencies = DYNAMIC_MIXED_CASES.map { item ->
+            val samples = LongArray(DYNAMIC_MIXED_SAMPLES_PER_QUERY) {
+                measureNanoTime {
+                    check(
+                        adaptive.decode(item.query, DYNAMIC_MIXED_CANDIDATE_LIMIT)
+                            .any { it.text == item.expected },
+                    )
+                }
+            }
+            DynamicMixedLatency(
+                query = item.query,
+                p95Ns = percentile(samples, 0.95),
+                maxNs = samples.max(),
+            )
+        }
         val englishP95 = perLookup(englishSamples, ENGLISH_LOOKUPS)
         val hostP95 = perLookup(hostSamples, MIXED_LOOKUPS)
         val hybridP95 = perLookup(hybridSamples, HYBRID_LOOKUPS)
+        val dynamicMixedP95 = dynamicMixedLatencies.maxOf(DynamicMixedLatency::p95Ns)
+        val dynamicMixedMax = dynamicMixedLatencies.maxOf(DynamicMixedLatency::maxNs)
         check(englishP95 <= ENGLISH_P95_GATE_NS) { "English lookup p95 regression: $englishP95 ns" }
         check(hostP95 <= MIXED_P95_GATE_NS) { "host mixed decode p95 regression: $hostP95 ns" }
         check(hybridP95 <= HYBRID_P95_GATE_NS) { "hybrid decode p95 regression: $hybridP95 ns" }
+        dynamicMixedLatencies.forEach { latency ->
+            check(latency.p95Ns <= DYNAMIC_MIXED_P95_GATE_NS) {
+                "dynamic mixed decode p95 regression for ${latency.query}: ${latency.p95Ns} ns"
+            }
+        }
 
         report.writeText(
             """
             {
-              "schemaVersion": 2,
+              "schemaVersion": 4,
               "stage": "M5-mixed-input",
               "generatedAt": "${Instant.now()}",
               "correctness": {
                 "w": "我",
+                "wChineseHead": ${jsonStringArray(
+                    wCandidates.take(SINGLE_LETTER_CHINESE_HEAD).map { it.text },
+                )},
+                "wChineseCandidates": $wChineseCount,
+                "wEnglishCandidates": $wEnglishCount,
+                "wFirstEnglishRank": $wFirstEnglishRank,
+                "singleLetters": ${singleLetterJson(singleLetterObservations)},
                 "z": "在",
                 "hangFirstChineseSource": "BASE_EXACT",
                 "host": ["host", "hosts", "hostile", "${jsonString(hostPrefix.candidate.text)}|st"],
@@ -175,7 +327,8 @@ object M5MixedInputBenchmark {
                 "funFrostHybrid": ${jsonStringArray(frostFunCandidates.map { it.text })},
                 "funLearnedAlias": "fun",
                 "zhongwsrf": "中文输入法",
-                "zhongwensrf": "中文输入法"
+                "zhongwensrf": "中文输入法",
+                "dynamicMixed": ${dynamicMixedJson(dynamicMixedObservations)}
               },
               "englishLexicon": {
                 "words": ${englishFile.useLines { lines -> lines.count { it.isNotBlank() && !it.startsWith("#") } }},
@@ -191,6 +344,14 @@ object M5MixedInputBenchmark {
               "hybridDecode": {
                 "p95Ns": ${format(hybridP95)},
                 "gateNs": ${format(HYBRID_P95_GATE_NS)}
+              },
+              "dynamicMixedDecode": {
+                "cases": ${DYNAMIC_MIXED_CASES.size},
+                "candidateLimit": $DYNAMIC_MIXED_CANDIDATE_LIMIT,
+                "p95Ns": ${format(dynamicMixedP95)},
+                "maxNs": $dynamicMixedMax,
+                "gateNs": ${format(DYNAMIC_MIXED_P95_GATE_NS)},
+                "byQuery": ${dynamicMixedLatencyJson(dynamicMixedLatencies)}
               }
             }
             """.trimIndent() + "\n",
@@ -199,9 +360,13 @@ object M5MixedInputBenchmark {
     }
 
     private fun perLookup(samples: LongArray, lookups: Int): Double {
+        return percentile(samples, 0.95) / lookups
+    }
+
+    private fun percentile(samples: LongArray, percentile: Double): Double {
         val sorted = samples.sorted()
-        val index = (ceil(0.95 * sorted.size).toInt() - 1).coerceIn(0, sorted.lastIndex)
-        return sorted[index].toDouble() / lookups
+        val index = (ceil(percentile * sorted.size).toInt() - 1).coerceIn(0, sorted.lastIndex)
+        return sorted[index].toDouble()
     }
 
     private fun sha256(file: File): String {
@@ -221,6 +386,22 @@ object M5MixedInputBenchmark {
 
     private fun jsonStringArray(values: List<String>): String =
         values.joinToString(prefix = "[", postfix = "]") { "\"${jsonString(it)}\"" }
+
+    private fun dynamicMixedJson(values: List<DynamicMixedObservation>): String =
+        values.joinToString(prefix = "[", postfix = "]") { observation ->
+            val item = observation.item
+            """{"query":"${jsonString(item.query)}","expected":"${jsonString(item.expected)}","segmentation":"${jsonString(item.formattedSegmentation)}","canonicalPinyin":"${jsonString(item.canonicalPinyin)}","rank":${observation.rank},"maximumRank":${item.maximumRank},"matchKind":"${observation.matchKind.name}"}"""
+        }
+
+    private fun dynamicMixedLatencyJson(values: List<DynamicMixedLatency>): String =
+        values.joinToString(prefix = "[", postfix = "]") { latency ->
+            """{"query":"${jsonString(latency.query)}","p95Ns":${format(latency.p95Ns)},"maxNs":${latency.maxNs}}"""
+        }
+
+    private fun singleLetterJson(values: List<SingleLetterObservation>): String =
+        values.joinToString(prefix = "[", postfix = "]") { observation ->
+            """{"letter":"${observation.letter}","hasPinyinEvidence":${observation.hasPinyinEvidence},"firstChineseRank":${observation.firstChineseRank ?: "null"},"chineseCandidates":${observation.chineseCandidates},"englishCandidates":${observation.englishCandidates},"firstEnglishRank":${observation.firstEnglishRank ?: "null"}}"""
+        }
 
     private fun jsonString(value: String): String = buildString(value.length) {
         value.forEach { character ->
@@ -246,13 +427,93 @@ object M5MixedInputBenchmark {
     private const val ENGLISH_LOOKUPS = 5_000
     private const val MIXED_LOOKUPS = 200
     private const val HYBRID_LOOKUPS = 1_000
+    private const val DYNAMIC_MIXED_SAMPLES_PER_QUERY = 50
     private const val ENGLISH_P95_GATE_NS = 500_000.0
     private const val MIXED_P95_GATE_NS = 5_000_000.0
     private const val HYBRID_P95_GATE_NS = 5_000_000.0
+    private const val DYNAMIC_MIXED_P95_GATE_NS = 5_000_000.0
+    private const val SINGLE_LETTER_REPLAY_LIMIT = 16
+    private const val SINGLE_LETTER_CHINESE_HEAD = 4
+    private const val SINGLE_LETTER_CHINESE_DOMINANCE_RATIO = 3
+    private const val STRONG_PINYIN_ENGLISH_PREFIX_BUDGET = 2
+    private const val STRONG_PINYIN_ENGLISH_EXACT_BUDGET = 3
+    private const val DYNAMIC_MIXED_CANDIDATE_LIMIT = 255
     private val ENGLISH_MATCH_KINDS = setOf(
         CandidateMatchKind.ENGLISH_EXACT,
         CandidateMatchKind.ENGLISH_PREFIX,
     )
     private val FROST_FUN_TEXTS = linkedSetOf("妇女", "父女", "腐女", "赋能")
     private val FROST_FUN_CANONICAL_CODES = setOf("funv", "funeng")
+    private val DYNAMIC_MIXED_CASES = listOf(
+        DynamicMixedCase(
+            query = "hunshenxs",
+            expected = "浑身解数",
+            canonicalPinyin = "hunshenxieshu",
+            formattedSegmentation = "hun'shen'x's",
+            maximumRank = 1,
+        ),
+        DynamicMixedCase(
+            query = "kaiyuanxy",
+            expected = "开源协议",
+            canonicalPinyin = "kaiyuanxieyi",
+            formattedSegmentation = "kai'yuan'x'y",
+            maximumRank = 10,
+        ),
+        DynamicMixedCase(
+            query = "suanfafzd",
+            expected = "算法复杂度",
+            canonicalPinyin = "suanfafuzadu",
+            formattedSegmentation = "suan'fa'f'z'd",
+            maximumRank = 10,
+        ),
+        DynamicMixedCase(
+            query = "yemianxs",
+            expected = "页面显示",
+            canonicalPinyin = "yemianxianshi",
+            formattedSegmentation = "ye'mian'x's",
+            maximumRank = 10,
+        ),
+        DynamicMixedCase(
+            query = "wenjianxz",
+            expected = "文件下载",
+            canonicalPinyin = "wenjianxiazai",
+            formattedSegmentation = "wen'jian'x'z",
+            maximumRank = 10,
+        ),
+        DynamicMixedCase(
+            query = "quanxiansz",
+            expected = "权限设置",
+            canonicalPinyin = "quanxianshezhi",
+            formattedSegmentation = "quan'xian's'z",
+            maximumRank = 10,
+        ),
+        DynamicMixedCase(
+            query = "yisscp",
+            expected = "\u827A\u672F\u6536\u85CF\u54C1",
+            canonicalPinyin = "yishushoucangpin",
+            formattedSegmentation = "yi's's'c'p",
+            maximumRank = 64,
+        ),
+        DynamicMixedCase(
+            query = "xiaszf",
+            expected = "\u897F\u5B89\u5E02\u653F\u5E9C",
+            canonicalPinyin = "xianshizhengfu",
+            formattedSegmentation = "xi'a's'z'f",
+            maximumRank = 64,
+        ),
+        DynamicMixedCase(
+            query = "dancs",
+            expected = "\u5927\u5E74\u521D\u4E09",
+            canonicalPinyin = "danianchusan",
+            formattedSegmentation = "da'n'c's",
+            maximumRank = 64,
+        ),
+        DynamicMixedCase(
+            query = "gongjijin",
+            expected = "\u653B\u51FB\u6280\u80FD",
+            canonicalPinyin = "gongjijineng",
+            formattedSegmentation = "gong'ji'ji'n",
+            maximumRank = 255,
+        ),
+    )
 }

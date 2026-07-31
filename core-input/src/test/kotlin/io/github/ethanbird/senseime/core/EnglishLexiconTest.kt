@@ -62,6 +62,95 @@ class EnglishLexiconTest {
     }
 
     @Test
+    fun oneLetterPinyinKeepsAChineseHeadAndOnlyTwoEnglishEntrances() {
+        val chinese = listOf(
+            Candidate("我", score = 13.4f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "w"),
+            Candidate("为", score = 12.8f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "w"),
+            Candidate("问", score = 12.4f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "w"),
+            Candidate("无", score = 12.0f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "w"),
+            Candidate("五", score = 11.6f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "w"),
+            Candidate("完", score = 11.2f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "w"),
+        )
+        val english = EnglishLexicon.fromWords(
+            listOf("was", "with", "were", "will", "would", "when", "where", "who"),
+        ).suggest("w", 32)
+
+        val merged = MixedCandidateRanker.merge(chinese, english, 8)
+
+        assertEquals(listOf("我", "为", "问", "无"), merged.take(4).map { it.text })
+        assertEquals(
+            listOf("was", "with"),
+            merged.filter { it.matchKind == CandidateMatchKind.ENGLISH_PREFIX }.map { it.text },
+        )
+    }
+
+    @Test
+    fun lowFrequencyValidInitialActivatesChineseModeWithoutAScoreThreshold() {
+        val chinese = listOf(
+            Candidate(
+                "\u6015",
+                score = 6f,
+                matchKind = CandidateMatchKind.BASE_PREFIX,
+                canonicalInitials = "p",
+            ),
+        )
+        val english = EnglishLexicon.fromWords(
+            listOf("people", "please", "public", "problem", "place", "point"),
+        ).suggest("p", 16)
+
+        val merged = MixedCandidateRanker.merge(chinese, english, 16)
+
+        assertEquals("\u6015", merged.first().text)
+        assertEquals(
+            2,
+            merged.count { it.matchKind == CandidateMatchKind.ENGLISH_PREFIX },
+        )
+    }
+
+    @Test
+    fun oneConcretePinyinCandidateActivatesTheChineseInitialMode() {
+        val shallowChinese = listOf(
+            Candidate("我", score = 13.4f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "w"),
+        )
+        val english = EnglishLexicon.fromWords(
+            listOf("was", "with", "were", "will", "would", "when"),
+        ).suggest("w", 32)
+
+        val merged = MixedCandidateRanker.merge(shallowChinese, english, 7)
+
+        assertEquals(shallowChinese.single().text, merged.first().text)
+        assertEquals(
+            listOf("was", "with"),
+            merged.filter { it.matchKind == CandidateMatchKind.ENGLISH_PREFIX }.map { it.text },
+        )
+    }
+
+    @Test
+    fun exactOneLetterEnglishKeepsOneMoreEntranceThanBroadPrefixes() {
+        val chinese = listOf(
+            Candidate("啊", score = 13.6f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "a"),
+            Candidate("阿", score = 13.0f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "a"),
+            Candidate("爱", score = 12.6f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "a"),
+            Candidate("安", score = 12.2f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "a"),
+        )
+        val english = EnglishLexicon.fromWords(
+            listOf("a", "about", "after", "again", "all", "also"),
+        ).suggest("a", 32)
+
+        val merged = MixedCandidateRanker.merge(chinese, english, 10)
+
+        assertEquals(
+            listOf("a", "about", "after"),
+            merged
+                .filter {
+                    it.matchKind == CandidateMatchKind.ENGLISH_EXACT ||
+                        it.matchKind == CandidateMatchKind.ENGLISH_PREFIX
+                }
+                .map { it.text },
+        )
+    }
+
+    @Test
     fun corpusNoiseSingleLetterDoesNotDisplaceInitialPinyin() {
         val chinese = listOf(
             Candidate("在", score = 13.52f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "z"),
@@ -113,6 +202,19 @@ class EnglishLexiconTest {
 
         assertEquals("host", values.first().text)
         assertTrue(values.size <= 96)
+    }
+
+    @Test
+    fun oneLetterEnglishRecallUsesASmallerBroadPrefixBudget() {
+        val broadLexicon = EnglishLexicon.fromWords(
+            (0 until 100).map { index ->
+                "w${'a' + index / 26}${'a' + index % 26}"
+            },
+        )
+
+        val values = broadLexicon.suggest("w", Int.MAX_VALUE)
+
+        assertEquals(32, values.size)
     }
 
     @Test

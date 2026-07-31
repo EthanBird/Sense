@@ -1,21 +1,21 @@
     {
-      "schemaVersion": 2,
+      "schemaVersion": 3,
       "stage": "quality-replay",
-      "generatedAt": "2026-07-30T14:47:08.556388200Z",
+      "generatedAt": "2026-07-31T02:30:47.015502700Z",
       "assets": {
         "lexiconBytes": 35069585,
         "lexiconSha256": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
         "bigramRecords": 65536,
         "bigramBytes": 786442,
         "bigramSha256": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
-        "bigramLoadMs": 35.051
+        "bigramLoadMs": 23.118
       },
       "corpus": {
-        "cases": 120,
+        "cases": 126,
         "contextCases": 4,
         "aliasCases": 2,
-        "modeCounts": {"full":20,"sentence":20,"name":15,"colloquial":15,"technical":15,"typo":12,"initials":12,"hybrid":11},
-        "frequencyBucketCounts": {"head":74,"mid":41,"tail":5,"unknown":0}
+        "modeCounts": {"full":20,"sentence":20,"name":15,"colloquial":15,"technical":15,"typo":12,"initials":12,"hybrid":17},
+        "frequencyBucketCounts": {"head":74,"mid":41,"tail":11,"unknown":0}
       },
       "syntheticContextGate": {
         "query": "woshiren",
@@ -28,16 +28,16 @@
         "productionCandidateLimit": 255,
         "candidateLimits": [10, 64, 255],
         "byLimit": {
-"10": {"baseline":{"cases":120,"top1":85,"top3":94,"top10":107,"covered":107,"top1Rate":0.7083,"top3Rate":0.7833,"top10Rate":0.8917,"coverageRate":0.8917,"mrr":0.7639},"contextual":{"cases":120,"top1":92,"top3":100,"top10":109,"covered":109,"top1Rate":0.7667,"top3Rate":0.8333,"top10Rate":0.9083,"coverageRate":0.9083,"mrr":0.8122}},
-"64": {"baseline":{"cases":120,"top1":85,"top3":94,"top10":107,"covered":109,"top1Rate":0.7083,"top3Rate":0.7833,"top10Rate":0.8917,"coverageRate":0.9083,"mrr":0.7645},"contextual":{"cases":120,"top1":92,"top3":100,"top10":109,"covered":112,"top1Rate":0.7667,"top3Rate":0.8333,"top10Rate":0.9083,"coverageRate":0.9333,"mrr":0.8134}},
-"255": {"baseline":{"cases":120,"top1":85,"top3":94,"top10":107,"covered":115,"top1Rate":0.7083,"top3Rate":0.7833,"top10Rate":0.8917,"coverageRate":0.9583,"mrr":0.7650},"contextual":{"cases":120,"top1":92,"top3":100,"top10":109,"covered":118,"top1Rate":0.7667,"top3Rate":0.8333,"top10Rate":0.9083,"coverageRate":0.9833,"mrr":0.8140}}
+"10": {"baseline":{"cases":126,"top1":92,"top3":101,"top10":113,"covered":113,"top1Rate":0.7302,"top3Rate":0.8016,"top10Rate":0.8968,"coverageRate":0.8968,"mrr":0.7820},"contextual":{"cases":126,"top1":99,"top3":107,"top10":115,"covered":115,"top1Rate":0.7857,"top3Rate":0.8492,"top10Rate":0.9127,"coverageRate":0.9127,"mrr":0.8280}},
+"64": {"baseline":{"cases":126,"top1":92,"top3":101,"top10":113,"covered":115,"top1Rate":0.7302,"top3Rate":0.8016,"top10Rate":0.8968,"coverageRate":0.9127,"mrr":0.7825},"contextual":{"cases":126,"top1":99,"top3":107,"top10":115,"covered":118,"top1Rate":0.7857,"top3Rate":0.8492,"top10Rate":0.9127,"coverageRate":0.9365,"mrr":0.8291}},
+"255": {"baseline":{"cases":126,"top1":92,"top3":101,"top10":113,"covered":121,"top1Rate":0.7302,"top3Rate":0.8016,"top10Rate":0.8968,"coverageRate":0.9603,"mrr":0.7830},"contextual":{"cases":126,"top1":99,"top3":107,"top10":115,"covered":124,"top1Rate":0.7857,"top3Rate":0.8492,"top10Rate":0.9127,"coverageRate":0.9841,"mrr":0.8296}}
         },
-        "byModeAtProductionLimit": {"colloquial":{"baseline":{"cases":15,"top1":13,"top3":13,"top10":14,"covered":14,"top1Rate":0.8667,"top3Rate":0.8667,"top10Rate":0.9333,"coverageRate":0.9333,"mrr":0.8833},"contextual":{"cases":15,"top1":12,"top3":14,"top10":14,"covered":14,"top1Rate":0.8000,"top3Rate":0.9333,"top10Rate":0.9333,"coverageRate":0.9333,"mrr":0.8667}},"full":{"baseline":{"cases":20,"top1":20,"top3":20,"top10":20,"covered":20,"top1Rate":1.0000,"top3Rate":1.0000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":1.0000},"contextual":{"cases":20,"top1":20,"top3":20,"top10":20,"covered":20,"top1Rate":1.0000,"top3Rate":1.0000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":1.0000}},"hybrid":{"baseline":{"cases":11,"top1":10,"top3":10,"top10":11,"covered":11,"top1Rate":0.9091,"top3Rate":0.9091,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":0.9221},"contextual":{"cases":11,"top1":10,"top3":10,"top10":11,"covered":11,"top1Rate":0.9091,"top3Rate":0.9091,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":0.9221}},"initials":{"baseline":{"cases":12,"top1":4,"top3":6,"top10":12,"covered":12,"top1Rate":0.3333,"top3Rate":0.5000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":0.5036},"contextual":{"cases":12,"top1":4,"top3":6,"top10":12,"covered":12,"top1Rate":0.3333,"top3Rate":0.5000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":0.5036}},"name":{"baseline":{"cases":15,"top1":14,"top3":15,"top10":15,"covered":15,"top1Rate":0.9333,"top3Rate":1.0000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":0.9667},"contextual":{"cases":15,"top1":14,"top3":15,"top10":15,"covered":15,"top1Rate":0.9333,"top3Rate":1.0000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":0.9667}},"sentence":{"baseline":{"cases":20,"top1":6,"top3":12,"top10":15,"covered":16,"top1Rate":0.3000,"top3Rate":0.6000,"top10Rate":0.7500,"coverageRate":0.8000,"mrr":0.4696},"contextual":{"cases":20,"top1":14,"top3":17,"top10":18,"covered":19,"top1Rate":0.7000,"top3Rate":0.8500,"top10Rate":0.9000,"coverageRate":0.9500,"mrr":0.7806}},"technical":{"baseline":{"cases":15,"top1":13,"top3":13,"top10":15,"covered":15,"top1Rate":0.8667,"top3Rate":0.8667,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":0.8911},"contextual":{"cases":15,"top1":13,"top3":13,"top10":14,"covered":15,"top1Rate":0.8667,"top3Rate":0.8667,"top10Rate":0.9333,"coverageRate":1.0000,"mrr":0.8844}},"typo":{"baseline":{"cases":12,"top1":5,"top3":5,"top10":5,"covered":12,"top1Rate":0.4167,"top3Rate":0.4167,"top10Rate":0.4167,"coverageRate":1.0000,"mrr":0.4258},"contextual":{"cases":12,"top1":5,"top3":5,"top10":5,"covered":12,"top1Rate":0.4167,"top3Rate":0.4167,"top10Rate":0.4167,"coverageRate":1.0000,"mrr":0.4261}}},
-        "byFrequencyBucketAtProductionLimit": {"head":{"baseline":{"cases":74,"top1":51,"top3":58,"top10":66,"covered":72,"top1Rate":0.6892,"top3Rate":0.7838,"top10Rate":0.8919,"coverageRate":0.9730,"mrr":0.7555},"contextual":{"cases":74,"top1":56,"top3":62,"top10":69,"covered":74,"top1Rate":0.7568,"top3Rate":0.8378,"top10Rate":0.9324,"coverageRate":1.0000,"mrr":0.8156}},"mid":{"baseline":{"cases":41,"top1":31,"top3":33,"top10":36,"covered":38,"top1Rate":0.7561,"top3Rate":0.8049,"top10Rate":0.8780,"coverageRate":0.9268,"mrr":0.7935},"contextual":{"cases":41,"top1":33,"top3":35,"top10":36,"covered":39,"top1Rate":0.8049,"top3Rate":0.8537,"top10Rate":0.8780,"coverageRate":0.9512,"mrr":0.8307}},"tail":{"baseline":{"cases":5,"top1":3,"top3":3,"top10":5,"covered":5,"top1Rate":0.6000,"top3Rate":0.6000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":0.6733},"contextual":{"cases":5,"top1":3,"top3":3,"top10":4,"covered":5,"top1Rate":0.6000,"top3Rate":0.6000,"top10Rate":0.8000,"coverageRate":1.0000,"mrr":0.6533}}},
+        "byModeAtProductionLimit": {"colloquial":{"baseline":{"cases":15,"top1":13,"top3":13,"top10":14,"covered":14,"top1Rate":0.8667,"top3Rate":0.8667,"top10Rate":0.9333,"coverageRate":0.9333,"mrr":0.8833},"contextual":{"cases":15,"top1":12,"top3":14,"top10":14,"covered":14,"top1Rate":0.8000,"top3Rate":0.9333,"top10Rate":0.9333,"coverageRate":0.9333,"mrr":0.8667}},"full":{"baseline":{"cases":20,"top1":20,"top3":20,"top10":20,"covered":20,"top1Rate":1.0000,"top3Rate":1.0000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":1.0000},"contextual":{"cases":20,"top1":20,"top3":20,"top10":20,"covered":20,"top1Rate":1.0000,"top3Rate":1.0000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":1.0000}},"hybrid":{"baseline":{"cases":17,"top1":17,"top3":17,"top10":17,"covered":17,"top1Rate":1.0000,"top3Rate":1.0000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":1.0000},"contextual":{"cases":17,"top1":17,"top3":17,"top10":17,"covered":17,"top1Rate":1.0000,"top3Rate":1.0000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":1.0000}},"initials":{"baseline":{"cases":12,"top1":4,"top3":6,"top10":12,"covered":12,"top1Rate":0.3333,"top3Rate":0.5000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":0.5036},"contextual":{"cases":12,"top1":4,"top3":6,"top10":12,"covered":12,"top1Rate":0.3333,"top3Rate":0.5000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":0.5036}},"name":{"baseline":{"cases":15,"top1":14,"top3":15,"top10":15,"covered":15,"top1Rate":0.9333,"top3Rate":1.0000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":0.9667},"contextual":{"cases":15,"top1":14,"top3":15,"top10":15,"covered":15,"top1Rate":0.9333,"top3Rate":1.0000,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":0.9667}},"sentence":{"baseline":{"cases":20,"top1":6,"top3":12,"top10":15,"covered":16,"top1Rate":0.3000,"top3Rate":0.6000,"top10Rate":0.7500,"coverageRate":0.8000,"mrr":0.4696},"contextual":{"cases":20,"top1":14,"top3":17,"top10":18,"covered":19,"top1Rate":0.7000,"top3Rate":0.8500,"top10Rate":0.9000,"coverageRate":0.9500,"mrr":0.7806}},"technical":{"baseline":{"cases":15,"top1":13,"top3":13,"top10":15,"covered":15,"top1Rate":0.8667,"top3Rate":0.8667,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":0.8911},"contextual":{"cases":15,"top1":13,"top3":13,"top10":14,"covered":15,"top1Rate":0.8667,"top3Rate":0.8667,"top10Rate":0.9333,"coverageRate":1.0000,"mrr":0.8844}},"typo":{"baseline":{"cases":12,"top1":5,"top3":5,"top10":5,"covered":12,"top1Rate":0.4167,"top3Rate":0.4167,"top10Rate":0.4167,"coverageRate":1.0000,"mrr":0.4258},"contextual":{"cases":12,"top1":5,"top3":5,"top10":5,"covered":12,"top1Rate":0.4167,"top3Rate":0.4167,"top10Rate":0.4167,"coverageRate":1.0000,"mrr":0.4261}}},
+        "byFrequencyBucketAtProductionLimit": {"head":{"baseline":{"cases":74,"top1":51,"top3":58,"top10":66,"covered":72,"top1Rate":0.6892,"top3Rate":0.7838,"top10Rate":0.8919,"coverageRate":0.9730,"mrr":0.7555},"contextual":{"cases":74,"top1":56,"top3":62,"top10":69,"covered":74,"top1Rate":0.7568,"top3Rate":0.8378,"top10Rate":0.9324,"coverageRate":1.0000,"mrr":0.8156}},"mid":{"baseline":{"cases":41,"top1":32,"top3":34,"top10":36,"covered":38,"top1Rate":0.7805,"top3Rate":0.8293,"top10Rate":0.8780,"coverageRate":0.9268,"mrr":0.8144},"contextual":{"cases":41,"top1":34,"top3":36,"top10":36,"covered":39,"top1Rate":0.8293,"top3Rate":0.8780,"top10Rate":0.8780,"coverageRate":0.9512,"mrr":0.8516}},"tail":{"baseline":{"cases":11,"top1":9,"top3":9,"top10":11,"covered":11,"top1Rate":0.8182,"top3Rate":0.8182,"top10Rate":1.0000,"coverageRate":1.0000,"mrr":0.8515},"contextual":{"cases":11,"top1":9,"top3":9,"top10":10,"covered":11,"top1Rate":0.8182,"top3Rate":0.8182,"top10Rate":0.9091,"coverageRate":1.0000,"mrr":0.8424}}},
         "rankMovement": {
           "improved": 17,
           "degraded": 4,
-          "unchanged": 99
+          "unchanged": 105
         },
         "results": [
   {"query":"zhongguo","expected":"中国","mode":"full","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"中国","contextualTop1":"中国","baselineRank":1,"contextualRank":1,"baselineMatched":"中国","contextualMatched":"中国","baselineCandidates":186,"contextualCandidates":184},
@@ -96,7 +96,7 @@
   {"query":"guojing","expected":"郭靖","mode":"name","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"郭靖","contextualTop1":"郭靖","baselineRank":1,"contextualRank":1,"baselineMatched":"郭靖","contextualMatched":"郭靖","baselineCandidates":183,"contextualCandidates":183},
   {"query":"huangrong","expected":"黄蓉","mode":"name","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"黄蓉","contextualTop1":"黄蓉","baselineRank":1,"contextualRank":1,"baselineMatched":"黄蓉","contextualMatched":"黄蓉","baselineCandidates":178,"contextualCandidates":178},
   {"query":"haode","expected":"好的","mode":"colloquial","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"好的","contextualTop1":"好的","baselineRank":1,"contextualRank":1,"baselineMatched":"好的","contextualMatched":"好的","baselineCandidates":172,"contextualCandidates":172},
-  {"query":"meiwenti","expected":"没问题","mode":"colloquial","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"没问题","contextualTop1":"没问题","baselineRank":1,"contextualRank":1,"baselineMatched":"没问题","contextualMatched":"没问题","baselineCandidates":155,"contextualCandidates":155},
+  {"query":"meiwenti","expected":"没问题","mode":"colloquial","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"没问题","contextualTop1":"没问题","baselineRank":1,"contextualRank":1,"baselineMatched":"没问题","contextualMatched":"没问题","baselineCandidates":84,"contextualCandidates":84},
   {"query":"zhende","expected":"真的","mode":"colloquial","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"真的","contextualTop1":"真的","baselineRank":1,"contextualRank":1,"baselineMatched":"真的","contextualMatched":"真的","baselineCandidates":169,"contextualCandidates":169},
   {"query":"keyiya","expected":"可以呀","mode":"colloquial","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"可以呀","contextualTop1":"可以呀","baselineRank":1,"contextualRank":1,"baselineMatched":"可以呀","contextualMatched":"可以呀","baselineCandidates":172,"contextualCandidates":172},
   {"query":"zhidaole","expected":"知道了","mode":"colloquial","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"知道了","contextualTop1":"知道了","baselineRank":1,"contextualRank":1,"baselineMatched":"知道了","contextualMatched":"知道了","baselineCandidates":170,"contextualCandidates":168},
@@ -111,7 +111,7 @@
   {"query":"ganma","expected":"干嘛","mode":"colloquial","context":null,"aliases":["干吗"],"frequencyBucket":"mid","baselineTop1":"干嘛","contextualTop1":"干嘛","baselineRank":1,"contextualRank":1,"baselineMatched":"干嘛","contextualMatched":"干嘛","baselineCandidates":194,"contextualCandidates":194},
   {"query":"yihuierjian","expected":"一会儿见","mode":"colloquial","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"以会而及按","contextualTop1":"以会而及按","baselineRank":null,"contextualRank":null,"baselineMatched":null,"contextualMatched":null,"baselineCandidates":168,"contextualCandidates":168},
   {"query":"rengongzhineng","expected":"人工智能","mode":"technical","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"人工智能","contextualTop1":"人工智能","baselineRank":1,"contextualRank":1,"baselineMatched":"人工智能","contextualMatched":"人工智能","baselineCandidates":158,"contextualCandidates":156},
-  {"query":"jiqixuexi","expected":"机器学习","mode":"technical","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"机器学习","contextualTop1":"机器学习","baselineRank":1,"contextualRank":1,"baselineMatched":"机器学习","contextualMatched":"机器学习","baselineCandidates":166,"contextualCandidates":163},
+  {"query":"jiqixuexi","expected":"机器学习","mode":"technical","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"机器学习","contextualTop1":"机器学习","baselineRank":1,"contextualRank":1,"baselineMatched":"机器学习","contextualMatched":"机器学习","baselineCandidates":94,"contextualCandidates":91},
   {"query":"shenjingwangluo","expected":"神经网络","mode":"technical","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"神经网络","contextualTop1":"神经网络","baselineRank":1,"contextualRank":1,"baselineMatched":"神经网络","contextualMatched":"神经网络","baselineCandidates":160,"contextualCandidates":163},
   {"query":"caozuoxitong","expected":"操作系统","mode":"technical","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"操作系统","contextualTop1":"操作系统","baselineRank":1,"contextualRank":1,"baselineMatched":"操作系统","contextualMatched":"操作系统","baselineCandidates":168,"contextualCandidates":149},
   {"query":"shujuku","expected":"数据库","mode":"technical","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"数据库","contextualTop1":"数据库","baselineRank":1,"contextualRank":1,"baselineMatched":"数据库","contextualMatched":"数据库","baselineCandidates":167,"contextualCandidates":164},
@@ -130,9 +130,9 @@
   {"query":"jintiantianqihenha","expected":"今天天气很好","mode":"typo","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"今天天其很哈","contextualTop1":"今天天其很哈","baselineRank":156,"contextualRank":89,"baselineMatched":"今天天气很好","contextualMatched":"今天天气很好","baselineCandidates":160,"contextualCandidates":145},
   {"query":"rengongzhinengg","expected":"人工智能","mode":"typo","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"人共只能","contextualTop1":"人共只能","baselineRank":67,"contextualRank":72,"baselineMatched":"人工智能","contextualMatched":"人工智能","baselineCandidates":97,"contextualCandidates":97},
   {"query":"shurufaa","expected":"输入法","mode":"typo","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"书如发啊","contextualTop1":"输入法啊","baselineRank":128,"contextualRank":105,"baselineMatched":"输入法","contextualMatched":"输入法","baselineCandidates":166,"contextualCandidates":164},
-  {"query":"shujuk","expected":"数据库","mode":"typo","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"数据库","contextualTop1":"数据库","baselineRank":1,"contextualRank":1,"baselineMatched":"数据库","contextualMatched":"数据库","baselineCandidates":173,"contextualCandidates":173},
+  {"query":"shujuk","expected":"数据库","mode":"typo","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"数据库","contextualTop1":"数据库","baselineRank":1,"contextualRank":1,"baselineMatched":"数据库","contextualMatched":"数据库","baselineCandidates":79,"contextualCandidates":79},
   {"query":"bianchengyuyqn","expected":"编程语言","mode":"typo","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"变成语言","contextualTop1":"变成语言","baselineRank":21,"contextualRank":22,"baselineMatched":"编程语言","contextualMatched":"编程语言","baselineCandidates":96,"contextualCandidates":92},
-  {"query":"jiqixuex","expected":"机器学习","mode":"typo","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"机器学习","contextualTop1":"机器学习","baselineRank":1,"contextualRank":1,"baselineMatched":"机器学习","contextualMatched":"机器学习","baselineCandidates":102,"contextualCandidates":102},
+  {"query":"jiqixuex","expected":"机器学习","mode":"typo","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"机器学习","contextualTop1":"机器学习","baselineRank":1,"contextualRank":1,"baselineMatched":"机器学习","contextualMatched":"机器学习","baselineCandidates":7,"contextualCandidates":7},
   {"query":"shouj","expected":"手机","mode":"typo","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"手机","contextualTop1":"手机","baselineRank":1,"contextualRank":1,"baselineMatched":"手机","contextualMatched":"手机","baselineCandidates":255,"contextualCandidates":255},
   {"query":"pengyuo","expected":"朋友","mode":"typo","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"捧与哦","contextualTop1":"捧与哦","baselineRank":97,"contextualRank":97,"baselineMatched":"朋友","contextualMatched":"朋友","baselineCandidates":174,"contextualCandidates":174},
   {"query":"gongzup","expected":"工作","mode":"typo","context":null,"aliases":[],"frequencyBucket":"head","baselineTop1":"工作","contextualTop1":"工作","baselineRank":1,"contextualRank":1,"baselineMatched":"工作","contextualMatched":"工作","baselineCandidates":102,"contextualCandidates":102},
@@ -152,27 +152,33 @@
   {"query":"zhongwsrf","expected":"中文输入法","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"中文输入法","contextualTop1":"中文输入法","baselineRank":1,"contextualRank":1,"baselineMatched":"中文输入法","contextualMatched":"中文输入法","baselineCandidates":1,"contextualCandidates":1},
   {"query":"zhongwensrf","expected":"中文输入法","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"中文输入法","contextualTop1":"中文输入法","baselineRank":1,"contextualRank":1,"baselineMatched":"中文输入法","contextualMatched":"中文输入法","baselineCandidates":1,"contextualCandidates":1},
   {"query":"rengzn","expected":"人工智能","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"人工智能","contextualTop1":"人工智能","baselineRank":1,"contextualRank":1,"baselineMatched":"人工智能","contextualMatched":"人工智能","baselineCandidates":85,"contextualCandidates":85},
-  {"query":"rengongzn","expected":"人工智能","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"人工智能","contextualTop1":"人工智能","baselineRank":1,"contextualRank":1,"baselineMatched":"人工智能","contextualMatched":"人工智能","baselineCandidates":97,"contextualCandidates":97},
-  {"query":"rengongzhin","expected":"人工智能","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"人工智能","contextualTop1":"人工智能","baselineRank":1,"contextualRank":1,"baselineMatched":"人工智能","contextualMatched":"人工智能","baselineCandidates":108,"contextualCandidates":108},
+  {"query":"rengongzn","expected":"人工智能","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"人工智能","contextualTop1":"人工智能","baselineRank":1,"contextualRank":1,"baselineMatched":"人工智能","contextualMatched":"人工智能","baselineCandidates":1,"contextualCandidates":1},
+  {"query":"rengongzhin","expected":"人工智能","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"人工智能","contextualTop1":"人工智能","baselineRank":1,"contextualRank":1,"baselineMatched":"人工智能","contextualMatched":"人工智能","baselineCandidates":12,"contextualCandidates":12},
   {"query":"jiqxx","expected":"机器学习","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"机器学习","contextualTop1":"机器学习","baselineRank":1,"contextualRank":1,"baselineMatched":"机器学习","contextualMatched":"机器学习","baselineCandidates":1,"contextualCandidates":1},
-  {"query":"jiqixx","expected":"机器学习","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"机器学习","contextualTop1":"机器学习","baselineRank":1,"contextualRank":1,"baselineMatched":"机器学习","contextualMatched":"机器学习","baselineCandidates":49,"contextualCandidates":49},
-  {"query":"jiqixuex","expected":"机器学习","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"机器学习","contextualTop1":"机器学习","baselineRank":1,"contextualRank":1,"baselineMatched":"机器学习","contextualMatched":"机器学习","baselineCandidates":102,"contextualCandidates":102},
-  {"query":"caozxt","expected":"操作系统","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"操作系统","contextualTop1":"操作系统","baselineRank":1,"contextualRank":1,"baselineMatched":"操作系统","contextualMatched":"操作系统","baselineCandidates":1,"contextualCandidates":1},
-  {"query":"caozuoxt","expected":"操作系统","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"操作系统","contextualTop1":"操作系统","baselineRank":1,"contextualRank":1,"baselineMatched":"操作系统","contextualMatched":"操作系统","baselineCandidates":49,"contextualCandidates":49},
-  {"query":"bianchengyy","expected":"编程语言","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"变成与","contextualTop1":"变成与","baselineRank":7,"contextualRank":7,"baselineMatched":"编程语言","contextualMatched":"编程语言","baselineCandidates":97,"contextualCandidates":97}
+  {"query":"jiqixx","expected":"机器学习","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"机器学习","contextualTop1":"机器学习","baselineRank":1,"contextualRank":1,"baselineMatched":"机器学习","contextualMatched":"机器学习","baselineCandidates":1,"contextualCandidates":1},
+  {"query":"jiqixuex","expected":"机器学习","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"机器学习","contextualTop1":"机器学习","baselineRank":1,"contextualRank":1,"baselineMatched":"机器学习","contextualMatched":"机器学习","baselineCandidates":7,"contextualCandidates":7},
+  {"query":"caozxt","expected":"操作系统","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"操作系统","contextualTop1":"操作系统","baselineRank":1,"contextualRank":1,"baselineMatched":"操作系统","contextualMatched":"操作系统","baselineCandidates":2,"contextualCandidates":2},
+  {"query":"caozuoxt","expected":"操作系统","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"操作系统","contextualTop1":"操作系统","baselineRank":1,"contextualRank":1,"baselineMatched":"操作系统","contextualMatched":"操作系统","baselineCandidates":2,"contextualCandidates":2},
+  {"query":"bianchengyy","expected":"编程语言","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"mid","baselineTop1":"编程语言","contextualTop1":"编程语言","baselineRank":1,"contextualRank":1,"baselineMatched":"编程语言","contextualMatched":"编程语言","baselineCandidates":2,"contextualCandidates":2},
+  {"query":"hunshenxs","expected":"浑身解数","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"tail","baselineTop1":"浑身解数","contextualTop1":"浑身解数","baselineRank":1,"contextualRank":1,"baselineMatched":"浑身解数","contextualMatched":"浑身解数","baselineCandidates":1,"contextualCandidates":1},
+  {"query":"kaiyuanxy","expected":"开源协议","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"tail","baselineTop1":"开源协议","contextualTop1":"开源协议","baselineRank":1,"contextualRank":1,"baselineMatched":"开源协议","contextualMatched":"开源协议","baselineCandidates":1,"contextualCandidates":1},
+  {"query":"suanfafzd","expected":"算法复杂度","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"tail","baselineTop1":"算法复杂度","contextualTop1":"算法复杂度","baselineRank":1,"contextualRank":1,"baselineMatched":"算法复杂度","contextualMatched":"算法复杂度","baselineCandidates":1,"contextualCandidates":1},
+  {"query":"yemianxs","expected":"页面显示","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"tail","baselineTop1":"页面显示","contextualTop1":"页面显示","baselineRank":1,"contextualRank":1,"baselineMatched":"页面显示","contextualMatched":"页面显示","baselineCandidates":1,"contextualCandidates":1},
+  {"query":"wenjianxz","expected":"文件下载","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"tail","baselineTop1":"文件下载","contextualTop1":"文件下载","baselineRank":1,"contextualRank":1,"baselineMatched":"文件下载","contextualMatched":"文件下载","baselineCandidates":1,"contextualCandidates":1},
+  {"query":"quanxiansz","expected":"权限设置","mode":"hybrid","context":null,"aliases":[],"frequencyBucket":"tail","baselineTop1":"权限设置","contextualTop1":"权限设置","baselineRank":1,"contextualRank":1,"baselineMatched":"权限设置","contextualMatched":"权限设置","baselineCandidates":1,"contextualCandidates":1}
         ]
       },
       "latency": {
         "unit": "nanoseconds",
         "cleanCasesExcludeMode": "typo",
         "cleanByCandidateLimit": {
-"10": {"baseline":{"samples":216,"p50Ns":1195100,"p95Ns":4906700,"p99Ns":5947100,"p50Ms":1.195,"p95Ms":4.907,"p99Ms":5.947},"contextual":{"samples":216,"p50Ns":1352900,"p95Ns":4786100,"p99Ns":5919900,"p50Ms":1.353,"p95Ms":4.786,"p99Ms":5.920}},
-"64": {"baseline":{"samples":216,"p50Ns":2036700,"p95Ns":13456300,"p99Ns":15645700,"p50Ms":2.037,"p95Ms":13.456,"p99Ms":15.646},"contextual":{"samples":216,"p50Ns":1811500,"p95Ns":11214200,"p99Ns":13972300,"p50Ms":1.812,"p95Ms":11.214,"p99Ms":13.972}},
-"255": {"baseline":{"samples":216,"p50Ns":1873300,"p95Ns":11750900,"p99Ns":16736100,"p50Ms":1.873,"p95Ms":11.751,"p99Ms":16.736},"contextual":{"samples":216,"p50Ns":2209000,"p95Ns":12857900,"p99Ns":15596100,"p50Ms":2.209,"p95Ms":12.858,"p99Ms":15.596}}
+"10": {"baseline":{"samples":228,"p50Ns":1075100,"p95Ns":4785900,"p99Ns":6630300,"p50Ms":1.075,"p95Ms":4.786,"p99Ms":6.630},"contextual":{"samples":228,"p50Ns":1043300,"p95Ns":4826100,"p99Ns":6020400,"p50Ms":1.043,"p95Ms":4.826,"p99Ms":6.020}},
+"64": {"baseline":{"samples":228,"p50Ns":1738600,"p95Ns":10887200,"p99Ns":14376900,"p50Ms":1.739,"p95Ms":10.887,"p99Ms":14.377},"contextual":{"samples":228,"p50Ns":1736700,"p95Ns":11692100,"p99Ns":15168900,"p50Ms":1.737,"p95Ms":11.692,"p99Ms":15.169}},
+"255": {"baseline":{"samples":228,"p50Ns":1698200,"p95Ns":11732700,"p99Ns":14374700,"p50Ms":1.698,"p95Ms":11.733,"p99Ms":14.375},"contextual":{"samples":228,"p50Ns":1759600,"p95Ns":11617800,"p99Ns":15082400,"p50Ms":1.760,"p95Ms":11.618,"p99Ms":15.082}}
         },
         "typoAtProductionLimit": {
-          "baseline": {"samples":36,"p50Ns":2139200,"p95Ns":9588000,"p99Ns":10019300,"p50Ms":2.139,"p95Ms":9.588,"p99Ms":10.019},
-          "contextual": {"samples":36,"p50Ns":2915800,"p95Ns":11417200,"p99Ns":11453600,"p50Ms":2.916,"p95Ms":11.417,"p99Ms":11.454}
+          "baseline": {"samples":36,"p50Ns":2234900,"p95Ns":9400400,"p99Ns":14060000,"p50Ms":2.235,"p95Ms":9.400,"p99Ms":14.060},
+          "contextual": {"samples":36,"p50Ns":2362600,"p95Ns":9966600,"p99Ns":12563800,"p50Ms":2.363,"p95Ms":9.967,"p99Ms":12.564}
         }
       },
       "gates": {
@@ -180,10 +186,16 @@
         "minimumTop10Rate": 0.85,
         "minimumTop1Rate": 0.7,
         "minimumMrr": 0.75,
-        "observedCoverageRate": 0.9833,
-        "observedTop10Rate": 0.9083,
-        "observedTop1Rate": 0.7667,
-        "observedMrr": 0.8140,
+        "dynamicMixedSentinels": {
+          "cases": 6,
+          "hunshenxsMaximumRank": 1,
+          "tailMaximumRank": 10,
+          "status": "pass"
+        },
+        "observedCoverageRate": 0.9841,
+        "observedTop10Rate": 0.9127,
+        "observedTop1Rate": 0.7857,
+        "observedMrr": 0.8296,
         "status": "pass"
       },
       "deviceMetrics": {"status": "pending-real-device"}

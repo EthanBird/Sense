@@ -23,6 +23,65 @@ class ProgressivePinyinTest {
     }
 
     @Test
+    fun mixedSegmentationExposesDisplayJointsWithoutChangingRawComposition() {
+        val mixed = PinyinSyllableSegmenter(
+            setOf("hun", "shen", "shu", "wo", "xi", "xie", "zhong"),
+        ).segmentMixed("hunshenxs")
+
+        assertEquals("hunshenxs", mixed?.rawCode)
+        assertEquals("hun'shen'x's", mixed?.formatted)
+        assertEquals(
+            listOf(
+                MixedPinyinSegment("hun", abbreviated = false),
+                MixedPinyinSegment("shen", abbreviated = false),
+                MixedPinyinSegment("x", abbreviated = true),
+                MixedPinyinSegment("s", abbreviated = true),
+            ),
+            mixed?.segments,
+        )
+    }
+
+    @Test
+    fun mixedDisplayKeepsAnIncompleteTailTogether() {
+        val segmenter = PinyinSyllableSegmenter(
+            setOf("hun", "shen", "shu", "wo", "zhong"),
+        )
+
+        assertEquals("hun'sh", segmenter.segmentMixed("hunsh")?.formatted)
+        assertEquals("zhong'w", segmenter.segmentMixed("zhongw")?.formatted)
+        assertEquals("zh'w", segmenter.segmentMixed("zhw")?.formatted)
+    }
+
+    @Test
+    fun mixedDisplayPreservesAnExplicitSyllableJoint() {
+        val segmenter = PinyinSyllableSegmenter(setOf("an", "xi", "xian"))
+
+        assertEquals("xian", segmenter.segmentMixed("xian")?.formatted)
+        assertEquals("xi'an", segmenter.segmentMixed("xi'an")?.formatted)
+        assertEquals("xian", segmenter.segmentMixed("xi'an")?.rawCode)
+    }
+
+    @Test
+    fun candidateMetadataSelectsTheMatchingAmbiguousSegmentation() {
+        val segmenter = PinyinSyllableSegmenter(
+            setOf("an", "fan", "fang", "gan", "hun", "shen", "shu", "xie"),
+        )
+
+        assertEquals(
+            "fang'an",
+            segmenter.segmentMixed("fangan", "fangan", "fa")?.formatted,
+        )
+        assertEquals(
+            "fan'gan",
+            segmenter.segmentMixed("fangan", "fangan", "fg")?.formatted,
+        )
+        assertEquals(
+            "hun'shen'x's",
+            segmenter.segmentMixed("hunshenxs", "hunshenxieshu", "hsxs")?.formatted,
+        )
+    }
+
+    @Test
     fun normalizationReusesAlreadyCanonicalPinyin() {
         val canonical = String(charArrayOf('p', 'i', 'p', 'e', 'i'))
 

@@ -117,6 +117,11 @@ object M3SentenceBenchmark {
 
     private data class RankedMatch(val rank: Int, val text: String)
 
+    private data class HybridSentinel(
+        val expected: String,
+        val maximumRank: Int,
+    )
+
     @JvmStatic
     fun main(args: Array<String>) {
         require(args.size == 4) {
@@ -379,6 +384,22 @@ object M3SentenceBenchmark {
         check(baselineHybrid[sentinelIndex].rank == 1 && contextualHybrid[sentinelIndex].rank == 1) {
             "Spelling correction displaced the exact hybrid sentinel"
         }
+        DYNAMIC_MIXED_SENTINELS.forEach { (query, sentinel) ->
+            val baseline = baselineHybrid.singleOrNull { it.item.query == query }
+            val contextual = contextualHybrid.singleOrNull { it.item.query == query }
+            check(baseline != null && contextual != null) {
+                "Hybrid replay is missing generalized mixed-pinyin sentinel $query"
+            }
+            check(baseline.item.expected == sentinel.expected) {
+                "Hybrid replay expected-text drift for $query"
+            }
+            check(baseline.rank != null && baseline.rank <= sentinel.maximumRank) {
+                "Baseline mixed-pinyin recall regression for $query: rank=${baseline.rank}"
+            }
+            check(contextual.rank != null && contextual.rank <= sentinel.maximumRank) {
+                "Contextual mixed-pinyin recall regression for $query: rank=${contextual.rank}"
+            }
+        }
     }
 
     private fun validateLatencyGate(
@@ -557,7 +578,7 @@ object M3SentenceBenchmark {
         }
         return """
             {
-              "schemaVersion": 2,
+              "schemaVersion": 3,
               "stage": "quality-replay",
               "generatedAt": "${Instant.now()}",
               "assets": {
@@ -615,6 +636,12 @@ $latencyLimits
                 "minimumTop10Rate": $MIN_PRODUCTION_TOP10_RATE,
                 "minimumTop1Rate": $MIN_PRODUCTION_TOP1_RATE,
                 "minimumMrr": $MIN_PRODUCTION_MRR,
+                "dynamicMixedSentinels": {
+                  "cases": ${DYNAMIC_MIXED_SENTINELS.size},
+                  "hunshenxsMaximumRank": ${DYNAMIC_MIXED_SENTINELS.getValue("hunshenxs").maximumRank},
+                  "tailMaximumRank": $MAX_DYNAMIC_MIXED_TAIL_RANK,
+                  "status": "pass"
+                },
                 "observedCoverageRate": ${formatRate(contextualProductionMetrics.coverageRate)},
                 "observedTop10Rate": ${formatRate(contextualProductionMetrics.top10Rate)},
                 "observedTop1Rate": ${formatRate(contextualProductionMetrics.top1Rate)},
@@ -704,6 +731,15 @@ $latencyLimits
     private const val MIN_PRODUCTION_MRR = 0.75
     private const val MIN_PRODUCTION_HYBRID_TOP1 = 10
     private const val HYBRID_CORRECTION_SENTINEL_QUERY = "rengzn"
+    private const val MAX_DYNAMIC_MIXED_TAIL_RANK = 10
+    private val DYNAMIC_MIXED_SENTINELS = linkedMapOf(
+        "hunshenxs" to HybridSentinel("浑身解数", maximumRank = 1),
+        "kaiyuanxy" to HybridSentinel("开源协议", maximumRank = MAX_DYNAMIC_MIXED_TAIL_RANK),
+        "suanfafzd" to HybridSentinel("算法复杂度", maximumRank = MAX_DYNAMIC_MIXED_TAIL_RANK),
+        "yemianxs" to HybridSentinel("页面显示", maximumRank = MAX_DYNAMIC_MIXED_TAIL_RANK),
+        "wenjianxz" to HybridSentinel("文件下载", maximumRank = MAX_DYNAMIC_MIXED_TAIL_RANK),
+        "quanxiansz" to HybridSentinel("权限设置", maximumRank = MAX_DYNAMIC_MIXED_TAIL_RANK),
+    )
     private const val MAX_ALLOWED_CONTEXTUAL_COVERAGE_LOSS = 1
     private const val MAX_ALLOWED_CONTEXTUAL_TOP10_LOSS = 2
     private const val MAX_ALLOWED_CONTEXTUAL_MRR_LOSS = 0.01

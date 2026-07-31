@@ -1,9 +1,14 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 4,
   "stage": "M5-mixed-input",
-  "generatedAt": "2026-07-30T14:50:43.957614400Z",
+  "generatedAt": "2026-07-31T02:30:10.258423700Z",
   "correctness": {
     "w": "我",
+    "wChineseHead": ["我", "为", "啊", "万"],
+    "wChineseCandidates": 14,
+    "wEnglishCandidates": 2,
+    "wFirstEnglishRank": 8,
+    "singleLetters": [{"letter":"a","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":13,"englishCandidates":3,"firstEnglishRank":4}, {"letter":"b","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":7}, {"letter":"c","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":6}, {"letter":"d","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":12}, {"letter":"e","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":16,"englishCandidates":0,"firstEnglishRank":null}, {"letter":"f","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":3}, {"letter":"g","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":8}, {"letter":"h","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":9}, {"letter":"i","hasPinyinEvidence":false,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":2}, {"letter":"j","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":8}, {"letter":"k","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":4}, {"letter":"l","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":7}, {"letter":"m","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":9}, {"letter":"n","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":8}, {"letter":"o","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":4}, {"letter":"p","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":4}, {"letter":"q","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":9}, {"letter":"r","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":5}, {"letter":"s","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":10}, {"letter":"t","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":8}, {"letter":"u","hasPinyinEvidence":false,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":3}, {"letter":"v","hasPinyinEvidence":false,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":2}, {"letter":"w","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":8}, {"letter":"x","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":9}, {"letter":"y","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":12}, {"letter":"z","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":12}],
     "z": "在",
     "hangFirstChineseSource": "BASE_EXACT",
     "host": ["host", "hosts", "hostile", "后|st"],
@@ -11,21 +16,30 @@
     "funFrostHybrid": ["妇女", "赋能", "父女", "腐女"],
     "funLearnedAlias": "fun",
     "zhongwsrf": "中文输入法",
-    "zhongwensrf": "中文输入法"
+    "zhongwensrf": "中文输入法",
+    "dynamicMixed": [{"query":"hunshenxs","expected":"浑身解数","segmentation":"hun'shen'x's","canonicalPinyin":"hunshenxieshu","rank":1,"maximumRank":1,"matchKind":"BASE_HYBRID"}, {"query":"kaiyuanxy","expected":"开源协议","segmentation":"kai'yuan'x'y","canonicalPinyin":"kaiyuanxieyi","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"suanfafzd","expected":"算法复杂度","segmentation":"suan'fa'f'z'd","canonicalPinyin":"suanfafuzadu","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"yemianxs","expected":"页面显示","segmentation":"ye'mian'x's","canonicalPinyin":"yemianxianshi","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"wenjianxz","expected":"文件下载","segmentation":"wen'jian'x'z","canonicalPinyin":"wenjianxiazai","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"quanxiansz","expected":"权限设置","segmentation":"quan'xian's'z","canonicalPinyin":"quanxianshezhi","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"yisscp","expected":"艺术收藏品","segmentation":"yi's's'c'p","canonicalPinyin":"yishushoucangpin","rank":1,"maximumRank":64,"matchKind":"BASE_HYBRID"}, {"query":"xiaszf","expected":"西安市政府","segmentation":"xi'a's'z'f","canonicalPinyin":"xianshizhengfu","rank":1,"maximumRank":64,"matchKind":"BASE_HYBRID"}, {"query":"dancs","expected":"大年初三","segmentation":"da'n'c's","canonicalPinyin":"danianchusan","rank":62,"maximumRank":64,"matchKind":"BASE_HYBRID"}, {"query":"gongjijin","expected":"攻击技能","segmentation":"gong'ji'ji'n","canonicalPinyin":"gongjijineng","rank":97,"maximumRank":255,"matchKind":"BASE_HYBRID"}]
   },
   "englishLexicon": {
     "words": 20000,
     "bytes": 161139,
     "sha256": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624",
-    "p95Ns": 5801.76,
+    "p95Ns": 3656.76,
     "gateNs": 500000.00
   },
   "mixedProgressiveDecode": {
-    "p95Ns": 623443.50,
+    "p95Ns": 757695.00,
     "gateNs": 5000000.00
   },
   "hybridDecode": {
-    "p95Ns": 496925.60,
+    "p95Ns": 156961.20,
     "gateNs": 5000000.00
+  },
+  "dynamicMixedDecode": {
+    "cases": 10,
+    "candidateLimit": 255,
+    "p95Ns": 2406100.00,
+    "maxNs": 4254500,
+    "gateNs": 5000000.00,
+    "byQuery": [{"query":"hunshenxs","p95Ns":122200.00,"maxNs":813100}, {"query":"kaiyuanxy","p95Ns":76600.00,"maxNs":857000}, {"query":"suanfafzd","p95Ns":63300.00,"maxNs":730600}, {"query":"yemianxs","p95Ns":101500.00,"maxNs":643800}, {"query":"wenjianxz","p95Ns":196800.00,"maxNs":757400}, {"query":"quanxiansz","p95Ns":102800.00,"maxNs":1224100}, {"query":"yisscp","p95Ns":1023100.00,"maxNs":1050600}, {"query":"xiaszf","p95Ns":1662100.00,"maxNs":4254500}, {"query":"dancs","p95Ns":2072600.00,"maxNs":2576800}, {"query":"gongjijin","p95Ns":2406100.00,"maxNs":2663600}]
   }
 }

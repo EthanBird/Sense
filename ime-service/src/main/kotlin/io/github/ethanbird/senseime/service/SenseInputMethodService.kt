@@ -86,6 +86,7 @@ class SenseInputMethodService : InputMethodService() {
     private var decoderRuntime = CandidateDecoderRuntime(
         generation = 0L,
         decoder = FakeDecoder(),
+        segmenter = PinyinSyllableSegmenter(FALLBACK_SYLLABLES),
     )
     private var adaptiveDecoder: AdaptivePinyinDecoder? = null
     private var userLexicon: UserLexicon? = null
@@ -172,14 +173,16 @@ class SenseInputMethodService : InputMethodService() {
         destroyed = false
         val bootstrapLexicon = MemoryUserLexicon()
         userLexicon = bootstrapLexicon
+        val bootstrapSegmenter = PinyinSyllableSegmenter(FALLBACK_SYLLABLES)
         adaptiveDecoder = AdaptivePinyinDecoder(
             base = FakeDecoder(),
             userLexicon = bootstrapLexicon,
-            segmenter = PinyinSyllableSegmenter(FALLBACK_SYLLABLES),
+            segmenter = bootstrapSegmenter,
         )
         decoderRuntime = CandidateDecoderRuntime(
             generation = nextGeneration(decoderRuntime.generation),
             decoder = requireNotNull(adaptiveDecoder),
+            segmenter = bootstrapSegmenter,
         )
         englishInput = EnglishInputSession(EnglishLexicon.EMPTY, DECODE_CANDIDATE_LIMIT)
         candidateRunner = LatestOnlyTaskRunner(
@@ -336,10 +339,11 @@ class SenseInputMethodService : InputMethodService() {
             }.onFailure { error ->
                 Log.e(TAG, "Persistent user lexicon migration/load failed", error)
             }.getOrElse { MemoryUserLexicon() }
+            val segmenter = PinyinSyllableSegmenter(syllables)
             val loadedDecoder = AdaptivePinyinDecoder(
                 base = baseDecoder,
                 userLexicon = learned,
-                segmenter = PinyinSyllableSegmenter(syllables),
+                segmenter = segmenter,
                 englishLexicon = englishLexicon,
             )
             mainHandler.post {
@@ -353,6 +357,7 @@ class SenseInputMethodService : InputMethodService() {
                 decoderRuntime = CandidateDecoderRuntime(
                     generation = nextGeneration(decoderRuntime.generation),
                     decoder = loadedDecoder,
+                    segmenter = segmenter,
                 )
                 productionDecoderReady = true
                 learningAllowed = allowsLocalPersistence(currentEditorInfo)
@@ -1609,6 +1614,7 @@ class SenseInputMethodService : InputMethodService() {
             leftContext = compositionLeftContext,
             decoderGeneration = runtime.generation,
             decoder = runtime.decoder,
+            segmenter = runtime.segmenter,
         )
         val launch = candidateSession.begin(
             composition = request.composition,
@@ -1616,15 +1622,21 @@ class SenseInputMethodService : InputMethodService() {
             forceDecode = forceDecode,
         )
         if (launch.stateChanged) mainHandler.removeCallbacksAndMessages(candidateResultToken)
+        val candidateBarText = CandidateBarCompositionPresenter.text(
+            composition = request.composition,
+            segmenter = request.segmenter,
+            decodingPending = launch.presentation.pending,
+            primaryCandidate = launch.presentation.snapshot.candidates.firstOrNull(),
+        )
         if (launch.presentation.pending) {
             keyboardView?.updateComposition(
                 request.composition.revision,
-                request.composition.visibleText,
+                candidateBarText,
             )
         } else {
             keyboardView?.updateComposing(
                 request.composition.revision,
-                request.composition.visibleText,
+                candidateBarText,
                 launch.presentation.snapshot.candidates.map { it.text },
             )
         }
@@ -1669,7 +1681,12 @@ class SenseInputMethodService : InputMethodService() {
         }
         keyboardView?.updateComposing(
             composition.revision,
-            composition.visibleText,
+            CandidateBarCompositionPresenter.text(
+                composition = composition,
+                segmenter = request.segmenter,
+                decodingPending = presentation.pending,
+                primaryCandidate = presentation.snapshot.candidates.firstOrNull(),
+            ),
             presentation.snapshot.candidates.map { it.text },
         )
     }
@@ -1943,11 +1960,13 @@ private data class CandidateDecodeRequest(
     val leftContext: String,
     val decoderGeneration: Long,
     val decoder: InputDecoder,
+    val segmenter: PinyinSyllableSegmenter,
 )
 
 private data class CandidateDecoderRuntime(
     val generation: Long,
     val decoder: InputDecoder,
+    val segmenter: PinyinSyllableSegmenter,
 )
 
 private sealed interface DeferredInput {

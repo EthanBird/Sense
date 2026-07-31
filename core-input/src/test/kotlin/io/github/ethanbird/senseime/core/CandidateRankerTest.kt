@@ -48,6 +48,47 @@ class CandidateRankerTest {
     }
 
     @Test
+    fun completeHybridPathUsesItsOwnCorrectionEvidenceTier() {
+        val values = CandidateRanker.rank(
+            candidates = listOf(
+                Candidate("short correction", score = 5.4f, matchKind = CandidateMatchKind.CORRECTED),
+                Candidate(
+                    "complete mixed path",
+                    score = 5.6f,
+                    matchKind = CandidateMatchKind.BASE_HYBRID,
+                ),
+            ),
+            limit = 8,
+            hasCanonicalExact = false,
+        )
+
+        assertEquals(listOf("complete mixed path", "short correction"), values.map { it.text })
+    }
+
+    @Test
+    fun duplicateEvidenceBonusAlreadyInScoreIsStableAcrossASecondRankingPass() {
+        val candidates = listOf(
+            Candidate(
+                "duplicate",
+                score = 6f,
+                matchKind = CandidateMatchKind.BASE_HYBRID,
+            ),
+            Candidate(
+                "duplicate",
+                score = 5.6f,
+                matchKind = CandidateMatchKind.BASE_HYBRID,
+            ),
+            Candidate("competitor", score = 7.4f, matchKind = CandidateMatchKind.BASE_PREFIX),
+        )
+
+        val once = CandidateRanker.rank(candidates, 8, hasCanonicalExact = false)
+        val twice = CandidateRanker.rank(once, 8, hasCanonicalExact = false)
+
+        assertEquals(listOf("competitor", "duplicate"), once.map { it.text })
+        assertEquals(once, twice)
+    }
+
+    @Test
     fun boundedAccumulatorLetsALateStrongerDuplicateReenterTheTopK() {
         val candidates = buildList {
             add(Candidate("late", score = -100f, matchKind = CandidateMatchKind.BASE_PREFIX))

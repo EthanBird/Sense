@@ -377,6 +377,92 @@ class AdaptivePinyinDecoderTest {
     }
 
     @Test
+    fun strongMixedScoreSurvivesLearningAndASecondRankingPass() {
+        val selected = Candidate(
+            text = "\u6D51\u8EAB\u89E3\u6570",
+            score = 5.6f,
+            canonicalPinyin = "hunshenxieshu",
+            matchKind = CandidateMatchKind.BASE_HYBRID,
+            canonicalInitials = "hsxs",
+        )
+        val base = object : InputDecoder {
+            override fun decode(composing: String, limit: Int): List<Candidate> =
+                listOf(
+                    selected,
+                    Candidate(
+                        text = "\u6D51\u8EAB\u7CFB",
+                        score = 5.4f,
+                        canonicalPinyin = "hunshenxi",
+                        matchKind = CandidateMatchKind.CORRECTED,
+                        canonicalInitials = "hsx",
+                    ),
+                )
+        }
+        val mixedSegmenter = PinyinSyllableSegmenter(
+            setOf("hun", "shen", "shu", "xie"),
+        )
+        val decoder = AdaptivePinyinDecoder(base, MemoryUserLexicon(), mixedSegmenter)
+        assertTrue(decoder.learn("hunshenxs", selected) != null)
+
+        val learned = decoder.decode("hunshenxs", 8)
+        val reranked = CandidateRanker.rank(
+            learned,
+            limit = 8,
+            hasCanonicalExact = false,
+        )
+
+        assertEquals("\u6D51\u8EAB\u89E3\u6570", learned.first().text)
+        assertEquals(CandidateMatchKind.USER_FULL, learned.first().matchKind)
+        assertEquals(learned, reranked)
+    }
+
+    @Test
+    fun learnedSingleInitialCandidateKeepsItsChineseModePrior() {
+        val selected = Candidate(
+            text = "\u95EE",
+            score = 8f,
+            canonicalPinyin = "wen",
+            matchKind = CandidateMatchKind.BASE_PREFIX,
+            canonicalInitials = "w",
+        )
+        val base = object : InputDecoder {
+            override fun decode(composing: String, limit: Int): List<Candidate> =
+                listOf(
+                    Candidate(
+                        text = "\u6211",
+                        score = 9f,
+                        canonicalPinyin = "wo",
+                        matchKind = CandidateMatchKind.BASE_PREFIX,
+                        canonicalInitials = "w",
+                    ),
+                    selected,
+                )
+        }
+        val decoder = AdaptivePinyinDecoder(
+            base = base,
+            userLexicon = MemoryUserLexicon(),
+            segmenter = PinyinSyllableSegmenter(setOf("wen", "wo")),
+            englishLexicon = EnglishLexicon.fromWords(
+                listOf("was", "with", "were", "will", "would"),
+            ),
+        )
+        val before = decoder.decode("w", 16)
+        val beforeRank = before.indexOfFirst { it.text == selected.text }
+        assertTrue(decoder.learn("w", selected) != null)
+
+        val after = decoder.decode("w", 16)
+        val afterRank = after.indexOfFirst { it.text == selected.text }
+
+        assertTrue(beforeRank >= 0)
+        assertTrue(afterRank in 0..beforeRank)
+        assertEquals(CandidateMatchKind.USER_INITIALS, after[afterRank].matchKind)
+        assertTrue(after.first().matchKind != CandidateMatchKind.ENGLISH_PREFIX)
+        assertTrue(
+            after.count { it.matchKind == CandidateMatchKind.ENGLISH_PREFIX } <= 2,
+        )
+    }
+
+    @Test
     fun invalidTailStillOffersAChinesePrefixAfterThreeEnglishWords() {
         val base = object : InputDecoder {
             override fun decode(composing: String, limit: Int): List<Candidate> =

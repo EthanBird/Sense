@@ -15,8 +15,12 @@ class PinyinDecoder private constructor(
     private val bigramModel: CharacterBigramModel,
     private val syllableRecordIndicesByInitial: Array<IntArray>,
     private val spellingGraph: PinyinSpellingGraph,
+    private val segmenter: PinyinSyllableSegmenter,
     private val correctionBudget: CorrectionSearchBudget,
 ) : ContextualInputDecoder, ProgressivePrefixProbeDecoder, RankedCandidateDecoder {
+
+    @Volatile
+    private var cachedSpellingPaths: CachedSpellingPaths? = null
 
     override fun decode(composing: String, limit: Int): List<Candidate> =
         decodeInternal(composing, limit, NO_CODE_POINT, includeCorrections = true)
@@ -64,7 +68,14 @@ class PinyinDecoder private constructor(
             query,
             parsedQuery.forcedJoints,
         )
+        // Short canonical spellings already have stronger evidence than an
+        // inferred mixed path. Keep dynamic recall only for longer collisions
+        // such as `gongjijin` -> `gong'ji'ji'n`.
+        val shouldInferMixedCandidates =
+            (!hasCanonicalExact && !hasCanonicalComposition) ||
+                query.length >= MIN_DYNAMIC_MIXED_WITH_CANONICAL_LENGTH
         val candidates = ArrayList<Candidate>(outputLimit * 3)
+        var hasProducedStrongMixedCandidate = false
 
         if (exactRecord >= 0) {
             candidates += readCandidates(
@@ -84,7 +95,49 @@ class PinyinDecoder private constructor(
             )
         }
         if (!parsedQuery.hasForcedJoints) {
-            candidates += readHybridCandidates(query, outputLimit)
+            val rawHybridCandidates = readHybridCandidates(query, outputLimit)
+            val mixedPaths = if (shouldInferMixedCandidates) {
+                segmenter.segmentMixedPaths(query, MAX_DYNAMIC_MIXED_PATHS)
+            } else {
+                emptyList()
+            }
+            val hasStrongMixedPath = mixedPaths.any { it.hasStrongTypedEvidence }
+            val hybridCandidates =
+                if (rawHybridCandidates.isEmpty() || !hasStrongMixedPath) {
+                    rawHybridCandidates
+                } else {
+                    rawHybridCandidates.map { candidate ->
+                        val hasStrongPath = mixedPaths.any { path ->
+                            path.hasStrongTypedEvidence &&
+                                segmenter.matchesCanonical(
+                                    path,
+                                    candidate.canonicalPinyin,
+                                    candidate.canonicalInitials,
+                                )
+                        }
+                        if (hasStrongPath) {
+                            hasProducedStrongMixedCandidate = true
+                            candidate.copy(
+                                score = candidate.score + STRONG_MIXED_TYPED_EVIDENCE_BONUS,
+                            )
+                        } else {
+                            candidate
+                        }
+                    }
+                }
+            candidates += hybridCandidates
+            if (
+                shouldInferMixedCandidates &&
+                hybridCandidates.size < minOf(outputLimit, DYNAMIC_MIXED_FILL_FLOOR)
+            ) {
+                val dynamicMixed = readDynamicMixedCandidates(
+                    paths = mixedPaths,
+                    limit = outputLimit,
+                )
+                candidates += dynamicMixed.candidates
+                hasProducedStrongMixedCandidate =
+                    hasProducedStrongMixedCandidate || dynamicMixed.hasStrongCandidate
+            }
             candidates += readInitialsCandidates(query, outputLimit)
             if (!hasCanonicalExact) {
                 candidates += readStatisticalPrefixCandidates(query, outputLimit)
@@ -97,6 +150,7 @@ class PinyinDecoder private constructor(
                 normalizedQuery = query,
                 limit = outputLimit,
                 allowComposedCorrections = !hasCanonicalExact && !hasCanonicalComposition,
+                includeComposedCorrections = !hasProducedStrongMixedCandidate,
             )
         }
 
@@ -118,6 +172,7 @@ class PinyinDecoder private constructor(
             hasCanonicalComposition = hasCanonicalComposition,
         )
     }
+
     private fun findExact(query: String): Int {
         var low = 0
         var high = recordOffsets.lastIndex
@@ -384,6 +439,124 @@ class PinyinDecoder private constructor(
         return mergeCandidates(values.values.toList(), limit)
     }
 
+    /**
+     * Recovers mixed full-pinyin/initial spellings omitted from the compact
+     * prebuilt hybrid namespace by low-frequency asset thresholds.
+     *
+     * Each abbreviated edge expands only through the syllable inventory. A
+     * binary-search prefix probe discards branches absent from the canonical
+     * lexicon immediately, while path, beam, probe and record budgets keep the
+     * fallback independent of total lexicon size.
+     */
+    private data class DynamicMixedResult(
+        val candidates: List<Candidate>,
+        val hasStrongCandidate: Boolean,
+    )
+
+    private fun readDynamicMixedCandidates(
+        paths: List<MixedPinyinPath>,
+        limit: Int,
+    ): DynamicMixedResult {
+        val viablePaths = paths.filter { path ->
+            path.rawCode.length >= MIN_HYBRID_LENGTH &&
+                path.fullSyllables > 0 &&
+                path.abbreviatedSyllables in 1..MAX_DYNAMIC_MIXED_ABBREVIATIONS &&
+                path.segments.size <= MAX_DYNAMIC_MIXED_SYLLABLES
+        }
+        if (viablePaths.isEmpty()) return DynamicMixedResult(emptyList(), false)
+
+        val values = LinkedHashMap<String, Candidate>(minOf(limit * 2, 64))
+        val canonicalPrefixPresence = HashMap<String, Boolean>(MAX_DYNAMIC_MIXED_PREFIX_PROBES_PER_PATH)
+        var hasStrongCandidate = false
+        for (path in viablePaths) {
+            var remainingPrefixProbes = MAX_DYNAMIC_MIXED_PREFIX_PROBES_PER_PATH
+            var inspectedExactRecords = 0
+            var prefixes: List<String> = listOf("")
+            var pathIsViable = true
+            for ((segmentIndex, segment) in path.segments.withIndex()) {
+                val expansions = if (segment.abbreviated) {
+                    segmenter.syllablesStartingWith(segment.code)
+                } else {
+                    listOf(segment.code)
+                }
+                if (expansions.isEmpty()) {
+                    pathIsViable = false
+                    break
+                }
+                val next = LinkedHashSet<String>(minOf(MAX_DYNAMIC_MIXED_BEAM, prefixes.size * expansions.size))
+                var budgetExhausted = false
+                prefixLoop@ for (prefix in prefixes) {
+                    for (syllable in expansions) {
+                        if (remainingPrefixProbes <= 0) {
+                            budgetExhausted = true
+                            break@prefixLoop
+                        }
+                        remainingPrefixProbes -= 1
+                        val canonical = prefix + syllable
+                        val hasPrefix = canonicalPrefixPresence.getOrPut(canonical) {
+                            hasCanonicalRecordPrefix(canonical)
+                        }
+                        if (hasPrefix) {
+                            next += canonical
+                            if (next.size >= MAX_DYNAMIC_MIXED_BEAM) break@prefixLoop
+                        }
+                    }
+                }
+                if (next.isEmpty()) {
+                    pathIsViable = false
+                    break
+                }
+                prefixes = next.toList()
+                if (budgetExhausted && segmentIndex < path.segments.lastIndex) {
+                    pathIsViable = false
+                    break
+                }
+            }
+            if (!pathIsViable) continue
+
+            val expectedInitials = path.initials
+            for (canonical in prefixes) {
+                if (inspectedExactRecords >= MAX_DYNAMIC_MIXED_EXACT_RECORDS_PER_PATH) break
+                val record = findExact(canonical)
+                if (record < 0) continue
+                inspectedExactRecords += 1
+                readCandidates(
+                    record,
+                    minOf(limit, DYNAMIC_MIXED_CANDIDATES_PER_RECORD),
+                    CandidateMatchKind.BASE_HYBRID,
+                    canonical,
+                ).asSequence()
+                    .filter { it.canonicalInitials == expectedInitials }
+                    .map { candidate ->
+                        candidate.copy(
+                            score = candidate.score +
+                                if (path.hasStrongTypedEvidence) {
+                                    STRONG_MIXED_TYPED_EVIDENCE_BONUS
+                                } else {
+                                    0f
+                                },
+                        )
+                    }
+                    .forEach { candidate ->
+                        if (path.hasStrongTypedEvidence) hasStrongCandidate = true
+                        val previous = values[candidate.text]
+                        if (previous == null || candidate.score > previous.score) {
+                            values[candidate.text] = candidate
+                        }
+                    }
+            }
+        }
+        return DynamicMixedResult(
+            candidates = mergeCandidates(values.values.toList(), limit),
+            hasStrongCandidate = hasStrongCandidate,
+        )
+    }
+
+    private fun hasCanonicalRecordPrefix(prefix: String): Boolean {
+        val index = lowerBound(prefix)
+        return index < recordOffsets.size && codeStartsWith(index, prefix)
+    }
+
     private fun readPrefixCandidates(query: String, limit: Int): List<Candidate> {
         val values = HashMap<String, Candidate>()
         fun readRecord(index: Int) {
@@ -428,12 +601,13 @@ class PinyinDecoder private constructor(
         normalizedQuery: String,
         limit: Int,
         allowComposedCorrections: Boolean,
+        includeComposedCorrections: Boolean = true,
     ): List<Candidate> {
         val values = ArrayList<Candidate>()
         val composedProbes = ArrayList<CorrectionCompositionProbe>()
         val spellingPathLimit =
             correctionBudget.spellingPathLimit(allowComposedCorrections, limit)
-        val paths = spellingGraph.paths(rawInput, maxPaths = spellingPathLimit)
+        val paths = spellingPaths(rawInput, spellingPathLimit)
             .asSequence()
             .filter { it.cost > 0f && it.canonical != normalizedQuery }
             .toList()
@@ -451,12 +625,14 @@ class PinyinDecoder private constructor(
                     }
                     .forEach { candidate -> values += candidate.withCorrectionPenalty(path) }
             }
-            compositionScoreUpperBound(path.canonical)?.let { upperBound ->
-                composedProbes += CorrectionCompositionProbe(
-                    path = path,
-                    upperBound = upperBound,
-                    hasExactRecord = exact >= 0,
-                )
+            if (includeComposedCorrections) {
+                compositionScoreUpperBound(path.canonical)?.let { upperBound ->
+                    composedProbes += CorrectionCompositionProbe(
+                        path = path,
+                        upperBound = upperBound,
+                        hasExactRecord = exact >= 0,
+                    )
+                }
             }
         }
 
@@ -509,6 +685,32 @@ class PinyinDecoder private constructor(
             }
         return CandidateRanker.rank(values, limit, hasCanonicalExact = false)
     }
+
+    /**
+     * Reuses the immutable spelling lattice for repeated renders of the same
+     * composing revision. Candidate reads and context scores still run on every
+     * decode; only the query-invariant graph expansion is retained.
+     *
+     * A single volatile entry matches the IME's hot path without an LRU lock.
+     * Concurrent misses may duplicate work, but publication and reads remain
+     * race-safe and the next render observes a complete value.
+     */
+    private fun spellingPaths(rawInput: String, maxPaths: Int): List<PinyinSpellingPath> {
+        cachedSpellingPaths?.let { cached ->
+            if (cached.rawInput == rawInput && cached.maxPaths == maxPaths) {
+                return cached.paths
+            }
+        }
+        return spellingGraph.paths(rawInput, maxPaths = maxPaths).also { paths ->
+            cachedSpellingPaths = CachedSpellingPaths(rawInput, maxPaths, paths)
+        }
+    }
+
+    private data class CachedSpellingPaths(
+        val rawInput: String,
+        val maxPaths: Int,
+        val paths: List<PinyinSpellingPath>,
+    )
 
     private fun isSingleCharacterTailExtension(typed: String, canonical: String): Boolean =
         (canonical.length == typed.length + 1 && canonical.startsWith(typed)) ||
@@ -692,6 +894,9 @@ class PinyinDecoder private constructor(
     }
 
     private fun parseQuery(value: String): ParsedQuery {
+        if (value.all { it in 'a'..'z' }) {
+            return ParsedQuery(value, EMPTY_FORCED_JOINTS)
+        }
         val code = StringBuilder(value.length)
         val jointOffsets = ArrayList<Int>()
         var pendingJoint = false
@@ -753,6 +958,7 @@ class PinyinDecoder private constructor(
         private const val RECENT_EDIT_OFFSET_WINDOW = 1
         private const val TAIL_EXTENSION_PROBE_LIMIT = 2
         private const val NO_CODE_POINT = -1
+        private val EMPTY_FORCED_JOINTS = BooleanArray(0)
         private const val SINGLE_LETTER_SYLLABLES = "aeo"
         private const val FALLBACK_SOURCE_TIER = 1
         // CC-CEDICT fallback entries use weight 1. Penalizing only fallback
@@ -771,6 +977,16 @@ class PinyinDecoder private constructor(
         private const val HYBRID_CANDIDATES_PER_RECORD = 16
         private const val HYBRID_RETAINED_LIMIT_MULTIPLIER = 2
         private const val HYBRID_PRUNE_LIMIT_MULTIPLIER = 3
+        private const val DYNAMIC_MIXED_FILL_FLOOR = 16
+        private const val MAX_DYNAMIC_MIXED_PATHS = 4
+        private const val MIN_DYNAMIC_MIXED_WITH_CANONICAL_LENGTH = 8
+        private const val MAX_DYNAMIC_MIXED_ABBREVIATIONS = 4
+        private const val MAX_DYNAMIC_MIXED_SYLLABLES = 12
+        private const val MAX_DYNAMIC_MIXED_BEAM = 96
+        private const val MAX_DYNAMIC_MIXED_PREFIX_PROBES_PER_PATH = 4_096
+        private const val MAX_DYNAMIC_MIXED_EXACT_RECORDS_PER_PATH = 16
+        private const val DYNAMIC_MIXED_CANDIDATES_PER_RECORD = 16
+        private const val STRONG_MIXED_TYPED_EVIDENCE_BONUS = 1f
         private val MAGIC = byteArrayOf('S'.code.toByte(), 'P'.code.toByte(), 'L'.code.toByte(), 'X'.code.toByte())
 
         fun load(
@@ -850,6 +1066,7 @@ class PinyinDecoder private constructor(
                 bigramModel,
                 Array(syllableRecords.size) { syllableRecords[it].toIntArray() },
                 PinyinSpellingGraph(syllables),
+                PinyinSyllableSegmenter(syllables),
                 correctionBudget,
             )
         }
