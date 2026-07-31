@@ -93,6 +93,20 @@ class CloudSpeechResponseDecoderTest {
         )
     }
 
+    @Test
+    fun `Sogou response is routed away from HTTPS decoder`() {
+        val result = CloudSpeechResponseDecoder.decode(
+            SpeechProviderProtocol.SOGOU_SRSS,
+            "{}".toByteArray(),
+        )
+
+        assertTrue(result.isFailure)
+        assertEquals(
+            CloudSpeechFailureKind.PROTOCOL,
+            (result.exceptionOrNull() as CloudSpeechResponseDecodingException).failureKind,
+        )
+    }
+
     private fun decode(
         protocol: SpeechProviderProtocol,
         json: String,

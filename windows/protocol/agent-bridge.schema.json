@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sense.local/schemas/agent-bridge.v1.json",
+  "title": "Sense Agent Bridge v1",
+  "description": "Bounded out-of-process editor and Skill invocation contract for the Windows TSF client.",
+  "oneOf": [
+    { "$ref": "#/$defs/handshake" },
+    { "$ref": "#/$defs/skillInvocation" },
+    { "$ref": "#/$defs/bridgeEvent" }
+  ],
+  "$defs": {
+    "base": {
+      "type": "object",
+      "required": ["protocol", "type"],
+      "properties": {
+        "protocol": { "const": "sense.agent.bridge.v1" },
+        "type": { "type": "string", "maxLength": 64 }
+      }
+    },
+    "handshake": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "required": ["protocol", "type"],
+          "properties": {
+            "protocol": { "const": "sense.agent.bridge.v1" },
+            "type": { "const": "handshake" }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "snapshot": {
+      "type": "object",
+      "required": [
+        "request_id",
+        "generation",
+        "capability",
+        "before_cursor",
+        "selected_text",
+        "after_cursor",
+        "document_hash"
+      ],
+      "properties": {
+        "request_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,128}$"
+        },
+        "generation": { "type": "integer", "minimum": 1 },
+        "capability": {
+          "enum": [
+            "FULL_DOCUMENT",
+            "SELECTION_ONLY",
+            "SURROUNDING_WINDOW",
+            "UNAVAILABLE"
+          ]
+        },
+        "before_cursor": { "type": "string", "maxLength": 65536 },
+        "selected_text": { "type": "string", "maxLength": 65536 },
+        "after_cursor": { "type": "string", "maxLength": 65536 },
+        "document_hash": {
+          "type": "string",
+          "pattern": "^$|^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "skillInvocation": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "required": [
+            "protocol",
+            "type",
+            "skill_id",
+            "skill_revision",
+            "instruction",
+            "snapshot"
+          ],
+          "properties": {
+            "protocol": { "const": "sense.agent.bridge.v1" },
+            "type": { "const": "skill.invoke" },
+            "skill_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,128}$"
+            },
+            "skill_revision": { "type": "integer", "minimum": 1 },
+            "instruction": { "type": "string", "minLength": 1, "maxLength": 4096 },
+            "snapshot": { "$ref": "#/$defs/snapshot" }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "bridgeEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "properties": {
+            "request_id": { "type": ["string", "null"], "maxLength": 128 },
+            "run_id": { "type": "string", "maxLength": 128 },
+            "status": { "type": "string", "maxLength": 64 },
+            "code": { "type": "string", "maxLength": 64 },
+            "delta": { "type": "string", "maxLength": 4096 },
+            "patch": { "type": "object" }
+          }
+        }
+      ]
+    }
+  }
+}

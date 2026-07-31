@@ -30,6 +30,7 @@ object CloudSpeechResponseDecoder {
             SpeechProviderProtocol.OPENAI_TRANSCRIPTIONS -> decodeOpenAi(root)
             SpeechProviderProtocol.DEEPGRAM_LISTEN -> decodeDeepgram(root)
             SpeechProviderProtocol.ANDROID_SYSTEM,
+            SpeechProviderProtocol.SOGOU_SRSS,
             SpeechProviderProtocol.DASHSCOPE_REALTIME,
             -> protocolError("speech response protocol is not supported by the HTTPS decoder")
         }
@@ -53,7 +54,7 @@ object CloudSpeechResponseDecoder {
             as? SpeechJsonValue.ObjectValue
             ?: protocolError("Deepgram response has no first alternative")
         val first = firstAlternative.string("transcript")
-            ?.let(::boundedTranscript)
+            ?.let(::boundedSpeechTranscript)
             ?: protocolError("Deepgram first alternative is missing transcript")
         if (first.isEmpty()) {
             throw CloudSpeechResponseDecodingException(
@@ -66,7 +67,7 @@ object CloudSpeechResponseDecoder {
             .take(MAX_ALTERNATIVES - 1)
             .mapNotNull { alternative ->
                 (alternative as? SpeechJsonValue.ObjectValue)?.string("transcript")
-                    ?.let(::boundedTranscript)
+                    ?.let(::boundedSpeechTranscript)
                     ?.takeIf(String::isNotEmpty)
             }
         return CloudSpeechTranscript(
@@ -76,7 +77,7 @@ object CloudSpeechResponseDecoder {
     }
 
     private fun transcript(value: String): CloudSpeechTranscript {
-        val text = boundedTranscript(value)
+        val text = boundedSpeechTranscript(value)
         if (text.isEmpty()) {
             throw CloudSpeechResponseDecodingException(
                 CloudSpeechFailureKind.NO_AUDIO,
@@ -84,19 +85,6 @@ object CloudSpeechResponseDecoder {
             )
         }
         return CloudSpeechTranscript(text)
-    }
-
-    private fun boundedTranscript(value: String): String {
-        val trimmed = value.trim()
-        if (trimmed.length <= MAX_TRANSCRIPT_CHARS) return trimmed
-        var end = MAX_TRANSCRIPT_CHARS
-        if (
-            trimmed[end - 1].isHighSurrogate() &&
-            trimmed.getOrNull(end)?.isLowSurrogate() == true
-        ) {
-            end -= 1
-        }
-        return trimmed.substring(0, end)
     }
 
     private fun decodeUtf8(bytes: ByteArray): String = try {
@@ -119,6 +107,116 @@ object CloudSpeechResponseDecoder {
     private const val MAX_ALTERNATIVES = 5
 }
 
+internal data class SogouAsrResponse(
+    val transcript: CloudSpeechTranscript?,
+    val isFinal: Boolean,
+    val serverError: String? = null,
+)
+
+/** Strict decoder for one SRSS WebSocket text message. */
+internal object SogouAsrResponseDecoder {
+    fun decode(message: String): Result<SogouAsrResponse> = runCatching {
+        if (message.toByteArray(StandardCharsets.UTF_8).size >
+            CloudSpeechResponseDecoder.MAX_RESPONSE_BYTES
+        ) {
+            throw CloudSpeechResponseDecodingException(
+                CloudSpeechFailureKind.RESPONSE_TOO_LARGE,
+                "Sogou speech response exceeded the size ceiling",
+            )
+        }
+        val root = SpeechJsonParser(message).parse() as? SpeechJsonValue.ObjectValue
+            ?: protocolError("Sogou speech response root must be an object")
+        val errorValue = root.fields["error"]
+        if (errorValue.isPresentServerError()) {
+            return@runCatching SogouAsrResponse(
+                transcript = null,
+                isFinal = true,
+                serverError = serverErrorText(requireNotNull(errorValue)),
+            )
+        }
+
+        val resultsValue = root.fields["results"] ?: return@runCatching SogouAsrResponse(
+            transcript = null,
+            isFinal = false,
+        )
+        val results = resultsValue as? SpeechJsonValue.ArrayValue
+            ?: protocolError("Sogou speech results must be an array")
+
+        var selected: SogouAsrResponse? = null
+        results.values.forEach { value ->
+            val result = value as? SpeechJsonValue.ObjectValue
+                ?: protocolError("Sogou speech result must be an object")
+            val isFinal = result.boolean("is_final") == true
+            val alternatives = result.array("alternatives") ?: return@forEach
+            val first = alternatives.values.firstOrNull() as? SpeechJsonValue.ObjectValue
+                ?: return@forEach
+            val text = first.string("transcript")
+                ?.let(::boundedSpeechTranscript)
+                .orEmpty()
+            if (text.isEmpty() && !isFinal) return@forEach
+            val decodedAlternatives = alternatives.values
+                .drop(1)
+                .take(MAX_ALTERNATIVES - 1)
+                .mapNotNull { alternative ->
+                    (alternative as? SpeechJsonValue.ObjectValue)?.string("transcript")
+                        ?.let(::boundedSpeechTranscript)
+                        ?.takeIf(String::isNotEmpty)
+                }
+                .filterNot { it == text }
+                .distinct()
+            val candidate = SogouAsrResponse(
+                transcript = text.takeIf(String::isNotEmpty)?.let {
+                    CloudSpeechTranscript(it, decodedAlternatives)
+                },
+                isFinal = isFinal,
+            )
+            if (isFinal || selected?.isFinal != true) selected = candidate
+        }
+        selected ?: SogouAsrResponse(transcript = null, isFinal = false)
+    }
+
+    private fun serverErrorText(value: SpeechJsonValue): String {
+        val message = when (value) {
+            is SpeechJsonValue.StringValue -> value.value
+            is SpeechJsonValue.ObjectValue ->
+                value.string("message") ?: value.string("msg") ?: "unknown server error"
+            else -> "unknown server error"
+        }
+        return boundedSpeechTranscript(message).take(MAX_SERVER_ERROR_CHARS)
+    }
+
+    private fun SpeechJsonValue?.isPresentServerError(): Boolean = when (this) {
+        null,
+        SpeechJsonValue.NullValue,
+        SpeechJsonValue.BooleanValue(false),
+        -> false
+        is SpeechJsonValue.StringValue -> value.isNotBlank()
+        else -> true
+    }
+
+    private fun protocolError(message: String): Nothing =
+        throw CloudSpeechResponseDecodingException(
+            CloudSpeechFailureKind.PROTOCOL,
+            message,
+        )
+
+    private const val MAX_ALTERNATIVES = 5
+    private const val MAX_SERVER_ERROR_CHARS = 512
+}
+
+private fun boundedSpeechTranscript(value: String): String {
+    val trimmed = value.trim()
+    if (trimmed.length <= CloudSpeechResponseDecoder.MAX_TRANSCRIPT_CHARS) return trimmed
+    var end = CloudSpeechResponseDecoder.MAX_TRANSCRIPT_CHARS
+    if (
+        trimmed[end - 1].isHighSurrogate() &&
+        trimmed.getOrNull(end)?.isLowSurrogate() == true
+    ) {
+        end -= 1
+    }
+    return trimmed.substring(0, end)
+}
+
 private sealed interface SpeechJsonValue {
     data class ObjectValue(
         val fields: Map<String, SpeechJsonValue>,
@@ -131,6 +229,9 @@ private sealed interface SpeechJsonValue {
 
         fun array(name: String): ArrayValue? =
             fields[name] as? ArrayValue
+
+        fun boolean(name: String): Boolean? =
+            (fields[name] as? BooleanValue)?.value
     }
 
     data class ArrayValue(
@@ -139,6 +240,10 @@ private sealed interface SpeechJsonValue {
 
     data class StringValue(
         val value: String,
+    ) : SpeechJsonValue
+
+    data class BooleanValue(
+        val value: Boolean,
     ) : SpeechJsonValue
 
     data object ScalarValue : SpeechJsonValue
@@ -175,8 +280,8 @@ private class SpeechJsonParser(
             '{' -> parseObject(depth + 1)
             '[' -> parseArray(depth + 1)
             '"' -> SpeechJsonValue.StringValue(parseString())
-            't' -> parseLiteral("true", SpeechJsonValue.ScalarValue)
-            'f' -> parseLiteral("false", SpeechJsonValue.ScalarValue)
+            't' -> parseLiteral("true", SpeechJsonValue.BooleanValue(true))
+            'f' -> parseLiteral("false", SpeechJsonValue.BooleanValue(false))
             'n' -> parseLiteral("null", SpeechJsonValue.NullValue)
             '-', in '0'..'9' -> parseNumber()
             else -> fail("unexpected JSON token")

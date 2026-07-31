@@ -32,11 +32,13 @@ fun interface CloudSpeechHttpCallback {
     fun onResult(result: CloudSpeechHttpResult)
 }
 
-interface CloudSpeechHttpCall {
+interface CloudSpeechCall {
     val callId: Long
 
     fun cancel()
 }
+
+interface CloudSpeechHttpCall : CloudSpeechCall
 
 /**
  * Cancellable bounded HTTPS transport for prerecorded speech.

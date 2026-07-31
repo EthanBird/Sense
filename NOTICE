@@ -119,3 +119,26 @@ selects the first 20,000 eligible words. The generated asset is 161,139 bytes
 with SHA-256:
 1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624.
 It remains under the ISC License.
+
+OkHttp
+------
+
+Source: https://github.com/square/okhttp
+Package: com.squareup.okhttp3:okhttp 5.3.0
+Copyright: Square, Inc. and contributors
+License: Apache License 2.0
+License copy: licenses/okhttp-Apache-2.0.txt
+APK copy: assets/OKHTTP-APACHE-2.0.txt
+
+Concentus
+---------
+
+Source: https://github.com/lostromb/concentus
+Package: io.github.jaredmdobson:concentus 1.0.2
+Copyright: the Opus and Concentus copyright holders listed in the license copy
+License: BSD 3-Clause
+License copy: licenses/concentus-BSD-3-Clause.txt
+APK copy: assets/CONCENTUS-BSD-3-CLAUSE.txt
+
+Sense uses Concentus to encode 16 kHz mono PCM into Opus packets for the optional
+Sogou SRSS speech provider. No Concentus native binary is bundled.

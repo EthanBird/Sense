@@ -26,6 +26,8 @@ dependencies {
     api(project(":brain-api"))
     implementation(project(":ai-brain"))
     implementation(project(":ai-protocol"))
+    implementation(libs.okhttp)
+    implementation(libs.concentus)
     testImplementation(libs.junit)
     androidTestImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)

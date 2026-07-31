@@ -54,6 +54,7 @@ import io.github.ethanbird.senseime.service.ai.editor.EditorStaleReason
 import io.github.ethanbird.senseime.speech.AndroidSpeechRecognizerController
 import io.github.ethanbird.senseime.speech.CloudSpeechRecognitionController
 import io.github.ethanbird.senseime.speech.CloudSpeechRecognitionListener
+import io.github.ethanbird.senseime.speech.SpeechProviderCredentialRequirement
 import io.github.ethanbird.senseime.speech.SpeechProviderProfile
 import io.github.ethanbird.senseime.speech.SpeechProviderProtocol
 import io.github.ethanbird.senseime.speech.SpeechProviderPresetCatalog
@@ -2003,7 +2004,8 @@ private class ConfiguredSpeechProvider(
         return when {
             preset?.canTranscribe == false ->
                 preset.capabilityNotice ?: "当前语音提供商尚未启用"
-            profile.protocol != SpeechProviderProtocol.ANDROID_SYSTEM && !hadCredential ->
+            preset?.credentialRequirement == SpeechProviderCredentialRequirement.API_KEY &&
+                !hadCredential ->
                 "请先在设置中配置语音 API Key"
             else -> "无法启动${displayName}，请检查语音配置后重试"
         }

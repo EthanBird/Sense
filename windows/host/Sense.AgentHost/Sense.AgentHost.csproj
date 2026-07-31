@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApplicationIcon>..\..\native\tsf\resources\sense.ico</ApplicationIcon>
+    <AssemblyName>Sense.AgentHost</AssemblyName>
+    <RootNamespace>Sense.AgentHost</RootNamespace>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+</Project>

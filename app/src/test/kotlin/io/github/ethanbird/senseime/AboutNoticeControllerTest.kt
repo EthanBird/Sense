@@ -15,6 +15,8 @@ class AboutNoticeControllerTest {
                 "Sense GPL-3.0" to "LICENSE.txt",
                 "Rime Frost NOTICE" to "RIME-FROST-NOTICE.txt",
                 "Rime Frost GPL-3.0" to "RIME-FROST-GPL-3.0.txt",
+                "OkHttp Apache-2.0" to "OKHTTP-APACHE-2.0.txt",
+                "Concentus BSD-3-Clause" to "CONCENTUS-BSD-3-CLAUSE.txt",
             ),
             ABOUT_NOTICE_ASSETS,
         )

@@ -48,6 +48,7 @@ enum class SpeechProviderProtocol {
     ANDROID_SYSTEM,
     OPENAI_TRANSCRIPTIONS,
     DEEPGRAM_LISTEN,
+    SOGOU_SRSS,
     DASHSCOPE_REALTIME,
 }
 
@@ -76,6 +77,7 @@ data class SpeechProviderPreset(
     val defaultEndpointUrl: String? = null,
     val defaultModel: String? = null,
     val preferOnDevice: Boolean = false,
+    val allowConnectionOverrides: Boolean = true,
     val capabilityNotice: String? = null,
 ) {
     val canTranscribe: Boolean
@@ -95,13 +97,15 @@ data class SpeechProviderPreset(
 }
 
 /**
- * Versioned local catalog. Endpoint defaults are ordinary configuration, never capability claims.
+ * Versioned local catalog. A preset may lock its connection fields when they are protocol data
+ * rather than user configuration.
  */
 object SpeechProviderPresetCatalog {
-    const val CATALOG_VERSION = 1
+    const val CATALOG_VERSION = 2
     const val SYSTEM = "android-system"
     const val OPENAI_COMPATIBLE = "openai-compatible"
     const val DEEPGRAM = "deepgram"
+    const val SOGOU = "sogou-srss"
     const val ALIBABA_DASHSCOPE = "alibaba-dashscope"
 
     private const val CONFIGURATION_ONLY_NOTICE =
@@ -117,6 +121,7 @@ object SpeechProviderPresetCatalog {
             runtimeCapability = SpeechProviderRuntimeCapability.AVAILABLE,
             credentialRequirement = SpeechProviderCredentialRequirement.NONE,
             preferOnDevice = true,
+            allowConnectionOverrides = false,
         ),
         SpeechProviderPreset(
             id = OPENAI_COMPATIBLE,
@@ -139,6 +144,18 @@ object SpeechProviderPresetCatalog {
             credentialRequirement = SpeechProviderCredentialRequirement.API_KEY,
             defaultEndpointUrl = "https://api.deepgram.com/v1/listen",
             defaultModel = "nova-3",
+        ),
+        SpeechProviderPreset(
+            id = SOGOU,
+            displayName = "搜狗在线语音（免配置）",
+            description = "内置搜狗 SRSS 在线识别；选择后即可使用，无需 API Key",
+            transport = SpeechProviderTransport.WEBSOCKET_PCM,
+            protocol = SpeechProviderProtocol.SOGOU_SRSS,
+            runtimeCapability = SpeechProviderRuntimeCapability.AVAILABLE,
+            credentialRequirement = SpeechProviderCredentialRequirement.NONE,
+            defaultEndpointUrl = SogouAsrProtocol.ENDPOINT_URL,
+            defaultModel = "srss-wfst",
+            allowConnectionOverrides = false,
         ),
         SpeechProviderPreset(
             id = ALIBABA_DASHSCOPE,
@@ -243,6 +260,18 @@ object SpeechProviderValidator {
                 SpeechProviderErrorCode.PRESET_MISMATCH,
                 "$.protocol",
                 "transport and protocol must match the selected preset",
+            )
+        } else if (
+            !preset.allowConnectionOverrides &&
+            (
+                profile.endpointUrl != preset.defaultEndpointUrl ||
+                    profile.model != preset.defaultModel
+            )
+        ) {
+            errors += error(
+                SpeechProviderErrorCode.PRESET_MISMATCH,
+                "$.endpoint_url",
+                "connection settings must match the selected built-in preset",
             )
         }
 

@@ -23,6 +23,7 @@ class CloudSpeechRecognitionController(
         maxDurationMillis = maxDurationMillis,
     )
     private val httpsClient = CloudSpeechHttpsClient(callbackExecutor = eventExecutor)
+    private val sogouClient = SogouAsrWebSocketClient(callbackExecutor = eventExecutor)
     private val gate = CloudSpeechSessionGate()
     private val lock = Any()
     private var active: Session? = null
@@ -41,9 +42,14 @@ class CloudSpeechRecognitionController(
         }
         require(
             profile.protocol == SpeechProviderProtocol.OPENAI_TRANSCRIPTIONS ||
-                profile.protocol == SpeechProviderProtocol.DEEPGRAM_LISTEN,
+                profile.protocol == SpeechProviderProtocol.DEEPGRAM_LISTEN ||
+                profile.protocol == SpeechProviderProtocol.SOGOU_SRSS,
         ) { "profile is not handled by the cloud speech controller" }
-        SpeechProviderCredentialPolicy.requireValid(apiKey)
+        if (preset.credentialRequirement == SpeechProviderCredentialRequirement.API_KEY) {
+            SpeechProviderCredentialPolicy.requireValid(apiKey)
+        } else {
+            require(apiKey.isEmpty()) { "this speech provider does not accept an API key" }
+        }
 
         val session = synchronized(lock) {
             check(!destroyed) { "cloud speech controller is destroyed" }
@@ -99,7 +105,7 @@ class CloudSpeechRecognitionController(
             current
         }
         recorder.cancel(sessionId)
-        session.httpCall?.cancel()
+        session.remoteCall?.cancel()
         session.eraseKey()
         emitRaw(session.listener, SpeechRecognitionEvent.Cancelled(sessionId))
         return true
@@ -114,12 +120,13 @@ class CloudSpeechRecognitionController(
         }
         session?.let {
             recorder.cancel(it.token.sessionId)
-            it.httpCall?.cancel()
+            it.remoteCall?.cancel()
             it.eraseKey()
             emitRaw(it.listener, SpeechRecognitionEvent.Destroyed)
         }
         recorder.close()
         httpsClient.close()
+        sogouClient.close()
     }
 
     private fun beginUpload(
@@ -148,6 +155,11 @@ class CloudSpeechRecognitionController(
                 session,
                 SpeechRecognitionEvent.ProcessingRequested(session.token.sessionId),
             )
+        }
+
+        if (session.profile.protocol == SpeechProviderProtocol.SOGOU_SRSS) {
+            beginSogouUpload(session, audio)
+            return
         }
 
         val request = try {
@@ -196,7 +208,65 @@ class CloudSpeechRecognitionController(
         session.eraseKey()
         synchronized(lock) {
             if (active === session && gate.isCurrent(session.token)) {
-                session.httpCall = call
+                session.remoteCall = call
+            } else {
+                call.cancel()
+            }
+        }
+    }
+
+    private fun beginSogouUpload(
+        session: Session,
+        audio: Pcm16WavAudio,
+    ) {
+        val call = try {
+            sogouClient.transcribe(
+                profile = session.profile,
+                audio = audio,
+                callback = object : SogouAsrCallback {
+                    override fun onPartialResult(transcript: CloudSpeechTranscript) {
+                        emitIfCurrent(
+                            session,
+                            SpeechRecognitionEvent.PartialResult(
+                                sessionId = session.token.sessionId,
+                                text = transcript.text,
+                            ),
+                        )
+                    }
+
+                    override fun onResult(result: CloudSpeechHttpResult) {
+                        when (result) {
+                            is CloudSpeechHttpResult.Success -> finishSucceeded(
+                                session,
+                                result.transcript,
+                            )
+                            is CloudSpeechHttpResult.Failure -> {
+                                if (result.failure.kind == CloudSpeechFailureKind.CANCELLED) {
+                                    finishCancelled(session)
+                                } else {
+                                    finishFailed(session, result.failure)
+                                }
+                            }
+                        }
+                    }
+                },
+            ).getOrThrow()
+        } catch (_: RuntimeException) {
+            finishFailed(
+                session,
+                CloudSpeechFailure(
+                    kind = CloudSpeechFailureKind.INTERNAL,
+                    message = "搜狗语音请求启动失败",
+                ),
+            )
+            return
+        } finally {
+            audio.erase()
+        }
+        session.eraseKey()
+        synchronized(lock) {
+            if (active === session && gate.isCurrent(session.token)) {
+                session.remoteCall = call
             } else {
                 call.cancel()
             }
@@ -306,7 +376,7 @@ class CloudSpeechRecognitionController(
         val listener: CloudSpeechRecognitionListener,
     ) {
         var phase: SessionPhase = SessionPhase.RECORDING
-        var httpCall: CloudSpeechHttpCall? = null
+        var remoteCall: CloudSpeechCall? = null
 
         fun eraseKey() {
             apiKey.fill('\u0000')

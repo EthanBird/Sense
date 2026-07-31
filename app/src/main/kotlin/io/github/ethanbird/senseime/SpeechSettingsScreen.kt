@@ -207,7 +207,7 @@ internal class SpeechSettingsScreen(
             )
         }
         val apiKey =
-            views.secretField(R.string.speech_provider_key, "可选；系统模式无需 Key")
+            views.secretField(R.string.speech_provider_key, "免 Key Provider 无需填写")
         val endpoint = views.editField(R.string.speech_provider_endpoint, "https://…")
         val model = views.editField(R.string.speech_provider_model, "model")
         val advanced = views.switch(R.string.speech_provider_advanced)
@@ -371,15 +371,15 @@ internal class SpeechSettingsScreen(
         val current = binding ?: return
         val preset = selectedPreset()
         val profile = preset.defaultProfile(selectedLanguageTag()).copy(
-            endpointUrl = if (preset.defaultEndpointUrl == null) {
-                null
-            } else {
-                current.endpoint.text.toString().trim()
+            endpointUrl = when {
+                preset.defaultEndpointUrl == null -> null
+                !preset.allowConnectionOverrides -> preset.defaultEndpointUrl
+                else -> current.endpoint.text.toString().trim()
             },
-            model = if (preset.defaultModel == null) {
-                null
-            } else {
-                current.model.text.toString().trim()
+            model = when {
+                preset.defaultModel == null -> null
+                !preset.allowConnectionOverrides -> preset.defaultModel
+                else -> current.model.text.toString().trim()
             },
         )
         val validation = profile.validate()
@@ -522,14 +522,16 @@ internal class SpeechSettingsScreen(
 
     private fun updateAdvancedVisibility() {
         val current = binding ?: return
-        val cloud = selectedPreset().defaultEndpointUrl != null
-        current.advanced.isEnabled = cloud
-        if (!cloud && current.advanced.isChecked) {
+        val editableConnection = selectedPreset().let {
+            it.defaultEndpointUrl != null && it.allowConnectionOverrides
+        }
+        current.advanced.isEnabled = editableConnection
+        if (!editableConnection && current.advanced.isChecked) {
             current.advanced.isChecked = false
             return
         }
         current.advancedFields.visibility =
-            if (cloud && current.advanced.isChecked) View.VISIBLE else View.GONE
+            if (editableConnection && current.advanced.isChecked) View.VISIBLE else View.GONE
     }
 
     private fun updateKeyHint() {
@@ -561,6 +563,8 @@ internal class SpeechSettingsScreen(
                     !hasPermission() -> R.string.speech_provider_permission_needed
                     preset.id == SpeechProviderPresetCatalog.SYSTEM ->
                         R.string.speech_provider_system_ready
+                    preset.credentialRequirement == SpeechProviderCredentialRequirement.NONE ->
+                        R.string.speech_provider_builtin_ready
                     else -> R.string.speech_provider_cloud_ready
                 },
             )

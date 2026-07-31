@@ -4,7 +4,7 @@
     <string name="brand_english">SENSE</string>
     <string name="brand_chinese">先思输入法</string>
     <string name="brand_tagline">先输入，再思考；需要时，让 AI 接住下一步。</string>
-    <string name="stage_badge">v0.4.5.beta.6 · 智能混拼与中文优先预览版</string>
+    <string name="stage_badge">v0.4.5.beta.7 · 免配置搜狗语音预览版</string>
     <string name="ime_status_title">输入法状态</string>
     <string name="ime_enabled">Sense 已在系统输入法列表中启用</string>
     <string name="ime_disabled">Sense 尚未启用，先完成系统设置</string>
@@ -163,7 +163,7 @@
     <string name="agent_tools_status_save_failed">工具配置保存失败，已恢复上一次选择。</string>
     <string name="agent_tools_status_invalid">工具配置无法完整读取。为避免覆盖原配置，请重启后重试。</string>
     <string name="speech_provider_title">语音转文字</string>
-    <string name="speech_provider_body">默认使用系统语音识别并优先尝试设备端模型。OpenAI-compatible 与 Deepgram 可在短时录音停止后通过 HTTPS 转写；录音仅在内存中处理，不落盘。阿里云百炼目前只提供安全配置预览。云端密钥按 Provider 与地址隔离。</string>
+    <string name="speech_provider_body">默认使用系统语音识别并优先尝试设备端模型。搜狗在线语音已内置，可免 Key 直接使用；OpenAI-compatible 与 Deepgram 可在短时录音停止后通过 HTTPS 转写。录音仅在内存中处理，不落盘。阿里云百炼目前只提供配置预览。云端密钥按 Provider 与地址隔离。</string>
     <string name="speech_provider_preset">语音 Provider</string>
     <string name="speech_provider_language">识别语言</string>
     <string name="speech_provider_key">语音 API Key</string>
@@ -174,6 +174,7 @@
     <string name="speech_provider_clear_key">清除已保存的语音 API Key</string>
     <string name="speech_provider_not_configured">尚未配置，将使用系统语音识别。</string>
     <string name="speech_provider_system_ready">系统语音识别已就绪，可从键盘工具栏启动。</string>
+    <string name="speech_provider_builtin_ready">该内置语音 Provider 已就绪，无需 API Key，可从键盘工具栏启动。</string>
     <string name="speech_provider_cloud_ready">该语音 Provider 已就绪；保存对应 API Key 后可从键盘工具栏启动。</string>
     <string name="speech_provider_permission_needed">请先授予麦克风权限，再从键盘工具栏启动。</string>
     <string name="speech_provider_configuration_only">该云端 Provider 目前仅保存配置，不会被键盘当作可执行转写适配器。</string>
@@ -187,7 +188,7 @@
     <string name="speech_provider_key_cleared">语音 API Key 已清除，非敏感配置仍保留。</string>
     <string name="speech_provider_key_saved">已安全保存；留空保持不变</string>
     <string name="speech_provider_key_required">云端模式需要 API Key；仅同一 Provider 和地址可留空保留</string>
-    <string name="speech_provider_key_not_required">系统模式无需 API Key</string>
+    <string name="speech_provider_key_not_required">此 Provider 无需 API Key</string>
     <string name="speech_permission_grant">授予麦克风权限</string>
     <string name="speech_permission_granted">麦克风权限已授予</string>
     <string name="speech_permission_open_settings">前往系统设置授予麦克风权限</string>
@@ -200,5 +201,5 @@
     <string name="dictionary_notice_body">项目与生产中文词库按 GPL-3.0-only 发布；中文词条来自固定 commit、可离线重建的 Rime Frost 首选源。点击离线查看完整来源、署名与许可。</string>
     <string name="dictionary_notice_load_error">无法读取随应用打包的许可文件。</string>
     <string name="close">关闭</string>
-    <string name="version_label">版本 0.4.5.beta.6 · Android 10+</string>
+    <string name="version_label">版本 0.4.5.beta.7 · Android 10+</string>
 </resources>

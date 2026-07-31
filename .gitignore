@@ -16,3 +16,6 @@ captures/
 .artifacts/
 __pycache__/
 *.pyc
+windows/out/
+windows/host/**/bin/
+windows/host/**/obj/

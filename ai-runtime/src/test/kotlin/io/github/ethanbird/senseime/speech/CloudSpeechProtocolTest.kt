@@ -93,4 +93,14 @@ class CloudSpeechProtocolTest {
         assertFalse(request.toString().contains("RIFF"))
         assertFalse(request.toString().contains("Authorization"))
     }
+
+    @Test
+    fun `Sogou provider is routed away from HTTPS request factory`() {
+        val result = CloudSpeechRequestFactory.create(
+            SpeechProviderPresetCatalog.require(SpeechProviderPresetCatalog.SOGOU).defaultProfile(),
+            Pcm16WavEncoder.encode(byteArrayOf(1, 0)),
+        )
+
+        assertTrue(result.isFailure)
+    }
 }

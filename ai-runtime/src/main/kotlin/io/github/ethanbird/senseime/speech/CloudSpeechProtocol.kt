@@ -229,6 +229,8 @@ object CloudSpeechRequestFactory {
                 createDeepgram(profile, wavAudio)
             SpeechProviderProtocol.ANDROID_SYSTEM ->
                 error("system speech recognition does not use the cloud request factory")
+            SpeechProviderProtocol.SOGOU_SRSS ->
+                error("Sogou SRSS uses its WebSocket adapter")
             SpeechProviderProtocol.DASHSCOPE_REALTIME ->
                 error("DashScope realtime adapter is configuration-only")
         }.also {

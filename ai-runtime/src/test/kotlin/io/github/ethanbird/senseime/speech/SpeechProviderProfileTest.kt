@@ -8,7 +8,7 @@ import org.junit.Test
 
 class SpeechProviderProfileTest {
     @Test
-    fun `catalog exposes executable system OpenAI and Deepgram providers`() {
+    fun `catalog exposes executable system keyless Sogou and keyed cloud providers`() {
         val system = SpeechProviderPresetCatalog.require(SpeechProviderPresetCatalog.SYSTEM)
         assertTrue(system.canTranscribe)
         assertEquals(
@@ -32,6 +32,13 @@ class SpeechProviderProfileTest {
             )
             assertTrue(preset.capabilityNotice.isNullOrBlank())
         }
+
+        val sogou = SpeechProviderPresetCatalog.require(SpeechProviderPresetCatalog.SOGOU)
+        assertTrue(sogou.canTranscribe)
+        assertEquals(SpeechProviderProtocol.SOGOU_SRSS, sogou.protocol)
+        assertEquals(SpeechProviderCredentialRequirement.NONE, sogou.credentialRequirement)
+        assertFalse(sogou.allowConnectionOverrides)
+        assertEquals(SogouAsrProtocol.ENDPOINT_URL, sogou.defaultEndpointUrl)
 
         val dashScope = SpeechProviderPresetCatalog.require(
             SpeechProviderPresetCatalog.ALIBABA_DASHSCOPE,
@@ -136,5 +143,26 @@ class SpeechProviderProfileTest {
         assertEquals(SpeechProviderTransport.HTTP_AUDIO_WAV, migrated.transport)
         assertEquals("https://api.deepgram.com/v1/listen", migrated.endpointUrl)
         assertTrue(migrated.validate().isValid)
+    }
+
+    @Test
+    fun `built-in Sogou connection settings are fixed`() {
+        val preset = SpeechProviderPresetCatalog.require(SpeechProviderPresetCatalog.SOGOU)
+
+        val changedEndpoint = preset.defaultProfile().copy(
+            endpointUrl = "wss://example.com/srss",
+        )
+        val changedModel = preset.defaultProfile().copy(model = "other")
+
+        assertTrue(
+            changedEndpoint.validate().errors.any {
+                it.code == SpeechProviderErrorCode.PRESET_MISMATCH
+            },
+        )
+        assertTrue(
+            changedModel.validate().errors.any {
+                it.code == SpeechProviderErrorCode.PRESET_MISMATCH
+            },
+        )
     }
 }
