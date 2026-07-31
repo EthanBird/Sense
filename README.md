@@ -2,11 +2,11 @@
 
 > Android 原生高性能中文输入法：普通输入完全本地运行，AI、记忆与工具能力通过可配置的长按方向 Skill 显式触发。
 
-**项目状态：** `v0.4.5.beta.5` 解码质量、Frost 词库与个性化排序预发布
+**项目状态：** `v0.4.5.beta.6` 智能混拼、中文优先排序与候选分词预发布
 
-**当前版本：** `v0.4.5.beta.5`（`versionCode 26`）
+**当前版本：** `v0.4.5.beta.6`（`versionCode 27`）
 
-**更新日期：** 2026-07-30
+**更新日期：** 2026-07-31
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
 
 本文基于《GlassIME Android AI 中文输入法产品与技术设计文档 v0.1》重新整理，并统一改名为：
@@ -22,7 +22,7 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.5.beta.5 Decoder quality and Frost lexicon
+## 0. 当前迭代：v0.4.5.beta.6 Mixed pinyin and Chinese-first ranking
 
 `v0.4.5` 在 v0.4.4 的开放工具、完整 Agent Journal 和本地记忆之上，把 Skills
 交付为可配置、可修订、可由 Agent 智能读取和管理的长期系统：
@@ -64,7 +64,14 @@ hash/CAS/写后验证继续有效；这些边界防止状态错写，但不限�
 `skill_read` 和 `skill_manage`，且不会删除任何用户数据。完整草稿使用原子 recovery
 snapshot 与有界生命周期 durability handoff。
 
-`v0.4.5.beta.5` 深入重做中文候选召回和排序：全拼 exact、整句组合、简拼、混拼、
+`v0.4.5.beta.6` 在统一解码器上加入有界混拼音节图：连续输入会同时探索完整音节、
+声母缩写、`zh/ch/sh` 和未完成尾部，并用词典前缀即时剪枝。例如 `hunshenxs` 会按
+候选元数据解释为 `hun'shen'x's`，召回“浑身解数”，而不是依赖单词特例。单字母中文
+模式改为由真实单汉字拼音证据驱动，宽泛英文补全只保留少量入口；完整英文 exact
+仍按强证据参与统一排序。候选栏仅在中文 Top-1 就绪后展示候选对齐的隐式分隔，
+编辑器 composition 始终保留原始输入。
+
+本版本继续深入重做中文候选召回和排序：全拼 exact、整句组合、简拼、混拼、
 前缀、英文、用户词与纠错路径进入统一分数域；拼写纠错由穷举查询改为带音节边界和
 编辑代价的有界 spelling graph；动态整句 lattice 扩大音节边与 beam，同时按片段
 归一化长句分数。最终来源先验为 canonical exact/composition `+8/+6`、普通
@@ -96,19 +103,18 @@ paths 和 4 个 composed probes；已有 exact 或规范组合且 `outputLimit <
 扩展到 608,314；Frost、bigram、英文词表和 SQLite 迁移在专用线程构建完整解码器后
 原子热切换，不阻塞 IME 创建主线程。项目与 APK 许可同步切换为 GPL-3.0-only。
 
-最终 M3 contextual 回放达到 Top-1 `92/120（76.67%）`、Top-3 `83.33%`、Top-10
-`109/120（90.83%）`、Coverage `118/120（98.33%）`、MRR `0.8140`；门禁为
-Top-1/Top-10/Coverage/MRR `70%/85%/93%/0.75`，hybrid 另要求 Top-1 至少
-`10/11` 并保持 `rengzn → 人工智能` sentinel。非 typo、limit 255 的 Host p95/p99
-为 `12.858/15.596 ms`，typo 为 `11.417/11.454 ms`。最新 M4 的 initials、渐进
-limit 16、渐进 limit 255 和组合 p95 分别为 `0.037/0.402/0.839/2.578 ms`，其中
-limit 255 前缀候选数为 51；M5 的英文词典、中英混合渐进解码和 hybrid p95 分别为
-`5.802 µs`、`0.623 ms`、`0.497 ms`。
+最终 M3 contextual 回放达到 Top-1 `99/126（78.57%）`、Top-3 `107/126（84.92%）`、
+Top-10 `115/126（91.27%）`、Coverage `124/126（98.41%）`、MRR `0.8296`；门禁为
+Top-1/Top-10/Coverage/MRR `70%/85%/93%/0.75`，hybrid `17/17` Top-1。最新 M4 的
+initials、渐进 limit 16、渐进 limit 255 和组合 p95 分别为
+`0.019/0.224/0.578/2.069 ms`，其中 limit 255 前缀候选数为 51。M5 的英文词典、
+中英混合渐进解码和 hybrid p95 分别为 `3.657 µs`、`0.758 ms`、`0.157 ms`；
+10 条动态混拼逐查询最大 p95 为 `2.406 ms`，低于 `5 ms` 门禁。
 
 决策记录见 [ADR 0022](docs/adr/0022-gpl-rime-frost-lexicon-pipeline.md) 与
 [ADR 0023](docs/adr/0023-v0.4.5-beta5-decoder-quality.md)，详细发布门禁见
-[`v0.4.5.beta.5` 预发布说明](docs/releases/v0.4.5.beta.5.md)，最新发布资产见
-[`v0.4.5.beta.5` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.5)。
+[`v0.4.5.beta.6` 预发布说明](docs/releases/v0.4.5.beta.6.md)，最新发布资产见
+[`v0.4.5.beta.6` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.6)。
 
 `v0.4.5.beta.4` 修复键盘刚显示、窗口切换或目录观察 catch-up 时，等价 Skill catalog
 重复发布会撤销已开始长按的问题：解析结果、显示标签与 active Skill 均未变化时保留
@@ -154,7 +160,7 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
 | Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
 | 既有质量 | AI、IME、UI、Core、M0–M6、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 26`、`versionName 0.4.5.beta.5`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据 | `versionCode 27`、`versionName 0.4.5.beta.6`、`minSdk 29`、`targetSdk 36` |
 
 仓库不再运行 GitHub Actions；测试、Lint、性能门禁、APK 构建和签名校验统一在 Windows
 本地执行。完整本地验证与构建：
@@ -171,11 +177,11 @@ powershell -ExecutionPolicy Bypass -File tools/local_release.ps1 -Publish
 
 `-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。
 
-> **v0.4.5.beta.5 发布收口：** 本轮源码整合冻结后将重新运行并人工审查 X-02
+> **v0.4.5.beta.6 发布收口：** 本轮源码整合冻结后将重新运行并人工审查 X-02
 > production source、build authority 与 offline gate 的 exact SHA-256，并同步刷新
 > boundary baseline。正式本地发布会在同一 release `HEAD` 上再次执行 source/artifact
 > gate，并把结果与 APK 签名、校验和一起归档到
-> [`v0.4.5.beta.5` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.5)。
+> [`v0.4.5.beta.6` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.6)。
 
 标准工程验证命令：
 
@@ -473,7 +479,7 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.4.5.beta.5` 解码质量、Frost 词库与
+以下保留 M0 的实施记录；当前代码位于 `v0.4.5.beta.6` 智能混拼、中文优先排序与
 个性化排序预发布阶段。
 现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。
