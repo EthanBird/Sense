@@ -40,6 +40,8 @@ internal class ChineseInputSchemeCoordinator(
 
     var t9: T9Composition = T9Composition()
         private set
+    var t9EditorText: String = ""
+        private set
     var wubi: WubiComposition = WubiComposition()
         private set
     var leftContext: String = ""
@@ -59,6 +61,12 @@ internal class ChineseInputSchemeCoordinator(
             ChineseInputScheme.WUBI_86 -> wubi.visibleCode
             ChineseInputScheme.PINYIN_QWERTY -> ""
         }
+    val editorComposingText: String
+        get() = when (scheme) {
+            ChineseInputScheme.PINYIN_T9 -> t9EditorText
+            ChineseInputScheme.WUBI_86 -> wubi.visibleCode
+            ChineseInputScheme.PINYIN_QWERTY -> ""
+        }
     val hasComposition: Boolean
         get() = rawCode.isNotEmpty()
     val isWubiReverseLookup: Boolean
@@ -66,10 +74,23 @@ internal class ChineseInputSchemeCoordinator(
     val learnsPinyinOnCommit: Boolean
         get() = scheme == ChineseInputScheme.PINYIN_T9 || isWubiReverseLookup
 
+    /** Source-compatible fast path for callers that publish the raw alternative code. */
     fun type(
         character: Char,
         captureLeftContext: () -> String,
         publish: (String) -> Boolean,
+    ): AlternativeEditResult = type(
+        character = character,
+        captureLeftContext = captureLeftContext,
+        publish = publish,
+        presentT9 = T9Composition::rawDigits,
+    )
+
+    fun type(
+        character: Char,
+        captureLeftContext: () -> String,
+        publish: (String) -> Boolean,
+        presentT9: (T9Composition) -> String = T9Composition::rawDigits,
     ): AlternativeEditResult {
         val previousRaw = rawCode
         return when (scheme) {
@@ -84,7 +105,8 @@ internal class ChineseInputSchemeCoordinator(
                 }
                 if (next == previous) return AlternativeEditResult.CONSUMED
                 val nextLeftContext = leftContextForEdit(previousRaw, captureLeftContext)
-                if (!publish(next.rawDigits)) return AlternativeEditResult.REJECTED
+                val nextEditorText = presentT9(next)
+                if (!publish(nextEditorText)) return AlternativeEditResult.REJECTED
                 if (
                     scheme != ChineseInputScheme.PINYIN_T9 ||
                     schemeEpoch != expectedEpoch ||
@@ -93,6 +115,7 @@ internal class ChineseInputSchemeCoordinator(
                     return AlternativeEditResult.REJECTED
                 }
                 t9 = next
+                t9EditorText = nextEditorText
                 completeEdit(nextLeftContext)
                 AlternativeEditResult.CHANGED
             }
@@ -119,14 +142,24 @@ internal class ChineseInputSchemeCoordinator(
         }
     }
 
-    fun backspace(publish: (String) -> Boolean): Boolean {
+    fun backspace(publish: (String) -> Boolean): Boolean = backspace(
+        publish = publish,
+        presentT9 = T9Composition::rawDigits,
+    )
+
+    fun backspace(
+        publish: (String) -> Boolean,
+        presentT9: (T9Composition) -> String = T9Composition::rawDigits,
+    ): Boolean {
         when (scheme) {
             ChineseInputScheme.PINYIN_QWERTY -> return false
             ChineseInputScheme.PINYIN_T9 -> {
                 val previous = t9
                 val expectedEpoch = schemeEpoch
                 val next = previous.backspace()
-                if (next == previous || !publish(next.rawDigits)) return false
+                if (next == previous) return false
+                val nextEditorText = presentT9(next)
+                if (!publish(nextEditorText)) return false
                 if (
                     scheme != ChineseInputScheme.PINYIN_T9 ||
                     schemeEpoch != expectedEpoch ||
@@ -135,6 +168,7 @@ internal class ChineseInputSchemeCoordinator(
                     return false
                 }
                 t9 = next
+                t9EditorText = nextEditorText
             }
             ChineseInputScheme.WUBI_86 -> {
                 val previous = wubi
@@ -153,6 +187,23 @@ internal class ChineseInputSchemeCoordinator(
         }
         if (rawCode.isEmpty()) leftContext = ""
         advancePresentationRevision()
+        return true
+    }
+
+    /** Clears the current T9 transaction for the dedicated "reinput" rail action. */
+    fun clearT9Composition(publish: (String) -> Boolean): Boolean {
+        if (scheme != ChineseInputScheme.PINYIN_T9 || t9.rawDigits.isEmpty()) return false
+        val previous = t9
+        val expectedEpoch = schemeEpoch
+        if (!publish("")) return false
+        if (
+            scheme != ChineseInputScheme.PINYIN_T9 ||
+            schemeEpoch != expectedEpoch ||
+            t9 != previous
+        ) {
+            return false
+        }
+        resetAlternativeState()
         return true
     }
 
@@ -228,6 +279,45 @@ internal class ChineseInputSchemeCoordinator(
     fun select(presentationRevision: Long, sourceIndex: Int): Candidate? =
         candidateSession.select(presentationRevision, sourceIndex)
 
+    /**
+     * Locks one revision-bound spelling from the T9 side rail.
+     *
+     * The raw digit stream stays unchanged, so the editor composition does not need another IPC
+     * publication. Both the local T9 revision and the opaque presentation revision advance before
+     * stale candidates are discarded.
+     */
+    fun selectT9PinyinChoice(
+        presentationRevision: Long,
+        sourceIndex: Int,
+        publish: (String) -> Boolean = { true },
+        presentT9: (T9Composition) -> String = T9Composition::rawDigits,
+    ): Boolean {
+        if (scheme != ChineseInputScheme.PINYIN_T9) return false
+        val choice = candidateSession.selectT9PinyinChoice(
+            presentationRevision = presentationRevision,
+            sourceIndex = sourceIndex,
+        ) ?: return false
+        val previous = t9
+        val expectedEpoch = schemeEpoch
+        val next = previous.selectPinyin(choice)
+        if (next == previous) return false
+        val nextEditorText = presentT9(next)
+        if (!publish(nextEditorText)) return false
+        if (
+            scheme != ChineseInputScheme.PINYIN_T9 ||
+            schemeEpoch != expectedEpoch ||
+            t9 != previous ||
+            this.presentationRevision != presentationRevision
+        ) {
+            return false
+        }
+        t9 = next
+        t9EditorText = nextEditorText
+        advancePresentationRevision()
+        candidateSession.clear()
+        return true
+    }
+
     fun currentDecoding(): AlternativeDecoding? {
         val current = candidateSession.current
         return current.decoding?.takeIf {
@@ -251,6 +341,7 @@ internal class ChineseInputSchemeCoordinator(
 
     private fun resetAlternativeState() {
         t9 = T9Composition()
+        t9EditorText = ""
         wubi = WubiComposition()
         leftContext = ""
         schemeEpoch = nextGeneration(schemeEpoch)

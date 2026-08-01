@@ -18,6 +18,8 @@ internal interface KeyboardInteractionActionSink {
     fun onClipboardAction(action: KeyboardClipboardAction, index: Int)
     fun onEditorAction(action: KeyboardEditorAction)
     fun onSettingsAction()
+    fun onT9PinyinChoiceSelected(revision: Long, index: Int) = Unit
+    fun onInputSchemeSelected(choice: KeyboardInputSchemeChoice) = Unit
     fun onAiHoldStarted(generation: Long)
     fun onAiHoldCancelled(generation: Long)
     fun onAiStopRequested(generation: Long)
@@ -42,6 +44,7 @@ internal interface KeyboardInteractionHost {
 
     var interactionPanel: KeyboardPanel
     var interactionPrimaryMode: PrimaryKeyboardMode
+    var interactionInputSchemeChoice: KeyboardInputSchemeChoice
     var interactionEmojiGroupIndex: Int
     var interactionSymbolCategoryIndex: Int
     var interactionClipboardPageIndex: Int
@@ -528,6 +531,22 @@ internal class KeyboardInteractionController(
         if (changed) invalidateCandidateViewport()
     }
 
+    /** Cancels only frozen targets whose left-rail spelling changed after an async decode. */
+    fun cancelT9PinyinRailPointers() {
+        var changed = false
+        for (index in pressedTargets.size() - 1 downTo 0) {
+            val target = pressedTargets.valueAt(index)
+            if (!target.isT9PinyinRailPointerTarget()) continue
+            val pointerId = pressedTargets.keyAt(index)
+            touchReducer.cancel(pointerId)
+            pressedTargets.removeAt(index)
+            panelScroll.forgetPointer(pointerId)
+            invalidateTouchTarget(target)
+            changed = true
+        }
+        if (changed) scheduler.postInvalidateOnAnimation()
+    }
+
     fun cancelOrdinaryTouches() {
         gestureCoordinator.cancelSkillGesture()
         clearOrdinaryPointerCore()
@@ -807,16 +826,4 @@ internal class KeyboardInteractionController(
         const val CANDIDATE_FAST_FLING_VELOCITY_DP_PER_SECOND = 720f
         const val CANDIDATE_SETTLE_DURATION_MILLIS = 180L
     }
-}
-
-internal fun FrozenTouchTarget.isCandidatePointerTarget(): Boolean = when (this) {
-    is FrozenTouchTarget.CandidateValue,
-    is FrozenTouchTarget.CandidateControlValue,
-    is FrozenTouchTarget.CandidatePageArea,
-    is FrozenTouchTarget.CandidateStripArea,
-    -> true
-
-    is FrozenTouchTarget.KeyValue,
-    is FrozenTouchTarget.PanelScrollArea,
-    -> false
 }

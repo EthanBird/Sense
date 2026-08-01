@@ -40,6 +40,28 @@ class AlternativeCommitSnapshotTest {
     }
 
     @Test
+    fun t9CommitTracksThePublishedPinyinLengthSeparatelyFromRawDigits() {
+        val coordinator = coordinator(ChineseInputScheme.PINYIN_T9)
+        val visible = "hun'shen'x's"
+        "486743697".forEach { digit ->
+            coordinator.type(
+                character = digit,
+                captureLeftContext = { "" },
+                publish = { true },
+                presentT9 = { visible },
+            )
+        }
+
+        val snapshot = snapshot(coordinator, hasCandidate = true)
+
+        assertEquals("486743697", snapshot.rawCode)
+        assertEquals(visible, snapshot.editorComposingText)
+        assertEquals(visible.length, snapshot.editorComposingLength)
+        assertEquals(visible, snapshot.outputText(candidateText = null))
+        assertEquals("浑身解数", snapshot.outputText(candidateText = "浑身解数"))
+    }
+
+    @Test
     fun directWubiCommitUsesWubiRoute() {
         val coordinator = coordinator(ChineseInputScheme.WUBI_86)
         coordinator.type('a', { "" }) { true }

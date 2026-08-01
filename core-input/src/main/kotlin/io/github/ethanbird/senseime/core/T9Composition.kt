@@ -8,6 +8,24 @@ data class T9LockedEdge(
 )
 
 /**
+ * Immutable edit journal used to make T9 backspace undo the most recent user action.
+ *
+ * Digits, explicit joints and spelling locks can be interleaved. Keeping that order avoids
+ * guessing from the final sets (for example, a digit typed after selecting `hun` must be removed
+ * before the earlier selection is unlocked).
+ */
+sealed interface T9EditOperation {
+    data object Digit : T9EditOperation
+
+    data class Joint(val digitOffset: Int) : T9EditOperation
+
+    data class Lock(
+        val applied: T9LockedEdge,
+        val previousLockedEdges: List<T9LockedEdge>,
+    ) : T9EditOperation
+}
+
+/**
  * Immutable composing transaction for nine-key pinyin.
  *
  * Digits remain the source of truth. Spelling selections are recorded as
@@ -19,6 +37,7 @@ data class T9Composition(
     val forcedJoints: Set<Int> = emptySet(),
     val lockedEdges: List<T9LockedEdge> = emptyList(),
     val revision: Long = 0L,
+    val editOperations: List<T9EditOperation> = emptyList(),
 ) {
     init {
         require(rawDigits.all { it in T9_DIGITS }) { "T9 input accepts digits 2..9" }
@@ -44,7 +63,11 @@ data class T9Composition(
     fun typeDigit(digit: Char): T9Composition {
         require(digit in T9_DIGITS) { "T9 input accepts digits 2..9" }
         if (rawDigits.length >= PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH) return this
-        return copy(rawDigits = rawDigits + digit, revision = nextRevision())
+        return copy(
+            rawDigits = rawDigits + digit,
+            revision = nextRevision(),
+            editOperations = editOperations + T9EditOperation.Digit,
+        )
     }
 
     /** Adds the separator produced by the `1` key at the current cursor. */
@@ -54,6 +77,7 @@ data class T9Composition(
         return copy(
             forcedJoints = forcedJoints + joint,
             revision = nextRevision(),
+            editOperations = editOperations + T9EditOperation.Joint(joint),
         )
     }
 
@@ -72,14 +96,65 @@ data class T9Composition(
             "Locked edge must not cross a forced joint"
         }
         if (edge in lockedEdges) return this
+        val previousLockedEdges = lockedEdges
         return copy(
-            lockedEdges = lockedEdges.filterNot(edge::overlaps) + edge,
+            lockedEdges = previousLockedEdges.filterNot(edge::overlaps) + edge,
             revision = nextRevision(),
+            editOperations = editOperations + T9EditOperation.Lock(edge, previousLockedEdges),
         )
     }
 
-    /** Unlocks the latest spelling, removes a trailing separator, then digits. */
+    /**
+     * Applies one dynamic pinyin choice only when it still belongs to this immutable revision.
+     * Stale UI choices are ignored; a valid choice keeps digits intact and locks one next edge.
+     */
+    fun selectPinyin(choice: T9PinyinChoice): T9Composition {
+        if (choice.sourceDigits != rawDigits || choice.sourceRevision != revision) return this
+        var nextUnresolvedDigit = 0
+        val locksByStart = lockedEdges.associateBy(T9LockedEdge::digitStart)
+        while (nextUnresolvedDigit < rawDigits.length) {
+            nextUnresolvedDigit = locksByStart[nextUnresolvedDigit]?.digitEnd ?: break
+        }
+        if (choice.digitStart != nextUnresolvedDigit) return this
+        val expectedDigits = T9SyllableIndex.digitsFor(choice.canonicalPinyin)
+        if (expectedDigits != rawDigits.substring(choice.digitStart, choice.digitEnd)) return this
+        return lockEdge(choice.lockedEdge)
+    }
+
+    /** Reverses the latest digit, explicit joint or spelling selection in true edit order. */
     fun backspace(): T9Composition {
+        when (val latest = editOperations.lastOrNull()) {
+            T9EditOperation.Digit -> if (rawDigits.isNotEmpty()) {
+                val newLength = rawDigits.length - 1
+                return copy(
+                    rawDigits = rawDigits.dropLast(1),
+                    forcedJoints = forcedJoints.filterTo(linkedSetOf()) { it <= newLength },
+                    revision = nextRevision(),
+                    editOperations = editOperations.dropLast(1),
+                )
+            }
+
+            is T9EditOperation.Joint -> if (latest.digitOffset in forcedJoints) {
+                return copy(
+                    forcedJoints = forcedJoints - latest.digitOffset,
+                    revision = nextRevision(),
+                    editOperations = editOperations.dropLast(1),
+                )
+            }
+
+            is T9EditOperation.Lock -> if (latest.applied in lockedEdges) {
+                return copy(
+                    lockedEdges = latest.previousLockedEdges,
+                    revision = nextRevision(),
+                    editOperations = editOperations.dropLast(1),
+                )
+            }
+
+            null -> Unit
+        }
+
+        // Preserve source compatibility for directly constructed compositions that predate the
+        // journal. Production edits always take the ordered path above.
         if (lockedEdges.isNotEmpty()) {
             return copy(
                 lockedEdges = lockedEdges.dropLast(1),

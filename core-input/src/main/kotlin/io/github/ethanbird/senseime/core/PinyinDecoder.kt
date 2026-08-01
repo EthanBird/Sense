@@ -146,6 +146,9 @@ class PinyinDecoder private constructor(
         val shouldInferMixedCandidates =
             (!hasCanonicalExact && !hasCanonicalComposition) ||
                 query.length >= MIN_DYNAMIC_MIXED_WITH_CANONICAL_LENGTH
+        val requiresForcedMixedRecall =
+            parsedQuery.hasForcedJoints &&
+                hasAbbreviatedForcedRegion(query, parsedQuery.forcedJoints)
         val candidates = ArrayList<Candidate>(outputLimit * 3)
         var hasProducedStrongMixedCandidate = false
 
@@ -166,13 +169,31 @@ class PinyinDecoder private constructor(
                 forcedJoints = parsedQuery.forcedJoints,
             )
         }
-        if (!parsedQuery.hasForcedJoints) {
-            val rawHybridCandidates = readHybridCandidates(query, outputLimit)
-            val mixedPaths = if (shouldInferMixedCandidates) {
-                segmenter.segmentMixedPaths(query, MAX_DYNAMIC_MIXED_PATHS)
+        if (!parsedQuery.hasForcedJoints || requiresForcedMixedRecall) {
+            val mixedPaths = if (shouldInferMixedCandidates || requiresForcedMixedRecall) {
+                segmenter.segmentMixedPaths(
+                    if (parsedQuery.hasForcedJoints) composing else query,
+                    MAX_DYNAMIC_MIXED_PATHS,
+                )
             } else {
                 emptyList()
             }
+            val rawHybridCandidates = readHybridCandidates(query, outputLimit)
+                .let { values ->
+                    if (!parsedQuery.hasForcedJoints) {
+                        values
+                    } else {
+                        values.filter { candidate ->
+                            mixedPaths.any { path ->
+                                segmenter.matchesCanonical(
+                                    path,
+                                    candidate.canonicalPinyin,
+                                    candidate.canonicalInitials,
+                                )
+                            }
+                        }
+                    }
+                }
             val hasStrongMixedPath = mixedPaths.any { it.hasStrongTypedEvidence }
             val hybridCandidates =
                 if (rawHybridCandidates.isEmpty() || !hasStrongMixedPath) {
@@ -199,7 +220,7 @@ class PinyinDecoder private constructor(
                 }
             candidates += hybridCandidates
             if (
-                shouldInferMixedCandidates &&
+                (shouldInferMixedCandidates || requiresForcedMixedRecall) &&
                 hybridCandidates.size < minOf(outputLimit, DYNAMIC_MIXED_FILL_FLOOR)
             ) {
                 val dynamicMixed = readDynamicMixedCandidates(
@@ -210,13 +231,26 @@ class PinyinDecoder private constructor(
                 hasProducedStrongMixedCandidate =
                     hasProducedStrongMixedCandidate || dynamicMixed.hasStrongCandidate
             }
-            candidates += readInitialsCandidates(query, outputLimit)
-            if (!hasCanonicalExact) {
+            val initialsCandidates = readInitialsCandidates(query, outputLimit)
+            candidates += if (!parsedQuery.hasForcedJoints) {
+                initialsCandidates
+            } else {
+                initialsCandidates.filter { candidate ->
+                    mixedPaths.any { path ->
+                        segmenter.matchesCanonical(
+                            path,
+                            candidate.canonicalPinyin,
+                            candidate.canonicalInitials,
+                        )
+                    }
+                }
+            }
+            if (!parsedQuery.hasForcedJoints && !hasCanonicalExact) {
                 candidates += readStatisticalPrefixCandidates(query, outputLimit)
                 candidates += readPrefixCandidates(query, outputLimit)
             }
         }
-        if (includeCorrections) {
+        if (includeCorrections && !parsedQuery.hasForcedJoints) {
             candidates += readSpellingGraphCorrections(
                 rawInput = composing,
                 normalizedQuery = query,
@@ -868,6 +902,25 @@ class PinyinDecoder private constructor(
             }
         }
         return maximumSegments.last() >= 2
+    }
+
+    /**
+     * Fully spelled regions such as `ni'hao` are already handled by the canonical sentence DAG.
+     * The mixed namespace is needed only when a user-locked boundary leaves an initial or an
+     * incomplete tail (for example `hun'shenxs`). Avoiding it for canonical regions keeps an
+     * explicit T9 choice as cheap as ordinary full-pinyin composition.
+     */
+    private fun hasAbbreviatedForcedRegion(
+        query: String,
+        forcedJoints: BooleanArray,
+    ): Boolean {
+        var start = 0
+        for (end in 1..query.length) {
+            if (end != query.length && !forcedJoints.getOrElse(end) { false }) continue
+            if (!segmenter.isComplete(query.substring(start, end))) return true
+            start = end
+        }
+        return false
     }
 
     private fun readCandidates(

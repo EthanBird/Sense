@@ -10,6 +10,8 @@ data class T9AlternativeDecoding(
     val expandedQueryCount: Int,
     val decodeInvocationCount: Int,
     val availablePathCount: Int,
+    /** Dynamic canonical choices derived from the same path beam used for this decode. */
+    val pinyinChoices: List<T9PinyinChoice> = emptyList(),
 )
 
 /**
@@ -184,6 +186,7 @@ object T9AlternativeInputDecoder {
                 candidate = candidate.copy(
                     score = candidate.score + evidencePrior(candidate.matchKind) -
                         structuralPenalty - candidateIndex * CANDIDATE_ORDER_PENALTY,
+                    pinyinInputAlias = plan.query,
                 ),
                 path = plan.path,
                 pathIndex = plan.pathIndex,
@@ -397,12 +400,17 @@ object T9AlternativeInputDecoder {
         val ordered = ranked.values.sortedWith(CANDIDATE_ORDER).take(limit)
         val resolvedPath = ordered.firstOrNull()?.path ?: paths.first()
         return T9AlternativeDecoding(
-            composingLabel = "${composition.rawDigits} · ${resolvedPath.formatted}",
+            composingLabel = resolvedPath.formatted,
             candidates = ordered.map(RankedCandidate::candidate),
             decodedQueryCount = decodedQueries,
             expandedQueryCount = expandedQueries,
             decodeInvocationCount = decodedQueries + expandedQueries,
             availablePathCount = paths.size,
+            pinyinChoices = buildT9PinyinChoices(
+                composition = composition,
+                paths = paths,
+                maxChoices = T9SyllableIndex.DEFAULT_MAX_CHOICES,
+            ),
         )
     }
 

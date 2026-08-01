@@ -46,6 +46,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         CLIPBOARD(KeyboardPanel.CLIPBOARD),
         EDITOR(KeyboardPanel.EDITOR),
         VOICE(KeyboardPanel.VOICE),
+        INPUT_SCHEMES(KeyboardPanel.INPUT_SCHEMES),
     }
 
     enum class ClipboardAction(internal val contract: KeyboardClipboardAction) {
@@ -88,6 +89,8 @@ class SenseKeyboardView @JvmOverloads constructor(
     var clipboardActionListener: ((action: ClipboardAction, index: Int) -> Unit)? = null
     var editorActionListener: ((action: EditorAction) -> Unit)? = null
     var settingsActionListener: (() -> Unit)? = null
+    var t9PinyinChoiceSelectionListener: T9PinyinChoiceSelectionListener? = null
+    var inputSchemeSelectionListener: KeyboardInputSchemeSelectionListener? = null
     var aiHoldListener: AiHoldListener? = null
     var skillSelectionListener: KeyboardSkillSelectionListener? = null
 
@@ -127,6 +130,10 @@ class SenseKeyboardView @JvmOverloads constructor(
     private var panel = KeyboardPanel.LETTERS
     private var primaryKeyboardMode = PrimaryKeyboardMode.QWERTY
     private var primaryKeyboardLegendMode = PrimaryKeyboardLegendMode.SWIPE_HINTS
+    private var selectedInputSchemeChoice = KeyboardInputSchemeChoice.PINYIN_QWERTY
+    private var t9CompositionActive = false
+    private var t9PinyinChoiceRevision = 0L
+    private var t9PinyinChoices: List<T9PinyinChoice> = emptyList()
     private var keyboardSizeProfile = KeyboardSizeProfile.DEFAULT
     private var renderPassCount = 0L
 
@@ -154,6 +161,14 @@ class SenseKeyboardView @JvmOverloads constructor(
 
         override fun onSettingsAction() {
             settingsActionListener?.invoke()
+        }
+
+        override fun onT9PinyinChoiceSelected(revision: Long, index: Int) {
+            t9PinyinChoiceSelectionListener?.onT9PinyinChoiceSelected(revision, index)
+        }
+
+        override fun onInputSchemeSelected(choice: KeyboardInputSchemeChoice) {
+            inputSchemeSelectionListener?.onInputSchemeSelected(choice)
         }
 
         override fun onAiHoldStarted(generation: Long) {
@@ -204,6 +219,11 @@ class SenseKeyboardView @JvmOverloads constructor(
             get() = primaryKeyboardMode
             set(value) {
                 primaryKeyboardMode = value
+            }
+        override var interactionInputSchemeChoice: KeyboardInputSchemeChoice
+            get() = selectedInputSchemeChoice
+            set(value) {
+                selectedInputSchemeChoice = value
             }
         override var interactionEmojiGroupIndex: Int
             get() = emojiGroupIndex
@@ -351,28 +371,64 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     fun updateComposition(revision: Long, text: String) {
-        updateCandidateUi(revision, text, values = null)
+        updateCandidateUi(revision, text, values = null, t9Choices = null)
     }
 
     fun updateComposing(revision: Long, text: String, values: List<String>) {
-        updateCandidateUi(revision, text, values)
+        updateCandidateUi(revision, text, values, t9Choices = null)
+    }
+
+    /** Atomically publishes the candidate strip and T9 segmentation rail for one revision. */
+    fun updateT9Composing(
+        revision: Long,
+        text: String,
+        values: List<String>?,
+        choices: List<T9PinyinChoice>,
+    ) {
+        updateCandidateUi(revision, text, values, t9Choices = choices)
     }
 
     private fun updateCandidateUi(
         revision: Long,
         text: String,
         values: List<String>?,
+        t9Choices: List<T9PinyinChoice>?,
     ) {
+        val nextT9CompositionActive =
+            primaryKeyboardMode == PrimaryKeyboardMode.T9 && text.isNotEmpty()
+        val t9CompositionStateChanged = t9CompositionActive != nextT9CompositionActive
+        if (t9CompositionStateChanged) t9CompositionActive = nextT9CompositionActive
+        val nextT9Choices = when {
+            text.isEmpty() -> emptyList()
+            t9Choices != null -> t9Choices.take(MAX_T9_PINYIN_CHOICES).toList()
+            primaryKeyboardMode == PrimaryKeyboardMode.T9 &&
+                t9PinyinChoiceRevision != revision -> emptyList()
+            else -> t9PinyinChoices
+        }
+        val revisionChanged = t9PinyinChoiceRevision != revision
+        val listChanged = t9PinyinChoices != nextT9Choices
+        val t9ChoicesChanged = listChanged || (nextT9Choices.isNotEmpty() && revisionChanged)
+        if (revisionChanged) t9PinyinChoiceRevision = revision
+        if (t9ChoicesChanged) {
+            t9PinyinChoices = nextT9Choices
+        }
+        val t9SceneChanged =
+            (t9ChoicesChanged || t9CompositionStateChanged) &&
+                panel == KeyboardPanel.LETTERS &&
+                primaryKeyboardMode == PrimaryKeyboardMode.T9
         val nextCandidates = values ?: if (text.isEmpty()) emptyList() else null
         val nextCandidatesReady = nextCandidates != null
-        if (
+        val candidatePointersChanged =
             CandidatePointerFence.shouldCancel(
                 previousReady = candidatePanel.candidatesReady,
                 previousCandidates = candidatePanel.candidates,
                 nextReady = nextCandidatesReady,
                 nextCandidates = nextCandidates,
             )
-        ) {
+        if (t9SceneChanged) {
+            interaction.cancelT9PinyinRailPointers()
+        }
+        if (candidatePointersChanged) {
             interaction.cancelCandidatePointers()
         }
         val change = candidatePanel.publish(
@@ -385,8 +441,21 @@ class SenseKeyboardView @JvmOverloads constructor(
             fontScale = resources.configuration.fontScale,
         )
         if (change.cancelSettle) interaction.stopCandidateSettle()
-        if (change.requiresKeySceneRebuild) rebuildKeys(width, height)
+        if (change.requiresKeySceneRebuild || t9SceneChanged) rebuildKeys(width, height)
         invalidate()
+    }
+
+    /** Publishes at most four revision-bound segmentation paths into the T9 left rail. */
+    fun updateT9PinyinChoices(revision: Long, choices: List<T9PinyinChoice>) {
+        val snapshot = choices.take(MAX_T9_PINYIN_CHOICES).toList()
+        if (t9PinyinChoiceRevision == revision && t9PinyinChoices == snapshot) return
+        t9PinyinChoiceRevision = revision
+        t9PinyinChoices = snapshot
+        if (panel == KeyboardPanel.LETTERS && primaryKeyboardMode == PrimaryKeyboardMode.T9) {
+            interaction.cancelT9PinyinRailPointers()
+            rebuildKeys(width, height)
+            invalidate()
+        }
     }
 
     fun setShifted(value: Boolean) {
@@ -433,10 +502,17 @@ class SenseKeyboardView @JvmOverloads constructor(
         mode: PrimaryKeyboardMode,
         legendMode: PrimaryKeyboardLegendMode,
     ) {
+        val nextChoice = KeyboardInputSchemeChoice.fromPresentation(mode, legendMode)
+        val choiceChanged = selectedInputSchemeChoice != nextChoice
+        val clearT9Choices = mode != PrimaryKeyboardMode.T9 && t9PinyinChoices.isNotEmpty()
+        val clearT9Composition = mode != PrimaryKeyboardMode.T9 && t9CompositionActive
         if (
             chineseMode == chinese &&
             primaryKeyboardMode == mode &&
-            primaryKeyboardLegendMode == legendMode
+            primaryKeyboardLegendMode == legendMode &&
+            !choiceChanged &&
+            !clearT9Choices &&
+            !clearT9Composition
         ) {
             return
         }
@@ -445,9 +521,23 @@ class SenseKeyboardView @JvmOverloads constructor(
         chineseMode = chinese
         primaryKeyboardMode = mode
         primaryKeyboardLegendMode = legendMode
+        selectedInputSchemeChoice = nextChoice
+        if (clearT9Choices) t9PinyinChoices = emptyList()
+        if (clearT9Composition) t9CompositionActive = false
         if (languageChanged) interaction.collapseCandidates()
         rebuildKeys(width, height)
         invalidate()
+    }
+
+    /** Calibrates selection highlighting when the host starts directly in English mode. */
+    fun setSelectedInputSchemeChoice(value: KeyboardInputSchemeChoice) {
+        if (selectedInputSchemeChoice == value) return
+        selectedInputSchemeChoice = value
+        if (panel == KeyboardPanel.INPUT_SCHEMES) {
+            interaction.cancelAllTouches()
+            rebuildKeys(width, height)
+            invalidate()
+        }
     }
 
     fun setPanel(value: Panel) = setPanel(value.contract)
@@ -497,6 +587,12 @@ class SenseKeyboardView @JvmOverloads constructor(
     internal fun panelKeysForTesting(): List<Key> = keyboardScene.keys
         .subList(keyboardScene.panelKeyStart, keyboardScene.panelKeyEndExclusive)
         .toList()
+
+    internal fun toolbarKeysForTesting(): List<Key> = keyboardScene.keys
+        .subList(keyboardScene.toolbarKeyStart, keyboardScene.toolbarKeyEndExclusive)
+        .toList()
+
+    internal fun panelForTesting(): KeyboardPanel = panel
 
     internal fun candidateSceneBuildCountForTesting(): Long = candidatePanel.sceneBuildCount
 
@@ -752,6 +848,10 @@ class SenseKeyboardView @JvmOverloads constructor(
                 voiceSurfaceState = voiceSurfaceState,
                 fontScale = resources.configuration.fontScale,
                 primaryLegendMode = primaryKeyboardLegendMode,
+                t9CompositionActive = t9CompositionActive,
+                t9PinyinChoiceRevision = t9PinyinChoiceRevision,
+                t9PinyinChoices = t9PinyinChoices,
+                selectedInputSchemeChoice = selectedInputSchemeChoice,
             ),
             target = keyboardScene,
         )
@@ -766,10 +866,14 @@ class SenseKeyboardView @JvmOverloads constructor(
         candidatePanel.takesToolbar(isCandidateToolbarSuppressedByPanel())
 
     private fun showsCandidates(): Boolean =
-        panel != KeyboardPanel.EDITOR && panel != KeyboardPanel.VOICE
+        panel != KeyboardPanel.EDITOR &&
+            panel != KeyboardPanel.VOICE &&
+            panel != KeyboardPanel.INPUT_SCHEMES
 
     private fun isCandidateToolbarSuppressedByPanel(): Boolean =
-        panel == KeyboardPanel.EDITOR || panel == KeyboardPanel.VOICE
+        panel == KeyboardPanel.EDITOR ||
+            panel == KeyboardPanel.VOICE ||
+            panel == KeyboardPanel.INPUT_SCHEMES
 
     private fun relayoutCandidates(
         viewWidth: Int = width,
@@ -799,6 +903,7 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private companion object {
         const val CLIPBOARD_ITEMS_PER_PAGE = 3
+        const val MAX_T9_PINYIN_CHOICES = 4
     }
 }
 

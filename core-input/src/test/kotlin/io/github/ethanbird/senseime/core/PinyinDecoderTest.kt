@@ -652,6 +652,25 @@ class PinyinDecoderTest {
     }
 
     @Test
+    fun productionPrefixProbeRetainsMixedRecallAcrossExplicitSyllableJoints() {
+        val bigrams = repositoryFile("ime-service/src/main/assets/pinyin_bigrams.bin")
+            .inputStream()
+            .buffered()
+            .use(BinaryCharacterBigramModel::load)
+        val production = repositoryFile("ime-service/src/main/assets/pinyin_lexicon.bin")
+            .inputStream()
+            .buffered()
+            .use { PinyinDecoder.load(it, bigrams) }
+
+        listOf("hun'shenxs", "hun'shen'x's").forEach { query ->
+            val candidates = production.decodePrefixProbe(query, 255)
+
+            assertEquals("\u6D51\u8EAB\u89E3\u6570", candidates.firstOrNull()?.text)
+            assertEquals(CandidateMatchKind.BASE_HYBRID, candidates.firstOrNull()?.matchKind)
+        }
+    }
+
+    @Test
     fun invalidBinaryIsRejected() {
         val failure = runCatching { PinyinDecoder.fromBytes(byteArrayOf(1, 2, 3)) }
         assertTrue(failure.isFailure)

@@ -645,7 +645,7 @@ class AdaptivePinyinDecoderTest {
     }
 
     @Test
-    fun forcedCanonicalQuerySkipsContinuousUserRecordWithoutBoundaryEvidence() {
+    fun forcedCanonicalQueryRetainsOnlyBoundaryCompatibleUserRecords() {
         val prefixQueries = mutableListOf<String>()
         val base = object : ProgressivePrefixProbeDecoder {
             override fun decode(composing: String, limit: Int): List<Candidate> =
@@ -666,6 +666,7 @@ class AdaptivePinyinDecoderTest {
         }
         val lexicon = MemoryUserLexicon(clock = { 1_000L })
         lexicon.record("xian", "xa", "\u5148\u5B89")
+        lexicon.record("xian", "x", "\u5148")
         val decoder = AdaptivePinyinDecoder(
             base,
             lexicon,
@@ -674,14 +675,16 @@ class AdaptivePinyinDecoderTest {
 
         val continuous = decoder.decodeCanonicalChineseOnly("xian", 8)
         val forced = decoder.decodeCanonicalChineseOnly("xi'an", 8)
+        val forcedTopOne = decoder.decodeCanonicalChineseOnly("xi'an", 1)
 
-        assertTrue(continuous.any { it.matchKind == CandidateMatchKind.USER_FULL })
-        assertEquals(listOf("\u897F\u5B89"), forced.map(Candidate::text))
-        assertTrue(forced.none {
-            it.matchKind == CandidateMatchKind.USER_FULL ||
-                it.matchKind == CandidateMatchKind.USER_INITIALS
+        assertTrue(continuous.count { it.matchKind == CandidateMatchKind.USER_FULL } >= 2)
+        assertTrue(forced.any {
+            it.text == "\u5148\u5B89" && it.matchKind == CandidateMatchKind.USER_FULL
         })
-        assertEquals(listOf("xian", "xi'an"), prefixQueries)
+        assertTrue(forced.none { it.text == "\u5148" })
+        assertTrue(forced.any { it.text == "\u897F\u5B89" })
+        assertEquals("\u5148\u5B89", forcedTopOne.single().text)
+        assertEquals(listOf("xian", "xi'an", "xi'an"), prefixQueries)
     }
 
     @Test

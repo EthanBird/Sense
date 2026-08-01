@@ -8,6 +8,14 @@ data class Candidate(
     val canonicalInitials: String? = null,
     /** Scheme-native spelling, for example a Wubi code. */
     val canonicalCode: String? = null,
+    /**
+     * Non-canonical Pinyin query that reached this candidate through an ambiguous input scheme.
+     *
+     * T9 can resolve `hunshenxs` to canonical `hunshenxieshu`. Keeping that source query on the
+     * candidate lets the shared user lexicon persist it as an alias even when the service commits
+     * and learns from the canonical spelling.
+     */
+    val pinyinInputAlias: String? = null,
 )
 
 enum class CandidateMatchKind {

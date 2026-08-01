@@ -3,9 +3,13 @@ package io.github.ethanbird.senseime.service
 import io.github.ethanbird.senseime.config.ChineseInputScheme
 import io.github.ethanbird.senseime.config.ImePreferencesV1
 import io.github.ethanbird.senseime.config.WubiAutoCommitMode
+import io.github.ethanbird.senseime.core.FakeDecoder
+import io.github.ethanbird.senseime.core.T9PinyinChoice
+import io.github.ethanbird.senseime.core.T9SyllableIndex
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -37,6 +41,39 @@ class ChineseInputSchemeCoordinatorTest {
     }
 
     @Test
+    fun t9EditorPresentationCanPublishPinyinWithoutReplacingRawDecoderDigits() {
+        val coordinator = coordinator(ChineseInputScheme.PINYIN_T9)
+        val published = ArrayList<String>()
+        val display = mapOf("4" to "g", "48" to "hu", "486" to "hun")
+
+        "486".forEach { digit ->
+            assertEquals(
+                AlternativeEditResult.CHANGED,
+                coordinator.type(
+                    character = digit,
+                    captureLeftContext = { "" },
+                    publish = { published += it; true },
+                    presentT9 = { value -> display.getValue(value.rawDigits) },
+                ),
+            )
+        }
+
+        assertEquals(listOf("g", "hu", "hun"), published)
+        assertEquals("486", coordinator.rawCode)
+        assertEquals("hun", coordinator.editorComposingText)
+
+        assertTrue(
+            coordinator.backspace(
+                publish = { published += it; true },
+                presentT9 = { value -> display.getValue(value.rawDigits) },
+            ),
+        )
+        assertEquals("48", coordinator.rawCode)
+        assertEquals("hu", coordinator.editorComposingText)
+        assertEquals("hu", published.last())
+    }
+
+    @Test
     fun failedEditorPublicationLeavesAlternativeStateUnchanged() {
         val coordinator = coordinator(ChineseInputScheme.WUBI_86)
         val before = coordinator.key()
@@ -65,6 +102,43 @@ class ChineseInputSchemeCoordinatorTest {
         assertTrue(coordinator.backspace(publish))
         assertEquals("", coordinator.rawCode)
         assertEquals(listOf("4", "4", "4", ""), published)
+    }
+
+    @Test
+    fun t9SideRailChoiceIsRevisionBoundAndBackspaceReversible() {
+        val coordinator = coordinator(ChineseInputScheme.PINYIN_T9)
+        "486".forEach { coordinator.type(it, { "" }) { true } }
+        val originalPresentationRevision = coordinator.presentationRevision
+        val choice = T9SyllableIndex(listOf("hun")).choices(coordinator.t9, 1).single()
+        publishT9Choices(coordinator, choice)
+
+        assertFalse(coordinator.selectT9PinyinChoice(originalPresentationRevision - 1, 0))
+        assertFalse(coordinator.selectT9PinyinChoice(originalPresentationRevision, 1))
+        assertTrue(coordinator.selectT9PinyinChoice(originalPresentationRevision, 0))
+        assertEquals("486", coordinator.rawCode)
+        assertEquals("hun", coordinator.t9.lockedEdges.single().spelling)
+        assertEquals(originalPresentationRevision + 1, coordinator.presentationRevision)
+        assertEquals(null, coordinator.currentDecoding())
+
+        assertTrue(coordinator.backspace { true })
+        assertTrue(coordinator.t9.lockedEdges.isEmpty())
+        assertEquals("486", coordinator.rawCode)
+    }
+
+    @Test
+    fun t9ReinputClearsOnlyAfterEditorAcceptsTheEmptyComposition() {
+        val coordinator = coordinator(ChineseInputScheme.PINYIN_T9)
+        "486".forEach { coordinator.type(it, { "" }) { true } }
+        val before = coordinator.key()
+
+        assertFalse(coordinator.clearT9Composition { false })
+        assertEquals(before, coordinator.key())
+
+        val published = ArrayList<String>()
+        assertTrue(coordinator.clearT9Composition { published += it; true })
+        assertEquals(listOf(""), published)
+        assertEquals("", coordinator.rawCode)
+        assertNotEquals(before.schemeEpoch, coordinator.key().schemeEpoch)
     }
 
     @Test
@@ -149,4 +223,39 @@ class ChineseInputSchemeCoordinatorTest {
     private fun coordinator(scheme: ChineseInputScheme) = ChineseInputSchemeCoordinator(
         ImePreferencesV1(chineseInputScheme = scheme),
     )
+
+    private fun publishT9Choices(
+        coordinator: ChineseInputSchemeCoordinator,
+        vararg choices: T9PinyinChoice,
+    ) {
+        val key = coordinator.key()
+        val request = AlternativeDecodeRequest(
+            key = key,
+            t9Composition = coordinator.t9,
+            wubiComposition = null,
+            t9Index = T9SyllableIndex(listOf("hun")),
+            pinyinDecoder = FakeDecoder(),
+            pinyinDecoderGeneration = 1,
+            wubiDecoder = null,
+            wubiCandidateDecoder = null,
+            wubiDecoderGeneration = 1,
+            leftContext = "",
+            limit = 8,
+        )
+        coordinator.begin(request, forceDecode = false)
+        assertNotNull(
+            coordinator.complete(
+                request = request,
+                decoding = AlternativeDecoding(
+                    key = key,
+                    composingLabel = "hun",
+                    candidates = emptyList(),
+                    candidateLabels = emptyList(),
+                    t9PinyinChoices = choices.toList(),
+                ),
+                activePinyinGeneration = 1,
+                activeWubiGeneration = 1,
+            ),
+        )
+    }
 }

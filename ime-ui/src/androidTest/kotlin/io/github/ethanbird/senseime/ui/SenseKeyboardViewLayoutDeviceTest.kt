@@ -303,7 +303,8 @@ class SenseKeyboardViewLayoutDeviceTest {
         assertEquals(beforeT9 + 1L, onMain { keyboard.keySceneBuildCountForTesting() })
         assertEquals(listOf("123", "456", "789"), characterRows(t9Keys, '1'..'9'))
         assertTrue(t9Keys.none { it.code in 'a'.code..'z'.code })
-        assertEquals("ABC", t9Keys.single { it.code == '2'.code }.visualLegend)
+        assertEquals("ABC", t9Keys.single { it.code == '2'.code }.label)
+        assertEquals(null, t9Keys.single { it.code == '2'.code }.visualLegend)
 
         val beforeWubi = onMain { keyboard.keySceneBuildCountForTesting() }
         onMain {
@@ -358,6 +359,133 @@ class SenseKeyboardViewLayoutDeviceTest {
         assertEquals(
             SwipeCharacterMap.forKey('m'.code, SwipeCharacterMode.ENGLISH),
             englishKeys.single { it.code == 'm'.code }.visualLegend,
+        )
+    }
+
+    @Test
+    fun toolbarKeyboardEntrySelectsOneSchemeAndReturnsToLetters() {
+        val selections = mutableListOf<KeyboardInputSchemeChoice>()
+        onMain {
+            keyboard.setPanel(SenseKeyboardView.Panel.LETTERS)
+            keyboard.setInputPresentation(
+                chinese = true,
+                mode = PrimaryKeyboardMode.QWERTY,
+                legendMode = PrimaryKeyboardLegendMode.SWIPE_HINTS,
+            )
+            keyboard.inputSchemeSelectionListener =
+                KeyboardInputSchemeSelectionListener { choice -> selections += choice }
+        }
+        val toolbarKeyboard = onMain {
+            keyboard.toolbarKeysForTesting().single { it.icon == Icon.KEYBOARD }
+        }
+        val beforeOpen = onMain { keyboard.keySceneBuildCountForTesting() }
+
+        tap(toolbarKeyboard)
+
+        assertEquals(KeyboardPanel.INPUT_SCHEMES, onMain { keyboard.panelForTesting() })
+        assertEquals(beforeOpen + 1L, onMain { keyboard.keySceneBuildCountForTesting() })
+        val initialOptions = onMain { keyboard.panelKeysForTesting() }
+            .filter { it.action is KeyAction.SelectInputScheme }
+        assertEquals(3, initialOptions.size)
+        assertEquals(
+            KeyboardInputSchemeChoice.PINYIN_QWERTY,
+            (initialOptions.single { it.selected }.action as KeyAction.SelectInputScheme).choice,
+        )
+
+        val wubi = initialOptions.single {
+            (it.action as? KeyAction.SelectInputScheme)?.choice ==
+                KeyboardInputSchemeChoice.WUBI_86
+        }
+        val beforeSelect = onMain { keyboard.keySceneBuildCountForTesting() }
+        tap(wubi)
+
+        assertEquals(listOf(KeyboardInputSchemeChoice.WUBI_86), onMain { selections.toList() })
+        assertEquals(KeyboardPanel.LETTERS, onMain { keyboard.panelForTesting() })
+        assertEquals(beforeSelect + 1L, onMain { keyboard.keySceneBuildCountForTesting() })
+
+        val reopen = onMain {
+            keyboard.toolbarKeysForTesting().single { it.icon == Icon.KEYBOARD }
+        }
+        tap(reopen)
+        val reopenedOptions = onMain { keyboard.panelKeysForTesting() }
+            .filter { it.action is KeyAction.SelectInputScheme }
+        assertEquals(
+            KeyboardInputSchemeChoice.WUBI_86,
+            (reopenedOptions.single { it.selected }.action as KeyAction.SelectInputScheme).choice,
+        )
+        val close = onMain {
+            keyboard.panelKeysForTesting().single {
+                (it.action as? KeyAction.ShowPanel)?.panel == KeyboardPanel.LETTERS
+            }
+        }
+        tap(close)
+        assertEquals(KeyboardPanel.LETTERS, onMain { keyboard.panelForTesting() })
+    }
+
+    @Test
+    fun atomicT9ComposingPublishesChoicesOnceAndRestoresPunctuationWhenEmpty() {
+        onMain {
+            keyboard.setPanel(SenseKeyboardView.Panel.LETTERS)
+            keyboard.setInputPresentation(
+                chinese = true,
+                mode = PrimaryKeyboardMode.T9,
+                legendMode = PrimaryKeyboardLegendMode.SWIPE_HINTS,
+            )
+            keyboard.updateT9Composing(1L, "2", values = null, choices = emptyList())
+        }
+        val beforeEmptyRevision = onMain { keyboard.keySceneBuildCountForTesting() }
+
+        onMain {
+            keyboard.updateT9Composing(2L, "28", values = null, choices = emptyList())
+        }
+        assertEquals(beforeEmptyRevision, onMain { keyboard.keySceneBuildCountForTesting() })
+
+        val choices = listOf(
+            T9PinyinChoice(canonical = "hun", preview = "hun'shen'x's"),
+            T9PinyinChoice(canonical = "hunshen", preview = "hun'shen'xs"),
+        )
+        val beforeChoices = onMain { keyboard.keySceneBuildCountForTesting() }
+        onMain {
+            keyboard.updateT9Composing(2L, "28", values = null, choices = choices)
+        }
+        assertEquals(beforeChoices + 1L, onMain { keyboard.keySceneBuildCountForTesting() })
+        val choiceKeys = onMain { keyboard.panelKeysForTesting() }
+            .filter { it.action is KeyAction.SelectT9PinyinChoice }
+        assertEquals(listOf("hun", "hunshen"), choiceKeys.map(Key::label))
+        assertEquals(listOf("hun'shen'x's", "hun'shen'xs"), choiceKeys.map(Key::visualLegend))
+        assertTrue(choiceKeys.all { it.style == KeyStyle.T9_LEFT_RAIL })
+        assertTrue(onMain { keyboard.panelKeysForTesting() }.none { it.action == KeyAction.None })
+
+        val beforeRepeat = onMain { keyboard.keySceneBuildCountForTesting() }
+        onMain {
+            keyboard.updateT9Composing(2L, "28", values = null, choices = choices)
+        }
+        assertEquals(beforeRepeat, onMain { keyboard.keySceneBuildCountForTesting() })
+
+        val beforeClear = onMain { keyboard.keySceneBuildCountForTesting() }
+        onMain {
+            keyboard.updateT9Composing(3L, "", values = emptyList(), choices = emptyList())
+        }
+        assertEquals(beforeClear + 1L, onMain { keyboard.keySceneBuildCountForTesting() })
+        val restored = onMain { keyboard.panelKeysForTesting() }
+        assertTrue(restored.any { it.code == KeyCodes.COMMA })
+        assertTrue(restored.any { it.code == KeyCodes.PERIOD })
+        assertTrue(restored.any { it.code == KeyCodes.T9_REINPUT })
+    }
+
+    private fun tap(key: Key) {
+        val downTime = SystemClock.uptimeMillis()
+        dispatch(
+            action = MotionEvent.ACTION_DOWN,
+            x = key.bounds.centerX(),
+            y = key.bounds.centerY(),
+            downTime = downTime,
+        )
+        dispatch(
+            action = MotionEvent.ACTION_UP,
+            x = key.bounds.centerX(),
+            y = key.bounds.centerY(),
+            downTime = downTime,
         )
     }
 

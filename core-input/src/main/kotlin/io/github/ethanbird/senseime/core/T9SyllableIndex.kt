@@ -48,7 +48,9 @@ fun interface T9PinyinPathSource {
  * Search walks at most one trie branch per input offset and retains a bounded
  * beam. It never expands a digit into every possible letter combination.
  */
-class T9SyllableIndex(syllables: Collection<String>) : T9PinyinPathSource {
+class T9SyllableIndex(syllables: Collection<String>) :
+    T9PinyinPathSource,
+    T9PinyinChoiceSource {
     private val root = TrieNode()
     private var maximumSignatureLength = 0
 
@@ -104,6 +106,18 @@ class T9SyllableIndex(syllables: Collection<String>) : T9PinyinPathSource {
 
     fun paths(composition: T9Composition): List<T9PinyinPath> =
         paths(composition, DEFAULT_MAX_PATHS)
+
+    fun choices(composition: T9Composition): List<T9PinyinChoice> =
+        choices(composition, DEFAULT_MAX_CHOICES)
+
+    override fun choices(
+        composition: T9Composition,
+        maxChoices: Int,
+    ): List<T9PinyinChoice> {
+        if (maxChoices <= 0 || composition.rawDigits.isEmpty()) return emptyList()
+        val paths = paths(composition, CHOICE_PATH_BEAM)
+        return buildT9PinyinChoices(composition, paths, maxChoices)
+    }
 
     override fun paths(
         composition: T9Composition,
@@ -311,7 +325,9 @@ class T9SyllableIndex(syllables: Collection<String>) : T9PinyinPathSource {
 
     companion object {
         const val DEFAULT_MAX_PATHS = 32
+        const val DEFAULT_MAX_CHOICES = 8
         private const val MAX_PATH_LIMIT = 256
+        private const val CHOICE_PATH_BEAM = 32
         private const val T9_KEY_COUNT = 8
         private val READABLE_DOUBLE_INITIALS = listOf("zh", "ch", "sh")
 

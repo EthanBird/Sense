@@ -19,7 +19,14 @@ internal class KeyboardPrimaryLayout(
         items.forEachIndexed { index, (icon, code) ->
             output += Key(
                 label = "",
-                action = KeyAction.EmitKey(code),
+                action = if (icon == Icon.KEYBOARD) {
+                    KeyAction.ShowPanel(
+                        panel = KeyboardPanel.INPUT_SCHEMES,
+                        keyCode = code,
+                    )
+                } else {
+                    KeyAction.EmitKey(code)
+                },
                 bounds = RectF(
                     index * slot + metrics.dp(5f),
                     metrics.dp(3f),

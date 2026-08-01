@@ -11,6 +11,7 @@ import io.github.ethanbird.senseime.core.MemoryUserLexicon
 import io.github.ethanbird.senseime.core.PinyinDecoder
 import io.github.ethanbird.senseime.core.PinyinSyllableSegmenter
 import io.github.ethanbird.senseime.core.T9Composition
+import io.github.ethanbird.senseime.core.T9LockedEdge
 import io.github.ethanbird.senseime.core.T9SyllableIndex
 import io.github.ethanbird.senseime.core.WubiComposition
 import java.io.File
@@ -21,6 +22,23 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AlternativeInputDecodingTest {
+    @Test
+    fun t9LetterFallbackPreservesForcedAndLockedBoundariesWithoutDigits() {
+        val forced = T9Composition()
+            .typeDigit('8')
+            .forceJoint()
+            .typeDigit('8')
+        val lockedThenTyped = "486".fold(T9Composition()) { state, digit ->
+            state.typeDigit(digit)
+        }
+            .lockEdge(T9LockedEdge(0, 3, "hun"))
+            .typeDigit('7')
+
+        assertEquals("t't", fallbackT9EditorText(forced))
+        assertEquals("hun'p", fallbackT9EditorText(lockedThenTyped))
+        assertTrue(fallbackT9EditorText(forced).none(Char::isDigit))
+    }
+
     @Test
     fun t9BootstrapFallbackDoesNotPublishLatinCandidate() {
         val composition = "22".fold(T9Composition()) { state, digit -> state.typeDigit(digit) }
@@ -44,7 +62,7 @@ class AlternativeInputDecodingTest {
         )
 
         assertTrue(result.candidates.isEmpty())
-        assertEquals("22 · ba", result.composingLabel)
+        assertEquals("ba", result.composingLabel)
     }
 
     @Test
@@ -59,7 +77,7 @@ class AlternativeInputDecodingTest {
         val result = AlternativeInputDecoder.decode(request)
 
         assertEquals(listOf("浑"), result.candidates.map { it.text })
-        assertEquals("486 · hun", result.composingLabel)
+        assertEquals("hun", result.composingLabel)
     }
 
     @Test
@@ -93,7 +111,7 @@ class AlternativeInputDecodingTest {
         )
 
         assertEquals("浑身解数", result.candidates.firstOrNull()?.text)
-        assertEquals("486743697 · hun'shen'x's", result.composingLabel)
+        assertEquals("hun'shen'x's", result.composingLabel)
         assertTrue(
             result.candidates.none { candidate ->
                 candidate.text.isNotEmpty() && candidate.text.all { it in 'a'..'z' || it in 'A'..'Z' }

@@ -109,7 +109,9 @@ internal class KeyboardRenderer(
             return frameRequests
         }
 
-        if (state.panel == KeyboardPanel.EDITOR) {
+        if (state.panel == KeyboardPanel.INPUT_SCHEMES) {
+            chrome.drawInputSchemeHeader(canvas, state)
+        } else if (state.panel == KeyboardPanel.EDITOR) {
             chrome.drawEditorHeader(canvas, state)
             chrome.drawEditorPanelBackground(canvas, state)
         } else {

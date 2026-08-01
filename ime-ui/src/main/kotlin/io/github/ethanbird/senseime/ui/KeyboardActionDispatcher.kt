@@ -83,6 +83,7 @@ internal class KeyboardActionDispatcher(
             key.style != KeyStyle.CATEGORY &&
             key.style != KeyStyle.SYMBOL &&
             key.style != KeyStyle.SYMBOL_CATEGORY &&
+            key.style != KeyStyle.T9_LEFT_RAIL &&
             key.scrollPanel == null &&
             isKeyEnabled(key)
 
@@ -173,6 +174,25 @@ internal class KeyboardActionDispatcher(
                 host.interactionScene.symbolGridScrollState.reset()
                 host.interactionRebuildKeys()
                 scheduler.invalidate()
+            }
+
+            is KeyAction.SelectT9PinyinChoice -> {
+                flushKeys()
+                actions.onT9PinyinChoiceSelected(action.revision, action.index)
+            }
+
+            is KeyAction.ShowPanel -> {
+                flushKeys()
+                host.interactionSetPanel(action.panel)
+            }
+
+            is KeyAction.SelectInputScheme -> {
+                flushKeys()
+                if (host.interactionInputSchemeChoice != action.choice) {
+                    host.interactionInputSchemeChoice = action.choice
+                    actions.onInputSchemeSelected(action.choice)
+                }
+                host.interactionSetPanel(KeyboardPanel.LETTERS)
             }
 
             is KeyAction.CommitText -> {

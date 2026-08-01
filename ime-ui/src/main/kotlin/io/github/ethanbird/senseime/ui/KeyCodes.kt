@@ -22,6 +22,7 @@ object KeyCodes {
     const val SETTINGS = -20
     const val UNDO = -21
     const val REDO = -22
+    const val T9_REINPUT = -23
     const val SPACE = 32
     const val ENTER = 10
 }

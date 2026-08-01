@@ -122,13 +122,14 @@ internal class KeyboardChromeRenderer(
             paint.color = color(0xFF667085.toInt(), 0xFF8F949E.toInt())
             paint.textSize = sp(11f)
             paint.textAlign = Paint.Align.LEFT
-            canvas.drawText(
-                candidates.composing,
-                0,
-                minOf(12, candidates.composing.length),
-                dp(10f),
-                dp(14f),
-                paint,
+            text.drawEllipsized(
+                canvas = canvas,
+                text = candidates.composing,
+                paint = paint,
+                x = dp(10f),
+                centerY = dp(10f),
+                maximumWidth = state.viewWidth - dp(20f),
+                trimTrailingWhitespace = false,
             )
         }
         if (candidates.candidates.isEmpty()) return
@@ -346,6 +347,17 @@ internal class KeyboardChromeRenderer(
     fun drawEditorHeader(
         canvas: Canvas,
         state: KeyboardRendererState,
+    ) = drawPanelHeader(canvas, state, EDITOR_HEADER)
+
+    fun drawInputSchemeHeader(
+        canvas: Canvas,
+        state: KeyboardRendererState,
+    ) = drawPanelHeader(canvas, state, INPUT_SCHEME_HEADER)
+
+    private fun drawPanelHeader(
+        canvas: Canvas,
+        state: KeyboardRendererState,
+        title: String,
     ) {
         paint.style = Paint.Style.FILL
         paint.color = color(0x16FFFFFF, 0x0AFFFFFF)
@@ -355,7 +367,7 @@ internal class KeyboardChromeRenderer(
         paint.textAlign = Paint.Align.LEFT
         text.drawCentered(
             canvas,
-            EDITOR_HEADER,
+            title,
             paint,
             dp(14f),
             metrics.candidateHeight / 2f,
@@ -458,6 +470,7 @@ internal class KeyboardChromeRenderer(
         const val CANDIDATE_HEADER = "候选"
         const val CLIPBOARD_HEADER = "剪贴板"
         const val EDITOR_HEADER = "文字编辑"
+        const val INPUT_SCHEME_HEADER = "键盘选择"
         const val TOOLBOX_HEADER = "工具箱"
         const val TOOLBOX_HINT = "长按空格唤醒 AI"
     }

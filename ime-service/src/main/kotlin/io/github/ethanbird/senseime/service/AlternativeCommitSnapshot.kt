@@ -19,10 +19,17 @@ internal enum class AlternativeLearningDomain {
 internal data class AlternativeCommitSnapshot(
     val compositionKey: AlternativeCompositionKey,
     val rawCode: String,
+    val editorComposingText: String,
     val learningDomain: AlternativeLearningDomain,
     val editorSessionId: Long,
     val inputConnectionIdentity: Any?,
 ) {
+    val editorComposingLength: Int
+        get() = editorComposingText.length
+
+    fun outputText(candidateText: String?): String =
+        candidateText ?: editorComposingText.ifEmpty { rawCode }
+
     fun stillOwnsComposition(currentKey: AlternativeCompositionKey): Boolean =
         compositionKey == currentKey
 
@@ -57,6 +64,7 @@ internal data class AlternativeCommitSnapshot(
             return AlternativeCommitSnapshot(
                 compositionKey = compositionKey,
                 rawCode = compositionKey.rawCode,
+                editorComposingText = coordinator.editorComposingText,
                 learningDomain = learningDomain,
                 editorSessionId = editorSessionId,
                 inputConnectionIdentity = inputConnectionIdentity,

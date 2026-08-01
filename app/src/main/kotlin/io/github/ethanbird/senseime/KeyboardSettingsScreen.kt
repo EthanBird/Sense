@@ -15,7 +15,25 @@ import java.util.concurrent.Executor
 
 internal interface KeyboardSettingsRepository {
     fun load(): Result<ImePreferencesV1>
-    fun save(value: ImePreferencesV1): Result<Unit>
+    fun update(mutation: KeyboardSettingsMutation): Result<ImePreferencesV1>
+}
+
+internal data class KeyboardSettingsMutation(
+    val baseline: ImePreferencesV1,
+    val selected: ImePreferencesV1,
+) {
+    fun applyTo(latest: ImePreferencesV1): ImePreferencesV1 = latest.copy(
+        chineseInputScheme = if (selected.chineseInputScheme != baseline.chineseInputScheme) {
+            selected.chineseInputScheme
+        } else {
+            latest.chineseInputScheme
+        },
+        wubiAutoCommitMode = if (selected.wubiAutoCommitMode != baseline.wubiAutoCommitMode) {
+            selected.wubiAutoCommitMode
+        } else {
+            latest.wubiAutoCommitMode
+        },
+    )
 }
 
 internal class RuntimeKeyboardSettingsRepository(activity: Activity) : KeyboardSettingsRepository {
@@ -23,7 +41,8 @@ internal class RuntimeKeyboardSettingsRepository(activity: Activity) : KeyboardS
 
     override fun load(): Result<ImePreferencesV1> = store.load()
 
-    override fun save(value: ImePreferencesV1): Result<Unit> = store.save(value)
+    override fun update(mutation: KeyboardSettingsMutation): Result<ImePreferencesV1> =
+        store.update(mutation::applyTo)
 }
 
 internal class KeyboardSettingsController(
@@ -40,12 +59,15 @@ internal class KeyboardSettingsController(
         }
     }
 
-    fun save(value: ImePreferencesV1, deliver: (Result<ImePreferencesV1>) -> Unit): Boolean {
+    fun save(
+        baseline: ImePreferencesV1,
+        value: ImePreferencesV1,
+        deliver: (Result<ImePreferencesV1>) -> Unit,
+    ): Boolean {
         val requestGeneration = nextGeneration()
         return tasks.execute(
             operation = {
-                repository.save(value).getOrThrow()
-                value
+                repository.update(KeyboardSettingsMutation(baseline, value)).getOrThrow()
             },
             deliver = { result ->
                 if (!closed && generation == requestGeneration) deliver(result)
@@ -129,6 +151,7 @@ internal class KeyboardSettingsScreen(
                 current.scheme.isEnabled = true
                 current.autoCommit.isEnabled = true
                 current.save.isEnabled = true
+                current.baseline = value
                 current.status.text = activity.getString(
                     R.string.keyboard_ready,
                     activity.getString(SCHEMES[current.scheme.selectedItemPosition].labelRes),
@@ -146,16 +169,26 @@ internal class KeyboardSettingsScreen(
     private fun save() {
         val current = binding ?: return
         if (!current.save.isEnabled) return
+        val baseline = current.baseline ?: return
         current.save.isEnabled = false
         val value = ImePreferencesV1(
             chineseInputScheme = SCHEMES[current.scheme.selectedItemPosition].value,
             wubiAutoCommitMode = AUTO_COMMITS[current.autoCommit.selectedItemPosition].value,
         )
-        controller.save(value) { result ->
+        controller.save(baseline, value) { result ->
             binding?.let { active ->
                 active.save.isEnabled = true
                 active.status.text = result.fold(
-                    onSuccess = { activity.getString(R.string.keyboard_saved) },
+                    onSuccess = { persisted ->
+                        active.baseline = persisted
+                        active.scheme.setSelection(
+                            SCHEMES.indexOfFirst { it.value == persisted.chineseInputScheme },
+                        )
+                        active.autoCommit.setSelection(
+                            AUTO_COMMITS.indexOfFirst { it.value == persisted.wubiAutoCommitMode },
+                        )
+                        activity.getString(R.string.keyboard_saved)
+                    },
                     onFailure = { error ->
                         activity.getString(
                             R.string.keyboard_save_failed,
@@ -178,6 +211,7 @@ internal class KeyboardSettingsScreen(
         val autoCommit: Spinner,
         val save: Button,
         val status: TextView,
+        var baseline: ImePreferencesV1? = null,
     )
 
     private data class SchemeChoice(val value: ChineseInputScheme, val labelRes: Int)

@@ -68,6 +68,23 @@ class T9CompositionTest {
     }
 
     @Test
+    fun backspaceRemovesADigitTypedAfterAnEarlierSpellingLock() {
+        val selectedThenTyped = "486".fold(T9Composition()) { state, digit ->
+            state.typeDigit(digit)
+        }
+            .lockEdge(T9LockedEdge(0, 3, "hun"))
+            .typeDigit('7')
+
+        val withoutLatestDigit = selectedThenTyped.backspace()
+        val withoutEarlierSelection = withoutLatestDigit.backspace()
+
+        assertEquals("486", withoutLatestDigit.rawDigits)
+        assertEquals(listOf(T9LockedEdge(0, 3, "hun")), withoutLatestDigit.lockedEdges)
+        assertEquals("486", withoutEarlierSelection.rawDigits)
+        assertEquals(emptyList<T9LockedEdge>(), withoutEarlierSelection.lockedEdges)
+    }
+
+    @Test
     fun composingLengthIsBoundedAndRevisionWrapsWithoutOverflow() {
         val maximum = "2".repeat(PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH)
             .fold(T9Composition()) { state, digit -> state.typeDigit(digit) }

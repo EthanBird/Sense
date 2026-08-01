@@ -19,6 +19,11 @@ internal data class KeyboardSceneRequest(
     val voiceSurfaceState: VoiceSurfaceState?,
     val fontScale: Float,
     val primaryLegendMode: PrimaryKeyboardLegendMode = PrimaryKeyboardLegendMode.SWIPE_HINTS,
+    val t9CompositionActive: Boolean = false,
+    val t9PinyinChoiceRevision: Long = 0L,
+    val t9PinyinChoices: List<T9PinyinChoice> = emptyList(),
+    val selectedInputSchemeChoice: KeyboardInputSchemeChoice =
+        KeyboardInputSchemeChoice.PINYIN_QWERTY,
 )
 
 /**
@@ -32,6 +37,8 @@ internal class KeyboardSceneBuilder(
     private val metrics: KeyboardMetrics,
     private val primaryLayout: KeyboardPrimaryLayout = KeyboardPrimaryLayout(metrics),
     private val textMeasurer: CandidateTextMeasurer = PaintCandidateTextMeasurer(),
+    private val inputSchemePanelLayout: KeyboardInputSchemePanelLayout =
+        KeyboardInputSchemePanelLayout(metrics),
 ) {
     fun rebuildInto(
         request: KeyboardSceneRequest,
@@ -46,7 +53,8 @@ internal class KeyboardSceneBuilder(
             if (
                 !request.candidatesTakeToolbar &&
                 request.panel != KeyboardPanel.EDITOR &&
-                request.panel != KeyboardPanel.VOICE
+                request.panel != KeyboardPanel.VOICE &&
+                request.panel != KeyboardPanel.INPUT_SCHEMES
             ) {
                 target.toolbarKeyStart = keys.size
                 primaryLayout.appendToolbar(request.viewWidth, keys)
@@ -64,6 +72,9 @@ internal class KeyboardSceneBuilder(
                         chineseMode = request.chineseMode,
                         swipeMode = swipeCharacterMode(request.chineseMode),
                         legendMode = request.primaryLegendMode,
+                        t9CompositionActive = request.t9CompositionActive,
+                        t9PinyinChoiceRevision = request.t9PinyinChoiceRevision,
+                        t9PinyinChoices = request.t9PinyinChoices,
                     ),
                     output = keys,
                 )
@@ -88,6 +99,12 @@ internal class KeyboardSceneBuilder(
                 KeyboardPanel.CLIPBOARD -> layoutClipboard(request, target)
                 KeyboardPanel.EDITOR -> layoutEditor(request, target)
                 KeyboardPanel.VOICE -> layoutVoice(request, target)
+                KeyboardPanel.INPUT_SCHEMES -> inputSchemePanelLayout.appendKeys(
+                    viewWidth = request.viewWidth,
+                    viewHeight = request.viewHeight,
+                    selectedChoice = request.selectedInputSchemeChoice,
+                    output = keys,
+                )
             }
             target.panelKeyEndExclusive = keys.size
         }

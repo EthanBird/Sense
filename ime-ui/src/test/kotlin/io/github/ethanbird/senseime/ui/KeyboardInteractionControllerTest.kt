@@ -150,6 +150,92 @@ class KeyboardInteractionControllerTest {
     }
 
     @Test
+    fun `scheme panel actions stay local and selection closes after one semantic callback`() {
+        val clock = FakeClock()
+        val scheduler = FakeFrameScheduler(clock)
+        val actions = RecordingActions()
+        val host = FakeInteractionHost()
+        val dispatcher = KeyboardActionDispatcher(
+            host = host,
+            scheduler = scheduler,
+            actions = actions,
+            effects = RecordingActionEffects(),
+        )
+        val bounds = RectF(0f, 0f, 40f, 40f)
+
+        dispatcher.activate(
+            FrozenTouchTarget.KeyValue(
+                Key(
+                    label = "keyboard",
+                    action = KeyAction.ShowPanel(KeyboardPanel.INPUT_SCHEMES, KeyCodes.LETTERS),
+                    bounds = bounds,
+                ),
+                TouchInputReducer.GesturePolicy.tapOnly(),
+            ),
+            TouchInputReducer.Gesture.TAP,
+        )
+        assertEquals(KeyboardPanel.INPUT_SCHEMES, host.interactionPanel)
+
+        dispatcher.activate(
+            FrozenTouchTarget.KeyValue(
+                Key(
+                    label = "9键拼音",
+                    action = KeyAction.SelectInputScheme(KeyboardInputSchemeChoice.PINYIN_T9),
+                    bounds = bounds,
+                ),
+                TouchInputReducer.GesturePolicy.tapOnly(),
+            ),
+            TouchInputReducer.Gesture.TAP,
+        )
+
+        assertEquals(KeyboardInputSchemeChoice.PINYIN_T9, host.interactionInputSchemeChoice)
+        assertEquals(KeyboardPanel.LETTERS, host.interactionPanel)
+        assertEquals(listOf(KeyboardInputSchemeChoice.PINYIN_T9), actions.inputSchemes)
+        assertTrue(actions.keys.isEmpty())
+
+        host.interactionPanel = KeyboardPanel.INPUT_SCHEMES
+        dispatcher.activate(
+            FrozenTouchTarget.KeyValue(
+                Key(
+                    label = "9键拼音",
+                    action = KeyAction.SelectInputScheme(KeyboardInputSchemeChoice.PINYIN_T9),
+                    bounds = bounds,
+                ),
+                TouchInputReducer.GesturePolicy.tapOnly(),
+            ),
+            TouchInputReducer.Gesture.TAP,
+        )
+        assertEquals(listOf(KeyboardInputSchemeChoice.PINYIN_T9), actions.inputSchemes)
+        assertEquals(KeyboardPanel.LETTERS, host.interactionPanel)
+    }
+
+    @Test
+    fun `t9 pinyin choice dispatches revision and index without entering key FIFO`() {
+        val clock = FakeClock()
+        val scheduler = FakeFrameScheduler(clock)
+        val actions = RecordingActions()
+        val dispatcher = KeyboardActionDispatcher(
+            host = FakeInteractionHost(),
+            scheduler = scheduler,
+            actions = actions,
+            effects = RecordingActionEffects(),
+        )
+        val key = Key(
+            label = "hun",
+            action = KeyAction.SelectT9PinyinChoice(revision = 91L, index = 2),
+            bounds = RectF(0f, 0f, 40f, 40f),
+        )
+
+        dispatcher.activate(
+            FrozenTouchTarget.KeyValue(key, TouchInputReducer.GesturePolicy.tapOnly()),
+            TouchInputReducer.Gesture.TAP,
+        )
+
+        assertEquals(listOf(91L to 2), actions.t9PinyinChoices)
+        assertTrue(actions.keys.isEmpty())
+    }
+
+    @Test
     fun `hot move APIs publish primitive flags without changing frozen owner`() {
         val reducer = TouchInputReducer<String>(
             swipeThreshold = 20f,
@@ -275,13 +361,13 @@ class KeyboardInteractionControllerTest {
     fun `candidate pointer classifier covers values controls and both drag surfaces`() {
         val bounds = RectF(0f, 0f, 40f, 40f)
         val policy = TouchInputReducer.GesturePolicy.tapOnly()
-        val candidateTargets = listOf(
+        val candidateTargets: List<FrozenTouchTarget> = listOf(
             FrozenTouchTarget.CandidateValue(7L, 0, bounds, policy),
             FrozenTouchTarget.CandidateControlValue(CandidateControl.EXPAND, bounds, policy),
             FrozenTouchTarget.CandidatePageArea(bounds, policy),
             FrozenTouchTarget.CandidateStripArea(bounds, policy),
         )
-        val ordinaryTargets = listOf(
+        val ordinaryTargets: List<FrozenTouchTarget> = listOf(
             FrozenTouchTarget.KeyValue(
                 key = Key(
                     label = "a",
@@ -295,6 +381,33 @@ class KeyboardInteractionControllerTest {
 
         assertTrue(candidateTargets.all { it.isCandidatePointerTarget() })
         assertTrue(ordinaryTargets.none { it.isCandidatePointerTarget() })
+    }
+
+    @Test
+    fun `t9 rail classifier isolates the dynamic left column from physical input keys`() {
+        val bounds = RectF(0f, 0f, 40f, 40f)
+        val policy = TouchInputReducer.GesturePolicy.tapOnly()
+        val leftRail = FrozenTouchTarget.KeyValue(
+            key = Key(
+                label = "hun",
+                action = KeyAction.SelectT9PinyinChoice(7L, 0),
+                bounds = bounds,
+                style = KeyStyle.T9_LEFT_RAIL,
+            ),
+            gesturePolicy = policy,
+        )
+        val central = FrozenTouchTarget.KeyValue(
+            key = Key(
+                label = "GHI",
+                action = KeyAction.EmitKey('4'.code),
+                bounds = bounds,
+                style = KeyStyle.T9_PRIMARY,
+            ),
+            gesturePolicy = policy,
+        )
+
+        assertTrue(leftRail.isT9PinyinRailPointerTarget())
+        assertFalse(central.isT9PinyinRailPointerTarget())
     }
 
     private class FakeClock : KeyboardInteractionClock {
@@ -398,10 +511,17 @@ class KeyboardInteractionControllerTest {
         override fun canStartSkillGesture(key: Key): Boolean = true
     }
 
+    private class RecordingActionEffects : KeyboardActionEffects {
+        override fun stopPanelFling() = Unit
+        override fun stopCandidateSettle() = Unit
+    }
+
     private class RecordingActions : KeyboardInteractionActionSink {
         val keys = ArrayList<Int>()
         val texts = ArrayList<String>()
         val aiStarts = ArrayList<Long>()
+        val inputSchemes = ArrayList<KeyboardInputSchemeChoice>()
+        val t9PinyinChoices = ArrayList<Pair<Long, Int>>()
 
         override fun onKey(code: Int) {
             keys += code
@@ -414,6 +534,12 @@ class KeyboardInteractionControllerTest {
         override fun onClipboardAction(action: KeyboardClipboardAction, index: Int) = Unit
         override fun onEditorAction(action: KeyboardEditorAction) = Unit
         override fun onSettingsAction() = Unit
+        override fun onInputSchemeSelected(choice: KeyboardInputSchemeChoice) {
+            inputSchemes += choice
+        }
+        override fun onT9PinyinChoiceSelected(revision: Long, index: Int) {
+            t9PinyinChoices += revision to index
+        }
 
         override fun onAiHoldStarted(generation: Long) {
             aiStarts += generation
@@ -438,6 +564,7 @@ class KeyboardInteractionControllerTest {
         override val interactionFontScale: Float = 1f
         override var interactionPanel = KeyboardPanel.LETTERS
         override var interactionPrimaryMode = PrimaryKeyboardMode.QWERTY
+        override var interactionInputSchemeChoice = KeyboardInputSchemeChoice.PINYIN_QWERTY
         override var interactionEmojiGroupIndex = 0
         override var interactionSymbolCategoryIndex = 0
         override var interactionClipboardPageIndex = 0

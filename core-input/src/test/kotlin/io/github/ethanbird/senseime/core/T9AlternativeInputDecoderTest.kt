@@ -214,7 +214,7 @@ class T9AlternativeInputDecoderTest {
         assertEquals(2, result.expandedQueryCount)
         assertEquals(10, result.decodeInvocationCount)
         assertEquals("浑身解数", result.candidates.first().text)
-        assertEquals("486743697 · hun'shen'x's", result.composingLabel)
+        assertEquals("hun'shen'x's", result.composingLabel)
     }
 
     @Test

@@ -160,6 +160,10 @@ internal class KeyboardKeyRenderer(
             KeyStyle.EDITOR_ACTION -> drawEditorActionKey(canvas, state, key, pressed)
             KeyStyle.VOICE_PRIMARY -> drawVoicePrimaryKey(canvas, state, key, pressed)
             KeyStyle.TOOLBOX_CARD -> drawToolboxCard(canvas, key, pressed)
+            KeyStyle.T9_PRIMARY -> drawT9PrimaryKey(canvas, key, pressed)
+            KeyStyle.T9_RAIL -> drawT9RailKey(canvas, key, pressed)
+            KeyStyle.T9_LEFT_RAIL -> drawT9RailKey(canvas, key, pressed)
+            KeyStyle.INPUT_SCHEME_OPTION -> drawInputSchemeOption(canvas, key, pressed)
             else -> drawKeyboardKey(canvas, state, key, pressed)
         }
         if (
@@ -171,6 +175,151 @@ internal class KeyboardKeyRenderer(
                 drawSkillAuroraOverlay(canvas, key.bounds, foregroundOnly = true)
             }
             drawActiveSkillMarker(canvas, key.bounds)
+        }
+    }
+
+    private fun drawInputSchemeOption(
+        canvas: Canvas,
+        key: Key,
+        pressed: Boolean,
+    ) {
+        val active = key.selected
+        if (active || pressed) {
+            paint.style = Paint.Style.FILL
+            paint.color = if (active) {
+                color(0x185B7DF0, 0x305B7DF0)
+            } else {
+                color(0x0F172033, 0x20FFFFFF)
+            }
+            canvas.drawRoundRect(key.bounds, dp(14f), dp(14f), paint)
+        }
+
+        val tileSize = minOf(dp(54f), key.bounds.width() - dp(16f), key.bounds.height() - dp(34f))
+        val tileTop = key.bounds.top + dp(8f)
+        toolboxTileBounds.set(
+            key.bounds.centerX() - tileSize / 2f,
+            tileTop,
+            key.bounds.centerX() + tileSize / 2f,
+            tileTop + tileSize,
+        )
+        paint.style = Paint.Style.FILL
+        paint.color = when {
+            active -> color(0xFF3970F4.toInt(), 0xFF4E78F2.toInt())
+            pressed -> color(0xFFD8E2FF.toInt(), 0xFF343B55.toInt())
+            else -> color(0xE8FFFFFF.toInt(), 0xFF292B2E.toInt())
+        }
+        canvas.drawRoundRect(toolboxTileBounds, dp(14f), dp(14f), paint)
+
+        paint.color = if (active) Color.WHITE else color(0xFF263247.toInt(), 0xFFE7E9EE.toInt())
+        paint.textSize = sp(if ((key.visualLegend?.length ?: 0) > 2) 15f else 19f)
+        paint.textAlign = Paint.Align.CENTER
+        text.drawCentered(
+            canvas,
+            key.visualLegend.orEmpty(),
+            paint,
+            toolboxTileBounds.centerX(),
+            toolboxTileBounds.centerY(),
+        )
+
+        if (active) {
+            paint.color = color(0xFF1D5FF5.toInt(), 0xFF5A86FF.toInt())
+            canvas.drawCircle(
+                toolboxTileBounds.left + dp(3f),
+                toolboxTileBounds.bottom - dp(3f),
+                dp(7f),
+                paint,
+            )
+            paint.color = Color.WHITE
+            paint.textSize = sp(8f)
+            text.drawCentered(
+                canvas,
+                "✓",
+                paint,
+                toolboxTileBounds.left + dp(3f),
+                toolboxTileBounds.bottom - dp(3f),
+            )
+        }
+
+        paint.color = if (active) {
+            color(0xFF2865F0.toInt(), 0xFF82A2FF.toInt())
+        } else {
+            color(0xFF536073.toInt(), 0xFFB4B8C1.toInt())
+        }
+        paint.textSize = sp(12.5f)
+        paint.textAlign = Paint.Align.CENTER
+        text.drawCentered(
+            canvas,
+            key.label,
+            paint,
+            key.bounds.centerX(),
+            minOf(key.bounds.bottom - dp(7f), toolboxTileBounds.bottom + dp(18f)),
+        )
+    }
+
+    private fun drawT9PrimaryKey(
+        canvas: Canvas,
+        key: Key,
+        pressed: Boolean,
+    ) {
+        paint.style = Paint.Style.FILL
+        paint.color = if (pressed) {
+            color(0xFF5B7DF0.toInt(), 0xFF6D61D8.toInt())
+        } else {
+            color(0xEFFFFFFF.toInt(), 0xFF303132.toInt())
+        }
+        canvas.drawRoundRect(key.bounds, metrics.keyRadius, metrics.keyRadius, paint)
+        paint.color = if (pressed) Color.WHITE else color(0xFF111827.toInt(), 0xFFF6F7F9.toInt())
+        paint.textSize = sp(if (key.label.length >= 4) 17.5f else 19.5f)
+        paint.textAlign = Paint.Align.CENTER
+        text.drawCentered(canvas, key.label, paint, key.bounds.centerX(), key.bounds.centerY())
+    }
+
+    private fun drawT9RailKey(
+        canvas: Canvas,
+        key: Key,
+        pressed: Boolean,
+    ) {
+        paint.style = Paint.Style.FILL
+        paint.color = if (pressed) {
+            color(0xFF5B7DF0.toInt(), 0xFF6D61D8.toInt())
+        } else {
+            color(0xFFCED6E1.toInt(), 0xFF242526.toInt())
+        }
+        canvas.drawRoundRect(key.bounds, metrics.keyRadius, metrics.keyRadius, paint)
+        val foreground = if (pressed) Color.WHITE else color(0xFF263247.toInt(), 0xFFE3E5EA.toInt())
+        val icon = key.icon
+        if (icon != null) {
+            drawIcon(canvas, icon, key.bounds, foreground)
+        } else {
+            paint.color = foreground
+            paint.textSize = sp(if (key.visualLegend == null) 15f else 11.5f)
+            paint.textAlign = Paint.Align.CENTER
+            val mainY = key.bounds.centerY() - if (key.visualLegend == null) 0f else dp(6f)
+            val saveCount = canvas.save()
+            canvas.clipRect(key.bounds)
+            text.drawEllipsized(
+                canvas = canvas,
+                text = key.label,
+                paint = paint,
+                x = key.bounds.centerX(),
+                centerY = mainY,
+                maximumWidth = key.bounds.width() - dp(5f),
+                trimTrailingWhitespace = false,
+            )
+            key.visualLegend?.let { preview ->
+                paint.color = color(0xFF6B7484.toInt(), 0xFFA7AAB1.toInt())
+                paint.textSize = sp(7.5f)
+                text.drawEllipsized(
+                    canvas = canvas,
+                    text = preview,
+                    paint = paint,
+                    x = key.bounds.centerX(),
+                    centerY = key.bounds.centerY() + dp(7f),
+                    maximumWidth = key.bounds.width() - dp(5f),
+                    trimTrailingWhitespace = false,
+                )
+            }
+            canvas.restoreToCount(saveCount)
         }
     }
 

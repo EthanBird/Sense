@@ -8,6 +8,7 @@ import io.github.ethanbird.senseime.core.ContextualInputDecoder
 import io.github.ethanbird.senseime.core.InputDecoder
 import io.github.ethanbird.senseime.core.T9Composition
 import io.github.ethanbird.senseime.core.T9AlternativeInputDecoder
+import io.github.ethanbird.senseime.core.T9PinyinChoice
 import io.github.ethanbird.senseime.core.T9SyllableIndex
 import io.github.ethanbird.senseime.core.Wubi86Decoder
 import io.github.ethanbird.senseime.core.WubiComposition
@@ -44,11 +45,45 @@ internal data class AlternativeDecodeRequest(
         get() = if (dependsOnWubiDecoder) wubiDecoderGeneration else 0L
 }
 
+/** Letter-only editor fallback used while a complete T9 path inventory is still loading. */
+internal fun fallbackT9EditorText(composition: T9Composition?): String {
+    composition ?: return ""
+    if (composition.rawDigits.isEmpty()) return ""
+    val locksByStart = composition.lockedEdges.associateBy { it.digitStart }
+    val tokens = ArrayList<String>()
+    val unresolved = StringBuilder()
+    fun flushUnresolved() {
+        if (unresolved.isNotEmpty()) {
+            tokens += unresolved.toString()
+            unresolved.setLength(0)
+        }
+    }
+    var digitOffset = 0
+    while (digitOffset < composition.rawDigits.length) {
+        if (digitOffset > 0 && digitOffset in composition.forcedJoints) flushUnresolved()
+        val lock = locksByStart[digitOffset]
+        if (lock != null) {
+            flushUnresolved()
+            tokens += lock.spelling
+            digitOffset = lock.digitEnd
+        } else {
+            unresolved.append(T9_FALLBACK_LETTERS[composition.rawDigits[digitOffset] - '2'])
+            digitOffset += 1
+            if (locksByStart.containsKey(digitOffset)) flushUnresolved()
+        }
+    }
+    flushUnresolved()
+    return tokens.joinToString(separator = "'")
+}
+
+private const val T9_FALLBACK_LETTERS = "adgjmptw"
+
 internal data class AlternativeDecoding(
     val key: AlternativeCompositionKey,
     val composingLabel: String,
     val candidates: List<Candidate>,
     val candidateLabels: List<String>,
+    val t9PinyinChoices: List<T9PinyinChoice> = emptyList(),
 ) {
     init {
         require(candidates.size == candidateLabels.size)
@@ -133,6 +168,15 @@ internal class AlternativeCandidateSession {
         return decoding.candidates.getOrNull(sourceIndex)
     }
 
+    fun selectT9PinyinChoice(
+        presentationRevision: Long,
+        sourceIndex: Int,
+    ): T9PinyinChoice? {
+        val decoding = current.decoding ?: return null
+        if (current.pending || decoding.key.presentationRevision != presentationRevision) return null
+        return decoding.t9PinyinChoices.getOrNull(sourceIndex)
+    }
+
     fun clear() {
         current = AlternativePresentation(null, 0, 0, null, emptyList(), pending = false)
     }
@@ -172,6 +216,7 @@ internal object AlternativeInputDecoder {
             composingLabel = decoded.composingLabel,
             candidates = decoded.candidates,
             candidateLabels = decoded.candidates.map(Candidate::text),
+            t9PinyinChoices = decoded.pinyinChoices,
         )
     }
 

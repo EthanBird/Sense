@@ -47,6 +47,8 @@ import io.github.ethanbird.senseime.core.ProgressivePinyinDecoding
 import io.github.ethanbird.senseime.core.PinyinSyllableSegmenter
 import io.github.ethanbird.senseime.core.SemanticCandidateCatalog
 import io.github.ethanbird.senseime.core.SemanticCandidateMixer
+import io.github.ethanbird.senseime.core.T9Composition
+import io.github.ethanbird.senseime.core.T9PinyinChoice as CoreT9PinyinChoice
 import io.github.ethanbird.senseime.core.T9SyllableIndex
 import io.github.ethanbird.senseime.core.UserLearningEvidence
 import io.github.ethanbird.senseime.core.UserLexicon
@@ -86,10 +88,14 @@ import io.github.ethanbird.senseime.ui.KeyboardSkillSelection
 import io.github.ethanbird.senseime.ui.KeyboardSkillSelectionListener
 import io.github.ethanbird.senseime.ui.KeyboardSkillToggleAction
 import io.github.ethanbird.senseime.ui.KeyboardLayoutContract
+import io.github.ethanbird.senseime.ui.KeyboardInputSchemeChoice
+import io.github.ethanbird.senseime.ui.KeyboardInputSchemeSelectionListener
 import io.github.ethanbird.senseime.ui.PrimaryKeyboardMode
 import io.github.ethanbird.senseime.ui.PrimaryKeyboardLegendMode
 import io.github.ethanbird.senseime.ui.SenseKeyboardView
 import io.github.ethanbird.senseime.ui.SenseKeyboardSurface
+import io.github.ethanbird.senseime.ui.T9PinyinChoice as UiT9PinyinChoice
+import io.github.ethanbird.senseime.ui.T9PinyinChoiceSelectionListener
 import io.github.ethanbird.senseime.ui.VoiceSurfacePhase
 import io.github.ethanbird.senseime.ui.VoiceSurfaceState
 import java.util.ArrayDeque
@@ -274,7 +280,7 @@ class SenseInputMethodService : InputMethodService() {
                     request,
                     AlternativeDecoding(
                         key = request.key,
-                        composingLabel = request.key.rawCode,
+                        composingLabel = fallbackAlternativeComposingLabel(request),
                         candidates = emptyList(),
                         candidateLabels = emptyList(),
                     ),
@@ -459,6 +465,10 @@ class SenseInputMethodService : InputMethodService() {
         view.clipboardActionListener = ::handleClipboardAction
         view.editorActionListener = ::handleEditorAction
         view.settingsActionListener = ::openSenseHome
+        view.inputSchemeSelectionListener =
+            KeyboardInputSchemeSelectionListener(::handleInputSchemeSelection)
+        view.t9PinyinChoiceSelectionListener =
+            T9PinyinChoiceSelectionListener(::handleT9PinyinChoiceSelection)
         view.skillSelectionListener = KeyboardSkillSelectionListener(::handleSkillSelection)
         view.aiHoldListener = object : SenseKeyboardView.AiHoldListener {
             override fun onAiHoldStarted(generation: Long) {
@@ -478,6 +488,7 @@ class SenseInputMethodService : InputMethodService() {
             activePrimaryKeyboardMode(),
             activePrimaryKeyboardLegendMode(),
         )
+        view.setSelectedInputSchemeChoice(activeKeyboardInputSchemeChoice())
         view.setEditorSelectionState(
             hasSelection = editorSelectionState.hasSelection,
             selectionMode = editorSelectionState.selectionMode,
@@ -632,6 +643,7 @@ class SenseInputMethodService : InputMethodService() {
             activePrimaryKeyboardMode(),
             activePrimaryKeyboardLegendMode(),
         )
+        keyboardView?.setSelectedInputSchemeChoice(activeKeyboardInputSchemeChoice())
         keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
         reconcileAgentSkillsAndWatcher()
         render()
@@ -880,6 +892,7 @@ class SenseInputMethodService : InputMethodService() {
             }
 
             KeyCodes.DELETE -> handleBackspace()
+            KeyCodes.T9_REINPUT -> handleT9Reinput()
             KeyCodes.SPACE -> handleSpace()
             KeyCodes.COMMA -> commitText(if (chineseMode) "，" else ",")
             KeyCodes.PERIOD -> commitText(if (chineseMode) "。" else ".")
@@ -974,6 +987,7 @@ class SenseInputMethodService : InputMethodService() {
                 character = character,
                 captureLeftContext = ::captureDecodeLeftContext,
                 publish = ::updateConnectionComposition,
+                presentT9 = ::t9EditorCompositionText,
             )
         ) {
             AlternativeEditResult.UNHANDLED -> commitText(character.toString())
@@ -1084,7 +1098,84 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun handleAlternativeBackspace() {
-        if (inputScheme.backspace(::updateConnectionComposition)) render()
+        if (
+            inputScheme.backspace(
+                publish = ::updateConnectionComposition,
+                presentT9 = ::t9EditorCompositionText,
+            )
+        ) {
+            render()
+        }
+    }
+
+    private fun handleT9Reinput() {
+        if (!chineseMode) return
+        if (!inputScheme.clearT9Composition(::updateConnectionComposition)) return
+        mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
+        clearPendingCommit()
+        currentInputConnection?.finishComposingText()
+        render()
+    }
+
+    private fun handleT9PinyinChoiceSelection(revision: Long, index: Int) {
+        if (!chineseMode || inputScheme.scheme != ChineseInputScheme.PINYIN_T9) return
+        if (
+            !inputScheme.selectT9PinyinChoice(
+                presentationRevision = revision,
+                sourceIndex = index,
+                publish = ::updateConnectionComposition,
+                presentT9 = ::t9EditorCompositionText,
+            )
+        ) {
+            return
+        }
+        mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
+        clearPendingCommit()
+        render(forceDecode = true)
+    }
+
+    private fun handleInputSchemeSelection(choice: KeyboardInputSchemeChoice) {
+        if (
+            KeyboardInputSchemePreferencePlanner.plan(inputScheme.preferences, choice) ==
+            KeyboardInputSchemePersistenceIntent.Unchanged
+        ) {
+            keyboardView?.setSelectedInputSchemeChoice(activeKeyboardInputSchemeChoice())
+            return
+        }
+        if (hasAnyComposition() && !commitActivePrimaryOrRaw()) {
+            keyboardView?.setSelectedInputSchemeChoice(activeKeyboardInputSchemeChoice())
+            return
+        }
+
+        // Committing is a settings boundary and may apply a newer deferred snapshot. Plan again
+        // from that state so an older pre-commit copy never overwrites another settings field.
+        val intent = KeyboardInputSchemePreferencePlanner.plan(inputScheme.preferences, choice)
+        if (intent !is KeyboardInputSchemePersistenceIntent.Persist) {
+            keyboardView?.setSelectedInputSchemeChoice(activeKeyboardInputSchemeChoice())
+            return
+        }
+        val writeGeneration = nextGeneration(preferencesLoadGeneration)
+        preferencesLoadGeneration = writeGeneration
+        applyImePreferences(intent.preferences)
+        preferencesIo.execute {
+            val saved = imePreferencesStore.update { stored ->
+                when (val currentIntent = KeyboardInputSchemePreferencePlanner.plan(stored, choice)) {
+                    KeyboardInputSchemePersistenceIntent.Unchanged -> stored
+                    is KeyboardInputSchemePersistenceIntent.Persist -> currentIntent.preferences
+                }
+            }
+            mainHandler.post {
+                if (destroyed || preferencesLoadGeneration != writeGeneration) return@post
+                saved.onSuccess { persisted ->
+                    inputScheme.acceptLoadedPreferences(
+                        value = persisted,
+                        compositionActive = hasAnyComposition(),
+                    )?.let(::applyImePreferences)
+                }.onFailure { error ->
+                    Log.e(TAG, "IME preference save failed", error)
+                }
+            }
+        }
     }
 
     private fun handleSpace() {
@@ -2086,8 +2177,30 @@ class SenseInputMethodService : InputMethodService() {
             mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
         }
         val ready = launch.presentation.decoding
-        val label = ready?.composingLabel ?: key.rawCode
-        if (launch.presentation.pending) {
+        val label = if (key.scheme == ChineseInputScheme.PINYIN_T9) {
+            inputScheme.editorComposingText
+        } else {
+            ready?.composingLabel ?: inputScheme.editorComposingText
+        }
+        if (key.scheme == ChineseInputScheme.PINYIN_T9) {
+            val railChoices = ready?.uiT9PinyinChoices()
+                ?: request.t9Composition
+                    ?.let { composition ->
+                        request.t9Index.choices(composition, T9_PINYIN_CHOICE_LIMIT)
+                    }
+                    .orEmpty()
+                    .uiT9PinyinChoices()
+            keyboardView?.updateT9Composing(
+                revision = key.presentationRevision,
+                text = label,
+                values = if (launch.presentation.pending) {
+                    null
+                } else {
+                    ready?.candidateLabels.orEmpty()
+                },
+                choices = railChoices,
+            )
+        } else if (launch.presentation.pending) {
             keyboardView?.updateComposition(key.presentationRevision, label)
         } else {
             keyboardView?.updateComposing(
@@ -2173,14 +2286,55 @@ class SenseInputMethodService : InputMethodService() {
             }
             if (exact.size == 1 && commitAlternativeCandidate(exact.single())) return
         }
-        keyboardView?.updateComposing(
-            request.key.presentationRevision,
-            decoding.composingLabel,
-            presentation.decoding?.candidateLabels.orEmpty(),
-        )
+        if (request.key.scheme == ChineseInputScheme.PINYIN_T9) {
+            keyboardView?.updateT9Composing(
+                revision = request.key.presentationRevision,
+                text = inputScheme.editorComposingText,
+                values = presentation.decoding?.candidateLabels.orEmpty(),
+                choices = decoding.uiT9PinyinChoices(),
+            )
+        } else {
+            keyboardView?.updateComposing(
+                request.key.presentationRevision,
+                decoding.composingLabel,
+                presentation.decoding?.candidateLabels.orEmpty(),
+            )
+        }
     }
 
     private fun currentAlternativeDecoding(): AlternativeDecoding? = inputScheme.currentDecoding()
+
+    private fun fallbackAlternativeComposingLabel(request: AlternativeDecodeRequest): String =
+        if (request.key.scheme == ChineseInputScheme.PINYIN_T9) {
+            request.t9Composition
+                ?.let { composition ->
+                    request.t9Index.paths(composition, T9_EDITOR_PATH_LIMIT)
+                        .firstOrNull()
+                        ?.formatted
+                }
+                ?: fallbackT9EditorText(request.t9Composition)
+        } else {
+            request.key.rawCode
+        }
+
+    private fun AlternativeDecoding.uiT9PinyinChoices(): List<UiT9PinyinChoice> =
+        t9PinyinChoices.uiT9PinyinChoices()
+
+    private fun List<CoreT9PinyinChoice>.uiT9PinyinChoices(): List<UiT9PinyinChoice> =
+        take(T9_PINYIN_CHOICE_LIMIT).map { choice ->
+            UiT9PinyinChoice(
+                canonical = choice.canonicalPinyin,
+                preview = choice.previewPinyin,
+            )
+        }
+
+    private fun t9EditorCompositionText(composition: T9Composition): String {
+        if (composition.rawDigits.isEmpty()) return ""
+        return decoderRuntime.t9Index.paths(composition, T9_EDITOR_PATH_LIMIT)
+            .firstOrNull()
+            ?.formatted
+            ?: fallbackT9EditorText(composition)
+    }
 
     private fun commitPrimary(
         candidate: Candidate?,
@@ -2226,7 +2380,7 @@ class SenseInputMethodService : InputMethodService() {
         )
         val rawCode = commitSnapshot.rawCode
         if (rawCode.isEmpty()) return false
-        val output = candidate?.text ?: rawCode
+        val output = commitSnapshot.outputText(candidate?.text)
         val feedback = personalizationFeedback.prepareExpiration()
         val wubiLearningTarget = wubiRuntime.candidateDecoder.takeIf {
             commitSnapshot.learningDomain == AlternativeLearningDomain.WUBI &&
@@ -2238,7 +2392,8 @@ class SenseInputMethodService : InputMethodService() {
         }
         val committedStart = when {
             hasHostSelection(selectionStart, selectionEnd) -> minOf(selectionStart, selectionEnd)
-            selectionStart >= 0 -> (selectionStart - rawCode.length).coerceAtLeast(0)
+            selectionStart >= 0 ->
+                (selectionStart - commitSnapshot.editorComposingLength).coerceAtLeast(0)
             else -> -1
         }
         val committed = connection?.commitText(output, 1) == true
@@ -2643,6 +2798,13 @@ class SenseInputMethodService : InputMethodService() {
             PrimaryKeyboardLegendMode.SWIPE_HINTS
         }
 
+    private fun activeKeyboardInputSchemeChoice(): KeyboardInputSchemeChoice =
+        when (inputScheme.scheme) {
+            ChineseInputScheme.PINYIN_T9 -> KeyboardInputSchemeChoice.PINYIN_T9
+            ChineseInputScheme.PINYIN_QWERTY -> KeyboardInputSchemeChoice.PINYIN_QWERTY
+            ChineseInputScheme.WUBI_86 -> KeyboardInputSchemeChoice.WUBI_86
+        }
+
     private fun refreshImePreferencesAsync(expectedEditorSessionId: Long) {
         val requestGeneration = nextGeneration(preferencesLoadGeneration)
         preferencesLoadGeneration = requestGeneration
@@ -2682,6 +2844,7 @@ class SenseInputMethodService : InputMethodService() {
             activePrimaryKeyboardMode(),
             activePrimaryKeyboardLegendMode(),
         )
+        keyboardView?.setSelectedInputSchemeChoice(activeKeyboardInputSchemeChoice())
         render(forceDecode = schemeChanged)
     }
 
@@ -2788,6 +2951,8 @@ class SenseInputMethodService : InputMethodService() {
         const val ENGLISH_LEXICON_ASSET = "english_lexicon.txt"
         const val WUBI86_ASSET = "wubi86_lexicon.bin"
         const val DECODE_CANDIDATE_LIMIT = 255
+        const val T9_PINYIN_CHOICE_LIMIT = 4
+        const val T9_EDITOR_PATH_LIMIT = 1
         const val MAX_PROGRESSIVE_PREFIX_CANDIDATES = DECODE_CANDIDATE_LIMIT
         const val PRESENTATION_CANDIDATE_LIMIT = DECODE_CANDIDATE_LIMIT + MAX_PROGRESSIVE_PREFIX_CANDIDATES
         const val CLIPBOARD_HISTORY_LIMIT = 30

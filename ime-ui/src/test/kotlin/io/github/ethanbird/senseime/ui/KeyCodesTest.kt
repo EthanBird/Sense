@@ -30,6 +30,7 @@ class KeyCodesTest {
             KeyCodes.EMOJI,
             KeyCodes.UNDO,
             KeyCodes.REDO,
+            KeyCodes.T9_REINPUT,
         )
 
         assertTrue(codes.all { it < 0 })

@@ -78,7 +78,7 @@ object M7ChineseSchemeBenchmark {
         check(targetDecoded.candidates.firstOrNull()?.text == "浑身解数") {
             "T9 complete decode lost hunshenxs Top1: ${targetDecoded.candidates.take(3)}"
         }
-        check(targetDecoded.composingLabel == "486743697 · hun'shen'x's") {
+        check(targetDecoded.composingLabel == "hun'shen'x's") {
             "T9 resolved label regressed: ${targetDecoded.composingLabel}"
         }
         val wubiQueries = arrayOf("a", "b", "q", "r", "aaaa")

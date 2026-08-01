@@ -18,26 +18,38 @@ class ImePreferencesStore(context: Context) {
     private val lockFile = File(root, STORE_LOCK_FILE)
 
     fun load(): Result<ImePreferencesV1> = runCatching {
-        withStoreLock {
-            try {
-                file.openRead().use { ImePreferencesCodec.decode(it.readBytes()) }
-            } catch (_: FileNotFoundException) {
-                ImePreferencesV1.DEFAULT
-            }
-        }
+        withStoreLock(::readUnlocked)
     }
 
     fun save(value: ImePreferencesV1): Result<Unit> = runCatching {
-        withStoreLock {
-            val output = file.startWrite()
-            try {
-                output.write(ImePreferencesCodec.encode(value))
-                output.flush()
-                file.finishWrite(output)
-            } catch (error: Throwable) {
-                file.failWrite(output)
-                throw error
+        withStoreLock { writeUnlocked(value) }
+    }
+
+    /** Atomically reads, transforms and replaces the cross-process snapshot under one OS lock. */
+    fun update(transform: (ImePreferencesV1) -> ImePreferencesV1): Result<ImePreferencesV1> =
+        runCatching {
+            withStoreLock {
+                val updated = transform(readUnlocked())
+                writeUnlocked(updated)
+                updated
             }
+        }
+
+    private fun readUnlocked(): ImePreferencesV1 = try {
+        file.openRead().use { ImePreferencesCodec.decode(it.readBytes()) }
+    } catch (_: FileNotFoundException) {
+        ImePreferencesV1.DEFAULT
+    }
+
+    private fun writeUnlocked(value: ImePreferencesV1) {
+        val output = file.startWrite()
+        try {
+            output.write(ImePreferencesCodec.encode(value))
+            output.flush()
+            file.finishWrite(output)
+        } catch (error: Throwable) {
+            file.failWrite(output)
+            throw error
         }
     }
 

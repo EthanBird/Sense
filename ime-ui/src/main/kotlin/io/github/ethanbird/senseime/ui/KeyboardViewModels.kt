@@ -24,6 +24,10 @@ internal enum class KeyStyle {
     EDITOR_ACTION,
     VOICE_PRIMARY,
     TOOLBOX_CARD,
+    T9_PRIMARY,
+    T9_RAIL,
+    T9_LEFT_RAIL,
+    INPUT_SCHEME_OPTION,
 }
 
 internal enum class ScrollPanel {
@@ -91,6 +95,20 @@ internal sealed interface KeyAction {
         val index: Int,
     ) : KeyAction
 
+    data class SelectT9PinyinChoice(
+        val revision: Long,
+        val index: Int,
+    ) : KeyAction
+
+    data class ShowPanel(
+        val panel: KeyboardPanel,
+        override val keyCode: Int = 0,
+    ) : KeyAction
+
+    data class SelectInputScheme(
+        val choice: KeyboardInputSchemeChoice,
+    ) : KeyAction
+
     data object None : KeyAction
 }
 
@@ -139,6 +157,7 @@ internal class Key(
     val icon: Icon? = null,
     val secondaryLabel: String? = null,
     val scrollPanel: ScrollPanel? = null,
+    val selected: Boolean = false,
 ) {
     /** Primitive hot-path projection; reading a key code never allocates. */
     val code: Int = action.keyCode
@@ -174,6 +193,21 @@ internal data class CandidatePageCacheKey(
 internal sealed interface FrozenTouchTarget {
     val bounds: RectF
     val gesturePolicy: TouchInputReducer.GesturePolicy
+
+    fun isCandidatePointerTarget(): Boolean = when (this) {
+        is CandidateValue,
+        is CandidateControlValue,
+        is CandidatePageArea,
+        is CandidateStripArea,
+        -> true
+
+        is KeyValue,
+        is PanelScrollArea,
+        -> false
+    }
+
+    fun isT9PinyinRailPointerTarget(): Boolean =
+        this is KeyValue && key.style == KeyStyle.T9_LEFT_RAIL
 
     data class CandidateValue(
         val revision: Long,

@@ -133,11 +133,12 @@ class AdaptivePinyinDecoder(
         val baseCandidates = previousCodePoint
             ?.let { base.probeCanonicalChineseOnlyAfter(it, decoderInput, limit) }
             ?: base.probeCanonicalChineseOnly(decoderInput, limit)
-        val candidates = if ('\'' in decoderInput) {
-            baseCandidates
-        } else {
-            mergeUserAndBase(query, limit, baseCandidates)
-        }
+        val candidates = mergeUserAndBase(
+            query = query,
+            limit = limit,
+            baseCandidates = baseCandidates,
+            boundaryInput = decoderInput.takeIf { '\'' in it },
+        )
         return pureHanCandidates(candidates, limit)
     }
 
@@ -167,11 +168,12 @@ class AdaptivePinyinDecoder(
 
             else -> base.decode(decoderInput, limit)
         }
-        // The current personalization schema stores a continuous spelling only. A forced joint
-        // therefore has no persisted boundary evidence and must be evaluated by the boundary-
-        // aware base decoder alone instead of matching a contradictory continuous user record.
-        if ('\'' in decoderInput) return baseCandidates
-        return mergeUserAndBase(query, limit, baseCandidates)
+        return mergeUserAndBase(
+            query = query,
+            limit = limit,
+            baseCandidates = baseCandidates,
+            boundaryInput = decoderInput.takeIf { '\'' in it },
+        )
     }
 
     /** Preserve the production list instance when it is already all-Han and within the limit. */
@@ -200,8 +202,26 @@ class AdaptivePinyinDecoder(
         query: String,
         limit: Int,
         baseCandidates: List<Candidate>,
+        boundaryInput: String? = null,
     ): List<Candidate> {
-        val learnedCandidates = userLexicon.lookup(query, limit)
+        val learnedLookupLimit = if (boundaryInput == null) {
+            limit
+        } else {
+            maxOf(limit, FORCED_BOUNDARY_USER_LOOKUP_LIMIT)
+        }
+        val learnedCandidates = userLexicon.lookup(query, learnedLookupLimit).let { learned ->
+            if (boundaryInput == null) {
+                learned
+            } else {
+                learned.filter { phrase ->
+                    segmenter.segmentMixed(
+                        value = boundaryInput,
+                        canonicalPinyin = phrase.fullPinyin,
+                        canonicalInitials = phrase.initials,
+                    ) != null
+                }.take(limit)
+            }
+        }
         // Production base results already satisfy RankedCandidateDecoder. Most
         // composing queries have no personalization row, so preserve that result
         // instead of copying every candidate through adjustment maps and a second
@@ -480,10 +500,12 @@ class AdaptivePinyinDecoder(
             ?.let(PinyinSyllableSegmenter::normalize)
             ?.takeIf { it.length == characterCount }
         val initials = suppliedInitials ?: segmenter.initials(canonical, characterCount) ?: return null
-        val aliases = normalizedRawInput
-            .takeIf { it != canonical && it != initials }
-            ?.let(::setOf)
-            .orEmpty()
+        val aliases = linkedSetOf<String>()
+        sequenceOf(normalizedRawInput, candidate.pinyinInputAlias)
+            .filterNotNull()
+            .map(PinyinSyllableSegmenter::normalize)
+            .filter { it.isNotEmpty() && it != canonical && it != initials }
+            .forEach(aliases::add)
         return userLexicon.record(canonical, initials, candidate.text, aliases, evidence)
     }
 
@@ -546,6 +568,7 @@ class AdaptivePinyinDecoder(
     }
 
     private companion object {
+        const val FORCED_BOUNDARY_USER_LOOKUP_LIMIT = 128
         val RANKED_PREFIX_ORDER =
             compareBy<RankedPrefixCandidate> { it.wholeRank }
                 .thenBy { it.decodedRank }
