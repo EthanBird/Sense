@@ -14,6 +14,7 @@ internal data class KeyboardLetterLayoutRequest(
     val t9CompositionActive: Boolean = false,
     val t9PinyinChoiceRevision: Long = 0L,
     val t9PinyinChoices: List<T9PinyinChoice> = emptyList(),
+    val t9SideSymbols: List<String> = T9SideSymbolPolicy.DEFAULT_SYMBOLS,
 )
 
 /**

@@ -42,6 +42,10 @@ internal interface KeyboardRendererState {
     val emojiGroupIndex: Int
     val symbolCategoryIndex: Int
     val editorSelectionMode: Boolean
+    val shifted: Boolean
+        get() = false
+    val capsLocked: Boolean
+        get() = false
 
     fun isCandidatePressed(sourceIndex: Int): Boolean
 

@@ -22,6 +22,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
+import io.github.ethanbird.senseime.config.ImeSettingsRoute
 
 class SettingsActivity : ComponentActivity() {
     private val navigation = SettingsNavigationState()
@@ -48,7 +49,10 @@ class SettingsActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.setDecorFitsSystemWindows(false)
         }
-        navigation.restore(savedInstanceState?.getString(STATE_SECTION))
+        navigation.restore(
+            savedInstanceState?.getString(STATE_SECTION)
+                ?: intent.getStringExtra(ImeSettingsRoute.EXTRA_INITIAL_SECTION),
+        )
         skillsScreen = SkillsSettingsScreen(
             activity = this,
             views = settingsViews,
@@ -69,6 +73,13 @@ class SettingsActivity : ComponentActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        navigation.restore(intent.getStringExtra(ImeSettingsRoute.EXTRA_INITIAL_SECTION))
+        renderCurrentSection()
+    }
+
     override fun onStop() {
         // Always enqueue a terminal snapshot after every previously accepted debounced write.
         // Equality with the last completed snapshot cannot prove that an older write is not still
@@ -76,7 +87,9 @@ class SettingsActivity : ComponentActivity() {
         if (navigation.current == SettingsSection.SKILLS) {
             skillsScreen.onStop()
         }
+        (activeSectionScreen as? KeyboardSettingsScreen)?.onStop()
         (activeSectionScreen as? ProviderSettingsScreen)?.onStop()
+        activeSpeechScreen?.onStop()
         super.onStop()
     }
 

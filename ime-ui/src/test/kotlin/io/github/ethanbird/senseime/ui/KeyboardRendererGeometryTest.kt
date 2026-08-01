@@ -8,6 +8,14 @@ import org.junit.Test
 
 class KeyboardRendererGeometryTest {
     @Test
+    fun `candidate text center reserves lower descent safety`() {
+        val center = CandidateTextVerticalPolicy.centerY(top = 10f, bottom = 50f, density = 2f)
+
+        assertEquals(27f, center, 0.001f)
+        assertTrue(center < 30f)
+    }
+
+    @Test
     fun `ai geometry reuses rectangles and publishes stop hit target before draw`() {
         val geometry = MutableAiSurfaceRenderGeometry()
         geometry.update(

@@ -15,24 +15,11 @@ internal object T9KeyboardLayout : KeyboardLetterLayout {
         metrics: KeyboardMetrics,
         output: MutableList<Key>,
     ) {
-        val top = request.chromeBottom + metrics.dp(7f)
-        val bottom = request.viewHeight - metrics.systemBarHeight - metrics.dp(7f)
-        val availableHeight = bottom - top
-        if (
-            availableHeight <= metrics.keyGap * 3f ||
-            request.viewWidth <= metrics.horizontalPadding * 2f + metrics.keyGap * 4f
-        ) {
-            return
-        }
-
-        val bottomRowHeight = availableHeight * 0.23f
-        val bottomRowTop = bottom - bottomRowHeight
-        val mainBottom = bottomRowTop - metrics.keyGap
-        val mainHeight = mainBottom - top
-        val centreRowHeight = (mainHeight - metrics.keyGap * 2f) / 3f
-        if (centreRowHeight <= 0f) return
-
-        val columns = weightedColumns(request.viewWidth, metrics)
+        val geometry = layoutGeometry(request, metrics) ?: return
+        val top = geometry.top
+        val mainHeight = geometry.mainBottom - top
+        val centreRowHeight = geometry.centreRowHeight
+        val columns = geometry.columns
         T9_KEYS.forEachIndexed { index, spec ->
             val row = index / 3
             val column = index % 3 + 1
@@ -46,45 +33,16 @@ internal object T9KeyboardLayout : KeyboardLetterLayout {
                     columns[column].right,
                     y + centreRowHeight,
                 ),
+                visualLegend = spec.digit.toString(),
+                swipeOutput = spec.digit.toString(),
                 style = KeyStyle.T9_PRIMARY,
             )
         }
 
-        val pinyinChoices = request.t9PinyinChoices.take(MAX_LEFT_RAIL_CHOICES)
-        val punctuation = if (request.chineseMode) {
-            listOf(
-                "，" to KeyAction.EmitKey(KeyCodes.COMMA),
-                "。" to KeyAction.EmitKey(KeyCodes.PERIOD),
-                "？" to KeyAction.CommitText("？"),
-                "！" to KeyAction.CommitText("！"),
-            )
-        } else {
-            listOf(
-                "," to KeyAction.EmitKey(KeyCodes.COMMA),
-                "." to KeyAction.EmitKey(KeyCodes.PERIOD),
-                "?" to KeyAction.CommitText("?"),
-                "!" to KeyAction.CommitText("!"),
-            )
-        }
-        val leftRail = if (!request.t9CompositionActive) {
-            punctuation.map { (label, action) ->
-                LeftRailKey(label = label, action = action)
-            }
-        } else {
-            pinyinChoices.mapIndexed { index, choice ->
-                LeftRailKey(
-                    label = choice.canonical,
-                    visualLegend = choice.preview.takeUnless { it == choice.canonical },
-                    action = KeyAction.SelectT9PinyinChoice(
-                        revision = request.t9PinyinChoiceRevision,
-                        index = index,
-                    ),
-                )
-            }
-        }
-        val leftRailRowHeight = (mainHeight - metrics.keyGap * 3f) / 4f
-        leftRail.forEachIndexed { row, item ->
-            val y = top + row * (leftRailRowHeight + metrics.keyGap)
+        val leftRail = buildLeftRail(request)
+        val leftRailItemHeight = metrics.dp(LEFT_RAIL_ITEM_HEIGHT_DP)
+        leftRail.forEachIndexed { index, item ->
+            val y = top + index * leftRailItemHeight
             output += Key(
                 label = item.label,
                 action = item.action,
@@ -92,10 +50,11 @@ internal object T9KeyboardLayout : KeyboardLetterLayout {
                     columns[0].left,
                     y,
                     columns[0].right,
-                    y + leftRailRowHeight,
+                    y + leftRailItemHeight,
                 ),
                 visualLegend = item.visualLegend,
                 style = KeyStyle.T9_LEFT_RAIL,
+                scrollPanel = ScrollPanel.T9_LEFT_RAIL,
             )
         }
 
@@ -124,9 +83,91 @@ internal object T9KeyboardLayout : KeyboardLetterLayout {
         appendBottomRow(
             request = request,
             metrics = metrics,
-            top = bottomRowTop,
-            height = bottomRowHeight,
+            top = geometry.bottomRowTop,
+            height = geometry.bottomRowHeight,
             output = output,
+        )
+    }
+
+    /** Publishes the fixed rail viewport and clamps its retained scroll offset. */
+    fun configureLeftRailScene(
+        request: KeyboardLetterLayoutRequest,
+        metrics: KeyboardMetrics,
+        target: MutableKeyboardScene,
+    ) {
+        val geometry = layoutGeometry(request, metrics) ?: return
+        val column = geometry.columns[0]
+        target.t9LeftRailBounds = RectF(
+            column.left,
+            geometry.top,
+            column.right,
+            geometry.mainBottom,
+        )
+        target.t9LeftRailScrollState.configure(
+            contentExtent = leftRailItemCount(request) * metrics.dp(LEFT_RAIL_ITEM_HEIGHT_DP),
+            viewportExtent = geometry.mainBottom - geometry.top,
+        )
+    }
+
+    private fun buildLeftRail(request: KeyboardLetterLayoutRequest): List<LeftRailKey> {
+        if (request.t9CompositionActive) {
+            return request.t9PinyinChoices.take(MAX_LEFT_RAIL_CHOICES).mapIndexed { index, choice ->
+                LeftRailKey(
+                    label = choice.canonical,
+                    visualLegend = choice.preview.takeUnless { it == choice.canonical },
+                    action = KeyAction.SelectT9PinyinChoice(
+                        revision = request.t9PinyinChoiceRevision,
+                        index = index,
+                    ),
+                )
+            }
+        }
+        val symbols = request.t9SideSymbols.ifEmpty { T9SideSymbolPolicy.DEFAULT_SYMBOLS }
+        return ArrayList<LeftRailKey>(symbols.size + 1).apply {
+            symbols.forEach { symbol ->
+                add(LeftRailKey(label = symbol, action = KeyAction.CommitText(symbol)))
+            }
+            add(
+                LeftRailKey(
+                    label = CUSTOM_SETTINGS_LABEL,
+                    action = KeyAction.OpenT9SideSymbolSettings,
+                ),
+            )
+        }
+    }
+
+    private fun leftRailItemCount(request: KeyboardLetterLayoutRequest): Int =
+        if (request.t9CompositionActive) {
+            minOf(request.t9PinyinChoices.size, MAX_LEFT_RAIL_CHOICES)
+        } else {
+            request.t9SideSymbols.ifEmpty { T9SideSymbolPolicy.DEFAULT_SYMBOLS }.size + 1
+        }
+
+    private fun layoutGeometry(
+        request: KeyboardLetterLayoutRequest,
+        metrics: KeyboardMetrics,
+    ): LayoutGeometry? {
+        val top = request.chromeBottom + metrics.dp(7f)
+        val bottom = request.viewHeight - metrics.systemBarHeight - metrics.dp(7f)
+        val availableHeight = bottom - top
+        if (
+            availableHeight <= metrics.keyGap * 3f ||
+            request.viewWidth <= metrics.horizontalPadding * 2f + metrics.keyGap * 4f
+        ) {
+            return null
+        }
+        val bottomRowHeight = availableHeight * 0.23f
+        val bottomRowTop = bottom - bottomRowHeight
+        val mainBottom = bottomRowTop - metrics.keyGap
+        val centreRowHeight = (mainBottom - top - metrics.keyGap * 2f) / 3f
+        if (centreRowHeight <= 0f) return null
+        return LayoutGeometry(
+            top = top,
+            mainBottom = mainBottom,
+            bottomRowTop = bottomRowTop,
+            bottomRowHeight = bottomRowHeight,
+            centreRowHeight = centreRowHeight,
+            columns = weightedColumns(request.viewWidth, metrics),
         )
     }
 
@@ -175,6 +216,15 @@ internal object T9KeyboardLayout : KeyboardLetterLayout {
         val right: Float,
     )
 
+    private data class LayoutGeometry(
+        val top: Float,
+        val mainBottom: Float,
+        val bottomRowTop: Float,
+        val bottomRowHeight: Float,
+        val centreRowHeight: Float,
+        val columns: Array<Column>,
+    )
+
     private data class T9KeySpec(
         val digit: Char,
         val label: String,
@@ -204,5 +254,7 @@ internal object T9KeyboardLayout : KeyboardLetterLayout {
         T9KeySpec('9', "WXYZ"),
     )
 
-    private const val MAX_LEFT_RAIL_CHOICES = 4
+    private const val CUSTOM_SETTINGS_LABEL = "自定义设置"
+    private const val LEFT_RAIL_ITEM_HEIGHT_DP = 48f
+    private const val MAX_LEFT_RAIL_CHOICES = 8
 }

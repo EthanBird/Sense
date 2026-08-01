@@ -32,9 +32,26 @@ internal enum class KeyStyle {
 
 internal enum class ScrollPanel {
     EMOJI,
+    EMOJI_CATEGORIES,
     SYMBOL_CATEGORIES,
     SYMBOL_VALUES,
+    T9_LEFT_RAIL,
 }
+
+internal enum class ScrollAxis {
+    HORIZONTAL,
+    VERTICAL,
+}
+
+internal val ScrollPanel.axis: ScrollAxis
+    get() = when (this) {
+        ScrollPanel.EMOJI_CATEGORIES -> ScrollAxis.HORIZONTAL
+        ScrollPanel.EMOJI,
+        ScrollPanel.SYMBOL_CATEGORIES,
+        ScrollPanel.SYMBOL_VALUES,
+        ScrollPanel.T9_LEFT_RAIL,
+        -> ScrollAxis.VERTICAL
+    }
 
 internal enum class Icon {
     TOOLS,
@@ -55,6 +72,7 @@ internal enum class Icon {
     CLIPBOARD,
     UP,
     DOWN,
+    LEFT,
     RIGHT,
     HOME,
     END,
@@ -99,6 +117,9 @@ internal sealed interface KeyAction {
         val revision: Long,
         val index: Int,
     ) : KeyAction
+
+    /** Opens the keyboard-symbol editor without emitting an input key. */
+    data object OpenT9SideSymbolSettings : KeyAction
 
     data class ShowPanel(
         val panel: KeyboardPanel,
@@ -206,8 +227,11 @@ internal sealed interface FrozenTouchTarget {
         -> false
     }
 
-    fun isT9PinyinRailPointerTarget(): Boolean =
-        this is KeyValue && key.style == KeyStyle.T9_LEFT_RAIL
+    fun isT9PinyinRailPointerTarget(): Boolean = when (this) {
+        is KeyValue -> key.style == KeyStyle.T9_LEFT_RAIL
+        is PanelScrollArea -> panel == ScrollPanel.T9_LEFT_RAIL
+        else -> false
+    }
 
     data class CandidateValue(
         val revision: Long,

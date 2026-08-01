@@ -108,17 +108,9 @@ internal class KeyboardChromeRenderer(
             return
         }
         if (candidates.composing.isBlank() && candidates.candidates.isEmpty()) return
-        paint.style = Paint.Style.FILL
-        paint.color = color(0x22FFFFFF, 0x0FFFFFFF)
-        canvas.drawRect(
-            0f,
-            0f,
-            state.viewWidth.toFloat(),
-            state.collapsedCandidateBottom,
-            paint,
-        )
 
         if (candidates.composing.isNotBlank()) {
+            paint.isFakeBoldText = false
             paint.color = color(0xFF667085.toInt(), 0xFF8F949E.toInt())
             paint.textSize = sp(11f)
             paint.textAlign = Paint.Align.LEFT
@@ -149,9 +141,6 @@ internal class KeyboardChromeRenderer(
         val candidates = state.candidates
         val systemBarTop = state.viewHeight - metrics.systemBarHeight
         paint.style = Paint.Style.FILL
-        paint.color = color(0xF2EDF3FA.toInt(), 0xF2161718.toInt())
-        canvas.drawRect(0f, 0f, state.viewWidth.toFloat(), systemBarTop, paint)
-
         paint.color = color(0x16000000, 0x24FFFFFF)
         canvas.drawRect(
             0f,
@@ -272,6 +261,7 @@ internal class KeyboardChromeRenderer(
         // a theme state; changing text opacity on every key press looks like
         // a full candidate-strip flash.
         paint.color = color(0xFF172033.toInt(), 0xFFF3F4F7.toInt())
+        paint.isFakeBoldText = false
         paint.textSize = sp(textSizeSp)
         paint.textAlign = Paint.Align.LEFT
         val saveCount = canvas.save()
@@ -281,7 +271,7 @@ internal class KeyboardChromeRenderer(
             value,
             paint,
             candidate.textAnchor,
-            bounds.centerY + dp(2f),
+            CandidateTextVerticalPolicy.centerY(bounds.top, bounds.bottom, density),
         )
         canvas.restoreToCount(saveCount)
     }
@@ -360,6 +350,7 @@ internal class KeyboardChromeRenderer(
         title: String,
     ) {
         paint.style = Paint.Style.FILL
+        paint.isFakeBoldText = false
         paint.color = color(0x16FFFFFF, 0x0AFFFFFF)
         canvas.drawRect(0f, 0f, state.viewWidth.toFloat(), metrics.candidateHeight, paint)
         paint.color = color(0xFF344054.toInt(), 0xFFE7E9EE.toInt())

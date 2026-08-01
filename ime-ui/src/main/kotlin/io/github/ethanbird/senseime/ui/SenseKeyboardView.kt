@@ -89,6 +89,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     var clipboardActionListener: ((action: ClipboardAction, index: Int) -> Unit)? = null
     var editorActionListener: ((action: EditorAction) -> Unit)? = null
     var settingsActionListener: (() -> Unit)? = null
+    var t9SideSymbolSettingsListener: (() -> Unit)? = null
     var t9PinyinChoiceSelectionListener: T9PinyinChoiceSelectionListener? = null
     var inputSchemeSelectionListener: KeyboardInputSchemeSelectionListener? = null
     var aiHoldListener: AiHoldListener? = null
@@ -126,6 +127,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     private var editorSelectionMode = false
     private var editorCanPaste = false
     private var shifted = false
+    private var capsLocked = false
     private var chineseMode = true
     private var panel = KeyboardPanel.LETTERS
     private var primaryKeyboardMode = PrimaryKeyboardMode.QWERTY
@@ -134,6 +136,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     private var t9CompositionActive = false
     private var t9PinyinChoiceRevision = 0L
     private var t9PinyinChoices: List<T9PinyinChoice> = emptyList()
+    private var t9SideSymbols: List<String> = T9SideSymbolPolicy.DEFAULT_SYMBOLS
     private var keyboardSizeProfile = KeyboardSizeProfile.DEFAULT
     private var renderPassCount = 0L
 
@@ -161,6 +164,10 @@ class SenseKeyboardView @JvmOverloads constructor(
 
         override fun onSettingsAction() {
             settingsActionListener?.invoke()
+        }
+
+        override fun onT9SideSymbolSettings() {
+            t9SideSymbolSettingsListener?.invoke()
         }
 
         override fun onT9PinyinChoiceSelected(revision: Long, index: Int) {
@@ -351,6 +358,10 @@ class SenseKeyboardView @JvmOverloads constructor(
             get() = this@SenseKeyboardView.symbolCategoryIndex
         override val editorSelectionMode: Boolean
             get() = this@SenseKeyboardView.editorSelectionMode
+        override val shifted: Boolean
+            get() = this@SenseKeyboardView.shifted
+        override val capsLocked: Boolean
+            get() = this@SenseKeyboardView.capsLocked
 
         override fun isCandidatePressed(sourceIndex: Int): Boolean =
             interaction.isCandidatePressed(sourceIndex)
@@ -427,6 +438,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             )
         if (t9SceneChanged) {
             interaction.cancelT9PinyinRailPointers()
+            keyboardScene.t9LeftRailScrollState.reset()
         }
         if (candidatePointersChanged) {
             interaction.cancelCandidatePointers()
@@ -445,7 +457,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         invalidate()
     }
 
-    /** Publishes at most four revision-bound segmentation paths into the T9 left rail. */
+    /** Publishes revision-bound segmentation paths into the scrollable T9 left rail. */
     fun updateT9PinyinChoices(revision: Long, choices: List<T9PinyinChoice>) {
         val snapshot = choices.take(MAX_T9_PINYIN_CHOICES).toList()
         if (t9PinyinChoiceRevision == revision && t9PinyinChoices == snapshot) return
@@ -453,14 +465,39 @@ class SenseKeyboardView @JvmOverloads constructor(
         t9PinyinChoices = snapshot
         if (panel == KeyboardPanel.LETTERS && primaryKeyboardMode == PrimaryKeyboardMode.T9) {
             interaction.cancelT9PinyinRailPointers()
+            keyboardScene.t9LeftRailScrollState.reset()
+            rebuildKeys(width, height)
+            invalidate()
+        }
+    }
+
+    /** Injects the persisted idle symbols; the settings affordance is appended by the UI. */
+    fun setT9SideSymbols(symbols: List<String>) {
+        val normalized = T9SideSymbolPolicy.normalize(symbols)
+        if (t9SideSymbols == normalized) return
+        t9SideSymbols = normalized
+        if (
+            panel == KeyboardPanel.LETTERS &&
+            primaryKeyboardMode == PrimaryKeyboardMode.T9 &&
+            !t9CompositionActive
+        ) {
+            interaction.cancelT9PinyinRailPointers()
+            keyboardScene.t9LeftRailScrollState.reset()
             rebuildKeys(width, height)
             invalidate()
         }
     }
 
     fun setShifted(value: Boolean) {
-        if (shifted == value) return
-        shifted = value
+        setShiftState(shifted = value, capsLocked = false)
+    }
+
+    /** Publishes one-shot/caps-lock visual state atomically. */
+    fun setShiftState(shifted: Boolean, capsLocked: Boolean) {
+        val nextShifted = shifted || capsLocked
+        if (this.shifted == nextShifted && this.capsLocked == capsLocked) return
+        this.shifted = nextShifted
+        this.capsLocked = capsLocked
         rebuildKeys(width, height)
         invalidate()
     }
@@ -851,6 +888,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 t9CompositionActive = t9CompositionActive,
                 t9PinyinChoiceRevision = t9PinyinChoiceRevision,
                 t9PinyinChoices = t9PinyinChoices,
+                t9SideSymbols = t9SideSymbols,
                 selectedInputSchemeChoice = selectedInputSchemeChoice,
             ),
             target = keyboardScene,
@@ -903,7 +941,7 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private companion object {
         const val CLIPBOARD_ITEMS_PER_PAGE = 3
-        const val MAX_T9_PINYIN_CHOICES = 4
+        const val MAX_T9_PINYIN_CHOICES = 8
     }
 }
 

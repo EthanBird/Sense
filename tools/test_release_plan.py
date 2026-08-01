@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "release_plan.py"
 LOCAL_RELEASE = ROOT / "tools" / "local_release.ps1"
 APP_BUILD = ROOT / "app" / "build.gradle.kts"
-RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.5.beta.9.md"
+RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.6.md"
 RELEASE_CERT = (
     ROOT
     / "docs"
@@ -306,24 +306,25 @@ class LocalReleaseContractTest(unittest.TestCase):
             APP_BUILD.read_text(encoding="utf-8"),
             str(APP_BUILD),
         )
-        self.assertEqual(AndroidVersion(name="0.4.5.beta.9", code=30), current)
+        self.assertEqual(AndroidVersion(name="0.4.6", code=31), current)
         self.assertIn(current.tag, self.script)
         self.assertIn(current.apk_name, self.script)
         self.assertIn(
-            'Sense v0.4.5.beta.9 - T9 Pinyin and Wubi 86',
+            'Sense v0.4.6 - Keyboard UX and T9 refinement',
             self.script,
         )
         self.assertRegex(
             self.script,
-            re.compile(r"versionCode\s*(?:=|:)?\s*30", re.IGNORECASE),
+            re.compile(r"versionCode\s*(?:=|:)?\s*31", re.IGNORECASE),
         )
 
-    def test_release_notes_are_pinned_and_used_for_prerelease(self) -> None:
+    def test_release_notes_are_pinned_and_used_for_stable_release(self) -> None:
         self.assertTrue(RELEASE_NOTES.is_file())
-        self.assertIn("# Sense v0.4.5.beta.9", RELEASE_NOTES.read_text("utf-8"))
-        self.assertIn("v0.4.5.beta.9.md", self.script)
+        self.assertIn("# Sense v0.4.6", RELEASE_NOTES.read_text("utf-8"))
+        self.assertIn("v0.4.6.md", self.script)
         self.assertIn("--notes-file", self.script)
-        self.assertIn("--prerelease", self.script)
+        self.assertIn("--prerelease=false", self.script)
+        self.assertIn("[bool]$release.isPrerelease", self.script)
 
     def test_latency_sensitive_gates_run_before_sustained_host_benchmarks(self) -> None:
         m3 = self.script.index(":core-input:m3SentenceBenchmark")

@@ -1,5 +1,6 @@
 package io.github.ethanbird.senseime
 
+import io.github.ethanbird.senseime.config.ImeSettingsRoute
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -37,6 +38,15 @@ class SettingsNavigationStateTest {
         state.restore(SettingsSection.SOUL.name)
 
         assertEquals(SettingsSection.SOUL, state.current)
+    }
+
+    @Test
+    fun imeKeyboardRouteOpensKeyboardSettingsDirectly() {
+        val state = SettingsNavigationState()
+
+        state.restore(ImeSettingsRoute.KEYBOARD_SECTION)
+
+        assertEquals(SettingsSection.KEYBOARD, state.current)
     }
 
     @Test

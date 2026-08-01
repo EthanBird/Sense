@@ -24,6 +24,7 @@ internal class KeyboardHitTester(
     private val host: KeyboardHitTestHost,
     private val tapPolicy: TouchInputReducer.GesturePolicy,
     private val verticalScrollPolicy: TouchInputReducer.GesturePolicy,
+    private val horizontalScrollPolicy: TouchInputReducer.GesturePolicy,
 ) {
     fun targetAt(x: Float, y: Float): FrozenTouchTarget? {
         host.hitTestCandidatePanel.hitTest(
@@ -101,7 +102,11 @@ internal class KeyboardHitTester(
                 return FrozenTouchTarget.PanelScrollArea(
                     panel = panel,
                     bounds = RectF(bounds),
-                    gesturePolicy = verticalScrollPolicy,
+                    gesturePolicy = if (panel.axis == ScrollAxis.HORIZONTAL) {
+                        horizontalScrollPolicy
+                    } else {
+                        verticalScrollPolicy
+                    },
                 )
             }
         }
@@ -122,9 +127,29 @@ internal class KeyboardHitTester(
         )
     }
 
+    /** False only after crossing the frozen key's top edge in the upward-flick direction. */
+    fun isInsideUpwardGestureBoundary(target: FrozenTouchTarget, y: Float): Boolean =
+        y >= target.bounds.top
+
     private fun containsKey(key: Key, x: Float, y: Float): Boolean {
         val panel = key.scrollPanel ?: return key.bounds.contains(x, y)
         val viewport = host.panelViewportBoundsForHitTest(panel) ?: return false
+        val offset = host.scrollStateForHitTest(panel).offset
+        if (panel.axis == ScrollAxis.HORIZONTAL) {
+            return KeyboardHitTestGeometry.projectedHorizontalKeyContains(
+                x = x,
+                y = y,
+                keyLeft = key.bounds.left,
+                keyTop = key.bounds.top,
+                keyRight = key.bounds.right,
+                keyBottom = key.bounds.bottom,
+                viewportLeft = viewport.left,
+                viewportTop = viewport.top,
+                viewportRight = viewport.right,
+                viewportBottom = viewport.bottom,
+                scrollOffset = offset,
+            )
+        }
         return KeyboardHitTestGeometry.projectedKeyContains(
             x = x,
             y = y,
@@ -136,7 +161,7 @@ internal class KeyboardHitTester(
             viewportTop = viewport.top,
             viewportRight = viewport.right,
             viewportBottom = viewport.bottom,
-            scrollOffset = host.scrollStateForHitTest(panel).offset,
+            scrollOffset = offset,
         )
     }
 
@@ -144,6 +169,14 @@ internal class KeyboardHitTester(
         val panel = key.scrollPanel ?: return key.bounds
         val viewport = host.panelViewportBoundsForHitTest(panel) ?: return key.bounds
         val offset = host.scrollStateForHitTest(panel).offset
+        if (panel.axis == ScrollAxis.HORIZONTAL) {
+            return RectF(
+                maxOf(key.bounds.left - offset, viewport.left),
+                maxOf(key.bounds.top, viewport.top),
+                minOf(key.bounds.right - offset, viewport.right),
+                minOf(key.bounds.bottom, viewport.bottom),
+            )
+        }
         return RectF(
             maxOf(key.bounds.left, viewport.left),
             maxOf(key.bounds.top - offset, viewport.top),
@@ -157,6 +190,30 @@ internal class KeyboardHitTester(
 
 /** Primitive geometry used by both production hit testing and local JVM tests. */
 internal object KeyboardHitTestGeometry {
+    fun projectedHorizontalKeyContains(
+        x: Float,
+        y: Float,
+        keyLeft: Float,
+        keyTop: Float,
+        keyRight: Float,
+        keyBottom: Float,
+        viewportLeft: Float,
+        viewportTop: Float,
+        viewportRight: Float,
+        viewportBottom: Float,
+        scrollOffset: Float,
+    ): Boolean {
+        if (
+            x < viewportLeft || x >= viewportRight ||
+            y < viewportTop || y >= viewportBottom
+        ) {
+            return false
+        }
+        val contentX = x + scrollOffset
+        return contentX >= keyLeft && contentX < keyRight &&
+            y >= keyTop && y < keyBottom
+    }
+
     fun projectedKeyContains(
         x: Float,
         y: Float,

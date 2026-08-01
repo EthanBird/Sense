@@ -17,8 +17,10 @@ internal interface KeyboardScene {
     val systemBarKeyStart: Int
     val systemBarKeyEndExclusive: Int
     val emojiGridBounds: RectF?
+    val emojiCategoryBounds: RectF?
     val symbolCategoryBounds: RectF?
     val symbolGridBounds: RectF?
+    val t9LeftRailBounds: RectF?
     val editorMainBounds: RectF?
     val editorBottomTop: Float
     val editorBottomSeparators: FloatArray
@@ -58,9 +60,13 @@ internal class MutableKeyboardScene : KeyboardScene {
 
     override var emojiGridBounds: RectF? = null
         internal set
+    override var emojiCategoryBounds: RectF? = null
+        internal set
     override var symbolCategoryBounds: RectF? = null
         internal set
     override var symbolGridBounds: RectF? = null
+        internal set
+    override var t9LeftRailBounds: RectF? = null
         internal set
     override var editorMainBounds: RectF? = null
         internal set
@@ -80,8 +86,10 @@ internal class MutableKeyboardScene : KeyboardScene {
         internal set
 
     val emojiScrollState = ContinuousVerticalScrollState()
+    val emojiCategoryScrollState = ContinuousVerticalScrollState()
     val symbolCategoryScrollState = ContinuousVerticalScrollState()
     val symbolGridScrollState = ContinuousVerticalScrollState()
+    val t9LeftRailScrollState = ContinuousVerticalScrollState()
 
     private val occurrenceCounts = HashMap<KeyboardSkillPhysicalOwner.Signature, Int>()
 
@@ -95,8 +103,10 @@ internal class MutableKeyboardScene : KeyboardScene {
         systemBarKeyStart = 0
         systemBarKeyEndExclusive = 0
         emojiGridBounds = null
+        emojiCategoryBounds = null
         symbolCategoryBounds = null
         symbolGridBounds = null
+        t9LeftRailBounds = null
         editorMainBounds = null
         editorBottomTop = 0f
         editorBottomSeparators.fill(0f)
@@ -158,14 +168,18 @@ internal class MutableKeyboardScene : KeyboardScene {
 
     override fun viewportBounds(panel: ScrollPanel): RectF? = when (panel) {
         ScrollPanel.EMOJI -> emojiGridBounds
+        ScrollPanel.EMOJI_CATEGORIES -> emojiCategoryBounds
         ScrollPanel.SYMBOL_CATEGORIES -> symbolCategoryBounds
         ScrollPanel.SYMBOL_VALUES -> symbolGridBounds
+        ScrollPanel.T9_LEFT_RAIL -> t9LeftRailBounds
     }
 
     override fun scrollOffset(panel: ScrollPanel): Float = when (panel) {
         ScrollPanel.EMOJI -> emojiScrollState.offset
+        ScrollPanel.EMOJI_CATEGORIES -> emojiCategoryScrollState.offset
         ScrollPanel.SYMBOL_CATEGORIES -> symbolCategoryScrollState.offset
         ScrollPanel.SYMBOL_VALUES -> symbolGridScrollState.offset
+        ScrollPanel.T9_LEFT_RAIL -> t9LeftRailScrollState.offset
     }
 
     private fun assignPhysicalKeyIds(

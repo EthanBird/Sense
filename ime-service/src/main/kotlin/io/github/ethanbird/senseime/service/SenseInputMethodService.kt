@@ -5,11 +5,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.inputmethodservice.InputMethodService
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.text.InputType
 import android.util.Log
+import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
@@ -27,6 +29,7 @@ import io.github.ethanbird.senseime.brain.runtime.AgentSkillStore
 import io.github.ethanbird.senseime.config.ChineseInputScheme
 import io.github.ethanbird.senseime.config.ImePreferencesStore
 import io.github.ethanbird.senseime.config.ImePreferencesV1
+import io.github.ethanbird.senseime.config.ImeSettingsRoute
 import io.github.ethanbird.senseime.core.AdaptivePinyinDecoder
 import io.github.ethanbird.senseime.core.AdaptiveWubi86Decoder
 import io.github.ethanbird.senseime.core.BinaryCharacterBigramModel
@@ -122,7 +125,7 @@ class SenseInputMethodService : InputMethodService() {
     private var preferencesLoadGeneration = 0L
     private var wubiLoadRequested = false
     private var englishInput = EnglishInputSession(EnglishLexicon.EMPTY)
-    private var shifted = false
+    private var englishShiftState = EnglishShiftState.LOWERCASE
     private var chineseMode = true
     private var keyboardView: SenseKeyboardView? = null
     private var keyboardSurface: SenseKeyboardSurface? = null
@@ -454,6 +457,7 @@ class SenseInputMethodService : InputMethodService() {
     override fun onCreateInputView(): View = SenseKeyboardSurface(this).also { surface ->
         keyboardSurface = surface
         surface.setImeWindowVisible(imeWindowVisible)
+        surface.setKeyboardSizeProfile(inputScheme.preferences.toKeyboardSizeProfile())
         val view = surface.keyboardView
         surface.layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -465,6 +469,7 @@ class SenseInputMethodService : InputMethodService() {
         view.clipboardActionListener = ::handleClipboardAction
         view.editorActionListener = ::handleEditorAction
         view.settingsActionListener = ::openSenseHome
+        view.t9SideSymbolSettingsListener = ::openT9SideSymbolSettings
         view.inputSchemeSelectionListener =
             KeyboardInputSchemeSelectionListener(::handleInputSchemeSelection)
         view.t9PinyinChoiceSelectionListener =
@@ -488,7 +493,12 @@ class SenseInputMethodService : InputMethodService() {
             activePrimaryKeyboardMode(),
             activePrimaryKeyboardLegendMode(),
         )
+        view.setShiftState(
+            shifted = englishShiftState.uppercase,
+            capsLocked = englishShiftState.capsLocked,
+        )
         view.setSelectedInputSchemeChoice(activeKeyboardInputSchemeChoice())
+        view.setT9SideSymbols(inputScheme.preferences.t9SideSymbols)
         view.setEditorSelectionState(
             hasSelection = editorSelectionState.hasSelection,
             selectionMode = editorSelectionState.selectionMode,
@@ -503,12 +513,26 @@ class SenseInputMethodService : InputMethodService() {
         render()
     }
 
-    private fun openSenseHome() {
+    private fun openSenseHome() = openSenseSettings(initialSection = null)
+
+    private fun openT9SideSymbolSettings() =
+        openSenseSettings(initialSection = ImeSettingsRoute.KEYBOARD_SECTION)
+
+    private fun openSenseSettings(initialSection: String?) {
         cancelVoiceSession(exitSurface = true)
         cancelAndExitAi(HarnessCancelReason.CALLER_REQUESTED)
         val launchIntent = Intent()
             .setClassName(packageName, SENSE_SETTINGS_ACTIVITY)
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            .addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP,
+            )
+            .apply {
+                if (initialSection != null) {
+                    putExtra(ImeSettingsRoute.EXTRA_INITIAL_SECTION, initialSection)
+                }
+            }
         runCatching { startActivity(launchIntent) }
             .onFailure {
                 Toast.makeText(this, "无法打开 Sense 设置", Toast.LENGTH_SHORT).show()
@@ -887,8 +911,7 @@ class SenseInputMethodService : InputMethodService() {
         cancelVoiceForEditorInput()
         when (code) {
             KeyCodes.SHIFT -> {
-                shifted = !shifted
-                keyboardView?.setShifted(shifted)
+                setEnglishShiftState(englishShiftState.onShiftPressed())
             }
 
             KeyCodes.DELETE -> handleBackspace()
@@ -900,7 +923,6 @@ class SenseInputMethodService : InputMethodService() {
                 actionId = android.R.id.undo,
                 fallbackKeyCode = KeyEvent.KEYCODE_Z,
                 fallbackMetaState = KeyEvent.META_CTRL_ON,
-                successMessage = "已撤销",
             )
             KeyCodes.REDO -> performEditorHistoryCommand(
                 actionId = android.R.id.redo,
@@ -908,7 +930,6 @@ class SenseInputMethodService : InputMethodService() {
                 fallbackMetaState = KeyEvent.META_CTRL_ON or KeyEvent.META_SHIFT_ON,
                 secondaryFallbackKeyCode = KeyEvent.KEYCODE_Y,
                 secondaryFallbackMetaState = KeyEvent.META_CTRL_ON,
-                successMessage = "已重做",
             )
             KeyCodes.LANGUAGE -> toggleLanguage()
             KeyCodes.SWITCH_INPUT_METHOD -> switchInputMethod()
@@ -930,17 +951,14 @@ class SenseInputMethodService : InputMethodService() {
             null
         }
         if (!chineseMode) {
-            val output = if (shifted) character.uppercaseChar() else character
+            val output = englishShiftState.applyTo(character)
             if (output.lowercaseChar() in 'a'..'z') {
                 if (!englishCompositionEdits.type(output)) return
                 completeReplacementFeedback(replacementFeedback)
+                setEnglishShiftState(englishShiftState.afterAcceptedLetter())
                 render()
             } else {
                 commitText(output.toString())
-            }
-            if (shifted) {
-                shifted = false
-                keyboardView?.setShifted(false)
             }
             return
         }
@@ -1167,10 +1185,7 @@ class SenseInputMethodService : InputMethodService() {
             mainHandler.post {
                 if (destroyed || preferencesLoadGeneration != writeGeneration) return@post
                 saved.onSuccess { persisted ->
-                    inputScheme.acceptLoadedPreferences(
-                        value = persisted,
-                        compositionActive = hasAnyComposition(),
-                    )?.let(::applyImePreferences)
+                    acceptImePreferencesSnapshot(persisted)
                 }.onFailure { error ->
                     Log.e(TAG, "IME preference save failed", error)
                 }
@@ -1382,8 +1397,7 @@ class SenseInputMethodService : InputMethodService() {
     private fun toggleLanguage() {
         if (!commitActiveRawComposition()) return
         chineseMode = !chineseMode
-        shifted = false
-        keyboardView?.setShifted(false)
+        resetEnglishShiftState()
         keyboardView?.setInputPresentation(
             chineseMode,
             activePrimaryKeyboardMode(),
@@ -1391,6 +1405,19 @@ class SenseInputMethodService : InputMethodService() {
         )
         keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
         render()
+    }
+
+    private fun setEnglishShiftState(next: EnglishShiftState) {
+        if (englishShiftState == next) return
+        englishShiftState = next
+        keyboardView?.setShiftState(
+            shifted = next.uppercase,
+            capsLocked = next.capsLocked,
+        )
+    }
+
+    private fun resetEnglishShiftState() {
+        setEnglishShiftState(EnglishShiftState.LOWERCASE)
     }
 
     private fun switchInputMethod() {
@@ -1468,7 +1495,6 @@ class SenseInputMethodService : InputMethodService() {
         fallbackMetaState: Int,
         secondaryFallbackKeyCode: Int? = null,
         secondaryFallbackMetaState: Int = 0,
-        successMessage: String,
     ) {
         if (!commitActiveRawComposition()) return
         val connection = currentInputConnection ?: return
@@ -1483,9 +1509,19 @@ class SenseInputMethodService : InputMethodService() {
                             secondaryFallbackMetaState,
                         )
                     )
-        keyboardView?.showSkillFeedback(
-            if (accepted) successMessage else "$successMessage · 当前输入框未响应",
-        )
+        val feedback = EditorHistoryFeedbackPolicy.afterAttempt(accepted)
+        keyboardView?.let { view ->
+            view.performHapticFeedback(
+                when (feedback.haptic) {
+                    EditorHistoryHaptic.CONFIRM -> HapticFeedbackConstants.KEYBOARD_TAP
+                    EditorHistoryHaptic.REJECT -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        HapticFeedbackConstants.REJECT
+                    } else {
+                        HapticFeedbackConstants.CLOCK_TICK
+                    }
+                },
+            )
+        }
     }
 
     private fun sendShortcutKeyEvents(
@@ -2029,8 +2065,7 @@ class SenseInputMethodService : InputMethodService() {
         personalizationFeedback.clear()
         englishInput.reset()
         clearPendingCommit()
-        shifted = false
-        keyboardView?.setShifted(false)
+        resetEnglishShiftState()
         if (finishConnection) currentInputConnection?.finishComposingText()
         render()
     }
@@ -2478,8 +2513,7 @@ class SenseInputMethodService : InputMethodService() {
         inputScheme.clearAfterCommit()
         mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
         clearPendingCommit()
-        shifted = false
-        keyboardView?.setShifted(false)
+        resetEnglishShiftState()
         render()
     }
 
@@ -2502,8 +2536,6 @@ class SenseInputMethodService : InputMethodService() {
         if (!committed) return false
         personalizationFeedback.complete(feedback)
         englishInput.reset()
-        shifted = false
-        keyboardView?.setShifted(false)
         render()
         return true
     }
@@ -2578,8 +2610,7 @@ class SenseInputMethodService : InputMethodService() {
             compositionLeftContext = ""
             progressiveLearnings.clear()
             clearPendingCommit()
-            shifted = false
-            keyboardView?.setShifted(false)
+            resetEnglishShiftState()
             render()
         }
         return true
@@ -2819,15 +2850,21 @@ class SenseInputMethodService : InputMethodService() {
                     return@post
                 }
                 loaded.onSuccess { value ->
-                    inputScheme.acceptLoadedPreferences(
-                        value = value,
-                        compositionActive = hasAnyComposition(),
-                    )?.let(::applyImePreferences)
+                    acceptImePreferencesSnapshot(value)
                 }.onFailure { error ->
                     Log.e(TAG, "IME preference load failed", error)
                 }
             }
         }
+    }
+
+    /** Height and rail symbols are composition-independent and may update before a scheme boundary. */
+    private fun acceptImePreferencesSnapshot(value: ImePreferencesV1) {
+        applyKeyboardAppearancePreferences(value)
+        inputScheme.acceptLoadedPreferences(
+            value = value,
+            compositionActive = hasAnyComposition(),
+        )?.let(::applyImePreferences)
     }
 
     private fun applyImePreferences(value: ImePreferencesV1) {
@@ -2839,6 +2876,7 @@ class SenseInputMethodService : InputMethodService() {
             clearPendingCommit()
         }
         if (inputScheme.scheme == ChineseInputScheme.WUBI_86) requestWubiDecoderLoad()
+        applyKeyboardAppearancePreferences(value)
         keyboardView?.setInputPresentation(
             chineseMode,
             activePrimaryKeyboardMode(),
@@ -2846,6 +2884,11 @@ class SenseInputMethodService : InputMethodService() {
         )
         keyboardView?.setSelectedInputSchemeChoice(activeKeyboardInputSchemeChoice())
         render(forceDecode = schemeChanged)
+    }
+
+    private fun applyKeyboardAppearancePreferences(value: ImePreferencesV1) {
+        keyboardSurface?.setKeyboardSizeProfile(value.toKeyboardSizeProfile())
+        keyboardView?.setT9SideSymbols(value.t9SideSymbols)
     }
 
     private fun requestWubiDecoderLoad() {
@@ -2951,7 +2994,7 @@ class SenseInputMethodService : InputMethodService() {
         const val ENGLISH_LEXICON_ASSET = "english_lexicon.txt"
         const val WUBI86_ASSET = "wubi86_lexicon.bin"
         const val DECODE_CANDIDATE_LIMIT = 255
-        const val T9_PINYIN_CHOICE_LIMIT = 4
+        const val T9_PINYIN_CHOICE_LIMIT = 8
         const val T9_EDITOR_PATH_LIMIT = 1
         const val MAX_PROGRESSIVE_PREFIX_CANDIDATES = DECODE_CANDIDATE_LIMIT
         const val PRESENTATION_CANDIDATE_LIMIT = DECODE_CANDIDATE_LIMIT + MAX_PROGRESSIVE_PREFIX_CANDIDATES

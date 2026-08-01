@@ -181,6 +181,11 @@ internal class KeyboardActionDispatcher(
                 actions.onT9PinyinChoiceSelected(action.revision, action.index)
             }
 
+            KeyAction.OpenT9SideSymbolSettings -> {
+                flushKeys()
+                actions.onT9SideSymbolSettings()
+            }
+
             is KeyAction.ShowPanel -> {
                 flushKeys()
                 host.interactionSetPanel(action.panel)

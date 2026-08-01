@@ -22,6 +22,7 @@ internal data class KeyboardSceneRequest(
     val t9CompositionActive: Boolean = false,
     val t9PinyinChoiceRevision: Long = 0L,
     val t9PinyinChoices: List<T9PinyinChoice> = emptyList(),
+    val t9SideSymbols: List<String> = T9SideSymbolPolicy.DEFAULT_SYMBOLS,
     val selectedInputSchemeChoice: KeyboardInputSchemeChoice =
         KeyboardInputSchemeChoice.PINYIN_QWERTY,
 )
@@ -62,9 +63,8 @@ internal class KeyboardSceneBuilder(
             }
             target.panelKeyStart = keys.size
             when (request.panel) {
-                KeyboardPanel.LETTERS -> primaryLayout.appendLetters(
-                    mode = request.primaryMode,
-                    request = KeyboardLetterLayoutRequest(
+                KeyboardPanel.LETTERS -> {
+                    val letterRequest = KeyboardLetterLayoutRequest(
                         viewWidth = request.viewWidth,
                         viewHeight = request.viewHeight,
                         chromeBottom = chromeBottom,
@@ -75,9 +75,17 @@ internal class KeyboardSceneBuilder(
                         t9CompositionActive = request.t9CompositionActive,
                         t9PinyinChoiceRevision = request.t9PinyinChoiceRevision,
                         t9PinyinChoices = request.t9PinyinChoices,
-                    ),
-                    output = keys,
-                )
+                        t9SideSymbols = request.t9SideSymbols,
+                    )
+                    primaryLayout.appendLetters(
+                        mode = request.primaryMode,
+                        request = letterRequest,
+                        output = keys,
+                    )
+                    if (request.primaryMode == PrimaryKeyboardMode.T9) {
+                        T9KeyboardLayout.configureLeftRailScene(letterRequest, metrics, target)
+                    }
+                }
 
                 KeyboardPanel.NUMBERS -> primaryLayout.appendNumbers(
                     viewWidth = request.viewWidth,
@@ -220,7 +228,7 @@ internal class KeyboardSceneBuilder(
         val categoryHeight = metrics.dp(29f)
         val actionHeight = metrics.dp(40f)
         val gridGap = metrics.dp(3f)
-        if (bottom <= top) return
+        if (bottom <= top || request.viewWidth <= metrics.horizontalPadding * 2f) return
         if (bottom - top <= categoryHeight + actionHeight + gridGap * 2f) {
             appendWeightedRow(
                 items = EMOJI_ACTION_ROW,
@@ -238,8 +246,22 @@ internal class KeyboardSceneBuilder(
             actionHeight = actionHeight,
             gridGap = gridGap,
         )
-        val categorySlot =
-            (request.viewWidth - metrics.horizontalPadding * 2) / EmojiCatalog.categories.size
+        val groupIndex = request.emojiGroupIndex.coerceIn(0, EmojiCatalog.categories.lastIndex)
+        val categoryViewportWidth = request.viewWidth - metrics.horizontalPadding * 2f
+        val categorySlot = EmojiCategoryRailPolicy.slotWidth(metrics.density)
+        target.emojiCategoryBounds = RectF(
+            metrics.horizontalPadding,
+            geometry.categoryTop,
+            request.viewWidth - metrics.horizontalPadding,
+            geometry.categoryBottom,
+        )
+        EmojiCategoryRailPolicy.configureAndReveal(
+            state = target.emojiCategoryScrollState,
+            itemCount = EmojiCatalog.categories.size,
+            selectedIndex = groupIndex,
+            viewportExtent = categoryViewportWidth,
+            slotWidth = categorySlot,
+        )
         EmojiCatalog.categories.forEachIndexed { index, group ->
             keys += Key(
                 label = group.icon,
@@ -251,13 +273,14 @@ internal class KeyboardSceneBuilder(
                     geometry.categoryBottom,
                 ),
                 style = KeyStyle.CATEGORY,
+                scrollPanel = ScrollPanel.EMOJI_CATEGORIES,
+                selected = index == groupIndex,
             )
         }
         val columns = 7
         val itemWidth = (request.viewWidth - metrics.horizontalPadding * 2) / columns
         val viewportHeight = geometry.gridBottom - geometry.gridTop
         val itemHeight = max(metrics.dp(46f), viewportHeight / 3f)
-        val groupIndex = request.emojiGroupIndex.coerceIn(0, EmojiCatalog.categories.lastIndex)
         val values = EmojiCatalog.categories[groupIndex].values
         val contentRows = (values.size + columns - 1) / columns
         target.emojiScrollState.configure(contentRows * itemHeight, viewportHeight)
@@ -498,7 +521,7 @@ internal class KeyboardSceneBuilder(
             val action = slot.role.toEditorAction()
             val icon = when (slot.role) {
                 KeyboardLayoutContract.EditorKeyRole.UP -> Icon.UP
-                KeyboardLayoutContract.EditorKeyRole.LEFT -> Icon.BACK
+                KeyboardLayoutContract.EditorKeyRole.LEFT -> Icon.LEFT
                 KeyboardLayoutContract.EditorKeyRole.RIGHT -> Icon.RIGHT
                 KeyboardLayoutContract.EditorKeyRole.DOWN -> Icon.DOWN
                 KeyboardLayoutContract.EditorKeyRole.DELETE -> Icon.DELETE

@@ -98,6 +98,97 @@ class TouchInputReducerTest {
     }
 
     @Test
+    fun qwertyUpwardFlickActivatesOnlyAfterPointerCrossesOutsideItsKey() {
+        val reducer = TouchInputReducer<String>(24f, 30f)
+        val policy = TouchInputReducer.GesturePolicy.upwardFlick(
+            minimumDistance = 12f,
+            verticalDominanceRatio = 1.15f,
+            requirePointerExit = true,
+        )
+        reducer.onDown(1, "q", 20f, 60f)
+
+        val insideOnly = reducer.onUp(
+            pointerId = 1,
+            x = 20f,
+            y = 30f,
+            insideTapTarget = true,
+            insideGestureBounds = true,
+            policy = policy,
+        )
+
+        reducer.onDown(2, "q", 20f, 60f)
+        reducer.onMove(
+            pointerId = 2,
+            x = 20f,
+            y = 42f,
+            insideTapTarget = true,
+            insideGestureBounds = false,
+            policy = policy,
+        )
+        val crossedOutside = reducer.onUp(
+            pointerId = 2,
+            x = 20f,
+            y = 30f,
+            insideTapTarget = true,
+            insideGestureBounds = true,
+            policy = policy,
+        )
+
+        assertEquals(TouchInputReducer.Gesture.TAP, insideOnly?.gesture)
+        assertEquals(TouchInputReducer.Gesture.SWIPE_UP, crossedOutside?.gesture)
+    }
+
+    @Test
+    fun qwertySidewaysOrDownwardExitDoesNotArmTheUpwardCharacter() {
+        val reducer = TouchInputReducer<String>(24f, 30f)
+        val policy = TouchInputReducer.GesturePolicy.upwardFlick(
+            minimumDistance = 12f,
+            verticalDominanceRatio = 1.15f,
+            requirePointerExit = true,
+        )
+        reducer.onDown(1, "q", 20f, 60f)
+        reducer.onMove(
+            pointerId = 1,
+            x = 55f,
+            y = 58f,
+            insideTapTarget = false,
+            insideGestureBounds = true,
+            policy = policy,
+        )
+
+        val activation = reducer.onUp(
+            pointerId = 1,
+            x = 20f,
+            y = 30f,
+            insideTapTarget = true,
+            insideGestureBounds = true,
+            policy = policy,
+        )
+
+        reducer.onDown(2, "q", 20f, 60f)
+        reducer.onMove(
+            pointerId = 2,
+            x = 20f,
+            y = 95f,
+            insideTapTarget = false,
+            // The production boundary is y >= key.top, so leaving through the bottom stays in.
+            insideGestureBounds = true,
+            policy = policy,
+        )
+        val downwardExit = reducer.onUp(
+            pointerId = 2,
+            x = 20f,
+            y = 30f,
+            insideTapTarget = true,
+            insideGestureBounds = true,
+            policy = policy,
+        )
+
+        assertEquals(TouchInputReducer.Gesture.TAP, activation?.gesture)
+        assertEquals(TouchInputReducer.Gesture.TAP, downwardExit?.gesture)
+    }
+
+    @Test
     fun flickDistanceUsesTwelveDpFloorAndEighteenPercentOfTallKeys() {
         assertEquals(12f, KeyboardGestureThresholds.upwardFlickDistance(12f, 50f))
         assertEquals(18f, KeyboardGestureThresholds.upwardFlickDistance(12f, 100f))
@@ -140,6 +231,48 @@ class TouchInputReducerTest {
         assertTrue(move.verticalScrollLatched)
         assertEquals("emoji", activation?.target)
         assertEquals(TouchInputReducer.Gesture.SWIPE_UP, activation?.gesture)
+    }
+
+    @Test
+    fun horizontalCategoryScrollLatchesOnlyAlongItsAxis() {
+        val reducer = TouchInputReducer<String>(24f, 30f)
+        val policy = TouchInputReducer.GesturePolicy.horizontalScroll(
+            touchSlop = 8f,
+            horizontalDominanceRatio = 1.15f,
+        )
+        reducer.onDown(1, "emoji-categories", 80f, 30f)
+
+        val move = reducer.onMove(
+            pointerId = 1,
+            x = 55f,
+            y = 31f,
+            insideTapTarget = false,
+            policy = policy,
+        )
+        val activation = reducer.onUp(
+            pointerId = 1,
+            x = 55f,
+            y = 31f,
+            insideTapTarget = false,
+            policy = policy,
+        )
+
+        assertTrue(move.tapSuppressed)
+        assertTrue(move.verticalScrollLatched)
+        assertEquals(TouchInputReducer.Gesture.SWIPE_LEFT, activation?.gesture)
+    }
+
+    @Test
+    fun ensureVisibleMovesOnlyWhenItemCrossesViewportEdge() {
+        val state = ContinuousVerticalScrollState()
+        state.configure(contentExtent = 506f, viewportExtent = 322f)
+
+        assertFalse(state.ensureVisible(itemStart = 46f, itemEnd = 92f))
+        assertTrue(state.ensureVisible(itemStart = 322f, itemEnd = 368f))
+        assertEquals(46f, state.offset, 0.001f)
+        assertFalse(state.ensureVisible(itemStart = 322f, itemEnd = 368f))
+        assertTrue(state.ensureVisible(itemStart = 0f, itemEnd = 46f))
+        assertEquals(0f, state.offset, 0.001f)
     }
 
     @Test

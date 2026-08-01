@@ -150,6 +150,28 @@ class KeyboardInteractionControllerTest {
     }
 
     @Test
+    fun `t9 digit key remains eligible for long press skill arming`() {
+        val clock = FakeClock()
+        val scheduler = FakeFrameScheduler(clock)
+        val dispatcher = KeyboardActionDispatcher(
+            host = FakeInteractionHost(),
+            scheduler = scheduler,
+            actions = RecordingActions(),
+            effects = RecordingActionEffects(),
+        )
+        val key = Key(
+            label = "ABC",
+            action = KeyAction.EmitKey('2'.code),
+            bounds = RectF(0f, 0f, 60f, 50f),
+            visualLegend = "2",
+            swipeOutput = "2",
+            style = KeyStyle.T9_PRIMARY,
+        )
+
+        assertTrue(dispatcher.canStartSkillGesture(key))
+    }
+
+    @Test
     fun `scheme panel actions stay local and selection closes after one semantic callback`() {
         val clock = FakeClock()
         val scheduler = FakeFrameScheduler(clock)
@@ -236,6 +258,33 @@ class KeyboardInteractionControllerTest {
     }
 
     @Test
+    fun `t9 custom symbol entry uses its dedicated settings route`() {
+        val clock = FakeClock()
+        val scheduler = FakeFrameScheduler(clock)
+        val actions = RecordingActions()
+        val dispatcher = KeyboardActionDispatcher(
+            host = FakeInteractionHost(),
+            scheduler = scheduler,
+            actions = actions,
+            effects = RecordingActionEffects(),
+        )
+        val key = Key(
+            label = "自定义设置",
+            action = KeyAction.OpenT9SideSymbolSettings,
+            bounds = RectF(0f, 0f, 40f, 40f),
+        )
+
+        dispatcher.activate(
+            FrozenTouchTarget.KeyValue(key, TouchInputReducer.GesturePolicy.tapOnly()),
+            TouchInputReducer.Gesture.TAP,
+        )
+
+        assertEquals(1, actions.t9SideSymbolSettingsCount)
+        assertTrue(actions.keys.isEmpty())
+        assertTrue(actions.texts.isEmpty())
+    }
+
+    @Test
     fun `hot move APIs publish primitive flags without changing frozen owner`() {
         val reducer = TouchInputReducer<String>(
             swipeThreshold = 20f,
@@ -293,6 +342,40 @@ class KeyboardInteractionControllerTest {
                 viewportTop = 20f,
                 viewportRight = 80f,
                 viewportBottom = 60f,
+                scrollOffset = 80f,
+            ),
+        )
+    }
+
+    @Test
+    fun `horizontal projected hit geometry applies category offset inside viewport`() {
+        assertTrue(
+            KeyboardHitTestGeometry.projectedHorizontalKeyContains(
+                x = 24f,
+                y = 30f,
+                keyLeft = 100f,
+                keyTop = 20f,
+                keyRight = 146f,
+                keyBottom = 48f,
+                viewportLeft = 8f,
+                viewportTop = 20f,
+                viewportRight = 88f,
+                viewportBottom = 48f,
+                scrollOffset = 80f,
+            ),
+        )
+        assertFalse(
+            KeyboardHitTestGeometry.projectedHorizontalKeyContains(
+                x = 7f,
+                y = 30f,
+                keyLeft = 80f,
+                keyTop = 20f,
+                keyRight = 126f,
+                keyBottom = 48f,
+                viewportLeft = 8f,
+                viewportTop = 20f,
+                viewportRight = 88f,
+                viewportBottom = 48f,
                 scrollOffset = 80f,
             ),
         )
@@ -405,8 +488,14 @@ class KeyboardInteractionControllerTest {
             ),
             gesturePolicy = policy,
         )
+        val blankRailArea = FrozenTouchTarget.PanelScrollArea(
+            panel = ScrollPanel.T9_LEFT_RAIL,
+            bounds = bounds,
+            gesturePolicy = policy,
+        )
 
         assertTrue(leftRail.isT9PinyinRailPointerTarget())
+        assertTrue(blankRailArea.isT9PinyinRailPointerTarget())
         assertFalse(central.isT9PinyinRailPointerTarget())
     }
 
@@ -522,6 +611,7 @@ class KeyboardInteractionControllerTest {
         val aiStarts = ArrayList<Long>()
         val inputSchemes = ArrayList<KeyboardInputSchemeChoice>()
         val t9PinyinChoices = ArrayList<Pair<Long, Int>>()
+        var t9SideSymbolSettingsCount = 0
 
         override fun onKey(code: Int) {
             keys += code
@@ -534,6 +624,9 @@ class KeyboardInteractionControllerTest {
         override fun onClipboardAction(action: KeyboardClipboardAction, index: Int) = Unit
         override fun onEditorAction(action: KeyboardEditorAction) = Unit
         override fun onSettingsAction() = Unit
+        override fun onT9SideSymbolSettings() {
+            t9SideSymbolSettingsCount += 1
+        }
         override fun onInputSchemeSelected(choice: KeyboardInputSchemeChoice) {
             inputSchemes += choice
         }

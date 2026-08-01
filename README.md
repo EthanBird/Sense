@@ -10,11 +10,11 @@
 > 分帧与 SRSS WebSocket 转写，选择后无需 API Key 即可从键盘语音入口使用。协议与
 > 双实现验证见[接入记录](docs/research/sogou-asr-provider-integration-2026-08-01.md)。
 
-**项目状态：** `v0.4.5.beta.9` 中文九键与五笔 86 预发布
+**项目状态：** `v0.4.6` 键盘交互与九键体验稳定版
 
-**当前版本：** `v0.4.5.beta.9`（`versionCode 30`）
+**当前版本：** `v0.4.6`（`versionCode 31`）
 
-**更新日期：** 2026-08-01
+**更新日期：** 2026-08-02
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
 
 本文基于《GlassIME Android AI 中文输入法产品与技术设计文档 v0.1》重新整理，并统一改名为：
@@ -30,7 +30,15 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.5.beta.9 中文九键与五笔 86
+## 0. 当前迭代：v0.4.6 键盘交互与九键体验
+
+`v0.4.6` 将九键左侧标点重构为可连续滚动、可自定义的侧栏，恢复 `1–9`
+小号数字提示与上滑数字输出，并让九键数字键完整复用 Skills 长按方向选择和极光状态。
+全键字符上滑只有在指针越过键帽上边界后才成立。候选区与键盘主题、裁剪和文字基线
+统一；英文 Shift 改为单次大写、持续锁定、小写三态；退格、回车和文字编辑图标使用
+统一纤细线条，撤销/重做不再覆盖红色提示。Emoji 新增手势、爱心、完整地区旗帜等
+分类，并支持分类栏横向连续滚动。设置页提供竖/横屏独立高度拖动预览，键盘、Provider
+和语音配置均按修改自动保存。
 
 `v0.4.5.beta.9` 新增生产可用的中文九键与五笔 86：九键数字串直接进入拼音
 trie/DAG，候选栏同时保留数字原文与自动分词，例如 `486743697 · hun'shen'x's`；
@@ -129,8 +137,8 @@ initials、渐进 limit 16、渐进 limit 255 和组合 p95 分别为
 决策记录见 [ADR 0022](docs/adr/0022-gpl-rime-frost-lexicon-pipeline.md)、
 [ADR 0023](docs/adr/0023-v0.4.5-beta5-decoder-quality.md) 与
 [ADR 0025](docs/adr/0025-three-chinese-schemes-t9-dag-and-wubi86.md)，详细发布门禁见
-[`v0.4.5.beta.9` 预发布说明](docs/releases/v0.4.5.beta.9.md)，最新发布资产见
-[`v0.4.5.beta.9` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.9)。
+[`v0.4.6` 发布说明](docs/releases/v0.4.6.md)，最新发布资产见
+[`v0.4.6` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.6)。
 
 `v0.4.5.beta.4` 修复键盘刚显示、窗口切换或目录观察 catch-up 时，等价 Skill catalog
 重复发布会撤销已开始长按的问题：解析结果、显示标签与 active Skill 均未变化时保留
@@ -176,7 +184,7 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
 | Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
 | 既有质量 | AI、IME、UI、Core、M0–M7、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 30`、`versionName 0.4.5.beta.9`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据 | `versionCode 31`、`versionName 0.4.6`、`minSdk 29`、`targetSdk 36` |
 
 仓库不再运行 GitHub Actions；测试、Lint、性能门禁、APK 构建和签名校验统一在 Windows
 本地执行。完整本地验证与构建：
@@ -185,7 +193,7 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 powershell -ExecutionPolicy Bypass -File tools/local_release.ps1
 ```
 
-当前提交推送到 GitHub 后，由同一脚本创建预发布、上传 APK 与校验和，并下载资产复核：
+当前提交推送到 GitHub 后，由同一脚本创建正式发布、上传 APK 与校验和，并下载资产复核：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/local_release.ps1 -Publish
@@ -193,11 +201,11 @@ powershell -ExecutionPolicy Bypass -File tools/local_release.ps1 -Publish
 
 `-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。
 
-> **v0.4.5.beta.9 发布收口：** 本轮源码整合已冻结，并已重新运行及人工审查 X-02
+> **v0.4.6 发布收口：** 本轮源码整合完成后会重新运行及人工审查 X-02
 > production source、build authority 与 offline gate 的 exact SHA-256，并同步刷新
 > boundary baseline。正式本地发布会在同一 release `HEAD` 上再次执行 source/artifact
 > gate，并把结果与 APK 签名、校验和一起归档到
-> [`v0.4.5.beta.9` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.9)。
+> [`v0.4.6` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.6)。
 
 标准工程验证命令：
 
@@ -509,8 +517,8 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.4.5.beta.9` 中文九键、五笔 86、
-流式搜狗语音、Skills 交互、Windows TSF 工程预览与个性化排序预发布阶段。
+以下保留 M0 的实施记录；当前代码位于 `v0.4.6` 中文九键、五笔 86、
+流式搜狗语音、Skills 交互、Windows TSF 工程预览与个性化排序稳定阶段。
 现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。
 

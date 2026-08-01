@@ -79,6 +79,11 @@ internal class KeyboardKeyRenderer(
         canvas: Canvas,
         state: KeyboardRendererState,
     ) {
+        state.scene.t9LeftRailBounds?.let { viewport ->
+            paint.style = Paint.Style.FILL
+            paint.color = color(0xFFCED6E1.toInt(), 0xFF242526.toInt())
+            canvas.drawRoundRect(viewport, metrics.keyRadius, metrics.keyRadius, paint)
+        }
         val keys = state.scene.keys
         var index = 0
         while (index < keys.size) {
@@ -114,15 +119,19 @@ internal class KeyboardKeyRenderer(
         val offset = state.scene.scrollOffset(panel)
         val saveCount = canvas.save()
         canvas.clipRect(viewport)
-        canvas.translate(0f, -offset)
-        val visibleContentTop = viewport.top + offset
-        val visibleContentBottom = viewport.bottom + offset
+        val horizontal = panel.axis == ScrollAxis.HORIZONTAL
+        if (horizontal) canvas.translate(-offset, 0f) else canvas.translate(0f, -offset)
+        val visibleContentStart =
+            (if (horizontal) viewport.left else viewport.top) + offset
+        val visibleContentEnd =
+            (if (horizontal) viewport.right else viewport.bottom) + offset
         val keys = state.scene.keys
         var low = startIndex
         var high = endIndex
         while (low < high) {
             val middle = (low + high) ushr 1
-            if (keys[middle].bounds.bottom <= visibleContentTop) {
+            val itemEnd = if (horizontal) keys[middle].bounds.right else keys[middle].bounds.bottom
+            if (itemEnd <= visibleContentStart) {
                 low = middle + 1
             } else {
                 high = middle
@@ -131,7 +140,8 @@ internal class KeyboardKeyRenderer(
         var index = low
         while (index < endIndex) {
             val key = keys[index]
-            if (key.bounds.top >= visibleContentBottom) break
+            val itemStart = if (horizontal) key.bounds.left else key.bounds.top
+            if (itemStart >= visibleContentEnd) break
             drawKey(canvas, state, key)
             index += 1
         }
@@ -162,7 +172,7 @@ internal class KeyboardKeyRenderer(
             KeyStyle.TOOLBOX_CARD -> drawToolboxCard(canvas, key, pressed)
             KeyStyle.T9_PRIMARY -> drawT9PrimaryKey(canvas, key, pressed)
             KeyStyle.T9_RAIL -> drawT9RailKey(canvas, key, pressed)
-            KeyStyle.T9_LEFT_RAIL -> drawT9RailKey(canvas, key, pressed)
+            KeyStyle.T9_LEFT_RAIL -> drawT9LeftRailItem(canvas, key, pressed)
             KeyStyle.INPUT_SCHEME_OPTION -> drawInputSchemeOption(canvas, key, pressed)
             else -> drawKeyboardKey(canvas, state, key, pressed)
         }
@@ -271,7 +281,74 @@ internal class KeyboardKeyRenderer(
         paint.color = if (pressed) Color.WHITE else color(0xFF111827.toInt(), 0xFFF6F7F9.toInt())
         paint.textSize = sp(if (key.label.length >= 4) 17.5f else 19.5f)
         paint.textAlign = Paint.Align.CENTER
-        text.drawCentered(canvas, key.label, paint, key.bounds.centerX(), key.bounds.centerY())
+        text.drawCentered(
+            canvas,
+            key.label,
+            paint,
+            key.bounds.centerX(),
+            key.bounds.centerY() + dp(3f),
+        )
+        key.visualLegend?.let { digit ->
+            paint.color = if (pressed) {
+                0xCCFFFFFF.toInt()
+            } else {
+                color(0xFF7A8494.toInt(), 0xFF8E929A.toInt())
+            }
+            paint.textSize = sp(8f)
+            text.drawCentered(
+                canvas,
+                digit,
+                paint,
+                key.bounds.centerX(),
+                key.bounds.top + dp(7f),
+            )
+        }
+    }
+
+    private fun drawT9LeftRailItem(
+        canvas: Canvas,
+        key: Key,
+        pressed: Boolean,
+    ) {
+        if (pressed) {
+            paint.style = Paint.Style.FILL
+            paint.color = color(0xFF5B7DF0.toInt(), 0xFF6D61D8.toInt())
+            canvas.drawRect(key.bounds, paint)
+        }
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = dp(0.5f)
+        paint.color = color(0x207A8494, 0x24FFFFFF)
+        canvas.drawLine(key.bounds.left, key.bounds.bottom, key.bounds.right, key.bounds.bottom, paint)
+        paint.style = Paint.Style.FILL
+        paint.color = if (pressed) Color.WHITE else color(0xFF263247.toInt(), 0xFFE3E5EA.toInt())
+        paint.textAlign = Paint.Align.CENTER
+        paint.textSize = sp(if (key.visualLegend == null) 14f else 10.5f)
+        val mainY = key.bounds.centerY() - if (key.visualLegend == null) 0f else dp(5f)
+        val saveCount = canvas.save()
+        canvas.clipRect(key.bounds)
+        text.drawEllipsized(
+            canvas = canvas,
+            text = key.label,
+            paint = paint,
+            x = key.bounds.centerX(),
+            centerY = mainY,
+            maximumWidth = key.bounds.width() - dp(5f),
+            trimTrailingWhitespace = false,
+        )
+        key.visualLegend?.let { preview ->
+            paint.color = color(0xFF6B7484.toInt(), 0xFFA7AAB1.toInt())
+            paint.textSize = sp(7f)
+            text.drawEllipsized(
+                canvas = canvas,
+                text = preview,
+                paint = paint,
+                x = key.bounds.centerX(),
+                centerY = key.bounds.centerY() + dp(7f),
+                maximumWidth = key.bounds.width() - dp(5f),
+                trimTrailingWhitespace = false,
+            )
+        }
+        canvas.restoreToCount(saveCount)
     }
 
     private fun drawT9RailKey(
@@ -454,6 +531,20 @@ internal class KeyboardKeyRenderer(
         val icon = key.icon
         if (icon != null) {
             drawIcon(canvas, icon, key.bounds, paint.color)
+            if (
+                icon == Icon.SHIFT &&
+                ShiftIconVisualPolicy.resolve(state.shifted, state.capsLocked) ==
+                ShiftIconVisualState.CAPS_LOCK
+            ) {
+                paint.style = Paint.Style.FILL
+                paint.color = if (pressed) Color.WHITE else color(0xFF5B7DF0.toInt(), 0xFF8EA4FF.toInt())
+                canvas.drawCircle(
+                    key.bounds.centerX(),
+                    key.bounds.bottom - dp(7f),
+                    dp(1.6f),
+                    paint,
+                )
+            }
         } else {
             paint.textSize = sp(if (key.label.length > 2) 13f else 20f)
             paint.textAlign = Paint.Align.CENTER
@@ -923,6 +1014,7 @@ internal class KeyboardKeyRenderer(
         } else {
             color(0xFF172033.toInt(), 0xFFF3F4F7.toInt())
         }
+        paint.isFakeBoldText = false
         paint.textSize = sp(15f)
         paint.textAlign = Paint.Align.CENTER
         text.drawCentered(
@@ -966,6 +1058,7 @@ internal class KeyboardKeyRenderer(
             drawIcon(canvas, icon, key.bounds, tint)
         } else {
             paint.color = tint
+            paint.isFakeBoldText = false
             paint.textSize = sp(14.5f)
             paint.textAlign = Paint.Align.CENTER
             text.drawCentered(
@@ -995,6 +1088,7 @@ internal class KeyboardKeyRenderer(
         } else {
             paint.style = Paint.Style.FILL
             paint.color = color(0xFF172033.toInt(), 0xFFF3F4F7.toInt())
+            paint.isFakeBoldText = false
             paint.textSize = sp(16f)
             paint.textAlign = Paint.Align.CENTER
             text.drawCentered(

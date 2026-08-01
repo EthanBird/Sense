@@ -18,6 +18,7 @@ internal interface KeyboardInteractionActionSink {
     fun onClipboardAction(action: KeyboardClipboardAction, index: Int)
     fun onEditorAction(action: KeyboardEditorAction)
     fun onSettingsAction()
+    fun onT9SideSymbolSettings() = Unit
     fun onT9PinyinChoiceSelected(revision: Long, index: Int) = Unit
     fun onInputSchemeSelected(choice: KeyboardInputSchemeChoice) = Unit
     fun onAiHoldStarted(generation: Long)
@@ -98,10 +99,15 @@ internal class KeyboardInteractionController(
         touchSlop = scaledTouchSlop,
         verticalDominanceRatio = VERTICAL_GESTURE_DOMINANCE,
     )
+    private val horizontalScrollGesturePolicy = TouchInputReducer.GesturePolicy.horizontalScroll(
+        touchSlop = scaledTouchSlop,
+        horizontalDominanceRatio = VERTICAL_GESTURE_DOMINANCE,
+    )
     private val hitTester = KeyboardHitTester(
         host = this,
         tapPolicy = tapGesturePolicy,
         verticalScrollPolicy = pageScrollGesturePolicy,
+        horizontalScrollPolicy = horizontalScrollGesturePolicy,
     )
     private val panelScroll = PanelScrollController(
         context = host.interactionContext,
@@ -308,40 +314,53 @@ internal class KeyboardInteractionController(
                         y = y,
                         insideTapTarget = hitTester.isInsideTapTarget(target, x, y),
                         policy = target.gesturePolicy,
+                        insideGestureBounds =
+                            hitTester.isInsideUpwardGestureBoundary(target, y),
                     )
                     val scrollPanel = scrollPanelFor(target)
-                    val verticalScrollLatched =
-                        moveFlags and TouchInputReducer.MOVE_VERTICAL_SCROLL_LATCHED != 0
-                    if (verticalScrollLatched && scrollPanel != null) {
+                    val scrollLatched =
+                        moveFlags and TouchInputReducer.MOVE_SCROLL_LATCHED != 0
+                    if (scrollLatched && scrollPanel != null) {
+                        val coordinate = scrollCoordinate(scrollPanel, x, y)
                         panelScroll.acquireForLatchedPointer(
                             pointerId = pointerId,
                             panel = scrollPanel,
-                            y = y,
+                            coordinate = coordinate,
                             event = event,
                         )
                     }
                     if (
-                        verticalScrollLatched &&
+                        scrollLatched &&
                         scrollPanel != null &&
                         pointerId == panelScroll.activePointerId &&
                         scrollPanel == panelScroll.activePanel
                     ) {
-                        val currentY = y
-                        val previousY = panelScroll.previousPointerY(pointerId, currentY)
-                        if (scrollStateFor(scrollPanel).scrollBy(previousY - currentY)) {
+                        val currentCoordinate = scrollCoordinate(scrollPanel, x, y)
+                        val previousCoordinate = panelScroll.previousPointerCoordinate(
+                            pointerId,
+                            currentCoordinate,
+                        )
+                        if (
+                            scrollStateFor(scrollPanel).scrollBy(
+                                previousCoordinate - currentCoordinate,
+                            )
+                        ) {
                             invalidateScrollPanel(scrollPanel)
                         }
-                        panelScroll.rememberPointerY(pointerId, currentY)
+                        panelScroll.rememberPointerCoordinate(pointerId, currentCoordinate)
                         if (panelScroll.latch(pointerId, scrollPanel)) {
                             cancelOtherPanelTouches(pointerId, scrollPanel)
                             invalidateScrollPanel(scrollPanel)
                         }
                     } else if (
-                        verticalScrollLatched &&
+                        scrollLatched &&
                         panelScroll.isLatched &&
                         pointerId != panelScroll.activePointerId
                     ) {
-                        panelScroll.rememberPointerY(pointerId, y)
+                        panelScroll.rememberPointerCoordinate(
+                            pointerId,
+                            scrollPanel?.let { scrollCoordinate(it, x, y) } ?: y,
+                        )
                     }
                     if (
                         moveFlags and (
@@ -404,7 +423,12 @@ internal class KeyboardInteractionController(
             )
         }
         scrollPanelFor(target)?.let { panel ->
-            panelScroll.start(pointerId, panel, y, event)
+            panelScroll.start(
+                pointerId = pointerId,
+                panel = panel,
+                coordinate = scrollCoordinate(panel, x, y),
+                event = event,
+            )
         }
         val key = (target as? FrozenTouchTarget.KeyValue)?.key
         if (key != null && actionDispatcher.deleteRepeatTarget(key) != null) {
@@ -471,6 +495,8 @@ internal class KeyboardInteractionController(
                     y = y,
                     insideTapTarget = hitTester.isInsideTapTarget(activationTarget, x, y),
                     policy = activationTarget.gesturePolicy,
+                    insideGestureBounds =
+                        hitTester.isInsideUpwardGestureBoundary(activationTarget, y),
                 )
             }
         }
@@ -540,6 +566,11 @@ internal class KeyboardInteractionController(
             val pointerId = pressedTargets.keyAt(index)
             touchReducer.cancel(pointerId)
             pressedTargets.removeAt(index)
+            panelScroll.finish(
+                pointerId = pointerId,
+                panel = ScrollPanel.T9_LEFT_RAIL,
+                shouldFling = false,
+            )
             panelScroll.forgetPointer(pointerId)
             invalidateTouchTarget(target)
             changed = true
@@ -703,8 +734,10 @@ internal class KeyboardInteractionController(
 
     fun panelViewportBounds(panel: ScrollPanel): RectF? = when (panel) {
         ScrollPanel.EMOJI -> scene.emojiGridBounds
+        ScrollPanel.EMOJI_CATEGORIES -> scene.emojiCategoryBounds
         ScrollPanel.SYMBOL_CATEGORIES -> scene.symbolCategoryBounds
         ScrollPanel.SYMBOL_VALUES -> scene.symbolGridBounds
+        ScrollPanel.T9_LEFT_RAIL -> scene.t9LeftRailBounds
     }
 
     private fun isCollapsedCandidateScrollTarget(target: FrozenTouchTarget): Boolean =
@@ -715,6 +748,7 @@ internal class KeyboardInteractionController(
                 )
 
     private fun gesturePolicyForKey(key: Key): TouchInputReducer.GesturePolicy = when {
+        key.scrollPanel?.axis == ScrollAxis.HORIZONTAL -> horizontalScrollGesturePolicy
         key.scrollPanel != null || key.style == KeyStyle.CARD -> pageScrollGesturePolicy
         key.swipeOutput != null ->
             TouchInputReducer.GesturePolicy.upwardFlick(
@@ -723,6 +757,7 @@ internal class KeyboardInteractionController(
                     keyHeight = key.bounds.height(),
                 ),
                 verticalDominanceRatio = VERTICAL_GESTURE_DOMINANCE,
+                requirePointerExit = key.style != KeyStyle.T9_PRIMARY,
             )
 
         else -> tapGesturePolicy
@@ -791,9 +826,14 @@ internal class KeyboardInteractionController(
     override fun scrollStateFor(panel: ScrollPanel): ContinuousVerticalScrollState =
         when (panel) {
             ScrollPanel.EMOJI -> scene.emojiScrollState
+            ScrollPanel.EMOJI_CATEGORIES -> scene.emojiCategoryScrollState
             ScrollPanel.SYMBOL_CATEGORIES -> scene.symbolCategoryScrollState
             ScrollPanel.SYMBOL_VALUES -> scene.symbolGridScrollState
+            ScrollPanel.T9_LEFT_RAIL -> scene.t9LeftRailScrollState
         }
+
+    private fun scrollCoordinate(panel: ScrollPanel, x: Float, y: Float): Float =
+        if (panel.axis == ScrollAxis.HORIZONTAL) x else y
 
     override fun invalidateScrollPanel(panel: ScrollPanel) {
         val bounds = panelViewportBounds(panel)

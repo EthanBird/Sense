@@ -10,6 +10,9 @@ enum class EmojiCategoryId {
     TRAVEL_PLACES,
     OBJECTS,
     SYMBOLS_FLAGS,
+    GESTURES_BODY,
+    HEARTS,
+    FLAGS,
 }
 
 /**
@@ -177,6 +180,51 @@ object EmojiCatalog {
                 """,
             ),
         ),
+        EmojiCategory(
+            EmojiCategoryId.GESTURES_BODY,
+            "手势",
+            "👍",
+            gestureAndBodyValues(),
+        ),
+        EmojiCategory(
+            EmojiCategoryId.HEARTS,
+            "爱心",
+            "❤️",
+            emojiValues(
+                """
+                ❤️ 🩷 🧡 💛 💚 💙 🩵 💜 🤎 🖤 🩶 🤍 💔 ❤️‍🔥 ❤️‍🩹 ❣️ 💕 💞 💓 💗
+                💖 💘 💝 💟 ♥️ 🥰 😍 😘 😗 😙 😚 🥹 😊 🤗 🫶 🫰 💋 💌 💐 🌹
+                🥀 🌺 🌷 🌸 💮 🪷 🪻 🌻 🌼 🎀 🎁 💍 💎 🕯️ 🎂 🍫 🍬 🍭 🧸 🦢
+                🕊️ 🦋 🌙 ⭐ 🌟 ✨ 💫 🥂 🍷 🎶 🎵 🏩 💒 👩‍❤️‍👨 👩‍❤️‍👩 👨‍❤️‍👨 💑
+                👩‍❤️‍💋‍👨 👩‍❤️‍💋‍👩 👨‍❤️‍💋‍👨 🫂 🤝 🫶🏻 🫶🏼
+                🫶🏽 🫶🏾 🫶🏿 🫰🏻 🫰🏼 🫰🏽 🫰🏾 🫰🏿
+                """,
+            ),
+        ),
+        EmojiCategory(
+            EmojiCategoryId.FLAGS,
+            "旗帜",
+            "🏳️",
+            flagValues(
+                """
+                AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ
+                BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ
+                CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ
+                DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR
+                GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY
+                HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT
+                JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ
+                LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM
+                MN MO MP MQ MR MS MT MU MV MW MX MY MZ
+                NA NC NE NF NG NI NL NO NP NR NU NZ OM
+                PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA
+                RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST
+                SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ
+                UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW
+                EU UN
+                """,
+            ),
+        ),
     )
 
     private val byId = categories.associateBy(EmojiCategory::id)
@@ -194,3 +242,43 @@ object EmojiCatalog {
 
 private fun emojiValues(raw: String): List<String> =
     raw.trim().split(Regex("\\s+")).filter(String::isNotEmpty)
+
+private fun gestureAndBodyValues(): List<String> {
+    val fixed = emojiValues(
+        """
+        👐 🤲 🤝 🙏 💪 🦾 🦿 🦵 🦶 👂 🦻 👃 🧠 🫀 🫁 🦷 🦴 👀 👁️ 👅 👄
+        🫦 👶 🧒 👦 👧 🧑 👱 👨 👩 🧔 🧓 👴 👵 🗣️ 👤 👥 🫂 👣
+        """,
+    )
+    val toneable = emojiValues(
+        """
+        👋 🤚 🖐 ✋ 🖖 🫱 🫲 🫳 🫴 🫷 🫸 👌 🤌 🤏 ✌ 🤞 🫰 🤟 🤘 🤙
+        👈 👉 👆 🖕 👇 ☝ 🫵 👍 👎 ✊ 👊 🤛 🤜 👏 🙌 🫶 ✍ 💅 🤳
+        """,
+    )
+    return buildList(fixed.size + toneable.size * (SKIN_TONES.size + 1)) {
+        addAll(fixed)
+        toneable.forEach { base ->
+            add(base)
+            SKIN_TONES.forEach { tone -> add(base + tone) }
+        }
+    }
+}
+
+private fun flagValues(rawCountryCodes: String): List<String> = buildList {
+    addAll(emojiValues("🏳️ 🏴 🏁 🚩 🏳️‍🌈 🏳️‍⚧️ 🏴‍☠️"))
+    emojiValues(rawCountryCodes).forEach { countryCode ->
+        require(countryCode.length == 2 && countryCode.all { it in 'A'..'Z' })
+        val first = REGIONAL_INDICATOR_A + (countryCode[0] - 'A')
+        val second = REGIONAL_INDICATOR_A + (countryCode[1] - 'A')
+        add(
+            StringBuilder(4)
+                .appendCodePoint(first)
+                .appendCodePoint(second)
+                .toString(),
+        )
+    }
+}
+
+private val SKIN_TONES = listOf("🏻", "🏼", "🏽", "🏾", "🏿")
+private const val REGIONAL_INDICATOR_A = 0x1F1E6

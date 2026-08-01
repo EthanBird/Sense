@@ -1,7 +1,10 @@
 package io.github.ethanbird.senseime
 
 import android.app.Activity
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -9,7 +12,6 @@ import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.Switch
 import android.widget.TextView
-import android.widget.AdapterView
 import io.github.ethanbird.senseime.brain.api.CredentialEndpointScope
 import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
 import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
@@ -201,9 +203,13 @@ internal class ProviderSettingsScreen(
     private var loadedCredentialScope: String? = null
     private var hasSavedCredential = false
     private var testRunning = false
+    private var suppressAutoSave = false
+    private var lastRequestedProfile: ProviderProfile? = null
+    private var lastRequestedCredentialSignature: Long? = null
     private val controller = ProviderSettingsController(repository, tasks)
     private val testClient =
         SenseAiProviderTestClient(activity.applicationContext, ::onConnectionTestEvent)
+    private val persistEditedTextRunnable = Runnable(::autoPersist)
 
     fun createView(): View {
         val root = LinearLayout(activity).apply {
@@ -294,13 +300,9 @@ internal class ProviderSettingsScreen(
         )
         root.addView(advanced.withTop(views.dp(10)))
         root.addView(advancedFields.withTop(views.dp(10)))
-        root.addView(
-            views.secondaryButton(R.string.ai_provider_save, ::save)
-                .withTop(views.dp(12)),
-        )
         val testButton =
-            views.primaryButton(R.string.ai_provider_test, ::saveAndTestConnection)
-        root.addView(testButton.withTop(views.dp(8)))
+            views.primaryButton(R.string.ai_provider_test, ::testConnection)
+        root.addView(testButton.withTop(views.dp(12)))
         root.addView(
             views.secondaryButton(R.string.ai_provider_validate, ::validateSaved)
                 .withTop(views.dp(8)),
@@ -336,6 +338,15 @@ internal class ProviderSettingsScreen(
             testButton = testButton,
         )
         advanced.setOnCheckedChangeListener { _, _ -> updateAdvancedVisibility() }
+        apiStyle.persistSelectionOnChange()
+        structuredOutput.persistSelectionOnChange()
+        thinkingMode.persistSelectionOnChange()
+        streaming.setOnCheckedChangeListener { _, _ -> autoPersist() }
+        listOf(name, baseUrl, model, apiKey).forEach { field ->
+            field.persistTextOnChange {
+                if (field === baseUrl) updateKeyHint()
+            }
+        }
         preset.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
@@ -349,16 +360,19 @@ internal class ProviderSettingsScreen(
                     updateAdvancedVisibility()
                     return
                 }
-                apiKey.text.clear()
-                val selected = ProviderPresetCatalog.presets[position]
-                if (selected.isCustom) {
-                    advanced.isChecked = true
-                } else {
-                    advanced.isChecked = false
-                    applyPresetFields(selected)
+                withoutAutoSave {
+                    apiKey.text.clear()
+                    val selected = ProviderPresetCatalog.presets[position]
+                    if (selected.isCustom) {
+                        advanced.isChecked = true
+                    } else {
+                        advanced.isChecked = false
+                        applyPresetFields(selected)
+                    }
                 }
                 updateAdvancedVisibility()
                 updateKeyHint()
+                autoPersist()
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
@@ -370,11 +384,13 @@ internal class ProviderSettingsScreen(
 
     fun onStop() {
         testClient.cancel()
+        flushPendingTextAutoSave()
     }
 
     override fun close() {
         testClient.cancel()
         testClient.close()
+        flushPendingTextAutoSave()
         controller.close()
         binding = null
     }
@@ -396,34 +412,42 @@ internal class ProviderSettingsScreen(
 
     private fun applySnapshot(snapshot: ProviderSettingsSnapshot) {
         val current = binding ?: return
+        uiLoaded = false
+        suppressAutoSave = true
         hasSavedCredential = snapshot.hasCredential
         val profile = snapshot.profile
         if (profile == null) {
+            suppressAutoSave = false
             applyDefaultProfile()
             current.status.setText(R.string.ai_provider_not_configured)
             current.status.setTextColor(activity.getColor(R.color.sense_secondary))
             return
         }
         val preset = ProviderPresetCatalog.detect(profile)
-        selectedPresetPosition = ProviderPresetCatalog.presets.indexOf(preset)
-        current.preset.setSelection(selectedPresetPosition)
-        current.name.setText(profile.displayName)
-        current.baseUrl.setText(profile.baseUrl)
-        current.model.setText(profile.model)
-        current.apiStyle.setSelection(
-            if (profile.apiStyle == ProviderApiStyle.OPENAI_RESPONSES) 0 else 1,
-        )
-        current.structuredOutput.setSelection(
-            when (profile.structuredOutput) {
-                StructuredOutputMode.JSON_SCHEMA -> 0
-                StructuredOutputMode.JSON_OBJECT -> 1
-                StructuredOutputMode.PROMPT_ONLY -> 2
-            },
-        )
-        current.thinkingMode.setSelection(ProviderReasoningStrength.from(profile).ordinal)
-        current.streaming.isChecked = profile.streaming
-        current.advanced.isChecked = preset.isCustom
+        try {
+            selectedPresetPosition = ProviderPresetCatalog.presets.indexOf(preset)
+            current.preset.setSelection(selectedPresetPosition)
+            current.name.setText(profile.displayName)
+            current.baseUrl.setText(profile.baseUrl)
+            current.model.setText(profile.model)
+            current.apiStyle.setSelection(
+                if (profile.apiStyle == ProviderApiStyle.OPENAI_RESPONSES) 0 else 1,
+            )
+            current.structuredOutput.setSelection(
+                when (profile.structuredOutput) {
+                    StructuredOutputMode.JSON_SCHEMA -> 0
+                    StructuredOutputMode.JSON_OBJECT -> 1
+                    StructuredOutputMode.PROMPT_ONLY -> 2
+                },
+            )
+            current.thinkingMode.setSelection(ProviderReasoningStrength.from(profile).ordinal)
+            current.streaming.isChecked = profile.streaming
+            current.advanced.isChecked = preset.isCustom
+        } finally {
+            suppressAutoSave = false
+        }
         loadedCredentialScope = credentialScope(profile)
+        lastRequestedProfile = profile
         uiLoaded = true
         updateAdvancedVisibility()
         updateKeyHint()
@@ -433,25 +457,28 @@ internal class ProviderSettingsScreen(
 
     private fun applyDefaultProfile() {
         val current = binding ?: return
+        uiLoaded = false
+        suppressAutoSave = true
         loadedCredentialScope = null
         hasSavedCredential = false
         val preset = ProviderPresetCatalog.default
-        selectedPresetPosition = ProviderPresetCatalog.presets.indexOf(preset)
-        current.preset.setSelection(selectedPresetPosition)
-        applyPresetFields(preset)
-        current.thinkingMode.setSelection(0)
-        current.advanced.isChecked = false
+        try {
+            selectedPresetPosition = ProviderPresetCatalog.presets.indexOf(preset)
+            current.preset.setSelection(selectedPresetPosition)
+            applyPresetFields(preset)
+            current.thinkingMode.setSelection(0)
+            current.advanced.isChecked = false
+        } finally {
+            suppressAutoSave = false
+        }
+        lastRequestedProfile = currentProfile()
+        lastRequestedCredentialSignature = null
         uiLoaded = true
         updateAdvancedVisibility()
         updateKeyHint()
     }
 
-    private fun save() {
-        if (testRunning) testClient.cancel()
-        persist()
-    }
-
-    private fun saveAndTestConnection() {
+    private fun testConnection() {
         val current = binding ?: return
         if (testRunning) {
             testClient.cancel()
@@ -500,20 +527,42 @@ internal class ProviderSettingsScreen(
 
             else -> enteredKey.toCharArray()
         }
+        val credentialSignature = enteredKey.takeIf(String::isNotEmpty)
+            ?.let(SettingsAutoSavePolicy::credentialSignature)
+        if (!SettingsAutoSavePolicy.shouldEnqueue(
+                lastRequestedValue = lastRequestedProfile,
+                requestedValue = profile,
+                lastCredentialSignature = lastRequestedCredentialSignature,
+                requestedCredentialSignature = credentialSignature,
+                forceBarrier = onSaved != null,
+            )) return
+        lastRequestedProfile = profile
+        lastRequestedCredentialSignature = credentialSignature
         current.status.setText(R.string.ai_provider_not_configured)
         current.status.setTextColor(activity.getColor(R.color.sense_secondary))
         controller.save(profile, key) { result ->
             result
                 .onSuccess { snapshot ->
+                    lastRequestedProfile = profile
+                    lastRequestedCredentialSignature = null
                     hasSavedCredential = snapshot.hasCredential
                     loadedCredentialScope = scope
-                    current.apiKey.text.clear()
+                    if (
+                        SettingsAutoSavePolicy.shouldClearCredentialEditor(
+                            submittedValue = enteredKey,
+                            currentEditorValue = current.apiKey.text.toString(),
+                        )
+                    ) {
+                        current.apiKey.text.clear()
+                    }
                     updateKeyHint()
                     current.status.setText(R.string.ai_provider_saved)
                     current.status.setTextColor(activity.getColor(R.color.sense_success))
                     onSaved?.invoke()
                 }
                 .onFailure {
+                    lastRequestedProfile = null
+                    lastRequestedCredentialSignature = null
                     current.status.setText(R.string.ai_provider_save_failed)
                     current.status.setTextColor(activity.getColor(android.R.color.holo_red_dark))
                 }
@@ -526,6 +575,7 @@ internal class ProviderSettingsScreen(
             result
                 .onSuccess { snapshot ->
                     hasSavedCredential = false
+                    lastRequestedCredentialSignature = null
                     loadedCredentialScope = snapshot.profile?.let(::credentialScope)
                     current.apiKey.text.clear()
                     updateKeyHint()
@@ -622,6 +672,77 @@ internal class ProviderSettingsScreen(
                 ProviderPresetCatalog.presets.lastIndex,
             )
         ]
+    }
+
+    private fun Spinner.persistSelectionOnChange() {
+        onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long,
+            ) {
+                autoPersist()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+        }
+    }
+
+    private fun EditText.persistTextOnChange(onFocusLost: () -> Unit = {}) {
+        addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(
+                value: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) = Unit
+
+            override fun onTextChanged(
+                value: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) = Unit
+
+            override fun afterTextChanged(value: Editable?) {
+                scheduleTextAutoSave()
+            }
+        })
+        setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                onFocusLost()
+                flushPendingTextAutoSave()
+            }
+        }
+    }
+
+    private fun scheduleTextAutoSave() {
+        if (!uiLoaded || suppressAutoSave) return
+        binding?.root?.let { root ->
+            root.removeCallbacks(persistEditedTextRunnable)
+            root.postDelayed(persistEditedTextRunnable, TEXT_AUTO_SAVE_DEBOUNCE_MS)
+        }
+    }
+
+    private fun flushPendingTextAutoSave() {
+        binding?.root?.removeCallbacks(persistEditedTextRunnable)
+        autoPersist()
+    }
+
+    private fun autoPersist() {
+        if (!uiLoaded || suppressAutoSave) return
+        persist()
+    }
+
+    private inline fun withoutAutoSave(action: () -> Unit) {
+        val previous = suppressAutoSave
+        suppressAutoSave = true
+        try {
+            action()
+        } finally {
+            suppressAutoSave = previous
+        }
     }
 
     private fun credentialScope(profile: ProviderProfile): String =
@@ -791,5 +912,6 @@ internal class ProviderSettingsScreen(
 
     private companion object {
         const val DEFAULT_PROVIDER_MODEL = "gpt-4.1-mini"
+        const val TEXT_AUTO_SAVE_DEBOUNCE_MS = 350L
     }
 }

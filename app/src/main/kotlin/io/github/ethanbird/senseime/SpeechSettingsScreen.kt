@@ -3,6 +3,8 @@ package io.github.ethanbird.senseime
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -186,7 +188,11 @@ internal class SpeechSettingsScreen(
     private var hasSavedCredential = false
     private var permissionRequestInFlight = false
     private var permissionDeniedOnce = false
+    private var suppressAutoSave = false
+    private var lastRequestedProfile: SpeechProviderProfile? = null
+    private var lastRequestedCredentialSignature: Long? = null
     private val controller = SpeechSettingsController(repository, tasks)
+    private val persistEditedTextRunnable = Runnable(::autoPersist)
 
     fun createView(): View {
         val root = LinearLayout(activity).apply {
@@ -250,12 +256,8 @@ internal class SpeechSettingsScreen(
         root.addView(advanced.withTop(views.dp(10)))
         root.addView(advancedFields.withTop(views.dp(10)))
         root.addView(
-            views.secondaryButton(R.string.speech_provider_save, ::save)
-                .withTop(views.dp(12)),
-        )
-        root.addView(
             views.secondaryButton(R.string.speech_provider_clear_key, ::clearCredential)
-                .withTop(views.dp(8)),
+                .withTop(views.dp(12)),
         )
         val permissionButton =
             views.primaryButton(R.string.speech_permission_grant, ::requestPermission)
@@ -285,6 +287,13 @@ internal class SpeechSettingsScreen(
             status = status,
         )
         advanced.setOnCheckedChangeListener { _, _ -> updateAdvancedVisibility() }
+        language.persistSelectionOnChange()
+        streamingOptimization.setOnCheckedChangeListener { _, _ -> autoPersist() }
+        listOf(endpoint, model, apiKey).forEach { field ->
+            field.persistTextOnChange {
+                if (field === endpoint) updateKeyHint()
+            }
+        }
         preset.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
@@ -295,15 +304,18 @@ internal class SpeechSettingsScreen(
                 val changed = position != selectedPresetPosition
                 selectedPresetPosition = position
                 if (uiLoaded && changed) {
-                    apiKey.text.clear()
-                    applyPresetFields(selectedPreset())
-                    advanced.isChecked = false
-                    streamingOptimization.isChecked = false
+                    withoutAutoSave {
+                        apiKey.text.clear()
+                        applyPresetFields(selectedPreset())
+                        advanced.isChecked = false
+                        streamingOptimization.isChecked = false
+                    }
                 }
                 updateStreamingVisibility()
                 updateAdvancedVisibility()
                 updateKeyHint()
                 updateCapabilityStatus()
+                if (changed) autoPersist()
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
@@ -319,6 +331,10 @@ internal class SpeechSettingsScreen(
         updatePermissionButton()
     }
 
+    fun onStop() {
+        flushPendingTextAutoSave()
+    }
+
     fun onPermissionResult(granted: Boolean) {
         permissionRequestInFlight = false
         permissionDeniedOnce = !granted
@@ -330,6 +346,7 @@ internal class SpeechSettingsScreen(
     }
 
     override fun close() {
+        flushPendingTextAutoSave()
         controller.close()
         binding = null
     }
@@ -350,25 +367,33 @@ internal class SpeechSettingsScreen(
 
     private fun applySnapshot(snapshot: SpeechSettingsSnapshot) {
         val current = binding ?: return
+        uiLoaded = false
+        suppressAutoSave = true
         hasSavedCredential = snapshot.hasCredential
         val profile = snapshot.profile
         val preset = profile?.let { SpeechProviderPresetCatalog.find(it.presetId) }
             ?: SpeechProviderPresetCatalog.require(SpeechProviderPresetCatalog.SYSTEM)
-        selectedPresetPosition = SpeechProviderPresetCatalog.all.indexOf(preset).coerceAtLeast(0)
-        current.preset.setSelection(selectedPresetPosition)
-        applyPresetFields(preset)
-        if (profile != null) {
-            current.endpoint.setText(profile.endpointUrl.orEmpty())
-            current.model.setText(profile.model.orEmpty())
-            val languageIndex =
-                SPEECH_LANGUAGES.indexOfFirst { it.second == profile.languageTag }
-            current.language.setSelection(languageIndex.coerceAtLeast(0))
-            current.streamingOptimization.isChecked = profile.streamingOptimization
-        } else {
-            current.streamingOptimization.isChecked = false
+        try {
+            selectedPresetPosition = SpeechProviderPresetCatalog.all.indexOf(preset).coerceAtLeast(0)
+            current.preset.setSelection(selectedPresetPosition)
+            applyPresetFields(preset)
+            if (profile != null) {
+                current.endpoint.setText(profile.endpointUrl.orEmpty())
+                current.model.setText(profile.model.orEmpty())
+                val languageIndex =
+                    SPEECH_LANGUAGES.indexOfFirst { it.second == profile.languageTag }
+                current.language.setSelection(languageIndex.coerceAtLeast(0))
+                current.streamingOptimization.isChecked = profile.streamingOptimization
+            } else {
+                current.streamingOptimization.isChecked = false
+            }
+            current.advanced.isChecked = false
+        } finally {
+            suppressAutoSave = false
         }
         loadedCredentialScope = profile?.let { credentialScope(preset, it.endpointUrl) }
-        current.advanced.isChecked = false
+        lastRequestedProfile = profile ?: currentProfile(preset)
+        lastRequestedCredentialSignature = null
         uiLoaded = true
         updateAdvancedVisibility()
         updateStreamingVisibility()
@@ -378,44 +403,33 @@ internal class SpeechSettingsScreen(
 
     private fun applyDefault() {
         val current = binding ?: return
+        uiLoaded = false
+        suppressAutoSave = true
         hasSavedCredential = false
         loadedCredentialScope = null
         val preset =
             SpeechProviderPresetCatalog.require(SpeechProviderPresetCatalog.SYSTEM)
-        selectedPresetPosition = SpeechProviderPresetCatalog.all.indexOf(preset).coerceAtLeast(0)
-        current.preset.setSelection(selectedPresetPosition)
-        applyPresetFields(preset)
-        current.streamingOptimization.isChecked = false
-        current.advanced.isChecked = false
+        try {
+            selectedPresetPosition = SpeechProviderPresetCatalog.all.indexOf(preset).coerceAtLeast(0)
+            current.preset.setSelection(selectedPresetPosition)
+            applyPresetFields(preset)
+            current.streamingOptimization.isChecked = false
+            current.advanced.isChecked = false
+        } finally {
+            suppressAutoSave = false
+        }
+        lastRequestedProfile = currentProfile(preset)
+        lastRequestedCredentialSignature = null
         uiLoaded = true
         updateAdvancedVisibility()
         updateStreamingVisibility()
         updateKeyHint()
     }
 
-    private fun save() {
+    private fun persist() {
         val current = binding ?: return
         val preset = selectedPreset()
-        val profile = preset.defaultProfile(selectedLanguageTag()).copy(
-            endpointUrl = when {
-                preset.defaultEndpointUrl == null -> null
-                !preset.allowConnectionOverrides -> preset.defaultEndpointUrl
-                else -> current.endpoint.text.toString().trim()
-            },
-            model = when {
-                preset.defaultModel == null -> null
-                !preset.allowConnectionOverrides -> preset.defaultModel
-                else -> current.model.text.toString().trim()
-            },
-            interimResults = if (preset.id == SpeechProviderPresetCatalog.SOGOU) {
-                current.streamingOptimization.isChecked
-            } else {
-                true
-            },
-            streamingOptimization =
-                preset.id == SpeechProviderPresetCatalog.SOGOU &&
-                    current.streamingOptimization.isChecked,
-        )
+        val profile = currentProfile(preset)
         val validation = profile.validate()
         if (!validation.isValid) {
             current.status.text = validation.errors.joinToString("\n") {
@@ -451,12 +465,31 @@ internal class SpeechSettingsScreen(
             }
             else -> enteredKey.toCharArray()
         }
+        val credentialSignature = enteredKey.takeIf(String::isNotEmpty)
+            ?.let(SettingsAutoSavePolicy::credentialSignature)
+        if (!SettingsAutoSavePolicy.shouldEnqueue(
+                lastRequestedValue = lastRequestedProfile,
+                requestedValue = profile,
+                lastCredentialSignature = lastRequestedCredentialSignature,
+                requestedCredentialSignature = credentialSignature,
+            )) return
+        lastRequestedProfile = profile
+        lastRequestedCredentialSignature = credentialSignature
         controller.save(profile, apiKey) { result ->
             result
                 .onSuccess { snapshot ->
+                    lastRequestedProfile = profile
+                    lastRequestedCredentialSignature = null
                     hasSavedCredential = snapshot.hasCredential
                     loadedCredentialScope = scope
-                    current.apiKey.text.clear()
+                    if (
+                        SettingsAutoSavePolicy.shouldClearCredentialEditor(
+                            submittedValue = enteredKey,
+                            currentEditorValue = current.apiKey.text.toString(),
+                        )
+                    ) {
+                        current.apiKey.text.clear()
+                    }
                     updateKeyHint()
                     current.status.setText(
                         if (
@@ -482,10 +515,36 @@ internal class SpeechSettingsScreen(
                     )
                 }
                 .onFailure {
+                    lastRequestedProfile = null
+                    lastRequestedCredentialSignature = null
                     current.status.setText(R.string.speech_provider_save_failed)
                     current.status.setTextColor(activity.getColor(android.R.color.holo_red_dark))
                 }
         }
+    }
+
+    private fun currentProfile(preset: SpeechProviderPreset = selectedPreset()): SpeechProviderProfile {
+        val current = requireNotNull(binding)
+        return preset.defaultProfile(selectedLanguageTag()).copy(
+            endpointUrl = when {
+                preset.defaultEndpointUrl == null -> null
+                !preset.allowConnectionOverrides -> preset.defaultEndpointUrl
+                else -> current.endpoint.text.toString().trim()
+            },
+            model = when {
+                preset.defaultModel == null -> null
+                !preset.allowConnectionOverrides -> preset.defaultModel
+                else -> current.model.text.toString().trim()
+            },
+            interimResults = if (preset.id == SpeechProviderPresetCatalog.SOGOU) {
+                current.streamingOptimization.isChecked
+            } else {
+                true
+            },
+            streamingOptimization =
+                preset.id == SpeechProviderPresetCatalog.SOGOU &&
+                    current.streamingOptimization.isChecked,
+        )
     }
 
     private fun clearCredential() {
@@ -500,6 +559,8 @@ internal class SpeechSettingsScreen(
                         }
                     }
                     current.apiKey.text.clear()
+                    lastRequestedProfile = snapshot.profile
+                    lastRequestedCredentialSignature = null
                     updateKeyHint()
                     current.status.setText(
                         if (snapshot.profile == null) {
@@ -533,6 +594,77 @@ internal class SpeechSettingsScreen(
                 SpeechProviderPresetCatalog.all.lastIndex,
             )
         ]
+    }
+
+    private fun Spinner.persistSelectionOnChange() {
+        onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long,
+            ) {
+                autoPersist()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+        }
+    }
+
+    private fun EditText.persistTextOnChange(onFocusLost: () -> Unit = {}) {
+        addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(
+                value: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int,
+            ) = Unit
+
+            override fun onTextChanged(
+                value: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int,
+            ) = Unit
+
+            override fun afterTextChanged(value: Editable?) {
+                scheduleTextAutoSave()
+            }
+        })
+        setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                onFocusLost()
+                flushPendingTextAutoSave()
+            }
+        }
+    }
+
+    private fun scheduleTextAutoSave() {
+        if (!uiLoaded || suppressAutoSave) return
+        binding?.root?.let { root ->
+            root.removeCallbacks(persistEditedTextRunnable)
+            root.postDelayed(persistEditedTextRunnable, TEXT_AUTO_SAVE_DEBOUNCE_MS)
+        }
+    }
+
+    private fun flushPendingTextAutoSave() {
+        binding?.root?.removeCallbacks(persistEditedTextRunnable)
+        autoPersist()
+    }
+
+    private fun autoPersist() {
+        if (!uiLoaded || suppressAutoSave) return
+        persist()
+    }
+
+    private inline fun withoutAutoSave(action: () -> Unit) {
+        val previous = suppressAutoSave
+        suppressAutoSave = true
+        try {
+            action()
+        } finally {
+            suppressAutoSave = previous
+        }
     }
 
     private fun selectedLanguageTag(): String {
@@ -664,6 +796,8 @@ internal class SpeechSettingsScreen(
             PackageManager.PERMISSION_GRANTED
 
     private companion object {
+        const val TEXT_AUTO_SAVE_DEBOUNCE_MS = 350L
+
         val SPEECH_LANGUAGES = listOf(
             "普通话（中国大陆）" to "zh-CN",
             "粤语（香港）" to "zh-HK",

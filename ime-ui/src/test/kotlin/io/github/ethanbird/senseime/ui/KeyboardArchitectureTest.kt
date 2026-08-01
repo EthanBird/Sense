@@ -7,6 +7,46 @@ import org.junit.Test
 
 class KeyboardArchitectureTest {
     @Test
+    fun `shift renderer projection distinguishes one shot from caps lock`() {
+        assertEquals(ShiftIconVisualState.OFF, ShiftIconVisualPolicy.resolve(false, false))
+        assertEquals(ShiftIconVisualState.ONE_SHOT, ShiftIconVisualPolicy.resolve(true, false))
+        assertEquals(ShiftIconVisualState.CAPS_LOCK, ShiftIconVisualPolicy.resolve(true, true))
+    }
+
+    @Test
+    fun `emoji category rail declares horizontal scroll projection`() {
+        assertEquals(ScrollAxis.HORIZONTAL, ScrollPanel.EMOJI_CATEGORIES.axis)
+        assertEquals(ScrollAxis.VERTICAL, ScrollPanel.EMOJI.axis)
+        assertEquals(ScrollAxis.VERTICAL, ScrollPanel.T9_LEFT_RAIL.axis)
+    }
+
+    @Test
+    fun `emoji category rail keeps fixed slots and minimally reveals selection`() {
+        val state = ContinuousVerticalScrollState()
+        val slot = EmojiCategoryRailPolicy.slotWidth(density = 1f)
+
+        EmojiCategoryRailPolicy.configureAndReveal(
+            state = state,
+            itemCount = 11,
+            selectedIndex = 10,
+            viewportExtent = 322f,
+            slotWidth = slot,
+        )
+        val afterLast = state.offset
+        EmojiCategoryRailPolicy.configureAndReveal(
+            state = state,
+            itemCount = 11,
+            selectedIndex = 9,
+            viewportExtent = 322f,
+            slotWidth = slot,
+        )
+
+        assertEquals(46f, slot, 0.001f)
+        assertEquals(184f, afterLast, 0.001f)
+        assertEquals(afterLast, state.offset, 0.001f)
+    }
+
+    @Test
     fun `legacy nested contracts remain source compatible`() {
         val panel: SenseKeyboardView.Panel = SenseKeyboardView.Panel.LETTERS
         val clipboardAction: SenseKeyboardView.ClipboardAction =
@@ -91,14 +131,15 @@ class KeyboardArchitectureTest {
             listOf("分词", "ABC", "DEF", "GHI", "JKL", "MNO", "PQRS", "TUV", "WXYZ"),
             output.filter { it.code in '1'.code..'9'.code }.map(Key::label),
         )
-        assertTrue(
-            output.filter { it.code in '1'.code..'9'.code }.all { it.visualLegend == null },
+        assertEquals(
+            ('1'..'9').map(Char::toString),
+            output.filter { it.code in '1'.code..'9'.code }.map(Key::visualLegend),
         )
         assertTrue(output.any { it.code == KeyCodes.DELETE })
     }
 
     @Test
-    fun `t9 keycaps expose only their letter group and no swipe output`() {
+    fun `t9 keycaps keep letters primary and expose digits as legends and upward output`() {
         val layout = KeyboardPrimaryLayout(
             metrics = KeyboardMetrics.fromDensity(1f),
         )
@@ -110,12 +151,98 @@ class KeyboardArchitectureTest {
 
         val t9Two = t9.single { it.code == '2'.code }
         assertEquals("ABC", t9Two.label)
-        assertEquals(null, t9Two.visualLegend)
-        assertEquals(null, t9Two.swipeOutput)
+        assertEquals("2", t9Two.visualLegend)
+        assertEquals("2", t9Two.swipeOutput)
 
         val qwertyQ = qwerty.single { it.code == 'q'.code }
         assertEquals("1", qwertyQ.visualLegend)
         assertEquals("1", qwertyQ.swipeOutput)
+    }
+
+    @Test
+    fun `t9 digit key keeps one physical skill owner while exposing upward digit output`() {
+        val keys = ArrayList<Key>()
+        KeyboardPrimaryLayout(KeyboardMetrics.fromDensity(1f)).appendLetters(
+            PrimaryKeyboardMode.T9,
+            letterRequest(),
+            keys,
+        )
+        val two = keys.single { it.code == '2'.code }
+        val scene = MutableKeyboardScene().apply {
+            mutableKeys += two
+            panelKeyStart = 0
+            panelKeyEndExclusive = 1
+            assignPhysicalKeyIds(KeyboardPanel.LETTERS)
+        }
+        val owner = requireNotNull(scene.physicalIdFor(two)).toSkillOwner()
+        val binding = KeyboardSkillBinding(
+            keyCode = '2'.code,
+            direction = KeyboardSkillDirection.LEFT,
+            skillId = "digit-two-skill",
+            label = "数字技能",
+        )
+        val bindings = KeyboardSkillBindingSet.from(listOf(binding))
+
+        assertEquals('2'.code, owner.signature.keyCode)
+        assertEquals(KeyStyle.T9_PRIMARY.name, owner.signature.styleToken)
+        assertEquals(binding, bindings.binding(two.code, KeyboardSkillDirection.LEFT))
+        assertTrue(KeyboardSkillKeyPolicy.supportsKeyCode(two.code))
+        assertEquals("2", two.swipeOutput)
+    }
+
+    @Test
+    fun `idle t9 left rail is one contiguous scroll run with injected symbols and settings`() {
+        val symbols = (1..24).map { "符$it" }
+        val output = ArrayList<Key>()
+        KeyboardPrimaryLayout(KeyboardMetrics.fromDensity(1f)).appendLetters(
+            PrimaryKeyboardMode.T9,
+            letterRequest(t9SideSymbols = symbols),
+            output,
+        )
+
+        val rail = output.filter { it.style == KeyStyle.T9_LEFT_RAIL }
+        assertEquals(symbols.size + 1, rail.size)
+        assertEquals(symbols, rail.dropLast(1).map(Key::label))
+        assertEquals("自定义设置", rail.last().label)
+        assertEquals(KeyAction.OpenT9SideSymbolSettings, rail.last().action)
+        assertTrue(rail.all { it.scrollPanel == ScrollPanel.T9_LEFT_RAIL })
+        rail.zipWithNext().forEach { (current, next) ->
+            assertEquals(current.bounds.bottom, next.bounds.top, 0.001f)
+        }
+    }
+
+    @Test
+    fun `t9 symbol injection trims deduplicates and remains bounded`() {
+        val normalized = T9SideSymbolPolicy.normalize(
+            listOf("  ，  ", "", "，", "abcdef", "😀😁😂🤣😃") +
+                (1..40).map { "符$it" },
+        )
+
+        assertEquals("，", normalized.first())
+        assertEquals("abcd", normalized[1])
+        assertEquals(4, normalized[2].codePointCount(0, normalized[2].length))
+        assertTrue(normalized.size <= T9SideSymbolPolicy.MAX_SYMBOLS)
+        assertEquals(normalized.size, normalized.distinct().size)
+        assertEquals(
+            T9SideSymbolPolicy.DEFAULT_SYMBOLS,
+            T9SideSymbolPolicy.normalize(emptyList()),
+        )
+    }
+
+    @Test
+    fun `t9 scene publishes a scrollable left rail viewport`() {
+        val metrics = KeyboardMetrics.fromDensity(1f)
+        val scene = MutableKeyboardScene()
+        T9KeyboardLayout.configureLeftRailScene(
+            request = letterRequest(t9SideSymbols = (1..24).map { "符$it" }),
+            metrics = metrics,
+            target = scene,
+        )
+
+        assertTrue(scene.t9LeftRailBounds != null)
+        assertTrue(scene.t9LeftRailScrollState.maximumOffset > 0f)
+        assertTrue(scene.t9LeftRailScrollState.scrollBy(48f))
+        assertEquals(48f, scene.scrollOffset(ScrollPanel.T9_LEFT_RAIL), 0.001f)
     }
 
     @Test
@@ -155,6 +282,22 @@ class KeyboardArchitectureTest {
         assertTrue(output.none { it.style == KeyStyle.T9_LEFT_RAIL })
         assertTrue(output.none { it.code == KeyCodes.COMMA || it.code == KeyCodes.PERIOD })
         assertTrue(output.none { it.action == KeyAction.None })
+    }
+
+    @Test
+    fun `t9 composition rail keeps eight scrollable segmentation choices`() {
+        val output = ArrayList<Key>()
+        val supplied = (0 until 10).map { index -> T9PinyinChoice("path$index", "p'a't'h$index") }
+        KeyboardPrimaryLayout(KeyboardMetrics.fromDensity(1f)).appendLetters(
+            PrimaryKeyboardMode.T9,
+            letterRequest(t9PinyinChoices = supplied),
+            output,
+        )
+
+        val rail = output.filter { it.style == KeyStyle.T9_LEFT_RAIL }
+        assertEquals(8, rail.size)
+        assertEquals(supplied.take(8).map(T9PinyinChoice::canonical), rail.map(Key::label))
+        assertTrue(rail.all { it.scrollPanel == ScrollPanel.T9_LEFT_RAIL })
     }
 
     @Test
@@ -223,6 +366,7 @@ class KeyboardArchitectureTest {
         t9PinyinChoiceRevision: Long = 0L,
         t9PinyinChoices: List<T9PinyinChoice> = emptyList(),
         t9CompositionActive: Boolean = t9PinyinChoices.isNotEmpty(),
+        t9SideSymbols: List<String> = T9SideSymbolPolicy.DEFAULT_SYMBOLS,
     ) = KeyboardLetterLayoutRequest(
         viewWidth = 1080,
         viewHeight = 420,
@@ -234,6 +378,7 @@ class KeyboardArchitectureTest {
         t9CompositionActive = t9CompositionActive,
         t9PinyinChoiceRevision = t9PinyinChoiceRevision,
         t9PinyinChoices = t9PinyinChoices,
+        t9SideSymbols = t9SideSymbols,
     )
 
     private class RecordingLetterLayout : KeyboardLetterLayout {
