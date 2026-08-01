@@ -204,6 +204,7 @@ object AgentSkillCatalogReducer {
         return when (mutation) {
             is AgentSkillMutation.Create -> {
                 AgentSkillPolicy.requireValidId(mutation.id)
+                mutation.binding?.let(AgentSkillPolicy::requireAssignableSlot)
                 require(catalog.definition(mutation.id) == null) {
                     "Skill already exists: ${mutation.id}"
                 }
@@ -273,6 +274,7 @@ object AgentSkillCatalogReducer {
 
             is AgentSkillMutation.Bind -> {
                 AgentSkillPolicy.requireValidId(mutation.skillId)
+                AgentSkillPolicy.requireAssignableSlot(mutation.slot)
                 requireNotNull(catalog.definition(mutation.skillId)) {
                     "Unknown Skill: ${mutation.skillId}"
                 }
@@ -433,6 +435,20 @@ object AgentSkillPolicy {
                 keyCode in ACTION_KEY_CODES,
         ) {
             "Skill slot key code is not bindable: $keyCode"
+        }
+    }
+
+    /** Downward Z/Y holds are built-in editor history gestures, not assignable Skill slots. */
+    fun isAssignableSlot(slot: AgentSkillSlot?): Boolean = when {
+        slot == null || slot.direction != AgentSkillDirection.DOWN -> true
+        slot.keyCode == 'z'.code || slot.keyCode == 'Z'.code -> false
+        slot.keyCode == 'y'.code || slot.keyCode == 'Y'.code -> false
+        else -> true
+    }
+
+    fun requireAssignableSlot(slot: AgentSkillSlot) {
+        require(isAssignableSlot(slot)) {
+            "Z/Y downward gestures are reserved for undo and redo"
         }
     }
 

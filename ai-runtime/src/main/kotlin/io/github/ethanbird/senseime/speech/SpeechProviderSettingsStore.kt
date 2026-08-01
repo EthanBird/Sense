@@ -136,7 +136,8 @@ class SpeechProviderSettingsStore(context: Context) {
                     .put("language_tag", profile.languageTag)
                     .put("prefer_on_device", profile.preferOnDevice)
                     .put("interim_results", profile.interimResults)
-                    .put("punctuation", profile.punctuation),
+                    .put("punctuation", profile.punctuation)
+                    .put("streaming_optimization", profile.streamingOptimization),
             )
             .apply {
                 if (secret != null) {
@@ -165,6 +166,7 @@ class SpeechProviderSettingsStore(context: Context) {
                 preferOnDevice = json.getBoolean("prefer_on_device"),
                 interimResults = json.getBoolean("interim_results"),
                 punctuation = json.getBoolean("punctuation"),
+                streamingOptimization = json.optBoolean("streaming_optimization", false),
             ),
         )
 

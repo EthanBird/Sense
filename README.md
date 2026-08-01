@@ -10,9 +10,9 @@
 > 分帧与 SRSS WebSocket 转写，选择后无需 API Key 即可从键盘语音入口使用。协议与
 > 双实现验证见[接入记录](docs/research/sogou-asr-provider-integration-2026-08-01.md)。
 
-**项目状态：** `v0.4.5.beta.7` 免配置搜狗语音与 Windows TSF 工程预发布
+**项目状态：** `v0.4.5.beta.8` 流式语音、撤销/重做与 Skills 交互预发布
 
-**当前版本：** `v0.4.5.beta.7`（`versionCode 28`）
+**当前版本：** `v0.4.5.beta.8`（`versionCode 29`）
 
 **更新日期：** 2026-08-01
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
@@ -30,13 +30,13 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.5.beta.7 Built-in Sogou ASR and Windows TSF preview
+## 0. 当前迭代：v0.4.5.beta.8 Streaming ASR and Skills UX preview
 
-`v0.4.5.beta.7` 在既有系统、OpenAI-compatible 与 Deepgram 语音链路上新增免配置
-搜狗 SRSS Provider，内置加密握手、纯 Java Opus 20 ms 分帧、WebSocket 中间/最终
-结果、超时与取消处理；同一测试音频已通过 Python 复现和 Kotlin live probe 双重验证。
-仓库同时加入 Windows C++20 TSF 工程预览，但 Windows 产物与 Agent Bridge 不进入
-Android APK。
+`v0.4.5.beta.8` 修复英文模式字符滑动映射，`M` 键恢复输出 ASCII `/`；新增可选的
+“流式优化（边说边转）”语音模式，并明确提示该模式可能降低准确率；长按 `Z` 后下滑
+执行撤销，长按 `Y` 后下滑执行重做。Skills 设置页改为可点击的可视化键盘绑定器，创建
+流程加入模板、分步编辑、实时摘要与完成进度，让新建、预览和绑定形成一条连续路径。
+免配置搜狗 SRSS Provider 与 Windows C++20 TSF 工程预览继续保留。
 
 `v0.4.5` 在 v0.4.4 的开放工具、完整 Agent Journal 和本地记忆之上，把 Skills
 交付为可配置、可修订、可由 Agent 智能读取和管理的长期系统：
@@ -127,8 +127,8 @@ initials、渐进 limit 16、渐进 limit 255 和组合 p95 分别为
 
 决策记录见 [ADR 0022](docs/adr/0022-gpl-rime-frost-lexicon-pipeline.md) 与
 [ADR 0023](docs/adr/0023-v0.4.5-beta5-decoder-quality.md)，详细发布门禁见
-[`v0.4.5.beta.7` 预发布说明](docs/releases/v0.4.5.beta.7.md)，最新发布资产见
-[`v0.4.5.beta.7` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.7)。
+[`v0.4.5.beta.8` 预发布说明](docs/releases/v0.4.5.beta.8.md)，最新发布资产见
+[`v0.4.5.beta.8` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.8)。
 
 `v0.4.5.beta.4` 修复键盘刚显示、窗口切换或目录观察 catch-up 时，等价 Skill catalog
 重复发布会撤销已开始长按的问题：解析结果、显示标签与 active Skill 均未变化时保留
@@ -174,7 +174,7 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
 | Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
 | 既有质量 | AI、IME、UI、Core、M0–M6、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 28`、`versionName 0.4.5.beta.7`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据 | `versionCode 29`、`versionName 0.4.5.beta.8`、`minSdk 29`、`targetSdk 36` |
 
 仓库不再运行 GitHub Actions；测试、Lint、性能门禁、APK 构建和签名校验统一在 Windows
 本地执行。完整本地验证与构建：
@@ -191,11 +191,11 @@ powershell -ExecutionPolicy Bypass -File tools/local_release.ps1 -Publish
 
 `-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。
 
-> **v0.4.5.beta.7 发布收口：** 本轮源码整合冻结后将重新运行并人工审查 X-02
+> **v0.4.5.beta.8 发布收口：** 本轮源码整合冻结后将重新运行并人工审查 X-02
 > production source、build authority 与 offline gate 的 exact SHA-256，并同步刷新
 > boundary baseline。正式本地发布会在同一 release `HEAD` 上再次执行 source/artifact
 > gate，并把结果与 APK 签名、校验和一起归档到
-> [`v0.4.5.beta.7` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.7)。
+> [`v0.4.5.beta.8` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.8)。
 
 标准工程验证命令：
 
@@ -493,8 +493,8 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.4.5.beta.7` 免配置搜狗语音、Windows
-TSF 工程预览与个性化排序预发布阶段。
+以下保留 M0 的实施记录；当前代码位于 `v0.4.5.beta.8` 流式搜狗语音、Skills 交互、
+Windows TSF 工程预览与个性化排序预发布阶段。
 现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。
 

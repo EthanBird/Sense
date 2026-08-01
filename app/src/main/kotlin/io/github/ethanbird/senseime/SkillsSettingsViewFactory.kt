@@ -1,14 +1,18 @@
 package io.github.ethanbird.senseime
 
 import android.app.Activity
+import android.graphics.Typeface
 import android.text.Editable
 import android.text.InputFilter
 import android.text.TextWatcher
+import android.view.Gravity
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.EditText
+import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
+import android.widget.TextView
 import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import io.github.ethanbird.senseime.brain.api.AgentSkillCatalog
 import io.github.ethanbird.senseime.brain.api.AgentSkillDirection
@@ -18,6 +22,7 @@ import io.github.ethanbird.senseime.brain.api.AgentSkillSlot
 internal data class SkillsSettingsViewActions(
     val onSkillSelected: (Int) -> Unit,
     val onCreate: () -> Unit,
+    val onTemplateSelected: (SkillCreationTemplate) -> Unit,
     val onDiscard: () -> Unit,
     val onSave: () -> Unit,
     val onBind: () -> Unit,
@@ -50,18 +55,111 @@ internal class SkillsSettingsViewFactory(
         val root = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
         }
-        root.addView(views.text(R.string.skills_body, 13f, R.color.sense_secondary))
+
+        val createButton = views.primaryButton(R.string.skills_create_new, actions.onCreate)
+        val hero = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(views.dp(20), views.dp(20), views.dp(20), views.dp(20))
+            background = views.rounded(
+                activity.getColor(R.color.sense_surface),
+                views.dp(20).toFloat(),
+                activity.getColor(R.color.sense_accent),
+            )
+            addView(
+                views.text(
+                    R.string.skills_hero_title,
+                    22f,
+                    R.color.sense_primary,
+                    Typeface.BOLD,
+                ),
+            )
+            addView(
+                views.text(R.string.skills_hero_body, 14f, R.color.sense_secondary)
+                    .withTop(views.dp(7)),
+            )
+            addView(createButton.withTop(views.dp(14)))
+        }
+        root.addView(hero)
 
         val selector = views.accessibleSpinner(R.string.skills_select)
-        root.addView(
-            views.labeledField(R.string.skills_select, selector).withTop(views.dp(14)),
-        )
-        val createButton =
-            views.secondaryButton(R.string.skills_create_new, actions.onCreate)
-        root.addView(createButton.withTop(views.dp(8)))
         val discardButton =
             views.secondaryButton(R.string.skills_discard_draft, actions.onDiscard)
-        root.addView(discardButton.withTop(views.dp(8)))
+        val manageBody = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(views.labeledField(R.string.skills_select, selector))
+            addView(discardButton.withTop(views.dp(8)))
+        }
+        val manageSection =
+            views.card(R.string.skills_manage_title, manageBody).withTop(views.dp(12))
+        root.addView(manageSection)
+
+        val templateButtons = mutableListOf<View>()
+        val templateRow = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        SkillCreationTemplates.all.forEachIndexed { index, template ->
+            val pitch = template.description.ifBlank {
+                activity.getString(R.string.skills_template_blank_pitch)
+            }
+            val button = TextView(activity).apply {
+                text = activity.getString(
+                    R.string.skills_template_card,
+                    templateIcon(template),
+                    template.label,
+                    pitch,
+                )
+                textSize = 13f
+                typeface = Typeface.DEFAULT_BOLD
+                setTextColor(activity.getColor(R.color.sense_primary))
+                setLineSpacing(0f, 1.14f)
+                gravity = Gravity.CENTER_VERTICAL
+                minWidth = views.dp(164)
+                minimumHeight = views.dp(92)
+                setPadding(views.dp(14), views.dp(12), views.dp(14), views.dp(12))
+                isClickable = true
+                isFocusable = true
+                contentDescription = activity.getString(
+                    R.string.skills_template_accessibility,
+                    template.label,
+                    pitch,
+                )
+                background = views.rounded(
+                    activity.getColor(R.color.sense_background),
+                    views.dp(15).toFloat(),
+                    activity.getColor(R.color.sense_accent),
+                )
+                setOnClickListener { actions.onTemplateSelected(template) }
+            }
+            templateRow.addView(
+                button,
+                LinearLayout.LayoutParams(
+                    views.dp(180),
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                ).apply {
+                    if (index > 0) marginStart = views.dp(8)
+                },
+            )
+            templateButtons += button
+        }
+        val cancelCreateButton =
+            views.secondaryButton(R.string.skills_back_to_existing, actions.onDiscard)
+        templateButtons += cancelCreateButton
+        val templateBody = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(views.text(R.string.skills_templates_body, 12f, R.color.sense_secondary))
+            addView(
+                HorizontalScrollView(activity).apply {
+                    isHorizontalScrollBarEnabled = false
+                    isFillViewport = false
+                    addView(templateRow)
+                }.withTop(views.dp(12)),
+            )
+            addView(cancelCreateButton.withTop(views.dp(10)))
+        }
+        val templateSection =
+            views.card(R.string.skills_templates_title, templateBody).withTop(views.dp(12))
+        root.addView(templateSection)
 
         val id = views.editField(R.string.skills_id, "lowercase_id").apply {
             isSaveEnabled = false
@@ -88,66 +186,81 @@ internal class SkillsSettingsViewFactory(
                 intents.map(::intentLabel),
             )
         }
-        val key = views.accessibleSpinner(R.string.skills_key).apply {
-            adapter = ArrayAdapter(
-                activity,
-                android.R.layout.simple_spinner_dropdown_item,
-                SkillKeyOptions.all.map(SkillKeyOption::label),
-            )
-        }
-        val direction = views.accessibleSpinner(R.string.skills_direction).apply {
-            adapter = ArrayAdapter(
-                activity,
-                android.R.layout.simple_spinner_dropdown_item,
-                AgentSkillDirection.entries.map(::directionLabel),
-            )
-        }
 
-        root.addView(views.labeledField(R.string.skills_id, id).withTop(views.dp(14)))
-        root.addView(views.labeledField(R.string.skills_name, name).withTop(views.dp(10)))
+        val creationProgress =
+            views.text(R.string.skills_creation_progress_start, 12f, R.color.sense_accent).apply {
+                typeface = Typeface.DEFAULT_BOLD
+                accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
+            }
+        val identityBody = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(creationProgress)
+            addView(views.text(R.string.skills_identity_body, 12f, R.color.sense_secondary)
+                .withTop(views.dp(5)))
+            addView(views.labeledField(R.string.skills_name, name).withTop(views.dp(12)))
+            addView(
+                views.labeledField(R.string.skills_description, description).withTop(views.dp(10)),
+            )
+            addView(views.text(R.string.skills_id_hint, 11f, R.color.sense_secondary)
+                .withTop(views.dp(12)))
+            addView(views.labeledField(R.string.skills_id, id).withTop(views.dp(5)))
+        }
         root.addView(
-            views.labeledField(R.string.skills_description, description).withTop(views.dp(10)),
+            views.card(R.string.skills_identity_title, identityBody).withTop(views.dp(12)),
         )
-        root.addView(views.labeledField(R.string.skills_content, content).withTop(views.dp(10)))
+
+        val documentBody = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(views.text(R.string.skills_document_body, 12f, R.color.sense_secondary))
+            addView(views.labeledField(R.string.skills_content, content).withTop(views.dp(12)))
+            addView(
+                views.labeledField(R.string.skills_base_intent, intent).withTop(views.dp(10)),
+            )
+        }
         root.addView(
-            views.labeledField(R.string.skills_base_intent, intent).withTop(views.dp(10)),
+            views.card(R.string.skills_document_title, documentBody).withTop(views.dp(12)),
         )
-        root.addView(
-            views.text(R.string.skills_binding_hint, 12f, R.color.sense_secondary)
-                .withTop(views.dp(14)),
-        )
-        root.addView(views.labeledField(R.string.skills_key, key).withTop(views.dp(8)))
-        root.addView(
-            views.labeledField(R.string.skills_direction, direction).withTop(views.dp(10)),
-        )
+
+        val bindingPicker = SkillKeyboardBindingPicker(activity, views)
         val slotOccupancy =
             views.text(R.string.skills_slot_unbound, 12f, R.color.sense_secondary).apply {
                 accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
             }
-        root.addView(slotOccupancy.withTop(views.dp(10)))
+        val bindingBody = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(views.text(R.string.skills_binding_hint, 12f, R.color.sense_secondary))
+            addView(bindingPicker.withTop(views.dp(12)))
+            addView(slotOccupancy.withTop(views.dp(10)))
+        }
+        root.addView(
+            views.card(R.string.skills_binding_step_title, bindingBody).withTop(views.dp(12)),
+        )
 
         val saveButton = views.primaryButton(R.string.skills_save, actions.onSave)
-        root.addView(saveButton.withTop(views.dp(14)))
         val bindButton = views.secondaryButton(R.string.skills_bind, actions.onBind)
-        root.addView(bindButton.withTop(views.dp(8)))
         val unbindSlotButton =
             views.secondaryButton(R.string.skills_unbind_slot, actions.onUnbindSlot)
-        root.addView(unbindSlotButton.withTop(views.dp(8)))
         val unbindAllButton =
             views.secondaryButton(R.string.skills_unbind_all, actions.onUnbindAll)
-        root.addView(unbindAllButton.withTop(views.dp(8)))
+        val bindingSummary =
+            views.text(R.string.skills_bindings_none, 12f, R.color.sense_secondary)
+        val actionsBody = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(saveButton)
+            addView(bindButton.withTop(views.dp(8)))
+            addView(unbindSlotButton.withTop(views.dp(8)))
+            addView(unbindAllButton.withTop(views.dp(8)))
+            addView(bindingSummary.withTop(views.dp(12)))
+        }
+        root.addView(
+            views.card(R.string.skills_actions_title, actionsBody).withTop(views.dp(12)),
+        )
 
         val revisionSelector = views.accessibleSpinner(R.string.skills_history_select)
-        root.addView(
-            views.labeledField(R.string.skills_history_select, revisionSelector)
-                .withTop(views.dp(18)),
-        )
         val viewRevisionButton =
             views.secondaryButton(R.string.skills_history_view, actions.onViewRevision)
-        root.addView(viewRevisionButton.withTop(views.dp(8)))
         val restoreRevisionButton =
             views.secondaryButton(R.string.skills_history_restore, actions.onRestoreRevision)
-        root.addView(restoreRevisionButton.withTop(views.dp(8)))
         val historyPreview =
             views.text(
                 R.string.skills_history_preview_empty,
@@ -157,16 +270,46 @@ internal class SkillsSettingsViewFactory(
                 setTextIsSelectable(true)
                 accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
             }
-        root.addView(historyPreview.withTop(views.dp(10)))
+        val historyContent = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = View.GONE
+            addView(
+                views.labeledField(R.string.skills_history_select, revisionSelector)
+                    .withTop(views.dp(10)),
+            )
+            addView(viewRevisionButton.withTop(views.dp(8)))
+            addView(restoreRevisionButton.withTop(views.dp(8)))
+            addView(historyPreview.withTop(views.dp(10)))
+        }
+        val historyToggleButton =
+            views.secondaryButton(R.string.skills_history_show) {}
+        historyToggleButton.setOnClickListener {
+            val show = historyContent.visibility != View.VISIBLE
+            historyContent.visibility = if (show) View.VISIBLE else View.GONE
+            historyToggleButton.setText(
+                if (show) R.string.skills_history_hide else R.string.skills_history_show,
+            )
+        }
+        val historyBody = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(views.text(R.string.skills_history_body, 12f, R.color.sense_secondary))
+            addView(historyToggleButton.withTop(views.dp(8)))
+            addView(historyContent)
+        }
+        val historySection =
+            views.card(R.string.skills_history_title, historyBody).withTop(views.dp(12))
+        root.addView(historySection)
 
-        val bindingSummary =
-            views.text(R.string.skills_bindings_none, 12f, R.color.sense_secondary)
-        root.addView(bindingSummary.withTop(views.dp(12)))
         val status =
             views.text(R.string.skills_loading_body, 12f, R.color.sense_secondary).apply {
                 accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
+                setPadding(views.dp(14), views.dp(12), views.dp(14), views.dp(12))
+                background = views.rounded(
+                    activity.getColor(R.color.sense_surface),
+                    views.dp(14).toFloat(),
+                )
             }
-        root.addView(status.withTop(views.dp(10)))
+        root.addView(status.withTop(views.dp(12)))
 
         val binding = SkillSettingsViewBinding(
             root = root,
@@ -176,8 +319,14 @@ internal class SkillsSettingsViewFactory(
             description = description,
             content = content,
             intent = intent,
-            key = key,
-            direction = direction,
+            bindingPicker = bindingPicker,
+            manageSection = manageSection,
+            templateSection = templateSection,
+            templateButtons = templateButtons,
+            creationProgress = creationProgress,
+            historySection = historySection,
+            historyContent = historyContent,
+            historyToggleButton = historyToggleButton,
             revisionSelector = revisionSelector,
             historyPreview = historyPreview,
             restoreRevisionButton = restoreRevisionButton,
@@ -253,19 +402,8 @@ internal class SkillsSettingsViewFactory(
             bindingSlot = selectedSlot(binding),
         )
 
-    fun selectedSlot(binding: SkillSettingsViewBinding): AgentSkillSlot? {
-        val keyCode = SkillKeyOptions.all
-            .getOrNull(binding.key.selectedItemPosition)
-            ?.keyCode
-            ?: return null
-        val direction = AgentSkillDirection.entries[
-            binding.direction.selectedItemPosition.coerceIn(
-                0,
-                AgentSkillDirection.entries.lastIndex,
-            )
-        ]
-        return AgentSkillSlot(keyCode, direction)
-    }
+    fun selectedSlot(binding: SkillSettingsViewBinding): AgentSkillSlot? =
+        binding.bindingPicker.selectedSlot()
 
     fun renderCatalogSelector(
         binding: SkillSettingsViewBinding,
@@ -287,24 +425,34 @@ internal class SkillsSettingsViewFactory(
             val index = catalog.definitions.indexOfFirst { it.id == selectedId }
             if (index >= 0) binding.selector.setSelection(index)
         }
+        binding.bindingPicker.renderCatalog(catalog, selectedSkillId)
     }
 
     fun renderDraftFields(
         binding: SkillSettingsViewBinding,
         record: SkillEditorDraftRecord,
     ) {
+        binding.creating = record.creating
         binding.id.setText(record.draft.id)
         binding.id.isEnabled = record.creating
         binding.name.setText(record.draft.name)
         binding.description.setText(record.draft.description)
         binding.content.setText(record.draft.content)
         binding.intent.setSelection(intentIndex(record.draft.baseIntent))
-        binding.key.setSelection(
-            SkillKeyOptions.indexOf(record.bindingSelection.slot?.keyCode),
-        )
-        binding.direction.setSelection(
-            record.bindingSelection.slot?.direction?.ordinal ?: 0,
-        )
+        binding.bindingPicker.setSelection(record.bindingSelection.slot)
+        binding.manageSection.visibility = if (record.creating) View.GONE else View.VISIBLE
+        binding.templateSection.visibility = if (record.creating) View.VISIBLE else View.GONE
+        binding.createButton.visibility = if (record.creating) View.GONE else View.VISIBLE
+        binding.creationProgress.visibility = if (record.creating) View.VISIBLE else View.GONE
+        binding.historySection.visibility = if (record.creating) View.GONE else View.VISIBLE
+        if (record.creating) {
+            binding.historyContent.visibility = View.GONE
+            binding.historyToggleButton.setText(R.string.skills_history_show)
+        }
+        binding.bindButton.visibility = if (record.creating) View.GONE else View.VISIBLE
+        binding.unbindSlotButton.visibility = if (record.creating) View.GONE else View.VISIBLE
+        binding.unbindAllButton.visibility = if (record.creating) View.GONE else View.VISIBLE
+        renderCreationProgress(binding)
     }
 
     fun renderSlotOccupancy(
@@ -312,8 +460,15 @@ internal class SkillsSettingsViewFactory(
         occupancy: SkillSlotOccupancy,
     ) {
         val slot = occupancy.slot
+        val reservedCommand = SkillBindingSlotPolicy.reservedCommand(slot)
         binding.slotOccupancy.text = when {
             slot == null -> activity.getString(R.string.skills_slot_not_selected)
+            reservedCommand != null -> activity.getString(
+                R.string.skills_binding_reserved_slot,
+                SkillKeyOptions.labelOf(slot.keyCode),
+                directionLabel(slot.direction),
+                reservedCommand,
+            )
             occupancy.kind == SkillSlotOccupancyKind.EMPTY -> activity.getString(
                 R.string.skills_slot_empty,
                 SkillKeyOptions.labelOf(slot.keyCode),
@@ -334,7 +489,7 @@ internal class SkillsSettingsViewFactory(
         }
         binding.slotOccupancy.setTextColor(
             activity.getColor(
-                if (occupancy.requiresReplacement) {
+                if (occupancy.requiresReplacement || reservedCommand != null) {
                     R.color.sense_accent
                 } else {
                     R.color.sense_secondary
@@ -348,6 +503,7 @@ internal class SkillsSettingsViewFactory(
         catalog: AgentSkillCatalog?,
         skillId: String?,
     ) {
+        binding.bindingPicker.renderCatalog(catalog, skillId)
         if (skillId == null) {
             binding.bindingSummary.setText(R.string.skills_bindings_new)
             return
@@ -376,6 +532,8 @@ internal class SkillsSettingsViewFactory(
                 state.pendingSlotReplacement?.operation == SkillReplacementOperation.CREATE
             ) {
                 R.string.skills_save_confirm
+            } else if (binding.creating) {
+                R.string.skills_create_and_save
             } else {
                 R.string.skills_save
             },
@@ -516,6 +674,31 @@ internal class SkillsSettingsViewFactory(
         binding.restoreRevisionButton.isEnabled = enabled && history.canRestore
     }
 
+    fun renderCreationProgress(binding: SkillSettingsViewBinding) {
+        if (!binding.creating) return
+        val missing = buildList {
+            if (binding.name.text.isBlank()) add(activity.getString(R.string.skills_name))
+            if (binding.description.text.isBlank()) {
+                add(activity.getString(R.string.skills_description))
+            }
+            if (binding.content.text.isBlank()) add(activity.getString(R.string.skills_content))
+            if (binding.id.text.isBlank()) add(activity.getString(R.string.skills_id))
+        }
+        binding.creationProgress.text = if (missing.isEmpty()) {
+            activity.getString(R.string.skills_creation_progress_ready)
+        } else {
+            activity.getString(
+                R.string.skills_creation_progress_missing,
+                missing.joinToString("、"),
+            )
+        }
+        binding.creationProgress.setTextColor(
+            activity.getColor(
+                if (missing.isEmpty()) R.color.sense_success else R.color.sense_accent,
+            ),
+        )
+    }
+
     private fun historyAdapter(labels: List<String>): ArrayAdapter<String> =
         ArrayAdapter(
             activity,
@@ -561,16 +744,18 @@ internal class SkillsSettingsViewFactory(
             ) = Unit
 
             override fun afterTextChanged(s: Editable?) {
-                if (!isApplyingState()) actions.onDraftEdited()
+                if (!isApplyingState()) {
+                    renderCreationProgress(binding)
+                    actions.onDraftEdited()
+                }
             }
         }
         binding.editableFields.forEach { it.addTextChangedListener(documentWatcher) }
         binding.intent.onItemSelectedListener =
             selectionListener(isApplyingState) { actions.onDraftEdited() }
-        binding.key.onItemSelectedListener =
-            selectionListener(isApplyingState) { actions.onSlotSelectionChanged() }
-        binding.direction.onItemSelectedListener =
-            selectionListener(isApplyingState) { actions.onSlotSelectionChanged() }
+        binding.bindingPicker.setOnSelectionChangedListener {
+            if (!isApplyingState()) actions.onSlotSelectionChanged()
+        }
         binding.revisionSelector.onItemSelectedListener =
             selectionListener(isApplyingState, actions.onRevisionSelectionChanged)
     }
@@ -600,5 +785,14 @@ internal class SkillsSettingsViewFactory(
         EditorIntent.TRANSLATE -> "翻译"
         EditorIntent.FORMAT -> "整理格式"
         EditorIntent.NO_CHANGE -> "不修改"
+    }
+
+    private fun templateIcon(template: SkillCreationTemplate): String = when (template.key) {
+        "blank" -> "＋"
+        "polish" -> "✨"
+        "translate" -> "中↔EN"
+        "summary" -> "≡"
+        "reply" -> "↗"
+        else -> "◆"
     }
 }

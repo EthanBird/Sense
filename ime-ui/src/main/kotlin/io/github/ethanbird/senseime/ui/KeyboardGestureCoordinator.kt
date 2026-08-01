@@ -191,7 +191,10 @@ internal class KeyboardGestureCoordinator(
             return
         }
         if (key == null || !effects.canStartSkillGesture(key)) return
-        val options = skillBindings.optionsForKey(key.code) ?: return
+        val options = KeyboardBuiltInGesturePolicy.optionsForKey(
+            keyCode = key.code,
+            configured = skillBindings.optionsForKey(key.code),
+        ) ?: return
         if (options.count <= 0) return
         skillSession.begin(
             pointerId = pointerId,
@@ -797,6 +800,11 @@ internal class KeyboardGestureCoordinator(
 
     private fun commitSkillSelection(direction: KeyboardSkillDirection) {
         val binding = pickerOptions?.binding(direction) ?: return
+        KeyboardBuiltInGesturePolicy.command(binding)?.let { command ->
+            haptics.perform(HapticFeedbackConstants.KEYBOARD_TAP)
+            actions.onKey(command.keyCode)
+            return
+        }
         val action = KeyboardSkillTogglePolicy.resolve(activeKeyboardSkill, binding)
         val requestToken = SKILL_SELECTION_REQUEST_TOKENS.next()
         val expectedActive = when (action) {

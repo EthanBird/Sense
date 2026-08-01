@@ -161,10 +161,7 @@ class SettingsActivity : ComponentActivity() {
                     R.string.settings_skills_title,
                     R.string.settings_skills_summary,
                 )
-                screenContent.addView(
-                    card(R.string.skills_documents_title, skillsScreen.createView())
-                        .withTop(dp(20)),
-                )
+                screenContent.addView(skillsScreen.createView().withTop(dp(20)))
             }
             SettingsSection.VOICE -> {
                 renderDetailHeader(R.string.settings_voice_title, R.string.settings_voice_summary)

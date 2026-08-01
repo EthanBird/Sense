@@ -445,7 +445,7 @@ EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("ai-runtime/build.gradle.kts"):
         "175f9868685698b2f52a572ff42d4e64413b85d47674e038e1cf9219f3ca349c",
     Path("app/build.gradle.kts"):
-        "06f35fcca51acf1b66598066eb345f7aa8b2394a587fac012ea0e5a6c54c205c",
+        "e6da924b0829500c23c9f40f3d920eb696e0d209f6d4d5d7e278e96c614edc94",
     Path("benchmark/build.gradle.kts"):
         "999d9aba8d2813df7e108a9dece00c7f6406b3c5273e59f323d0565e650abf8b",
     Path("brain-api/build.gradle.kts"):

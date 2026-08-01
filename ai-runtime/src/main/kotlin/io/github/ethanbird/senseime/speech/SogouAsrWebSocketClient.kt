@@ -25,6 +25,14 @@ internal interface SogouAsrCallback {
     fun onResult(result: CloudSpeechHttpResult)
 }
 
+internal interface SogouAsrLiveCall : CloudSpeechCall {
+    /** Copies one sample-aligned PCM16 chunk for ordered background encoding. */
+    fun sendPcm(pcm: ByteArray): Boolean
+
+    /** Closes microphone input while leaving the socket alive for the final transcript. */
+    fun finishInput(): Boolean
+}
+
 /** Cancellable SRSS transport. It owns copied PCM and wipes audio buffers on every terminal path. */
 internal class SogouAsrWebSocketClient(
     callbackExecutor: Executor,
@@ -46,7 +54,7 @@ internal class SogouAsrWebSocketClient(
 ) : AutoCloseable {
     private val callbackExecutor = SerialExecutor(callbackExecutor)
     private val nextCallId = AtomicLong(0L)
-    private val calls = ConcurrentHashMap<Long, CallState>()
+    private val calls = ConcurrentHashMap<Long, ResponseCall>()
     private val closed = AtomicBoolean(false)
 
     init {
@@ -92,9 +100,43 @@ internal class SogouAsrWebSocketClient(
         call
     }
 
+    /** Opens SRSS before microphone capture so partial text can arrive while the user is speaking. */
+    fun startStreaming(
+        profile: SpeechProviderProfile,
+        callback: SogouAsrCallback,
+    ): Result<SogouAsrLiveCall> = runCatching {
+        check(!closed.get()) { "Sogou ASR client is closed" }
+        profile.requireValid()
+        require(profile.protocol == SpeechProviderProtocol.SOGOU_SRSS) {
+            "profile is not a Sogou SRSS provider"
+        }
+        require(profile.streamingOptimization) {
+            "profile did not opt into streaming optimization"
+        }
+        val call = LiveCallState(
+            callId = nextCallId.incrementAndGet(),
+            profile = profile,
+            callback = callback,
+        )
+        calls[call.callId] = call
+        try {
+            call.timeoutFuture = timeoutScheduler.schedule(
+                { call.timeout() },
+                totalTimeoutMillis.toLong(),
+                TimeUnit.MILLISECONDS,
+            )
+            call.prepareFuture = worker.submit { prepareAndConnectLive(call) }
+        } catch (error: RuntimeException) {
+            call.abandonBeforeStart()
+            throw error
+        }
+        if (call.isTerminal()) call.prepareFuture?.cancel(true)
+        call
+    }
+
     override fun close() {
         if (!closed.compareAndSet(false, true)) return
-        calls.values.toList().forEach(CallState::cancel)
+        calls.values.toList().forEach(ResponseCall::cancel)
         worker.shutdownNow()
         timeoutScheduler.shutdownNow()
         httpClient.dispatcher.executorService.shutdown()
@@ -139,6 +181,40 @@ internal class SogouAsrWebSocketClient(
         }
     }
 
+    private fun prepareAndConnectLive(call: LiveCallState) {
+        if (call.isTerminal()) return
+        val handshake = try {
+            SogouAsrProtocol.prepareHandshake(
+                languageTag = call.profile.languageTag,
+                interimResults = true,
+            )
+        } catch (_: RuntimeException) {
+            call.fail(
+                CloudSpeechFailureKind.INTERNAL,
+                "搜狗流式语音请求准备失败",
+            )
+            return
+        }
+        if (!call.installHandshake(handshake)) return
+
+        try {
+            val requestBuilder = Request.Builder().url(
+                requireNotNull(call.profile.endpointUrl),
+            )
+            handshake.headers.forEach { (name, value) -> requestBuilder.header(name, value) }
+            val webSocket = httpClient.newWebSocket(
+                requestBuilder.build(),
+                Listener(call),
+            )
+            if (!call.attach(webSocket)) webSocket.cancel()
+        } catch (_: RuntimeException) {
+            call.fail(
+                CloudSpeechFailureKind.INVALID_CONFIGURATION,
+                "搜狗流式语音 WebSocket 地址无效",
+            )
+        }
+    }
+
     private fun streamPreparedAudio(
         call: CallState,
         webSocket: WebSocket,
@@ -168,21 +244,41 @@ internal class SogouAsrWebSocketClient(
         }
     }
 
+    private interface ResponseCall : CloudSpeechCall {
+        val profile: SpeechProviderProfile
+
+        fun isTerminal(): Boolean
+        fun wasTimedOut(): Boolean
+        fun attach(value: WebSocket): Boolean
+        fun onOpened(value: WebSocket): Boolean
+        fun acceptResponseBytes(byteCount: Int): Boolean
+        fun partial(transcript: CloudSpeechTranscript)
+        fun hasPartialResult(): Boolean
+        fun succeed(transcript: CloudSpeechTranscript)
+        fun fail(
+            kind: CloudSpeechFailureKind,
+            message: String,
+            httpStatus: Int? = null,
+        )
+    }
+
     private inner class Listener(
-        private val call: CallState,
+        private val call: ResponseCall,
     ) : WebSocketListener() {
         override fun onOpen(
             webSocket: WebSocket,
             response: Response,
         ) {
-            if (!call.attach(webSocket)) {
+            if (!call.onOpened(webSocket)) {
                 webSocket.cancel()
                 return
             }
-            try {
-                call.streamFuture = worker.submit { streamPreparedAudio(call, webSocket) }
-            } catch (_: RuntimeException) {
-                call.fail(CloudSpeechFailureKind.INTERNAL, "搜狗语音发送任务启动失败")
+            if (call is CallState) {
+                try {
+                    call.streamFuture = worker.submit { streamPreparedAudio(call, webSocket) }
+                } catch (_: RuntimeException) {
+                    call.fail(CloudSpeechFailureKind.INTERNAL, "搜狗语音发送任务启动失败")
+                }
             }
         }
 
@@ -264,10 +360,10 @@ internal class SogouAsrWebSocketClient(
 
     private inner class CallState(
         override val callId: Long,
-        val profile: SpeechProviderProfile,
+        override val profile: SpeechProviderProfile,
         val pcm: ByteArray,
         val callback: SogouAsrCallback,
-    ) : CloudSpeechCall {
+    ) : ResponseCall {
         private val terminal = AtomicBoolean(false)
         private val timedOut = AtomicBoolean(false)
         private val responseBytes = AtomicLong(0L)
@@ -289,11 +385,11 @@ internal class SogouAsrWebSocketClient(
         private var frames: List<ByteArray>? = null
         private var lastPartialText: String? = null
 
-        fun isTerminal(): Boolean = terminal.get()
+        override fun isTerminal(): Boolean = terminal.get()
 
-        fun wasTimedOut(): Boolean = timedOut.get()
+        override fun wasTimedOut(): Boolean = timedOut.get()
 
-        fun attach(value: WebSocket): Boolean {
+        override fun attach(value: WebSocket): Boolean {
             webSocket = value
             if (isTerminal()) {
                 value.cancel()
@@ -301,6 +397,8 @@ internal class SogouAsrWebSocketClient(
             }
             return true
         }
+
+        override fun onOpened(value: WebSocket): Boolean = attach(value)
 
         fun installPrepared(
             value: SogouAsrHandshake,
@@ -323,7 +421,7 @@ internal class SogouAsrWebSocketClient(
             PreparedAudio(currentHandshake, currentFrames)
         }
 
-        fun acceptResponseBytes(byteCount: Int): Boolean {
+        override fun acceptResponseBytes(byteCount: Int): Boolean {
             if (byteCount > CloudSpeechResponseDecoder.MAX_RESPONSE_BYTES) {
                 fail(
                     CloudSpeechFailureKind.RESPONSE_TOO_LARGE,
@@ -342,7 +440,7 @@ internal class SogouAsrWebSocketClient(
             return !isTerminal()
         }
 
-        fun partial(transcript: CloudSpeechTranscript) {
+        override fun partial(transcript: CloudSpeechTranscript) {
             if (isTerminal() || lastPartialText == transcript.text) return
             lastPartialText = transcript.text
             callbackExecutor.execute {
@@ -350,16 +448,16 @@ internal class SogouAsrWebSocketClient(
             }
         }
 
-        fun hasPartialResult(): Boolean = !lastPartialText.isNullOrBlank()
+        override fun hasPartialResult(): Boolean = !lastPartialText.isNullOrBlank()
 
-        fun succeed(transcript: CloudSpeechTranscript) {
+        override fun succeed(transcript: CloudSpeechTranscript) {
             complete(CloudSpeechHttpResult.Success(transcript), gracefulClose = true)
         }
 
-        fun fail(
+        override fun fail(
             kind: CloudSpeechFailureKind,
             message: String,
-            httpStatus: Int? = null,
+            httpStatus: Int?,
         ) {
             complete(
                 CloudSpeechHttpResult.Failure(
@@ -419,6 +517,315 @@ internal class SogouAsrWebSocketClient(
                 frames?.forEach { it.fill(0) }
                 frames = null
                 handshake = null
+            }
+        }
+    }
+
+    private inner class LiveCallState(
+        override val callId: Long,
+        override val profile: SpeechProviderProfile,
+        private val callback: SogouAsrCallback,
+    ) : ResponseCall, SogouAsrLiveCall {
+        private val terminal = AtomicBoolean(false)
+        private val timedOut = AtomicBoolean(false)
+        private val responseBytes = AtomicLong(0L)
+        private val bufferLock = Any()
+        private val encoderLock = Any()
+        private val encoder = SogouOpusStreamEncoder()
+        private val sendExecutor = SerialExecutor(worker)
+        private val pendingPcm = ArrayDeque<ByteArray>()
+
+        @Volatile
+        private var webSocket: WebSocket? = null
+
+        @Volatile
+        var prepareFuture: Future<*>? = null
+
+        @Volatile
+        var timeoutFuture: ScheduledFuture<*>? = null
+
+        private var handshake: SogouAsrHandshake? = null
+        private var opened = false
+        private var configSent = false
+        private var finishRequested = false
+        private var endSent = false
+        private var totalPcmBytes = 0
+        private var lastPartialText: String? = null
+
+        override fun isTerminal(): Boolean = terminal.get()
+
+        override fun wasTimedOut(): Boolean = timedOut.get()
+
+        fun installHandshake(value: SogouAsrHandshake): Boolean = synchronized(bufferLock) {
+            if (isTerminal()) {
+                false
+            } else {
+                handshake = value
+                true
+            }
+        }
+
+        override fun attach(value: WebSocket): Boolean {
+            synchronized(bufferLock) {
+                webSocket = value
+                if (isTerminal()) {
+                    value.cancel()
+                    return false
+                }
+            }
+            return true
+        }
+
+        override fun onOpened(value: WebSocket): Boolean {
+            if (!attach(value)) return false
+            synchronized(bufferLock) {
+                if (isTerminal()) return false
+                opened = true
+            }
+            scheduleDrain()
+            return true
+        }
+
+        override fun sendPcm(pcm: ByteArray): Boolean {
+            require(pcm.isNotEmpty()) { "PCM chunk is empty" }
+            require(pcm.size % Pcm16AudioFormat.BYTES_PER_SAMPLE == 0) {
+                "PCM16 chunk must be sample-aligned"
+            }
+            val maximum = Pcm16AudioFormat.maxPcmBytes(
+                Pcm16AudioFormat.ABSOLUTE_MAX_DURATION_MILLIS,
+            )
+            val copy = pcm.copyOf()
+            val accepted = synchronized(bufferLock) {
+                if (
+                    isTerminal() ||
+                    finishRequested ||
+                    totalPcmBytes.toLong() + copy.size.toLong() > maximum.toLong()
+                ) {
+                    false
+                } else {
+                    pendingPcm.addLast(copy)
+                    totalPcmBytes += copy.size
+                    true
+                }
+            }
+            if (!accepted) {
+                copy.fill(0)
+                return false
+            }
+            scheduleDrain()
+            return true
+        }
+
+        override fun finishInput(): Boolean {
+            val accepted = synchronized(bufferLock) {
+                if (isTerminal() || finishRequested || totalPcmBytes <= 0) {
+                    false
+                } else {
+                    finishRequested = true
+                    true
+                }
+            }
+            if (accepted) scheduleDrain()
+            return accepted
+        }
+
+        private fun scheduleDrain() {
+            if (isTerminal()) return
+            try {
+                sendExecutor.execute(Runnable(::drain))
+            } catch (_: RuntimeException) {
+                fail(CloudSpeechFailureKind.INTERNAL, "搜狗流式语音发送任务启动失败")
+            }
+        }
+
+        private fun drain() {
+            while (!isTerminal()) {
+                val socket = synchronized(bufferLock) {
+                    if (!opened) return
+                    webSocket ?: return
+                }
+                val config = synchronized(bufferLock) {
+                    if (!configSent) {
+                        configSent = true
+                        handshake?.encryptedConfigBase64
+                    } else {
+                        null
+                    }
+                }
+                if (config != null) {
+                    if (!socket.send(config)) {
+                        fail(CloudSpeechFailureKind.NETWORK, "搜狗流式语音配置发送失败")
+                        return
+                    }
+                    continue
+                }
+
+                val chunk = synchronized(bufferLock) {
+                    if (pendingPcm.isEmpty()) null else pendingPcm.removeFirst()
+                }
+                if (chunk != null) {
+                    val sent = try {
+                        encodeAndSend(socket, chunk)
+                    } catch (_: RuntimeException) {
+                        fail(CloudSpeechFailureKind.INTERNAL, "搜狗流式语音编码失败")
+                        return
+                    } finally {
+                        chunk.fill(0)
+                    }
+                    if (!sent) {
+                        fail(CloudSpeechFailureKind.NETWORK, "搜狗流式语音音频发送失败")
+                        return
+                    }
+                    continue
+                }
+
+                val shouldFinish = synchronized(bufferLock) {
+                    if (finishRequested && !endSent) {
+                        endSent = true
+                        true
+                    } else {
+                        false
+                    }
+                }
+                if (!shouldFinish) return
+                val flushed = try {
+                    finishEncoderAndSend(socket)
+                } catch (_: RuntimeException) {
+                    fail(CloudSpeechFailureKind.INTERNAL, "搜狗流式语音收尾编码失败")
+                    return
+                }
+                if (!flushed || !socket.send(END_OF_AUDIO_MESSAGE)) {
+                    fail(CloudSpeechFailureKind.NETWORK, "搜狗流式语音结束包发送失败")
+                }
+                return
+            }
+        }
+
+        private fun encodeAndSend(
+            socket: WebSocket,
+            pcm: ByteArray,
+        ): Boolean = synchronized(encoderLock) {
+            var sent = true
+            encoder.append(pcm) { packet ->
+                try {
+                    if (sent) sent = socket.send(packet.toByteString())
+                } finally {
+                    packet.fill(0)
+                }
+            }
+            sent
+        }
+
+        private fun finishEncoderAndSend(socket: WebSocket): Boolean =
+            synchronized(encoderLock) {
+                var sent = true
+                encoder.finish { packet ->
+                    try {
+                        if (sent) sent = socket.send(packet.toByteString())
+                    } finally {
+                        packet.fill(0)
+                    }
+                }
+                sent
+            }
+
+        override fun acceptResponseBytes(byteCount: Int): Boolean {
+            if (byteCount > CloudSpeechResponseDecoder.MAX_RESPONSE_BYTES) {
+                fail(
+                    CloudSpeechFailureKind.RESPONSE_TOO_LARGE,
+                    "搜狗流式语音单条响应超过大小限制",
+                )
+                return false
+            }
+            val total = responseBytes.addAndGet(byteCount.toLong())
+            if (total > MAX_TOTAL_RESPONSE_BYTES) {
+                fail(
+                    CloudSpeechFailureKind.RESPONSE_TOO_LARGE,
+                    "搜狗流式语音响应总量超过大小限制",
+                )
+                return false
+            }
+            return !isTerminal()
+        }
+
+        override fun partial(transcript: CloudSpeechTranscript) {
+            if (isTerminal() || lastPartialText == transcript.text) return
+            lastPartialText = transcript.text
+            callbackExecutor.execute {
+                runCatching { callback.onPartialResult(transcript) }
+            }
+        }
+
+        override fun hasPartialResult(): Boolean = !lastPartialText.isNullOrBlank()
+
+        override fun succeed(transcript: CloudSpeechTranscript) {
+            complete(CloudSpeechHttpResult.Success(transcript), gracefulClose = true)
+        }
+
+        override fun fail(
+            kind: CloudSpeechFailureKind,
+            message: String,
+            httpStatus: Int?,
+        ) {
+            complete(
+                CloudSpeechHttpResult.Failure(
+                    CloudSpeechFailure(kind, httpStatus, message),
+                ),
+                gracefulClose = false,
+            )
+        }
+
+        override fun cancel() {
+            complete(
+                CloudSpeechHttpResult.Failure(
+                    CloudSpeechFailure(
+                        CloudSpeechFailureKind.CANCELLED,
+                        message = "流式语音转写已取消",
+                    ),
+                ),
+                gracefulClose = false,
+            )
+        }
+
+        fun timeout() {
+            timedOut.set(true)
+            fail(CloudSpeechFailureKind.TIMEOUT, "搜狗流式语音请求超时")
+        }
+
+        fun abandonBeforeStart() {
+            if (!terminal.compareAndSet(false, true)) return
+            calls.remove(callId, this)
+            timeoutFuture?.cancel(false)
+            eraseBuffers()
+        }
+
+        private fun complete(
+            result: CloudSpeechHttpResult,
+            gracefulClose: Boolean,
+        ) {
+            if (!terminal.compareAndSet(false, true)) return
+            timeoutFuture?.cancel(false)
+            calls.remove(callId, this)
+            if (gracefulClose) {
+                webSocket?.close(NORMAL_CLOSE_CODE, "done")
+            } else {
+                webSocket?.cancel()
+            }
+            prepareFuture?.cancel(true)
+            eraseBuffers()
+            callbackExecutor.execute {
+                runCatching { callback.onResult(result) }
+            }
+        }
+
+        private fun eraseBuffers() {
+            synchronized(bufferLock) {
+                pendingPcm.forEach { it.fill(0) }
+                pendingPcm.clear()
+                handshake = null
+            }
+            synchronized(encoderLock) {
+                encoder.close()
             }
         }
     }

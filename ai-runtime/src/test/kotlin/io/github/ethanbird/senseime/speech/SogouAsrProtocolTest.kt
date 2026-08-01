@@ -1,6 +1,7 @@
 package io.github.ethanbird.senseime.speech
 
 import java.util.Base64
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -74,6 +75,34 @@ class SogouAsrProtocolTest {
                 ((packet[0].toInt() and 0xff) shl 8) or (packet[1].toInt() and 0xff)
             assertEquals(packet.size - 2, declaredLength)
             assertTrue(declaredLength > 0)
+        }
+    }
+
+    @Test
+    fun `incremental Opus encoding is identical across arbitrary microphone chunks`() {
+        val pcm = ByteArray(SogouOpusPacketEncoder.FRAME_PCM_BYTES * 3 + 218)
+        pcm.indices.forEach { index -> pcm[index] = (index * 17 + 5).toByte() }
+        val expected = SogouOpusPacketEncoder.encode(pcm)
+        val actual = mutableListOf<ByteArray>()
+        val stream = SogouOpusStreamEncoder()
+
+        try {
+            stream.append(pcm, offset = 0, byteCount = 514, emitPacket = actual::add)
+            stream.append(pcm, offset = 514, byteCount = 1_026, emitPacket = actual::add)
+            stream.append(
+                pcm,
+                offset = 1_540,
+                byteCount = pcm.size - 1_540,
+                emitPacket = actual::add,
+            )
+            stream.finish(actual::add)
+        } finally {
+            stream.close()
+        }
+
+        assertEquals(expected.size, actual.size)
+        expected.indices.forEach { index ->
+            assertArrayEquals(expected[index], actual[index])
         }
     }
 

@@ -15,7 +15,21 @@ enum class PcmRecordingStopReason {
 }
 
 interface ShortPcm16RecorderListener {
+    /**
+     * Opt-in hook for live transports. PCM is delivered on the capture thread, is sample-aligned,
+     * and remains valid only for the duration of [onPcmChunk].
+     */
+    val wantsPcmChunks: Boolean
+        get() = false
+
     fun onRecordingStarted(sessionId: Long)
+
+    fun onPcmChunk(
+        sessionId: Long,
+        pcm: ByteArray,
+    ) {
+        pcm.fill(0)
+    }
 
     fun onRmsChanged(
         sessionId: Long,
@@ -231,6 +245,12 @@ class ShortPcm16AudioRecorder(
                             }
                             nextRmsNanos = now + RMS_INTERVAL_NANOS
                         }
+                        if (session.listener.wantsPcmChunks) {
+                            dispatchPcmIfCurrent(
+                                session,
+                                session.pcm.copyOfRange(written, written + read),
+                            )
+                        }
                         written += read
                     }
                     read == 0 -> Thread.yield()
@@ -342,6 +362,19 @@ class ShortPcm16AudioRecorder(
 
     private fun dispatchRaw(callback: () -> Unit) {
         callbackExecutor.execute(callback)
+    }
+
+    private fun dispatchPcmIfCurrent(
+        session: CaptureSession,
+        pcm: ByteArray,
+    ) {
+        try {
+            if (isCurrent(session)) {
+                session.listener.onPcmChunk(session.sessionId, pcm)
+            }
+        } finally {
+            pcm.fill(0)
+        }
     }
 
     private fun safelyStop(recorder: AudioRecord?) {

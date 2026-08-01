@@ -191,69 +191,143 @@ internal object SogouOpusPacketEncoder {
 
     fun encode(pcm: ByteArray): List<ByteArray> {
         require(pcm.isNotEmpty()) { "PCM audio is empty" }
-        require(pcm.size % Pcm16AudioFormat.BYTES_PER_SAMPLE == 0) {
-            "PCM16 audio must be sample-aligned"
-        }
-        require(
-            pcm.size <= Pcm16AudioFormat.maxPcmBytes(
-                Pcm16AudioFormat.ABSOLUTE_MAX_DURATION_MILLIS,
-            ),
-        ) { "PCM audio exceeds the recording ceiling" }
-
-        val encoder = OpusEncoder(
-            Pcm16AudioFormat.SAMPLE_RATE_HZ,
-            Pcm16AudioFormat.CHANNEL_COUNT,
-            OpusApplication.OPUS_APPLICATION_VOIP,
-        )
-        val samples = ShortArray(FRAME_SAMPLES)
-        val encoded = ByteArray(MAX_OPUS_PACKET_BYTES)
         val packets = ArrayList<ByteArray>((pcm.size + FRAME_PCM_BYTES - 1) / FRAME_PCM_BYTES)
+        val stream = SogouOpusStreamEncoder()
         try {
-            var pcmOffset = 0
-            while (pcmOffset < pcm.size) {
-                samples.fill(0)
-                val byteCount = minOf(FRAME_PCM_BYTES, pcm.size - pcmOffset)
-                var source = pcmOffset
-                var sample = 0
-                while (source < pcmOffset + byteCount) {
-                    val low = pcm[source].toInt() and 0xff
-                    val high = pcm[source + 1].toInt()
-                    samples[sample++] = ((high shl 8) or low).toShort()
-                    source += Pcm16AudioFormat.BYTES_PER_SAMPLE
-                }
-                val encodedBytes = encoder.encode(
-                    samples,
-                    0,
-                    FRAME_SAMPLES,
-                    encoded,
-                    0,
-                    encoded.size,
-                )
-                require(encodedBytes in 1..MAX_UNSIGNED_SHORT) {
-                    "Opus encoder produced an invalid packet length"
-                }
-                val packet = ByteArray(LENGTH_PREFIX_BYTES + encodedBytes)
-                packet[0] = (encodedBytes ushr 8).toByte()
-                packet[1] = encodedBytes.toByte()
-                encoded.copyInto(
-                    packet,
-                    destinationOffset = LENGTH_PREFIX_BYTES,
-                    endIndex = encodedBytes,
-                )
-                packets += packet
-                pcmOffset += byteCount
-            }
+            stream.append(pcm, emitPacket = packets::add)
+            stream.finish(emitPacket = packets::add)
             return packets
         } catch (error: Exception) {
             packets.forEach { it.fill(0) }
             throw error
         } finally {
-            samples.fill(0)
-            encoded.fill(0)
+            stream.close()
+        }
+    }
+}
+
+/** Stateful 20 ms Opus encoder used by the optional live microphone path. */
+internal class SogouOpusStreamEncoder : AutoCloseable {
+    private val encoder = OpusEncoder(
+        Pcm16AudioFormat.SAMPLE_RATE_HZ,
+        Pcm16AudioFormat.CHANNEL_COUNT,
+        OpusApplication.OPUS_APPLICATION_VOIP,
+    )
+    private val pendingPcm = ByteArray(SogouOpusPacketEncoder.FRAME_PCM_BYTES)
+    private val samples = ShortArray(SogouOpusPacketEncoder.FRAME_SAMPLES)
+    private val encoded = ByteArray(MAX_OPUS_PACKET_BYTES)
+    private var pendingByteCount = 0
+    private var totalPcmBytes = 0
+    private var finished = false
+
+    /** Emits complete length-prefixed packets. The callback owns and may wipe each packet. */
+    fun append(
+        pcm: ByteArray,
+        offset: Int = 0,
+        byteCount: Int = pcm.size - offset,
+        emitPacket: (ByteArray) -> Unit,
+    ): Int {
+        check(!finished) { "Opus stream is already finished" }
+        require(offset >= 0 && byteCount >= 0 && offset + byteCount <= pcm.size) {
+            "PCM range is outside the source buffer"
+        }
+        require(byteCount % Pcm16AudioFormat.BYTES_PER_SAMPLE == 0) {
+            "PCM16 audio must be sample-aligned"
+        }
+        val maximum = Pcm16AudioFormat.maxPcmBytes(
+            Pcm16AudioFormat.ABSOLUTE_MAX_DURATION_MILLIS,
+        )
+        require(totalPcmBytes.toLong() + byteCount.toLong() <= maximum.toLong()) {
+            "PCM audio exceeds the recording ceiling"
+        }
+
+        var sourceOffset = offset
+        var remaining = byteCount
+        var emitted = 0
+        while (remaining > 0) {
+            val copied = minOf(remaining, pendingPcm.size - pendingByteCount)
+            pcm.copyInto(
+                pendingPcm,
+                destinationOffset = pendingByteCount,
+                startIndex = sourceOffset,
+                endIndex = sourceOffset + copied,
+            )
+            pendingByteCount += copied
+            sourceOffset += copied
+            remaining -= copied
+            totalPcmBytes += copied
+            if (pendingByteCount == pendingPcm.size) {
+                emitPacket(encodePendingFrame())
+                emitted++
+                pendingPcm.fill(0)
+                pendingByteCount = 0
+            }
+        }
+        return emitted
+    }
+
+    fun finish(emitPacket: (ByteArray) -> Unit): Int {
+        check(!finished) { "Opus stream is already finished" }
+        require(totalPcmBytes > 0) { "PCM audio is empty" }
+        var emitted = 0
+        try {
+            if (pendingByteCount > 0) {
+                pendingPcm.fill(0, pendingByteCount, pendingPcm.size)
+                emitPacket(encodePendingFrame())
+                emitted = 1
+            }
+            return emitted
+        } finally {
+            finished = true
+            eraseWorkingBuffers()
         }
     }
 
-    private const val LENGTH_PREFIX_BYTES = 2
-    private const val MAX_OPUS_PACKET_BYTES = 1_275
-    private const val MAX_UNSIGNED_SHORT = 65_535
+    override fun close() {
+        finished = true
+        eraseWorkingBuffers()
+    }
+
+    private fun encodePendingFrame(): ByteArray {
+        var source = 0
+        for (sampleIndex in samples.indices) {
+            val low = pendingPcm[source].toInt() and 0xff
+            val high = pendingPcm[source + 1].toInt()
+            samples[sampleIndex] = ((high shl 8) or low).toShort()
+            source += Pcm16AudioFormat.BYTES_PER_SAMPLE
+        }
+        val encodedBytes = encoder.encode(
+            samples,
+            0,
+            SogouOpusPacketEncoder.FRAME_SAMPLES,
+            encoded,
+            0,
+            encoded.size,
+        )
+        require(encodedBytes in 1..MAX_UNSIGNED_SHORT) {
+            "Opus encoder produced an invalid packet length"
+        }
+        return ByteArray(LENGTH_PREFIX_BYTES + encodedBytes).also { packet ->
+            packet[0] = (encodedBytes ushr 8).toByte()
+            packet[1] = encodedBytes.toByte()
+            encoded.copyInto(
+                packet,
+                destinationOffset = LENGTH_PREFIX_BYTES,
+                endIndex = encodedBytes,
+            )
+        }
+    }
+
+    private fun eraseWorkingBuffers() {
+        pendingPcm.fill(0)
+        samples.fill(0)
+        encoded.fill(0)
+        pendingByteCount = 0
+    }
+
+    private companion object {
+        const val LENGTH_PREFIX_BYTES = 2
+        const val MAX_OPUS_PACKET_BYTES = 1_275
+        const val MAX_UNSIGNED_SHORT = 65_535
+    }
 }

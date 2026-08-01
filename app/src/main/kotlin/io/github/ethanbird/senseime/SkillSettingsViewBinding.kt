@@ -21,8 +21,14 @@ internal class SkillSettingsViewBinding(
     val description: EditText,
     val content: EditText,
     val intent: Spinner,
-    val key: Spinner,
-    val direction: Spinner,
+    val bindingPicker: SkillKeyboardBindingPicker,
+    val manageSection: LinearLayout,
+    val templateSection: LinearLayout,
+    val templateButtons: List<View>,
+    val creationProgress: TextView,
+    val historySection: LinearLayout,
+    val historyContent: LinearLayout,
+    val historyToggleButton: Button,
     val revisionSelector: Spinner,
     val historyPreview: TextView,
     val restoreRevisionButton: Button,
@@ -37,6 +43,8 @@ internal class SkillSettingsViewBinding(
     val bindingSummary: TextView,
     val status: TextView,
 ) {
+    var creating: Boolean = false
+
     val editableFields: List<EditText> = listOf(id, name, description, content)
 
     val editorControls: List<View> = listOf(
@@ -45,11 +53,12 @@ internal class SkillSettingsViewBinding(
         description,
         content,
         intent,
-        key,
-        direction,
+        bindingPicker,
+        *templateButtons.toTypedArray(),
         revisionSelector,
         createButton,
         discardButton,
+        historyToggleButton,
         viewRevisionButton,
         unbindSlotButton,
         unbindAllButton,

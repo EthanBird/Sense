@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.TextView
 import io.github.ethanbird.senseime.brain.api.AgentSkillCatalog
 import io.github.ethanbird.senseime.brain.api.AgentSkillDefinition
+import io.github.ethanbird.senseime.brain.api.AgentSkillSlot
 
 /**
  * Owns the complete Skills settings vertical slice: editor state, persistence, mutation ordering,
@@ -100,6 +101,7 @@ internal class SkillsSettingsScreen(
             actions = SkillsSettingsViewActions(
                 onSkillSelected = ::selectAgentSkill,
                 onCreate = ::startCreatingAgentSkill,
+                onTemplateSelected = ::applySkillTemplate,
                 onDiscard = ::discardCurrentAgentSkillDraft,
                 onSave = ::saveAgentSkill,
                 onBind = ::bindSelectedAgentSkill,
@@ -309,6 +311,31 @@ internal class SkillsSettingsScreen(
         persistAgentSkillDraftSession()
     }
 
+    private fun applySkillTemplate(template: SkillCreationTemplate) {
+        agentSkillDraftRecoveryWriteAuthorized = true
+        mutationController.clearConfirmations()
+        if (agentSkillDraftSession.current()?.creating != true) {
+            captureAgentSkillDraftFromViews()
+            agentSkillDraftSession = agentSkillDraftSession.beginCreate(emptyAgentSkillDraft())
+        }
+        val current = requireNotNull(agentSkillDraftSession.current())
+        val draft = template.instantiate(
+            occupiedIds = agentSkillCatalog?.definitions.orEmpty().mapTo(linkedSetOf()) { it.id },
+            bindingSlot = current.bindingSelection.slot,
+        )
+        agentSkillDraftSession = agentSkillDraftSession.capture(
+            draft = draft,
+            bindingSelectionExplicit = current.bindingSelection.explicitlySelected,
+        )
+        renderAgentSkillDraft(requireNotNull(agentSkillDraftSession.current()))
+        agentSkillStatus.text = activity.getString(
+            R.string.skills_template_applied,
+            template.label,
+        )
+        agentSkillStatus.setTextColor(activity.getColor(R.color.sense_success))
+        persistAgentSkillDraftSession()
+    }
+
     private fun renderAgentSkillDraft(record: SkillEditorDraftRecord) {
         creatingAgentSkill = record.creating
         applyingAgentSkillUi = true
@@ -347,19 +374,30 @@ internal class SkillsSettingsScreen(
     private fun saveAgentSkill() {
         agentSkillDraftRecoveryWriteAuthorized = true
         captureAgentSkillDraftFromViews()
+        val record = agentSkillDraftSession.current()
+        if (
+            record?.creating == true &&
+            !SkillBindingSlotPolicy.isSelectable(record.draft.bindingSlot)
+        ) {
+            return showReservedAgentSkillSlot(record.draft.bindingSlot)
+        }
         mutationController.save(
             catalog = agentSkillCatalog,
-            record = agentSkillDraftSession.current(),
+            record = record,
         )
     }
 
     private fun bindSelectedAgentSkill() {
         agentSkillDraftRecoveryWriteAuthorized = true
         captureAgentSkillDraftFromViews()
+        val slot = viewFactory.selectedSlot(requireSkillBinding())
+        if (!SkillBindingSlotPolicy.isSelectable(slot)) {
+            return showReservedAgentSkillSlot(slot)
+        }
         mutationController.bind(
             catalog = agentSkillCatalog,
             skill = selectedAgentSkill(),
-            slot = viewFactory.selectedSlot(requireSkillBinding()),
+            slot = slot,
         )
     }
 
@@ -387,14 +425,22 @@ internal class SkillsSettingsScreen(
         return agentSkillCatalog?.definition(sourceId)
     }
 
-    private fun emptyAgentSkillDraft(): SkillSettingsDraft = SkillSettingsDraft(
-        id = "",
-        name = "",
-        description = "",
-        content = "",
-        baseIntent = viewFactory.intents.first(),
-        bindingSlot = null,
-    )
+    private fun emptyAgentSkillDraft(): SkillSettingsDraft =
+        SkillCreationTemplates.BLANK.instantiate(
+            occupiedIds = agentSkillCatalog?.definitions.orEmpty().mapTo(linkedSetOf()) { it.id },
+        )
+
+    private fun showReservedAgentSkillSlot(slot: AgentSkillSlot?) {
+        val command = SkillBindingSlotPolicy.reservedCommand(slot) ?: return
+        showAgentSkillError(
+            activity.getString(
+                R.string.skills_reserved_slot_error,
+                SkillKeyOptions.labelOf(requireNotNull(slot).keyCode),
+                viewFactory.directionLabel(slot.direction),
+                command,
+            ),
+        )
+    }
 
     private fun captureAgentSkillDraftFromViews(
         bindingSelectionExplicit: Boolean = false,

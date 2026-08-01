@@ -59,6 +59,152 @@ internal object SkillKeyOptions {
         all.firstOrNull { it.keyCode == keyCode }?.label ?: "Key $keyCode"
 }
 
+internal data class SkillCreationTemplate(
+    val key: String,
+    val label: String,
+    val suggestedId: String,
+    val name: String,
+    val description: String,
+    val content: String,
+    val baseIntent: EditorIntent,
+) {
+    fun instantiate(
+        occupiedIds: Set<String>,
+        bindingSlot: AgentSkillSlot? = null,
+    ): SkillSettingsDraft = SkillSettingsDraft(
+        id = SkillCreationTemplates.uniqueId(suggestedId, occupiedIds),
+        name = name,
+        description = description,
+        content = content,
+        baseIntent = baseIntent,
+        bindingSlot = bindingSlot,
+    )
+}
+
+/** One-tap starting points that turn the editor from a blank form into a guided workflow. */
+internal object SkillCreationTemplates {
+    val BLANK = SkillCreationTemplate(
+        key = "blank",
+        label = "自由创建",
+        suggestedId = "my_skill",
+        name = "",
+        description = "",
+        content = """# 目标
+说明这个 Skill 要帮助用户完成什么。
+
+# 工作方式
+1. 先理解输入与上下文
+2. 按要求处理
+3. 输出可直接使用的结果
+
+# 约束
+- 保留用户原意
+- 信息不足时明确指出需要补充的内容
+
+# 输出格式
+说明最终结果的语言、结构和长度。""",
+        baseIntent = EditorIntent.SMART_EDIT,
+    )
+
+    val all: List<SkillCreationTemplate> = listOf(
+        BLANK,
+        SkillCreationTemplate(
+            key = "polish",
+            label = "自然润色",
+            suggestedId = "polish",
+            name = "自然润色",
+            description = "让表达更自然、清晰，同时保持原意和语气",
+            content = """# 自然润色
+重写用户选中的文字，使其更自然、清晰、连贯。
+
+## 规则
+- 保持事实、立场、专有名词与原始意图
+- 删除重复和生硬表达，不凭空增加信息
+- 默认直接输出润色后的正文，不附解释
+- 若原文有明确格式，则保持格式""",
+            baseIntent = EditorIntent.REWRITE,
+        ),
+        SkillCreationTemplate(
+            key = "translate",
+            label = "中英翻译",
+            suggestedId = "translate_zh_en",
+            name = "中英翻译",
+            description = "自动判断中英文并翻译成另一种语言",
+            content = """# 中英翻译
+判断输入语言：中文翻译为自然英文，英文翻译为自然中文。
+
+## 规则
+- 保留人名、术语、数字、链接和段落结构
+- 优先传达语义与语气，不做逐字硬译
+- 默认只输出译文
+- 有歧义时采用最符合上下文的解释""",
+            baseIntent = EditorIntent.TRANSLATE,
+        ),
+        SkillCreationTemplate(
+            key = "summary",
+            label = "要点总结",
+            suggestedId = "key_points",
+            name = "要点总结",
+            description = "把长文本整理成简洁、可执行的重点清单",
+            content = """# 要点总结
+提取输入中的核心结论、证据、决定和待办事项。
+
+## 输出
+- 一句话结论
+- 3–7 条关键要点
+- 若存在行动项，列出负责人、事项与时间
+
+不重复原文，不补充输入中不存在的事实。""",
+            baseIntent = EditorIntent.FORMAT,
+        ),
+        SkillCreationTemplate(
+            key = "reply",
+            label = "专业回复",
+            suggestedId = "professional_reply",
+            name = "专业回复",
+            description = "根据上下文生成礼貌、明确、可直接发送的回复",
+            content = """# 专业回复
+根据当前上下文起草一段可以直接发送的回复。
+
+## 规则
+- 先回应对方最重要的问题
+- 语气礼貌、坚定、简洁
+- 需要行动时给出清晰下一步
+- 不编造承诺、时间或事实
+- 默认只输出回复正文""",
+            baseIntent = EditorIntent.ANSWER,
+        ),
+    )
+
+    fun uniqueId(base: String, occupiedIds: Set<String>): String {
+        val normalized = base.lowercase().replace(Regex("[^a-z0-9._-]+"), "_")
+            .trim('_', '.', '-')
+            .ifEmpty { "skill" }
+            .take(AgentSkillPolicy.MAX_ID_CHARS)
+        if (normalized !in occupiedIds) return normalized
+        var suffix = 2
+        while (true) {
+            val suffixText = "_$suffix"
+            val candidate = normalized
+                .take(AgentSkillPolicy.MAX_ID_CHARS - suffixText.length) + suffixText
+            if (candidate !in occupiedIds) return candidate
+            suffix++
+        }
+    }
+}
+
+/** Z/Y downward holds are product editing gestures and are not assignable Skill slots. */
+internal object SkillBindingSlotPolicy {
+    fun reservedCommand(slot: AgentSkillSlot?): String? = when {
+        slot == null || slot.direction != AgentSkillDirection.DOWN -> null
+        slot.keyCode == 'z'.code || slot.keyCode == 'Z'.code -> "撤销"
+        slot.keyCode == 'y'.code || slot.keyCode == 'Y'.code -> "重做"
+        else -> null
+    }
+
+    fun isSelectable(slot: AgentSkillSlot?): Boolean = AgentSkillPolicy.isAssignableSlot(slot)
+}
+
 internal data class SkillSettingsDraft(
     val id: String,
     val name: String,
@@ -88,6 +234,9 @@ internal data class SkillSettingsDraft(
             }
             require(baseIntent != EditorIntent.NO_CHANGE) {
                 "NO_CHANGE 不能作为 Skill 的基础意图"
+            }
+            require(SkillBindingSlotPolicy.isSelectable(bindingSlot)) {
+                "Z/Y 下滑已保留给撤销与重做"
             }
         }.exceptionOrNull()?.message
     }

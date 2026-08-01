@@ -29,6 +29,30 @@ class SwipeCharacterMapTest {
             "?",
             SwipeCharacterMap.forKey('l'.code, SwipeCharacterMode.ENGLISH),
         )
+        assertEquals(
+            "/",
+            SwipeCharacterMap.forKey('m'.code, SwipeCharacterMode.ENGLISH),
+        )
+        assertEquals(
+            ":",
+            SwipeCharacterMap.forKey('b'.code, SwipeCharacterMode.ENGLISH),
+        )
+        assertEquals(
+            ";",
+            SwipeCharacterMap.forKey('n'.code, SwipeCharacterMode.ENGLISH),
+        )
         assertNull(SwipeCharacterMap.forKey(KeyCodes.DELETE))
+    }
+
+    @Test
+    fun englishSwipeCharactersAreAlwaysAscii() {
+        ('a'..'z').forEach { letter ->
+            val value = checkNotNull(
+                SwipeCharacterMap.forKey(letter.code, SwipeCharacterMode.ENGLISH),
+            )
+            check(value.all { it.code in 0x20..0x7e }) {
+                "English mapping for $letter contains non-ASCII punctuation: $value"
+            }
+        }
     }
 }

@@ -269,6 +269,45 @@ class AgentSkillsTest {
     }
 
     @Test
+    fun `new bindings cannot occupy undo and redo gestures while legacy slots remain removable`() {
+        val undo = slot('z', AgentSkillDirection.DOWN)
+        val redo = slot('y', AgentSkillDirection.DOWN)
+        assertFalse(AgentSkillPolicy.isAssignableSlot(undo))
+        assertFalse(AgentSkillPolicy.isAssignableSlot(redo))
+
+        val legacy = AgentSkillCatalog(
+            generation = 2L,
+            definitions = AgentBuiltInSkills.definitions,
+            bindings = AgentBuiltInSkills.bindings + AgentSkillBinding(undo, "answer"),
+            active = null,
+        )
+        assertThrows(IllegalArgumentException::class.java) {
+            AgentSkillCatalogReducer.apply(
+                legacy,
+                AgentSkillMutation.Bind("rewrite", redo),
+            )
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            AgentSkillCatalogReducer.apply(
+                legacy,
+                AgentSkillMutation.Create(
+                    id = "reserved_binding",
+                    name = "保留手势",
+                    description = "不应覆盖内置编辑手势",
+                    content = "# 保留手势\n测试。",
+                    binding = redo,
+                ),
+            )
+        }
+
+        val cleaned = AgentSkillCatalogReducer.apply(
+            legacy,
+            AgentSkillMutation.Unbind(undo),
+        ).catalog
+        assertNull(cleaned.binding(undo))
+    }
+
+    @Test
     fun `catalog binding envelope covers every rendered semantic slot and no more`() {
         val keyCodes =
             ('a'..'z').map(Char::code) +

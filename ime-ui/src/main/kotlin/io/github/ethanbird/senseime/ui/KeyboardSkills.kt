@@ -315,6 +315,62 @@ data class KeyboardSkillOptions(
     ): Int = if (binding == null) 0 else 1 shl direction.ordinal
 }
 
+enum class KeyboardBuiltInCommand(
+    val keyCode: Int,
+    val label: String,
+) {
+    UNDO(KeyCodes.UNDO, "撤销"),
+    REDO(KeyCodes.REDO, "重做"),
+}
+
+/**
+ * Built-in long-hold gestures share the directional picker with Skills while remaining
+ * non-persistable commands. Z/Y down are reserved so the same physical gesture is deterministic
+ * even when the Skill catalog is refreshed by another process.
+ */
+object KeyboardBuiltInGesturePolicy {
+    private const val UNDO_SKILL_ID = "\u0000sense-undo"
+    private const val REDO_SKILL_ID = "\u0000sense-redo"
+
+    fun optionsForKey(
+        keyCode: Int,
+        configured: KeyboardSkillOptions?,
+    ): KeyboardSkillOptions? {
+        val command = commandForKey(keyCode) ?: return configured
+        val builtIn = KeyboardSkillBinding(
+            keyCode = keyCode,
+            direction = KeyboardSkillDirection.DOWN,
+            skillId = when (command) {
+                KeyboardBuiltInCommand.UNDO -> UNDO_SKILL_ID
+                KeyboardBuiltInCommand.REDO -> REDO_SKILL_ID
+            },
+            label = command.label,
+            description = "内置编辑命令",
+        )
+        return (configured ?: KeyboardSkillOptions()).copy(down = builtIn)
+    }
+
+    fun command(binding: KeyboardSkillBinding): KeyboardBuiltInCommand? =
+        when (binding.skillId) {
+            UNDO_SKILL_ID -> KeyboardBuiltInCommand.UNDO
+            REDO_SKILL_ID -> KeyboardBuiltInCommand.REDO
+            else -> null
+        }
+
+    fun reservedCommand(
+        keyCode: Int,
+        direction: KeyboardSkillDirection,
+    ): KeyboardBuiltInCommand? =
+        commandForKey(keyCode).takeIf { direction == KeyboardSkillDirection.DOWN }
+
+    private fun commandForKey(keyCode: Int): KeyboardBuiltInCommand? =
+        when (keyCode) {
+            'z'.code, 'Z'.code -> KeyboardBuiltInCommand.UNDO
+            'y'.code, 'Y'.code -> KeyboardBuiltInCommand.REDO
+            else -> null
+        }
+}
+
 object KeyboardSkillTogglePolicy {
     fun resolve(
         active: ActiveKeyboardSkill?,

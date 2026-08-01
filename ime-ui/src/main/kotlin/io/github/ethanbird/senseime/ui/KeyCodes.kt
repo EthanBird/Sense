@@ -20,6 +20,8 @@ object KeyCodes {
     const val VOICE_RETRY = -18
     const val TOOLBOX = -19
     const val SETTINGS = -20
+    const val UNDO = -21
+    const val REDO = -22
     const val SPACE = 32
     const val ENTER = 10
 }

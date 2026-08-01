@@ -28,6 +28,8 @@ class KeyCodesTest {
             KeyCodes.VOICE,
             KeyCodes.CLIPBOARD,
             KeyCodes.EMOJI,
+            KeyCodes.UNDO,
+            KeyCodes.REDO,
         )
 
         assertTrue(codes.all { it < 0 })

@@ -7,7 +7,7 @@ fun interface CloudSpeechRecognitionListener {
 }
 
 /**
- * Record-then-transcribe facade for executable cloud speech providers.
+ * Speech facade for executable cloud providers, including opt-in live Sogou transcription.
  *
  * Callers use the same monotonically increasing session ids as
  * [AndroidSpeechRecognizerController]. All microphone and HTTP callbacks pass through an
@@ -65,8 +65,41 @@ class CloudSpeechRecognitionController(
             ).also { active = it }
         }
         emitRaw(session.listener, SpeechRecognitionEvent.Started(sessionId, false))
-        recorder.start(sessionId, RecorderBridge(session))
-            .getOrElse {
+        if (
+            profile.protocol == SpeechProviderProtocol.SOGOU_SRSS &&
+            profile.streamingOptimization
+        ) {
+            val call = sogouClient.startStreaming(
+                profile = profile,
+                callback = sogouCallback(session),
+            ).getOrElse {
+                finishFailed(
+                    session,
+                    CloudSpeechFailure(
+                        kind = CloudSpeechFailureKind.INTERNAL,
+                        message = "搜狗流式语音请求启动失败",
+                    ),
+                )
+                throw it
+            }
+            synchronized(lock) {
+                if (active === session && gate.isCurrent(session.token)) {
+                    session.remoteCall = call
+                    session.liveCall = call
+                } else {
+                    call.cancel()
+                }
+            }
+        }
+        val recorderStart = synchronized(lock) {
+            if (active === session && gate.isCurrent(session.token)) {
+                recorder.start(sessionId, RecorderBridge(session))
+            } else {
+                null
+            }
+        }
+        if (recorderStart == null) return@runCatching
+        recorderStart.getOrElse {
                 finishFailed(
                     session,
                     CloudSpeechFailure(
@@ -158,6 +191,19 @@ class CloudSpeechRecognitionController(
         }
 
         if (session.profile.protocol == SpeechProviderProtocol.SOGOU_SRSS) {
+            if (session.profile.streamingOptimization) {
+                audio.erase()
+                if (session.liveCall?.finishInput() != true) {
+                    finishFailed(
+                        session,
+                        CloudSpeechFailure(
+                            kind = CloudSpeechFailureKind.INTERNAL,
+                            message = "搜狗流式语音结束失败",
+                        ),
+                    )
+                }
+                return
+            }
             beginSogouUpload(session, audio)
             return
         }
@@ -223,33 +269,7 @@ class CloudSpeechRecognitionController(
             sogouClient.transcribe(
                 profile = session.profile,
                 audio = audio,
-                callback = object : SogouAsrCallback {
-                    override fun onPartialResult(transcript: CloudSpeechTranscript) {
-                        emitIfCurrent(
-                            session,
-                            SpeechRecognitionEvent.PartialResult(
-                                sessionId = session.token.sessionId,
-                                text = transcript.text,
-                            ),
-                        )
-                    }
-
-                    override fun onResult(result: CloudSpeechHttpResult) {
-                        when (result) {
-                            is CloudSpeechHttpResult.Success -> finishSucceeded(
-                                session,
-                                result.transcript,
-                            )
-                            is CloudSpeechHttpResult.Failure -> {
-                                if (result.failure.kind == CloudSpeechFailureKind.CANCELLED) {
-                                    finishCancelled(session)
-                                } else {
-                                    finishFailed(session, result.failure)
-                                }
-                            }
-                        }
-                    }
-                },
+                callback = sogouCallback(session),
             ).getOrThrow()
         } catch (_: RuntimeException) {
             finishFailed(
@@ -273,6 +293,35 @@ class CloudSpeechRecognitionController(
         }
     }
 
+    private fun sogouCallback(session: Session): SogouAsrCallback =
+        object : SogouAsrCallback {
+            override fun onPartialResult(transcript: CloudSpeechTranscript) {
+                emitIfCurrent(
+                    session,
+                    SpeechRecognitionEvent.PartialResult(
+                        sessionId = session.token.sessionId,
+                        text = transcript.text,
+                    ),
+                )
+            }
+
+            override fun onResult(result: CloudSpeechHttpResult) {
+                when (result) {
+                    is CloudSpeechHttpResult.Success -> finishSucceeded(
+                        session,
+                        result.transcript,
+                    )
+                    is CloudSpeechHttpResult.Failure -> {
+                        if (result.failure.kind == CloudSpeechFailureKind.CANCELLED) {
+                            finishCancelled(session)
+                        } else {
+                            finishFailed(session, result.failure)
+                        }
+                    }
+                }
+            }
+        }
+
     private fun finishSucceeded(
         session: Session,
         transcript: CloudSpeechTranscript,
@@ -289,11 +338,15 @@ class CloudSpeechRecognitionController(
         session: Session,
         failure: CloudSpeechFailure,
     ) {
+        if (!complete(session)) return
+        recorder.cancel(session.token.sessionId)
+        session.remoteCall?.takeUnless { failure.kind == CloudSpeechFailureKind.CANCELLED }
+            ?.cancel()
         val terminal = SpeechRecognitionEvent.Failed(
             sessionId = session.token.sessionId,
             failure = failure.toRecognitionFailure(),
         )
-        if (complete(session)) emitRaw(session.listener, terminal)
+        emitRaw(session.listener, terminal)
     }
 
     private fun finishCancelled(session: Session) {
@@ -334,6 +387,9 @@ class CloudSpeechRecognitionController(
     private inner class RecorderBridge(
         private val session: Session,
     ) : ShortPcm16RecorderListener {
+        override val wantsPcmChunks: Boolean
+            get() = session.liveCall != null
+
         override fun onRecordingStarted(sessionId: Long) {
             emitIfCurrent(session, SpeechRecognitionEvent.Ready(sessionId))
             emitIfCurrent(session, SpeechRecognitionEvent.SpeechBegan(sessionId))
@@ -347,6 +403,14 @@ class CloudSpeechRecognitionController(
                 session,
                 SpeechRecognitionEvent.RmsChanged(sessionId, speechUiDb),
             )
+        }
+
+        override fun onPcmChunk(
+            sessionId: Long,
+            pcm: ByteArray,
+        ) {
+            if (sessionId != session.token.sessionId) return
+            session.liveCall?.sendPcm(pcm)
         }
 
         override fun onRecordingStopped(
@@ -377,6 +441,7 @@ class CloudSpeechRecognitionController(
     ) {
         var phase: SessionPhase = SessionPhase.RECORDING
         var remoteCall: CloudSpeechCall? = null
+        var liveCall: SogouAsrLiveCall? = null
 
         fun eraseKey() {
             apiKey.fill('\u0000')

@@ -793,6 +793,20 @@ class SenseInputMethodService : InputMethodService() {
             KeyCodes.SPACE -> handleSpace()
             KeyCodes.COMMA -> commitText(if (chineseMode) "，" else ",")
             KeyCodes.PERIOD -> commitText(if (chineseMode) "。" else ".")
+            KeyCodes.UNDO -> performEditorHistoryCommand(
+                actionId = android.R.id.undo,
+                fallbackKeyCode = KeyEvent.KEYCODE_Z,
+                fallbackMetaState = KeyEvent.META_CTRL_ON,
+                successMessage = "已撤销",
+            )
+            KeyCodes.REDO -> performEditorHistoryCommand(
+                actionId = android.R.id.redo,
+                fallbackKeyCode = KeyEvent.KEYCODE_Z,
+                fallbackMetaState = KeyEvent.META_CTRL_ON or KeyEvent.META_SHIFT_ON,
+                secondaryFallbackKeyCode = KeyEvent.KEYCODE_Y,
+                secondaryFallbackMetaState = KeyEvent.META_CTRL_ON,
+                successMessage = "已重做",
+            )
             KeyCodes.LANGUAGE -> toggleLanguage()
             KeyCodes.SWITCH_INPUT_METHOD -> switchInputMethod()
             KeyCodes.CLIPBOARD -> showClipboard()
@@ -1094,6 +1108,47 @@ class SenseInputMethodService : InputMethodService() {
         currentInputConnection?.sendKeyEvent(
             KeyEvent(now, now, KeyEvent.ACTION_UP, keyCode, 0, metaState),
         )
+    }
+
+    private fun performEditorHistoryCommand(
+        actionId: Int,
+        fallbackKeyCode: Int,
+        fallbackMetaState: Int,
+        secondaryFallbackKeyCode: Int? = null,
+        secondaryFallbackMetaState: Int = 0,
+        successMessage: String,
+    ) {
+        commitActiveRawComposition()
+        val connection = currentInputConnection ?: return
+        val accepted =
+            connection.performContextMenuAction(actionId) ||
+                sendShortcutKeyEvents(connection, fallbackKeyCode, fallbackMetaState) ||
+                (
+                    secondaryFallbackKeyCode != null &&
+                        sendShortcutKeyEvents(
+                            connection,
+                            secondaryFallbackKeyCode,
+                            secondaryFallbackMetaState,
+                        )
+                    )
+        keyboardView?.showSkillFeedback(
+            if (accepted) successMessage else "$successMessage · 当前输入框未响应",
+        )
+    }
+
+    private fun sendShortcutKeyEvents(
+        connection: InputConnection,
+        keyCode: Int,
+        metaState: Int,
+    ): Boolean {
+        val now = SystemClock.uptimeMillis()
+        val downAccepted = connection.sendKeyEvent(
+            KeyEvent(now, now, KeyEvent.ACTION_DOWN, keyCode, 0, metaState),
+        )
+        val upAccepted = connection.sendKeyEvent(
+            KeyEvent(now, now, KeyEvent.ACTION_UP, keyCode, 0, metaState),
+        )
+        return downAccepted && upAccepted
     }
 
     private fun deleteOneCodePointOrSelection(): Boolean {

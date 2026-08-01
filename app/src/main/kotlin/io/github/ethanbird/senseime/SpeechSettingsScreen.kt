@@ -160,6 +160,8 @@ internal class SpeechSettingsViewBinding(
     val apiKey: EditText,
     val endpoint: EditText,
     val model: EditText,
+    val streamingOptimization: Switch,
+    val streamingFields: LinearLayout,
     val advanced: Switch,
     val advancedFields: LinearLayout,
     val permissionButton: Button,
@@ -210,6 +212,18 @@ internal class SpeechSettingsScreen(
             views.secretField(R.string.speech_provider_key, "免 Key Provider 无需填写")
         val endpoint = views.editField(R.string.speech_provider_endpoint, "https://…")
         val model = views.editField(R.string.speech_provider_model, "model")
+        val streamingOptimization = views.switch(R.string.speech_streaming_optimization)
+        val streamingFields = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(streamingOptimization)
+            addView(
+                views.text(
+                    R.string.speech_streaming_optimization_note,
+                    12f,
+                    R.color.sense_secondary,
+                ).withTop(views.dp(2)),
+            )
+        }
         val advanced = views.switch(R.string.speech_provider_advanced)
         val advancedFields = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
@@ -228,6 +242,7 @@ internal class SpeechSettingsScreen(
             views.labeledField(R.string.speech_provider_language, language)
                 .withTop(views.dp(10)),
         )
+        root.addView(streamingFields.withTop(views.dp(10)))
         root.addView(
             views.labeledField(R.string.speech_provider_key, apiKey)
                 .withTop(views.dp(10)),
@@ -262,6 +277,8 @@ internal class SpeechSettingsScreen(
             apiKey = apiKey,
             endpoint = endpoint,
             model = model,
+            streamingOptimization = streamingOptimization,
+            streamingFields = streamingFields,
             advanced = advanced,
             advancedFields = advancedFields,
             permissionButton = permissionButton,
@@ -281,7 +298,9 @@ internal class SpeechSettingsScreen(
                     apiKey.text.clear()
                     applyPresetFields(selectedPreset())
                     advanced.isChecked = false
+                    streamingOptimization.isChecked = false
                 }
+                updateStreamingVisibility()
                 updateAdvancedVisibility()
                 updateKeyHint()
                 updateCapabilityStatus()
@@ -290,6 +309,7 @@ internal class SpeechSettingsScreen(
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
         updateAdvancedVisibility()
+        updateStreamingVisibility()
         updatePermissionButton()
         load()
         return root
@@ -343,11 +363,15 @@ internal class SpeechSettingsScreen(
             val languageIndex =
                 SPEECH_LANGUAGES.indexOfFirst { it.second == profile.languageTag }
             current.language.setSelection(languageIndex.coerceAtLeast(0))
+            current.streamingOptimization.isChecked = profile.streamingOptimization
+        } else {
+            current.streamingOptimization.isChecked = false
         }
         loadedCredentialScope = profile?.let { credentialScope(preset, it.endpointUrl) }
         current.advanced.isChecked = false
         uiLoaded = true
         updateAdvancedVisibility()
+        updateStreamingVisibility()
         updateKeyHint()
         updateCapabilityStatus()
     }
@@ -361,9 +385,11 @@ internal class SpeechSettingsScreen(
         selectedPresetPosition = SpeechProviderPresetCatalog.all.indexOf(preset).coerceAtLeast(0)
         current.preset.setSelection(selectedPresetPosition)
         applyPresetFields(preset)
+        current.streamingOptimization.isChecked = false
         current.advanced.isChecked = false
         uiLoaded = true
         updateAdvancedVisibility()
+        updateStreamingVisibility()
         updateKeyHint()
     }
 
@@ -381,6 +407,14 @@ internal class SpeechSettingsScreen(
                 !preset.allowConnectionOverrides -> preset.defaultModel
                 else -> current.model.text.toString().trim()
             },
+            interimResults = if (preset.id == SpeechProviderPresetCatalog.SOGOU) {
+                current.streamingOptimization.isChecked
+            } else {
+                true
+            },
+            streamingOptimization =
+                preset.id == SpeechProviderPresetCatalog.SOGOU &&
+                    current.streamingOptimization.isChecked,
         )
         val validation = profile.validate()
         if (!validation.isValid) {
@@ -532,6 +566,16 @@ internal class SpeechSettingsScreen(
         }
         current.advancedFields.visibility =
             if (editableConnection && current.advanced.isChecked) View.VISIBLE else View.GONE
+    }
+
+    private fun updateStreamingVisibility() {
+        val current = binding ?: return
+        val supported = selectedPreset().id == SpeechProviderPresetCatalog.SOGOU
+        current.streamingFields.visibility = if (supported) View.VISIBLE else View.GONE
+        current.streamingOptimization.isEnabled = supported
+        if (!supported && current.streamingOptimization.isChecked) {
+            current.streamingOptimization.isChecked = false
+        }
     }
 
     private fun updateKeyHint() {

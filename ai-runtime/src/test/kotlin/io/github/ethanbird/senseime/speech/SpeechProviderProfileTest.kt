@@ -65,6 +65,28 @@ class SpeechProviderProfileTest {
     }
 
     @Test
+    fun `streaming optimization is opt-in for every preset`() {
+        SpeechProviderPresetCatalog.all.forEach { preset ->
+            assertFalse(preset.defaultProfile().streamingOptimization)
+        }
+    }
+
+    @Test
+    fun `streaming optimization is accepted only by Sogou`() {
+        val system = SpeechProviderPresetCatalog
+            .require(SpeechProviderPresetCatalog.SYSTEM)
+            .defaultProfile()
+            .copy(streamingOptimization = true)
+        val sogou = SpeechProviderPresetCatalog
+            .require(SpeechProviderPresetCatalog.SOGOU)
+            .defaultProfile()
+            .copy(streamingOptimization = true)
+
+        assertFalse(system.validate().isValid)
+        assertTrue(sogou.validate().isValid)
+    }
+
+    @Test
     fun `system provider rejects cloud fields`() {
         val profile = SpeechProviderPresetCatalog
             .require(SpeechProviderPresetCatalog.SYSTEM)

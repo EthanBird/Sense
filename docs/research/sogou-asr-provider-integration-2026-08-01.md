@@ -26,13 +26,21 @@
 
 - `SpeechProviderPresetCatalog.SOGOU`：免 API Key、固定 endpoint/model、运行时可执行。
 - `SogouAsrProtocol`：匿名请求 UUID、语言映射、配置构造及加密握手。
-- `SogouOpusPacketEncoder`：纯 Java Concentus 编码，20 ms 补零尾帧与 2-byte 长度头。
-- `SogouAsrWebSocketClient`：OkHttp WebSocket、8 ms 帧节流、60 秒总超时、响应大小
+- `SogouOpusPacketEncoder` / `SogouOpusStreamEncoder`：纯 Java Concentus 编码，支持
+  一次性输入和任意大小 PCM chunk 的增量 20 ms 分帧、补零尾帧与 2-byte 长度头。
+- `SogouAsrWebSocketClient`：OkHttp WebSocket、可选边录边发、60 秒总超时、响应大小
   上限、取消代际与音频缓冲清零。
 - `CloudSpeechRecognitionController`：与既有录音器/会话 gate/PartialResult/FinalResult
   链路统一。
 - 设置页与 IME：选择“搜狗在线语音（免配置）”并保存后直接使用；API Key 和连接字段
   均不需要填写。
+
+## 可选流式优化
+
+“流式优化（边说边转）”默认关闭。开启后，控制器会在录音开始前建立 SRSS WebSocket，
+录音器按顺序复制 PCM chunk，增量 Opus 编码器每积累 20 ms 音频就立即发送；服务端的
+中间结果沿现有 `PartialResult` 链路持续更新键盘语音预览，停止录音后只补齐尾帧并发送 `{}`。
+该选项在设置页明确标注响应更快、准确率可能降低，关闭时仍使用原有录完再识别路径。
 
 依赖：
 
@@ -50,6 +58,9 @@
 
 服务端最终消息报告 `end_time=7.600s`、`confidence=0.86`。Kotlin live probe 同时验证了
 中间结果、最终结果和完全一致的文本。
+
+新增流式探针按真实 20 ms 节奏发送同一 PCM 样本，并断言在麦克风输入结束前已经收到
+非空中间结果；最终文本仍与上述期望文本完全一致。
 
 离线门禁：
 

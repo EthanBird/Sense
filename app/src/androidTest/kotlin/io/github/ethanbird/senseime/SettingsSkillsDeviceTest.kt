@@ -46,7 +46,8 @@ class SettingsSkillsDeviceTest {
             assertTrue(
                 "Skills editor did not hydrate",
                 waitUntil(scenario, 5_000L) { activity ->
-                    findEditText(activity, "完整 Skill 文档")?.isEnabled == true
+                    findEditText(activity, activity.getString(R.string.skills_content))
+                        ?.isEnabled == true
                 },
             )
 
@@ -54,9 +55,10 @@ class SettingsSkillsDeviceTest {
                 .replace("\\u0000", "\u0000")
                 .replace("\\n", "\n")
             scenario.onActivity { activity ->
-                val editor = requireNotNull(findEditText(activity, "完整 Skill 文档"))
+                val label = activity.getString(R.string.skills_content)
+                val editor = requireNotNull(findEditText(activity, label))
                 editor.setText(exactDraft)
-                assertEquals("完整 Skill 文档", editor.contentDescription.toString())
+                assertEquals(label, editor.contentDescription.toString())
             }
 
             scenario.recreate()
@@ -64,7 +66,8 @@ class SettingsSkillsDeviceTest {
             assertTrue(
                 "recreated Settings Activity did not restore the exact current Skill draft",
                 waitUntil(scenario, 5_000L) { activity ->
-                    findEditText(activity, "完整 Skill 文档")?.text?.toString() == exactDraft
+                    findEditText(activity, activity.getString(R.string.skills_content))
+                        ?.text?.toString() == exactDraft
                 },
             )
             scenario.onActivity { activity ->
@@ -87,7 +90,8 @@ class SettingsSkillsDeviceTest {
             assertTrue(
                 "Skills editor did not hydrate",
                 waitUntil(scenario, 5_000L) { activity ->
-                    findEditText(activity, "完整 Skill 文档")?.isEnabled == true
+                    findEditText(activity, activity.getString(R.string.skills_content))
+                        ?.isEnabled == true
                 },
             )
             val accepted = buildString(AgentSkillPolicy.MAX_CONTENT_CHARS) {
@@ -98,7 +102,9 @@ class SettingsSkillsDeviceTest {
             val rejected = "$accepted!"
 
             scenario.onActivity { activity ->
-                val editor = requireNotNull(findEditText(activity, "完整 Skill 文档"))
+                val editor = requireNotNull(
+                    findEditText(activity, activity.getString(R.string.skills_content)),
+                )
                 editor.setText(accepted)
                 assertEquals(accepted, editor.text.toString())
                 editor.text.replace(0, editor.length(), rejected)

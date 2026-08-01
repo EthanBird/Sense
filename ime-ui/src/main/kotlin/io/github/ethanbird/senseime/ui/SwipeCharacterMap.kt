@@ -7,13 +7,23 @@ enum class SwipeCharacterMode {
 
 /** Up-swipe characters shown as the small hint above every alphabet key. */
 object SwipeCharacterMap {
-    private val values = mapOf(
+    private val chineseValues = mapOf(
+        'q' to "1", 'w' to "2", 'e' to "3", 'r' to "4", 't' to "5",
+        'y' to "6", 'u' to "7", 'i' to "8", 'o' to "9", 'p' to "0",
+        'a' to "~", 's' to "！", 'd' to "@", 'f' to "#", 'g' to "%",
+        'h' to "“", 'j' to "”", 'k' to "*", 'l' to "？",
+        'z' to "（", 'x' to "）", 'c' to "-", 'v' to "_", 'b' to "：",
+        'n' to "；", 'm' to "、",
+    )
+
+    /** ASCII-only counterpart used by the English keyboard. */
+    private val englishValues = mapOf(
         'q' to "1", 'w' to "2", 'e' to "3", 'r' to "4", 't' to "5",
         'y' to "6", 'u' to "7", 'i' to "8", 'o' to "9", 'p' to "0",
         'a' to "~", 's' to "!", 'd' to "@", 'f' to "#", 'g' to "%",
-        'h' to "“", 'j' to "”", 'k' to "*", 'l' to "?",
-        'z' to "（", 'x' to "）", 'c' to "-", 'v' to "_", 'b' to "：",
-        'n' to "；", 'm' to "、",
+        'h' to "\"", 'j' to "'", 'k' to "*", 'l' to "?",
+        'z' to "(", 'x' to ")", 'c' to "-", 'v' to "_", 'b' to ":",
+        'n' to ";", 'm' to "/",
     )
 
     /**
@@ -29,13 +39,12 @@ object SwipeCharacterMap {
     ): String? {
         if (code !in 'A'.code..'z'.code) return null
         val letter = code.toChar().lowercaseChar()
-        return when {
-            mode == SwipeCharacterMode.CHINESE && letter == 's' -> "！"
-            mode == SwipeCharacterMode.CHINESE && letter == 'l' -> "？"
-            else -> values[letter]
+        return when (mode) {
+            SwipeCharacterMode.CHINESE -> chineseValues[letter]
+            SwipeCharacterMode.ENGLISH -> englishValues[letter]
         }
     }
 
     val size: Int
-        get() = values.size
+        get() = chineseValues.size
 }

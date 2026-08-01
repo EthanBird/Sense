@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "release_plan.py"
 LOCAL_RELEASE = ROOT / "tools" / "local_release.ps1"
 APP_BUILD = ROOT / "app" / "build.gradle.kts"
-RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.5.beta.7.md"
+RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.5.beta.8.md"
 RELEASE_CERT = (
     ROOT
     / "docs"
@@ -96,9 +96,9 @@ class AndroidVersionParsingTest(unittest.TestCase):
 
     def test_dotted_prerelease_version_is_supported(self) -> None:
         self.assertEqual(
-            AndroidVersion(name="0.4.5.beta.7", code=28),
+            AndroidVersion(name="0.4.5.beta.8", code=29),
             parse_android_version(
-                gradle_version(name="0.4.5.beta.7", code=28)
+                gradle_version(name="0.4.5.beta.8", code=29)
             ),
         )
 
@@ -306,22 +306,22 @@ class LocalReleaseContractTest(unittest.TestCase):
             APP_BUILD.read_text(encoding="utf-8"),
             str(APP_BUILD),
         )
-        self.assertEqual(AndroidVersion(name="0.4.5.beta.7", code=28), current)
+        self.assertEqual(AndroidVersion(name="0.4.5.beta.8", code=29), current)
         self.assertIn(current.tag, self.script)
         self.assertIn(current.apk_name, self.script)
         self.assertIn(
-            'Sense v0.4.5.beta.7 - Built-in Sogou ASR and Windows TSF preview',
+            'Sense v0.4.5.beta.8 - Streaming ASR, undo/redo, and Skills UX',
             self.script,
         )
         self.assertRegex(
             self.script,
-            re.compile(r"versionCode\s*(?:=|:)?\s*28", re.IGNORECASE),
+            re.compile(r"versionCode\s*(?:=|:)?\s*29", re.IGNORECASE),
         )
 
     def test_release_notes_are_pinned_and_used_for_prerelease(self) -> None:
         self.assertTrue(RELEASE_NOTES.is_file())
-        self.assertIn("# Sense v0.4.5.beta.7", RELEASE_NOTES.read_text("utf-8"))
-        self.assertIn("v0.4.5.beta.7.md", self.script)
+        self.assertIn("# Sense v0.4.5.beta.8", RELEASE_NOTES.read_text("utf-8"))
+        self.assertIn("v0.4.5.beta.8.md", self.script)
         self.assertIn("--notes-file", self.script)
         self.assertIn("--prerelease", self.script)
 

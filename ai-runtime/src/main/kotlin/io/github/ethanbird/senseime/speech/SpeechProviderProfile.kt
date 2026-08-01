@@ -22,6 +22,8 @@ data class SpeechProviderProfile(
     val preferOnDevice: Boolean = true,
     val interimResults: Boolean = true,
     val punctuation: Boolean = true,
+    /** Sends microphone frames while recording instead of uploading one completed utterance. */
+    val streamingOptimization: Boolean = false,
 ) {
     fun validate(): SpeechProviderValidation = SpeechProviderValidator.validate(this)
 
@@ -311,6 +313,17 @@ object SpeechProviderValidator {
                     "must be non-blank, bounded, and contain no controls",
                 )
             }
+        }
+
+        if (
+            profile.streamingOptimization &&
+            profile.protocol != SpeechProviderProtocol.SOGOU_SRSS
+        ) {
+            errors += error(
+                SpeechProviderErrorCode.PRESET_MISMATCH,
+                "$.streaming_optimization",
+                "is currently available only for the Sogou streaming protocol",
+            )
         }
 
         return SpeechProviderValidation(errors)
