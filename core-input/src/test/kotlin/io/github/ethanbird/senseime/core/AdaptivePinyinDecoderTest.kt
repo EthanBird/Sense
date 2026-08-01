@@ -610,6 +610,96 @@ class AdaptivePinyinDecoderTest {
     }
 
     @Test
+    fun canonicalChineseOnlyDecodeUsesCorrectionFreeBaseAndRetainsPersonalization() {
+        val ordinaryQueries = mutableListOf<String>()
+        val canonicalQueries = mutableListOf<String>()
+        val base = object : ProgressivePrefixProbeDecoder {
+            override fun decode(composing: String, limit: Int): List<Candidate> {
+                ordinaryQueries += composing
+                return listOf(Candidate("纠错结果", matchKind = CandidateMatchKind.CORRECTED))
+            }
+
+            override fun decodePrefixProbe(composing: String, limit: Int): List<Candidate> {
+                canonicalQueries += composing
+                return listOf(
+                    Candidate(
+                        text = "浑身解数",
+                        score = 5f,
+                        canonicalPinyin = composing,
+                        canonicalInitials = "hsxs",
+                        matchKind = CandidateMatchKind.BASE_HYBRID,
+                    ),
+                )
+            }
+        }
+        val lexicon = MemoryUserLexicon(clock = { 1_000L })
+        lexicon.record("hunshenxieshu", "hsxs", "浑身解数", setOf("hunshenxs"))
+        val decoder = AdaptivePinyinDecoder(base, lexicon, segmenter)
+
+        val values = decoder.decodeCanonicalChineseOnly("hunshenxs", 8)
+
+        assertTrue(ordinaryQueries.isEmpty())
+        assertEquals(listOf("hunshenxs"), canonicalQueries)
+        assertEquals("浑身解数", values.first().text)
+        assertTrue(values.none { it.matchKind == CandidateMatchKind.CORRECTED })
+    }
+
+    @Test
+    fun forcedCanonicalQuerySkipsContinuousUserRecordWithoutBoundaryEvidence() {
+        val prefixQueries = mutableListOf<String>()
+        val base = object : ProgressivePrefixProbeDecoder {
+            override fun decode(composing: String, limit: Int): List<Candidate> =
+                error("canonical probe expected")
+
+            override fun decodePrefixProbe(composing: String, limit: Int): List<Candidate> {
+                prefixQueries += composing
+                return listOf(
+                    Candidate(
+                        text = "\u897F\u5B89",
+                        score = 5f,
+                        canonicalPinyin = composing,
+                        canonicalInitials = "xa",
+                        matchKind = CandidateMatchKind.BASE_EXACT,
+                    ),
+                )
+            }
+        }
+        val lexicon = MemoryUserLexicon(clock = { 1_000L })
+        lexicon.record("xian", "xa", "\u5148\u5B89")
+        val decoder = AdaptivePinyinDecoder(
+            base,
+            lexicon,
+            PinyinSyllableSegmenter(setOf("xi", "an", "xian")),
+        )
+
+        val continuous = decoder.decodeCanonicalChineseOnly("xian", 8)
+        val forced = decoder.decodeCanonicalChineseOnly("xi'an", 8)
+
+        assertTrue(continuous.any { it.matchKind == CandidateMatchKind.USER_FULL })
+        assertEquals(listOf("\u897F\u5B89"), forced.map(Candidate::text))
+        assertTrue(forced.none {
+            it.matchKind == CandidateMatchKind.USER_FULL ||
+                it.matchKind == CandidateMatchKind.USER_INITIALS
+        })
+        assertEquals(listOf("xian", "xi'an"), prefixQueries)
+    }
+
+    @Test
+    fun chineseOnlySeamsFilterLatinFromBootstrapFallback() {
+        val decoder = AdaptivePinyinDecoder(
+            base = FakeDecoder(),
+            userLexicon = MemoryUserLexicon(),
+            segmenter = PinyinSyllableSegmenter(setOf("ba", "sense")),
+        )
+
+        assertTrue(decoder.decodeCanonicalChineseOnly("ba", 8).isEmpty())
+        assertEquals(
+            listOf("\u5148\u601D"),
+            decoder.decodeChineseOnly("sense", 8).map(Candidate::text),
+        )
+    }
+
+    @Test
     fun supplementaryHanCandidateCanBeLearnedAsOneCharacter() {
         val supplementaryHan = String(Character.toChars(0x29F7E))
         val lexicon = MemoryUserLexicon(clock = { 1000L })

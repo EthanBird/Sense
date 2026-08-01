@@ -313,16 +313,21 @@ internal class KeyboardKeyRenderer(
                 key.label,
                 paint,
                 key.bounds.centerX(),
-                key.bounds.centerY() + if (key.hint == null) 0f else dp(3f),
+                key.bounds.centerY() + if (key.visualLegend == null) 0f else dp(3f),
             )
         }
 
-        val hint = key.hint
-        if (hint != null) {
+        val visualLegend = key.visualLegend
+        if (visualLegend != null) {
             paint.color = color(0xFF7C8799.toInt(), 0xFF83868D.toInt())
             paint.textSize = sp(8.5f)
             paint.textAlign = Paint.Align.CENTER
-            canvas.drawText(hint, key.bounds.centerX(), key.bounds.top + dp(10f), paint)
+            canvas.drawText(
+                visualLegend,
+                key.bounds.centerX(),
+                key.bounds.top + dp(10f),
+                paint,
+            )
         }
         if (isActiveSkillSource(state, key)) {
             drawActiveSkillMarker(canvas, key.bounds)

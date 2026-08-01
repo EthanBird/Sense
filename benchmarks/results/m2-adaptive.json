@@ -1,27 +1,27 @@
 {
   "schemaVersion": 2,
   "stage": "M2",
-  "generatedAt": "2026-07-30T14:50:09.588998400Z",
+  "generatedAt": "2026-08-01T10:50:22.780107300Z",
   "lexicon": {
     "keys": 823782,
     "bytes": 35069585,
-    "loadMs": 185.23
+    "loadMs": 175.53
   },
   "exactLookup": {
-    "medianNs": 488832.36,
-    "p95Ns": 602086.57
+    "medianNs": 510412.89,
+    "p95Ns": 591559.80
   },
   "typoLookup": {
-    "medianMs": 0.92,
-    "p95Ms": 0.97
+    "medianMs": 0.73,
+    "p95Ms": 0.80
   },
   "longSentenceTypoLookup": {
-    "medianMs": 8.60,
-    "p95Ms": 10.66
+    "medianMs": 5.92,
+    "p95Ms": 6.33
   },
   "userLexicon10kLookup": {
-    "medianNs": 643.53,
-    "p95Ns": 1871.59
+    "medianNs": 480.29,
+    "p95Ns": 1882.95
   },
   "deviceMetrics": { "status": "pending-real-device" }
 }

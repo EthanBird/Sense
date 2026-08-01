@@ -153,6 +153,7 @@ def _write_good_tree(root: Path) -> None:
     modules = (
         "app",
         "ai-protocol",
+        "ime-config",
         "ime-service",
         "ime-ui",
         "brain-api",
@@ -198,6 +199,7 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
     )
     for module in (
         "ai-protocol",
+        "ime-config",
         "ime-service",
         "ime-ui",
         "brain-api",

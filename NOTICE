@@ -142,3 +142,10 @@ APK copy: assets/CONCENTUS-BSD-3-CLAUSE.txt
 
 Sense uses Concentus to encode 16 kHz mono PCM into Opus packets for the optional
 Sogou SRSS speech provider. No Concentus native binary is bundled.
+Rime Wubi / Wubi86 dictionary
+----------------------------------------
+Sense includes a deterministically compiled Wubi86 dictionary from Rime Wubi,
+revision 152a0d3f3efe40cae216d1e3b338242446848d07.
+The source dictionary is licensed under GNU LGPL v3.0. Sense excludes z-prefixed
+symbol records and adds exact, completion and reverse indexes in its SWBX/1 format.
+See licenses/RIME-WUBI-NOTICE.md and licenses/rime-wubi-LGPL-3.0.txt.

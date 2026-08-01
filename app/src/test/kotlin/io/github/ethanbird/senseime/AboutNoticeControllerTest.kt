@@ -8,13 +8,15 @@ import org.junit.Test
 
 class AboutNoticeControllerTest {
     @Test
-    fun noticeAssetCatalogMatchesGplFrostBundle() {
+    fun noticeAssetCatalogMatchesChineseDictionaryBundles() {
         assertEquals(
             listOf(
                 "NOTICE" to "NOTICE.txt",
                 "Sense GPL-3.0" to "LICENSE.txt",
                 "Rime Frost NOTICE" to "RIME-FROST-NOTICE.txt",
                 "Rime Frost GPL-3.0" to "RIME-FROST-GPL-3.0.txt",
+                "Rime Wubi NOTICE" to "RIME-WUBI-NOTICE.txt",
+                "Rime Wubi LGPL-3.0" to "RIME-WUBI-LGPL-3.0.txt",
                 "OkHttp Apache-2.0" to "OKHTTP-APACHE-2.0.txt",
                 "Concentus BSD-3-Clause" to "CONCENTUS-BSD-3-CLAUSE.txt",
             ),

@@ -10,9 +10,9 @@
 > 分帧与 SRSS WebSocket 转写，选择后无需 API Key 即可从键盘语音入口使用。协议与
 > 双实现验证见[接入记录](docs/research/sogou-asr-provider-integration-2026-08-01.md)。
 
-**项目状态：** `v0.4.5.beta.8` 流式语音、撤销/重做与 Skills 交互预发布
+**项目状态：** `v0.4.5.beta.9` 中文九键与五笔 86 预发布
 
-**当前版本：** `v0.4.5.beta.8`（`versionCode 29`）
+**当前版本：** `v0.4.5.beta.9`（`versionCode 30`）
 
 **更新日期：** 2026-08-01
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
@@ -30,13 +30,14 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.5.beta.8 Streaming ASR and Skills UX preview
+## 0. 当前迭代：v0.4.5.beta.9 中文九键与五笔 86
 
-`v0.4.5.beta.8` 修复英文模式字符滑动映射，`M` 键恢复输出 ASCII `/`；新增可选的
-“流式优化（边说边转）”语音模式，并明确提示该模式可能降低准确率；长按 `Z` 后下滑
-执行撤销，长按 `Y` 后下滑执行重做。Skills 设置页改为可点击的可视化键盘绑定器，创建
-流程加入模板、分步编辑、实时摘要与完成进度，让新建、预览和绑定形成一条连续路径。
-免配置搜狗 SRSS Provider 与 Windows C++20 TSF 工程预览继续保留。
+`v0.4.5.beta.9` 新增生产可用的中文九键与五笔 86：九键数字串直接进入拼音
+trie/DAG，候选栏同时保留数字原文与自动分词，例如 `486743697 · hun'shen'x's`；
+五笔提供精确候选、前缀补全、`z` 拼音反查、字根键帽、三种自动上屏策略及独立个性化。
+三种中文方案通过 `ime-config` 跨 app/IME 进程保存，方案 epoch、composition revision
+与 decoder generation 共同隔离陈旧异步结果；QWERTY/T9 几何和五笔 legend 原子切换。
+免配置搜狗 SRSS Provider、Skills 交互与 Windows C++20 TSF 工程预览继续保留。
 
 `v0.4.5` 在 v0.4.4 的开放工具、完整 Agent Journal 和本地记忆之上，把 Skills
 交付为可配置、可修订、可由 Agent 智能读取和管理的长期系统：
@@ -125,10 +126,11 @@ initials、渐进 limit 16、渐进 limit 255 和组合 p95 分别为
 中英混合渐进解码和 hybrid p95 分别为 `3.657 µs`、`0.758 ms`、`0.157 ms`；
 10 条动态混拼逐查询最大 p95 为 `2.406 ms`，低于 `5 ms` 门禁。
 
-决策记录见 [ADR 0022](docs/adr/0022-gpl-rime-frost-lexicon-pipeline.md) 与
-[ADR 0023](docs/adr/0023-v0.4.5-beta5-decoder-quality.md)，详细发布门禁见
-[`v0.4.5.beta.8` 预发布说明](docs/releases/v0.4.5.beta.8.md)，最新发布资产见
-[`v0.4.5.beta.8` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.8)。
+决策记录见 [ADR 0022](docs/adr/0022-gpl-rime-frost-lexicon-pipeline.md)、
+[ADR 0023](docs/adr/0023-v0.4.5-beta5-decoder-quality.md) 与
+[ADR 0025](docs/adr/0025-three-chinese-schemes-t9-dag-and-wubi86.md)，详细发布门禁见
+[`v0.4.5.beta.9` 预发布说明](docs/releases/v0.4.5.beta.9.md)，最新发布资产见
+[`v0.4.5.beta.9` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.9)。
 
 `v0.4.5.beta.4` 修复键盘刚显示、窗口切换或目录观察 catch-up 时，等价 Skill catalog
 重复发布会撤销已开始长按的问题：解析结果、显示标签与 active Skill 均未变化时保留
@@ -173,8 +175,8 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | 键盘交互 | 四向选择、精确 physical owner、极光隔离、停止与 reduced motion |
 | Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
 | Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
-| 既有质量 | AI、IME、UI、Core、M0–M6、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 29`、`versionName 0.4.5.beta.8`、`minSdk 29`、`targetSdk 36` |
+| 既有质量 | AI、IME、UI、Core、M0–M7、Lint、APK、签名、权限与资产哈希无回退 |
+| APK 元数据 | `versionCode 30`、`versionName 0.4.5.beta.9`、`minSdk 29`、`targetSdk 36` |
 
 仓库不再运行 GitHub Actions；测试、Lint、性能门禁、APK 构建和签名校验统一在 Windows
 本地执行。完整本地验证与构建：
@@ -191,17 +193,19 @@ powershell -ExecutionPolicy Bypass -File tools/local_release.ps1 -Publish
 
 `-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。
 
-> **v0.4.5.beta.8 发布收口：** 本轮源码整合冻结后将重新运行并人工审查 X-02
+> **v0.4.5.beta.9 发布收口：** 本轮源码整合已冻结，并已重新运行及人工审查 X-02
 > production source、build authority 与 offline gate 的 exact SHA-256，并同步刷新
 > boundary baseline。正式本地发布会在同一 release `HEAD` 上再次执行 source/artifact
 > gate，并把结果与 APK 签名、校验和一起归档到
-> [`v0.4.5.beta.8` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.8)。
+> [`v0.4.5.beta.9` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.5.beta.9)。
 
 标准工程验证命令：
 
 ```bash
 python3 tools/test_build_pinyin_lexicon.py
 python3 tools/test_build_bigram_model.py
+python3 tools/test_build_wubi86_lexicon.py
+python3 tools/test_verify_wubi86_assets.py
 python3 tools/test_m4_core_assets.py
 python3 tools/test_m5_mixed_assets.py
 
@@ -214,8 +218,11 @@ python3 tools/test_m5_mixed_assets.py
   :memory-protocol:jar \
   :event-journal:test \
   :event-journal:jar \
+  :ime-config:testDebugUnitTest \
   :core-input:test \
   :ime-service:testDebugUnitTest \
+  :ime-ui:testDebugUnitTest \
+  :app:testDebugUnitTest \
   :core-input:m0HostBenchmark \
   :core-input:m1PinyinBenchmark \
   :core-input:m2AdaptiveBenchmark \
@@ -223,7 +230,7 @@ python3 tools/test_m5_mixed_assets.py
   :core-input:m4CoreBenchmark \
   :core-input:m5MixedInputBenchmark \
   :core-input:m6InputPolishBenchmark \
-  :ime-ui:testDebugUnitTest \
+  :core-input:m7ChineseSchemeBenchmark \
   :ai-runtime:lintDebug \
   :ime-service:lintDebug \
   :ime-ui:lintDebug \
@@ -233,13 +240,22 @@ python3 tools/test_m5_mixed_assets.py
   :benchmark:assembleBenchmark
 ```
 
-在 Maven 仓库不可达、但已安装 API 36 SDK 与 Gradle 8.13 的环境，可运行离线门禁并产出工程 debug 签名 APK：
+在 Maven 仓库不可达、但已安装 API 36 SDK 与 Gradle 8.13 的环境，可运行离线兼容性门禁并产出工程 debug 签名 APK：
 
 ```bash
 ANDROID_SDK_ROOT=/path/to/android-sdk \
 SENSE_GRADLE_HOME=/path/to/gradle-8.13 \
 tools/offline_verify.sh
 ```
+
+脚本从 `app/build.gradle.kts` 读取当前 `versionName`/`versionCode`，使用 Kotlin 2.0.21
+复编译 Android 独立兼容闭包，并执行 Android-free JVM 子集、词库重建、M0–M7、Lint 与 APK
+边界检查。涉及真实 Android framework 行为的完整单元/设备测试仍由上面的 Gradle 本地门禁执行。
+为保持无 Maven/Gradle 缓存依赖，离线 APK 对设置页使用到的 AndroidX Activity
+back-dispatch 接口编译脚本内兼容层，并让依赖 OkHttp/Concentus 的可选搜狗传输明确返回
+未装配状态；正式 APK 仍由 Gradle 链接锁定依赖并编译完整搜狗传输与测试。
+离线 APK 每次使用临时 debug signer，仅作无网编译兼容性证据；GitHub Release 由
+`tools/local_release.ps1` 使用固定 Sense release signer v1 产出。
 
 从 `v0.4.5.beta.1` 起，GitHub Release 使用固定的 Sense release signer v1，并通过
 本地发布脚本的指纹门禁校验；后续版本继续使用同一证书且递增 `versionCode`，即可直接覆盖升级。
@@ -493,8 +509,8 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.4.5.beta.8` 流式搜狗语音、Skills 交互、
-Windows TSF 工程预览与个性化排序预发布阶段。
+以下保留 M0 的实施记录；当前代码位于 `v0.4.5.beta.9` 中文九键、五笔 86、
+流式搜狗语音、Skills 交互、Windows TSF 工程预览与个性化排序预发布阶段。
 现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。
 

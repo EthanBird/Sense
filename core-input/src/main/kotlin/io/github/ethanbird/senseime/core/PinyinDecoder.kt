@@ -17,7 +17,10 @@ class PinyinDecoder private constructor(
     private val spellingGraph: PinyinSpellingGraph,
     private val segmenter: PinyinSyllableSegmenter,
     private val correctionBudget: CorrectionSearchBudget,
-) : ContextualInputDecoder, ProgressivePrefixProbeDecoder, RankedCandidateDecoder {
+) : ContextualInputDecoder,
+    ProgressivePrefixProbeDecoder,
+    CanonicalChineseLexicalProbeDecoder,
+    RankedCandidateDecoder {
 
     @Volatile
     private var cachedSpellingPaths: CachedSpellingPaths? = null
@@ -40,6 +43,75 @@ class PinyinDecoder private constructor(
     ): List<Candidate> {
         if (!Character.isValidCodePoint(previousCodePoint)) return emptyList()
         return decodeInternal(composing, limit, previousCodePoint, includeCorrections = false)
+    }
+
+    override fun probeCanonicalChineseOnly(composing: String, limit: Int): List<Candidate> =
+        decodeLexicalProbe(composing, limit, NO_CODE_POINT)
+
+    override fun probeCanonicalChineseOnlyAfter(
+        previousCodePoint: Int,
+        composing: String,
+        limit: Int,
+    ): List<Candidate> {
+        if (!Character.isValidCodePoint(previousCodePoint)) return emptyList()
+        return decodeLexicalProbe(composing, limit, previousCodePoint)
+    }
+
+    /**
+     * Lexical namespaces plus a length-bounded mixed-spelling expansion: no sentence DAG or
+     * correction graph. T9 probes this cheaper path across numeric alternatives before fully
+     * decoding winners.
+     */
+    private fun decodeLexicalProbe(
+        composing: String,
+        limit: Int,
+        previousCodePoint: Int,
+    ): List<Candidate> {
+        if (limit <= 0) return emptyList()
+        val parsedQuery = parseQuery(composing)
+        val query = parsedQuery.code
+        if (query.isEmpty() || query.length > PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH) {
+            return emptyList()
+        }
+        val outputLimit = minOf(limit, MAX_DECODE_CANDIDATES)
+        val exactRecord = if (parsedQuery.hasForcedJoints) -1 else findExact(query)
+        val hasCanonicalExact = exactRecord >= 0
+        val candidates = ArrayList<Candidate>(outputLimit * 3)
+        if (exactRecord >= 0) {
+            candidates += readCandidates(
+                exactRecord,
+                outputLimit,
+                CandidateMatchKind.BASE_EXACT,
+                query,
+            )
+        }
+        if (!parsedQuery.hasForcedJoints) {
+            candidates += readHybridCandidates(query, outputLimit)
+            if (query.length <= MAX_LEXICAL_PROBE_DYNAMIC_LENGTH) {
+                candidates += readDynamicMixedCandidates(
+                    paths = segmenter.segmentMixedPaths(query, MAX_DYNAMIC_MIXED_PATHS),
+                    limit = outputLimit,
+                ).candidates
+            }
+            candidates += readInitialsCandidates(query, outputLimit)
+        }
+        val contextual = if (previousCodePoint == NO_CODE_POINT) {
+            candidates
+        } else {
+            candidates.map { candidate ->
+                candidate.copy(
+                    score = candidate.score +
+                        bigramModel.score(previousCodePoint, candidate.text.codePointAt(0))
+                            .coerceIn(-CONTEXT_SCORE_CAP, CONTEXT_SCORE_CAP),
+                )
+            }
+        }
+        return CandidateRanker.rank(
+            candidates = contextual,
+            limit = outputLimit,
+            hasCanonicalExact = hasCanonicalExact,
+            hasCanonicalComposition = false,
+        )
     }
 
     /**
@@ -979,6 +1051,7 @@ class PinyinDecoder private constructor(
         private const val HYBRID_PRUNE_LIMIT_MULTIPLIER = 3
         private const val DYNAMIC_MIXED_FILL_FLOOR = 16
         private const val MAX_DYNAMIC_MIXED_PATHS = 4
+        private const val MAX_LEXICAL_PROBE_DYNAMIC_LENGTH = 24
         private const val MIN_DYNAMIC_MIXED_WITH_CANONICAL_LENGTH = 8
         private const val MAX_DYNAMIC_MIXED_ABBREVIATIONS = 4
         private const val MAX_DYNAMIC_MIXED_SYLLABLES = 12

@@ -5,7 +5,7 @@ enum class SwipeCharacterMode {
     ENGLISH,
 }
 
-/** Up-swipe characters shown as the small hint above every alphabet key. */
+/** Up-swipe output selected while a QWERTY scene is built. */
 object SwipeCharacterMap {
     private val chineseValues = mapOf(
         'q' to "1", 'w' to "2", 'e' to "3", 'r' to "4", 't' to "5",

@@ -52,6 +52,19 @@ class PinyinDecoderTest {
     }
 
     @Test
+    fun canonicalLexicalProbeReturnsExactEvidenceWithoutBuildingFallbackSentence() {
+        assertEquals(
+            listOf("\u4F60\u597D", "\u4F60\u53F7"),
+            decoder.probeCanonicalChineseOnly("nihao", 8).map(Candidate::text),
+        )
+        assertTrue(decoder.probeCanonicalChineseOnly("niwo", 8).isEmpty())
+        assertTrue(
+            decoder.decodePrefixProbe("niwo", 8)
+                .any { it.matchKind == CandidateMatchKind.BASE_COMPOSED },
+        )
+    }
+
+    @Test
     fun exactFourCharacterInitialsOutrankAccidentalLetterComposition() {
         val shortCodeDecoder = PinyinDecoder.fromBytes(
             lexicon(

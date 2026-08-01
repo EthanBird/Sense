@@ -1,7 +1,7 @@
 {
   "schemaVersion": 4,
   "stage": "M5-mixed-input",
-  "generatedAt": "2026-07-31T02:30:10.258423700Z",
+  "generatedAt": "2026-08-01T10:50:29.993610900Z",
   "correctness": {
     "w": "我",
     "wChineseHead": ["我", "为", "啊", "万"],
@@ -23,23 +23,23 @@
     "words": 20000,
     "bytes": 161139,
     "sha256": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624",
-    "p95Ns": 3656.76,
+    "p95Ns": 2341.66,
     "gateNs": 500000.00
   },
   "mixedProgressiveDecode": {
-    "p95Ns": 757695.00,
+    "p95Ns": 568018.00,
     "gateNs": 5000000.00
   },
   "hybridDecode": {
-    "p95Ns": 156961.20,
+    "p95Ns": 170460.40,
     "gateNs": 5000000.00
   },
   "dynamicMixedDecode": {
     "cases": 10,
     "candidateLimit": 255,
-    "p95Ns": 2406100.00,
-    "maxNs": 4254500,
+    "p95Ns": 2405300.00,
+    "maxNs": 2792300,
     "gateNs": 5000000.00,
-    "byQuery": [{"query":"hunshenxs","p95Ns":122200.00,"maxNs":813100}, {"query":"kaiyuanxy","p95Ns":76600.00,"maxNs":857000}, {"query":"suanfafzd","p95Ns":63300.00,"maxNs":730600}, {"query":"yemianxs","p95Ns":101500.00,"maxNs":643800}, {"query":"wenjianxz","p95Ns":196800.00,"maxNs":757400}, {"query":"quanxiansz","p95Ns":102800.00,"maxNs":1224100}, {"query":"yisscp","p95Ns":1023100.00,"maxNs":1050600}, {"query":"xiaszf","p95Ns":1662100.00,"maxNs":4254500}, {"query":"dancs","p95Ns":2072600.00,"maxNs":2576800}, {"query":"gongjijin","p95Ns":2406100.00,"maxNs":2663600}]
+    "byQuery": [{"query":"hunshenxs","p95Ns":117100.00,"maxNs":920800}, {"query":"kaiyuanxy","p95Ns":251900.00,"maxNs":1308900}, {"query":"suanfafzd","p95Ns":94000.00,"maxNs":943100}, {"query":"yemianxs","p95Ns":169500.00,"maxNs":696900}, {"query":"wenjianxz","p95Ns":133200.00,"maxNs":796800}, {"query":"quanxiansz","p95Ns":95600.00,"maxNs":1082800}, {"query":"yisscp","p95Ns":1225800.00,"maxNs":1372600}, {"query":"xiaszf","p95Ns":1628400.00,"maxNs":2658700}, {"query":"dancs","p95Ns":1827000.00,"maxNs":1919600}, {"query":"gongjijin","p95Ns":2405300.00,"maxNs":2792300}]
   }
 }

@@ -108,3 +108,18 @@ tasks.register<JavaExec>("m6InputPolishBenchmark") {
         rootProject.layout.projectDirectory.file("benchmarks/results/m6-input-polish.json").asFile.absolutePath,
     )
 }
+
+tasks.register<JavaExec>("m7ChineseSchemeBenchmark") {
+    group = "verification"
+    description = "Gates complete T9 decoding plus Wubi86 cold-load, memory and lookup performance."
+    dependsOn(tasks.named("classes"))
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("io.github.ethanbird.senseime.core.M7ChineseSchemeBenchmark")
+    args(
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/wubi86_lexicon.bin").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/pinyin_lexicon.bin").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/pinyin_bigrams.bin").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("ime-service/src/main/assets/pinyin_syllables.txt").asFile.absolutePath,
+        rootProject.layout.projectDirectory.file("benchmarks/results/m7-chinese-schemes.json").asFile.absolutePath,
+    )
+}

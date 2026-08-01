@@ -131,7 +131,10 @@ internal class Key(
     val label: String,
     val action: KeyAction,
     val bounds: RectF,
-    val hint: String? = null,
+    /** Secondary text painted on the key cap; it has no gesture semantics. */
+    val visualLegend: String? = null,
+    /** Text committed by an upward flick; it need not be rendered as a legend. */
+    val swipeOutput: String? = null,
     val style: KeyStyle = KeyStyle.LETTER,
     val icon: Icon? = null,
     val secondaryLabel: String? = null,

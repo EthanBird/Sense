@@ -1,6 +1,8 @@
 package io.github.ethanbird.senseime.service
 
 import io.github.ethanbird.senseime.core.LearnedPhrase
+import io.github.ethanbird.senseime.core.Candidate
+import io.github.ethanbird.senseime.core.CandidateMatchKind
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -103,6 +105,25 @@ class PersonalizationFeedbackWindowTest {
 
         assertEquals("拟", window.complete(nested)?.text)
         assertNull(window.complete(outer))
+    }
+
+    @Test
+    fun wubiCommitUsesTheSameTransactionalQuickDeleteWindow() {
+        val window = PersonalizationFeedbackWindow(clock = { 1_000L })
+        val candidate = Candidate(
+            text = "输入法",
+            score = 3f,
+            matchKind = CandidateMatchKind.WUBI_EXACT,
+            canonicalCode = "lwyy",
+        )
+        window.rememberWubi("lwyy", candidate, start = 4, endExclusive = 7)
+
+        val target = window.complete(window.prepareQuickDelete(cursor = 7))
+
+        assertEquals(
+            PersonalizationLearningTarget.Wubi("lwyy", candidate),
+            target,
+        )
     }
 
     private fun phrase(text: String = "拟") = LearnedPhrase(

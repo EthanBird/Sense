@@ -305,6 +305,14 @@ object KeyboardLayoutContract {
         WeightedKey("↵", KeyCodes.ENTER, 1.2f, action = true),
     )
 
+    /** Nine-key keeps an explicit erase action because it has no QWERTY third row. */
+    fun t9FunctionRow(chineseMode: Boolean): List<WeightedKey> = buildList {
+        val common = functionRow(chineseMode)
+        addAll(common.dropLast(1))
+        add(WeightedKey("⌫", KeyCodes.DELETE, 1.1f, action = true))
+        add(common.last())
+    }
+
     val systemBar: List<SystemKey> = listOf(
         SystemKey(KeyCodes.SWITCH_INPUT_METHOD, Side.LEFT),
         SystemKey(KeyCodes.CLIPBOARD, Side.RIGHT),

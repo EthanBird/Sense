@@ -18,6 +18,7 @@ internal data class KeyboardSceneRequest(
     val clipboardPageIndex: Int,
     val voiceSurfaceState: VoiceSurfaceState?,
     val fontScale: Float,
+    val primaryLegendMode: PrimaryKeyboardLegendMode = PrimaryKeyboardLegendMode.SWIPE_HINTS,
 )
 
 /**
@@ -62,6 +63,7 @@ internal class KeyboardSceneBuilder(
                         shifted = request.shifted,
                         chineseMode = request.chineseMode,
                         swipeMode = swipeCharacterMode(request.chineseMode),
+                        legendMode = request.primaryLegendMode,
                     ),
                     output = keys,
                 )

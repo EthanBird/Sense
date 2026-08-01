@@ -105,6 +105,51 @@ class KeyboardInteractionControllerTest {
     }
 
     @Test
+    fun `key dispatcher commits explicit swipe output instead of the visual legend`() {
+        val clock = FakeClock()
+        val scheduler = FakeFrameScheduler(clock)
+        val actions = RecordingActions()
+        val dispatcher = KeyboardActionDispatcher(
+            host = FakeInteractionHost(),
+            scheduler = scheduler,
+            actions = actions,
+            effects = object : KeyboardActionEffects {
+                override fun stopPanelFling() = Unit
+                override fun stopCandidateSettle() = Unit
+            },
+        )
+        val bounds = RectF(0f, 0f, 40f, 40f)
+        val legendOnly = Key(
+            label = "2",
+            action = KeyAction.EmitKey('2'.code),
+            bounds = bounds,
+            visualLegend = "ABC",
+        )
+        val explicitSwipe = Key(
+            label = "q",
+            action = KeyAction.EmitKey('q'.code),
+            bounds = bounds,
+            visualLegend = "visible",
+            swipeOutput = "1",
+        )
+        val policy = TouchInputReducer.GesturePolicy.upwardFlick(
+            minimumDistance = 12f,
+            verticalDominanceRatio = 1.15f,
+        )
+
+        dispatcher.activate(
+            FrozenTouchTarget.KeyValue(legendOnly, policy),
+            TouchInputReducer.Gesture.SWIPE_UP,
+        )
+        dispatcher.activate(
+            FrozenTouchTarget.KeyValue(explicitSwipe, policy),
+            TouchInputReducer.Gesture.SWIPE_UP,
+        )
+
+        assertEquals(listOf("1"), actions.texts)
+    }
+
+    @Test
     fun `hot move APIs publish primitive flags without changing frozen owner`() {
         val reducer = TouchInputReducer<String>(
             swipeThreshold = 20f,
@@ -355,6 +400,7 @@ class KeyboardInteractionControllerTest {
 
     private class RecordingActions : KeyboardInteractionActionSink {
         val keys = ArrayList<Int>()
+        val texts = ArrayList<String>()
         val aiStarts = ArrayList<Long>()
 
         override fun onKey(code: Int) {
@@ -362,7 +408,9 @@ class KeyboardInteractionControllerTest {
         }
 
         override fun onCandidate(revision: Long, sourceIndex: Int) = Unit
-        override fun onText(text: String) = Unit
+        override fun onText(text: String) {
+            texts += text
+        }
         override fun onClipboardAction(action: KeyboardClipboardAction, index: Int) = Unit
         override fun onEditorAction(action: KeyboardEditorAction) = Unit
         override fun onSettingsAction() = Unit

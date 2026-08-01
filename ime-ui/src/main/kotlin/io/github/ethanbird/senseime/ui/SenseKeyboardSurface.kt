@@ -46,6 +46,21 @@ class SenseKeyboardSurface @JvmOverloads constructor(
         applyPreferredHeightToParent()
     }
 
+    fun setPrimaryKeyboardMode(mode: PrimaryKeyboardMode) {
+        keyboardView.setPrimaryKeyboardMode(mode)
+    }
+
+    fun setPrimaryKeyboardLegendMode(mode: PrimaryKeyboardLegendMode) {
+        keyboardView.setPrimaryKeyboardLegendMode(mode)
+    }
+
+    fun setPrimaryKeyboardPresentation(
+        mode: PrimaryKeyboardMode,
+        legendMode: PrimaryKeyboardLegendMode,
+    ) {
+        keyboardView.setPrimaryKeyboardPresentation(mode, legendMode)
+    }
+
     fun preferredHeightPx(): Int = keyboardSizeProfile.preferredHeightPx(
         isLandscape =
             resources.configuration.orientation ==

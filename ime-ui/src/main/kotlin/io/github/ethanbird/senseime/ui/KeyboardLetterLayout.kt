@@ -10,6 +10,7 @@ internal data class KeyboardLetterLayoutRequest(
     val shifted: Boolean,
     val chineseMode: Boolean,
     val swipeMode: SwipeCharacterMode,
+    val legendMode: PrimaryKeyboardLegendMode = PrimaryKeyboardLegendMode.SWIPE_HINTS,
 )
 
 /**

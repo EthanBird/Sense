@@ -14,7 +14,8 @@ import java.util.concurrent.RejectedExecutionException
  */
 internal class LatestOnlyTaskRunner<Input : Any, Output : Any>(
     threadName: String,
-    private val work: (Input) -> Output,
+    /** The probe becomes false as soon as a newer submission supersedes this input. */
+    private val work: (input: Input, shouldContinue: () -> Boolean) -> Output,
     private val deliver: (sequence: Long, input: Input, output: Output) -> Unit,
     private val fail: (sequence: Long, input: Input, error: Throwable) -> Unit = { _, _, _ -> },
     private val executor: ExecutorService = Executors.newSingleThreadExecutor { runnable ->
@@ -61,15 +62,29 @@ internal class LatestOnlyTaskRunner<Input : Any, Output : Any>(
                 }
             }
 
-            val result = runCatching { work(request.input) }
-            val isNewest = synchronized(lock) {
-                !closed && request.sequence == newestSequence
+            val result = runCatching {
+                work(request.input) {
+                    synchronized(lock) {
+                        !closed && request.sequence == newestSequence
+                    }
+                }
             }
-            if (!isNewest) continue
-            result.fold(
-                onSuccess = { deliver(request.sequence, request.input, it) },
-                onFailure = { fail(request.sequence, request.input, it) },
-            )
+            // Freshness validation and callback entry form one publication boundary. submit()
+            // uses the same monitor, so a newer sequence is either visible here and suppresses
+            // this result, or is linearized after this callback has begun. Callback bodies are
+            // expected to hand off quickly; the monitor is reentrant for same-thread submission.
+            val published = synchronized(lock) {
+                if (closed || request.sequence != newestSequence) {
+                    false
+                } else {
+                    result.fold(
+                        onSuccess = { deliver(request.sequence, request.input, it) },
+                        onFailure = { fail(request.sequence, request.input, it) },
+                    )
+                    true
+                }
+            }
+            if (!published) continue
         }
     }
 

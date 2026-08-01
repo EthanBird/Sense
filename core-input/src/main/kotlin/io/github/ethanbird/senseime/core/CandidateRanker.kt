@@ -109,6 +109,8 @@ object CandidateRanker {
         }
         CandidateMatchKind.ENGLISH_EXACT -> ENGLISH_EXACT_PRIOR
         CandidateMatchKind.ENGLISH_PREFIX -> ENGLISH_PREFIX_PRIOR
+        CandidateMatchKind.WUBI_EXACT -> CANONICAL_EXACT_PRIOR
+        CandidateMatchKind.WUBI_COMPLETION -> PREFIX_PRIOR
         CandidateMatchKind.USER_FULL,
         CandidateMatchKind.USER_INITIALS,
         -> USER_PRIOR
@@ -136,6 +138,8 @@ object CandidateRanker {
         CandidateMatchKind.BASE_PREFIX -> 7
         CandidateMatchKind.ENGLISH_EXACT -> 8
         CandidateMatchKind.ENGLISH_PREFIX -> 9
+        CandidateMatchKind.WUBI_EXACT -> 0
+        CandidateMatchKind.WUBI_COMPLETION -> 7
     }
 
     private const val CANONICAL_EXACT_PRIOR = 8f

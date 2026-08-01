@@ -75,6 +75,7 @@ include(
     ":app",
     ":ime-service",
     ":ime-ui",
+    ":ime-config",
     ":core-input",
     ":ai-protocol",
     ":brain-api",

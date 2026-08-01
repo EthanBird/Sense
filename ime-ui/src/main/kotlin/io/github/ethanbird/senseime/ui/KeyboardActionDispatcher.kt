@@ -126,16 +126,7 @@ internal class KeyboardActionDispatcher(
             }
 
             gesture == TouchInputReducer.Gesture.SWIPE_UP && key.code > 0 -> {
-                (
-                    key.hint ?: SwipeCharacterMap.forKey(
-                        key.code,
-                        if (host.interactionChineseMode) {
-                            SwipeCharacterMode.CHINESE
-                        } else {
-                            SwipeCharacterMode.ENGLISH
-                        },
-                    )
-                    )?.let {
+                key.swipeOutput?.let {
                     flushKeys()
                     actions.onText(it)
                 }

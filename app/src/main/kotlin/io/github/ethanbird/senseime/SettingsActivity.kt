@@ -62,6 +62,7 @@ class SettingsActivity : ComponentActivity() {
         super.onResume()
         when (navigation.current) {
             SettingsSection.HOME -> updateStatus()
+            SettingsSection.KEYBOARD -> Unit
             SettingsSection.SKILLS -> skillsScreen.onResume()
             SettingsSection.VOICE -> activeSpeechScreen?.onResume()
             else -> Unit
@@ -139,6 +140,17 @@ class SettingsActivity : ComponentActivity() {
         screenContent.removeAllViews()
         when (navigation.current) {
             SettingsSection.HOME -> renderHome()
+            SettingsSection.KEYBOARD -> {
+                renderDetailHeader(
+                    R.string.settings_keyboard_title,
+                    R.string.settings_keyboard_summary,
+                )
+                val screen = KeyboardSettingsScreen(this, settingsViews)
+                activeSectionScreen = screen
+                screenContent.addView(
+                    card(R.string.keyboard_scheme_title, screen.createView()).withTop(dp(20)),
+                )
+            }
             SettingsSection.PROVIDER -> {
                 renderDetailHeader(R.string.settings_provider_title, R.string.settings_provider_summary)
                 val screen = ProviderSettingsScreen(this, settingsViews)
@@ -234,6 +246,11 @@ class SettingsActivity : ComponentActivity() {
         screenContent.addView(
             text(R.string.settings_categories_title, 13f, R.color.sense_secondary, Typeface.BOLD)
                 .withTop(dp(28)),
+        )
+        addCategory(
+            SettingsSection.KEYBOARD,
+            R.string.settings_keyboard_title,
+            R.string.settings_keyboard_summary,
         )
         addCategory(
             SettingsSection.PROVIDER,

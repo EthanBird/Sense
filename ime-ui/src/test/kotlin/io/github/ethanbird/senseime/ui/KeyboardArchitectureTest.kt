@@ -2,7 +2,7 @@ package io.github.ethanbird.senseime.ui
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
-import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class KeyboardArchitectureTest {
@@ -41,17 +41,62 @@ class KeyboardArchitectureTest {
     }
 
     @Test
-    fun `unregistered t9 mode fails before mutating scene output`() {
+    fun `production primary layout owns a usable t9 adapter`() {
         val layout = KeyboardPrimaryLayout(
             metrics = KeyboardMetrics.fromDensity(1f),
-            qwertyLayout = RecordingLetterLayout(),
         )
         val output = ArrayList<Key>()
 
-        assertThrows(IllegalStateException::class.java) {
-            layout.appendLetters(PrimaryKeyboardMode.T9, letterRequest(), output)
-        }
-        assertEquals(0, output.size)
+        layout.appendLetters(PrimaryKeyboardMode.T9, letterRequest(), output)
+
+        assertEquals(
+            ('1'..'9').map(Char::code),
+            output.map(Key::code).filter { it in '1'.code..'9'.code },
+        )
+        assertTrue(output.any { it.code == KeyCodes.DELETE })
+    }
+
+    @Test
+    fun `visual legends do not become swipe output in t9`() {
+        val layout = KeyboardPrimaryLayout(
+            metrics = KeyboardMetrics.fromDensity(1f),
+        )
+        val t9 = ArrayList<Key>()
+        val qwerty = ArrayList<Key>()
+
+        layout.appendLetters(PrimaryKeyboardMode.T9, letterRequest(), t9)
+        layout.appendLetters(PrimaryKeyboardMode.QWERTY, letterRequest(), qwerty)
+
+        val t9Two = t9.single { it.code == '2'.code }
+        assertEquals("ABC", t9Two.visualLegend)
+        assertEquals(null, t9Two.swipeOutput)
+
+        val qwertyQ = qwerty.single { it.code == 'q'.code }
+        assertEquals("1", qwertyQ.visualLegend)
+        assertEquals("1", qwertyQ.swipeOutput)
+    }
+
+    @Test
+    fun `wubi legends cover the weighted third letter row without changing swipe output`() {
+        val output = ArrayList<Key>()
+        KeyboardPrimaryLayout(KeyboardMetrics.fromDensity(1f)).appendLetters(
+            PrimaryKeyboardMode.QWERTY,
+            letterRequest(PrimaryKeyboardLegendMode.WUBI_86_ROOTS),
+            output,
+        )
+
+        val z = output.single { it.code == 'z'.code }
+        val m = output.single { it.code == 'm'.code }
+        assertEquals("反查", z.visualLegend)
+        assertEquals("山", m.visualLegend)
+        assertEquals(
+            SwipeCharacterMap.forKey('z'.code, SwipeCharacterMode.CHINESE),
+            z.swipeOutput,
+        )
+        assertEquals(
+            SwipeCharacterMap.forKey('m'.code, SwipeCharacterMode.CHINESE),
+            m.swipeOutput,
+        )
     }
 
     @Test
@@ -92,13 +137,16 @@ class KeyboardArchitectureTest {
         assertEquals(true, id.matches(owner))
     }
 
-    private fun letterRequest() = KeyboardLetterLayoutRequest(
+    private fun letterRequest(
+        legendMode: PrimaryKeyboardLegendMode = PrimaryKeyboardLegendMode.SWIPE_HINTS,
+    ) = KeyboardLetterLayoutRequest(
         viewWidth = 1080,
         viewHeight = 420,
         chromeBottom = 80f,
         shifted = false,
         chineseMode = true,
         swipeMode = SwipeCharacterMode.CHINESE,
+        legendMode = legendMode,
     )
 
     private class RecordingLetterLayout : KeyboardLetterLayout {

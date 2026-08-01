@@ -6,6 +6,7 @@ package io.github.ethanbird.senseime
  */
 internal enum class SettingsSection {
     HOME,
+    KEYBOARD,
     PROVIDER,
     SOUL,
     TOOLS,

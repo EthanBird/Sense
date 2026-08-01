@@ -126,6 +126,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     private var chineseMode = true
     private var panel = KeyboardPanel.LETTERS
     private var primaryKeyboardMode = PrimaryKeyboardMode.QWERTY
+    private var primaryKeyboardLegendMode = PrimaryKeyboardLegendMode.SWIPE_HINTS
     private var keyboardSizeProfile = KeyboardSizeProfile.DEFAULT
     private var renderPassCount = 0L
 
@@ -396,10 +397,55 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     fun setChineseMode(value: Boolean) {
-        if (chineseMode == value) return
+        setInputPresentation(value, primaryKeyboardMode, primaryKeyboardLegendMode)
+    }
+
+    /**
+     * Selects the primary letter geometry at a scene boundary.
+     *
+     * Active pointers are cancelled before replacing the topology so a touch
+     * frozen against the old layout never dispatches through the new one.
+     */
+    fun setPrimaryKeyboardMode(value: PrimaryKeyboardMode) {
+        setInputPresentation(chineseMode, value, primaryKeyboardLegendMode)
+    }
+
+    fun setPrimaryKeyboardLegendMode(value: PrimaryKeyboardLegendMode) {
+        setInputPresentation(chineseMode, primaryKeyboardMode, value)
+    }
+
+    /** Atomically replaces geometry and legends, avoiding an intermediate mismatched scene. */
+    fun setPrimaryKeyboardPresentation(
+        mode: PrimaryKeyboardMode,
+        legendMode: PrimaryKeyboardLegendMode,
+    ) {
+        setInputPresentation(chineseMode, mode, legendMode)
+    }
+
+    /**
+     * Installs language policy, geometry and legends as one immutable scene transition.
+     *
+     * A Chinese T9 to English QWERTY switch therefore cancels the active pointer once and builds
+     * one final scene; it never materializes an intermediate English T9 or stale-root scene.
+     */
+    fun setInputPresentation(
+        chinese: Boolean,
+        mode: PrimaryKeyboardMode,
+        legendMode: PrimaryKeyboardLegendMode,
+    ) {
+        if (
+            chineseMode == chinese &&
+            primaryKeyboardMode == mode &&
+            primaryKeyboardLegendMode == legendMode
+        ) {
+            return
+        }
+        val languageChanged = chineseMode != chinese
         interaction.cancelAllTouches()
-        chineseMode = value
-        interaction.collapseCandidates()
+        chineseMode = chinese
+        primaryKeyboardMode = mode
+        primaryKeyboardLegendMode = legendMode
+        if (languageChanged) interaction.collapseCandidates()
         rebuildKeys(width, height)
         invalidate()
     }
@@ -447,6 +493,10 @@ class SenseKeyboardView @JvmOverloads constructor(
     internal fun renderPassCountForTesting(): Long = renderPassCount
 
     internal fun keySceneBuildCountForTesting(): Long = keyboardScene.buildCount
+
+    internal fun panelKeysForTesting(): List<Key> = keyboardScene.keys
+        .subList(keyboardScene.panelKeyStart, keyboardScene.panelKeyEndExclusive)
+        .toList()
 
     internal fun candidateSceneBuildCountForTesting(): Long = candidatePanel.sceneBuildCount
 
@@ -701,6 +751,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 clipboardPageIndex = clipboardPageIndex,
                 voiceSurfaceState = voiceSurfaceState,
                 fontScale = resources.configuration.fontScale,
+                primaryLegendMode = primaryKeyboardLegendMode,
             ),
             target = keyboardScene,
         )

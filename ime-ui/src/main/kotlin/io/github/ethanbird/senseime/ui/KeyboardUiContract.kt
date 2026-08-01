@@ -41,12 +41,14 @@ enum class KeyboardEditorAction {
 
 /**
  * Runtime-selectable primary letter geometry.
- *
- * T9 is deliberately not exposed by the current product surface. The value is
- * present so a T9 [KeyboardLetterLayout] adapter can be registered and selected
- * without changing the View, renderer or touch pipeline.
  */
 enum class PrimaryKeyboardMode {
     QWERTY,
     T9,
+}
+
+/** Secondary legends are visual policy and never change swipe output. */
+enum class PrimaryKeyboardLegendMode {
+    SWIPE_HINTS,
+    WUBI_86_ROOTS,
 }

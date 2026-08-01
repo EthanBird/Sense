@@ -48,6 +48,16 @@ internal object QwertyKeyboardLayout : KeyboardLetterLayout {
             swipeMode = request.swipeMode,
             metrics = metrics,
             output = output,
+            visualLegendResolver = { keyCode, swipeOutput ->
+                when (request.legendMode) {
+                    PrimaryKeyboardLegendMode.SWIPE_HINTS -> swipeOutput
+                    PrimaryKeyboardLegendMode.WUBI_86_ROOTS -> if (keyCode in 'a'.code..'z'.code) {
+                        Wubi86KeyLegend.forKey(keyCode.toChar())
+                    } else {
+                        swipeOutput
+                    }
+                }
+            },
         )
         appendWeightedRowKeys(
             items = KeyboardLayoutContract.functionRow(request.chineseMode),
@@ -77,6 +87,11 @@ internal object QwertyKeyboardLayout : KeyboardLetterLayout {
 
         characters.forEachIndexed { index, character ->
             val x = left + index * (itemWidth + metrics.keyGap)
+            val swipeOutput = SwipeCharacterMap.forKey(character.code, request.swipeMode)
+            val visualLegend = when (request.legendMode) {
+                PrimaryKeyboardLegendMode.SWIPE_HINTS -> swipeOutput
+                PrimaryKeyboardLegendMode.WUBI_86_ROOTS -> Wubi86KeyLegend.forKey(character)
+            }
             output += Key(
                 label = KeyboardLayoutContract.letterLabel(
                     character = character,
@@ -85,7 +100,8 @@ internal object QwertyKeyboardLayout : KeyboardLetterLayout {
                 ),
                 action = KeyAction.EmitKey(character.code),
                 bounds = RectF(x, y, x + itemWidth, y + rowHeight),
-                hint = SwipeCharacterMap.forKey(character.code, request.swipeMode),
+                visualLegend = visualLegend,
+                swipeOutput = swipeOutput,
             )
         }
     }

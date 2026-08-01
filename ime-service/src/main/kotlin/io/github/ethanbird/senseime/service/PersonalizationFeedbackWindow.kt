@@ -1,19 +1,37 @@
 package io.github.ethanbird.senseime.service
 
+import io.github.ethanbird.senseime.core.Candidate
 import io.github.ethanbird.senseime.core.LearnedPhrase
+
+internal sealed interface PersonalizationLearningTarget {
+    val text: String
+
+    data class Pinyin(val phrase: LearnedPhrase) : PersonalizationLearningTarget {
+        override val text: String
+            get() = phrase.text
+    }
+
+    data class Wubi(
+        val rawCode: String,
+        val candidate: Candidate,
+    ) : PersonalizationLearningTarget {
+        override val text: String
+            get() = candidate.text
+    }
+}
 
 /**
  * Holds only the most recent learned commit.
  *
  * This state machine never touches storage. The service translates a consumed signal into an
- * in-memory demotion, and [PersistentUserLexicon] journals that mutation on its serial writer.
+ * in-memory demotion, and the active scheme-local lexicon journals it on its serial writer.
  */
 internal class PersonalizationFeedbackWindow(
     private val clock: () -> Long,
     private val windowMillis: Long = DEFAULT_WINDOW_MILLIS,
 ) {
     private data class Pending(
-        val phrase: LearnedPhrase,
+        val target: PersonalizationLearningTarget,
         val start: Int,
         val endExclusive: Int,
         val recordedAtMillis: Long,
@@ -31,7 +49,7 @@ internal class PersonalizationFeedbackWindow(
      */
     internal class Attempt internal constructor(
         internal val token: Any,
-        internal val phraseToDemote: LearnedPhrase?,
+        internal val targetToDemote: PersonalizationLearningTarget?,
     ) {
         internal var completed = false
     }
@@ -43,8 +61,25 @@ internal class PersonalizationFeedbackWindow(
     }
 
     fun remember(phrase: LearnedPhrase, start: Int = -1, endExclusive: Int = -1) {
+        remember(PersonalizationLearningTarget.Pinyin(phrase), start, endExclusive)
+    }
+
+    fun rememberWubi(
+        rawCode: String,
+        candidate: Candidate,
+        start: Int = -1,
+        endExclusive: Int = -1,
+    ) {
+        remember(PersonalizationLearningTarget.Wubi(rawCode, candidate), start, endExclusive)
+    }
+
+    private fun remember(
+        target: PersonalizationLearningTarget,
+        start: Int,
+        endExclusive: Int,
+    ) {
         pending = Pending(
-            phrase = phrase,
+            target = target,
             start = start,
             endExclusive = endExclusive,
             recordedAtMillis = clock(),
@@ -60,7 +95,7 @@ internal class PersonalizationFeedbackWindow(
                 cursor == value.endExclusive
         return Attempt(
             token = value,
-            phraseToDemote = value.phrase.takeIf { cursorMatches },
+            targetToDemote = value.target.takeIf { cursorMatches },
         )
     }
 
@@ -81,14 +116,14 @@ internal class PersonalizationFeedbackWindow(
         }
         return Attempt(
             token = value,
-            phraseToDemote = value.phrase.takeIf { overlapsCommittedRange },
+            targetToDemote = value.target.takeIf { overlapsCommittedRange },
         )
     }
 
     /** Prepares an accepted action that invalidates feedback without demoting it. */
     fun prepareExpiration(): Attempt? =
         freshPending()?.let { value ->
-            Attempt(token = value, phraseToDemote = null)
+            Attempt(token = value, targetToDemote = null)
         }
 
     /**
@@ -97,7 +132,7 @@ internal class PersonalizationFeedbackWindow(
      * Attempts are one-shot, and two nested attempts for the same pending phrase
      * can produce at most one demotion.
      */
-    fun complete(attempt: Attempt?): LearnedPhrase? {
+    fun complete(attempt: Attempt?): PersonalizationLearningTarget? {
         attempt ?: return null
         if (attempt.completed) return null
         attempt.completed = true
@@ -105,7 +140,7 @@ internal class PersonalizationFeedbackWindow(
         if (value.finalized) return null
         value.finalized = true
         if (pending === value) pending = null
-        return attempt.phraseToDemote
+        return attempt.targetToDemote
     }
 
     fun clear() {

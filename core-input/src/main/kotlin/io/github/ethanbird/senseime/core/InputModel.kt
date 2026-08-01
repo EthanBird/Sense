@@ -6,6 +6,8 @@ data class Candidate(
     val canonicalPinyin: String? = null,
     val matchKind: CandidateMatchKind = CandidateMatchKind.BASE_EXACT,
     val canonicalInitials: String? = null,
+    /** Scheme-native spelling, for example a Wubi code. */
+    val canonicalCode: String? = null,
 )
 
 enum class CandidateMatchKind {
@@ -19,6 +21,8 @@ enum class CandidateMatchKind {
     ENGLISH_PREFIX,
     USER_FULL,
     USER_INITIALS,
+    WUBI_EXACT,
+    WUBI_COMPLETION,
 }
 
 data class InputState(
@@ -64,6 +68,51 @@ interface RankedCandidateDecoder : InputDecoder
 /** Optional boundary-aware ranking for a previously selected composing segment. */
 interface ContextualInputDecoder : InputDecoder {
     fun decodeAfter(previousCodePoint: Int, composing: String, limit: Int = 5): List<Candidate>
+}
+
+/** Chinese-only recall seam for schemes whose key stream must never summon the English lexicon. */
+interface ChineseOnlyInputDecoder : InputDecoder {
+    fun decodeChineseOnly(composing: String, limit: Int = 5): List<Candidate>
+
+    fun decodeChineseOnlyAfter(
+        previousCodePoint: Int,
+        composing: String,
+        limit: Int = 5,
+    ): List<Candidate> = decodeChineseOnly(composing, limit)
+}
+
+/**
+ * Chinese-only decoding for a spelling that has already been validated by an input scheme.
+ *
+ * T9 paths come from the canonical syllable trie, so running the typo-correction graph again
+ * only repeats work and can introduce candidates that contradict the numeric path. Implementors
+ * retain exact, composed, hybrid, initials and personalization recall while omitting edit paths.
+ */
+interface CanonicalChineseOnlyInputDecoder : ChineseOnlyInputDecoder {
+    fun decodeCanonicalChineseOnly(composing: String, limit: Int = 5): List<Candidate>
+
+    fun decodeCanonicalChineseOnlyAfter(
+        previousCodePoint: Int,
+        composing: String,
+        limit: Int = 5,
+    ): List<Candidate> = decodeCanonicalChineseOnly(composing, limit)
+}
+
+/**
+ * Optional low-cost lexical seam for an already validated canonical spelling.
+ *
+ * It returns dictionary, hybrid, initials and personalization evidence without constructing a
+ * fallback sentence composition. Ambiguous input schemes can probe a wider bounded path beam,
+ * then run the complete canonical decoder only for retained winners or a structural fallback.
+ */
+interface CanonicalChineseLexicalProbeDecoder : InputDecoder {
+    fun probeCanonicalChineseOnly(composing: String, limit: Int = 1): List<Candidate>
+
+    fun probeCanonicalChineseOnlyAfter(
+        previousCodePoint: Int,
+        composing: String,
+        limit: Int = 1,
+    ): List<Candidate> = probeCanonicalChineseOnly(composing, limit)
 }
 
 /**

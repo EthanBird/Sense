@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "stage": "M0",
-  "generatedAt": "2026-07-30T14:47:30.782821100Z",
+  "generatedAt": "2026-08-01T10:47:40.531133700Z",
   "runtime": {
     "java": "17.0.19",
     "os": "Windows 10",
@@ -10,8 +10,8 @@
   "reducer": {
     "samples": 7,
     "operationsPerSample": 100000,
-    "medianNsPerOperation": 50.95,
-    "p95NsPerOperation": 78.18
+    "medianNsPerOperation": 58.74,
+    "p95NsPerOperation": 70.65
   },
   "deviceMetrics": {
     "status": "pending-real-device",

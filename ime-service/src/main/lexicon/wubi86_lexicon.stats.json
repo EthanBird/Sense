@@ -1,0 +1,45 @@
+{
+  "asset": {
+    "bytes": 5611947,
+    "sha256": "e2d47d43ab702862c349cd7f9ad36b2d4cbd72963c95cdb6f7911bf849937207"
+  },
+  "counts": {
+    "completion_candidates": 116889,
+    "completion_prefixes": 15259,
+    "exact_candidates": 136239,
+    "exact_codes": 99054,
+    "reverse_characters": 70386
+  },
+  "format": "SWBX/1",
+  "manifest": {
+    "path": "wubi_sources.json",
+    "sha256": "d37379890b59db10db7d49e6390c487ed5207c27ccf8e7f325a3d8c42bf80da3",
+    "sources": [
+      {
+        "id": "rime-wubi86",
+        "path": "wubi86.dict.yaml",
+        "sha256": "f833d86b72341fe82e069a425b6625f29ef85f1bc0f34f6fb7975fe514888b5a"
+      },
+      {
+        "id": "rime-wubi-license",
+        "path": "LICENSE",
+        "sha256": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768"
+      },
+      {
+        "id": "rime-wubi-authors",
+        "path": "AUTHORS",
+        "sha256": "4e4ca0e3ae6763a7cd5913f92c3b28091a7ec97d5cf4fc96c8f1a294e43f2839"
+      }
+    ]
+  },
+  "schema_version": 1,
+  "source_audit": {
+    "accepted": 136239,
+    "excluded_z": 677
+  },
+  "upstream": {
+    "commit": "152a0d3f3efe40cae216d1e3b338242446848d07",
+    "license": "LGPL-3.0",
+    "repository": "https://github.com/rime/rime-wubi"
+  }
+}

@@ -272,6 +272,106 @@ class SenseKeyboardViewLayoutDeviceTest {
         )
     }
 
+    @Test
+    fun atomicPresentationPublishesFinalQwertyT9AndWubiScenes() {
+        onMain {
+            keyboard.setPanel(SenseKeyboardView.Panel.LETTERS)
+            keyboard.setInputPresentation(
+                chinese = true,
+                mode = PrimaryKeyboardMode.QWERTY,
+                legendMode = PrimaryKeyboardLegendMode.SWIPE_HINTS,
+            )
+        }
+        assertEquals(
+            listOf("qwertyuiop", "asdfghjkl", "zxcvbnm"),
+            characterRows(onMain { keyboard.panelKeysForTesting() }, 'a'..'z'),
+        )
+        assertEquals(
+            "1",
+            onMain { keyboard.panelKeysForTesting().single { it.code == 'q'.code }.visualLegend },
+        )
+
+        val beforeT9 = onMain { keyboard.keySceneBuildCountForTesting() }
+        onMain {
+            keyboard.setInputPresentation(
+                chinese = true,
+                mode = PrimaryKeyboardMode.T9,
+                legendMode = PrimaryKeyboardLegendMode.SWIPE_HINTS,
+            )
+        }
+        val t9Keys = onMain { keyboard.panelKeysForTesting() }
+        assertEquals(beforeT9 + 1L, onMain { keyboard.keySceneBuildCountForTesting() })
+        assertEquals(listOf("123", "456", "789"), characterRows(t9Keys, '1'..'9'))
+        assertTrue(t9Keys.none { it.code in 'a'.code..'z'.code })
+        assertEquals("ABC", t9Keys.single { it.code == '2'.code }.visualLegend)
+
+        val beforeWubi = onMain { keyboard.keySceneBuildCountForTesting() }
+        onMain {
+            keyboard.setInputPresentation(
+                chinese = true,
+                mode = PrimaryKeyboardMode.QWERTY,
+                legendMode = PrimaryKeyboardLegendMode.WUBI_86_ROOTS,
+            )
+        }
+        val wubiKeys = onMain { keyboard.panelKeysForTesting() }
+        assertEquals(beforeWubi + 1L, onMain { keyboard.keySceneBuildCountForTesting() })
+        assertEquals(
+            listOf("qwertyuiop", "asdfghjkl", "zxcvbnm"),
+            characterRows(wubiKeys, 'a'..'z'),
+        )
+        assertEquals("金", wubiKeys.single { it.code == 'q'.code }.visualLegend)
+        assertEquals("工", wubiKeys.single { it.code == 'a'.code }.visualLegend)
+        assertEquals("山", wubiKeys.single { it.code == 'm'.code }.visualLegend)
+        assertEquals("反查", wubiKeys.single { it.code == 'z'.code }.visualLegend)
+        assertEquals(
+            SwipeCharacterMap.forKey('q'.code, SwipeCharacterMode.CHINESE),
+            wubiKeys.single { it.code == 'q'.code }.swipeOutput,
+        )
+        assertEquals(
+            SwipeCharacterMap.forKey('z'.code, SwipeCharacterMode.CHINESE),
+            wubiKeys.single { it.code == 'z'.code }.swipeOutput,
+        )
+
+        onMain {
+            keyboard.setInputPresentation(
+                chinese = true,
+                mode = PrimaryKeyboardMode.QWERTY,
+                legendMode = PrimaryKeyboardLegendMode.WUBI_86_ROOTS,
+            )
+        }
+        assertEquals(beforeWubi + 1L, onMain { keyboard.keySceneBuildCountForTesting() })
+
+        val beforeEnglish = onMain { keyboard.keySceneBuildCountForTesting() }
+        onMain {
+            keyboard.setInputPresentation(
+                chinese = false,
+                mode = PrimaryKeyboardMode.QWERTY,
+                legendMode = PrimaryKeyboardLegendMode.SWIPE_HINTS,
+            )
+        }
+        val englishKeys = onMain { keyboard.panelKeysForTesting() }
+        assertEquals(beforeEnglish + 1L, onMain { keyboard.keySceneBuildCountForTesting() })
+        assertEquals(
+            listOf("qwertyuiop", "asdfghjkl", "zxcvbnm"),
+            characterRows(englishKeys, 'a'..'z'),
+        )
+        assertEquals(
+            SwipeCharacterMap.forKey('m'.code, SwipeCharacterMode.ENGLISH),
+            englishKeys.single { it.code == 'm'.code }.visualLegend,
+        )
+    }
+
+    private fun characterRows(keys: List<Key>, range: CharRange): List<String> = keys
+        .asSequence()
+        .filter { it.code in range.first.code..range.last.code }
+        .groupBy { it.bounds.top }
+        .toSortedMap()
+        .values
+        .map { row ->
+            row.sortedBy { it.bounds.left }
+                .joinToString(separator = "") { it.code.toChar().toString() }
+        }
+
     private fun findFullyVisibleCandidateCenter(
         viewport: android.graphics.RectF,
     ): CandidateTapTarget {

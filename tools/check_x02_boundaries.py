@@ -421,11 +421,11 @@ EXPECTED_ROOT_BUILD_SCRIPT = """plugins {
 """
 
 EXPECTED_OFFLINE_VERIFY_SHA256 = (
-    "eae8286f64788fe1e5f6f8e33895ef54e8b0cad75f0298949e33d7bd3ca782f1"
+    "47c8687989afdd2fc4382ce919084d2e7427220697ae97af51b8684fb5c5d6d9"
 )
 EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("settings.gradle.kts"):
-        "7a929f9b2c7e790c0ef4d7991c7c5fc0a77e5707330f95ade35c1fb25a5f2b3e",
+        "d5ddcd1f6435c33971a5acb0a3e1fe99facffc06221c75a85761bf617b805892",
     Path("gradle/libs.versions.toml"):
         "0bcda17c3ce477b3ae42c811d9317eef9f1eef7abab03022dd24623c4c5a0be1",
     Path("gradle.properties"):
@@ -445,17 +445,19 @@ EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("ai-runtime/build.gradle.kts"):
         "175f9868685698b2f52a572ff42d4e64413b85d47674e038e1cf9219f3ca349c",
     Path("app/build.gradle.kts"):
-        "e6da924b0829500c23c9f40f3d920eb696e0d209f6d4d5d7e278e96c614edc94",
+        "da8f93869331e3376f9c79ec993a18c94b51d2b174da3995b1191873966d6ab1",
     Path("benchmark/build.gradle.kts"):
         "999d9aba8d2813df7e108a9dece00c7f6406b3c5273e59f323d0565e650abf8b",
     Path("brain-api/build.gradle.kts"):
         "c70c74e1a71c3f64a329722b9fa2337ad582df9dbef98c53fa4e781d8f29ee5a",
     Path("core-input/build.gradle.kts"):
-        "bba1bc12517ff0e4dd269c56c5d7ac4d5f4530a401d40c77cbf6c7962639bc69",
+        "a6c83531a328ad895672ac22c7e588e169f2c89cecc699ce9cb3af6cb8143706",
     Path("event-journal/build.gradle.kts"):
         "696b4999da20f0b2def5b6adf5f341f702c46a14d31ee80a0f790561f6bd4930",
+    Path("ime-config/build.gradle.kts"):
+        "3d3607e81b97c7dee10173f0f5c94b61df3f81dd6c02c62df1f33f51d368eb00",
     Path("ime-service/build.gradle.kts"):
-        "4b9f67296f4fc0f661900a2cb6c9b50d5d9496f4c546393dc5516cbe53fee5e0",
+        "b74ee9e4af4a689b21d63dda24c78141863e25e08f8aa86fc666e43d8cea3d44",
     Path("ime-ui/build.gradle.kts"):
         "c733d477f1e5da2a43b6fafaf3fa213b47fe55bb5ed14f99916defd0f96e7c3a",
     Path("memory-protocol/build.gradle.kts"):

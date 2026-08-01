@@ -12,17 +12,17 @@ if ($Publish -and ($SkipBuild -or $SkipTests)) {
     throw "-Publish requires a fresh local build and the complete local test gate."
 }
 
-$ReleaseTag = "v0.4.5.beta.8"
-$ReleaseApkName = "Sense-v0.4.5.beta.8.apk"
-$ReleaseTitle = "Sense v0.4.5.beta.8 - Streaming ASR, undo/redo, and Skills UX"
+$ReleaseTag = "v0.4.5.beta.9"
+$ReleaseApkName = "Sense-v0.4.5.beta.9.apk"
+$ReleaseTitle = "Sense v0.4.5.beta.9 - T9 Pinyin and Wubi 86"
 $ReleaseCertificateSha256 = "76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984"
-$ExpectedVersionName = "0.4.5.beta.8"
-$ExpectedVersionCode = 29
+$ExpectedVersionName = "0.4.5.beta.9"
+$ExpectedVersionCode = 30
 
 $RepoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
 $AppBuildFile = Join-Path $RepoRoot "app\build.gradle.kts"
 $GradleWrapper = Join-Path $RepoRoot "gradlew.bat"
-$ReleaseNotes = Join-Path $RepoRoot "docs\releases\v0.4.5.beta.8.md"
+$ReleaseNotes = Join-Path $RepoRoot "docs\releases\v0.4.5.beta.9.md"
 $BuiltApk = Join-Path $RepoRoot "app/build/outputs/apk/release/app-release.apk"
 $ReleaseDirectory = Join-Path $RepoRoot "build\releases\$ReleaseTag"
 $ReleaseApk = Join-Path $ReleaseDirectory $ReleaseApkName
@@ -315,6 +315,10 @@ function Invoke-LocalTests {
         Write-Host "python tools/$($test.Name)"
         Invoke-Checked -FilePath $Python -ArgumentList @($test.FullName) | Out-Null
     }
+    Write-Host "python tools/verify_wubi86_assets.py"
+    Invoke-Checked -FilePath $Python -ArgumentList @(
+        (Join-Path $RepoRoot "tools\verify_wubi86_assets.py")
+    ) | Out-Null
 
     Write-Step "Run JVM/Android unit tests, lint, and test APK assembly"
     Invoke-Gradle @(
@@ -328,6 +332,7 @@ function Invoke-LocalTests {
         ":event-journal:test",
         ":event-journal:jar",
         ":core-input:test",
+        ":ime-config:testDebugUnitTest",
         ":ime-service:testDebugUnitTest",
         ":ime-service:assembleDebugAndroidTest",
         ":ime-ui:testDebugUnitTest",
@@ -335,6 +340,7 @@ function Invoke-LocalTests {
         ":app:testDebugUnitTest",
         ":app:assembleDebugAndroidTest",
         ":ai-runtime:lintDebug",
+        ":ime-config:lintDebug",
         ":ime-service:lintDebug",
         ":ime-ui:lintDebug",
         ":app:lintDebug",
@@ -348,7 +354,7 @@ function Invoke-LocalTests {
         (Join-Path $RepoRoot "tools/verify_runtime_boundaries.py")
     ) | Out-Null
 
-    Write-Step "Run M0-M6 host performance gates"
+    Write-Step "Run M0-M7 host performance gates"
     # Run the latency-sensitive M3 and M4 gates before the sustained host benchmarks so their
     # absolute budgets are measured before CPU thermal throttling can bias the local release gate.
     $m3Passes = 0
@@ -389,7 +395,8 @@ function Invoke-LocalTests {
         "--console=plain",
         "--no-parallel",
         ":core-input:m5MixedInputBenchmark",
-        ":core-input:m6InputPolishBenchmark"
+        ":core-input:m6InputPolishBenchmark",
+        ":core-input:m7ChineseSchemeBenchmark"
     ) | Out-Null
 }
 
@@ -502,6 +509,13 @@ function Test-ReleaseApk {
             (Join-Path $RepoRoot "tools\verify_manifest_permissions.py"),
             "--packaged", $manifestPath
         ) | Out-Null
+
+        # Rebuild the pinned source and compare the APK's SWBX/1 plus both
+        # LGPL attribution assets byte-for-byte with their reviewed copies.
+        Invoke-Checked -FilePath $Python -ArgumentList @(
+            (Join-Path $RepoRoot "tools\verify_wubi86_assets.py"),
+            "--apk", $Apk
+        ) | Out-Null
     }
     finally {
         $tempRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
@@ -596,7 +610,8 @@ function Restore-PublishBenchmarkResults {
         "benchmarks/results/m3-sentence.json",
         "benchmarks/results/m4-core.json",
         "benchmarks/results/m5-mixed-input.json",
-        "benchmarks/results/m6-input-polish.json"
+        "benchmarks/results/m6-input-polish.json",
+        "benchmarks/results/m7-chinese-schemes.json"
     ) | Out-Null
 }
 

@@ -24,7 +24,11 @@ import io.github.ethanbird.senseime.brain.api.AgentSkillCatalog
 import io.github.ethanbird.senseime.brain.api.AgentSkillDirection
 import io.github.ethanbird.senseime.brain.api.AgentSkillSlot
 import io.github.ethanbird.senseime.brain.runtime.AgentSkillStore
+import io.github.ethanbird.senseime.config.ChineseInputScheme
+import io.github.ethanbird.senseime.config.ImePreferencesStore
+import io.github.ethanbird.senseime.config.ImePreferencesV1
 import io.github.ethanbird.senseime.core.AdaptivePinyinDecoder
+import io.github.ethanbird.senseime.core.AdaptiveWubi86Decoder
 import io.github.ethanbird.senseime.core.BinaryCharacterBigramModel
 import io.github.ethanbird.senseime.core.Candidate
 import io.github.ethanbird.senseime.core.CandidateMatchKind
@@ -35,6 +39,7 @@ import io.github.ethanbird.senseime.core.FakeDecoder
 import io.github.ethanbird.senseime.core.InputDecoder
 import io.github.ethanbird.senseime.core.LearnedPhrase
 import io.github.ethanbird.senseime.core.MemoryUserLexicon
+import io.github.ethanbird.senseime.core.MemoryWubiUserLexicon
 import io.github.ethanbird.senseime.core.PinyinComposition
 import io.github.ethanbird.senseime.core.PinyinDecoder
 import io.github.ethanbird.senseime.core.ProgressivePinyinDecoder
@@ -42,10 +47,17 @@ import io.github.ethanbird.senseime.core.ProgressivePinyinDecoding
 import io.github.ethanbird.senseime.core.PinyinSyllableSegmenter
 import io.github.ethanbird.senseime.core.SemanticCandidateCatalog
 import io.github.ethanbird.senseime.core.SemanticCandidateMixer
+import io.github.ethanbird.senseime.core.T9SyllableIndex
 import io.github.ethanbird.senseime.core.UserLearningEvidence
 import io.github.ethanbird.senseime.core.UserLexicon
 import io.github.ethanbird.senseime.core.UserNegativeFeedback
 import io.github.ethanbird.senseime.core.UserSelectionKind
+import io.github.ethanbird.senseime.core.Wubi86Decoder
+import io.github.ethanbird.senseime.core.Wubi86Lexicon
+import io.github.ethanbird.senseime.core.WubiLearningEvidence
+import io.github.ethanbird.senseime.core.WubiNegativeFeedback
+import io.github.ethanbird.senseime.core.WubiSelectionKind
+import io.github.ethanbird.senseime.core.WubiUserLexicon
 import io.github.ethanbird.senseime.core.editorComposingTextUpdate
 import io.github.ethanbird.senseime.service.ai.SenseAiEditorCoordinator
 import io.github.ethanbird.senseime.service.ai.AgentSkillRunSnapshot
@@ -74,6 +86,8 @@ import io.github.ethanbird.senseime.ui.KeyboardSkillSelection
 import io.github.ethanbird.senseime.ui.KeyboardSkillSelectionListener
 import io.github.ethanbird.senseime.ui.KeyboardSkillToggleAction
 import io.github.ethanbird.senseime.ui.KeyboardLayoutContract
+import io.github.ethanbird.senseime.ui.PrimaryKeyboardMode
+import io.github.ethanbird.senseime.ui.PrimaryKeyboardLegendMode
 import io.github.ethanbird.senseime.ui.SenseKeyboardView
 import io.github.ethanbird.senseime.ui.SenseKeyboardSurface
 import io.github.ethanbird.senseime.ui.VoiceSurfacePhase
@@ -88,12 +102,19 @@ class SenseInputMethodService : InputMethodService() {
         generation = 0L,
         decoder = FakeDecoder(),
         segmenter = PinyinSyllableSegmenter(FALLBACK_SYLLABLES),
+        t9Index = T9SyllableIndex(FALLBACK_SYLLABLES),
     )
+    @Volatile
+    private var wubiRuntime = WubiDecoderRuntime(0L, null, null, null)
     private var adaptiveDecoder: AdaptivePinyinDecoder? = null
     private var userLexicon: UserLexicon? = null
     private val candidateSession = CandidateDecodeSession()
     private var composition = PinyinComposition()
     private var compositionLeftContext = ""
+    private val inputScheme = ChineseInputSchemeCoordinator()
+    private lateinit var imePreferencesStore: ImePreferencesStore
+    private var preferencesLoadGeneration = 0L
+    private var wubiLoadRequested = false
     private var englishInput = EnglishInputSession(EnglishLexicon.EMPTY)
     private var shifted = false
     private var chineseMode = true
@@ -102,9 +123,13 @@ class SenseInputMethodService : InputMethodService() {
     private var imeWindowVisible = false
     private val mainHandler = Handler(Looper.getMainLooper())
     private val candidateResultToken = Any()
+    private val alternativeCandidateResultToken = Any()
     private var candidateRunner: LatestOnlyTaskRunner<CandidateDecodeRequest, ProgressivePinyinDecoding>? = null
-    private var pendingSpaceRevision: Long? = null
-    private val deferredInputs = ArrayDeque<DeferredInput>()
+    private var alternativeCandidateRunner:
+        LatestOnlyTaskRunner<AlternativeDecodeRequest, AlternativeDecoding>? = null
+    private val wubiOverflow = WubiOverflowCoordinator()
+    private val pendingDecodeCommit =
+        PendingDecodeCommitCoordinator<DeferredInput>(MAX_DEFERRED_INPUT_EVENTS)
     private val progressiveLearnings = ProgressiveLearningQueue()
     private val personalizationFeedback = PersonalizationFeedbackWindow(SystemClock::elapsedRealtime)
     private val englishCompositionEdits = EnglishCompositionEditController(
@@ -120,13 +145,12 @@ class SenseInputMethodService : InputMethodService() {
                 updateConnectionComposition(text)
         },
     )
-    private var drainingDeferredInputs = false
     @Volatile
     private var destroyed = false
     private var editorSelectionState = EditorSelectionState()
     private var selectionStart = -1
     private var selectionEnd = -1
-    private var learningAllowed = false
+    private var localPersistenceAllowed = false
     private var productionDecoderReady = false
     private var decodeContextAllowed = true
     private var clipboardHistoryAllowed = false
@@ -142,6 +166,18 @@ class SenseInputMethodService : InputMethodService() {
     }
     private val decoderIo = Executors.newSingleThreadExecutor { runnable ->
         Thread(runnable, "sense-decoder-loader").apply { isDaemon = true }
+    }
+    private val decoderRuntimePublisher = BackgroundRuntimePublisher(
+        backgroundExecutor = decoderIo,
+        publicationExecutor = java.util.concurrent.Executor { command ->
+            mainHandler.post(command)
+        },
+    )
+    private val schemeIo = Executors.newSingleThreadExecutor { runnable ->
+        Thread(runnable, "sense-input-scheme").apply { isDaemon = true }
+    }
+    private val preferencesIo = Executors.newSingleThreadExecutor { runnable ->
+        Thread(runnable, "sense-ime-preferences").apply { isDaemon = true }
     }
     private lateinit var speechController: AndroidSpeechRecognizerController
     private lateinit var cloudSpeechController: CloudSpeechRecognitionController
@@ -162,11 +198,7 @@ class SenseInputMethodService : InputMethodService() {
         publishEditorSelectionState()
     }
     private val pendingCommitTimeout = Runnable {
-        val revision = pendingSpaceRevision ?: return@Runnable
-        if (composition.revision != revision) return@Runnable
-        pendingSpaceRevision = null
-        commitRawComposition()
-        drainDeferredInputs()
+        resolvePendingCommitTimeout()
     }
 
     override fun onCreate() {
@@ -184,11 +216,12 @@ class SenseInputMethodService : InputMethodService() {
             generation = nextGeneration(decoderRuntime.generation),
             decoder = requireNotNull(adaptiveDecoder),
             segmenter = bootstrapSegmenter,
+            t9Index = T9SyllableIndex(FALLBACK_SYLLABLES),
         )
         englishInput = EnglishInputSession(EnglishLexicon.EMPTY, DECODE_CANDIDATE_LIMIT)
         candidateRunner = LatestOnlyTaskRunner(
             threadName = "sense-candidate-decoder",
-            work = { request ->
+            work = { request, _ ->
                 val activeDecoder = request.decoder
                 val decoding = (activeDecoder as? ProgressivePinyinDecoder)?.decodeProgressively(
                     composition = request.composition,
@@ -228,6 +261,27 @@ class SenseInputMethodService : InputMethodService() {
                 )
             },
         )
+        alternativeCandidateRunner = LatestOnlyTaskRunner(
+            threadName = "sense-alternative-candidate-decoder",
+            work = { request, shouldContinue ->
+                AlternativeInputDecoder.decodeWhileCurrent(request, shouldContinue)
+            },
+            deliver = { _, request, decoding ->
+                postAlternativeDecodedCandidates(request, decoding)
+            },
+            fail = { _, request, _ ->
+                postAlternativeDecodedCandidates(
+                    request,
+                    AlternativeDecoding(
+                        key = request.key,
+                        composingLabel = request.key.rawCode,
+                        candidates = emptyList(),
+                        candidateLabels = emptyList(),
+                    ),
+                )
+            },
+        )
+        imePreferencesStore = ImePreferencesStore(this)
         loadProductionDecoderAsync()
         clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         loadClipboardHistory()
@@ -312,64 +366,83 @@ class SenseInputMethodService : InputMethodService() {
      * production decoder has already been published.
      */
     private fun loadProductionDecoderAsync() {
-        decoderIo.execute {
-            val bigramModel = runCatching<CharacterBigramModel> {
-                assets.open(PINYIN_BIGRAM_ASSET).use(BinaryCharacterBigramModel::load)
-            }.onFailure { error ->
-                Log.e(TAG, "Bigram model load failed", error)
-            }.getOrElse { CharacterBigramModel.EMPTY }
-            val baseDecoder = runCatching<InputDecoder> {
-                assets.open(PINYIN_ASSET).use { PinyinDecoder.load(it, bigramModel) }
-            }.onFailure { error ->
-                Log.e(TAG, "Pinyin lexicon load failed", error)
-            }.getOrElse { FakeDecoder() }
-            val syllables = runCatching {
-                assets.open(PINYIN_SYLLABLES_ASSET)
-                    .bufferedReader()
-                    .useLines { lines -> lines.toSet() }
-            }.onFailure { error ->
-                Log.e(TAG, "Pinyin syllable inventory load failed", error)
-            }.getOrElse { FALLBACK_SYLLABLES }
-            val englishLexicon = runCatching {
-                assets.open(ENGLISH_LEXICON_ASSET).use { EnglishLexicon.load(it) }
-            }.onFailure { error ->
-                Log.e(TAG, "English lexicon load failed", error)
-            }.getOrElse { EnglishLexicon.EMPTY }
-            val learned = runCatching<UserLexicon> {
-                PersistentUserLexicon(this)
-            }.onFailure { error ->
-                Log.e(TAG, "Persistent user lexicon migration/load failed", error)
-            }.getOrElse { MemoryUserLexicon() }
-            val segmenter = PinyinSyllableSegmenter(syllables)
-            val loadedDecoder = AdaptivePinyinDecoder(
-                base = baseDecoder,
-                userLexicon = learned,
-                segmenter = segmenter,
-                englishLexicon = englishLexicon,
-            )
-            mainHandler.post {
+        decoderRuntimePublisher.load(
+            build = {
+                val bigramModel = runCatching<CharacterBigramModel> {
+                    assets.open(PINYIN_BIGRAM_ASSET).use(BinaryCharacterBigramModel::load)
+                }.onFailure { error ->
+                    Log.e(TAG, "Bigram model load failed", error)
+                }.getOrElse { CharacterBigramModel.EMPTY }
+                val baseDecoder = runCatching<InputDecoder> {
+                    assets.open(PINYIN_ASSET).use { PinyinDecoder.load(it, bigramModel) }
+                }.onFailure { error ->
+                    Log.e(TAG, "Pinyin lexicon load failed", error)
+                }.getOrElse { FakeDecoder() }
+                val syllables = runCatching {
+                    assets.open(PINYIN_SYLLABLES_ASSET)
+                        .bufferedReader()
+                        .useLines { lines -> lines.toSet() }
+                }.onFailure { error ->
+                    Log.e(TAG, "Pinyin syllable inventory load failed", error)
+                }.getOrElse { FALLBACK_SYLLABLES }
+                val englishLexicon = runCatching {
+                    assets.open(ENGLISH_LEXICON_ASSET).use { EnglishLexicon.load(it) }
+                }.onFailure { error ->
+                    Log.e(TAG, "English lexicon load failed", error)
+                }.getOrElse { EnglishLexicon.EMPTY }
+                val learned = runCatching<UserLexicon> {
+                    PersistentUserLexicon(this)
+                }.onFailure { error ->
+                    Log.e(TAG, "Persistent user lexicon migration/load failed", error)
+                }.getOrElse { MemoryUserLexicon() }
+                val segmenter = PinyinSyllableSegmenter(syllables)
+                val loadedDecoder = AdaptivePinyinDecoder(
+                    base = baseDecoder,
+                    userLexicon = learned,
+                    segmenter = segmenter,
+                    englishLexicon = englishLexicon,
+                )
+                val t9Index = runCatching {
+                    T9SyllableIndex(syllables)
+                }.onFailure { error ->
+                    Log.e(TAG, "T9 syllable index build failed", error)
+                }.getOrElse {
+                    T9SyllableIndex(FALLBACK_SYLLABLES)
+                }
+                LoadedCandidateDecoderRuntime(
+                    runtime = CandidateDecoderRuntime(
+                        generation = 0L,
+                        decoder = loadedDecoder,
+                        segmenter = segmenter,
+                        t9Index = t9Index,
+                    ),
+                    adaptiveDecoder = loadedDecoder,
+                    userLexicon = learned,
+                    englishLexicon = englishLexicon,
+                )
+            },
+            publish = publish@{ loaded ->
+                val learned = loaded.userLexicon
                 if (destroyed) {
                     learned.close()
-                    return@post
+                    return@publish
                 }
                 val previousLexicon = userLexicon
                 userLexicon = learned
-                adaptiveDecoder = loadedDecoder
-                decoderRuntime = CandidateDecoderRuntime(
+                adaptiveDecoder = loaded.adaptiveDecoder
+                decoderRuntime = loaded.runtime.copy(
                     generation = nextGeneration(decoderRuntime.generation),
-                    decoder = loadedDecoder,
-                    segmenter = segmenter,
                 )
                 productionDecoderReady = true
-                learningAllowed = allowsLocalPersistence(currentEditorInfo)
+                localPersistenceAllowed = allowsLocalPersistence(currentEditorInfo)
 
                 val pendingEnglish = englishInput.composing
-                englishInput = EnglishInputSession(englishLexicon, DECODE_CANDIDATE_LIMIT)
+                englishInput = EnglishInputSession(loaded.englishLexicon, DECODE_CANDIDATE_LIMIT)
                 pendingEnglish.forEach(englishInput::type)
                 previousLexicon?.takeIf { it !== learned }?.close()
-                render(forceDecode = chineseMode && composition.remainingPinyin.isNotEmpty())
-            }
-        }
+                render(forceDecode = chineseMode && hasActiveChineseComposition())
+            },
+        )
     }
 
     override fun onCreateInputView(): View = SenseKeyboardSurface(this).also { surface ->
@@ -400,7 +473,11 @@ class SenseInputMethodService : InputMethodService() {
                 aiCoordinator.cancel(generation, HarnessCancelReason.CALLER_REQUESTED)
             }
         }
-        view.setChineseMode(chineseMode)
+        view.setInputPresentation(
+            chineseMode,
+            activePrimaryKeyboardMode(),
+            activePrimaryKeyboardLegendMode(),
+        )
         view.setEditorSelectionState(
             hasSelection = editorSelectionState.hasSelection,
             selectionMode = editorSelectionState.selectionMode,
@@ -527,7 +604,7 @@ class SenseInputMethodService : InputMethodService() {
         editorSessionId = nextGeneration(editorSessionId)
         editorFieldIdentity = "editor-$editorSessionId"
         val persistenceAllowed = allowsLocalPersistence(attribute)
-        learningAllowed = persistenceAllowed && productionDecoderReady
+        localPersistenceAllowed = persistenceAllowed
         decodeContextAllowed = allowsTransientDecodeContext(attribute)
         clipboardHistoryAllowed = persistenceAllowed
         selectionStart = attribute?.initialSelStart ?: -1
@@ -537,6 +614,7 @@ class SenseInputMethodService : InputMethodService() {
         )
         publishEditorSelectionState()
         resetComposition(finishConnection = true)
+        refreshImePreferencesAsync(editorSessionId)
         keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
         if (clipboardHistoryAllowed) {
             capturePrimaryClipboard()
@@ -548,7 +626,12 @@ class SenseInputMethodService : InputMethodService() {
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         cancelVoiceSession(exitSurface = true)
         super.onStartInputView(info, restarting)
-        keyboardView?.setChineseMode(chineseMode)
+        refreshImePreferencesAsync(editorSessionId)
+        keyboardView?.setInputPresentation(
+            chineseMode,
+            activePrimaryKeyboardMode(),
+            activePrimaryKeyboardLegendMode(),
+        )
         keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
         reconcileAgentSkillsAndWatcher()
         render()
@@ -568,6 +651,10 @@ class SenseInputMethodService : InputMethodService() {
     override fun onFinishInput() {
         cancelVoiceSession(exitSurface = true)
         invalidateAiForEditorChange(EditorStaleReason.FINISH_INPUT)
+        // Invalidate commit/replay snapshots before finishComposingText can re-enter the host.
+        // getCurrentInputConnection may still expose the binding-level connection after finish.
+        editorSessionId = nextGeneration(editorSessionId)
+        editorFieldIdentity = "editor-$editorSessionId"
         clipboardHistoryAllowed = false
         resetComposition(finishConnection = true)
         currentEditorInfo = null
@@ -611,7 +698,7 @@ class SenseInputMethodService : InputMethodService() {
         selectionStart = newSelStart
         selectionEnd = newSelEnd
         val hasActiveComposition = if (chineseMode) {
-            composition.visibleText.isNotEmpty()
+            hasActiveChineseComposition()
         } else {
             englishInput.composing.isNotEmpty()
         }
@@ -641,19 +728,31 @@ class SenseInputMethodService : InputMethodService() {
         destroyed = true
         imeWindowVisible = false
         keyboardSurface?.setImeWindowVisible(false)
-        pendingSpaceRevision = null
+        pendingDecodeCommit.clearAll()
+        wubiOverflow.clear()
         mainHandler.removeCallbacks(pendingCommitTimeout)
-        deferredInputs.clear()
         mainHandler.removeCallbacksAndMessages(candidateResultToken)
+        mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
         candidateRunner?.close()
         candidateRunner = null
+        alternativeCandidateRunner?.close()
+        alternativeCandidateRunner = null
         decoderIo.shutdownNow()
+        schemeIo.shutdownNow()
+        preferencesIo.shutdownNow()
         clipboardManager.removePrimaryClipChangedListener(clipboardListener)
         userLexicon?.close()
         userLexicon = null
+        wubiRuntime.userLexicon?.close()
+        wubiRuntime = WubiDecoderRuntime(
+            generation = nextGeneration(wubiRuntime.generation),
+            decoder = null,
+            candidateDecoder = null,
+            userLexicon = null,
+        )
         adaptiveDecoder = null
         productionDecoderReady = false
-        learningAllowed = false
+        localPersistenceAllowed = false
         val voiceSession = activeVoiceSession
         activeVoiceSession = null
         cancelVoiceBackend(voiceSession)
@@ -697,19 +796,12 @@ class SenseInputMethodService : InputMethodService() {
     private fun beginAiHold(generation: Long) {
         val view = keyboardView ?: return
         if (!view.isAiSurfaceActive() || view.activeAiGeneration() != generation) return
+        if (deferIfDecodeCommitPending(DeferredInput.AiHold(generation))) return
+        cancelVoiceForEditorInput()
         val compositionSettled = when {
             !chineseMode && englishInput.composing.isNotEmpty() ->
                 commitEnglishComposition(englishInput.defaultCommitCandidate)
-            chineseMode && composition.visibleText.isNotEmpty() -> {
-                val decoding = currentDecoding()
-                if (decoding != null) {
-                    commitPrimary(decoding.wholeCandidates.firstOrNull())
-                } else {
-                    // Long-press has already given the decoder 380 ms. A stalled
-                    // worker must not make AI activation hang indefinitely.
-                    commitRawComposition()
-                }
-            }
+            chineseMode && hasActiveChineseComposition() -> commitActivePrimaryOrRaw()
             else -> true
         }
         if (!compositionSettled) {
@@ -757,6 +849,7 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun handleKey(code: Int) {
+        if (deferIfDecodeCommitPending(DeferredInput.Key(code))) return
         when (code) {
             KeyCodes.VOICE -> {
                 openVoiceInput()
@@ -779,10 +872,7 @@ class SenseInputMethodService : InputMethodService() {
                 return
             }
         }
-        if (activeVoiceSession != null || keyboardView?.isVoiceSurfaceActive() == true) {
-            cancelVoiceSession(exitSurface = true)
-        }
-        if (deferIfSpacePending(DeferredInput.Key(code))) return
+        cancelVoiceForEditorInput()
         when (code) {
             KeyCodes.SHIFT -> {
                 shifted = !shifted
@@ -820,7 +910,7 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun handleCharacter(character: Char) {
         val replacementFeedback = if (
-            composition.visibleText.isEmpty() && englishInput.composing.isEmpty()
+            !hasAnyComposition()
         ) {
             personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
         } else {
@@ -842,11 +932,24 @@ class SenseInputMethodService : InputMethodService() {
             return
         }
 
+        when (inputScheme.scheme) {
+            ChineseInputScheme.PINYIN_QWERTY ->
+                handlePinyinCharacter(character, replacementFeedback)
+            ChineseInputScheme.PINYIN_T9 ->
+                handleT9Character(character, replacementFeedback)
+            ChineseInputScheme.WUBI_86 ->
+                handleWubiCharacter(character, replacementFeedback)
+        }
+    }
+
+    private fun handlePinyinCharacter(
+        character: Char,
+        replacementFeedback: PersonalizationFeedbackWindow.Attempt?,
+    ) {
         if (character.lowercaseChar() !in 'a'..'z') {
             commitText(character.toString())
             return
         }
-
         val previous = composition
         val next = previous.type(character)
         val nextLeftContext = if (previous.visibleText.isEmpty()) {
@@ -862,10 +965,108 @@ class SenseInputMethodService : InputMethodService() {
         render()
     }
 
+    private fun handleT9Character(
+        character: Char,
+        replacementFeedback: PersonalizationFeedbackWindow.Attempt?,
+    ) {
+        when (
+            inputScheme.type(
+                character = character,
+                captureLeftContext = ::captureDecodeLeftContext,
+                publish = ::updateConnectionComposition,
+            )
+        ) {
+            AlternativeEditResult.UNHANDLED -> commitText(character.toString())
+            AlternativeEditResult.CHANGED -> {
+                completeReplacementFeedback(replacementFeedback)
+                render()
+            }
+            AlternativeEditResult.CONSUMED,
+            AlternativeEditResult.REJECTED,
+            -> Unit
+        }
+    }
+
+    private fun handleWubiCharacter(
+        character: Char,
+        replacementFeedback: PersonalizationFeedbackWindow.Attempt?,
+    ) {
+        val normalized = character.lowercaseChar()
+        if (normalized !in 'a'..'z') {
+            commitText(character.toString())
+            return
+        }
+        when (
+            val overflow = wubiOverflow.onCharacter(
+                composition = inputScheme.wubi,
+                character = normalized,
+                presentationRevision = activePresentationRevision(),
+                mode = inputScheme.preferences.wubiAutoCommitMode,
+                decoding = currentAlternativeDecoding(),
+            )
+        ) {
+            WubiOverflowAction.Continue -> Unit
+            WubiOverflowAction.Reject -> return
+            is WubiOverflowAction.Commit -> {
+                if (commitAlternativeCandidate(overflow.candidate)) {
+                    // Committing is a settings-safe composition boundary. Route the fifth key
+                    // again so a concurrently loaded scheme preference is also respected.
+                    handleCharacter(normalized)
+                }
+                return
+            }
+            is WubiOverflowAction.Await -> {
+                startPendingWubiOverflow(
+                    presentationRevision = overflow.presentationRevision,
+                    replayKeyCode = normalized.code,
+                )
+                if (alternativeCandidateRunner == null) {
+                    val candidates = wubiRuntime.candidateDecoder
+                        ?.decode(inputScheme.wubi.code, DECODE_CANDIDATE_LIMIT)
+                        .orEmpty()
+                    val resolution = wubiOverflow.onDecoded(
+                        overflow.presentationRevision,
+                        candidates,
+                    )
+                    when (resolution) {
+                        WubiOverflowAction.Continue,
+                        is WubiOverflowAction.Await,
+                        -> error("Synchronous Wubi overflow resolution did not terminate")
+                        WubiOverflowAction.Reject,
+                        is WubiOverflowAction.Commit,
+                        -> resolveWubiOverflowAction(
+                            action = resolution,
+                            presentationRevision = overflow.presentationRevision,
+                        )
+                    }
+                }
+                return
+            }
+        }
+        when (
+            inputScheme.type(
+                character = normalized,
+                captureLeftContext = ::captureDecodeLeftContext,
+                publish = ::updateConnectionComposition,
+            )
+        ) {
+            AlternativeEditResult.UNHANDLED -> commitText(character.toString())
+            AlternativeEditResult.CHANGED -> {
+                completeReplacementFeedback(replacementFeedback)
+                render()
+            }
+            AlternativeEditResult.CONSUMED,
+            AlternativeEditResult.REJECTED,
+            -> Unit
+        }
+    }
+
     private fun handleBackspace() {
         if (!chineseMode && englishInput.composing.isNotEmpty()) {
             if (englishCompositionEdits.backspace()) render()
-        } else if (composition.visibleText.isNotEmpty()) {
+        } else if (chineseMode && hasAlternativeComposition()) {
+            handleAlternativeBackspace()
+        } else if (chineseMode && hasActiveChineseComposition()) {
             val rollsBackProgressiveSelection =
                 composition.remainingPinyin.isEmpty() && composition.acceptedSegments.isNotEmpty()
             val previous = composition
@@ -882,6 +1083,10 @@ class SenseInputMethodService : InputMethodService() {
         }
     }
 
+    private fun handleAlternativeBackspace() {
+        if (inputScheme.backspace(::updateConnectionComposition)) render()
+    }
+
     private fun handleSpace() {
         if (!chineseMode) {
             if (englishInput.composing.isNotEmpty()) {
@@ -896,6 +1101,10 @@ class SenseInputMethodService : InputMethodService() {
             }
             return
         }
+        if (inputScheme.scheme != ChineseInputScheme.PINYIN_QWERTY) {
+            handleAlternativeSpace()
+            return
+        }
         if (composition.visibleText.isEmpty()) {
             val feedback =
                 personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
@@ -905,28 +1114,49 @@ class SenseInputMethodService : InputMethodService() {
             return
         }
         if (composition.remainingPinyin.isEmpty()) {
-            commitRawComposition()
+            commitActiveRawComposition()
             return
         }
         val decoding = currentDecoding()
         if (decoding == null) {
             startPendingCommit(composition.revision)
             if (candidateRunner == null) {
-                clearPendingCommit()
-                commitRawComposition()
+                val completion = finishPendingCandidateCommit(composition.revision)
+                commitAndReplayPending(completion, ::commitRawComposition)
             }
             return
         }
         commitPrimary(decoding.wholeCandidates.firstOrNull())
     }
 
+    private fun handleAlternativeSpace() {
+        if (!hasAlternativeComposition()) {
+            val feedback =
+                personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
+            if (currentInputConnection?.commitText(" ", 1) == true) {
+                completeReplacementFeedback(feedback)
+            }
+            return
+        }
+        val decoding = currentAlternativeDecoding()
+        if (decoding == null) {
+            startPendingCommit(activePresentationRevision())
+            if (alternativeCandidateRunner == null) {
+                val completion = finishPendingCandidateCommit(activePresentationRevision())
+                commitAndReplayPending(completion, ::commitAlternativeRawComposition)
+            }
+            return
+        }
+        commitAlternativeCandidate(decoding.candidates.firstOrNull())
+    }
+
     private fun handleEnter() {
         if (!chineseMode && englishInput.composing.isNotEmpty()) {
             commitEnglishComposition(candidate = null)
-        } else if (composition.visibleText.isNotEmpty()) {
+        } else if (chineseMode && hasActiveChineseComposition()) {
             // Enter confirms exactly what the user can see. It never auto-selects
             // a Chinese candidate and does not append a newline in this branch.
-            commitRawComposition()
+            commitActiveRawComposition()
         } else {
             val feedback =
                 personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
@@ -941,6 +1171,15 @@ class SenseInputMethodService : InputMethodService() {
     private fun commitCandidate(revision: Long, sourceIndex: Int) {
         if (!chineseMode) {
             englishInput.select(revision, sourceIndex)?.let(::commitEnglishComposition)
+            return
+        }
+        if (inputScheme.scheme != ChineseInputScheme.PINYIN_QWERTY) {
+            if (!hasAlternativeComposition()) return
+            val candidate = inputScheme.select(revision, sourceIndex) ?: return
+            commitAlternativeCandidate(
+                candidate,
+                UserLearningEvidence(UserSelectionKind.EXPLICIT_SELECTION, sourceIndex.coerceAtLeast(0)),
+            )
             return
         }
         if (composition.visibleText.isEmpty()) return
@@ -978,7 +1217,7 @@ class SenseInputMethodService : InputMethodService() {
                 // setComposingText. Never resurrect that stale transaction.
                 if (composition != previous) return
                 composition = next
-                if (learningAllowed) progressiveLearnings.add(learning)
+                if (pinyinLearningReady()) progressiveLearnings.add(learning)
                 render()
             }
 
@@ -987,9 +1226,10 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun commitText(text: String) {
-        if (deferIfSpacePending(DeferredInput.Text(text))) return
+        if (deferIfDecodeCommitPending(DeferredInput.Text(text))) return
+        cancelVoiceForEditorInput()
         val replacementFeedback = if (
-            composition.visibleText.isEmpty() && englishInput.composing.isEmpty()
+            !hasAnyComposition()
         ) {
             personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
         } else {
@@ -1000,15 +1240,36 @@ class SenseInputMethodService : InputMethodService() {
             if (!commitEnglishComposition(englishInput.defaultCommitCandidate)) return
             committedComposition = true
         }
+        if (
+            chineseMode &&
+            inputScheme.scheme != ChineseInputScheme.PINYIN_QWERTY &&
+            hasAlternativeComposition()
+        ) {
+            val decoding = currentAlternativeDecoding()
+            if (decoding == null) {
+                startPendingCommit(
+                    revision = activePresentationRevision(),
+                    triggerInput = DeferredInput.Text(text),
+                )
+                if (alternativeCandidateRunner == null) {
+                    val completion = finishPendingCandidateCommit(activePresentationRevision())
+                    commitAndReplayPending(completion, ::commitAlternativeRawComposition)
+                }
+                return
+            }
+            if (!commitAlternativeCandidate(decoding.candidates.firstOrNull())) return
+            committedComposition = true
+        }
         if (composition.visibleText.isNotEmpty()) {
             val decoding = currentDecoding()
             if (composition.remainingPinyin.isNotEmpty() && decoding == null) {
-                startPendingCommit(composition.revision)
-                deferredInputs.addLast(DeferredInput.Text(text))
+                startPendingCommit(
+                    revision = composition.revision,
+                    triggerInput = DeferredInput.Text(text),
+                )
                 if (candidateRunner == null) {
-                    clearPendingCommit()
-                    commitRawComposition()
-                    drainDeferredInputs()
+                    val completion = finishPendingCandidateCommit(composition.revision)
+                    commitAndReplayPending(completion, ::commitRawComposition)
                 }
                 return
             }
@@ -1028,21 +1289,21 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun toggleLanguage() {
-        if (chineseMode) {
-            if (composition.visibleText.isNotEmpty()) commitRawComposition()
-        } else if (englishInput.composing.isNotEmpty()) {
-            commitEnglishComposition(candidate = null)
-        }
+        if (!commitActiveRawComposition()) return
         chineseMode = !chineseMode
         shifted = false
         keyboardView?.setShifted(false)
-        keyboardView?.setChineseMode(chineseMode)
+        keyboardView?.setInputPresentation(
+            chineseMode,
+            activePrimaryKeyboardMode(),
+            activePrimaryKeyboardLegendMode(),
+        )
         keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
         render()
     }
 
     private fun switchInputMethod() {
-        commitActiveRawComposition()
+        if (!commitActiveRawComposition()) return
         (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).showInputMethodPicker()
     }
 
@@ -1056,7 +1317,7 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun showEditor() {
-        commitActiveRawComposition()
+        if (!commitActiveRawComposition()) return
         editorSelectionState = EditorSelectionState(
             hasSelection = hasHostSelection(selectionStart, selectionEnd),
         )
@@ -1118,7 +1379,7 @@ class SenseInputMethodService : InputMethodService() {
         secondaryFallbackMetaState: Int = 0,
         successMessage: String,
     ) {
-        commitActiveRawComposition()
+        if (!commitActiveRawComposition()) return
         val connection = currentInputConnection ?: return
         val accepted =
             connection.performContextMenuAction(actionId) ||
@@ -1194,7 +1455,22 @@ class SenseInputMethodService : InputMethodService() {
     ) {
         val learned = personalizationFeedback.complete(attempt) ?: return
         runCatching {
-            adaptiveDecoder?.demote(learned, feedback)
+            when (learned) {
+                is PersonalizationLearningTarget.Pinyin ->
+                    adaptiveDecoder?.demote(learned.phrase, feedback)
+                is PersonalizationLearningTarget.Wubi ->
+                    wubiRuntime.candidateDecoder?.demote(
+                        composing = learned.rawCode,
+                        candidate = learned.candidate,
+                        feedback = when (feedback) {
+                            UserNegativeFeedback.QUICK_DELETE -> WubiNegativeFeedback.QUICK_DELETE
+                            UserNegativeFeedback.IMMEDIATE_REPLACEMENT ->
+                                WubiNegativeFeedback.IMMEDIATE_REPLACEMENT
+                            UserNegativeFeedback.MANUAL_DEMOTION ->
+                                WubiNegativeFeedback.MANUAL_DEMOTION
+                        },
+                    )
+            }
         }.onFailure { error ->
             Log.e(TAG, "Personalization feedback update failed", error)
         }
@@ -1317,7 +1593,7 @@ class SenseInputMethodService : InputMethodService() {
     private fun openVoiceInput() {
         if (!::speechController.isInitialized || currentInputConnection == null) return
         cancelVoiceSession(exitSurface = true)
-        commitActiveRawComposition()
+        if (!commitActiveRawComposition()) return
         val launchGeneration = nextGeneration(voiceLaunchGeneration)
         voiceLaunchGeneration = launchGeneration
         // As with AI snapshots, let a composing-text commit reach the host before binding the
@@ -1331,6 +1607,18 @@ class SenseInputMethodService : InputMethodService() {
             ) {
                 startVoiceInputNow()
             }
+        }
+    }
+
+    /**
+     * A voice launch is posted one main-loop turn after its composing commit. Input replayed in
+     * that gap must invalidate the post just as input after an active launch cancels its session.
+     */
+    private fun cancelVoiceForEditorInput() {
+        if (activeVoiceSession != null || keyboardView?.isVoiceSurfaceActive() == true) {
+            cancelVoiceSession(exitSurface = true)
+        } else {
+            voiceLaunchGeneration = nextGeneration(voiceLaunchGeneration)
         }
     }
 
@@ -1644,11 +1932,12 @@ class SenseInputMethodService : InputMethodService() {
     private fun resetComposition(finishConnection: Boolean) {
         composition = composition.reset()
         compositionLeftContext = ""
+        inputScheme.reset()
+        mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
         progressiveLearnings.clear()
         personalizationFeedback.clear()
         englishInput.reset()
         clearPendingCommit()
-        deferredInputs.clear()
         shifted = false
         keyboardView?.setShifted(false)
         if (finishConnection) currentInputConnection?.finishComposingText()
@@ -1656,12 +1945,20 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun render(forceDecode: Boolean = false) {
+        inputScheme.takePendingPreferences(compositionActive = hasAnyComposition())?.let { value ->
+            applyImePreferences(value)
+            return
+        }
         if (!chineseMode) {
             keyboardView?.updateComposing(
                 englishInput.revision,
                 englishInput.composing,
                 englishInput.candidates.map { it.text },
             )
+            return
+        }
+        if (inputScheme.scheme != ChineseInputScheme.PINYIN_QWERTY) {
+            renderAlternative(forceDecode)
             return
         }
         val runtime = decoderRuntime
@@ -1721,7 +2018,12 @@ class SenseInputMethodService : InputMethodService() {
         request: CandidateDecodeRequest,
         decoding: ProgressivePinyinDecoding,
     ) {
-        if (destroyed || !chineseMode || request.composition != composition) return
+        if (
+            destroyed ||
+            !chineseMode ||
+            inputScheme.scheme != ChineseInputScheme.PINYIN_QWERTY ||
+            request.composition != composition
+        ) return
         val presentation = candidateSession.complete(
             requestedComposition = request.composition,
             decoding = decoding,
@@ -1729,10 +2031,13 @@ class SenseInputMethodService : InputMethodService() {
             decoderGeneration = request.decoderGeneration,
         ) ?: return
 
-        if (pendingSpaceRevision == composition.revision) {
-            clearPendingCommit()
-            commitPrimary(decoding.wholeCandidates.firstOrNull())
-            drainDeferredInputs()
+        if (
+            pendingDecodeCommit.intent == PendingDecodeCommit.Candidate(composition.revision)
+        ) {
+            val completion = finishPendingCandidateCommit(composition.revision)
+            commitAndReplayPending(completion) {
+                commitPrimary(decoding.wholeCandidates.firstOrNull())
+            }
             return
         }
         keyboardView?.updateComposing(
@@ -1754,6 +2059,128 @@ class SenseInputMethodService : InputMethodService() {
             decoderGeneration = runtime.generation,
         )
     }
+
+    private fun renderAlternative(forceDecode: Boolean) {
+        val key = inputScheme.key()
+        val pinyinRuntime = decoderRuntime
+        val activeWubiRuntime = wubiRuntime
+        val request = AlternativeDecodeRequest(
+            key = key,
+            t9Composition = inputScheme.t9.takeIf {
+                inputScheme.scheme == ChineseInputScheme.PINYIN_T9
+            },
+            wubiComposition = inputScheme.wubi.takeIf {
+                inputScheme.scheme == ChineseInputScheme.WUBI_86
+            },
+            t9Index = pinyinRuntime.t9Index,
+            pinyinDecoder = pinyinRuntime.decoder,
+            pinyinDecoderGeneration = pinyinRuntime.generation,
+            wubiDecoder = activeWubiRuntime.decoder,
+            wubiCandidateDecoder = activeWubiRuntime.candidateDecoder,
+            wubiDecoderGeneration = activeWubiRuntime.generation,
+            leftContext = inputScheme.leftContext,
+            limit = DECODE_CANDIDATE_LIMIT,
+        )
+        val launch = inputScheme.begin(request, forceDecode)
+        if (launch.stateChanged) {
+            mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
+        }
+        val ready = launch.presentation.decoding
+        val label = ready?.composingLabel ?: key.rawCode
+        if (launch.presentation.pending) {
+            keyboardView?.updateComposition(key.presentationRevision, label)
+        } else {
+            keyboardView?.updateComposing(
+                key.presentationRevision,
+                label,
+                ready?.candidateLabels.orEmpty(),
+            )
+        }
+        val decoderReady = isAlternativeDecoderReady(
+            scheme = request.key.scheme,
+            wubiCandidateDecoderAvailable = activeWubiRuntime.candidateDecoder != null,
+            wubiLoadInFlight = wubiLoadRequested,
+        )
+        if (launch.shouldDecode && decoderReady) {
+            if (alternativeCandidateRunner?.submit(request) == -1L) {
+                alternativeCandidateRunner = null
+            }
+        }
+    }
+
+    private fun postAlternativeDecodedCandidates(
+        request: AlternativeDecodeRequest,
+        decoding: AlternativeDecoding,
+    ) {
+        mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
+        mainHandler.postAtTime(
+            { applyAlternativeDecodedCandidates(request, decoding) },
+            alternativeCandidateResultToken,
+            SystemClock.uptimeMillis(),
+        )
+    }
+
+    private fun applyAlternativeDecodedCandidates(
+        request: AlternativeDecodeRequest,
+        decoding: AlternativeDecoding,
+    ) {
+        if (
+            destroyed ||
+            !chineseMode ||
+            inputScheme.scheme == ChineseInputScheme.PINYIN_QWERTY ||
+            request.key != inputScheme.key()
+        ) {
+            return
+        }
+        val presentation = inputScheme.complete(
+            request = request,
+            decoding = decoding,
+            activePinyinGeneration = decoderRuntime.generation,
+            activeWubiGeneration = wubiRuntime.generation,
+        ) ?: return
+
+        val overflow = wubiOverflow.onDecoded(
+            presentationRevision = request.key.presentationRevision,
+            candidates = decoding.candidates,
+        )
+        when (overflow) {
+            WubiOverflowAction.Continue -> Unit
+            is WubiOverflowAction.Await -> error("Decoded Wubi overflow cannot remain pending")
+            WubiOverflowAction.Reject,
+            is WubiOverflowAction.Commit,
+            -> {
+                resolveWubiOverflowAction(
+                    action = overflow,
+                    presentationRevision = request.key.presentationRevision,
+                )
+                return
+            }
+        }
+
+        if (
+            pendingDecodeCommit.intent ==
+            PendingDecodeCommit.Candidate(request.key.presentationRevision)
+        ) {
+            val completion = finishPendingCandidateCommit(request.key.presentationRevision)
+            commitAndReplayPending(completion) {
+                commitAlternativeCandidate(decoding.candidates.firstOrNull())
+            }
+            return
+        }
+        if (inputScheme.shouldUniqueAtFourCommit()) {
+            val exact = decoding.candidates.filter {
+                it.matchKind == CandidateMatchKind.WUBI_EXACT
+            }
+            if (exact.size == 1 && commitAlternativeCandidate(exact.single())) return
+        }
+        keyboardView?.updateComposing(
+            request.key.presentationRevision,
+            decoding.composingLabel,
+            presentation.decoding?.candidateLabels.orEmpty(),
+        )
+    }
+
+    private fun currentAlternativeDecoding(): AlternativeDecoding? = inputScheme.currentDecoding()
 
     private fun commitPrimary(
         candidate: Candidate?,
@@ -1786,6 +2213,121 @@ class SenseInputMethodService : InputMethodService() {
         return commitComposition(output, rawInput, learnable, evidence, composingLength)
     }
 
+    private fun commitAlternativeCandidate(
+        candidate: Candidate?,
+        evidence: UserLearningEvidence = UserLearningEvidence.DEFAULT_ACCEPT,
+    ): Boolean {
+        val connection = currentInputConnection
+        val commitSnapshot = AlternativeCommitSnapshot.capture(
+            coordinator = inputScheme,
+            hasCandidate = candidate != null,
+            editorSessionId = editorSessionId,
+            inputConnectionIdentity = connection,
+        )
+        val rawCode = commitSnapshot.rawCode
+        if (rawCode.isEmpty()) return false
+        val output = candidate?.text ?: rawCode
+        val feedback = personalizationFeedback.prepareExpiration()
+        val wubiLearningTarget = wubiRuntime.candidateDecoder.takeIf {
+            commitSnapshot.learningDomain == AlternativeLearningDomain.WUBI &&
+                wubiLearningReady()
+        }
+        val pinyinLearningTarget = adaptiveDecoder.takeIf {
+            commitSnapshot.learningDomain == AlternativeLearningDomain.PINYIN &&
+                pinyinLearningReady()
+        }
+        val committedStart = when {
+            hasHostSelection(selectionStart, selectionEnd) -> minOf(selectionStart, selectionEnd)
+            selectionStart >= 0 -> (selectionStart - rawCode.length).coerceAtLeast(0)
+            else -> -1
+        }
+        val committed = connection?.commitText(output, 1) == true
+        if (!committed) {
+            clearPendingCommit()
+            return false
+        }
+        personalizationFeedback.complete(feedback)
+        val sameEditor = commitSnapshot.isSameEditor(editorSessionId, currentInputConnection)
+        val committedEnd = committedStart.takeIf { it >= 0 }?.plus(output.length) ?: -1
+        if (wubiLearningTarget != null && candidate != null) {
+            runCatching {
+                wubiLearningTarget.learn(
+                    composing = rawCode,
+                    candidate = candidate,
+                    evidence = WubiLearningEvidence(
+                        kind = when {
+                            evidence.kind == UserSelectionKind.DEFAULT_ACCEPT ->
+                                WubiSelectionKind.DEFAULT_ACCEPT
+                            candidate.matchKind == CandidateMatchKind.WUBI_COMPLETION ->
+                                WubiSelectionKind.COMPLETION_SELECTION
+                            else -> WubiSelectionKind.EXPLICIT_SELECTION
+                        },
+                        selectedRank = evidence.selectedRank,
+                    ),
+                )
+            }.onFailure { error ->
+                Log.e(TAG, "Wubi86 personalization update failed", error)
+            }.getOrNull()?.let {
+                if (sameEditor) {
+                    personalizationFeedback.rememberWubi(
+                        rawCode = rawCode,
+                        candidate = candidate,
+                        start = committedStart,
+                        endExclusive = committedEnd,
+                    )
+                }
+            }
+        }
+        if (pinyinLearningTarget != null && candidate != null) {
+            val canonical = candidate.canonicalPinyin
+            if (!canonical.isNullOrEmpty()) {
+                runCatching {
+                    pinyinLearningTarget.learn(canonical, candidate, evidence)
+                }.onFailure { error ->
+                    Log.e(TAG, "Alternative Pinyin personalization update failed", error)
+                }.getOrNull()?.let { learned ->
+                    if (sameEditor) {
+                        personalizationFeedback.remember(
+                            learned,
+                            start = committedStart,
+                            endExclusive = committedEnd,
+                        )
+                    }
+                }
+            }
+        }
+        if (commitSnapshot.stillOwnsComposition(inputScheme.key())) {
+            clearAlternativeCompositionAfterCommit()
+        }
+        return true
+    }
+
+    private fun commitAlternativeRawComposition(): Boolean = commitAlternativeCandidate(null)
+
+    private fun commitActivePrimaryOrRaw(): Boolean = when {
+        !chineseMode && englishInput.composing.isNotEmpty() ->
+            commitEnglishComposition(englishInput.defaultCommitCandidate)
+        inputScheme.scheme == ChineseInputScheme.PINYIN_QWERTY -> {
+            val decoding = currentDecoding()
+            if (decoding == null) commitRawComposition()
+            else commitPrimary(decoding.wholeCandidates.firstOrNull())
+        }
+        else -> {
+            val decoding = currentAlternativeDecoding()
+            if (decoding == null) commitAlternativeRawComposition()
+            else commitAlternativeCandidate(decoding.candidates.firstOrNull())
+        }
+    }
+
+    private fun clearAlternativeCompositionAfterCommit() {
+        inputScheme.clearAfterCommit()
+        mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
+        clearPendingCommit()
+        shifted = false
+        keyboardView?.setShifted(false)
+        render()
+    }
+
     private fun commitRawComposition(): Boolean {
         if (composition.visibleText.isEmpty()) return false
         return commitComposition(
@@ -1811,12 +2353,13 @@ class SenseInputMethodService : InputMethodService() {
         return true
     }
 
-    private fun commitActiveRawComposition() {
-        if (chineseMode) {
-            if (composition.visibleText.isNotEmpty()) commitRawComposition()
-        } else if (englishInput.composing.isNotEmpty()) {
-            commitEnglishComposition(candidate = null)
-        }
+    /** Returns true when there was nothing to settle or the host accepted the commit. */
+    private fun commitActiveRawComposition(): Boolean = when {
+        chineseMode && inputScheme.scheme == ChineseInputScheme.PINYIN_QWERTY ->
+            composition.visibleText.isEmpty() || commitRawComposition()
+
+        chineseMode -> !hasAlternativeComposition() || commitAlternativeRawComposition()
+        else -> englishInput.composing.isEmpty() || commitEnglishComposition(candidate = null)
     }
 
     private fun commitComposition(
@@ -1828,7 +2371,7 @@ class SenseInputMethodService : InputMethodService() {
     ): Boolean {
         val committingComposition = composition
         val stagedProgressiveLearnings = progressiveLearnings.snapshotForCommit()
-        val learningTarget = adaptiveDecoder.takeIf { learningAllowed }
+        val learningTarget = adaptiveDecoder.takeIf { pinyinLearningReady() }
         val committedEditorSessionId = editorSessionId
         val connection = currentInputConnection
         val committedStart = when {
@@ -1838,7 +2381,9 @@ class SenseInputMethodService : InputMethodService() {
         }
         val committed = connection?.commitText(output, 1) == true
         if (!committed) {
-            if (composition == committingComposition) clearPendingCommit()
+            if (composition == committingComposition) {
+                clearPendingCommit()
+            }
             return false
         }
         if (learningTarget != null) {
@@ -1900,48 +2445,298 @@ class SenseInputMethodService : InputMethodService() {
         }.getOrDefault("")
     }
 
-    private fun deferIfSpacePending(input: DeferredInput): Boolean {
-        if (pendingSpaceRevision == null) return false
-        if (deferredInputs.size < MAX_DEFERRED_INPUT_EVENTS) {
-            deferredInputs.addLast(input)
-            return true
-        }
-
-        // A failed/very slow decoder must never make the keyboard stop accepting input.
-        clearPendingCommit()
-        commitRawComposition()
-        drainDeferredInputs()
-        if (pendingSpaceRevision != null) {
-            deferredInputs.addLast(input)
-            return true
-        }
-        return false
-    }
-
-    private fun drainDeferredInputs() {
-        if (drainingDeferredInputs || pendingSpaceRevision != null) return
-        drainingDeferredInputs = true
-        try {
-            while (deferredInputs.isNotEmpty() && pendingSpaceRevision == null) {
-                when (val input = deferredInputs.removeFirst()) {
-                    is DeferredInput.Key -> handleKey(input.code)
-                    is DeferredInput.Text -> commitText(input.text)
+    private fun deferIfDecodeCommitPending(input: DeferredInput): Boolean {
+        return when (pendingDecodeCommit.defer(input)) {
+            DeferredInputOffer.NOT_PENDING -> false
+            DeferredInputOffer.ACCEPTED -> true
+            DeferredInputOffer.CAPACITY_REACHED -> {
+                // Resolve the older transaction without exceeding the hard queue bound, then
+                // preserve this input if draining happened to start a new pending transaction.
+                resolvePendingCommitTimeout()
+                when (pendingDecodeCommit.defer(input)) {
+                    DeferredInputOffer.NOT_PENDING -> false
+                    DeferredInputOffer.ACCEPTED,
+                    DeferredInputOffer.CAPACITY_REACHED,
+                    -> true
                 }
             }
-        } finally {
-            drainingDeferredInputs = false
         }
     }
 
-    private fun startPendingCommit(revision: Long) {
-        pendingSpaceRevision = revision
+    private fun replayPendingCompletion(
+        completion: FinishedPendingDecodeCommit<DeferredInput>,
+        includeTrigger: Boolean = true,
+    ) {
+        val inputs = buildList {
+            if (includeTrigger) completion.triggerInput?.let(::add)
+            addAll(completion.followUpInputs)
+        }
+        inputs.forEach { input ->
+            if (!deferIfDecodeCommitPending(input)) dispatchDeferredInput(input)
+        }
+    }
+
+    private fun dispatchDeferredInput(input: DeferredInput) {
+        when (input) {
+            is DeferredInput.Key -> handleKey(input.code)
+            is DeferredInput.Text -> commitText(input.text)
+            is DeferredInput.AiHold -> beginAiHold(input.generation)
+        }
+    }
+
+    private fun commitAndReplayPending(
+        completion: FinishedPendingDecodeCommit<DeferredInput>,
+        commit: () -> Boolean,
+    ): Boolean {
+        val committedEditorSessionId = editorSessionId
+        val committedConnection = currentInputConnection
+        val committed = commit()
+        if (
+            committed &&
+            editorSessionId == committedEditorSessionId &&
+            currentInputConnection === committedConnection
+        ) {
+            replayPendingCompletion(completion)
+        }
+        return committed
+    }
+
+    private fun startPendingCommit(
+        revision: Long,
+        triggerInput: DeferredInput? = null,
+    ) {
+        startPendingCommit(PendingDecodeCommit.Candidate(revision), triggerInput)
+    }
+
+    private fun startPendingWubiOverflow(
+        presentationRevision: Long,
+        replayKeyCode: Int,
+    ) {
+        startPendingCommit(
+            intent = PendingDecodeCommit.WubiOverflow(presentationRevision),
+            triggerInput = DeferredInput.Key(replayKeyCode),
+        )
+    }
+
+    private fun startPendingCommit(
+        intent: PendingDecodeCommit,
+        triggerInput: DeferredInput?,
+    ) {
+        pendingDecodeCommit.start(intent, triggerInput)
         mainHandler.removeCallbacks(pendingCommitTimeout)
         mainHandler.postDelayed(pendingCommitTimeout, PENDING_COMMIT_TIMEOUT_MS)
     }
 
-    private fun clearPendingCommit() {
-        pendingSpaceRevision = null
+    private fun finishPendingCandidateCommit(
+        presentationRevision: Long,
+    ): FinishedPendingDecodeCommit<DeferredInput> {
+        val completion = checkNotNull(pendingDecodeCommit.finish(presentationRevision)) {
+            "No matching pending candidate transaction"
+        }
+        check(completion.intent is PendingDecodeCommit.Candidate) {
+            "Candidate completion does not match the pending decode intent"
+        }
+        wubiOverflow.clear()
         mainHandler.removeCallbacks(pendingCommitTimeout)
+        return completion
+    }
+
+    private fun resolveWubiOverflowAction(
+        action: WubiOverflowAction,
+        presentationRevision: Long,
+    ) {
+        check(action == WubiOverflowAction.Reject || action is WubiOverflowAction.Commit)
+        val completion = checkNotNull(pendingDecodeCommit.finish(presentationRevision)) {
+            "No matching pending Wubi overflow transaction"
+        }
+        check(completion.intent is PendingDecodeCommit.WubiOverflow) {
+            "Wubi overflow completion does not match the pending decode intent"
+        }
+        wubiOverflow.clear()
+        mainHandler.removeCallbacks(pendingCommitTimeout)
+
+        when (action) {
+            WubiOverflowAction.Reject ->
+                replayPendingCompletion(completion, includeTrigger = false)
+            is WubiOverflowAction.Commit ->
+                commitAndReplayPending(completion) {
+                    commitAlternativeCandidate(action.candidate)
+                }
+            WubiOverflowAction.Continue,
+            is WubiOverflowAction.Await,
+            -> error("Wubi overflow action is not terminal")
+        }
+    }
+
+    private fun resolvePendingCommitTimeout() {
+        val intent = pendingDecodeCommit.intent ?: return
+        if (activePresentationRevision() != intent.presentationRevision) {
+            clearPendingCommit()
+            return
+        }
+        when (intent) {
+            is PendingDecodeCommit.Candidate -> {
+                val completion = finishPendingCandidateCommit(intent.presentationRevision)
+                commitAndReplayPending(completion, ::commitActiveRawComposition)
+            }
+            is PendingDecodeCommit.WubiOverflow -> {
+                when (val action = wubiOverflow.onTimeout(intent.presentationRevision)) {
+                    WubiOverflowAction.Continue,
+                    is WubiOverflowAction.Await,
+                    -> clearPendingCommit()
+                    WubiOverflowAction.Reject,
+                    is WubiOverflowAction.Commit,
+                    -> resolveWubiOverflowAction(action, intent.presentationRevision)
+                }
+            }
+        }
+    }
+
+    private fun clearPendingCommit() {
+        pendingDecodeCommit.clearAll()
+        wubiOverflow.clear()
+        mainHandler.removeCallbacks(pendingCommitTimeout)
+    }
+
+    private fun hasAnyComposition(): Boolean =
+        englishInput.composing.isNotEmpty() || hasActiveChineseComposition()
+
+    private fun pinyinLearningReady(): Boolean = isPinyinLearningReady(
+        localPersistenceAllowed = localPersistenceAllowed,
+        productionPinyinDecoderReady = productionDecoderReady,
+    )
+
+    private fun wubiLearningReady(): Boolean = isWubiLearningReady(
+        localPersistenceAllowed = localPersistenceAllowed,
+        adaptiveWubiDecoderReady = wubiRuntime.candidateDecoder != null,
+    )
+
+    private fun hasActiveChineseComposition(): Boolean = when (inputScheme.scheme) {
+        ChineseInputScheme.PINYIN_QWERTY -> composition.visibleText.isNotEmpty()
+        ChineseInputScheme.PINYIN_T9,
+        ChineseInputScheme.WUBI_86,
+        -> hasAlternativeComposition()
+    }
+
+    private fun hasAlternativeComposition(): Boolean = inputScheme.hasComposition
+
+    private fun activePresentationRevision(): Long =
+        if (chineseMode && inputScheme.scheme != ChineseInputScheme.PINYIN_QWERTY) {
+            inputScheme.presentationRevision
+        } else if (chineseMode) {
+            composition.revision
+        } else {
+            englishInput.revision
+        }
+
+    private fun activePrimaryKeyboardMode(): PrimaryKeyboardMode =
+        if (chineseMode && inputScheme.scheme == ChineseInputScheme.PINYIN_T9) {
+            PrimaryKeyboardMode.T9
+        } else {
+            PrimaryKeyboardMode.QWERTY
+        }
+
+    private fun activePrimaryKeyboardLegendMode(): PrimaryKeyboardLegendMode =
+        if (chineseMode && inputScheme.scheme == ChineseInputScheme.WUBI_86) {
+            PrimaryKeyboardLegendMode.WUBI_86_ROOTS
+        } else {
+            PrimaryKeyboardLegendMode.SWIPE_HINTS
+        }
+
+    private fun refreshImePreferencesAsync(expectedEditorSessionId: Long) {
+        val requestGeneration = nextGeneration(preferencesLoadGeneration)
+        preferencesLoadGeneration = requestGeneration
+        preferencesIo.execute {
+            val loaded = imePreferencesStore.load()
+            mainHandler.post {
+                if (
+                    destroyed ||
+                    preferencesLoadGeneration != requestGeneration ||
+                    editorSessionId != expectedEditorSessionId
+                ) {
+                    return@post
+                }
+                loaded.onSuccess { value ->
+                    inputScheme.acceptLoadedPreferences(
+                        value = value,
+                        compositionActive = hasAnyComposition(),
+                    )?.let(::applyImePreferences)
+                }.onFailure { error ->
+                    Log.e(TAG, "IME preference load failed", error)
+                }
+            }
+        }
+    }
+
+    private fun applyImePreferences(value: ImePreferencesV1) {
+        val schemeChanged = inputScheme.applyPreferences(value)
+        if (schemeChanged) {
+            composition = composition.reset()
+            compositionLeftContext = ""
+            mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
+            clearPendingCommit()
+        }
+        if (inputScheme.scheme == ChineseInputScheme.WUBI_86) requestWubiDecoderLoad()
+        keyboardView?.setInputPresentation(
+            chineseMode,
+            activePrimaryKeyboardMode(),
+            activePrimaryKeyboardLegendMode(),
+        )
+        render(forceDecode = schemeChanged)
+    }
+
+    private fun requestWubiDecoderLoad() {
+        if (wubiRuntime.decoder != null || wubiLoadRequested) return
+        wubiLoadRequested = true
+        schemeIo.execute {
+            val loaded = runCatching {
+                val userLexicon: WubiUserLexicon = runCatching {
+                    PersistentWubi86UserLexicon(applicationContext)
+                }.onFailure { error ->
+                    Log.e(TAG, "Wubi86 personalization storage unavailable", error)
+                }.getOrElse {
+                    MemoryWubiUserLexicon()
+                }
+                try {
+                    val decoder = assets.open(WUBI86_ASSET)
+                        .buffered()
+                        .use(Wubi86Lexicon::load)
+                        .let(::Wubi86Decoder)
+                    WubiDecoderRuntime(
+                        generation = 0L,
+                        decoder = decoder,
+                        candidateDecoder = AdaptiveWubi86Decoder(decoder, userLexicon),
+                        userLexicon = userLexicon,
+                    )
+                } catch (error: Throwable) {
+                    userLexicon.close()
+                    throw error
+                }
+            }
+            mainHandler.post {
+                if (destroyed) {
+                    loaded.getOrNull()?.userLexicon?.close()
+                    return@post
+                }
+                loaded.onSuccess { runtime ->
+                    wubiRuntime.userLexicon?.close()
+                    wubiRuntime = runtime.copy(
+                        generation = nextGeneration(wubiRuntime.generation),
+                    )
+                    if (chineseMode && inputScheme.scheme == ChineseInputScheme.WUBI_86) {
+                        render(forceDecode = true)
+                    }
+                }.onFailure { error ->
+                    wubiLoadRequested = false
+                    Log.e(TAG, "Wubi86 lexicon load failed", error)
+                    if (chineseMode && inputScheme.scheme == ChineseInputScheme.WUBI_86) {
+                        // Leave direct code entry usable after an asset failure: publish the
+                        // bounded empty fallback instead of keeping the candidate bar pending.
+                        render(forceDecode = true)
+                    }
+                }
+            }
+        }
     }
 
     private fun allowsLocalPersistence(info: EditorInfo?): Boolean {
@@ -1991,6 +2786,7 @@ class SenseInputMethodService : InputMethodService() {
         const val PINYIN_BIGRAM_ASSET = "pinyin_bigrams.bin"
         const val PINYIN_SYLLABLES_ASSET = "pinyin_syllables.txt"
         const val ENGLISH_LEXICON_ASSET = "english_lexicon.txt"
+        const val WUBI86_ASSET = "wubi86_lexicon.bin"
         const val DECODE_CANDIDATE_LIMIT = 255
         const val MAX_PROGRESSIVE_PREFIX_CANDIDATES = DECODE_CANDIDATE_LIMIT
         const val PRESENTATION_CANDIDATE_LIMIT = DECODE_CANDIDATE_LIMIT + MAX_PROGRESSIVE_PREFIX_CANDIDATES
@@ -2023,11 +2819,27 @@ private data class CandidateDecoderRuntime(
     val generation: Long,
     val decoder: InputDecoder,
     val segmenter: PinyinSyllableSegmenter,
+    val t9Index: T9SyllableIndex,
+)
+
+private data class LoadedCandidateDecoderRuntime(
+    val runtime: CandidateDecoderRuntime,
+    val adaptiveDecoder: AdaptivePinyinDecoder,
+    val userLexicon: UserLexicon,
+    val englishLexicon: EnglishLexicon,
+)
+
+private data class WubiDecoderRuntime(
+    val generation: Long,
+    val decoder: Wubi86Decoder?,
+    val candidateDecoder: AdaptiveWubi86Decoder?,
+    val userLexicon: WubiUserLexicon?,
 )
 
 private sealed interface DeferredInput {
     data class Key(val code: Int) : DeferredInput
     data class Text(val text: String) : DeferredInput
+    data class AiHold(val generation: Long) : DeferredInput
 }
 
 private data class ActiveVoiceSession(

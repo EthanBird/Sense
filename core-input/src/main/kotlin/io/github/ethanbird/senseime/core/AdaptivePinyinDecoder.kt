@@ -5,7 +5,10 @@ class AdaptivePinyinDecoder(
     private val userLexicon: UserLexicon,
     private val segmenter: PinyinSyllableSegmenter,
     private val englishLexicon: EnglishLexicon = EnglishLexicon.EMPTY,
-) : ProgressivePinyinDecoder, ContextualInputDecoder {
+) : ProgressivePinyinDecoder,
+    ContextualInputDecoder,
+    CanonicalChineseOnlyInputDecoder,
+    CanonicalChineseLexicalProbeDecoder {
     override fun decode(composing: String, limit: Int): List<Candidate> {
         if (limit <= 0) return emptyList()
         val decoderInput = normalizeDecoderInput(composing)
@@ -27,6 +30,115 @@ class AdaptivePinyinDecoder(
         }
         val chinese = decodeChinese(decoderInput, query, limit, previousCodePoint)
         return MixedCandidateRanker.merge(chinese, englishLexicon.suggest(query, limit), limit)
+    }
+
+    override fun decodeChineseOnly(composing: String, limit: Int): List<Candidate> {
+        if (limit <= 0) return emptyList()
+        val decoderInput = normalizeDecoderInput(composing)
+        val query = PinyinSyllableSegmenter.normalize(decoderInput)
+        if (query.isEmpty() || query.length > PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH) {
+            return emptyList()
+        }
+        return pureHanCandidates(decodeChinese(decoderInput, query, limit), limit)
+    }
+
+    override fun decodeChineseOnlyAfter(
+        previousCodePoint: Int,
+        composing: String,
+        limit: Int,
+    ): List<Candidate> {
+        if (limit <= 0) return emptyList()
+        val decoderInput = normalizeDecoderInput(composing)
+        val query = PinyinSyllableSegmenter.normalize(decoderInput)
+        if (query.isEmpty() || query.length > PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH) {
+            return emptyList()
+        }
+        return pureHanCandidates(
+            decodeChinese(decoderInput, query, limit, previousCodePoint),
+            limit,
+        )
+    }
+
+    override fun decodeCanonicalChineseOnly(composing: String, limit: Int): List<Candidate> {
+        if (limit <= 0) return emptyList()
+        val decoderInput = normalizeDecoderInput(composing)
+        val query = PinyinSyllableSegmenter.normalize(decoderInput)
+        if (query.isEmpty() || query.length > PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH) {
+            return emptyList()
+        }
+        return pureHanCandidates(
+            decodeChinese(decoderInput, query, limit, prefixProbe = true),
+            limit,
+        )
+    }
+
+    override fun decodeCanonicalChineseOnlyAfter(
+        previousCodePoint: Int,
+        composing: String,
+        limit: Int,
+    ): List<Candidate> {
+        if (limit <= 0 || !Character.isValidCodePoint(previousCodePoint)) return emptyList()
+        val decoderInput = normalizeDecoderInput(composing)
+        val query = PinyinSyllableSegmenter.normalize(decoderInput)
+        if (query.isEmpty() || query.length > PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH) {
+            return emptyList()
+        }
+        return pureHanCandidates(
+            decodeChinese(
+                decoderInput,
+                query,
+                limit,
+                previousCodePoint,
+                prefixProbe = true,
+            ),
+            limit,
+        )
+    }
+
+    override fun probeCanonicalChineseOnly(composing: String, limit: Int): List<Candidate> =
+        probeCanonicalChinese(composing, limit, previousCodePoint = null)
+
+    override fun probeCanonicalChineseOnlyAfter(
+        previousCodePoint: Int,
+        composing: String,
+        limit: Int,
+    ): List<Candidate> {
+        if (!Character.isValidCodePoint(previousCodePoint)) return emptyList()
+        return probeCanonicalChinese(composing, limit, previousCodePoint)
+    }
+
+    private fun probeCanonicalChinese(
+        composing: String,
+        limit: Int,
+        previousCodePoint: Int?,
+    ): List<Candidate> {
+        if (limit <= 0) return emptyList()
+        val decoderInput = normalizeDecoderInput(composing)
+        val query = PinyinSyllableSegmenter.normalize(decoderInput)
+        if (query.isEmpty() || query.length > PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH) {
+            return emptyList()
+        }
+        if (base !is CanonicalChineseLexicalProbeDecoder) {
+            return pureHanCandidates(
+                decodeChinese(
+                    decoderInput,
+                    query,
+                    limit,
+                    previousCodePoint,
+                    prefixProbe = true,
+                ),
+                limit,
+            )
+        }
+        val baseCandidates = previousCodePoint
+            ?.let { base.probeCanonicalChineseOnlyAfter(it, decoderInput, limit) }
+            ?: base.probeCanonicalChineseOnly(decoderInput, limit)
+        val candidates = if ('\'' in decoderInput) {
+            baseCandidates
+        } else {
+            mergeUserAndBase(query, limit, baseCandidates)
+        }
+        return pureHanCandidates(candidates, limit)
     }
 
     /**
@@ -55,7 +167,33 @@ class AdaptivePinyinDecoder(
 
             else -> base.decode(decoderInput, limit)
         }
+        // The current personalization schema stores a continuous spelling only. A forced joint
+        // therefore has no persisted boundary evidence and must be evaluated by the boundary-
+        // aware base decoder alone instead of matching a contradictory continuous user record.
+        if ('\'' in decoderInput) return baseCandidates
         return mergeUserAndBase(query, limit, baseCandidates)
+    }
+
+    /** Preserve the production list instance when it is already all-Han and within the limit. */
+    private fun pureHanCandidates(candidates: List<Candidate>, limit: Int): List<Candidate> {
+        if (candidates.size <= limit && candidates.all { isPureHanText(it.text) }) {
+            return candidates
+        }
+        return candidates.asSequence()
+            .filter { isPureHanText(it.text) }
+            .take(limit)
+            .toList()
+    }
+
+    private fun isPureHanText(value: String): Boolean {
+        if (value.isEmpty()) return false
+        var offset = 0
+        while (offset < value.length) {
+            val codePoint = value.codePointAt(offset)
+            if (Character.UnicodeScript.of(codePoint) != Character.UnicodeScript.HAN) return false
+            offset += Character.charCount(codePoint)
+        }
+        return true
     }
 
     private fun mergeUserAndBase(

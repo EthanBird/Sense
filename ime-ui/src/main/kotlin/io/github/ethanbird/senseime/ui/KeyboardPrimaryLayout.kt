@@ -11,7 +11,7 @@ import android.graphics.RectF
 internal class KeyboardPrimaryLayout(
     private val metrics: KeyboardMetrics,
     private val qwertyLayout: KeyboardLetterLayout = QwertyKeyboardLayout,
-    private val t9Layout: KeyboardLetterLayout? = null,
+    private val t9Layout: KeyboardLetterLayout = T9KeyboardLayout,
 ) {
     fun appendToolbar(viewWidth: Int, output: MutableList<Key>) {
         val items = TOOLBAR_ITEMS
@@ -67,9 +67,7 @@ internal class KeyboardPrimaryLayout(
     ) {
         val layout = when (mode) {
             PrimaryKeyboardMode.QWERTY -> qwertyLayout
-            PrimaryKeyboardMode.T9 -> checkNotNull(t9Layout) {
-                "PrimaryKeyboardMode.T9 requires a registered KeyboardLetterLayout adapter"
-            }
+            PrimaryKeyboardMode.T9 -> t9Layout
         }
         layout.appendKeys(request, metrics, output)
     }
@@ -197,6 +195,7 @@ internal fun appendWeightedRowKeys(
     metrics: KeyboardMetrics,
     output: MutableList<Key>,
     backToLettersIcon: Icon? = null,
+    visualLegendResolver: ((keyCode: Int, swipeOutput: String?) -> String?)? = null,
 ) {
     if (items.isEmpty()) return
     val totalWeight = items.sumOf { it.weight.toDouble() }.toFloat()
@@ -207,19 +206,26 @@ internal fun appendWeightedRowKeys(
     var x = metrics.horizontalPadding
     items.forEach { item ->
         val itemWidth = usable * item.weight / totalWeight
+        val swipeOutput = if (item.code > 0) {
+            SwipeCharacterMap.forKey(item.code, swipeMode)
+        } else {
+            null
+        }
         val icon = when (item.code) {
             KeyCodes.LETTERS -> backToLettersIcon
             else -> actionIcon(item.code)
+        }
+        val visualLegend = if (visualLegendResolver == null) {
+            swipeOutput
+        } else {
+            visualLegendResolver(item.code, swipeOutput)
         }
         output += Key(
             label = if (icon == null) item.label else "",
             action = KeyAction.EmitKey(item.code),
             bounds = RectF(x, y, x + itemWidth, y + rowHeight),
-            hint = if (item.code > 0) {
-                SwipeCharacterMap.forKey(item.code, swipeMode)
-            } else {
-                null
-            },
+            visualLegend = visualLegend,
+            swipeOutput = swipeOutput,
             style = if (item.action) KeyStyle.ACTION else KeyStyle.LETTER,
             icon = icon,
         )

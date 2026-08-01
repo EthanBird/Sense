@@ -697,7 +697,7 @@ internal class KeyboardInteractionController(
 
     private fun gesturePolicyForKey(key: Key): TouchInputReducer.GesturePolicy = when {
         key.scrollPanel != null || key.style == KeyStyle.CARD -> pageScrollGesturePolicy
-        SwipeCharacterMap.forKey(key.code, swipeCharacterMode()) != null ->
+        key.swipeOutput != null ->
             TouchInputReducer.GesturePolicy.upwardFlick(
                 minimumDistance = KeyboardGestureThresholds.upwardFlickDistance(
                     minimumDistance = dp(12f),
@@ -708,13 +708,6 @@ internal class KeyboardInteractionController(
 
         else -> tapGesturePolicy
     }
-
-    private fun swipeCharacterMode(): SwipeCharacterMode =
-        if (host.interactionChineseMode) {
-            SwipeCharacterMode.CHINESE
-        } else {
-            SwipeCharacterMode.ENGLISH
-        }
 
     fun computeScroll() {
         panelScroll.computeScroll()
