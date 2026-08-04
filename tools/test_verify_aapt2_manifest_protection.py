@@ -247,7 +247,7 @@ class Aapt2ManifestProtectionVerifierTest(unittest.TestCase):
             ),
         )
 
-    def test_requires_exact_used_permission_triplet(self) -> None:
+    def test_requires_exact_used_permission_set(self) -> None:
         required = tuple(
             ("uses-permission", name)
             for name in sorted(EXPECTED_USED_PERMISSIONS)
@@ -261,7 +261,7 @@ class Aapt2ManifestProtectionVerifierTest(unittest.TestCase):
             with self.subTest(used=used):
                 self.assertRejected(
                     xmltree(CANONICAL_ATTRIBUTE),
-                    "expected exactly the AAPT2 typed uses-permission triplet",
+                    "expected exactly the AAPT2 typed uses-permission set",
                     permissions=permissions_dump(
                         used_permissions=used,
                     ),

@@ -61,6 +61,7 @@ internal enum class Icon {
     EDITOR,
     VOICE,
     SETTINGS,
+    AGENT,
     HIDE,
     DELETE,
     ENTER,

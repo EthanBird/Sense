@@ -33,7 +33,7 @@ class AgentRunRecorderTest {
     fun `request codec emits every field in fixed canonical order`() {
         val request = request()
         assertEquals(
-            """{"protocol":"sense.harness.request.v1","request_id":"request-1","run_generation":9,"skill":"translate","skill_catalog_generation":null,"active_skill":null,"snapshot":{"protocol":"sense.editor.snapshot.v1","request_id":"request-1","snapshot_id":"snapshot-1","editor_generation":17,"field_identity":"field\nidentity","capability":"SELECTION_ONLY","text":"完整输入 \"text\" 🧠","text_start_offset":41,"selection":{"start":43,"end":47},"target":"selection","base_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","captured_at_monotonic_ms":123456,"truncated":false,"max_output_chars":8192},"max_output_chars":4096}""",
+            """{"protocol":"sense.harness.request.v1","request_id":"request-1","run_generation":9,"skill":"translate","result_mode":"editor_patch","skill_catalog_generation":null,"active_skill":null,"snapshot":{"protocol":"sense.editor.snapshot.v1","request_id":"request-1","snapshot_id":"snapshot-1","editor_generation":17,"field_identity":"field\nidentity","capability":"SELECTION_ONLY","text":"完整输入 \"text\" 🧠","text_start_offset":41,"selection":{"start":43,"end":47},"target":"selection","base_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","captured_at_monotonic_ms":123456,"truncated":false,"max_output_chars":8192},"max_output_chars":4096}""",
             AgentRunJournalCodec.encodeRequest(request),
         )
 
@@ -111,6 +111,23 @@ class AgentRunRecorderTest {
             events.map(AgentRunJournalCodec::eventType),
         )
     }
+
+    @Test
+    fun `final answer is encoded as a durable final journal record`() =
+        withJournalDirectory { directory ->
+            AgentEventJournal.open(directory).use { journal ->
+                val recorder = AgentRunRecorder.begin(journal, request())
+                recorder.record(AiEvent.FinalAnswer("request-1", 9, "完整回答"))
+
+                val record = journal.readLatest(limit = 2).records.last()
+                assertEquals(AgentJournalKind.FINAL, record.kind)
+                assertEquals("final_answer", record.attributes["event_type"])
+                assertEquals(
+                    """{"type":"final_answer","request_id":"request-1","run_generation":9,"text":"完整回答"}""",
+                    record.lexicalText,
+                )
+            }
+        }
 
     @Test
     fun `recorder persists complete request events raw provider data and tool exchange`() =

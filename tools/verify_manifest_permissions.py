@@ -18,6 +18,10 @@ EXPECTED_USED_PERMISSIONS = frozenset(
     {
         "android.permission.INTERNET",
         "android.permission.RECORD_AUDIO",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_SPECIAL_USE",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.WAKE_LOCK",
         DYNAMIC_RECEIVER_PERMISSION,
     }
 )
@@ -146,7 +150,7 @@ def verify_manifest_permissions(
         or set(used_permissions) != EXPECTED_USED_PERMISSIONS
     ):
         raise ManifestPermissionError(
-            f"{path}: expected exact uses-permission triplet "
+            f"{path}: expected exact uses-permission set "
             f"{sorted(EXPECTED_USED_PERMISSIONS)}, found {used_permissions}"
         )
 

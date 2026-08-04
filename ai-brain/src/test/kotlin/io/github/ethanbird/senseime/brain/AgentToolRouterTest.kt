@@ -3,6 +3,7 @@ package io.github.ethanbird.senseime.brain
 import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import io.github.ethanbird.senseime.brain.api.AgentSkillDirection
 import io.github.ethanbird.senseime.brain.api.AgentSkillPolicy
+import io.github.ethanbird.senseime.brain.api.AgentBrowserAction
 import io.github.ethanbird.senseime.brain.api.AgentToolArguments
 import io.github.ethanbird.senseime.brain.api.AgentToolId
 import org.junit.Assert.assertEquals
@@ -172,6 +173,62 @@ class AgentToolRouterTest {
                 argumentsDocument = """{"skill_id":"rewrite","revision":1}""",
                 enabledTools = emptySet(),
             )
+        }
+    }
+
+    @Test
+    fun terminalExecIsBoundedAndRetainsSessionScope() {
+        val call = AgentToolRouter.decode(
+            callId = "terminal-1",
+            toolName = AgentToolId.TERMINAL_EXEC.wireValue,
+            argumentsDocument =
+                """{"command":"printf 'hello'","cwd":"project","timeout_ms":5000}""",
+            enabledTools = setOf(AgentToolId.TERMINAL_EXEC),
+            requestId = "request-1",
+            runGeneration = 2,
+            sessionId = "sense.agent-hub.default",
+        )
+
+        assertEquals("sense.agent-hub.default", call.sessionId)
+        assertEquals(
+            AgentToolArguments.TerminalExec(
+                command = "printf 'hello'",
+                cwd = "project",
+                timeoutMs = 5_000,
+            ),
+            call.arguments,
+        )
+        assertThrows(ProviderPayloadException::class.java) {
+            decode(AgentToolId.TERMINAL_EXEC, """{"command":"pwd","timeout_ms":999}""")
+        }
+    }
+
+    @Test
+    fun browserUseEnforcesActionSpecificArguments() {
+        val type = decode(
+            AgentToolId.BROWSER_USE,
+            """{"action":"type","ref":4,"text":"Sense","submit":true}""",
+        ).arguments as AgentToolArguments.BrowserUse
+        assertEquals(AgentBrowserAction.TYPE, type.action)
+        assertEquals(4, type.ref)
+        assertEquals("Sense", type.text)
+        assertTrue(type.submit)
+
+        val navigate = decode(
+            AgentToolId.BROWSER_USE,
+            """{"action":"navigate","url":"https://example.com/path"}""",
+        ).arguments as AgentToolArguments.BrowserUse
+        assertEquals("https://example.com/path", navigate.url)
+
+        listOf(
+            """{"action":"navigate"}""",
+            """{"action":"click"}""",
+            """{"action":"snapshot","url":"https://example.com"}""",
+            """{"action":"navigate","url":"file:///tmp/page"}""",
+        ).forEach { document ->
+            assertThrows(ProviderPayloadException::class.java) {
+                decode(AgentToolId.BROWSER_USE, document)
+            }
         }
     }
 

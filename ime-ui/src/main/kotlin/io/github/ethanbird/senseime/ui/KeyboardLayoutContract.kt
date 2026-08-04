@@ -111,6 +111,7 @@ object KeyboardLayoutContract {
         EMOJI_PANEL,
         SERVICE_ACTION,
         SETTINGS_CALLBACK,
+        AGENT_CALLBACK,
     }
 
     enum class ToolboxItem(
@@ -123,6 +124,7 @@ object KeyboardLayoutContract {
         VOICE("语音输入", KeyCodes.VOICE, ToolboxActivationRoute.SERVICE_ACTION),
         CLIPBOARD("剪贴板", KeyCodes.CLIPBOARD, ToolboxActivationRoute.SERVICE_ACTION),
         EMOJI("Emoji", KeyCodes.EMOJI, ToolboxActivationRoute.EMOJI_PANEL),
+        AGENT("Agent", KeyCodes.AGENT, ToolboxActivationRoute.AGENT_CALLBACK),
         SETTINGS("先思首页", KeyCodes.SETTINGS, ToolboxActivationRoute.SETTINGS_CALLBACK),
     }
 

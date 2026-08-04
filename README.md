@@ -10,11 +10,11 @@
 > 分帧与 SRSS WebSocket 转写，选择后无需 API Key 即可从键盘语音入口使用。协议与
 > 双实现验证见[接入记录](docs/research/sogou-asr-provider-integration-2026-08-01.md)。
 
-**项目状态：** `v0.4.6` 键盘交互与九键体验稳定版
+**项目状态：** `v0.4.7` Agent 工作台、终端与浏览器稳定版
 
-**当前版本：** `v0.4.6`（`versionCode 31`）
+**当前版本：** `v0.4.7`（`versionCode 32`）
 
-**更新日期：** 2026-08-02
+**更新日期：** 2026-08-04
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
 
 本文基于《GlassIME Android AI 中文输入法产品与技术设计文档 v0.1》重新整理，并统一改名为：
@@ -30,7 +30,23 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.6 键盘交互与九键体验
+## 0. 当前迭代：v0.4.7 Agent 工作台、终端与浏览器
+
+`v0.4.7` 为输入法加入独立 Agent 工作台：连续对话采用自然 assistant result 通道，
+不再强制把普通回答包装成编辑器 Patch；流式预览、停止、新会话、Token 用量和有界会话
+持久化集中在 Agent 页签。任务运行所有权由独立 `:brain` 进程中的持久 runtime 保存，
+Activity 重建与输入法窗口切换不会终止运行；长任务通过前台服务通知继续输出。
+
+Agent 同时获得 session-scoped `terminal_exec` 与 `browser_use`。终端以应用 UID 在私有
+工作区运行 `/system/bin/sh`，提供 cwd containment、超时、退出码及有界 stdout/stderr；
+浏览器使用 Agent-owned WebView，支持导航、DOM snapshot、编号点击、输入、提交、前进、
+后退与刷新。用户在工作台浏览器页接管的正是同一标签，因此 Cookie、历史和页面状态
+连续保留。键盘工具箱和设置首页均可打开工作台，两个新工具也可在工具设置中独立开关。
+
+模型提交错误工具名或参数时，Brain 会把紧凑 typed error 作为 tool result 回送并继续
+当前工具循环，减少整轮协议修复带来的 Token 消耗。实现方案见
+[Agent Runtime v2 设计](docs/design/sense-agent-runtime-v2-openminis-core-design-2026-08-03.md)，
+完整变更与发布门禁见 [`v0.4.7` 发布说明](docs/releases/v0.4.7.md)。
 
 `v0.4.6` 将九键左侧标点重构为可连续滚动、可自定义的侧栏，恢复 `1–9`
 小号数字提示与上滑数字输出，并让九键数字键完整复用 Skills 长按方向选择和极光状态。
@@ -78,6 +94,8 @@ hash/CAS/写后验证继续有效；这些边界防止状态错写，但不限�
 - [ADR 0020：v0.4.5 Skills 运行时、键盘手势与 Agent ABI](docs/adr/0020-v0.4.5-skills-runtime-and-keyboard.md)
 - [Skills 工程开发文档：交互、不可变存储、工具与设置](docs/development/skills-engineering-plan-v1.0.md)
 - [Skills 互操作与 Android 边界研究记录](docs/research/skills-interop-and-android-boundaries-2026-07-27.md)
+- [OpenMinis Android Agent 核心能力研究](docs/research/openminis-android-agent-architecture-analysis-2026-08-03.md)
+- [Sense Agent Runtime v2：输入法生命周期、终端、浏览器与对话设计](docs/design/sense-agent-runtime-v2-openminis-core-design-2026-08-03.md)
 - [X-02 Stage Substrate 实施记录](docs/development/x02-stage-substrate-implementation.md)
 
 `v0.4.5` 已交付方向选择器、已提交状态驱动的 Aurora、
@@ -137,8 +155,8 @@ initials、渐进 limit 16、渐进 limit 255 和组合 p95 分别为
 决策记录见 [ADR 0022](docs/adr/0022-gpl-rime-frost-lexicon-pipeline.md)、
 [ADR 0023](docs/adr/0023-v0.4.5-beta5-decoder-quality.md) 与
 [ADR 0025](docs/adr/0025-three-chinese-schemes-t9-dag-and-wubi86.md)，详细发布门禁见
-[`v0.4.6` 发布说明](docs/releases/v0.4.6.md)，最新发布资产见
-[`v0.4.6` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.6)。
+[`v0.4.7` 发布说明](docs/releases/v0.4.7.md)，最新发布资产见
+[`v0.4.7` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.7)。
 
 `v0.4.5.beta.4` 修复键盘刚显示、窗口切换或目录观察 catch-up 时，等价 Skill catalog
 重复发布会撤销已开始长按的问题：解析结果、显示标签与 active Skill 均未变化时保留
@@ -184,7 +202,7 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
 | Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
 | 既有质量 | AI、IME、UI、Core、M0–M7、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 31`、`versionName 0.4.6`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据 | `versionCode 32`、`versionName 0.4.7`、`minSdk 29`、`targetSdk 36` |
 
 仓库不再运行 GitHub Actions；测试、Lint、性能门禁、APK 构建和签名校验统一在 Windows
 本地执行。完整本地验证与构建：
@@ -201,11 +219,11 @@ powershell -ExecutionPolicy Bypass -File tools/local_release.ps1 -Publish
 
 `-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。
 
-> **v0.4.6 发布收口：** 本轮源码整合完成后会重新运行及人工审查 X-02
+> **v0.4.7 发布收口：** 本轮源码整合完成后会重新运行及人工审查 X-02
 > production source、build authority 与 offline gate 的 exact SHA-256，并同步刷新
 > boundary baseline。正式本地发布会在同一 release `HEAD` 上再次执行 source/artifact
 > gate，并把结果与 APK 签名、校验和一起归档到
-> [`v0.4.6` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.6)。
+> [`v0.4.7` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.7)。
 
 标准工程验证命令：
 
@@ -517,7 +535,7 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.4.6` 中文九键、五笔 86、
+以下保留 M0 的实施记录；当前代码位于 `v0.4.7` Agent 工作台、中文九键、五笔 86、
 流式搜狗语音、Skills 交互、Windows TSF 工程预览与个性化排序稳定阶段。
 现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。

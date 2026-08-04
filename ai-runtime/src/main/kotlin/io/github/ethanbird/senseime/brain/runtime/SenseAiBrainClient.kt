@@ -14,6 +14,7 @@ import io.github.ethanbird.senseime.ai.protocol.AiEvent
 import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
 import io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode
 import io.github.ethanbird.senseime.ai.protocol.HarnessRequestV1
+import io.github.ethanbird.senseime.ai.protocol.isTerminal
 
 /**
  * One-request-at-a-time Messenger client for the private Brain process.
@@ -284,10 +285,7 @@ class SenseAiBrainClient(
             val event = runCatching { BrainMessageCodec.decodeEvent(message.data) }.getOrNull()
                 ?: return
             if (activeIdentity != (event.requestId to event.runGeneration)) return
-            val terminal =
-                event is AiEvent.FinalPatch ||
-                event is AiEvent.Cancelled ||
-                event is AiEvent.Failed
+            val terminal = event.isTerminal
             // Revoke authority before invoking application code. The callback may throw or
             // synchronously start a new run, neither of which may resurrect this identity.
             if (terminal) {

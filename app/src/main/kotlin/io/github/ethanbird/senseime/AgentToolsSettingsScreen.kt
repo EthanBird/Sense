@@ -145,6 +145,8 @@ internal class AgentToolsViewBinding(
     val master: Switch,
     val webSearch: Switch,
     val webRead: Switch,
+    val browserUse: Switch,
+    val terminalExec: Switch,
     val calculator: Switch,
     val localMemoryRecall: Switch,
     val skillRead: Switch,
@@ -181,6 +183,8 @@ internal class AgentToolsSettingsScreen(
         }
         val webSearch = views.switch(R.string.agent_tool_web_search, checked = true)
         val webRead = views.switch(R.string.agent_tool_web_read, checked = true)
+        val browserUse = views.switch(R.string.agent_tool_browser_use, checked = true)
+        val terminalExec = views.switch(R.string.agent_tool_terminal_exec, checked = true)
         val calculator = views.switch(R.string.agent_tool_calculator, checked = true)
         val memory = views.switch(R.string.agent_tool_local_memory_recall, checked = true)
         val skillRead = views.switch(R.string.agent_tool_skill_read, checked = true)
@@ -197,6 +201,8 @@ internal class AgentToolsSettingsScreen(
         root.addView(master.withTop(views.dp(12)))
         root.addView(webSearch.withTop(views.dp(8)))
         root.addView(webRead.withTop(views.dp(8)))
+        root.addView(browserUse.withTop(views.dp(8)))
+        root.addView(terminalExec.withTop(views.dp(8)))
         root.addView(calculator.withTop(views.dp(8)))
         root.addView(memory.withTop(views.dp(8)))
         root.addView(skillRead.withTop(views.dp(8)))
@@ -208,13 +214,25 @@ internal class AgentToolsSettingsScreen(
             master = master,
             webSearch = webSearch,
             webRead = webRead,
+            browserUse = browserUse,
+            terminalExec = terminalExec,
             calculator = calculator,
             localMemoryRecall = memory,
             skillRead = skillRead,
             skillManage = skillManage,
             status = status,
         )
-        listOf(master, webSearch, webRead, calculator, memory, skillRead, skillManage)
+        listOf(
+            master,
+            webSearch,
+            webRead,
+            browserUse,
+            terminalExec,
+            calculator,
+            memory,
+            skillRead,
+            skillManage,
+        )
             .forEach { switch ->
                 switch.setOnCheckedChangeListener { _, _ -> onSwitchChanged() }
             }
@@ -237,6 +255,8 @@ internal class AgentToolsSettingsScreen(
                 masterEnabled = current.master.isChecked,
                 webSearchEnabled = current.webSearch.isChecked,
                 webFetchEnabled = current.webRead.isChecked,
+                browserUseEnabled = current.browserUse.isChecked,
+                terminalExecEnabled = current.terminalExec.isChecked,
                 calculatorEnabled = current.calculator.isChecked,
                 memorySearchEnabled = current.localMemoryRecall.isChecked,
                 skillReadEnabled = current.skillRead.isChecked,
@@ -252,6 +272,8 @@ internal class AgentToolsSettingsScreen(
             current.master.isChecked = state.settings.masterEnabled
             current.webSearch.isChecked = state.settings.webSearchEnabled
             current.webRead.isChecked = state.settings.webFetchEnabled
+            current.browserUse.isChecked = state.settings.browserUseEnabled
+            current.terminalExec.isChecked = state.settings.terminalExecEnabled
             current.calculator.isChecked = state.settings.calculatorEnabled
             current.localMemoryRecall.isChecked = state.settings.memorySearchEnabled
             current.skillRead.isChecked = state.settings.skillReadEnabled
@@ -313,6 +335,8 @@ internal class AgentToolsSettingsScreen(
         current.master.isEnabled = enabled
         current.webSearch.isEnabled = enabled && current.master.isChecked
         current.webRead.isEnabled = enabled && current.master.isChecked
+        current.browserUse.isEnabled = enabled && current.master.isChecked
+        current.terminalExec.isEnabled = enabled && current.master.isChecked
         current.calculator.isEnabled = enabled && current.master.isChecked
         current.localMemoryRecall.isEnabled = enabled && current.master.isChecked
         current.skillRead.isEnabled = enabled && current.master.isChecked
@@ -323,6 +347,8 @@ internal class AgentToolsSettingsScreen(
         val enabled = current.master.isEnabled && current.master.isChecked
         current.webSearch.isEnabled = enabled
         current.webRead.isEnabled = enabled
+        current.browserUse.isEnabled = enabled
+        current.terminalExec.isEnabled = enabled
         current.calculator.isEnabled = enabled
         current.localMemoryRecall.isEnabled = enabled
         current.skillRead.isEnabled = enabled

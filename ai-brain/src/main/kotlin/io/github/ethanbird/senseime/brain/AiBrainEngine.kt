@@ -11,6 +11,7 @@ import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
 import io.github.ethanbird.senseime.ai.protocol.HarnessDispatch
 import io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode
 import io.github.ethanbird.senseime.ai.protocol.HarnessPhase
+import io.github.ethanbird.senseime.ai.protocol.HarnessResultMode
 import io.github.ethanbird.senseime.ai.protocol.PatchOperationType
 import io.github.ethanbird.senseime.ai.protocol.ProtocolValidator
 import io.github.ethanbird.senseime.ai.protocol.SenseAiProtocol
@@ -104,11 +105,14 @@ class AiBrainEngine(
         private val emittedDescription = StringBuilder()
         private val emittedPreview = StringBuilder()
         private var retryVisible: StableRetryVisibleStream? = null
-        private val usesNativePatchTool =
+        private val requiresEditorPatch =
+            spec.harnessRequest.resultMode == HarnessResultMode.EDITOR_PATCH
+        private val usesNativeToolProtocol =
             spec.provider.apiStyle ==
                 io.github.ethanbird.senseime.brain.api.ProviderApiStyle
                     .OPENAI_COMPATIBLE_CHAT_COMPLETIONS &&
                 ProviderCompatibility.isOfficialDeepSeek(spec.provider.baseUrl)
+        private val usesNativePatchTool = usesNativeToolProtocol && requiresEditorPatch
         private val acceptsAgentToolCalls = OpenAiRequestFactory.exposedAgentTools(
             enabledTools = spec.enabledTools,
             requestMode = requestMode,
@@ -578,7 +582,7 @@ class AiBrainEngine(
                         privateResponsesReasoningChars += event.json.length
                     }
                     is ProviderContentEvent.ToolCallDelta -> {
-                        if (!usesNativePatchTool && !acceptsAgentToolCalls) {
+                        if (!usesNativeToolProtocol && !acceptsAgentToolCalls) {
                             return failOutcome(
                                 HarnessErrorCode.PROTOCOL_INVALID,
                                 retryable = false,
@@ -614,30 +618,13 @@ class AiBrainEngine(
                             HarnessPhase.GENERATING,
                             "provider_generating",
                         )
-                        if (usesNativePatchTool &&
-                            !appendPrivateBounded(assistantContent, event.text)
-                        ) {
+                        val textFailure = consumeAssistantText(event.text, dispatches)
+                        if (textFailure != null) {
                             return failOutcome(
-                                HarnessErrorCode.PROVIDER_FAILURE,
+                                textFailure,
                                 retryable = false,
                                 prior = dispatches,
                             )
-                        }
-                        val visible = try {
-                            // Ordinary assistant content can never authorize an edit when the
-                            // provider was given the native terminal tool. It is retained only as
-                            // bounded repair evidence and is never shown as the generated result.
-                            val extracted = preview!!.append(event.text)
-                            if (usesNativePatchTool) "" else extracted
-                        } catch (_: ProviderPayloadException) {
-                            return failOutcome(
-                                HarnessErrorCode.PREVIEW_LIMIT_EXCEEDED,
-                                retryable = false,
-                                prior = dispatches,
-                            )
-                        }
-                        if (visible.isNotEmpty()) {
-                            emitVisiblePreview(visible, dispatches)
                         }
                     }
                     is ProviderContentEvent.Usage -> dispatches += session.accept(
@@ -692,30 +679,58 @@ class AiBrainEngine(
                                 prior = dispatches,
                             )
                         }
-                        if (!usesNativePatchTool &&
-                            preview!!.fullDocument().isEmpty() &&
+                        if (assistantContent.isEmpty() &&
                             !event.finalText.isNullOrEmpty()
                         ) {
-                            val visible = preview!!.append(event.finalText)
-                            if (visible.isNotEmpty()) {
-                                emitVisiblePreview(visible, dispatches)
+                            val textFailure = consumeAssistantText(event.finalText, dispatches)
+                            if (textFailure != null) {
+                                return failOutcome(
+                                    textFailure,
+                                    retryable = false,
+                                    prior = dispatches,
+                                )
                             }
                         }
                         finishRetryVisibility(dispatches)
                         if (session.state.isTerminal) return terminalOutcome(dispatches)
-                        return finalizePatch(attempt, dispatches)
+                        return finalizeResult(attempt, dispatches)
                     }
                 }
             }
             return terminalOutcome(dispatches)
         }
 
-        private fun finalizePatch(
+        private fun consumeAssistantText(
+            text: String,
+            dispatches: MutableList<HarnessDispatch>,
+        ): HarnessErrorCode? {
+            if (!appendPrivateBounded(assistantContent, text)) {
+                return HarnessErrorCode.PROVIDER_FAILURE
+            }
+            val visible = if (!requiresEditorPatch) {
+                text
+            } else {
+                try {
+                    // Native patch mode retains ordinary content only as bounded evidence. In all
+                    // patch modes the scanner exposes replacement text, never model-provided IDs.
+                    val extracted = preview!!.append(text)
+                    if (usesNativePatchTool) "" else extracted
+                } catch (_: ProviderPayloadException) {
+                    return HarnessErrorCode.PREVIEW_LIMIT_EXCEEDED
+                }
+            }
+            if (visible.isNotEmpty()) {
+                emitVisiblePreview(visible, dispatches)
+            }
+            return null
+        }
+
+        private fun finalizeResult(
             attempt: Int,
             prior: MutableList<HarnessDispatch>,
         ): Outcome {
             if (
-                usesNativePatchTool &&
+                usesNativeToolProtocol &&
                 nativeToolError == null &&
                 nativeToolName == OpenAiRequestFactory.NATIVE_PROGRESS_TOOL_NAME
             ) {
@@ -729,6 +744,19 @@ class AiBrainEngine(
             }
 
             val nativeFailure = nativeToolError
+            if (!requiresEditorPatch) {
+                if (nativeToolIndex != null) {
+                    completeNativeToolProgress(prior, succeeded = false)
+                    return repairOrFail(
+                        attempt = attempt,
+                        prior = prior,
+                        rejectedDocument = nativeToolArguments.toString(),
+                        validationSummary =
+                            nativeFailure ?: "unexpected or disabled Agent tool call",
+                    )
+                }
+                return finalizeAnswer(attempt, prior, assistantContent.toString())
+            }
             if (!usesNativePatchTool && nativeToolIndex != null) {
                 completeNativeToolProgress(prior, succeeded = false)
                 return repairOrFail(
@@ -744,6 +772,11 @@ class AiBrainEngine(
                     nativeToolIndex == null ||
                     nativeToolName != OpenAiRequestFactory.NATIVE_PATCH_TOOL_NAME
                 ) {
+                    val ordinaryAnswer = assistantContent.toString()
+                    if (attempt == 0 && ordinaryAnswer.isPlainAssistantAnswerCandidate()) {
+                        completeNativeToolProgress(prior, succeeded = false)
+                        return finalizeAnswer(attempt, prior, ordinaryAnswer)
+                    }
                     completeNativeToolProgress(prior, succeeded = false)
                     return repairOrFail(
                         attempt = attempt,
@@ -806,6 +839,9 @@ class AiBrainEngine(
                 )
             } else {
                 preview!!.fullDocument()
+            }
+            if (attempt == 0 && document.isPlainAssistantAnswerCandidate()) {
+                return finalizeAnswer(attempt, prior, document)
             }
             heartbeatTitle = "正在校验结构化编辑结果"
             prior += session.accept(
@@ -905,6 +941,66 @@ class AiBrainEngine(
                 rejectedDocument = document,
                 validationSummary = validationSummary,
             )
+        }
+
+        private fun finalizeAnswer(
+            attempt: Int,
+            prior: MutableList<HarnessDispatch>,
+            document: String,
+        ): Outcome {
+            val answer = document.trim()
+            if (answer.isEmpty() || answer.length > spec.harnessRequest.maxOutputChars) {
+                return repairOrFail(
+                    attempt = attempt,
+                    prior = prior,
+                    rejectedDocument = document,
+                    validationSummary = if (answer.isEmpty()) {
+                        "assistant answer is empty"
+                    } else {
+                        "assistant answer exceeds max_output_chars"
+                    },
+                )
+            }
+            heartbeatTitle = "正在校验回答"
+            prior += session.accept(
+                AiEvent.Status(
+                    requestId = requestId,
+                    runGeneration = runGeneration,
+                    phase = HarnessPhase.VALIDATING,
+                    label = "validating_answer",
+                ),
+                clock.nowMs(),
+            )
+            prior += emitAgentProgress(
+                kind = AgentProgressKind.VALIDATION,
+                state = AgentProgressState.COMPLETED,
+                stepId = "validation",
+                title = "回答已准备好",
+            )
+            if (session.state.isTerminal) return terminalOutcome(prior)
+            prior += session.accept(
+                AiEvent.FinalAnswer(
+                    requestId = requestId,
+                    runGeneration = runGeneration,
+                    text = answer,
+                ),
+                clock.nowMs(),
+            )
+            return terminalOutcome(prior)
+        }
+
+        private fun String.isPlainAssistantAnswerCandidate(): Boolean {
+            val candidate = trimStart()
+            if (candidate.isEmpty()) return false
+            if (
+                candidate.length < MIN_PLAIN_ANSWER_CHARS &&
+                candidate.all { it in 'A'..'Z' || it in 'a'..'z' }
+            ) {
+                return false
+            }
+            return !candidate.startsWith('{') &&
+                !candidate.startsWith('[') &&
+                !candidate.startsWith("```")
         }
 
         private fun repairOrFail(
@@ -1077,9 +1173,13 @@ class AiBrainEngine(
                 )
             }
 
-            val toolResult =
+            val toolResult = if (requiresEditorPatch) {
                 "{\"accepted\":true,\"instruction\":\"Continue the task and submit the " +
                     "final patch with sense_submit_patch.\"}"
+            } else {
+                "{\"accepted\":true,\"instruction\":\"Continue the task and finish with " +
+                    "one complete user-facing answer in ordinary assistant content.\"}"
+            }
             if (
                 !recordToolCall(
                     callId = callId,
@@ -1161,6 +1261,7 @@ class AiBrainEngine(
                     enabledTools = spec.enabledTools,
                     requestId = requestId,
                     runGeneration = runGeneration,
+                    sessionId = spec.harnessRequest.snapshot.fieldIdentity,
                 ).also { decoded ->
                     when (val arguments = decoded.arguments) {
                         is AgentToolArguments.SkillRead -> {
@@ -1187,12 +1288,11 @@ class AiBrainEngine(
                     }
                 }
             } catch (error: ProviderPayloadException) {
-                completeNativeToolProgress(prior, succeeded = false)
-                return repairOrFail(
-                    attempt,
-                    prior,
-                    nativeToolArguments.toString(),
-                    error.message ?: "invalid Agent tool call",
+                return continueAfterRejectedAgentTool(
+                    prior = prior,
+                    callId = callId,
+                    toolName = toolName,
+                    validationSummary = error.message ?: "invalid Agent tool call",
                 )
             }
             if (
@@ -1228,6 +1328,64 @@ class AiBrainEngine(
                 dispatches = prior,
                 cancelCall = oldCall,
                 toolExecution = pending,
+            )
+        }
+
+        /**
+         * Keeps a malformed or unauthorized tool call inside the same conversation.
+         *
+         * The provider receives one compact typed error paired with its original call id and can
+         * correct the arguments or finish normally. This avoids spending the one full-answer
+         * repair attempt and avoids replaying the immutable editor snapshot as a protocol retry.
+         */
+        private fun continueAfterRejectedAgentTool(
+            prior: MutableList<HarnessDispatch>,
+            callId: String,
+            toolName: String,
+            validationSummary: String,
+        ): Outcome {
+            val result = invalidToolResult(validationSummary.take(512))
+            if (
+                !recordToolCall(
+                    callId = callId,
+                    toolName = toolName,
+                    arguments = nativeToolArguments.toString(),
+                ) ||
+                !recordToolResult(
+                    callId = callId,
+                    toolName = toolName,
+                    content = result.content,
+                    isError = true,
+                )
+            ) {
+                return failOutcome(
+                    HarnessErrorCode.INTERNAL_FAILURE,
+                    retryable = false,
+                    prior = prior,
+                )
+            }
+            completeNativeToolProgress(prior, succeeded = false)
+            agentToolTurns += 1
+            val exchange = AgentToolExchange(
+                assistantReasoning = privateReasoning.toString(),
+                assistantContent = assistantContent.toString(),
+                responsesReasoningItems = privateResponsesReasoningItems.toList(),
+                toolCallId = callId,
+                toolName = toolName,
+                toolArguments = nativeToolArguments.toString(),
+                toolResult = result.content,
+            )
+            val continuation = AgentConversationContext(
+                exchanges = agentConversation.exchanges + exchange,
+                forceTerminalTool = agentToolTurns >= AgentToolRouter.MAX_TOOL_TURNS,
+            )
+            agentConversation = continuation
+            heartbeatTitle = "工具参数已反馈，Agent 正在继续处理"
+            val oldCall = invalidateActive()
+            return Outcome(
+                dispatches = prior,
+                cancelCall = oldCall,
+                continuation = continuation,
             )
         }
 
@@ -1500,14 +1658,13 @@ class AiBrainEngine(
                 reason = reason,
             )
 
-        private fun currentAttemptDocument(): String =
-            if (usesNativePatchTool) {
-                nativeToolArguments.toString().ifEmpty {
-                    preview?.fullDocument().orEmpty()
-                }
-            } else {
+        private fun currentAttemptDocument(): String = when {
+            !requiresEditorPatch -> assistantContent.toString()
+            usesNativePatchTool -> nativeToolArguments.toString().ifEmpty {
                 preview?.fullDocument().orEmpty()
             }
+            else -> preview?.fullDocument().orEmpty()
+        }
 
         private fun emitVisibleDescription(
             text: String,
@@ -1767,6 +1924,7 @@ class AiBrainEngine(
         const val MAX_AGENT_PROGRESS_TURNS = 2
         const val MAX_PRIVATE_REPLAY_CHARS = 262_144
         const val MAX_RESPONSES_REASONING_ITEMS = 8
+        const val MIN_PLAIN_ANSWER_CHARS = 8
 
         fun harnessLimits(
             spec: BrainRunSpec,

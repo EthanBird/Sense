@@ -122,7 +122,7 @@ internal class AiVoiceRenderer(
             paint.textAlign = Paint.Align.LEFT
             text.drawCentered(
                 canvas,
-                OUTPUT_PREVIEW,
+                if (state.resultActions.isEmpty()) OUTPUT_PREVIEW else ANSWER_PREVIEW,
                 paint,
                 card.left + dp(14f),
                 timelineBottom + dp(11f),
@@ -519,6 +519,10 @@ internal class AiVoiceRenderer(
         accent: Int,
     ) {
         val geometry = rendererState.aiGeometry
+        if (state.resultActions.isNotEmpty()) {
+            drawAiResultActions(canvas, rendererState, state, accent)
+            return
+        }
         val pill = geometry.lockPill
         if (pill.isEmpty) return
         val centerY = pill.centerY
@@ -630,6 +634,49 @@ internal class AiVoiceRenderer(
         )
     }
 
+    private fun drawAiResultActions(
+        canvas: Canvas,
+        rendererState: KeyboardRendererState,
+        state: AiSurfaceState,
+        accent: Int,
+    ) {
+        paint.style = Paint.Style.FILL
+        paint.textSize = sp(12.5f)
+        paint.textAlign = Paint.Align.CENTER
+        state.resultActions.forEach { action ->
+            val bounds = rendererState.aiGeometry.resultActionBounds(action.type)
+            if (bounds.isEmpty) return@forEach
+            val pressed = rendererState.aiPressedResultAction == action.type
+            paint.color = when {
+                pressed -> accent
+                action.type == AiResultActionType.APPLY ->
+                    color(0x1F26845A, 0x3671D9A8)
+                else -> color(0x165B72E8, 0x269C8CFF)
+            }
+            canvas.drawRoundRect(
+                bounds.left,
+                bounds.top,
+                bounds.right,
+                bounds.bottom,
+                dp(10f),
+                dp(10f),
+                paint,
+            )
+            paint.color = if (pressed) {
+                Color.WHITE
+            } else {
+                color(0xFF354258.toInt(), 0xFFF0F1F4.toInt())
+            }
+            text.drawCentered(
+                canvas,
+                action.label,
+                paint,
+                bounds.centerX,
+                bounds.centerY,
+            )
+        }
+    }
+
     private fun drawAiPreviewText(
         canvas: Canvas,
         value: String,
@@ -694,6 +741,7 @@ internal class AiVoiceRenderer(
     private fun sp(value: Float): Float = value * density * fontScale
 
     private companion object {
+        const val ANSWER_PREVIEW = "Agent 回答"
         const val EMPTY_TEXT = ""
         const val FAILURE_MARK = "!"
         const val OUTPUT_PREVIEW = "输出预览"

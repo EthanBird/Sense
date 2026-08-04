@@ -5,6 +5,7 @@
     <color name="sense_primary">#F7FAFC</color>
     <color name="sense_secondary">#AAB4C3</color>
     <color name="sense_accent">#82A7FF</color>
+    <color name="sense_accent_soft">#263B66</color>
+    <color name="sense_border">#34445C</color>
     <color name="sense_success">#4AD29A</color>
 </resources>
-

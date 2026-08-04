@@ -34,6 +34,8 @@ class SenseKeyboardView @JvmOverloads constructor(
         fun onAiStopRequested(generation: Long) {
             onAiHoldCancelled(generation)
         }
+
+        fun onAiResultAction(generation: Long, action: AiResultActionType) = Unit
     }
 
     /** Compatibility facades for callers compiled against the original API. */
@@ -89,6 +91,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     var clipboardActionListener: ((action: ClipboardAction, index: Int) -> Unit)? = null
     var editorActionListener: ((action: EditorAction) -> Unit)? = null
     var settingsActionListener: (() -> Unit)? = null
+    var agentActionListener: (() -> Unit)? = null
     var t9SideSymbolSettingsListener: (() -> Unit)? = null
     var t9PinyinChoiceSelectionListener: T9PinyinChoiceSelectionListener? = null
     var inputSchemeSelectionListener: KeyboardInputSchemeSelectionListener? = null
@@ -166,6 +169,10 @@ class SenseKeyboardView @JvmOverloads constructor(
             settingsActionListener?.invoke()
         }
 
+        override fun onAgentAction() {
+            agentActionListener?.invoke()
+        }
+
         override fun onT9SideSymbolSettings() {
             t9SideSymbolSettingsListener?.invoke()
         }
@@ -188,6 +195,10 @@ class SenseKeyboardView @JvmOverloads constructor(
 
         override fun onAiStopRequested(generation: Long) {
             aiHoldListener?.onAiStopRequested(generation)
+        }
+
+        override fun onAiResultAction(generation: Long, action: AiResultActionType) {
+            aiHoldListener?.onAiResultAction(generation, action)
         }
 
         override fun onSkillSelection(request: KeyboardSkillSelection) {
@@ -330,6 +341,8 @@ class SenseKeyboardView @JvmOverloads constructor(
             get() = aiRenderGeometry
         override val aiStopPressed: Boolean
             get() = interaction.aiStopPressed
+        override val aiPressedResultAction: AiResultActionType?
+            get() = interaction.aiPressedResultAction
         override val voiceSurface: VoiceSurfaceState?
             get() = voiceSurfaceState
         override val voiceWaveformBuffer: VoiceWaveformBuffer
@@ -779,12 +792,15 @@ class SenseKeyboardView @JvmOverloads constructor(
         statusText: String = "",
         activities: List<AiSurfaceActivity> =
             interaction.aiSurfaceState?.activities.orEmpty(),
+        resultActions: List<AiSurfaceResultAction> =
+            interaction.aiSurfaceState?.resultActions.orEmpty(),
     ): Boolean = interaction.updateAiSurface(
         generation = generation,
         phase = phase,
         preview = preview,
         statusText = statusText,
         activities = activities,
+        resultActions = resultActions,
     )
 
     fun appendAiStreamPreview(

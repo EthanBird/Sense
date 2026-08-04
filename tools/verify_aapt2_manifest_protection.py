@@ -18,6 +18,10 @@ EXPECTED_USED_PERMISSIONS = frozenset(
     {
         "android.permission.INTERNET",
         "android.permission.RECORD_AUDIO",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_SPECIAL_USE",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.WAKE_LOCK",
         EXPECTED_PERMISSION_NAME,
     }
 )
@@ -174,7 +178,7 @@ def verify_aapt2_manifest_protection(
     ):
         raise Aapt2ManifestProtectionError(
             f"{permission_path}: expected exactly the AAPT2 typed "
-            f"uses-permission triplet {sorted(EXPECTED_USED_PERMISSIONS)}, "
+            f"uses-permission set {sorted(EXPECTED_USED_PERMISSIONS)}, "
             f"found {used_entries}"
         )
 

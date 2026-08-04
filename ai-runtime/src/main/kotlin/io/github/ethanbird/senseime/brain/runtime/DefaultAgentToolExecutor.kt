@@ -54,6 +54,28 @@ interface AgentSkillToolSource {
     }
 }
 
+fun interface AgentTerminalToolSource {
+    /** Returns one compact JSON object that becomes the tool result's `data` field. */
+    fun execute(sessionId: String, arguments: AgentToolArguments.TerminalExec): String
+
+    companion object {
+        val UNAVAILABLE = AgentTerminalToolSource { _, _ ->
+            throw IllegalStateException("Terminal runtime unavailable")
+        }
+    }
+}
+
+fun interface AgentBrowserToolSource {
+    /** Returns one compact JSON object that becomes the tool result's `data` field. */
+    fun execute(sessionId: String, arguments: AgentToolArguments.BrowserUse): String
+
+    companion object {
+        val UNAVAILABLE = AgentBrowserToolSource { _, _ ->
+            throw IllegalStateException("Browser runtime unavailable")
+        }
+    }
+}
+
 /**
  * Dependency-free Android tool runtime.
  *
@@ -63,6 +85,8 @@ interface AgentSkillToolSource {
 class DefaultAgentToolExecutor(
     private val memorySource: AgentMemorySearchSource = AgentMemorySearchSource.EMPTY,
     private val skillSource: AgentSkillToolSource = AgentSkillToolSource.UNAVAILABLE,
+    private val terminalSource: AgentTerminalToolSource = AgentTerminalToolSource.UNAVAILABLE,
+    private val browserSource: AgentBrowserToolSource = AgentBrowserToolSource.UNAVAILABLE,
     private val connectTimeoutMs: Int = 8_000,
     private val readTimeoutMs: Int = 12_000,
     private val documentLoader: ((String) -> String)? = null,
@@ -71,6 +95,12 @@ class DefaultAgentToolExecutor(
         when (val arguments = call.arguments) {
             is AgentToolArguments.WebSearch -> webSearch(arguments)
             is AgentToolArguments.WebFetch -> webFetch(arguments)
+            is AgentToolArguments.BrowserUse -> success(
+                browserSource.execute(call.sessionId, arguments),
+            )
+            is AgentToolArguments.TerminalExec -> success(
+                terminalSource.execute(call.sessionId, arguments),
+            )
             is AgentToolArguments.Calculator -> calculate(arguments)
             is AgentToolArguments.MemorySearch -> memorySearch(
                 arguments,
@@ -410,7 +440,7 @@ class DefaultAgentToolExecutor(
         const val MAX_MEMORY_HIT_CHARS = 2_000
         const val MOBILE_USER_AGENT =
             "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 " +
-                "(KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36 Sense-IME/0.4.5.beta.1"
+                "(KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36 Sense-IME/0.4.7"
     }
 }
 

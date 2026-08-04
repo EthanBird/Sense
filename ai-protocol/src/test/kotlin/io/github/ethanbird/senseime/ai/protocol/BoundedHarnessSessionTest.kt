@@ -10,6 +10,45 @@ import org.junit.Test
 
 class BoundedHarnessSessionTest {
     @Test
+    fun finalAnswerIsValidatedAndTerminatesWithoutEditorAuthority() {
+        val request = validRequest().copy(resultMode = HarnessResultMode.ASSISTANT_MESSAGE)
+        val session = BoundedHarnessSession(request)
+        session.start(nowMonotonicMs = 0)
+
+        val accepted = session.accept(
+            AiEvent.FinalAnswer(request.requestId, request.runGeneration, "这是完整回答"),
+            nowMonotonicMs = 1,
+        )
+        val late = session.accept(
+            AiEvent.FinalAnswer(request.requestId, request.runGeneration, "迟到回答"),
+            nowMonotonicMs = 2,
+        )
+
+        assertTrue(accepted is HarnessDispatch.Emitted)
+        assertEquals(BoundedHarnessState.FINAL_ANSWER, session.state)
+        assertTrue(session.terminal is AiEvent.FinalAnswer)
+        assertTrue(late is HarnessDispatch.Dropped)
+        assertEquals(HarnessDropReason.TERMINATED, (late as HarnessDispatch.Dropped).reason)
+    }
+
+    @Test
+    fun blankFinalAnswerBecomesOneProtocolFailure() {
+        val request = validRequest().copy(resultMode = HarnessResultMode.ASSISTANT_MESSAGE)
+        val session = BoundedHarnessSession(request)
+        session.start(nowMonotonicMs = 0)
+
+        val result = session.accept(
+            AiEvent.FinalAnswer(request.requestId, request.runGeneration, "   "),
+            nowMonotonicMs = 1,
+        )
+
+        assertTrue(result is HarnessDispatch.Emitted)
+        assertEquals(HarnessErrorCode.PROTOCOL_INVALID, (result as HarnessDispatch.Emitted)
+            .event.let { it as AiEvent.Failed }.code)
+        assertEquals(BoundedHarnessState.FAILED, session.state)
+    }
+
+    @Test
     fun streamsInOrderAndAcceptsExactlyOneTerminalPatch() {
         val fake = DeterministicFakeHarness(validRequest())
 

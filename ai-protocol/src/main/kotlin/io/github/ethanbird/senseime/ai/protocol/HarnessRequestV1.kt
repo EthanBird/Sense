@@ -25,5 +25,6 @@ data class HarnessRequestV1(
      */
     val activeSkill: ActiveSkillInstructionV1? = null,
     val snapshot: EditorSnapshotV1,
+    val resultMode: HarnessResultMode = HarnessResultMode.EDITOR_PATCH,
     val maxOutputChars: Int = snapshot.maxOutputChars,
 )

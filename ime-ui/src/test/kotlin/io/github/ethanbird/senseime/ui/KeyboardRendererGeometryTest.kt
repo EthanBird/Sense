@@ -89,6 +89,40 @@ class KeyboardRendererGeometryTest {
     }
 
     @Test
+    fun `result actions replace hold controls with three stable hit targets`() {
+        val geometry = MutableAiSurfaceRenderGeometry()
+        val actions = listOf(
+            AiSurfaceResultAction(AiResultActionType.APPLY, "替换原文"),
+            AiSurfaceResultAction(AiResultActionType.COPY, "复制"),
+            AiSurfaceResultAction(AiResultActionType.DISMISS, "关闭"),
+        )
+
+        geometry.update(
+            viewWidth = 400,
+            viewHeight = 300,
+            keyRegionTop = 50f,
+            systemBarHeight = 52f,
+            horizontalPadding = 6f,
+            density = 1f,
+            active = true,
+            locked = true,
+            resultActions = actions,
+        )
+
+        assertTrue(geometry.lockPill.isEmpty)
+        assertTrue(geometry.stopBounds.isEmpty)
+        assertRect(geometry.resultActionBounds(AiResultActionType.APPLY), 10f, 253f, 132f, 295f)
+        assertRect(geometry.resultActionBounds(AiResultActionType.COPY), 139f, 253f, 261f, 295f)
+        assertRect(
+            geometry.resultActionBounds(AiResultActionType.DISMISS),
+            268f,
+            253f,
+            390f,
+            295f,
+        )
+    }
+
+    @Test
     fun `frame policy scans only timeline rows that the renderer displays`() {
         assertTrue(
             KeyboardRenderFramePolicy.aiNeedsDelayedFrame(

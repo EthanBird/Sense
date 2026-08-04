@@ -421,7 +421,7 @@ EXPECTED_ROOT_BUILD_SCRIPT = """plugins {
 """
 
 EXPECTED_OFFLINE_VERIFY_SHA256 = (
-    "47c8687989afdd2fc4382ce919084d2e7427220697ae97af51b8684fb5c5d6d9"
+    "468e531dd84da5c2b66605d184d5d36368926a7cca448ef4d1c006255679c4bc"
 )
 EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("settings.gradle.kts"):
@@ -445,7 +445,7 @@ EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("ai-runtime/build.gradle.kts"):
         "175f9868685698b2f52a572ff42d4e64413b85d47674e038e1cf9219f3ca349c",
     Path("app/build.gradle.kts"):
-        "9879cbdc605f5a521b9f0dbd79fc93a4e42097cd864456244fe122241148ab4e",
+        "5a50f36ab9ab0504bb23fa69f47c42d05b4a206f45cdb399db784ee00d9c5075",
     Path("benchmark/build.gradle.kts"):
         "999d9aba8d2813df7e108a9dece00c7f6406b3c5273e59f323d0565e650abf8b",
     Path("brain-api/build.gradle.kts"):

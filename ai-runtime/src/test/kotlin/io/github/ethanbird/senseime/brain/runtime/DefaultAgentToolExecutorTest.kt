@@ -14,6 +14,46 @@ import org.junit.Test
 
 class DefaultAgentToolExecutorTest {
     @Test
+    fun `terminal and browser sources receive stable session identity`() {
+        val sessions = mutableListOf<String>()
+        val executor = DefaultAgentToolExecutor(
+            terminalSource = AgentTerminalToolSource { sessionId, arguments ->
+                sessions += sessionId
+                "{\"command\":\"${arguments.command}\",\"exit_code\":0}"
+            },
+            browserSource = AgentBrowserToolSource { sessionId, arguments ->
+                sessions += sessionId
+                "{\"action\":\"${arguments.action.wireValue}\"}"
+            },
+        )
+
+        val terminal = executor.execute(
+            AgentToolCall(
+                callId = "terminal",
+                tool = AgentToolId.TERMINAL_EXEC,
+                arguments = AgentToolArguments.TerminalExec("pwd"),
+                sessionId = "hub-session",
+            ),
+        )
+        val browser = executor.execute(
+            AgentToolCall(
+                callId = "browser",
+                tool = AgentToolId.BROWSER_USE,
+                arguments = AgentToolArguments.BrowserUse(
+                    io.github.ethanbird.senseime.brain.api.AgentBrowserAction.SNAPSHOT,
+                ),
+                sessionId = "hub-session",
+            ),
+        )
+
+        assertEquals(listOf("hub-session", "hub-session"), sessions)
+        assertFalse(terminal.isError)
+        assertFalse(browser.isError)
+        assertTrue(terminal.content.contains("\"exit_code\":0"))
+        assertTrue(browser.content.contains("\"action\":\"snapshot\""))
+    }
+
+    @Test
     fun calculatorUsesBoundedParserWithoutEval() {
         val result = executor().execute(
             call(AgentToolId.CALCULATOR, AgentToolArguments.Calculator("2 + 3 * (4 ^ 2)")),

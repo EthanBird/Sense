@@ -1,5 +1,6 @@
 package io.github.ethanbird.senseime.service
 
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
@@ -84,6 +85,7 @@ import io.github.ethanbird.senseime.speech.SpeechRecognitionReducer
 import io.github.ethanbird.senseime.speech.SpeechRecognitionState
 import io.github.ethanbird.senseime.speech.SpeechSessionIdSequence
 import io.github.ethanbird.senseime.ui.KeyCodes
+import io.github.ethanbird.senseime.ui.AiResultActionType
 import io.github.ethanbird.senseime.ui.ActiveKeyboardSkill
 import io.github.ethanbird.senseime.ui.KeyboardSkillBinding
 import io.github.ethanbird.senseime.ui.KeyboardSkillDirection
@@ -350,6 +352,16 @@ class SenseInputMethodService : InputMethodService() {
                     activities,
                 )
             },
+            onAssistantResult = { generation, preview, status, activities, actions ->
+                keyboardView?.updateAiSurface(
+                    generation = generation,
+                    phase = io.github.ethanbird.senseime.ui.AiSurfacePhase.COMPLETE,
+                    preview = preview,
+                    statusText = status,
+                    activities = activities,
+                    resultActions = actions,
+                )
+            },
             onOwnApplyWindow = { token, active ->
                 aiApplicationToken = if (active) token else null
             },
@@ -469,6 +481,7 @@ class SenseInputMethodService : InputMethodService() {
         view.clipboardActionListener = ::handleClipboardAction
         view.editorActionListener = ::handleEditorAction
         view.settingsActionListener = ::openSenseHome
+        view.agentActionListener = ::openAgentHub
         view.t9SideSymbolSettingsListener = ::openT9SideSymbolSettings
         view.inputSchemeSelectionListener =
             KeyboardInputSchemeSelectionListener(::handleInputSchemeSelection)
@@ -486,6 +499,34 @@ class SenseInputMethodService : InputMethodService() {
 
             override fun onAiStopRequested(generation: Long) {
                 aiCoordinator.cancel(generation, HarnessCancelReason.CALLER_REQUESTED)
+            }
+
+            override fun onAiResultAction(
+                generation: Long,
+                action: AiResultActionType,
+            ) {
+                val currentView = keyboardView ?: return
+                when (action) {
+                    AiResultActionType.APPLY -> {
+                        if (aiCoordinator.applyAssistantResult(generation)) {
+                            currentView.exitAiSurface(generation)
+                        }
+                    }
+                    AiResultActionType.COPY -> {
+                        val answer = aiCoordinator.assistantResult(generation) ?: return
+                        clipboardManager.setPrimaryClip(
+                            ClipData.newPlainText("Sense Agent result", answer),
+                        )
+                        aiCoordinator.dismissAssistantResult(generation)
+                        currentView.exitAiSurface(generation)
+                        Toast.makeText(this@SenseInputMethodService, "已复制 Agent 回答", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                    AiResultActionType.DISMISS -> {
+                        aiCoordinator.dismissAssistantResult(generation)
+                        currentView.exitAiSurface(generation)
+                    }
+                }
             }
         }
         view.setInputPresentation(
@@ -514,6 +555,21 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun openSenseHome() = openSenseSettings(initialSection = null)
+
+    private fun openAgentHub() {
+        cancelVoiceSession(exitSurface = true)
+        cancelAndExitAi(HarnessCancelReason.CALLER_REQUESTED)
+        val launchIntent = Intent()
+            .setClassName(packageName, SENSE_AGENT_HUB_ACTIVITY)
+            .addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP,
+            )
+        runCatching { startActivity(launchIntent) }
+            .onFailure {
+                Toast.makeText(this, "Agent 工作台启动失败", Toast.LENGTH_SHORT).show()
+            }
+    }
 
     private fun openT9SideSymbolSettings() =
         openSenseSettings(initialSection = ImeSettingsRoute.KEYBOARD_SECTION)
@@ -2987,6 +3043,8 @@ class SenseInputMethodService : InputMethodService() {
     private companion object {
         const val SENSE_SETTINGS_ACTIVITY =
             "io.github.ethanbird.senseime.SettingsActivity"
+        const val SENSE_AGENT_HUB_ACTIVITY =
+            "io.github.ethanbird.senseime.AgentHubActivity"
         const val TAG = "SenseInputMethod"
         const val PINYIN_ASSET = "pinyin_lexicon.bin"
         const val PINYIN_BIGRAM_ASSET = "pinyin_bigrams.bin"

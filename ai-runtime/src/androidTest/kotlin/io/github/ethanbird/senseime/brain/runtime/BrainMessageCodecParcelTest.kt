@@ -4,10 +4,12 @@ import android.os.Bundle
 import android.os.Parcel
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.ethanbird.senseime.ai.protocol.ActiveSkillInstructionV1
+import io.github.ethanbird.senseime.ai.protocol.AiEvent
 import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import io.github.ethanbird.senseime.ai.protocol.EditorSnapshotV1
 import io.github.ethanbird.senseime.ai.protocol.EditorTextDigest
 import io.github.ethanbird.senseime.ai.protocol.HarnessRequestV1
+import io.github.ethanbird.senseime.ai.protocol.HarnessResultMode
 import io.github.ethanbird.senseime.ai.protocol.PatchTarget
 import io.github.ethanbird.senseime.ai.protocol.SenseAiProtocol
 import io.github.ethanbird.senseime.ai.protocol.SnapshotCapability
@@ -20,6 +22,21 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class BrainMessageCodecParcelTest {
+    @Test
+    fun assistantMessageRequestAndFinalAnswerRoundTrip() {
+        val request = maximumLegalRequest().copy(
+            resultMode = HarnessResultMode.ASSISTANT_MESSAGE,
+        )
+        assertEquals(request, BrainMessageCodec.decodeRequest(BrainMessageCodec.encodeRequest(request)))
+
+        val event = AiEvent.FinalAnswer(
+            requestId = request.requestId,
+            runGeneration = request.runGeneration,
+            text = "完整回答",
+        )
+        assertEquals(event, BrainMessageCodec.decodeEvent(BrainMessageCodec.encodeEvent(event)))
+    }
+
     @Test
     fun maximumMixedUtf16RequestAndFullDiscoveryReserveRoundTripBelow512KiB() {
         val request = maximumLegalRequest()

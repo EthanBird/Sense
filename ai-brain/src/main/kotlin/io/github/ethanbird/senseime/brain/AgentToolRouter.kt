@@ -3,6 +3,7 @@ package io.github.ethanbird.senseime.brain
 import io.github.ethanbird.senseime.brain.api.AgentToolArguments
 import io.github.ethanbird.senseime.brain.api.AgentToolCall
 import io.github.ethanbird.senseime.brain.api.AgentToolId
+import io.github.ethanbird.senseime.brain.api.AgentBrowserAction
 import io.github.ethanbird.senseime.brain.api.AgentSkillDirection
 import io.github.ethanbird.senseime.brain.api.AgentSkillPolicy
 import io.github.ethanbird.senseime.brain.api.AgentSkillSlot
@@ -23,6 +24,7 @@ internal object AgentToolRouter {
         enabledTools: Set<AgentToolId>,
         requestId: String? = null,
         runGeneration: Long? = null,
+        sessionId: String? = null,
     ): AgentToolCall {
         val tool = AgentToolId.fromWireValue(toolName)
             ?: throw ProviderPayloadException("unknown Agent tool")
@@ -62,6 +64,28 @@ internal object AgentToolRouter {
                         "max_chars",
                         default = DEFAULT_FETCH_CHARS,
                         range = 256..MAX_FETCH_CHARS,
+                    ),
+                )
+            }
+            AgentToolId.BROWSER_USE -> decodeBrowserUse(members)
+            AgentToolId.TERMINAL_EXEC -> {
+                requireKeys(
+                    members,
+                    required = setOf("command"),
+                    optional = setOf("cwd", "timeout_ms"),
+                )
+                AgentToolArguments.TerminalExec(
+                    command = members.requiredText(
+                        "command",
+                        MAX_TERMINAL_COMMAND_CHARS,
+                        trim = false,
+                    ),
+                    cwd = members.optionalText("cwd", MAX_TERMINAL_CWD_CHARS) ?: ".",
+                    timeoutMs = members.optionalInt(
+                        "timeout_ms",
+                        default = AgentToolArguments.TerminalExec.DEFAULT_TIMEOUT_MS,
+                        range = AgentToolArguments.TerminalExec.MIN_TIMEOUT_MS..
+                            AgentToolArguments.TerminalExec.MAX_TIMEOUT_MS,
                     ),
                 )
             }
@@ -112,7 +136,59 @@ internal object AgentToolRouter {
             arguments = arguments,
             requestId = requestId,
             runGeneration = runGeneration,
+            sessionId = sessionId ?: requestId ?: callId,
         )
+    }
+
+    private fun decodeBrowserUse(
+        members: Map<String, JsonValue>,
+    ): AgentToolArguments.BrowserUse {
+        val action = AgentBrowserAction.fromWireValue(
+            members.requiredText("action", MAX_BROWSER_ACTION_CHARS),
+        ) ?: throw ProviderPayloadException("unknown browser_use action")
+        val required = when (action) {
+            AgentBrowserAction.NAVIGATE -> setOf("action", "url")
+            AgentBrowserAction.CLICK -> setOf("action", "ref")
+            AgentBrowserAction.TYPE -> setOf("action", "ref", "text")
+            AgentBrowserAction.SNAPSHOT,
+            AgentBrowserAction.BACK,
+            AgentBrowserAction.FORWARD,
+            AgentBrowserAction.RELOAD,
+            -> setOf("action")
+        }
+        val optional = when (action) {
+            AgentBrowserAction.TYPE -> setOf("submit", "max_chars")
+            else -> setOf("max_chars")
+        }
+        requireKeys(members, required = required, optional = optional)
+        val url = members.optionalText("url", MAX_URL_CHARS)?.let(::requireBrowserUrl)
+        return AgentToolArguments.BrowserUse(
+            action = action,
+            url = url,
+            ref = members.optionalIntOrNull("ref", 1..MAX_BROWSER_REFS),
+            text = members.optionalText("text", MAX_BROWSER_INPUT_CHARS, trim = false),
+            submit = members.optionalBoolean("submit", default = false),
+            maxChars = members.optionalInt(
+                "max_chars",
+                default = AgentToolArguments.BrowserUse.DEFAULT_MAX_CHARS,
+                range = AgentToolArguments.BrowserUse.MIN_MAX_CHARS..
+                    AgentToolArguments.BrowserUse.MAX_MAX_CHARS,
+            ),
+        )
+    }
+
+    private fun requireBrowserUrl(value: String): String {
+        val uri = runCatching { URI(value) }.getOrNull()
+        if (
+            uri == null ||
+            !uri.isAbsolute ||
+            uri.scheme?.lowercase() !in setOf("http", "https") ||
+            uri.host.isNullOrBlank() ||
+            uri.rawUserInfo != null
+        ) {
+            throw ProviderPayloadException("browser_use requires an absolute HTTP(S) URL")
+        }
+        return uri.toASCIIString()
     }
 
     private fun decodeSkillManagement(
@@ -294,6 +370,23 @@ internal object AgentToolRouter {
         return value
     }
 
+    private fun Map<String, JsonValue>.optionalIntOrNull(
+        name: String,
+        range: IntRange,
+    ): Int? {
+        if (name !in this) return null
+        return optionalInt(name, default = Int.MIN_VALUE, range = range)
+    }
+
+    private fun Map<String, JsonValue>.optionalBoolean(
+        name: String,
+        default: Boolean,
+    ): Boolean {
+        val raw = get(name) ?: return default
+        return (raw as? JsonValue.BooleanValue)?.value
+            ?: throw ProviderPayloadException("$name must be a boolean")
+    }
+
     private fun Map<String, JsonValue>.optionalPositiveLong(name: String): Long? {
         val raw = get(name) ?: return null
         val value = (raw as? JsonValue.NumberValue)?.value?.toLongOrNull()
@@ -353,6 +446,11 @@ internal object AgentToolRouter {
     const val MAX_QUERY_CHARS = 512
     const val MAX_URL_CHARS = 2_048
     const val MAX_EXPRESSION_CHARS = 512
+    const val MAX_TERMINAL_COMMAND_CHARS = 4_096
+    const val MAX_TERMINAL_CWD_CHARS = 512
+    const val MAX_BROWSER_ACTION_CHARS = 16
+    const val MAX_BROWSER_INPUT_CHARS = 4_096
+    const val MAX_BROWSER_REFS = 200
     const val MAX_FETCH_CHARS = 12_000
     const val MAX_SEARCH_RESULTS = 10
     const val MAX_MEMORY_RESULTS = 20

@@ -40,6 +40,8 @@ class AgentToolSettingsStoreTest {
             setOf(
                 AgentToolId.WEB_SEARCH,
                 AgentToolId.WEB_FETCH,
+                AgentToolId.BROWSER_USE,
+                AgentToolId.TERMINAL_EXEC,
                 AgentToolId.CALCULATOR,
                 AgentToolId.MEMORY_SEARCH,
                 AgentToolId.SKILL_READ,
@@ -55,6 +57,8 @@ class AgentToolSettingsStoreTest {
             masterEnabled = false,
             webSearchEnabled = true,
             webFetchEnabled = false,
+            browserUseEnabled = false,
+            terminalExecEnabled = false,
             calculatorEnabled = true,
             memorySearchEnabled = false,
             skillReadEnabled = true,
@@ -79,6 +83,8 @@ class AgentToolSettingsStoreTest {
         val settings = AgentToolSettings(
             webSearchEnabled = false,
             webFetchEnabled = true,
+            browserUseEnabled = false,
+            terminalExecEnabled = false,
             calculatorEnabled = false,
             memorySearchEnabled = true,
             skillReadEnabled = false,
@@ -97,15 +103,17 @@ class AgentToolSettingsStoreTest {
 
     @Test
     fun `codec round trips every switch combination`() {
-        for (mask in 0 until 128) {
+        for (mask in 0 until 512) {
             val settings = AgentToolSettings(
                 masterEnabled = mask and 1 != 0,
                 webSearchEnabled = mask and 2 != 0,
                 webFetchEnabled = mask and 4 != 0,
-                calculatorEnabled = mask and 8 != 0,
-                memorySearchEnabled = mask and 16 != 0,
-                skillReadEnabled = mask and 32 != 0,
-                skillManageEnabled = mask and 64 != 0,
+                browserUseEnabled = mask and 8 != 0,
+                terminalExecEnabled = mask and 16 != 0,
+                calculatorEnabled = mask and 32 != 0,
+                memorySearchEnabled = mask and 64 != 0,
+                skillReadEnabled = mask and 128 != 0,
+                skillManageEnabled = mask and 256 != 0,
             )
 
             assertEquals(
@@ -131,16 +139,20 @@ class AgentToolSettingsStoreTest {
 
         assertTrue(decoded.skillReadEnabled)
         assertTrue(decoded.skillManageEnabled)
+        assertTrue(decoded.browserUseEnabled)
+        assertTrue(decoded.terminalExecEnabled)
         assertEquals(
             setOf(
                 AgentToolId.WEB_FETCH,
+                AgentToolId.BROWSER_USE,
+                AgentToolId.TERMINAL_EXEC,
                 AgentToolId.MEMORY_SEARCH,
                 AgentToolId.SKILL_READ,
                 AgentToolId.SKILL_MANAGE,
             ),
             decoded.enabledToolIds(),
         )
-        assertTrue(AgentToolSettingsCodec.encode(decoded).startsWith("schema_version=2\n"))
+        assertTrue(AgentToolSettingsCodec.encode(decoded).startsWith("schema_version=3\n"))
         val legacyMasterOff = AgentToolSettingsCodec.decode(
             legacy.replace("master_enabled=true", "master_enabled=false"),
         )
@@ -154,6 +166,8 @@ class AgentToolSettingsStoreTest {
         val noSkills = AgentToolSettings(
             webSearchEnabled = true,
             webFetchEnabled = false,
+            browserUseEnabled = false,
+            terminalExecEnabled = false,
             calculatorEnabled = false,
             memorySearchEnabled = false,
             skillReadEnabled = false,
@@ -232,7 +246,7 @@ class AgentToolSettingsStoreTest {
             AgentToolSettingsCodec.decode(valid.replace("web_fetch_enabled=true", "web_fetch_enabled=yes"))
         }
         assertThrows(IllegalArgumentException::class.java) {
-            AgentToolSettingsCodec.decode(valid.replace("schema_version=2", "schema_version=3"))
+            AgentToolSettingsCodec.decode(valid.replace("schema_version=3", "schema_version=4"))
         }
         assertThrows(IllegalArgumentException::class.java) {
             AgentToolSettingsCodec.decode(

@@ -107,7 +107,7 @@ class KeyboardLayoutContractTest {
     }
 
     @Test
-    fun toolboxExposesSixDistinctActionsInAnIconFirstFourColumnGrid() {
+    fun toolboxExposesSevenDistinctActionsInAnIconFirstFourColumnGrid() {
         val slots = KeyboardLayoutContract.toolboxLayout(
             viewWidth = 360f,
             contentTop = 53f,
@@ -118,13 +118,14 @@ class KeyboardLayoutContractTest {
         )
 
         assertEquals(KeyboardLayoutContract.ToolboxItem.entries, slots.map { it.item })
-        assertEquals(6, slots.map { it.item.keyCode }.distinct().size)
+        assertEquals(7, slots.map { it.item.keyCode }.distinct().size)
         assertEquals(
             setOf(
                 KeyboardLayoutContract.ToolboxActivationRoute.SYMBOLS_PANEL,
                 KeyboardLayoutContract.ToolboxActivationRoute.EMOJI_PANEL,
                 KeyboardLayoutContract.ToolboxActivationRoute.SERVICE_ACTION,
                 KeyboardLayoutContract.ToolboxActivationRoute.SETTINGS_CALLBACK,
+                KeyboardLayoutContract.ToolboxActivationRoute.AGENT_CALLBACK,
             ),
             slots.map { it.item.activationRoute }.toSet(),
         )
@@ -133,8 +134,9 @@ class KeyboardLayoutContractTest {
         assertEquals(94.25f, firstRow[1].left, 0.001f)
         assertEquals(182.5f, firstRow[2].left, 0.001f)
         assertEquals(270.75f, firstRow[3].left, 0.001f)
-        assertEquals(94.25f, slots[4].left, 0.001f)
-        assertEquals(182.5f, slots[5].left, 0.001f)
+        assertEquals(50.125f, slots[4].left, 0.001f)
+        assertEquals(138.375f, slots[5].left, 0.001f)
+        assertEquals(226.625f, slots[6].left, 0.001f)
         assertTrue(slots.all { it.right <= 354f })
         assertTrue(slots.all { it.bottom <= 298f })
         assertTrue(slots.all { it.right - it.left >= 48f && it.bottom - it.top >= 48f })
@@ -176,6 +178,10 @@ class KeyboardLayoutContractTest {
         assertEquals(
             KeyboardLayoutContract.ToolboxActivationRoute.SETTINGS_CALLBACK,
             KeyboardLayoutContract.toolboxActivationRoute(KeyCodes.SETTINGS),
+        )
+        assertEquals(
+            KeyboardLayoutContract.ToolboxActivationRoute.AGENT_CALLBACK,
+            KeyboardLayoutContract.toolboxActivationRoute(KeyCodes.AGENT),
         )
         assertEquals(null, KeyboardLayoutContract.toolboxActivationRoute(KeyCodes.TOOLBOX))
         assertEquals(null, KeyboardLayoutContract.toolboxActivationRoute(KeyCodes.LETTERS))

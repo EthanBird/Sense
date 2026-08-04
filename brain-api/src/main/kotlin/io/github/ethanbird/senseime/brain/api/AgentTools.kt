@@ -11,6 +11,8 @@ import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 enum class AgentToolId(val wireValue: String) {
     WEB_SEARCH("web_search"),
     WEB_FETCH("web_fetch"),
+    BROWSER_USE("browser_use"),
+    TERMINAL_EXEC("terminal_exec"),
     CALCULATOR("calculator"),
     MEMORY_SEARCH("memory_search"),
     SKILL_READ("skill_read"),
@@ -34,6 +36,45 @@ sealed interface AgentToolArguments {
         val url: String,
         val maxChars: Int,
     ) : AgentToolArguments
+
+    /** One bounded action against the session-owned WebView tab. */
+    data class BrowserUse(
+        val action: AgentBrowserAction,
+        val url: String? = null,
+        val ref: Int? = null,
+        val text: String? = null,
+        val submit: Boolean = false,
+        val maxChars: Int = DEFAULT_MAX_CHARS,
+    ) : AgentToolArguments {
+        init {
+            require(maxChars in MIN_MAX_CHARS..MAX_MAX_CHARS)
+        }
+
+        companion object {
+            const val MIN_MAX_CHARS = 512
+            const val MAX_MAX_CHARS = 12_000
+            const val DEFAULT_MAX_CHARS = 6_000
+        }
+    }
+
+    /** One sandboxed Android shell command rooted in the session workspace. */
+    data class TerminalExec(
+        val command: String,
+        val cwd: String = ".",
+        val timeoutMs: Int = DEFAULT_TIMEOUT_MS,
+    ) : AgentToolArguments {
+        init {
+            require(command.isNotBlank())
+            require(cwd.isNotBlank())
+            require(timeoutMs in MIN_TIMEOUT_MS..MAX_TIMEOUT_MS)
+        }
+
+        companion object {
+            const val MIN_TIMEOUT_MS = 1_000
+            const val MAX_TIMEOUT_MS = 60_000
+            const val DEFAULT_TIMEOUT_MS = 15_000
+        }
+    }
 
     data class Calculator(
         val expression: String,
@@ -139,6 +180,8 @@ data class AgentToolCall(
     /** Run identity used to prevent memory_search from recalling its own in-flight trace. */
     val requestId: String? = null,
     val runGeneration: Long? = null,
+    /** Stable local session scope used by stateful terminal and browser runtimes. */
+    val sessionId: String = requestId ?: callId,
 ) {
     init {
         require(callId.isNotBlank())
@@ -147,10 +190,30 @@ data class AgentToolCall(
         require((requestId == null) == (runGeneration == null))
         requestId?.let { require(it.isNotBlank()) }
         runGeneration?.let { require(it >= 0L) }
+        require(sessionId.isNotBlank())
+        require(sessionId.length <= MAX_SESSION_ID_CHARS)
+        require(sessionId.none(Character::isISOControl))
     }
 
     private companion object {
         const val MAX_CALL_ID_CHARS = 256
+        const val MAX_SESSION_ID_CHARS = 256
+    }
+}
+
+enum class AgentBrowserAction(val wireValue: String) {
+    NAVIGATE("navigate"),
+    SNAPSHOT("snapshot"),
+    CLICK("click"),
+    TYPE("type"),
+    BACK("back"),
+    FORWARD("forward"),
+    RELOAD("reload"),
+    ;
+
+    companion object {
+        fun fromWireValue(value: String): AgentBrowserAction? =
+            entries.firstOrNull { it.wireValue == value }
     }
 }
 

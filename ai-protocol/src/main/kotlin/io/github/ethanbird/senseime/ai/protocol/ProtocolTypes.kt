@@ -48,6 +48,18 @@ enum class EditorIntent(override val wireValue: String) : WireEnum {
     NO_CHANGE("no_change"),
 }
 
+/**
+ * Declares which terminal payload the caller expects from a harness run.
+ *
+ * Editing skills keep the strict [EDITOR_PATCH] contract. Conversational skills use
+ * [ASSISTANT_MESSAGE], allowing the provider to finish with ordinary assistant text while the IME
+ * retains local ownership of any later editor mutation.
+ */
+enum class HarnessResultMode(override val wireValue: String) : WireEnum {
+    EDITOR_PATCH("editor_patch"),
+    ASSISTANT_MESSAGE("assistant_message"),
+}
+
 enum class SelectionAfter(override val wireValue: String) : WireEnum {
     START("start"),
     END("end"),

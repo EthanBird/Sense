@@ -1,16 +1,26 @@
 package io.github.ethanbird.senseime.brain.runtime
 
+import android.Manifest
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.Message
 import android.os.Messenger
+import android.os.PowerManager
 import android.os.RemoteException
 import io.github.ethanbird.senseime.ai.protocol.AiEvent
 import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
 import io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode
+import io.github.ethanbird.senseime.ai.protocol.isTerminal
 import io.github.ethanbird.senseime.brain.AiBrainEngine
 import io.github.ethanbird.senseime.brain.BrainRequestMode
 import io.github.ethanbird.senseime.brain.api.AgentSkillCatalog
@@ -55,6 +65,8 @@ class SenseAiBrainService : Service() {
     @Volatile
     private var journalOpenFailure: Throwable? = null
     private var active: ActiveRun? = null
+    private var durableRunPromoted = false
+    private var wakeLock: PowerManager.WakeLock? = null
     private val outboundDeliveries =
         BrainIpcSerialDeliveryQueue<OutboundDelivery>()
     private val deliverOutboundEvents = Runnable {
@@ -108,6 +120,12 @@ class SenseAiBrainService : Service() {
             toolExecutor = DefaultAgentToolExecutor(
                 memorySource = memorySource,
                 skillSource = skillSource,
+                terminalSource = AgentTerminalToolSource(
+                    AgentRuntimeComponents.terminal(application)::executeForTool,
+                ),
+                browserSource = AgentBrowserToolSource(
+                    AgentRuntimeComponents.browser(application)::executeForTool,
+                ),
             ),
         )
         admissionLane = BrainAdmissionSerialLane(
@@ -117,6 +135,14 @@ class SenseAiBrainService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder = messenger.binder
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            ACTION_PROMOTE_DURABLE_RUN -> promoteDurableRun()
+            ACTION_STOP_DURABLE_RUN -> stopDurableRunFromNotification()
+        }
+        return START_NOT_STICKY
+    }
 
     override fun onDestroy() {
         val previous = synchronized(activeLock) {
@@ -132,6 +158,7 @@ class SenseAiBrainService : Service() {
         mainHandler.removeCallbacks(deliverOutboundEvents)
         outboundDeliveries.clear()
         previous?.retentionGate?.currentHandle()?.cancel(HarnessCancelReason.BRAIN_DIED)
+        releaseWakeLock()
         if (::admissionLane.isInitialized) {
             admissionLane.closeAfterDraining {
                 /*
@@ -376,6 +403,7 @@ class SenseAiBrainService : Service() {
             }
         } ?: return
         current.retentionGate.currentHandle()?.cancel(reason)
+        finishDurableRun(null)
     }
 
     /**
@@ -416,10 +444,7 @@ class SenseAiBrainService : Service() {
                 mainHandler.post { handle.cancel(HarnessCancelReason.BRAIN_DIED) }
             }
         }
-        val terminal =
-            event is AiEvent.FinalPatch ||
-            event is AiEvent.Cancelled ||
-                event is AiEvent.Failed
+        val terminal = event.isTerminal
 
         if (event is AiEvent.PreviewDelta || event is AiEvent.DescriptionDelta) {
             synchronized(activeLock) {
@@ -455,7 +480,147 @@ class SenseAiBrainService : Service() {
             enqueueDeliveryLocked(expectedRun, outbound)
         }
         scheduleOutboundDrain(scheduleDrain)
+        if (terminal) mainHandler.post { finishDurableRun(event) }
     }
+
+    private fun promoteDurableRun() {
+        durableRunPromoted = true
+        ensureNotificationChannel()
+        val notification = runningNotification("Agent 正在准备任务…")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                RUNNING_NOTIFICATION_ID,
+                notification,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+                } else {
+                    0
+                },
+            )
+        } else {
+            startForeground(RUNNING_NOTIFICATION_ID, notification)
+        }
+        val manager = getSystemService(PowerManager::class.java)
+        wakeLock = manager.newWakeLock(
+            PowerManager.PARTIAL_WAKE_LOCK,
+            "$packageName:sense-agent-run",
+        ).apply {
+            setReferenceCounted(false)
+            acquire(MAX_WAKE_LOCK_MS)
+        }
+    }
+
+    private fun stopDurableRunFromNotification() {
+        val current = synchronized(activeLock) {
+            active?.also {
+                it.admissionCancellation = HarnessCancelReason.CALLER_REQUESTED
+            }
+        }
+        if (current == null) {
+            finishDurableRun(null)
+            return
+        }
+        val handle = current.retentionGate.currentHandle()
+        if (handle != null) {
+            handle.cancel(HarnessCancelReason.CALLER_REQUESTED)
+        } else {
+            synchronized(activeLock) {
+                current.admissionTerminalRecorded = true
+            }
+            emit(
+                current,
+                AiEvent.Cancelled(
+                    current.identity.first,
+                    current.identity.second,
+                    HarnessCancelReason.CALLER_REQUESTED,
+                ),
+            )
+        }
+    }
+
+    private fun finishDurableRun(event: AiEvent?) {
+        if (!durableRunPromoted) return
+        durableRunPromoted = false
+        releaseWakeLock()
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        val completedText = when (event) {
+            is AiEvent.FinalAnswer -> event.text.lineSequence().firstOrNull().orEmpty().take(120)
+            is AiEvent.FinalPatch -> "编辑提案已经准备好"
+            is AiEvent.Failed -> "任务结束，可打开 Agent 查看详情"
+            is AiEvent.Cancelled, null -> "任务已停止"
+            else -> "任务结束"
+        }
+        if (
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            ensureNotificationChannel()
+            getSystemService(NotificationManager::class.java).notify(
+                COMPLETED_NOTIFICATION_ID,
+                completedNotification(completedText),
+            )
+        }
+        stopSelf()
+    }
+
+    private fun releaseWakeLock() {
+        wakeLock?.takeIf(PowerManager.WakeLock::isHeld)?.release()
+        wakeLock = null
+    }
+
+    private fun ensureNotificationChannel() {
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(
+            NotificationChannel(
+                NOTIFICATION_CHANNEL_ID,
+                "Sense Agent",
+                NotificationManager.IMPORTANCE_LOW,
+            ).apply {
+                description = "Agent 后台任务、终端和浏览器运行状态"
+            },
+        )
+    }
+
+    private fun runningNotification(status: String): Notification =
+        Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(applicationInfo.icon)
+            .setContentTitle("Sense Agent 正在运行")
+            .setContentText(status)
+            .setContentIntent(openHubPendingIntent())
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .addAction(
+                Notification.Action.Builder(
+                    null,
+                    "停止",
+                    PendingIntent.getService(
+                        this,
+                        2,
+                        Intent(this, SenseAiBrainService::class.java)
+                            .setAction(ACTION_STOP_DURABLE_RUN),
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                    ),
+                ).build(),
+            )
+            .build()
+
+    private fun completedNotification(status: String): Notification =
+        Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(applicationInfo.icon)
+            .setContentTitle("Sense Agent")
+            .setContentText(status)
+            .setContentIntent(openHubPendingIntent())
+            .setAutoCancel(true)
+            .build()
+
+    private fun openHubPendingIntent(): PendingIntent = PendingIntent.getActivity(
+        this,
+        1,
+        Intent().setClassName(packageName, AGENT_HUB_ACTIVITY)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+    )
 
     private fun recordTrace(expectedRun: ActiveRun, trace: BrainTraceEvent) {
         require((trace.requestId to trace.runGeneration) == expectedRun.identity)
@@ -716,7 +881,17 @@ class SenseAiBrainService : Service() {
     )
 
     companion object {
+        const val ACTION_PROMOTE_DURABLE_RUN =
+            "io.github.ethanbird.senseime.action.PROMOTE_AGENT_RUN"
+        const val ACTION_STOP_DURABLE_RUN =
+            "io.github.ethanbird.senseime.action.STOP_AGENT_RUN"
         private const val AGENT_HISTORY_DIRECTORY = "agent-history"
+        private const val AGENT_HUB_ACTIVITY =
+            "io.github.ethanbird.senseime.AgentHubActivity"
+        private const val NOTIFICATION_CHANNEL_ID = "sense-agent-runtime"
+        private const val RUNNING_NOTIFICATION_ID = 2407
+        private const val COMPLETED_NOTIFICATION_ID = 2408
+        private const val MAX_WAKE_LOCK_MS = 10 * 60 * 1_000L
         private const val TICK_INTERVAL_MS = 100L
         private const val IPC_FRAME_INTERVAL_MS = 16L
         private val PROCESS_ADMISSION_EXECUTOR = Executors.newSingleThreadExecutor { runnable ->

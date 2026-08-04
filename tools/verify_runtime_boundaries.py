@@ -14,6 +14,7 @@ import xml.etree.ElementTree as ET
 
 ANDROID = "{http://schemas.android.com/apk/res/android}"
 SETTINGS_ACTIVITY = "io.github.ethanbird.senseime.SettingsActivity"
+AGENT_HUB_ACTIVITY = "io.github.ethanbird.senseime.AgentHubActivity"
 BRAIN_SERVICE = (
     "io.github.ethanbird.senseime.brain.runtime.SenseAiBrainService"
 )
@@ -202,8 +203,9 @@ def verify_runtime_manifest(manifest_path: str | Path) -> None:
         )
     application = applications[0]
 
+    activities = application.findall("activity")
     settings = _component_by_name(
-        application.findall("activity"),
+        activities,
         component_name=SETTINGS_ACTIVITY,
         manifest_path=path,
     )
@@ -233,6 +235,24 @@ def verify_runtime_manifest(manifest_path: str | Path) -> None:
             "MAIN+LAUNCHER filter"
         )
 
+    agent_hub = _component_by_name(
+        activities,
+        component_name=AGENT_HUB_ACTIVITY,
+        manifest_path=path,
+    )
+    if agent_hub.get(ANDROID + "exported") != "false":
+        raise RuntimeBoundaryError(
+            f"{path}: AgentHubActivity must be exported=false"
+        )
+    if agent_hub.get(ANDROID + "process") != ":brain":
+        raise RuntimeBoundaryError(
+            f"{path}: AgentHubActivity must run in :brain"
+        )
+    if agent_hub.get(ANDROID + "windowSoftInputMode") != "adjustResize":
+        raise RuntimeBoundaryError(
+            f"{path}: AgentHubActivity must use adjustResize"
+        )
+
     services = application.findall("service")
     brain = _component_by_name(
         services,
@@ -246,6 +266,27 @@ def verify_runtime_manifest(manifest_path: str | Path) -> None:
     if brain.get(ANDROID + "process") != ":brain":
         raise RuntimeBoundaryError(
             f"{path}: Brain service must run in :brain"
+        )
+    if brain.get(ANDROID + "foregroundServiceType") != "specialUse":
+        raise RuntimeBoundaryError(
+            f"{path}: Brain service must use specialUse foreground type"
+        )
+    special_use_properties = [
+        child
+        for child in brain.findall("property")
+        if child.get(ANDROID + "name")
+        == "android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+    ]
+    if len(special_use_properties) != 1:
+        raise RuntimeBoundaryError(
+            f"{path}: Brain service must declare one special-use subtype"
+        )
+    if (
+        special_use_properties[0].get(ANDROID + "value")
+        != "user_initiated_agent_task"
+    ):
+        raise RuntimeBoundaryError(
+            f"{path}: Brain service special-use subtype drifted"
         )
 
     ime = _component_by_name(

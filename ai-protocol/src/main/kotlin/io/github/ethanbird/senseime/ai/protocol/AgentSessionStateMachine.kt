@@ -50,6 +50,17 @@ class AgentSessionStateMachine(
             -> moveTo(AgentExecutionState.DRAFTING)
             is AiEvent.Usage -> true
             is AiEvent.FinalPatch -> moveTo(AgentExecutionState.VALIDATING)
+            is AiEvent.FinalAnswer -> {
+                steps["terminal"] = AgentSessionStep(
+                    id = "terminal",
+                    kind = AgentProgressKind.ASSISTANT_UPDATE,
+                    state = AgentProgressState.COMPLETED,
+                    title = "回答已完成",
+                )
+                trimSteps()
+                mutableState = AgentExecutionState.COMPLETED
+                true
+            }
             is AiEvent.Cancelled -> {
                 steps["terminal"] = AgentSessionStep(
                     id = "terminal",

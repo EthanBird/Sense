@@ -234,6 +234,9 @@ internal class KeyboardActionDispatcher(
 
                 KeyboardLayoutContract.ToolboxActivationRoute.SETTINGS_CALLBACK ->
                     actions.onSettingsAction()
+
+                KeyboardLayoutContract.ToolboxActivationRoute.AGENT_CALLBACK ->
+                    actions.onAgentAction()
             }
             return
         }

@@ -271,12 +271,24 @@ data class AiSurfaceActivity(
     val state: AiSurfaceActivityState = AiSurfaceActivityState.RUNNING,
 )
 
+enum class AiResultActionType {
+    APPLY,
+    COPY,
+    DISMISS,
+}
+
+data class AiSurfaceResultAction(
+    val type: AiResultActionType,
+    val label: String,
+)
+
 data class AiSurfaceState(
     val generation: Long,
     val phase: AiSurfacePhase,
     val preview: String,
     val statusText: String,
     val activities: List<AiSurfaceActivity> = emptyList(),
+    val resultActions: List<AiSurfaceResultAction> = emptyList(),
     val lockProgress: Float = 0f,
     val locked: Boolean = false,
 )
@@ -287,6 +299,7 @@ data class AiSurfaceState(
 object AiSurfaceContract {
     const val MAX_PREVIEW_CHARS = 4_096
     const val MAX_VISIBLE_ACTIVITIES = 4
+    const val MAX_RESULT_ACTIONS = 3
     const val LOCK_DISTANCE_DP = 56f
 
     data class Bounds(

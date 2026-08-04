@@ -122,7 +122,9 @@ class SenseAiProviderTestClient(
                 outputTokens = event.outputTokens
             }
 
-            is AiEvent.FinalPatch -> {
+            is AiEvent.FinalPatch,
+            is AiEvent.FinalAnswer,
+            -> {
                 if (gate.takeIfActive(event.requestId, event.runGeneration) == null) return
                 val succeeded = ProviderConnectionTestEvent.Succeeded(
                     inputTokens = inputTokens,

@@ -3,8 +3,10 @@ package io.github.ethanbird.senseime.brain
 import io.github.ethanbird.senseime.ai.protocol.EditorSnapshotV1
 import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import io.github.ethanbird.senseime.ai.protocol.HarnessRequestV1
+import io.github.ethanbird.senseime.ai.protocol.HarnessResultMode
 import io.github.ethanbird.senseime.brain.api.AgentToolArguments
 import io.github.ethanbird.senseime.brain.api.AgentToolId
+import io.github.ethanbird.senseime.brain.api.AgentBrowserAction
 import io.github.ethanbird.senseime.brain.api.AgentSkillSummary
 import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
 import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
@@ -68,7 +70,9 @@ internal object OpenAiRequestFactory {
         require((attempt == 0) == (secondAttempt == null))
         require(secondAttempt == null || agentConversation == null)
 
-        val nativePatchTool = usesNativePatchTool(profile)
+        val nativeToolProtocol = usesNativeToolProtocol(profile)
+        val requiresEditorPatch = request.resultMode == HarnessResultMode.EDITOR_PATCH
+        val nativePatchTool = nativeToolProtocol && requiresEditorPatch
         val frozenCatalogGeneration =
             skillCatalogGeneration
                 ?: request.skillCatalogGeneration
@@ -82,11 +86,14 @@ internal object OpenAiRequestFactory {
             hasReadableSkills = skillCatalog.isNotEmpty(),
         )
         val includeInlineContract =
-            !nativePatchTool && profile.structuredOutput != StructuredOutputMode.JSON_SCHEMA
+            requiresEditorPatch &&
+                !nativePatchTool &&
+                profile.structuredOutput != StructuredOutputMode.JSON_SCHEMA
         val prompt = when (secondAttempt) {
             null -> buildHarnessInput(
                 request,
                 includeInlineContract,
+                nativeToolProtocol,
                 nativePatchTool,
                 exposedAgentTools,
                 skillCatalog,
@@ -106,6 +113,7 @@ internal object OpenAiRequestFactory {
                     conversation = agentConversation,
                     enabledTools = exposedAgentTools,
                     skillCatalogGeneration = frozenCatalogGeneration,
+                    requiresEditorPatch = requiresEditorPatch,
                 )
             ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS ->
                 chatCompletionsBody(
@@ -113,6 +121,7 @@ internal object OpenAiRequestFactory {
                     prompt,
                     request,
                     requestMode,
+                    nativeToolProtocol,
                     nativePatchTool,
                     agentConversation,
                     secondAttempt != null,
@@ -123,7 +132,7 @@ internal object OpenAiRequestFactory {
         val headers = linkedMapOf(
             "Accept" to if (profile.streaming) "text/event-stream" else "application/json",
             "Content-Type" to "application/json; charset=utf-8",
-            "User-Agent" to "Sense-IME/0.4.5.beta.1 AI-Brain",
+            "User-Agent" to "Sense-IME/0.4.7 AI-Brain",
         )
         when (credential) {
             is ProviderCredential.Bearer -> headers["Authorization"] = "Bearer ${credential.token}"
@@ -147,6 +156,7 @@ internal object OpenAiRequestFactory {
         conversation: AgentConversationContext?,
         enabledTools: Set<AgentToolId>,
         skillCatalogGeneration: Long?,
+        requiresEditorPatch: Boolean,
     ): String = buildString {
         append('{')
         property("model", profile.model)
@@ -168,7 +178,9 @@ internal object OpenAiRequestFactory {
             append(",\"include\":[\"reasoning.encrypted_content\"]")
             appendResponsesAgentTools(enabledTools, skillCatalogGeneration)
         }
-        appendStructuredOutput(profile, responses = true)
+        if (requiresEditorPatch) {
+            appendStructuredOutput(profile, responses = true)
+        }
         append('}')
     }
 
@@ -177,6 +189,7 @@ internal object OpenAiRequestFactory {
         prompt: String,
         request: HarnessRequestV1,
         requestMode: BrainRequestMode,
+        nativeToolProtocol: Boolean,
         nativePatchTool: Boolean,
         agentConversation: AgentConversationContext?,
         repairOrRecovery: Boolean,
@@ -188,36 +201,43 @@ internal object OpenAiRequestFactory {
         append(",\"messages\":")
         appendChatMessages(prompt, agentConversation)
         append(",\"stream\":").append(profile.streaming)
-        if (nativePatchTool && profile.streaming) {
+        if (nativeToolProtocol && profile.streaming) {
             append(",\"stream_options\":{\"include_usage\":true}")
         }
         append(",\"max_tokens\":").append(providerTokenBudget(requestMode))
-        if (nativePatchTool) {
+        if (nativeToolProtocol) {
             appendDeepSeekThinking(profile, requestMode)
-            appendNativeAgentTools(
-                request = request,
-                includeProgressTool =
-                    requestMode == BrainRequestMode.NORMAL &&
-                        !repairOrRecovery &&
-                        agentConversation?.forceTerminalTool != true,
-                enabledTools = if (
-                    requestMode == BrainRequestMode.NORMAL &&
+            val includeProgressTool =
+                requestMode == BrainRequestMode.NORMAL &&
                     !repairOrRecovery &&
                     agentConversation?.forceTerminalTool != true
-                ) {
-                    enabledTools
-                } else {
-                    emptySet()
-                },
-                forceChoice =
-                    requestMode == BrainRequestMode.CONNECTIVITY_TEST ||
+            val nativeAgentTools = if (
+                requestMode == BrainRequestMode.NORMAL &&
+                !repairOrRecovery &&
+                agentConversation?.forceTerminalTool != true
+            ) {
+                enabledTools
+            } else {
+                emptySet()
+            }
+            if (includeProgressTool || nativeAgentTools.isNotEmpty() || nativePatchTool) {
+                appendNativeAgentTools(
+                    request = request,
+                    includeProgressTool = includeProgressTool,
+                    enabledTools = nativeAgentTools,
+                    includePatchTool = nativePatchTool,
+                    forceChoice = nativePatchTool &&
                         (
-                            repairOrRecovery &&
-                                effectiveThinkingMode(profile, requestMode) ==
-                                ThinkingMode.DISABLED
+                            requestMode == BrainRequestMode.CONNECTIVITY_TEST ||
+                                (
+                                    repairOrRecovery &&
+                                        effectiveThinkingMode(profile, requestMode) ==
+                                        ThinkingMode.DISABLED
+                                    )
                             ),
-                skillCatalogGeneration = skillCatalogGeneration,
-            )
+                    skillCatalogGeneration = skillCatalogGeneration,
+                )
+            }
         } else {
             if (enabledTools.isNotEmpty()) {
                 appendChatAgentTools(enabledTools, skillCatalogGeneration)
@@ -229,7 +249,7 @@ internal object OpenAiRequestFactory {
                 }
             }
         }
-        if (!nativePatchTool) {
+        if (request.resultMode == HarnessResultMode.EDITOR_PATCH && !nativePatchTool) {
             appendStructuredOutput(profile, responses = false)
         }
         append('}')
@@ -327,6 +347,7 @@ internal object OpenAiRequestFactory {
         request: HarnessRequestV1,
         includeProgressTool: Boolean,
         enabledTools: Set<AgentToolId>,
+        includePatchTool: Boolean,
         forceChoice: Boolean,
         skillCatalogGeneration: Long?,
     ) {
@@ -355,17 +376,20 @@ internal object OpenAiRequestFactory {
             )
             needsComma = true
         }
-        if (needsComma) append(',')
-        append("{\"type\":\"function\",\"function\":{")
-        property("name", NATIVE_PATCH_TOOL_NAME)
-        append(',')
-        property(
-            "description",
-            "Submit the single terminal Sense editor patch and its safe one-line public summary.",
-        )
-        append(",\"parameters\":")
-        append(nativePatchToolSchema(request))
-        append("}}]")
+        if (includePatchTool) {
+            if (needsComma) append(',')
+            append("{\"type\":\"function\",\"function\":{")
+            property("name", NATIVE_PATCH_TOOL_NAME)
+            append(',')
+            property(
+                "description",
+                "Submit the single terminal Sense editor patch and its safe one-line public summary.",
+            )
+            append(",\"parameters\":")
+            append(nativePatchToolSchema(request))
+            append("}}")
+        }
+        append(']')
         if (forceChoice) {
             append(",\"tool_choice\":{\"type\":\"function\",\"function\":{\"name\":")
             jsonString(NATIVE_PATCH_TOOL_NAME)
@@ -437,6 +461,43 @@ internal object OpenAiRequestFactory {
                 append("\"required\":[\"url\"],\"properties\":{")
                 append("\"url\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":2048},")
                 append("\"max_chars\":{\"type\":\"integer\",\"minimum\":256,\"maximum\":12000}}}")
+            }
+            AgentToolId.BROWSER_USE -> {
+                property(
+                    "description",
+                    "Control the session browser. Navigate, inspect numbered interactive " +
+                        "elements, click, type, go back/forward, or reload. Inspect with " +
+                        "snapshot before using element refs.",
+                )
+                append(",\"parameters\":{\"type\":\"object\",\"additionalProperties\":false,")
+                append("\"required\":[\"action\"],\"properties\":{")
+                append("\"action\":{\"type\":\"string\",\"enum\":[")
+                AgentBrowserAction.entries.forEachIndexed { index, action ->
+                    if (index > 0) append(',')
+                    jsonString(action.wireValue)
+                }
+                append("]},")
+                append("\"url\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":2048},")
+                append("\"ref\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":200},")
+                append("\"text\":{\"type\":\"string\",\"maxLength\":4096},")
+                append("\"submit\":{\"type\":\"boolean\"},")
+                append("\"max_chars\":{\"type\":\"integer\",\"minimum\":512,")
+                append("\"maximum\":12000}}}")
+            }
+            AgentToolId.TERMINAL_EXEC -> {
+                property(
+                    "description",
+                    "Run one timeout-bounded Android shell command in the session workspace. " +
+                        "Use cwd for a workspace-relative directory; stdout, stderr and exit " +
+                        "status are returned.",
+                )
+                append(",\"parameters\":{\"type\":\"object\",\"additionalProperties\":false,")
+                append("\"required\":[\"command\"],\"properties\":{")
+                append("\"command\":{\"type\":\"string\",\"minLength\":1,")
+                append("\"maxLength\":4096},")
+                append("\"cwd\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":512},")
+                append("\"timeout_ms\":{\"type\":\"integer\",\"minimum\":1000,")
+                append("\"maximum\":60000}}}")
             }
             AgentToolId.CALCULATOR -> {
                 property(
@@ -595,6 +656,7 @@ internal object OpenAiRequestFactory {
     private fun buildHarnessInput(
         request: HarnessRequestV1,
         includeInlineContract: Boolean,
+        nativeToolProtocol: Boolean,
         nativePatchTool: Boolean,
         enabledTools: Set<AgentToolId>,
         skillCatalog: List<AgentSkillSummary>,
@@ -607,13 +669,37 @@ internal object OpenAiRequestFactory {
             skillManageEnabled = AgentToolId.SKILL_MANAGE in enabledTools,
             generation = skillCatalogGeneration,
         )
-        appendContextWindowContract(request)
+        if (request.resultMode == HarnessResultMode.EDITOR_PATCH) {
+            appendContextWindowContract(request)
+        }
         if (includeInlineContract) {
             append('\n')
             appendInlinePatchContract(request)
         }
         append('\n')
-        if (nativePatchTool) {
+        if (request.resultMode == HarnessResultMode.ASSISTANT_MESSAGE) {
+            when {
+                nativeToolProtocol && enabledTools.isNotEmpty() -> append(
+                    "Use an exposed tool only when it improves the answer, continue from every " +
+                        "tool result, then finish with one complete user-facing answer in ordinary " +
+                        "assistant content. Do not emit an editor-patch JSON object. Snapshot JSON:\n",
+                )
+                nativeToolProtocol -> append(
+                    "You may publish one concise progress update, then finish with one complete " +
+                        "user-facing answer in ordinary assistant content. Do not emit an " +
+                        "editor-patch JSON object. Snapshot JSON:\n",
+                )
+                enabledTools.isNotEmpty() -> append(
+                    "Call at most one exposed tool when useful, continue from its result, then " +
+                        "return one complete user-facing answer in ordinary assistant content. " +
+                        "Snapshot JSON:\n",
+                )
+                else -> append(
+                    "Return one complete, directly useful answer in ordinary assistant content. " +
+                        "Snapshot JSON:\n",
+                )
+            }
+        } else if (nativePatchTool) {
             if (enabledTools.isEmpty()) {
                 append(
                     "Use exactly one tool call per turn. First call sense_report_progress with " +
@@ -647,7 +733,10 @@ internal object OpenAiRequestFactory {
     ): String = buildString {
         append("Your previous answer was rejected by the local protocol gate. ")
         append("This is the only repair attempt. ")
-        if (nativePatchTool) {
+        if (request.resultMode == HarnessResultMode.ASSISTANT_MESSAGE) {
+            append("Return one corrected, complete user-facing answer in ordinary content.\n")
+            append("Validation errors: ")
+        } else if (nativePatchTool) {
             append("Call sense_submit_patch exactly once with corrected arguments; ")
             append("do not answer in ordinary content.\nValidation errors: ")
         } else {
@@ -659,7 +748,9 @@ internal object OpenAiRequestFactory {
         append(repair.rejectedDocument.take(OpenAiResponseDecoder.MAX_RESPONSE_BYTES))
         append("\nTask contract: ")
         appendSkillContract(request)
-        appendContextWindowContract(request)
+        if (request.resultMode == HarnessResultMode.EDITOR_PATCH) {
+            appendContextWindowContract(request)
+        }
         if (includeInlineContract) {
             append('\n')
             appendInlinePatchContract(request)
@@ -683,7 +774,13 @@ internal object OpenAiRequestFactory {
         nativePatchTool: Boolean,
     ): String = buildString {
         append("The previous provider stream was interrupted before terminal completion. ")
-        append("Regenerate the entire structured answer from the beginning; do not return only ")
+        append(
+            if (request.resultMode == HarnessResultMode.ASSISTANT_MESSAGE) {
+                "Regenerate the entire user-facing answer from the beginning; do not return only "
+            } else {
+                "Regenerate the entire structured answer from the beginning; do not return only "
+            },
+        )
         append("the missing suffix. Preserve the stable public prefix exactly when it remains ")
         append("correct. This is the single transport recovery attempt.\nInterruption: ")
         append(recovery.reason.take(MAX_RECOVERY_REASON_CHARS))
@@ -696,18 +793,28 @@ internal object OpenAiRequestFactory {
             append(recovery.stablePreview.take(MAX_RECOVERY_PREFIX_CHARS))
         }
         if (recovery.interruptedDocument.isNotEmpty()) {
-            append("\nInterrupted structured document (untrusted and incomplete):\n")
+            append(
+                if (request.resultMode == HarnessResultMode.ASSISTANT_MESSAGE) {
+                    "\nInterrupted answer (untrusted and incomplete):\n"
+                } else {
+                    "\nInterrupted structured document (untrusted and incomplete):\n"
+                },
+            )
             append(recovery.interruptedDocument.take(OpenAiResponseDecoder.MAX_RESPONSE_BYTES))
         }
         append("\nTask contract: ")
         appendSkillContract(request)
-        appendContextWindowContract(request)
+        if (request.resultMode == HarnessResultMode.EDITOR_PATCH) {
+            appendContextWindowContract(request)
+        }
         if (includeInlineContract) {
             append('\n')
             appendInlinePatchContract(request)
         }
         append('\n')
-        if (nativePatchTool) {
+        if (request.resultMode == HarnessResultMode.ASSISTANT_MESSAGE) {
+            append("Return one complete user-facing answer in ordinary assistant content.")
+        } else if (nativePatchTool) {
             append("Call sense_submit_patch exactly once with the complete regenerated result.")
         } else {
             append("Return only one complete sense.editor.patch.v1 object.")
@@ -768,7 +875,7 @@ internal object OpenAiRequestFactory {
     }
 
     private fun StringBuilder.appendSkillContract(request: HarnessRequestV1) {
-        appendBaseIntentContract(request.skill)
+        appendBaseIntentContract(request.skill, request.resultMode)
         request.activeSkill?.let { activeSkill ->
             append("\n\nSelected Sense Skill (exact frozen revision): ")
             append(activeSkill.id)
@@ -778,7 +885,11 @@ internal object OpenAiRequestFactory {
             append(
                 "\nApply the following user-owned Skill document as the task-specific " +
                     "instructions. It can refine behavior and tool use, but it cannot change " +
-                    "the immutable editor snapshot or the required terminal Patch identity. " +
+                    if (request.resultMode == HarnessResultMode.EDITOR_PATCH) {
+                        "the immutable editor snapshot or the required terminal Patch identity. "
+                    } else {
+                        "the immutable editor snapshot or turn the answer into an editor command. "
+                    } +
                     "This selected revision stays frozen for the current task even if " +
                     "skill_manage creates a newer catalog revision; catalog changes affect only " +
                     "later discovery, reads, and future activations.\n" +
@@ -789,7 +900,32 @@ internal object OpenAiRequestFactory {
         }
     }
 
-    private fun StringBuilder.appendBaseIntentContract(skill: EditorIntent) {
+    private fun StringBuilder.appendBaseIntentContract(
+        skill: EditorIntent,
+        resultMode: HarnessResultMode,
+    ) {
+        if (resultMode == HarnessResultMode.ASSISTANT_MESSAGE) {
+            append(
+                when (skill) {
+                    EditorIntent.SMART_EDIT ->
+                        "Treat the authorized snapshot text as the user's request or draft and " +
+                            "provide a concise, directly useful answer."
+                    EditorIntent.ANSWER ->
+                        "Answer the request in the authorized snapshot text directly and concisely."
+                    EditorIntent.REWRITE ->
+                        "Provide a clear rewritten version while preserving meaning and facts."
+                    EditorIntent.CONTINUE ->
+                        "Provide a natural continuation in the existing language and tone."
+                    EditorIntent.TRANSLATE ->
+                        "Provide the translation directly without extra commentary."
+                    EditorIntent.FORMAT ->
+                        "Provide a better-structured version without changing meaning or facts."
+                    EditorIntent.NO_CHANGE ->
+                        error("no_change is not a runnable editor skill")
+                },
+            )
+            return
+        }
         append(
             when (skill) {
                 EditorIntent.SMART_EDIT ->
@@ -875,6 +1011,8 @@ internal object OpenAiRequestFactory {
         property("request_id", request.requestId)
         append(',')
         property("skill", request.skill.wireValue)
+        append(',')
+        property("result_mode", request.resultMode.wireValue)
         append(",\"max_output_chars\":").append(request.maxOutputChars)
         append(",\"snapshot\":")
         appendSnapshot(snapshot)
@@ -947,7 +1085,7 @@ internal object OpenAiRequestFactory {
         }
     }
 
-    private fun usesNativePatchTool(profile: ProviderProfile): Boolean =
+    private fun usesNativeToolProtocol(profile: ProviderProfile): Boolean =
         profile.apiStyle == ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS &&
             ProviderCompatibility.isOfficialDeepSeek(profile.baseUrl)
 

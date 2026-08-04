@@ -18,12 +18,14 @@ internal interface KeyboardInteractionActionSink {
     fun onClipboardAction(action: KeyboardClipboardAction, index: Int)
     fun onEditorAction(action: KeyboardEditorAction)
     fun onSettingsAction()
+    fun onAgentAction() = Unit
     fun onT9SideSymbolSettings() = Unit
     fun onT9PinyinChoiceSelected(revision: Long, index: Int) = Unit
     fun onInputSchemeSelected(choice: KeyboardInputSchemeChoice) = Unit
     fun onAiHoldStarted(generation: Long)
     fun onAiHoldCancelled(generation: Long)
     fun onAiStopRequested(generation: Long)
+    fun onAiResultAction(generation: Long, action: AiResultActionType) = Unit
     fun onSkillSelection(request: KeyboardSkillSelection)
 }
 
@@ -163,6 +165,8 @@ internal class KeyboardInteractionController(
         get() = gestureCoordinator.highlightedDirection
     val aiStopPressed: Boolean
         get() = gestureCoordinator.aiStopPressed
+    val aiPressedResultAction: AiResultActionType?
+        get() = gestureCoordinator.aiPressedResultAction
     val hasAuroraSibling: Boolean
         get() = gestureCoordinator.hasAuroraSibling
 
@@ -220,12 +224,14 @@ internal class KeyboardInteractionController(
         preview: String,
         statusText: String,
         activities: List<AiSurfaceActivity>,
+        resultActions: List<AiSurfaceResultAction> = emptyList(),
     ): Boolean = gestureCoordinator.updateAiSurface(
         generation,
         phase,
         preview,
         statusText,
         activities,
+        resultActions,
     )
 
     fun appendAiStreamPreview(

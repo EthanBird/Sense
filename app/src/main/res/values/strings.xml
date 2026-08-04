@@ -4,7 +4,7 @@
     <string name="brand_english">SENSE</string>
     <string name="brand_chinese">先思输入法</string>
     <string name="brand_tagline">先输入，再思考；需要时，让 AI 接住下一步。</string>
-    <string name="stage_badge">v0.4.6 · 键盘交互与九键体验</string>
+    <string name="stage_badge">v0.4.7 · Agent 工作台</string>
     <string name="ime_status_title">输入法状态</string>
     <string name="ime_enabled">Sense 已在系统输入法列表中启用</string>
     <string name="ime_disabled">Sense 尚未启用，先完成系统设置</string>
@@ -206,10 +206,27 @@
     <string name="ai_provider_test_protocol">Provider 已响应，但没有返回可通过本地门禁的编辑协议。</string>
     <string name="ai_provider_test_internal">测试失败：私有 Brain 暂时不可用。</string>
     <string name="agent_tools_title">Agent 工具</string>
+    <string name="agent_hub_title">Sense Agent</string>
+    <string name="agent_hub_open">打开 Agent 工作台</string>
+    <string name="agent_hub_open_summary">持续对话，并在同一会话中使用终端与浏览器。</string>
+    <string name="agent_hub_composer_hint">告诉 Agent 你想完成什么…</string>
+    <string name="agent_hub_send">发送</string>
+    <string name="agent_hub_stop">停止</string>
+    <string name="agent_hub_new_chat">新会话</string>
+    <string name="agent_terminal_welcome">Sense Agent Terminal\n工作目录为当前 Agent 会话的私有 workspace。</string>
+    <string name="agent_terminal_hint">输入 Android Shell 命令</string>
+    <string name="agent_terminal_run">运行</string>
+    <string name="agent_terminal_clear">清空</string>
+    <string name="agent_browser_go">前往</string>
+    <string name="agent_browser_loading">浏览器正在加载…</string>
+    <string name="agent_browser_ready">浏览器已就绪</string>
+    <string name="agent_browser_error">浏览器操作失败</string>
     <string name="agent_tools_body">Agent 会根据任务智能选择这里允许的工具。总开关和各工具默认启用，且只能由你在本设置页更改；关闭工具只停止后续调用，不会删除已有文件、工具结果或记忆。</string>
     <string name="agent_tools_master">启用 Agent 工具</string>
     <string name="agent_tool_web_search">联网搜索 · 获取公开网络的最新信息</string>
     <string name="agent_tool_web_read">网页读取 · 提取指定网页的正文内容</string>
+    <string name="agent_tool_browser_use">浏览器控制 · 导航网页、读取 DOM、点击和填写表单</string>
+    <string name="agent_tool_terminal_exec">终端执行 · 在 Agent 会话工作区运行 Android Shell 命令</string>
     <string name="agent_tool_calculator">计算器 · 执行确定性的数学计算</string>
     <string name="agent_tool_local_memory_recall">本地记忆检索 · 读取已完整保留的历史记忆</string>
     <string name="agent_tool_skill_read">读取 Skills · 按需读取未激活 Skill 的完整文档</string>
@@ -260,5 +277,5 @@
     <string name="dictionary_notice_body">项目与生产中文词库按 GPL-3.0-only 发布；中文词条来自固定 commit、可离线重建的 Rime Frost 首选源。点击离线查看完整来源、署名与许可。</string>
     <string name="dictionary_notice_load_error">无法读取随应用打包的许可文件。</string>
     <string name="close">关闭</string>
-    <string name="version_label">版本 0.4.6 · Android 10+</string>
+    <string name="version_label">版本 0.4.7 · Android 10+</string>
 </resources>

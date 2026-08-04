@@ -24,6 +24,13 @@ def manifest(
     used_permissions: tuple[tuple[str, str], ...] = (
         ("uses-permission", "android.permission.INTERNET"),
         ("uses-permission", "android.permission.RECORD_AUDIO"),
+        ("uses-permission", "android.permission.FOREGROUND_SERVICE"),
+        (
+            "uses-permission",
+            "android.permission.FOREGROUND_SERVICE_SPECIAL_USE",
+        ),
+        ("uses-permission", "android.permission.POST_NOTIFICATIONS"),
+        ("uses-permission", "android.permission.WAKE_LOCK"),
         ("uses-permission", DYNAMIC_RECEIVER_PERMISSION),
     ),
 ) -> str:
@@ -195,10 +202,17 @@ class ManifestPermissionVerifierTest(unittest.TestCase):
             "custom permission declaration must be empty",
         )
 
-    def test_uses_permission_triplet_rejects_missing_extra_and_duplicate(self) -> None:
+    def test_uses_permission_set_rejects_missing_extra_and_duplicate(self) -> None:
         required = (
             ("uses-permission", "android.permission.INTERNET"),
             ("uses-permission", "android.permission.RECORD_AUDIO"),
+            ("uses-permission", "android.permission.FOREGROUND_SERVICE"),
+            (
+                "uses-permission",
+                "android.permission.FOREGROUND_SERVICE_SPECIAL_USE",
+            ),
+            ("uses-permission", "android.permission.POST_NOTIFICATIONS"),
+            ("uses-permission", "android.permission.WAKE_LOCK"),
             ("uses-permission", DYNAMIC_RECEIVER_PERMISSION),
         )
         cases = (
@@ -220,7 +234,7 @@ class ManifestPermissionVerifierTest(unittest.TestCase):
                         for tag, name in used_permissions
                     ),
                 )
-                self.assertRejected(xml, "exact uses-permission triplet")
+                self.assertRejected(xml, "exact uses-permission set")
 
     def test_permission_scope_attributes_are_rejected(self) -> None:
         for extra_attribute in (
@@ -273,6 +287,13 @@ class ManifestPermissionVerifierTest(unittest.TestCase):
                 used_permissions=(
                     ("uses-permission", "android.permission.INTERNET"),
                     ("uses-permission-sdk-23", "android.permission.RECORD_AUDIO"),
+                    ("uses-permission", "android.permission.FOREGROUND_SERVICE"),
+                    (
+                        "uses-permission",
+                        "android.permission.FOREGROUND_SERVICE_SPECIAL_USE",
+                    ),
+                    ("uses-permission", "android.permission.POST_NOTIFICATIONS"),
+                    ("uses-permission", "android.permission.WAKE_LOCK"),
                     ("uses-permission", DYNAMIC_RECEIVER_PERMISSION),
                 ),
             ),

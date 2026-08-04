@@ -10,6 +10,7 @@ import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
 import io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode
 import io.github.ethanbird.senseime.ai.protocol.HarnessPhase
 import io.github.ethanbird.senseime.ai.protocol.HarnessRequestV1
+import io.github.ethanbird.senseime.ai.protocol.HarnessResultMode
 import io.github.ethanbird.senseime.ai.protocol.PatchOperationType
 import io.github.ethanbird.senseime.ai.protocol.PatchOperationV1
 import io.github.ethanbird.senseime.ai.protocol.PatchTarget
@@ -30,6 +31,7 @@ internal object BrainMessageCodec {
             putString("request_id", request.requestId)
             putLong("generation", request.runGeneration)
             putString("skill", request.skill.name)
+            putString("result_mode", request.resultMode.name)
             putInt("max_output", request.maxOutputChars)
             request.skillCatalogGeneration?.let { generation ->
                 putLong("skill_catalog_generation", generation)
@@ -88,6 +90,9 @@ internal object BrainMessageCodec {
             requestId = requestId,
             runGeneration = bundle.getLong("generation"),
             skill = EditorIntent.valueOf(bundle.requireString("skill")),
+            resultMode = bundle.getString("result_mode")
+                ?.let(HarnessResultMode::valueOf)
+                ?: HarnessResultMode.EDITOR_PATCH,
             skillCatalogGeneration = if (bundle.containsKey("skill_catalog_generation")) {
                 bundle.getLong("skill_catalog_generation")
             } else {
@@ -192,6 +197,11 @@ internal object BrainMessageCodec {
                 encodePatch(this, event.patch)
             }
 
+            is AiEvent.FinalAnswer -> {
+                putString("type", "final_answer")
+                putString("text", event.text)
+            }
+
             is AiEvent.Cancelled -> {
                 putString("type", "cancelled")
                 putString("reason", event.reason.name)
@@ -270,6 +280,11 @@ internal object BrainMessageCodec {
                 bundle.getLong("output_tokens"),
             )
             "final_patch" -> AiEvent.FinalPatch(requestId, generation, decodePatch(bundle))
+            "final_answer" -> AiEvent.FinalAnswer(
+                requestId,
+                generation,
+                bundle.requireString("text"),
+            )
             "cancelled" -> AiEvent.Cancelled(
                 requestId,
                 generation,

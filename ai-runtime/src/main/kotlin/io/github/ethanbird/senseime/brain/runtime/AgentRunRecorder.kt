@@ -148,6 +148,7 @@ class AgentRunRecorder private constructor(
                 attributes = buildMap {
                     put("protocol", request.protocol)
                     put("skill", request.skill.wireValue)
+                    put("result_mode", request.resultMode.wireValue)
                     put("snapshot_id", request.snapshot.snapshotId)
                     request.skillCatalogGeneration?.let { generation ->
                         put("skill_catalog_generation", generation.toString())
@@ -174,6 +175,7 @@ object AgentRunJournalCodec {
         string("request_id", request.requestId)
         long("run_generation", request.runGeneration)
         string("skill", request.skill.wireValue)
+        string("result_mode", request.resultMode.wireValue)
         request.skillCatalogGeneration?.let {
             long("skill_catalog_generation", it)
         } ?: nullValue("skill_catalog_generation")
@@ -233,6 +235,8 @@ object AgentRunJournalCodec {
             }
             is AiEvent.FinalPatch ->
                 objectValue("patch") { patch(event.patch) }
+            is AiEvent.FinalAnswer ->
+                string("text", event.text)
             is AiEvent.Cancelled ->
                 string("reason", event.reason.name)
             is AiEvent.Failed -> {
@@ -274,6 +278,7 @@ object AgentRunJournalCodec {
         is AiEvent.AgentProgress -> "agent_progress"
         is AiEvent.Usage -> "usage"
         is AiEvent.FinalPatch -> "final_patch"
+        is AiEvent.FinalAnswer -> "final_answer"
         is AiEvent.Cancelled -> "cancelled"
         is AiEvent.Failed -> "failed"
     }
@@ -430,7 +435,9 @@ private fun AiEvent.journalKind(): AgentJournalKind = when (this) {
     is AiEvent.PreviewDelta,
     is AiEvent.PreviewReplace,
     -> AgentJournalKind.PREVIEW
-    is AiEvent.FinalPatch -> AgentJournalKind.FINAL
+    is AiEvent.FinalPatch,
+    is AiEvent.FinalAnswer,
+    -> AgentJournalKind.FINAL
     is AiEvent.Failed -> AgentJournalKind.ERROR
     is AiEvent.Cancelled -> AgentJournalKind.CANCELLED
     else -> AgentJournalKind.PUBLIC_AGENT_EVENT

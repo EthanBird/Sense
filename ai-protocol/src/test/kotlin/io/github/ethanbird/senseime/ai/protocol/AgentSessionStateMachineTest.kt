@@ -6,6 +6,19 @@ import org.junit.Test
 
 class AgentSessionStateMachineTest {
     @Test
+    fun `final answer completes the public session without a local apply step`() {
+        val machine = AgentSessionStateMachine("request", 7L)
+        machine.accept(started())
+        machine.accept(status(HarnessPhase.GENERATING))
+
+        val transition = machine.accept(AiEvent.FinalAnswer("request", 7L, "回答"))
+
+        assertTrue(transition is AgentSessionTransition.Accepted)
+        assertEquals(AgentExecutionState.COMPLETED, machine.snapshot.state)
+        assertEquals(AgentProgressKind.ASSISTANT_UPDATE, machine.snapshot.steps.last().kind)
+    }
+
+    @Test
     fun `tool rows correlate running and completion by call id`() {
         val machine = AgentSessionStateMachine("request", 7L)
         machine.accept(started())

@@ -25,6 +25,8 @@ internal interface KeyboardRendererState {
     val aiLocked: Boolean
     val aiGeometry: AiSurfaceRenderGeometry
     val aiStopPressed: Boolean
+    val aiPressedResultAction: AiResultActionType?
+        get() = null
 
     val voiceSurface: VoiceSurfaceState?
     val voiceWaveformBuffer: VoiceWaveformBuffer
@@ -220,6 +222,7 @@ internal interface AiSurfaceRenderGeometry {
     val card: RenderRect
     val lockPill: RenderRect
     val stopBounds: RenderRect
+    fun resultActionBounds(type: AiResultActionType): RenderRect
 }
 
 /**
@@ -234,12 +237,16 @@ internal class MutableAiSurfaceRenderGeometry : AiSurfaceRenderGeometry {
     private val mutableCard = MutableRenderRect()
     private val mutableLockPill = MutableRenderRect()
     private val mutableStopBounds = MutableRenderRect()
+    private val mutableResultActionBounds =
+        Array(AiResultActionType.entries.size) { MutableRenderRect() }
     override val card: RenderRect
         get() = mutableCard
     override val lockPill: RenderRect
         get() = mutableLockPill
     override val stopBounds: RenderRect
         get() = mutableStopBounds
+    override fun resultActionBounds(type: AiResultActionType): RenderRect =
+        mutableResultActionBounds[type.ordinal]
 
     internal fun update(
         viewWidth: Int,
@@ -250,6 +257,7 @@ internal class MutableAiSurfaceRenderGeometry : AiSurfaceRenderGeometry {
         density: Float,
         active: Boolean,
         locked: Boolean,
+        resultActions: List<AiSurfaceResultAction> = emptyList(),
     ) {
         if (
             !active ||
@@ -268,7 +276,25 @@ internal class MutableAiSurfaceRenderGeometry : AiSurfaceRenderGeometry {
             surfaceBottom - 7f * density,
         )
         val barTop = viewHeight - systemBarHeight
-        if (locked) {
+        mutableResultActionBounds.forEach(MutableRenderRect::clear)
+        if (resultActions.isNotEmpty()) {
+            mutableLockPill.clear()
+            mutableStopBounds.clear()
+            val actions = resultActions.take(AiSurfaceContract.MAX_RESULT_ACTIONS)
+            val margin = 10f * density
+            val gap = 7f * density
+            val available = viewWidth - margin * 2f - gap * (actions.size - 1)
+            val actionWidth = available / actions.size
+            actions.forEachIndexed { index, action ->
+                val left = margin + index * (actionWidth + gap)
+                mutableResultActionBounds[action.type.ordinal].set(
+                    left,
+                    barTop + 5f * density,
+                    left + actionWidth,
+                    viewHeight - 5f * density,
+                )
+            }
+        } else if (locked) {
             mutableLockPill.set(
                 14f * density,
                 barTop + 7f * density,
@@ -299,6 +325,7 @@ internal class MutableAiSurfaceRenderGeometry : AiSurfaceRenderGeometry {
         mutableCard.clear()
         mutableLockPill.clear()
         mutableStopBounds.clear()
+        mutableResultActionBounds.forEach(MutableRenderRect::clear)
     }
 }
 

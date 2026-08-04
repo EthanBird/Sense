@@ -43,6 +43,7 @@ internal object BrainRequestEnvelopePolicy {
         budget.addString("request_id", request.requestId)
         budget.addLong("generation")
         budget.addString("skill", request.skill.name)
+        budget.addString("result_mode", request.resultMode.name)
         budget.addInt("max_output")
         request.skillCatalogGeneration?.let {
             budget.addLong("skill_catalog_generation")

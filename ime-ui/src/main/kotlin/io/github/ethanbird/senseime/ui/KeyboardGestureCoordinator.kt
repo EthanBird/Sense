@@ -72,6 +72,9 @@ internal class KeyboardGestureCoordinator(
     var aiLocked: Boolean = false
         private set
     private var aiStopPointerId = NO_POINTER
+    private var aiResultPointerId = NO_POINTER
+    var aiPressedResultAction: AiResultActionType? = null
+        private set
 
     val pickerSourceBounds: RectF
         get() = pickerSourceBoundsStorage
@@ -417,6 +420,7 @@ internal class KeyboardGestureCoordinator(
         preview: String,
         statusText: String,
         activities: List<AiSurfaceActivity>,
+        resultActions: List<AiSurfaceResultAction> = emptyList(),
     ): Boolean {
         val current = aiSurfaceState ?: return false
         if (current.generation != generation) return false
@@ -428,6 +432,18 @@ internal class KeyboardGestureCoordinator(
                 phase != AiSurfacePhase.ERROR -> current.preview
             else -> boundedPreview
         }
+        val boundedActions = resultActions
+            .distinctBy(AiSurfaceResultAction::type)
+            .take(AiSurfaceContract.MAX_RESULT_ACTIONS)
+        if (boundedActions.isNotEmpty()) {
+            aiHoldSession.cancelAll()
+            clearScheduledAiHold()
+            aiLockProgress = 0f
+            aiLocked = false
+            aiStopPointerId = NO_POINTER
+            aiResultPointerId = NO_POINTER
+            aiPressedResultAction = null
+        }
         publishAiState(
             current.copy(
                 phase = phase,
@@ -436,6 +452,7 @@ internal class KeyboardGestureCoordinator(
                     current.statusText.ifBlank { defaultAiStatus(phase) }
                 },
                 activities = activities.takeLast(AiSurfaceContract.MAX_VISIBLE_ACTIVITIES),
+                resultActions = boundedActions,
                 lockProgress = aiLockProgress,
                 locked = aiLocked,
             ),
@@ -471,6 +488,8 @@ internal class KeyboardGestureCoordinator(
         clearScheduledAiHold()
         publishAiState(null)
         aiStopPointerId = NO_POINTER
+        aiResultPointerId = NO_POINTER
+        aiPressedResultAction = null
         host.interactionRelayoutCandidates()
         host.interactionRebuildKeys()
         scheduler.invalidate()
@@ -478,7 +497,8 @@ internal class KeyboardGestureCoordinator(
     }
 
     fun handleAiSurfaceTouch(event: MotionEvent): Boolean {
-        if (aiSurfaceState == null) return true
+        val state = aiSurfaceState ?: return true
+        if (state.resultActions.isNotEmpty()) return handleAiResultTouch(event, state)
         if (aiLocked) return handleLockedAiSurfaceTouch(event)
         when (event.actionMasked) {
             MotionEvent.ACTION_MOVE -> {
@@ -548,6 +568,8 @@ internal class KeyboardGestureCoordinator(
         publishAiState(null)
         publishAurora()
         aiStopPointerId = NO_POINTER
+        aiResultPointerId = NO_POINTER
+        aiPressedResultAction = null
         effects.clearOrdinaryInputFromGesture()
         if (
             aiOutcome == AiHoldGestureSession.Outcome.ACTIVE_CANCELLED &&
@@ -597,6 +619,88 @@ internal class KeyboardGestureCoordinator(
         updateAccessibilityDescription()
         animationFrameScheduled = false
     }
+
+    private fun handleAiResultTouch(
+        event: MotionEvent,
+        state: AiSurfaceState,
+    ): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN,
+            MotionEvent.ACTION_POINTER_DOWN,
+            -> {
+                val index = event.actionIndex
+                val action = resultActionAt(
+                    state,
+                    event.getX(index),
+                    event.getY(index),
+                )
+                if (action != null) {
+                    aiResultPointerId = event.getPointerId(index)
+                    aiPressedResultAction = action
+                    haptics.perform(HapticFeedbackConstants.KEYBOARD_TAP)
+                    scheduler.invalidate()
+                }
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                val pointerId = aiResultPointerId
+                if (pointerId != NO_POINTER) {
+                    val index = event.findPointerIndex(pointerId)
+                    val pressed = aiPressedResultAction
+                    if (
+                        index < 0 ||
+                        pressed == null ||
+                        !host.interactionAiGeometry.resultActionBounds(pressed).contains(
+                            event.getX(index),
+                            event.getY(index),
+                        )
+                    ) {
+                        aiResultPointerId = NO_POINTER
+                        aiPressedResultAction = null
+                        scheduler.invalidate()
+                    }
+                }
+            }
+
+            MotionEvent.ACTION_UP,
+            MotionEvent.ACTION_POINTER_UP,
+            -> {
+                val index = event.actionIndex
+                val pointerId = event.getPointerId(index)
+                if (pointerId == aiResultPointerId) {
+                    val action = aiPressedResultAction
+                    val activate = action != null &&
+                        host.interactionAiGeometry.resultActionBounds(action).contains(
+                            event.getX(index),
+                            event.getY(index),
+                        )
+                    aiResultPointerId = NO_POINTER
+                    aiPressedResultAction = null
+                    if (activate) {
+                        haptics.perform(HapticFeedbackConstants.CONFIRM)
+                        actions.onAiResultAction(state.generation, checkNotNull(action))
+                        host.interactionPerformClick()
+                    }
+                    scheduler.invalidate()
+                }
+            }
+
+            MotionEvent.ACTION_CANCEL -> {
+                aiResultPointerId = NO_POINTER
+                aiPressedResultAction = null
+                scheduler.invalidate()
+            }
+        }
+        return true
+    }
+
+    private fun resultActionAt(
+        state: AiSurfaceState,
+        x: Float,
+        y: Float,
+    ): AiResultActionType? = state.resultActions.firstOrNull { action ->
+        host.interactionAiGeometry.resultActionBounds(action.type).contains(x, y)
+    }?.type
 
     private fun handleLockedAiSurfaceTouch(event: MotionEvent): Boolean {
         val stopBounds = host.interactionAiGeometry.stopBounds
@@ -678,6 +782,8 @@ internal class KeyboardGestureCoordinator(
         )
         publishAurora()
         aiStopPointerId = NO_POINTER
+        aiResultPointerId = NO_POINTER
+        aiPressedResultAction = null
         haptics.perform(HapticFeedbackConstants.LONG_PRESS)
         scheduler.invalidate()
         actions.onAiHoldStarted(generation)
@@ -689,6 +795,8 @@ internal class KeyboardGestureCoordinator(
         clearScheduledAiHold()
         publishAiState(null)
         aiStopPointerId = NO_POINTER
+        aiResultPointerId = NO_POINTER
+        aiPressedResultAction = null
         effects.clearOrdinaryInputFromGesture()
         host.interactionRelayoutCandidates()
         host.interactionRebuildKeys()
@@ -949,6 +1057,7 @@ internal class KeyboardGestureCoordinator(
             density = density,
             active = aiSurfaceState != null,
             locked = aiLocked,
+            resultActions = aiSurfaceState?.resultActions.orEmpty(),
         )
     }
 

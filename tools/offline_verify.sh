@@ -821,6 +821,7 @@ application = root.find("application")
 if application is None:
     raise SystemExit(f"{manifest_path}: missing application")
 services = application.findall("service")
+activities = application.findall("activity")
 
 
 def exactly_one(name: str):
@@ -836,6 +837,19 @@ def exactly_one(name: str):
     return matches[0]
 
 
+def exactly_one_activity(name: str):
+    matches = [
+        activity
+        for activity in activities
+        if activity.get(android + "name") == name
+    ]
+    if len(matches) != 1:
+        raise SystemExit(
+            f"{manifest_path}: expected one {name}, found {len(matches)}"
+        )
+    return matches[0]
+
+
 brain = exactly_one(
     "io.github.ethanbird.senseime.brain.runtime.SenseAiBrainService"
 )
@@ -843,6 +857,30 @@ if brain.get(android + "exported") != "false":
     raise SystemExit(f"{manifest_path}: Brain service must be exported=false")
 if brain.get(android + "process") != ":brain":
     raise SystemExit(f"{manifest_path}: Brain service must run in :brain")
+if brain.get(android + "foregroundServiceType") != "specialUse":
+    raise SystemExit(f"{manifest_path}: Brain service must use specialUse")
+subtypes = [
+    prop
+    for prop in brain.findall("property")
+    if prop.get(android + "name")
+    == "android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+]
+if (
+    len(subtypes) != 1
+    or subtypes[0].get(android + "value")
+    != "user_initiated_agent_task"
+):
+    raise SystemExit(f"{manifest_path}: Brain special-use subtype drifted")
+
+agent_hub = exactly_one_activity(
+    "io.github.ethanbird.senseime.AgentHubActivity"
+)
+if agent_hub.get(android + "exported") != "false":
+    raise SystemExit(f"{manifest_path}: Agent Hub must be exported=false")
+if agent_hub.get(android + "process") != ":brain":
+    raise SystemExit(f"{manifest_path}: Agent Hub must run in :brain")
+if agent_hub.get(android + "windowSoftInputMode") != "adjustResize":
+    raise SystemExit(f"{manifest_path}: Agent Hub must use adjustResize")
 
 ime = exactly_one(
     "io.github.ethanbird.senseime.service.SenseInputMethodService"
@@ -873,6 +911,22 @@ if ! grep -Fxq "android.permission.RECORD_AUDIO" <<<"$DECLARED_PERMISSIONS"; the
     echo "Release gate failed: speech input is missing android.permission.RECORD_AUDIO." >&2
     exit 1
 fi
+if ! grep -Fxq "android.permission.FOREGROUND_SERVICE" <<<"$DECLARED_PERMISSIONS"; then
+    echo "Release gate failed: Agent runtime is missing android.permission.FOREGROUND_SERVICE." >&2
+    exit 1
+fi
+if ! grep -Fxq "android.permission.FOREGROUND_SERVICE_SPECIAL_USE" <<<"$DECLARED_PERMISSIONS"; then
+    echo "Release gate failed: Agent runtime is missing android.permission.FOREGROUND_SERVICE_SPECIAL_USE." >&2
+    exit 1
+fi
+if ! grep -Fxq "android.permission.POST_NOTIFICATIONS" <<<"$DECLARED_PERMISSIONS"; then
+    echo "Release gate failed: Agent runtime is missing android.permission.POST_NOTIFICATIONS." >&2
+    exit 1
+fi
+if ! grep -Fxq "android.permission.WAKE_LOCK" <<<"$DECLARED_PERMISSIONS"; then
+    echo "Release gate failed: Agent runtime is missing android.permission.WAKE_LOCK." >&2
+    exit 1
+fi
 if ! grep -Fxq \
     "io.github.ethanbird.senseime.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" \
     <<<"$DECLARED_PERMISSIONS"; then
@@ -883,6 +937,10 @@ UNEXPECTED_PERMISSIONS=$(
     grep -Fvx \
         -e "android.permission.INTERNET" \
         -e "android.permission.RECORD_AUDIO" \
+        -e "android.permission.FOREGROUND_SERVICE" \
+        -e "android.permission.FOREGROUND_SERVICE_SPECIAL_USE" \
+        -e "android.permission.POST_NOTIFICATIONS" \
+        -e "android.permission.WAKE_LOCK" \
         -e "io.github.ethanbird.senseime.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" \
         <<<"$DECLARED_PERMISSIONS" || true
 )

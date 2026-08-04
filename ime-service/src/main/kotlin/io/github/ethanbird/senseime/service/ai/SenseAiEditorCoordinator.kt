@@ -14,11 +14,13 @@ import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import io.github.ethanbird.senseime.ai.protocol.EditorSnapshotV1
 import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
 import io.github.ethanbird.senseime.ai.protocol.HarnessRequestV1
+import io.github.ethanbird.senseime.ai.protocol.HarnessResultMode
 import io.github.ethanbird.senseime.ai.protocol.PatchTarget
 import io.github.ethanbird.senseime.ai.protocol.SnapshotCapability
 import io.github.ethanbird.senseime.ai.protocol.TextSelectionV1
 import io.github.ethanbird.senseime.brain.runtime.SenseAiBrainClient
 import io.github.ethanbird.senseime.service.ai.editor.ActiveEditorPatchLease
+import io.github.ethanbird.senseime.service.ai.editor.AssistantResultPatchFactory
 import io.github.ethanbird.senseime.service.ai.editor.AndroidEditorSecurityClassifier
 import io.github.ethanbird.senseime.service.ai.editor.EditorApplyCommand
 import io.github.ethanbird.senseime.service.ai.editor.EditorCaptureDecision
@@ -47,6 +49,8 @@ import io.github.ethanbird.senseime.service.ai.editor.SurroundingEditorText
 import io.github.ethanbird.senseime.ui.AiSurfacePhase
 import io.github.ethanbird.senseime.ui.AiSurfaceActivity
 import io.github.ethanbird.senseime.ui.AiSurfaceActivityState
+import io.github.ethanbird.senseime.ui.AiResultActionType
+import io.github.ethanbird.senseime.ui.AiSurfaceResultAction
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
 
@@ -73,6 +77,13 @@ class SenseAiEditorCoordinator(
         preview: String,
         status: String,
         activities: List<AiSurfaceActivity>,
+    ) -> Unit,
+    private val onAssistantResult: (
+        generation: Long,
+        preview: String,
+        status: String,
+        activities: List<AiSurfaceActivity>,
+        actions: List<AiSurfaceResultAction>,
     ) -> Unit,
     private val onOwnApplyWindow: (applicationToken: Long?, active: Boolean) -> Unit,
     /** Lets the IME refresh bindings after skill_manage may have changed the shared catalog. */
@@ -156,6 +167,11 @@ class SenseAiEditorCoordinator(
             skillCatalogGeneration = frozenSkills?.catalogGeneration,
             activeSkill = frozenSkill?.instruction,
             snapshot = snapshot,
+            resultMode = if (frozenSkill?.baseIntent == EditorIntent.ANSWER) {
+                HarnessResultMode.ASSISTANT_MESSAGE
+            } else {
+                HarnessResultMode.EDITOR_PATCH
+            },
         )
         val run = ActiveRun(
             uiGeneration = uiGeneration,
@@ -278,6 +294,36 @@ class SenseAiEditorCoordinator(
         brainClient.close()
     }
 
+    fun assistantResult(uiGeneration: Long): String? = active
+        ?.takeIf { it.uiGeneration == uiGeneration }
+        ?.assistantAnswer
+
+    fun applyAssistantResult(uiGeneration: Long): Boolean {
+        val run = active?.takeIf { it.uiGeneration == uiGeneration } ?: return false
+        val answer = run.assistantAnswer ?: return false
+        val patch = AssistantResultPatchFactory.create(run.request, answer) ?: return false
+        val event = AiEvent.FinalPatch(
+            requestId = run.request.requestId,
+            runGeneration = run.request.runGeneration,
+            patch = patch,
+        )
+        return applyFinalPatch(run, event)
+    }
+
+    fun dismissAssistantResult(uiGeneration: Long): Boolean {
+        val run = active?.takeIf { it.uiGeneration == uiGeneration } ?: return false
+        if (run.assistantAnswer == null) return false
+        clearPendingSurfaceFrame()
+        run.transaction.cancel(
+            run.request.requestId,
+            run.request.runGeneration,
+            EditorTransactionCancelReason.CALLER_REQUESTED,
+        )
+        active = null
+        onAgentRunTerminal()
+        return true
+    }
+
     private fun onBrainEvent(event: AiEvent) {
         val run = active ?: return
         if (
@@ -348,6 +394,19 @@ class SenseAiEditorCoordinator(
                 applyFinalPatch(run, event)
                 onAgentRunTerminal()
             }
+            is AiEvent.FinalAnswer -> {
+                clearPendingSurfaceFrame()
+                run.presentation.complete(event.text)
+                run.assistantAnswer = event.text
+                onAssistantResult(
+                    run.uiGeneration,
+                    run.presentation.preview,
+                    "回答已完成",
+                    run.surfaceActivities(),
+                    assistantResultActions(run.lease.snapshot.target),
+                )
+                onAgentRunTerminal()
+            }
             is AiEvent.Cancelled -> {
                 clearPendingSurfaceFrame()
                 active = null
@@ -390,10 +449,10 @@ class SenseAiEditorCoordinator(
         }
     }
 
-    private fun applyFinalPatch(run: ActiveRun, event: AiEvent.FinalPatch) {
+    private fun applyFinalPatch(run: ActiveRun, event: AiEvent.FinalPatch): Boolean {
         val validation = run.transaction.beginValidation(event.requestId, event.runGeneration)
         if (validation !is io.github.ethanbird.senseime.service.ai.editor.EditorTransactionTransition.Changed) {
-            return
+            return false
         }
         val live = readLive(run.lease.snapshot)
         val guard = EditorPatchGuard.evaluate(
@@ -422,7 +481,7 @@ class SenseAiEditorCoordinator(
                 "输入框已变化，未覆盖",
                 run.surfaceActivities(),
             )
-            return
+            return false
         }
 
         val token = applicationTokens.getAndIncrement().coerceAtLeast(1L)
@@ -432,7 +491,7 @@ class SenseAiEditorCoordinator(
             token,
         )
         if (transition !is io.github.ethanbird.senseime.service.ai.editor.EditorTransactionTransition.Changed) {
-            return
+            return false
         }
         run.agentSession.markApplying()
         onSurfaceUpdate(
@@ -447,7 +506,7 @@ class SenseAiEditorCoordinator(
         }.getOrElse {
             run.transaction.fail(EditorTransactionFailure.INTERNAL_FAILURE, token)
             failApply(run, "无法生成安全的文本替换计划")
-            return
+            return false
         }
         val authoritativePreview = EditorCompletionPreviewPolicy.resolve(
             plan = plan,
@@ -465,14 +524,14 @@ class SenseAiEditorCoordinator(
                 "无需修改",
                 run.surfaceActivities(),
             )
-            return
+            return true
         }
         plan as EditorPatchPlan.Replace
         val currentConnection = connection()
         if (currentConnection == null) {
             run.transaction.fail(EditorTransactionFailure.EDITOR_REJECTED, token)
             failApply(run, "输入连接已断开")
-            return
+            return false
         }
 
         onOwnApplyWindow(token, true)
@@ -486,12 +545,12 @@ class SenseAiEditorCoordinator(
         if (execution == null) {
             run.transaction.fail(EditorTransactionFailure.INTERNAL_FAILURE, token)
             failApply(run, "宿主输入框发生异常，已停止写入")
-            return
+            return false
         }
         if (!execution.mutationAccepted) {
             run.transaction.fail(EditorTransactionFailure.EDITOR_REJECTED, token)
             failApply(run, "宿主应用未接受文本替换")
-            return
+            return false
         }
 
         val verified = runCatching {
@@ -500,7 +559,7 @@ class SenseAiEditorCoordinator(
         if (!verified) {
             run.transaction.fail(EditorTransactionFailure.POST_APPLY_VERIFICATION_FAILED, token)
             failApply(run, "文本已提交，但宿主未返回可验证结果")
-            return
+            return false
         }
         run.transaction.markApplied(event.requestId, event.runGeneration, token)
         run.presentation.complete(authoritativePreview)
@@ -513,6 +572,7 @@ class SenseAiEditorCoordinator(
             "已写入输入框",
             run.surfaceActivities(),
         )
+        return true
     }
 
     private fun executePlan(
@@ -947,12 +1007,28 @@ class SenseAiEditorCoordinator(
         return if (activeSkillName == null) "$scope…" else "$scope · Skill：$activeSkillName"
     }
 
+    private fun assistantResultActions(target: PatchTarget?): List<AiSurfaceResultAction> = listOf(
+        AiSurfaceResultAction(
+            type = AiResultActionType.APPLY,
+            label = when (target) {
+                PatchTarget.SELECTION -> "替换选区"
+                PatchTarget.CONTEXT_WINDOW -> "替换上下文"
+                PatchTarget.WHOLE_FIELD,
+                null,
+                -> "替换原文"
+            },
+        ),
+        AiSurfaceResultAction(AiResultActionType.COPY, "复制"),
+        AiSurfaceResultAction(AiResultActionType.DISMISS, "关闭"),
+    )
+
     private data class ActiveRun(
         val uiGeneration: Long,
         val request: HarnessRequestV1,
         val lease: ActiveEditorPatchLease,
         val transaction: EditorTransactionStateMachine,
         val presentation: AgentStreamPresentation = AgentStreamPresentation(),
+        var assistantAnswer: String? = null,
         val agentSession: AgentSessionStateMachine = AgentSessionStateMachine(
             requestId = request.requestId,
             runGeneration = request.runGeneration,

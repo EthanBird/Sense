@@ -31,6 +31,7 @@ class KeyCodesTest {
             KeyCodes.UNDO,
             KeyCodes.REDO,
             KeyCodes.T9_REINPUT,
+            KeyCodes.AGENT,
         )
 
         assertTrue(codes.all { it < 0 })

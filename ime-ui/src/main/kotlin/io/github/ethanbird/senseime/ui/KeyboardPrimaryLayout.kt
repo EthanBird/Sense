@@ -178,6 +178,7 @@ internal class KeyboardPrimaryLayout(
         KeyboardLayoutContract.ToolboxItem.VOICE -> Icon.VOICE
         KeyboardLayoutContract.ToolboxItem.CLIPBOARD -> Icon.CLIPBOARD
         KeyboardLayoutContract.ToolboxItem.EMOJI -> Icon.EMOJI
+        KeyboardLayoutContract.ToolboxItem.AGENT -> Icon.AGENT
         KeyboardLayoutContract.ToolboxItem.SETTINGS -> Icon.SETTINGS
     }
 

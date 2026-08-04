@@ -30,10 +30,20 @@ def valid_runtime_manifest() -> str:
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="io.github.ethanbird.senseime.AgentHubActivity"
+            android:exported="false"
+            android:process=":brain"
+            android:windowSoftInputMode="adjustResize" />
         <service
             android:name="io.github.ethanbird.senseime.brain.runtime.SenseAiBrainService"
             android:exported="false"
-            android:process=":brain" />
+            android:foregroundServiceType="specialUse"
+            android:process=":brain">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="user_initiated_agent_task" />
+        </service>
         <service
             android:name="io.github.ethanbird.senseime.service.SenseInputMethodService"
             android:permission="android.permission.BIND_INPUT_METHOD">
@@ -76,7 +86,19 @@ class RuntimeManifestVerifierTest(unittest.TestCase):
         <service
             android:name="io.github.ethanbird.senseime.brain.runtime.SenseAiBrainService"
             android:exported="false"
-            android:process=":brain" />
+            android:foregroundServiceType="specialUse"
+            android:process=":brain">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="user_initiated_agent_task" />
+        </service>
+"""
+        agent_hub = """\
+        <activity
+            android:name="io.github.ethanbird.senseime.AgentHubActivity"
+            android:exported="false"
+            android:process=":brain"
+            android:windowSoftInputMode="adjustResize" />
 """
         ime = """\
         <service
@@ -92,6 +114,11 @@ class RuntimeManifestVerifierTest(unittest.TestCase):
             (
                 valid.replace(settings, settings + settings),
                 "expected one .*SettingsActivity",
+            ),
+            (valid.replace(agent_hub, ""), "expected one .*AgentHubActivity"),
+            (
+                valid.replace(agent_hub, agent_hub + agent_hub),
+                "expected one .*AgentHubActivity",
             ),
             (valid.replace(brain, ""), "expected one .*SenseAiBrainService"),
             (
@@ -145,12 +172,64 @@ class RuntimeManifestVerifierTest(unittest.TestCase):
                 "exactly one MAIN\\+LAUNCHER",
             ),
             (
-                valid.replace('android:exported="false"', 'android:exported="true"'),
+                valid.replace(
+                    'android:name="io.github.ethanbird.senseime.AgentHubActivity"\n'
+                    '            android:exported="false"',
+                    'android:name="io.github.ethanbird.senseime.AgentHubActivity"\n'
+                    '            android:exported="true"',
+                ),
+                "AgentHubActivity must be exported=false",
+            ),
+            (
+                valid.replace(
+                    'android:name="io.github.ethanbird.senseime.AgentHubActivity"\n'
+                    '            android:exported="false"\n'
+                    '            android:process=":brain"',
+                    'android:name="io.github.ethanbird.senseime.AgentHubActivity"\n'
+                    '            android:exported="false"\n'
+                    '            android:process=":main"',
+                ),
+                "AgentHubActivity must run in :brain",
+            ),
+            (
+                valid.replace('android:windowSoftInputMode="adjustResize"',
+                              'android:windowSoftInputMode="adjustPan"'),
+                "AgentHubActivity must use adjustResize",
+            ),
+            (
+                valid.replace(
+                    'android:name="io.github.ethanbird.senseime.brain.runtime.SenseAiBrainService"\n'
+                    '            android:exported="false"',
+                    'android:name="io.github.ethanbird.senseime.brain.runtime.SenseAiBrainService"\n'
+                    '            android:exported="true"',
+                ),
                 "Brain service must be exported=false",
             ),
             (
-                valid.replace('android:process=":brain"', 'android:process=":main"'),
+                valid.replace(
+                    'android:foregroundServiceType="specialUse"\n'
+                    '            android:process=":brain"',
+                    'android:foregroundServiceType="specialUse"\n'
+                    '            android:process=":main"',
+                ),
                 "Brain service must run in :brain",
+            ),
+            (
+                valid.replace('android:foregroundServiceType="specialUse"',
+                              'android:foregroundServiceType="dataSync"'),
+                "Brain service must use specialUse foreground type",
+            ),
+            (
+                valid.replace(
+                    'android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"',
+                    'android:name="fixture.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"',
+                ),
+                "Brain service must declare one special-use subtype",
+            ),
+            (
+                valid.replace('android:value="user_initiated_agent_task"',
+                              'android:value="fixture"'),
+                "Brain service special-use subtype drifted",
             ),
             (
                 valid.replace(

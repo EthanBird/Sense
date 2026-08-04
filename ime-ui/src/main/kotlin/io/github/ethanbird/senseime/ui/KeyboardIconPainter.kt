@@ -160,6 +160,19 @@ internal class KeyboardIconPainter(
                     canvas.drawLine(innerX, innerY, outerX, outerY, paint)
                 }
             }
+            Icon.AGENT -> {
+                path.moveTo(cx, cy - unit * 8f)
+                path.lineTo(cx + unit * 1.8f, cy - unit * 2f)
+                path.lineTo(cx + unit * 7.5f, cy)
+                path.lineTo(cx + unit * 1.8f, cy + unit * 2f)
+                path.lineTo(cx, cy + unit * 8f)
+                path.lineTo(cx - unit * 1.8f, cy + unit * 2f)
+                path.lineTo(cx - unit * 7.5f, cy)
+                path.lineTo(cx - unit * 1.8f, cy - unit * 2f)
+                path.close()
+                canvas.drawPath(path, paint)
+                canvas.drawCircle(cx + unit * 6.2f, cy - unit * 6f, unit * 1.2f, paint)
+            }
             Icon.HIDE -> {
                 path.moveTo(cx - unit * 7f, cy - unit * 2f)
                 path.lineTo(cx, cy + unit * 5f)

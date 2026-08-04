@@ -18,5 +18,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".AgentHubActivity"
+            android:exported="false"
+            android:process=":brain"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 </manifest>

@@ -101,6 +101,19 @@ sealed interface AiEvent {
         val patch: EditorPatchV1,
     ) : AiEvent
 
+    /**
+     * A complete user-facing answer that stays inside the Agent surface.
+     *
+     * This payload carries no editor authority. If the user later chooses an apply action, the IME
+     * creates a fresh local [EditorPatchV1] bound to its immutable request snapshot and passes it
+     * through the existing editor guard.
+     */
+    data class FinalAnswer(
+        override val requestId: String,
+        override val runGeneration: Long,
+        val text: String,
+    ) : AiEvent
+
     data class Cancelled(
         override val requestId: String,
         override val runGeneration: Long,
@@ -180,4 +193,8 @@ enum class HarnessErrorCode {
 }
 
 val AiEvent.isTerminal: Boolean
-    get() = this is AiEvent.FinalPatch || this is AiEvent.Cancelled || this is AiEvent.Failed
+    get() =
+        this is AiEvent.FinalPatch ||
+            this is AiEvent.FinalAnswer ||
+            this is AiEvent.Cancelled ||
+            this is AiEvent.Failed

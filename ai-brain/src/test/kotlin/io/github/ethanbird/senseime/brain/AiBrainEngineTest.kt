@@ -13,6 +13,8 @@ import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
 import io.github.ethanbird.senseime.ai.protocol.HarnessErrorCode
 import io.github.ethanbird.senseime.ai.protocol.HarnessPhase
 import io.github.ethanbird.senseime.ai.protocol.HarnessRequestV1
+import io.github.ethanbird.senseime.ai.protocol.HarnessResultMode
+import io.github.ethanbird.senseime.ai.protocol.isTerminal
 import io.github.ethanbird.senseime.ai.protocol.PatchTarget
 import io.github.ethanbird.senseime.ai.protocol.SnapshotCapability
 import io.github.ethanbird.senseime.ai.protocol.TextSelectionV1
@@ -639,7 +641,7 @@ class AiBrainEngineTest {
     }
 
     @Test
-    fun `guessing a disabled Agent tool never reaches its executor`() {
+    fun `guessing a disabled Agent tool returns a typed result without full repair`() {
         var executions = 0
         val fixture = Fixture(
             deepSeekNative = true,
@@ -661,9 +663,13 @@ class AiBrainEngineTest {
 
         assertEquals(0, executions)
         assertEquals(2, fixture.transport.requests.size)
-        assertTrue(
+        assertFalse(
             fixture.events.filterIsInstance<AiEvent.Status>()
                 .any { it.label == "provider_repairing" },
+        )
+        assertTrue(
+            fixture.transport.requests[1].body.toString(StandardCharsets.UTF_8)
+                .contains("Agent tool is not enabled for this run"),
         )
     }
 
@@ -863,6 +869,51 @@ class AiBrainEngineTest {
         assertEquals(2, fixture.transport.requests.size)
         assertTrue(fixture.events.none { it is AiEvent.FinalPatch })
         assertTrue(fixture.events.none { it is AiEvent.PreviewDelta })
+    }
+
+    @Test
+    fun `assistant-message mode streams and terminates as an ordinary DeepSeek answer`() {
+        val fixture = Fixture(
+            deepSeekNative = true,
+            resultMode = HarnessResultMode.ASSISTANT_MESSAGE,
+        )
+        val handle = fixture.start()
+
+        fixture.transport.open(0)
+        fixture.transport.bytes(0, chatDelta("这是"))
+        fixture.transport.bytes(0, chatDelta("完整回答"))
+        fixture.transport.bytes(0, "data: [DONE]\n\n")
+
+        assertTrue(handle.isTerminal)
+        assertEquals(1, fixture.transport.requests.size)
+        assertEquals(
+            "这是完整回答",
+            fixture.events.filterIsInstance<AiEvent.FinalAnswer>().single().text,
+        )
+        assertEquals(
+            "这是完整回答",
+            fixture.events.filterIsInstance<AiEvent.PreviewDelta>().joinToString("") { it.text },
+        )
+        val body = fixture.transport.requests.single().body.toString(StandardCharsets.UTF_8)
+        assertFalse(body.contains("\"name\":\"sense_submit_patch\""))
+    }
+
+    @Test
+    fun `plain human text in patch mode becomes a result card without a repair request`() {
+        val fixture = Fixture()
+        val handle = fixture.start()
+
+        fixture.transport.open(0)
+        fixture.transport.bytes(0, chatDelta("可以先列出三个关键步骤。"))
+        fixture.transport.bytes(0, "data: [DONE]\n\n")
+
+        assertTrue(handle.isTerminal)
+        assertEquals(1, fixture.transport.requests.size)
+        assertEquals(
+            "可以先列出三个关键步骤。",
+            fixture.events.filterIsInstance<AiEvent.FinalAnswer>().single().text,
+        )
+        assertTrue(fixture.events.none { it is AiEvent.FinalPatch })
     }
 
     @Test
@@ -1340,9 +1391,7 @@ class AiBrainEngineTest {
             cancelThread.join()
             finalThread.join()
 
-            val terminalCount = fixture.events.count {
-                it is AiEvent.Cancelled || it is AiEvent.FinalPatch || it is AiEvent.Failed
-            }
+            val terminalCount = fixture.events.count(AiEvent::isTerminal)
             assertEquals(1, terminalCount)
             assertTrue(handle.isTerminal)
         }
@@ -1357,11 +1406,19 @@ class AiBrainEngineTest {
         private val toolExecutor: AgentToolExecutor = AgentToolExecutor.UNAVAILABLE,
         private val traceSink: BrainTraceSink = BrainTraceSink.NONE,
         private val eventObserver: (AiEvent) -> Unit = {},
+        resultMode: HarnessResultMode = HarnessResultMode.EDITOR_PATCH,
     ) {
         val clock = MutableClock()
         val transport = FakeTransport()
         val events = mutableListOf<AiEvent>()
-        private val request = harness()
+        private val request = harness().copy(
+            skill = if (resultMode == HarnessResultMode.ASSISTANT_MESSAGE) {
+                EditorIntent.ANSWER
+            } else {
+                EditorIntent.REWRITE
+            },
+            resultMode = resultMode,
+        )
         private val profile = ProviderProfile(
             id = if (deepSeekNative) "deepseek" else "test",
             displayName = if (deepSeekNative) "DeepSeek" else "Test",

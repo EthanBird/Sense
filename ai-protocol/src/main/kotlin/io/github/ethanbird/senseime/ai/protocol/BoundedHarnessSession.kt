@@ -38,12 +38,13 @@ enum class BoundedHarnessState {
     STREAMING,
     VALIDATING,
     FINAL_PATCH,
+    FINAL_ANSWER,
     CANCELLED,
     FAILED,
     ;
 
     val isTerminal: Boolean
-        get() = this == FINAL_PATCH || this == CANCELLED || this == FAILED
+        get() = this == FINAL_PATCH || this == FINAL_ANSWER || this == CANCELLED || this == FAILED
 }
 
 enum class HarnessDropReason {
@@ -178,6 +179,7 @@ class BoundedHarnessSession(
             is AiEvent.AgentProgress -> acceptAgentProgress(event, nowMonotonicMs)
             is AiEvent.Usage -> acceptUsage(event, nowMonotonicMs)
             is AiEvent.FinalPatch -> acceptFinalPatch(event, nowMonotonicMs)
+            is AiEvent.FinalAnswer -> acceptFinalAnswer(event, nowMonotonicMs)
             is AiEvent.Cancelled -> {
                 noteProviderEvent(nowMonotonicMs)
                 mutableState = BoundedHarnessState.CANCELLED
@@ -572,6 +574,27 @@ class BoundedHarnessSession(
         }
 
         mutableState = BoundedHarnessState.FINAL_PATCH
+        terminalEvent = event
+        return emit(event)
+    }
+
+    private fun acceptFinalAnswer(
+        event: AiEvent.FinalAnswer,
+        nowMonotonicMs: Long,
+    ): HarnessDispatch {
+        noteProviderEvent(nowMonotonicMs)
+        mutableState = BoundedHarnessState.VALIDATING
+        val maxAnswerChars = minOf(limits.maxPreviewChars, request.maxOutputChars)
+        if (
+            event.text.isBlank() ||
+            event.text.length > maxAnswerChars ||
+            !event.text.hasValidUnicodeScalars() ||
+            '\u0000' in event.text
+        ) {
+            return fail(HarnessErrorCode.PROTOCOL_INVALID)
+        }
+
+        mutableState = BoundedHarnessState.FINAL_ANSWER
         terminalEvent = event
         return emit(event)
     }

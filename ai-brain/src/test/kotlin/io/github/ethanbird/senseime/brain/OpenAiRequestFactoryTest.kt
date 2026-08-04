@@ -5,6 +5,7 @@ import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import io.github.ethanbird.senseime.ai.protocol.EditorSnapshotV1
 import io.github.ethanbird.senseime.ai.protocol.EditorTextDigest
 import io.github.ethanbird.senseime.ai.protocol.HarnessRequestV1
+import io.github.ethanbird.senseime.ai.protocol.HarnessResultMode
 import io.github.ethanbird.senseime.ai.protocol.PatchTarget
 import io.github.ethanbird.senseime.ai.protocol.SnapshotCapability
 import io.github.ethanbird.senseime.ai.protocol.TextSelectionV1
@@ -23,6 +24,58 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class OpenAiRequestFactoryTest {
+    @Test
+    fun `Responses assistant-message request uses ordinary text without patch schema`() {
+        val request = harness().copy(
+            skill = EditorIntent.ANSWER,
+            resultMode = HarnessResultMode.ASSISTANT_MESSAGE,
+        )
+        val body = OpenAiRequestFactory.create(
+            profile = profile(ProviderApiStyle.OPENAI_RESPONSES),
+            request = request,
+            credential = ProviderCredential.None,
+            attempt = 0,
+        ).body.toString(StandardCharsets.UTF_8)
+
+        assertTrue(ProviderJson.parse(body) is JsonValue.ObjectValue)
+        assertTrue(body.contains("ordinary assistant content"))
+        assertTrue(body.contains("\\\"result_mode\\\":\\\"assistant_message\\\""))
+        assertFalse(body.contains("sense_editor_patch"))
+        assertFalse(body.contains("Closed output JSON contract"))
+        assertFalse(body.contains("\"type\":\"json_schema\""))
+    }
+
+    @Test
+    fun `DeepSeek assistant-message request keeps Agent tools and removes terminal patch tool`() {
+        val request = harness().copy(
+            skill = EditorIntent.ANSWER,
+            resultMode = HarnessResultMode.ASSISTANT_MESSAGE,
+        )
+        val body = OpenAiRequestFactory.create(
+            profile = ProviderProfile(
+                id = "deepseek",
+                displayName = "DeepSeek",
+                apiStyle = ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS,
+                baseUrl = "https://api.deepseek.com/v1",
+                model = "deepseek-v4-pro",
+                thinkingMode = ThinkingMode.DISABLED,
+                structuredOutput = StructuredOutputMode.JSON_OBJECT,
+            ),
+            request = request,
+            credential = ProviderCredential.None,
+            attempt = 0,
+            enabledTools = setOf(AgentToolId.CALCULATOR),
+        ).body.toString(StandardCharsets.UTF_8)
+
+        assertTrue(ProviderJson.parse(body) is JsonValue.ObjectValue)
+        assertTrue(body.contains("\"name\":\"sense_report_progress\""))
+        assertTrue(body.contains("\"name\":\"calculator\""))
+        assertFalse(body.contains("\"name\":\"sense_submit_patch\""))
+        assertFalse(body.contains("\"tool_choice\""))
+        assertFalse(body.contains("\"response_format\""))
+        assertTrue(body.contains("finish with one complete user-facing answer"))
+    }
+
     @Test
     fun `Responses request includes schema reasoning stream and frozen snapshot`() {
         val wire = OpenAiRequestFactory.create(
@@ -478,6 +531,25 @@ class OpenAiRequestFactoryTest {
         assertTrue(body.contains("Regenerate the entire structured answer from the beginning"))
         assertTrue(body.contains("稳定"))
         assertTrue(body.contains("unexpected_stream_eof"))
+    }
+
+    @Test
+    fun `Responses advertises terminal and browser control schemas`() {
+        val body = OpenAiRequestFactory.create(
+            profile = profile(ProviderApiStyle.OPENAI_RESPONSES),
+            request = harness(),
+            credential = ProviderCredential.None,
+            attempt = 0,
+            enabledTools = setOf(AgentToolId.TERMINAL_EXEC, AgentToolId.BROWSER_USE),
+        ).body.toString(StandardCharsets.UTF_8)
+
+        assertTrue(body.contains("\"name\":\"terminal_exec\""))
+        assertTrue(body.contains("\"name\":\"browser_use\""))
+        assertTrue(body.contains("\"timeout_ms\""))
+        assertTrue(body.contains("\"navigate\""))
+        assertTrue(body.contains("\"snapshot\""))
+        assertTrue(body.contains("\"type\""))
+        assertTrue(ProviderJson.parse(body) is JsonValue.ObjectValue)
     }
 
     private fun profile(
