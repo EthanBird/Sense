@@ -2,12 +2,15 @@ package io.github.ethanbird.senseime.agent.ui
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.View
 import android.widget.FrameLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.compose.runtime.getValue
@@ -18,6 +21,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
+import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 
 /** Lazy Android View boundary so the ordinary IME path does not construct a composition. */
@@ -31,6 +35,10 @@ class AgentComposeHostView @JvmOverloads constructor(
     private val owners = AgentViewTreeOwners()
     private var renderingRequested = false
     private var released = false
+    private var ownedWindowRoot: View? = null
+    private var ownsWindowLifecycle = false
+    private var ownsWindowSavedState = false
+    private var ownsWindowViewModels = false
 
     init {
         // InputMethodService does not provide Activity-owned ViewTree owners. Install one stable
@@ -68,10 +76,17 @@ class AgentComposeHostView @JvmOverloads constructor(
         released = true
         renderingRequested = false
         composeView.disposeComposition()
+        clearOwnedWindowRootOwners()
         owners.destroy()
     }
 
     override fun onAttachedToWindow() {
+        // Compose obtains its WindowRecomposer from the *window root*, not from the nearest
+        // parent of ComposeView. An IME window has no Activity/Fragment owners, so installing
+        // owners only on this host still crashes on first attach with
+        // "ViewTreeLifecycleOwner not found". Fill the missing root owners before ViewGroup
+        // dispatches attachment to the child ComposeView.
+        installMissingWindowRootOwners()
         super.onAttachedToWindow()
         if (!released && renderingRequested && visibility == VISIBLE) {
             owners.moveTo(Lifecycle.State.RESUMED)
@@ -81,6 +96,41 @@ class AgentComposeHostView @JvmOverloads constructor(
     override fun onDetachedFromWindow() {
         if (!released) owners.moveTo(Lifecycle.State.CREATED)
         super.onDetachedFromWindow()
+        clearOwnedWindowRootOwners()
+    }
+
+    private fun installMissingWindowRootOwners() {
+        val root = rootView
+        ownedWindowRoot = root
+        if (root.findViewTreeLifecycleOwner() == null) {
+            root.setViewTreeLifecycleOwner(owners)
+            ownsWindowLifecycle = true
+        }
+        if (root.findViewTreeSavedStateRegistryOwner() == null) {
+            root.setViewTreeSavedStateRegistryOwner(owners)
+            ownsWindowSavedState = true
+        }
+        if (root.findViewTreeViewModelStoreOwner() == null) {
+            root.setViewTreeViewModelStoreOwner(owners)
+            ownsWindowViewModels = true
+        }
+    }
+
+    private fun clearOwnedWindowRootOwners() {
+        val root = ownedWindowRoot ?: return
+        if (ownsWindowLifecycle && root.findViewTreeLifecycleOwner() === owners) {
+            root.setViewTreeLifecycleOwner(null)
+        }
+        if (ownsWindowSavedState && root.findViewTreeSavedStateRegistryOwner() === owners) {
+            root.setViewTreeSavedStateRegistryOwner(null)
+        }
+        if (ownsWindowViewModels && root.findViewTreeViewModelStoreOwner() === owners) {
+            root.setViewTreeViewModelStoreOwner(null)
+        }
+        ownedWindowRoot = null
+        ownsWindowLifecycle = false
+        ownsWindowSavedState = false
+        ownsWindowViewModels = false
     }
 
     private class AgentViewTreeOwners :

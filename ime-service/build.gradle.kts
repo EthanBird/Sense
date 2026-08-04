@@ -20,6 +20,16 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+        unitTests.all {
+            it.systemProperty(
+                "robolectric.dependency.repo.url",
+                "https://repo.maven.apache.org/maven2",
+            )
+        }
+    }
 }
 
 dependencies {
@@ -30,6 +40,7 @@ dependencies {
     implementation(project(":ime-config"))
     implementation(project(":ime-ui"))
     testImplementation(libs.junit)
+    testImplementation("org.robolectric:robolectric:4.14.1")
     androidTestImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
