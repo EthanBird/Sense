@@ -255,13 +255,6 @@ class SettingsActivity : ComponentActivity() {
         screenContent.addView(secondaryButton(R.string.switch_ime) {
             handleEffect(SettingsEffect.ShowInputMethodPicker)
         }.withTop(dp(10)))
-        screenContent.addView(primaryButton(R.string.agent_hub_open) {
-            startActivity(Intent(this, AgentHubActivity::class.java))
-        }.withTop(dp(14)))
-        screenContent.addView(
-            text(R.string.agent_hub_open_summary, 13f, R.color.sense_secondary).withTop(dp(7)),
-        )
-
         screenContent.addView(
             text(R.string.settings_categories_title, 13f, R.color.sense_secondary, Typeface.BOLD)
                 .withTop(dp(28)),

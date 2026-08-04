@@ -20,6 +20,13 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import io.github.ethanbird.senseime.agent.ui.AgentMessageRole
+import io.github.ethanbird.senseime.agent.ui.AgentMessageUi
+import io.github.ethanbird.senseime.agent.ui.AgentToolKind
+import io.github.ethanbird.senseime.agent.ui.AgentToolState
+import io.github.ethanbird.senseime.agent.ui.AgentToolUi
+import io.github.ethanbird.senseime.agent.ui.AgentUiActions
+import io.github.ethanbird.senseime.agent.ui.AgentUiState
 import io.github.ethanbird.senseime.ai.protocol.ActiveSkillInstructionV1
 import io.github.ethanbird.senseime.ai.protocol.HarnessCancelReason
 import io.github.ethanbird.senseime.ai.protocol.TextSelectionV1
@@ -27,6 +34,11 @@ import io.github.ethanbird.senseime.brain.api.AgentSkillCatalog
 import io.github.ethanbird.senseime.brain.api.AgentSkillDirection
 import io.github.ethanbird.senseime.brain.api.AgentSkillSlot
 import io.github.ethanbird.senseime.brain.runtime.AgentSkillStore
+import io.github.ethanbird.senseime.brain.runtime.AgentHubMessageRole
+import io.github.ethanbird.senseime.brain.runtime.AgentHubObserver
+import io.github.ethanbird.senseime.brain.runtime.AgentHubProjection
+import io.github.ethanbird.senseime.brain.runtime.AgentHubToolState
+import io.github.ethanbird.senseime.brain.runtime.SenseAgentHubRuntime
 import io.github.ethanbird.senseime.config.ChineseInputScheme
 import io.github.ethanbird.senseime.config.ImePreferencesStore
 import io.github.ethanbird.senseime.config.ImePreferencesV1
@@ -131,6 +143,18 @@ class SenseInputMethodService : InputMethodService() {
     private var chineseMode = true
     private var keyboardView: SenseKeyboardView? = null
     private var keyboardSurface: SenseKeyboardSurface? = null
+    private var imeRoot: SenseImeRootLayout? = null
+    private val agentDraft = AgentDraftBuffer()
+    private var agentDraftComposition = ""
+    private var agentProjection = AgentHubProjection()
+    private var agentRuntime: SenseAgentHubRuntime? = null
+    private var agentSubscription: AutoCloseable? = null
+    private var selectedAgentToolIndex = 0
+    private var agentHistoryVisible = false
+    private var agentMenuVisible = false
+    private var openAgentToolId: String? = null
+    private var agentFrontVisible = false
+    private var agentComposerVisible = false
     private var imeWindowVisible = false
     private val mainHandler = Handler(Looper.getMainLooper())
     private val candidateResultToken = Any()
@@ -150,7 +174,7 @@ class SenseInputMethodService : InputMethodService() {
             override val editorSessionIdentity: Long
                 get() = editorSessionId
             override val inputConnectionIdentity: Any?
-                get() = currentInputConnection
+                get() = if (isAgentTextTarget()) agentDraft else currentInputConnection
 
             override fun publishEnglishComposition(text: String): Boolean =
                 updateConnectionComposition(text)
@@ -466,14 +490,17 @@ class SenseInputMethodService : InputMethodService() {
         )
     }
 
-    override fun onCreateInputView(): View = SenseKeyboardSurface(this).also { surface ->
+    override fun onCreateInputView(): View = SenseImeRootLayout(this).also { root ->
+        imeRoot?.release()
+        imeRoot = root
+        val surface = root.keyboardSurface
         keyboardSurface = surface
-        surface.setImeWindowVisible(imeWindowVisible)
-        surface.setKeyboardSizeProfile(inputScheme.preferences.toKeyboardSizeProfile())
+        root.setImeWindowVisible(imeWindowVisible)
+        root.setKeyboardSizeProfile(inputScheme.preferences.toKeyboardSizeProfile())
         val view = surface.keyboardView
-        surface.layoutParams = ViewGroup.LayoutParams(
+        root.layoutParams = ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            surface.preferredHeightPx(),
+            root.preferredKeyboardHeightPx(),
         )
         view.keyListener = SenseKeyboardView.KeyListener(::handleKey)
         view.candidateListener = ::commitCandidate
@@ -481,7 +508,7 @@ class SenseInputMethodService : InputMethodService() {
         view.clipboardActionListener = ::handleClipboardAction
         view.editorActionListener = ::handleEditorAction
         view.settingsActionListener = ::openSenseHome
-        view.agentActionListener = ::openAgentHub
+        view.agentActionListener = ::openAgentFront
         view.t9SideSymbolSettingsListener = ::openT9SideSymbolSettings
         view.inputSchemeSelectionListener =
             KeyboardInputSchemeSelectionListener(::handleInputSchemeSelection)
@@ -552,24 +579,273 @@ class SenseInputMethodService : InputMethodService() {
             view.showSkillFeedback(message)
         }
         render()
+        // Attach only the light projection observer. Provider, terminal and browser work still
+        // live in :brain and are created only after an Agent run is explicitly started.
+        ensureAgentRuntime()
+        restoreAgentFront()
     }
 
     private fun openSenseHome() = openSenseSettings(initialSection = null)
 
-    private fun openAgentHub() {
+    private fun openAgentFront() {
         cancelVoiceSession(exitSurface = true)
         cancelAndExitAi(HarnessCancelReason.CALLER_REQUESTED)
-        val launchIntent = Intent()
-            .setClassName(packageName, SENSE_AGENT_HUB_ACTIVITY)
-            .addFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_SINGLE_TOP,
-            )
-        runCatching { startActivity(launchIntent) }
-            .onFailure {
-                Toast.makeText(this, "Agent 工作台启动失败", Toast.LENGTH_SHORT).show()
-            }
+        if (!commitActiveRawComposition()) return
+        ensureAgentRuntime()
+        agentFrontVisible = true
+        agentComposerVisible = false
+        agentHistoryVisible = false
+        agentMenuVisible = false
+        keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
+        imeRoot?.showAgent(agentUiState(), agentUiActions, composing = false)
     }
+
+    private val agentUiActions by lazy(LazyThreadSafetyMode.NONE) {
+        AgentUiActions(
+            onOpen = ::openAgentFront,
+            onClose = ::closeAgentFront,
+            onCloseComposer = ::finishAgentComposing,
+            onHistory = ::toggleAgentHistory,
+            onMore = {
+                agentMenuVisible = !agentMenuVisible
+                publishAgentUi()
+            },
+            onDismissMenu = {
+                agentMenuVisible = false
+                publishAgentUi()
+            },
+            onComposerTap = ::beginAgentComposing,
+            onSend = ::sendAgentDraft,
+            onStop = { agentRuntime?.stop() },
+            onNewChat = ::startNewAgentConversation,
+            onAdd = ::attachCurrentSelectionToAgentDraft,
+            onSlash = {
+                beginAgentComposing()
+                commitToAgentDraft("/")
+            },
+            onVoice = {
+                beginAgentComposing()
+                openVoiceInput()
+            },
+            onToolPrevious = {
+                selectedAgentToolIndex = (selectedAgentToolIndex - 1).coerceAtLeast(0)
+                publishAgentUi()
+            },
+            onToolNext = {
+                if (agentProjection.tools.isNotEmpty()) {
+                    selectedAgentToolIndex =
+                        (selectedAgentToolIndex + 1).coerceAtMost(agentProjection.tools.lastIndex)
+                }
+                publishAgentUi()
+            },
+            onToolOpen = { tool ->
+                agentMenuVisible = false
+                openAgentToolId = tool.id
+                publishAgentUi()
+            },
+            onToolClose = {
+                openAgentToolId = null
+                publishAgentUi()
+            },
+            onCopyMessage = { message ->
+                clipboardManager.setPrimaryClip(
+                    ClipData.newPlainText("Sense Agent message", message.text),
+                )
+                Toast.makeText(this, "已复制回答", Toast.LENGTH_SHORT).show()
+            },
+        )
+    }
+
+    private fun ensureAgentRuntime() {
+        if (agentRuntime == null) {
+            agentRuntime = SenseAgentHubRuntime.get(applicationContext)
+        }
+        if (agentSubscription != null) return
+        agentSubscription = agentRuntime?.observe(
+            AgentHubObserver { projection ->
+                agentProjection = projection
+                selectedAgentToolIndex = when {
+                    projection.tools.isEmpty() -> 0
+                    projection.tools.any { it.state == AgentHubToolState.RUNNING } ->
+                        projection.tools.indexOfLast { it.state == AgentHubToolState.RUNNING }
+                    else -> selectedAgentToolIndex.coerceIn(0, projection.tools.lastIndex)
+                }
+                if (projection.tools.none { it.id == openAgentToolId }) {
+                    openAgentToolId = null
+                }
+                publishAgentUi()
+            },
+        )
+    }
+
+    private fun agentUiState(): AgentUiState {
+        val title = agentProjection.messages
+            .firstOrNull { it.role == AgentHubMessageRole.USER }
+            ?.text
+            ?.lineSequence()
+            ?.firstOrNull()
+            ?.take(18)
+            ?.takeIf(String::isNotBlank)
+            ?: "问候与求助"
+        return AgentUiState(
+            revision = agentProjection.revision,
+            title = title,
+            modelGroup = "Default Models",
+            modelLabel = "Sense · 当前模型",
+            loaded = agentProjection.loaded,
+            running = agentProjection.running,
+            status = agentProjection.status,
+            messages = agentProjection.messages.mapIndexed { index, message ->
+                AgentMessageUi(
+                    id = "${message.createdAtEpochMs}-${message.role}-$index",
+                    role = when (message.role) {
+                        AgentHubMessageRole.USER -> AgentMessageRole.USER
+                        AgentHubMessageRole.ASSISTANT -> AgentMessageRole.ASSISTANT
+                    },
+                    text = message.text,
+                )
+            },
+            streamingText = agentProjection.preview,
+            tools = agentProjection.tools.map { tool ->
+                AgentToolUi(
+                    id = tool.id,
+                    kind = when (tool.toolName) {
+                        "terminal_exec" -> AgentToolKind.TERMINAL
+                        "browser_use" -> AgentToolKind.BROWSER
+                        else -> AgentToolKind.GENERIC
+                    },
+                    title = when {
+                        tool.state == AgentHubToolState.RUNNING &&
+                            tool.toolName == "terminal_exec" -> "正在运行终端"
+                        tool.state == AgentHubToolState.RUNNING &&
+                            tool.toolName == "browser_use" -> "正在控制浏览器"
+                        else -> tool.title
+                    },
+                    detail = tool.detail,
+                    state = when (tool.state) {
+                        AgentHubToolState.RUNNING -> AgentToolState.RUNNING
+                        AgentHubToolState.COMPLETED -> AgentToolState.SUCCEEDED
+                        AgentHubToolState.FAILED -> AgentToolState.FAILED
+                    },
+                )
+            },
+            selectedToolIndex = selectedAgentToolIndex,
+            draft = agentDraft.displayText(agentDraftComposition),
+            draftCursor = agentDraft.cursor + agentDraftComposition.length,
+            composing = imeRoot?.mode == ImeFrontMode.AGENT_COMPOSING,
+            inputTokens = agentProjection.inputTokens,
+            outputTokens = agentProjection.outputTokens,
+            historyVisible = agentHistoryVisible,
+            menuVisible = agentMenuVisible,
+            openToolId = openAgentToolId,
+        )
+    }
+
+    private fun publishAgentUi() {
+        imeRoot?.renderAgent(agentUiState(), agentUiActions)
+    }
+
+    private fun beginAgentComposing() {
+        ensureAgentRuntime()
+        agentFrontVisible = true
+        agentComposerVisible = true
+        agentHistoryVisible = false
+        agentMenuVisible = false
+        openAgentToolId = null
+        imeRoot?.showAgent(agentUiState(), agentUiActions, composing = true)
+        keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
+        render()
+    }
+
+    private fun finishAgentComposing() {
+        if (!isAgentTextTarget()) return
+        if (!commitActiveRawComposition()) return
+        agentComposerVisible = false
+        imeRoot?.showAgent(agentUiState(), agentUiActions, composing = false)
+    }
+
+    private fun closeAgentFront() {
+        if (isAgentTextTarget() && !commitActiveRawComposition()) return
+        agentFrontVisible = false
+        agentComposerVisible = false
+        agentHistoryVisible = false
+        agentMenuVisible = false
+        openAgentToolId = null
+        imeRoot?.showKeyboard()
+        keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
+        render()
+    }
+
+    private fun sendAgentDraft() {
+        if (isAgentTextTarget() && !commitActiveRawComposition()) return
+        val message = agentDraft.text.trim()
+        if (message.isEmpty()) return
+        if (agentRuntime?.send(message) == true) {
+            agentDraft.clear()
+            agentDraftComposition = ""
+            agentComposerVisible = false
+            imeRoot?.showAgent(agentUiState(), agentUiActions, composing = false)
+        }
+    }
+
+    private fun startNewAgentConversation() {
+        if (agentProjection.running) return
+        if (isAgentTextTarget() && !commitActiveRawComposition()) return
+        if (agentRuntime?.clearConversation() == true) {
+            agentDraft.clear()
+            agentDraftComposition = ""
+            selectedAgentToolIndex = 0
+            agentHistoryVisible = false
+            agentMenuVisible = false
+            openAgentToolId = null
+            publishAgentUi()
+        }
+    }
+
+    private fun toggleAgentHistory() {
+        if (isAgentTextTarget() && !commitActiveRawComposition()) return
+        agentMenuVisible = false
+        openAgentToolId = null
+        agentHistoryVisible = !agentHistoryVisible
+        agentFrontVisible = true
+        agentComposerVisible = false
+        imeRoot?.showAgent(agentUiState(), agentUiActions, composing = false)
+    }
+
+    private fun restoreAgentFront() {
+        val root = imeRoot ?: return
+        if (agentFrontVisible) {
+            root.showAgent(
+                state = agentUiState(),
+                actions = agentUiActions,
+                composing = agentComposerVisible,
+            )
+        } else {
+            root.showKeyboard()
+        }
+    }
+
+    private fun attachCurrentSelectionToAgentDraft() {
+        beginAgentComposing()
+        val selection = runCatching {
+            currentInputConnection?.getSelectedText(0)?.toString().orEmpty()
+        }.getOrDefault("")
+        if (selection.isBlank()) {
+            Toast.makeText(this, "当前输入框没有选中文字", Toast.LENGTH_SHORT).show()
+            return
+        }
+        commitToAgentDraft("\n\n> 当前选区\n$selection\n\n")
+    }
+
+    private fun commitToAgentDraft(text: String): Boolean {
+        agentDraftComposition = ""
+        val accepted = agentDraft.insert(text)
+        publishAgentUi()
+        return accepted
+    }
+
+    private fun isAgentTextTarget(): Boolean =
+        imeRoot?.mode == ImeFrontMode.AGENT_COMPOSING
 
     private fun openT9SideSymbolSettings() =
         openSenseSettings(initialSection = ImeSettingsRoute.KEYBOARD_SECTION)
@@ -690,6 +966,8 @@ class SenseInputMethodService : InputMethodService() {
         cancelVoiceSession(exitSurface = true)
         invalidateAiForEditorChange(EditorStaleReason.START_INPUT)
         super.onStartInput(attribute, restarting)
+        if (isAgentTextTarget()) commitActiveRawComposition()
+        restoreAgentFront()
         currentEditorInfo = attribute
         editorGeneration = nextGeneration(editorGeneration)
         editorSessionId = nextGeneration(editorSessionId)
@@ -727,17 +1005,19 @@ class SenseInputMethodService : InputMethodService() {
         keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
         reconcileAgentSkillsAndWatcher()
         render()
+        restoreAgentFront()
     }
 
     override fun onWindowShown() {
         super.onWindowShown()
         imeWindowVisible = true
-        keyboardSurface?.setImeWindowVisible(true)
+        imeRoot?.setImeWindowVisible(true) ?: keyboardSurface?.setImeWindowVisible(true)
         /*
          * onStartInputView owns the watcher epoch rebuild. Window visibility still reconciles a
          * potentially missed CURRENT event, but must not immediately stop/start the fresh watch.
          */
         refreshAgentSkills()
+        restoreAgentFront()
     }
 
     override fun onFinishInput() {
@@ -819,7 +1099,7 @@ class SenseInputMethodService : InputMethodService() {
     override fun onDestroy() {
         destroyed = true
         imeWindowVisible = false
-        keyboardSurface?.setImeWindowVisible(false)
+        imeRoot?.setImeWindowVisible(false) ?: keyboardSurface?.setImeWindowVisible(false)
         pendingDecodeCommit.clearAll()
         wubiOverflow.clear()
         mainHandler.removeCallbacks(pendingCommitTimeout)
@@ -854,20 +1134,24 @@ class SenseInputMethodService : InputMethodService() {
         if (::agentSkillProjection.isInitialized) {
             agentSkillProjection.close()
         }
+        agentSubscription?.close()
+        agentSubscription = null
         /*
          * close() appends FileObserver teardown after every already-accepted read/mutation. A
          * graceful shutdown lets that FIFO drain without waiting on the IME main thread.
          */
         agentSkillIo.shutdown()
         aiApplicationToken = null
+        imeRoot?.release()
         keyboardView = null
         keyboardSurface = null
+        imeRoot = null
         super.onDestroy()
     }
 
     override fun onWindowHidden() {
         imeWindowVisible = false
-        keyboardSurface?.setImeWindowVisible(false)
+        imeRoot?.setImeWindowVisible(false) ?: keyboardSurface?.setImeWindowVisible(false)
         cancelVoiceSession(exitSurface = true)
         cancelAndExitAi(HarnessCancelReason.WINDOW_HIDDEN)
         super.onWindowHidden()
@@ -965,6 +1249,22 @@ class SenseInputMethodService : InputMethodService() {
             }
         }
         cancelVoiceForEditorInput()
+        if (isAgentTextTarget()) {
+            when (code) {
+                KeyCodes.HIDE -> {
+                    finishAgentComposing()
+                    return
+                }
+                KeyCodes.UNDO -> {
+                    if (commitActiveRawComposition() && agentDraft.undo()) publishAgentUi()
+                    return
+                }
+                KeyCodes.REDO -> {
+                    if (commitActiveRawComposition() && agentDraft.redo()) publishAgentUi()
+                    return
+                }
+            }
+        }
         when (code) {
             KeyCodes.SHIFT -> {
                 setEnglishShiftState(englishShiftState.onShiftPressed())
@@ -1002,7 +1302,7 @@ class SenseInputMethodService : InputMethodService() {
         val replacementFeedback = if (
             !hasAnyComposition()
         ) {
-            personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
+            prepareTextReplacementFeedback()
         } else {
             null
         }
@@ -1187,7 +1487,7 @@ class SenseInputMethodService : InputMethodService() {
         if (!inputScheme.clearT9Composition(::updateConnectionComposition)) return
         mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
         clearPendingCommit()
-        currentInputConnection?.finishComposingText()
+        finishActiveComposingText()
         render()
     }
 
@@ -1253,11 +1553,11 @@ class SenseInputMethodService : InputMethodService() {
         if (!chineseMode) {
             if (englishInput.composing.isNotEmpty()) {
                 if (!commitEnglishComposition(englishInput.defaultCommitCandidate)) return
-                currentInputConnection?.commitText(" ", 1)
+                commitToActiveTextTarget(" ")
             } else {
                 val feedback =
-                    personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
-                if (currentInputConnection?.commitText(" ", 1) == true) {
+                    prepareTextReplacementFeedback()
+                if (commitToActiveTextTarget(" ")) {
                     completeReplacementFeedback(feedback)
                 }
             }
@@ -1269,8 +1569,8 @@ class SenseInputMethodService : InputMethodService() {
         }
         if (composition.visibleText.isEmpty()) {
             val feedback =
-                personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
-            if (currentInputConnection?.commitText(" ", 1) == true) {
+                prepareTextReplacementFeedback()
+            if (commitToActiveTextTarget(" ")) {
                 completeReplacementFeedback(feedback)
             }
             return
@@ -1294,8 +1594,8 @@ class SenseInputMethodService : InputMethodService() {
     private fun handleAlternativeSpace() {
         if (!hasAlternativeComposition()) {
             val feedback =
-                personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
-            if (currentInputConnection?.commitText(" ", 1) == true) {
+                prepareTextReplacementFeedback()
+            if (commitToActiveTextTarget(" ")) {
                 completeReplacementFeedback(feedback)
             }
             return
@@ -1313,6 +1613,14 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun handleEnter() {
+        if (isAgentTextTarget()) {
+            if (hasAnyComposition()) {
+                commitActiveRawComposition()
+            } else {
+                sendAgentDraft()
+            }
+            return
+        }
         if (!chineseMode && englishInput.composing.isNotEmpty()) {
             commitEnglishComposition(candidate = null)
         } else if (chineseMode && hasActiveChineseComposition()) {
@@ -1321,7 +1629,7 @@ class SenseInputMethodService : InputMethodService() {
             commitActiveRawComposition()
         } else {
             val feedback =
-                personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
+                prepareTextReplacementFeedback()
             if (sendDefaultEditorAction(true)) {
                 personalizationFeedback.complete(feedback)
             } else if (currentInputConnection?.commitText("\n", 1) == true) {
@@ -1393,7 +1701,7 @@ class SenseInputMethodService : InputMethodService() {
         val replacementFeedback = if (
             !hasAnyComposition()
         ) {
-            personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
+            prepareTextReplacementFeedback()
         } else {
             null
         }
@@ -1439,11 +1747,11 @@ class SenseInputMethodService : InputMethodService() {
             committedComposition = true
         }
         val feedback = if (committedComposition) {
-            personalizationFeedback.prepareExpiration()
+            prepareTextExpirationFeedback()
         } else {
             replacementFeedback
         }
-        if (currentInputConnection?.commitText(text, 1) == true) {
+        if (commitToActiveTextTarget(text)) {
             completeReplacementFeedback(feedback)
             // A punctuation/clipboard/tool commit after a learned word becomes the
             // newest host edit, so a later Backspace must not demote the older word.
@@ -1492,6 +1800,14 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun showEditor() {
         if (!commitActiveRawComposition()) return
+        if (isAgentTextTarget()) {
+            editorSelectionState = EditorSelectionState(
+                hasSelection = false,
+            )
+            publishEditorSelectionState()
+            keyboardView?.setPanel(SenseKeyboardView.Panel.EDITOR)
+            return
+        }
         editorSelectionState = EditorSelectionState(
             hasSelection = hasHostSelection(selectionStart, selectionEnd),
         )
@@ -1500,6 +1816,10 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun handleEditorAction(action: SenseKeyboardView.EditorAction) {
+        if (isAgentTextTarget()) {
+            handleAgentDraftEditorAction(action)
+            return
+        }
         when (action) {
             SenseKeyboardView.EditorAction.BACK -> {
                 editorSelectionState = editorSelectionState.resetSelectionMode()
@@ -1532,6 +1852,56 @@ class SenseInputMethodService : InputMethodService() {
                 currentInputConnection?.performContextMenuAction(android.R.id.selectAll)
             }
         }
+    }
+
+    private fun handleAgentDraftEditorAction(action: SenseKeyboardView.EditorAction) {
+        var changed = false
+        when (action) {
+            SenseKeyboardView.EditorAction.BACK -> {
+                keyboardView?.setPanel(SenseKeyboardView.Panel.LETTERS)
+                return
+            }
+            SenseKeyboardView.EditorAction.UP,
+            SenseKeyboardView.EditorAction.HOME,
+            -> changed = agentDraft.moveHome()
+            SenseKeyboardView.EditorAction.DOWN,
+            SenseKeyboardView.EditorAction.END,
+            -> changed = agentDraft.moveEnd()
+            SenseKeyboardView.EditorAction.LEFT -> changed = agentDraft.moveCursor(-1)
+            SenseKeyboardView.EditorAction.RIGHT -> changed = agentDraft.moveCursor(1)
+            SenseKeyboardView.EditorAction.DELETE -> changed = agentDraft.deleteBackward()
+            SenseKeyboardView.EditorAction.COPY -> {
+                if (agentDraft.text.isNotEmpty()) {
+                    clipboardManager.setPrimaryClip(
+                        ClipData.newPlainText("Sense Agent draft", agentDraft.text),
+                    )
+                    Toast.makeText(this, R.string.editor_copied, Toast.LENGTH_SHORT).show()
+                }
+            }
+            SenseKeyboardView.EditorAction.CUT -> {
+                if (agentDraft.text.isNotEmpty()) {
+                    clipboardManager.setPrimaryClip(
+                        ClipData.newPlainText("Sense Agent draft", agentDraft.text),
+                    )
+                    changed = agentDraft.clear()
+                    Toast.makeText(this, R.string.editor_cut, Toast.LENGTH_SHORT).show()
+                }
+            }
+            SenseKeyboardView.EditorAction.PASTE -> {
+                val clip = clipboardManager.primaryClip
+                val value = clip
+                    ?.takeIf { it.itemCount > 0 }
+                    ?.getItemAt(0)
+                    ?.coerceToText(this)
+                    ?.toString()
+                    .orEmpty()
+                if (value.isNotEmpty()) changed = agentDraft.insert(value)
+            }
+            SenseKeyboardView.EditorAction.TOGGLE_SELECTION,
+            SenseKeyboardView.EditorAction.SELECT_ALL,
+            -> Toast.makeText(this, "Agent 草稿当前按光标编辑", Toast.LENGTH_SHORT).show()
+        }
+        if (changed) publishAgentUi()
     }
 
     private fun sendDirectionalKey(keyCode: Int) {
@@ -1596,6 +1966,11 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun deleteOneCodePointOrSelection(): Boolean {
+        if (isAgentTextTarget()) {
+            val deleted = agentDraft.deleteBackward()
+            if (deleted) publishAgentUi()
+            return deleted
+        }
         val connection = currentInputConnection ?: return false
         val frozenSelectionStart = selectionStart
         val frozenSelectionEnd = selectionEnd
@@ -1631,6 +2006,16 @@ class SenseInputMethodService : InputMethodService() {
         attempt,
         UserNegativeFeedback.IMMEDIATE_REPLACEMENT,
     )
+
+    private fun prepareTextReplacementFeedback(): PersonalizationFeedbackWindow.Attempt? =
+        if (isAgentTextTarget()) {
+            null
+        } else {
+            personalizationFeedback.prepareReplacement(selectionStart, selectionEnd)
+        }
+
+    private fun prepareTextExpirationFeedback(): PersonalizationFeedbackWindow.Attempt? =
+        if (isAgentTextTarget()) null else personalizationFeedback.prepareExpiration()
 
     private fun completePersonalizationFeedback(
         attempt: PersonalizationFeedbackWindow.Attempt?,
@@ -2073,8 +2458,8 @@ class SenseInputMethodService : InputMethodService() {
             )
             return
         }
-        val feedback = personalizationFeedback.prepareExpiration()
-        val committed = currentInputConnection?.commitText(text, 1) == true
+        val feedback = prepareTextExpirationFeedback()
+        val committed = commitToActiveTextTarget(text)
         if (committed) {
             personalizationFeedback.complete(feedback)
             activeVoiceSession = null
@@ -2122,7 +2507,7 @@ class SenseInputMethodService : InputMethodService() {
         englishInput.reset()
         clearPendingCommit()
         resetEnglishShiftState()
-        if (finishConnection) currentInputConnection?.finishComposingText()
+        if (finishConnection) finishActiveComposingText()
         render()
     }
 
@@ -2462,7 +2847,8 @@ class SenseInputMethodService : InputMethodService() {
         candidate: Candidate?,
         evidence: UserLearningEvidence = UserLearningEvidence.DEFAULT_ACCEPT,
     ): Boolean {
-        val connection = currentInputConnection
+        val agentTarget = isAgentTextTarget()
+        val connection = currentInputConnection.takeUnless { agentTarget }
         val commitSnapshot = AlternativeCommitSnapshot.capture(
             coordinator = inputScheme,
             hasCandidate = candidate != null,
@@ -2472,7 +2858,7 @@ class SenseInputMethodService : InputMethodService() {
         val rawCode = commitSnapshot.rawCode
         if (rawCode.isEmpty()) return false
         val output = commitSnapshot.outputText(candidate?.text)
-        val feedback = personalizationFeedback.prepareExpiration()
+        val feedback = prepareTextExpirationFeedback()
         val wubiLearningTarget = wubiRuntime.candidateDecoder.takeIf {
             commitSnapshot.learningDomain == AlternativeLearningDomain.WUBI &&
                 wubiLearningReady()
@@ -2482,18 +2868,20 @@ class SenseInputMethodService : InputMethodService() {
                 pinyinLearningReady()
         }
         val committedStart = when {
+            agentTarget -> -1
             hasHostSelection(selectionStart, selectionEnd) -> minOf(selectionStart, selectionEnd)
             selectionStart >= 0 ->
                 (selectionStart - commitSnapshot.editorComposingLength).coerceAtLeast(0)
             else -> -1
         }
-        val committed = connection?.commitText(output, 1) == true
+        val committed = commitToActiveTextTarget(output)
         if (!committed) {
             clearPendingCommit()
             return false
         }
         personalizationFeedback.complete(feedback)
-        val sameEditor = commitSnapshot.isSameEditor(editorSessionId, currentInputConnection)
+        val sameEditor = !agentTarget &&
+            commitSnapshot.isSameEditor(editorSessionId, currentInputConnection)
         val committedEnd = committedStart.takeIf { it >= 0 }?.plus(output.length) ?: -1
         if (wubiLearningTarget != null && candidate != null) {
             runCatching {
@@ -2587,8 +2975,8 @@ class SenseInputMethodService : InputMethodService() {
     private fun commitEnglishComposition(candidate: Candidate?): Boolean {
         if (englishInput.composing.isEmpty()) return false
         val output = candidate?.text ?: englishInput.composing
-        val feedback = personalizationFeedback.prepareExpiration()
-        val committed = currentInputConnection?.commitText(output, 1) == true
+        val feedback = prepareTextExpirationFeedback()
+        val committed = commitToActiveTextTarget(output)
         if (!committed) return false
         personalizationFeedback.complete(feedback)
         englishInput.reset()
@@ -2616,13 +3004,15 @@ class SenseInputMethodService : InputMethodService() {
         val stagedProgressiveLearnings = progressiveLearnings.snapshotForCommit()
         val learningTarget = adaptiveDecoder.takeIf { pinyinLearningReady() }
         val committedEditorSessionId = editorSessionId
-        val connection = currentInputConnection
+        val agentTarget = isAgentTextTarget()
+        val connection = currentInputConnection.takeUnless { agentTarget }
         val committedStart = when {
+            agentTarget -> -1
             hasHostSelection(selectionStart, selectionEnd) -> minOf(selectionStart, selectionEnd)
             selectionStart >= 0 -> (selectionStart - composingLength).coerceAtLeast(0)
             else -> -1
         }
-        val committed = connection?.commitText(output, 1) == true
+        val committed = commitToActiveTextTarget(output)
         if (!committed) {
             if (composition == committingComposition) {
                 clearPendingCommit()
@@ -2647,7 +3037,7 @@ class SenseInputMethodService : InputMethodService() {
                 }.onFailure { error ->
                     Log.e(TAG, "Personalization update failed", error)
                 }.getOrNull()?.let { learned ->
-                    val sameEditor =
+                    val sameEditor = !agentTarget &&
                         editorSessionId == committedEditorSessionId &&
                             currentInputConnection === connection
                     if (sameEditor) {
@@ -2673,18 +3063,42 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun updateConnectionComposition(visibleText: String): Boolean {
+        if (isAgentTextTarget()) {
+            agentDraftComposition = visibleText
+            publishAgentUi()
+            return true
+        }
         val update = editorComposingTextUpdate(visibleText)
         return currentInputConnection?.setComposingText(update.text, update.newCursorPosition) == true
     }
 
     private fun captureDecodeLeftContext(): String {
         if (!decodeContextAllowed) return ""
+        if (isAgentTextTarget()) {
+            return agentDraft.contextBeforeCursor(MAX_DECODE_CONTEXT_CHARS)
+        }
         return runCatching {
             currentInputConnection
                 ?.getTextBeforeCursor(MAX_DECODE_CONTEXT_CHARS, 0)
                 ?.toString()
                 .orEmpty()
         }.getOrDefault("")
+    }
+
+    private fun commitToActiveTextTarget(text: String): Boolean =
+        if (isAgentTextTarget()) {
+            commitToAgentDraft(text)
+        } else {
+            currentInputConnection?.commitText(text, 1) == true
+        }
+
+    private fun finishActiveComposingText() {
+        if (isAgentTextTarget()) {
+            agentDraftComposition = ""
+            publishAgentUi()
+        } else {
+            currentInputConnection?.finishComposingText()
+        }
     }
 
     private fun deferIfDecodeCommitPending(input: DeferredInput): Boolean {
@@ -2943,7 +3357,8 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun applyKeyboardAppearancePreferences(value: ImePreferencesV1) {
-        keyboardSurface?.setKeyboardSizeProfile(value.toKeyboardSizeProfile())
+        imeRoot?.setKeyboardSizeProfile(value.toKeyboardSizeProfile())
+            ?: keyboardSurface?.setKeyboardSizeProfile(value.toKeyboardSizeProfile())
         keyboardView?.setT9SideSymbols(value.t9SideSymbols)
     }
 
@@ -3043,8 +3458,6 @@ class SenseInputMethodService : InputMethodService() {
     private companion object {
         const val SENSE_SETTINGS_ACTIVITY =
             "io.github.ethanbird.senseime.SettingsActivity"
-        const val SENSE_AGENT_HUB_ACTIVITY =
-            "io.github.ethanbird.senseime.AgentHubActivity"
         const val TAG = "SenseInputMethod"
         const val PINYIN_ASSET = "pinyin_lexicon.bin"
         const val PINYIN_BIGRAM_ASSET = "pinyin_bigrams.bin"

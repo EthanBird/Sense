@@ -1451,7 +1451,13 @@ class AiBrainEngine(
                         AgentProgressState.COMPLETED
                     },
                     stepId = pending.stepId,
-                    title = if (result.isError) "工具返回错误，Agent 正在调整" else "工具调用已完成",
+                    title = when {
+                        result.isError -> "工具返回错误，Agent 正在调整"
+                        pending.toolName == "terminal_exec" -> "终端命令已完成"
+                        pending.toolName == "browser_use" -> "浏览器操作已完成"
+                        else -> "工具调用已完成"
+                    },
+                    detail = result.content.toPublicToolDetail(),
                     toolCallId = pending.call.callId,
                     toolName = pending.toolName,
                 )
@@ -1567,6 +1573,9 @@ class AiBrainEngine(
                 content = "{\"ok\":false,\"error\":${JsonWriter().string(message)}}",
                 isError = true,
             )
+
+        private fun String.toPublicToolDetail(): String =
+            replace('\n', ' ').replace('\r', ' ').take(160)
 
         private fun completeNativeToolProgress(
             dispatches: MutableList<HarnessDispatch>,

@@ -30,6 +30,8 @@ pluginManagement {
             when {
                 requested.id.id.startsWith("com.android.") ->
                     useModule("com.android.tools.build:gradle:${requested.version}")
+                requested.id.id == "org.jetbrains.kotlin.plugin.compose" ->
+                    useModule("org.jetbrains.kotlin:compose-compiler-gradle-plugin:${requested.version}")
                 requested.id.id.startsWith("org.jetbrains.kotlin.") ->
                     useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:${requested.version}")
             }
@@ -75,6 +77,7 @@ include(
     ":app",
     ":ime-service",
     ":ime-ui",
+    ":agent-ui",
     ":ime-config",
     ":core-input",
     ":ai-protocol",

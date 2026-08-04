@@ -22,9 +22,32 @@ internal object BrainMessageProtocol {
     const val START = 1
     const val CANCEL = 2
     const val EVENT = 3
+    const val ATTACH = 4
+    const val ATTACH_RESULT = 5
 }
 
 internal object BrainMessageCodec {
+    fun encodeIdentity(requestId: String, generation: Long): Bundle = Bundle().apply {
+        putString("request_id", requestId)
+        putLong("generation", generation)
+    }
+
+    fun decodeIdentity(bundle: Bundle): Pair<String, Long> =
+        bundle.requireString("request_id") to bundle.getLong("generation")
+
+    fun encodeAttachResult(
+        requestId: String,
+        generation: Long,
+        attached: Boolean,
+    ): Bundle = encodeIdentity(requestId, generation).apply {
+        putBoolean("attached", attached)
+    }
+
+    fun decodeAttachResult(bundle: Bundle): Triple<String, Long, Boolean> {
+        val (requestId, generation) = decodeIdentity(bundle)
+        return Triple(requestId, generation, bundle.getBoolean("attached"))
+    }
+
     fun encodeRequest(request: HarnessRequestV1): Bundle {
         BrainRequestEnvelopePolicy.requireAccepted(request)
         return Bundle().apply {

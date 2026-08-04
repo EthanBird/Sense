@@ -4,7 +4,7 @@
     <string name="brand_english">SENSE</string>
     <string name="brand_chinese">先思输入法</string>
     <string name="brand_tagline">先输入，再思考；需要时，让 AI 接住下一步。</string>
-    <string name="stage_badge">v0.4.7 · Agent 工作台</string>
+    <string name="stage_badge">v0.4.7 · 输入法前端 Agent</string>
     <string name="ime_status_title">输入法状态</string>
     <string name="ime_enabled">Sense 已在系统输入法列表中启用</string>
     <string name="ime_disabled">Sense 尚未启用，先完成系统设置</string>
@@ -207,8 +207,6 @@
     <string name="ai_provider_test_internal">测试失败：私有 Brain 暂时不可用。</string>
     <string name="agent_tools_title">Agent 工具</string>
     <string name="agent_hub_title">Sense Agent</string>
-    <string name="agent_hub_open">打开 Agent 工作台</string>
-    <string name="agent_hub_open_summary">持续对话，并在同一会话中使用终端与浏览器。</string>
     <string name="agent_hub_composer_hint">告诉 Agent 你想完成什么…</string>
     <string name="agent_hub_send">发送</string>
     <string name="agent_hub_stop">停止</string>

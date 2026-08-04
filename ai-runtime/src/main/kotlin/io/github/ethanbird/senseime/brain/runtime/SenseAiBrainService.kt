@@ -52,6 +52,7 @@ class SenseAiBrainService : Service() {
     private lateinit var settings: ProviderSettingsStore
     private lateinit var toolSettings: AgentToolSettingsStore
     private lateinit var skillStore: AgentSkillStore
+    private lateinit var durableRunStore: AgentDurableRunStore
     /*
      * Shared across Service instances in this :brain process. Android may construct a replacement
      * Service immediately after onDestroy() returns, while the old instance is still draining a
@@ -78,6 +79,7 @@ class SenseAiBrainService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        durableRunStore = AgentDurableRunStore(applicationContext)
         transport = HttpUrlConnectionProviderTransport()
         val application = applicationContext
         admissionExecutor.execute {
@@ -192,7 +194,7 @@ class SenseAiBrainService : Service() {
         // installed until that callback is captured for its original Messenger; replacing it
         // first would make emit() drop the cancellation as stale and strand the old client's UI.
         previous?.retentionGate?.currentHandle()?.cancel(HarnessCancelReason.CALLER_REQUESTED)
-        val current = ActiveRun(identity = identity, reply = reply)
+        val current = ActiveRun(identity = identity, initialReply = reply)
         synchronized(activeLock) {
             // A previous run with no installed handle cannot emit its own
             // terminal event. Its pending fragments still must not leak into
@@ -406,6 +408,52 @@ class SenseAiBrainService : Service() {
         finishDurableRun(null)
     }
 
+    private fun handleAttach(message: Message) {
+        val identity = runCatching { BrainMessageCodec.decodeIdentity(message.data) }.getOrNull()
+            ?: return
+        val reply = message.replyTo ?: return
+        val replay = synchronized(activeLock) {
+            active?.takeIf { it.identity == identity }?.let { current ->
+                if (reply !in current.replies && current.replies.size >= MAX_RUN_SUBSCRIBERS) {
+                    current.replies.remove(current.replies.first())
+                }
+                current.replies += reply
+                cancelVisibleFlushLocked(current)
+                current.ipcEvents.clear()
+                outboundDeliveries.removeAll { it.run === current }
+                current.replay.snapshot()
+            }
+        }
+        val attached = replay != null
+        try {
+            reply.send(
+                Message.obtain(null, BrainMessageProtocol.ATTACH_RESULT).apply {
+                    data = BrainMessageCodec.encodeAttachResult(
+                        requestId = identity.first,
+                        generation = identity.second,
+                        attached = attached,
+                    )
+                },
+            )
+        } catch (_: RemoteException) {
+            synchronized(activeLock) {
+                active?.takeIf { it.identity == identity }?.replies?.remove(reply)
+            }
+            return
+        }
+        if (replay.isNullOrEmpty()) return
+        val schedule = synchronized(activeLock) {
+            active?.takeIf { it.identity == identity && reply in it.replies }
+                ?.let {
+                    outboundDeliveries.enqueue(
+                        OutboundDelivery(it, replay, recipients = listOf(reply)),
+                    )
+                }
+                ?: false
+        }
+        scheduleOutboundDrain(schedule)
+    }
+
     /**
      * Returns true when this admission lost authority before a Brain handle was installed.
      *
@@ -444,7 +492,15 @@ class SenseAiBrainService : Service() {
                 mainHandler.post { handle.cancel(HarnessCancelReason.BRAIN_DIED) }
             }
         }
+        synchronized(activeLock) {
+            expectedRun.replay.accept(event)
+        }
         val terminal = event.isTerminal
+        if (terminal) {
+            runCatching { durableRunStore.complete(event) }
+        } else {
+            updateDurableNotification(event)
+        }
 
         if (event is AiEvent.PreviewDelta || event is AiEvent.DescriptionDelta) {
             synchronized(activeLock) {
@@ -562,6 +618,22 @@ class SenseAiBrainService : Service() {
             )
         }
         stopSelf()
+    }
+
+    private fun updateDurableNotification(event: AiEvent) {
+        val status = when (event) {
+            is AiEvent.Started -> "Agent 正在理解任务…"
+            is AiEvent.Status -> event.label.replace('_', ' ')
+            is AiEvent.AgentProgress -> event.title
+            else -> null
+        }?.take(120) ?: return
+        mainHandler.post {
+            if (!durableRunPromoted) return@post
+            getSystemService(NotificationManager::class.java).notify(
+                RUNNING_NOTIFICATION_ID,
+                runningNotification(status),
+            )
+        }
     }
 
     private fun releaseWakeLock() {
@@ -705,32 +777,51 @@ class SenseAiBrainService : Service() {
      */
     private fun sendEventsNow(delivery: OutboundDelivery) {
         val current = delivery.run
-        try {
-            delivery.events.forEach { event ->
-                val chunks = if (event is AiEvent.PreviewDelta) {
-                    BrainIpcTextChunker.chunk(event.text).map { chunk -> event.copy(text = chunk) }
-                } else {
-                    listOf(event)
-                }
-                chunks.forEach { outboundEvent ->
-                    current.reply.send(
+        val replies = delivery.recipients ?: synchronized(activeLock) {
+            current.replies.toList()
+        }
+        if (replies.isEmpty()) return
+        val outboundEvents = delivery.events.flatMap { event ->
+            if (event is AiEvent.PreviewDelta) {
+                BrainIpcTextChunker.chunk(event.text).map { chunk -> event.copy(text = chunk) }
+            } else {
+                listOf(event)
+            }
+        }
+        replies.forEach { reply ->
+            try {
+                outboundEvents.forEach { outboundEvent ->
+                    reply.send(
                         Message.obtain(null, BrainMessageProtocol.EVENT).apply {
                             data = BrainMessageCodec.encodeEvent(outboundEvent)
                         },
                     )
                 }
-            }
-        } catch (_: RemoteException) {
-            synchronized(activeLock) {
-                cancelTickerLocked(current)
-                if (active === current) {
-                    active = null
-                    cancelVisibleFlushLocked(current)
+            } catch (_: RemoteException) {
+                val cancelEphemeral = synchronized(activeLock) {
+                    current.replies.remove(reply)
+                    if (current.replies.isEmpty()) {
+                        cancelVisibleFlushLocked(current)
+                        current.ipcEvents.clear()
+                        if (active === current && !durableRunPromoted) {
+                            active = null
+                            cancelTickerLocked(current)
+                            true
+                        } else {
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                }
+                if (cancelEphemeral) {
+                    current.retentionGate.currentHandle()
+                        ?.cancel(HarnessCancelReason.BRAIN_DIED)
                 }
             }
+        }
+        if (synchronized(activeLock) { current.replies.isEmpty() }) {
             outboundDeliveries.removeAll { it.run === current }
-            current.ipcEvents.clear()
-            current.retentionGate.currentHandle()?.cancel(HarnessCancelReason.BRAIN_DIED)
         }
     }
 
@@ -838,7 +929,7 @@ class SenseAiBrainService : Service() {
         current: ActiveRun,
         events: List<AiEvent>,
     ): Boolean {
-        if (events.isEmpty()) return false
+        if (events.isEmpty() || current.replies.isEmpty()) return false
         return outboundDeliveries.enqueue(OutboundDelivery(current, events))
     }
 
@@ -851,6 +942,7 @@ class SenseAiBrainService : Service() {
             when (message.what) {
                 BrainMessageProtocol.START -> handleStart(message)
                 BrainMessageProtocol.CANCEL -> handleCancel(message)
+                BrainMessageProtocol.ATTACH -> handleAttach(message)
                 else -> super.handleMessage(message)
             }
         }
@@ -858,7 +950,8 @@ class SenseAiBrainService : Service() {
 
     private class ActiveRun(
         val identity: Pair<String, Long>,
-        val reply: Messenger,
+        initialReply: Messenger,
+        val replay: BrainRunReplay = BrainRunReplay(identity.first, identity.second),
         @Volatile var recorder: AgentRunRecorder? = null,
         val retentionGate: BrainRetentionFailureGate = BrainRetentionFailureGate(),
         val ticker: BrainRunTickerSlot = BrainRunTickerSlot(),
@@ -868,7 +961,9 @@ class SenseAiBrainService : Service() {
         var ipcFlushRunnable: Runnable? = null,
         var admissionCancellation: HarnessCancelReason? = null,
         var admissionTerminalRecorded: Boolean = false,
-    )
+    ) {
+        val replies = linkedSetOf(initialReply)
+    }
 
     private data class StartAdmission(
         val run: ActiveRun,
@@ -878,6 +973,7 @@ class SenseAiBrainService : Service() {
     private data class OutboundDelivery(
         val run: ActiveRun,
         val events: List<AiEvent>,
+        val recipients: List<Messenger>? = null,
     )
 
     companion object {
@@ -894,6 +990,7 @@ class SenseAiBrainService : Service() {
         private const val MAX_WAKE_LOCK_MS = 10 * 60 * 1_000L
         private const val TICK_INTERVAL_MS = 100L
         private const val IPC_FRAME_INTERVAL_MS = 16L
+        private const val MAX_RUN_SUBSCRIBERS = 4
         private val PROCESS_ADMISSION_EXECUTOR = Executors.newSingleThreadExecutor { runnable ->
             Thread(runnable, "sense-brain-admission").apply { isDaemon = true }
         }

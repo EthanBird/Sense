@@ -34,6 +34,8 @@ class SenseAiBrainClient(
     private var bound = false
     private var closed = false
     private var pending: HarnessRequestV1? = null
+    private var pendingAttach: Pair<String, Long>? = null
+    private var awaitingAttachResult: Pair<String, Long>? = null
     private var activeIdentity: Pair<String, Long>? = null
     private var bindingTimeout: Runnable? = null
 
@@ -53,6 +55,11 @@ class SenseAiBrainClient(
             pending?.also {
                 pending = null
                 sendStart(it)
+                return
+            }
+            pendingAttach?.also {
+                pendingAttach = null
+                sendAttach(it)
             }
         }
 
@@ -119,13 +126,15 @@ class SenseAiBrainClient(
             sendCancel(oldRequest, oldGeneration, HarnessCancelReason.CALLER_REQUESTED)
         }
         activeIdentity = request.requestId to request.runGeneration
+        pendingAttach = null
+        awaitingAttachResult = null
         val service = remote
         if (service != null) {
             sendStart(request)
             return
         }
         pending = request
-        scheduleBindingTimeout(request)
+        scheduleBindingTimeout(request.requestId to request.runGeneration)
         if (!bound && !binding) {
             binding = runCatching {
                 applicationContext.bindService(
@@ -149,6 +158,58 @@ class SenseAiBrainClient(
         }
     }
 
+    /** Reattaches a recreated foreground to a run still owned by the Brain service. */
+    fun attach(requestId: String, generation: Long) {
+        check(Looper.myLooper() == Looper.getMainLooper()) {
+            "SenseAiBrainClient must be driven from the IME main thread"
+        }
+        val identity = requestId to generation
+        if (closed) {
+            eventSink(
+                AiEvent.Failed(
+                    requestId,
+                    generation,
+                    HarnessErrorCode.INTERNAL_FAILURE,
+                    retryable = true,
+                ),
+            )
+            return
+        }
+        activeIdentity = identity
+        pending = null
+        awaitingAttachResult = null
+        val service = remote
+        if (service != null) {
+            pendingAttach = null
+            sendAttach(identity)
+            return
+        }
+        pendingAttach = identity
+        scheduleBindingTimeout(identity)
+        if (!bound && !binding) {
+            binding = runCatching {
+                applicationContext.bindService(
+                    Intent(applicationContext, SenseAiBrainService::class.java),
+                    connection,
+                    Context.BIND_AUTO_CREATE,
+                )
+            }.getOrDefault(false)
+            if (!binding) {
+                clearBindingTimeout()
+                pendingAttach = null
+                activeIdentity = null
+                eventSink(
+                    AiEvent.Failed(
+                        requestId,
+                        generation,
+                        HarnessErrorCode.INTERNAL_FAILURE,
+                        retryable = true,
+                    ),
+                )
+            }
+        }
+    }
+
     fun cancel(
         requestId: String,
         generation: Long,
@@ -161,6 +222,10 @@ class SenseAiBrainClient(
         if (activeIdentity != (requestId to generation)) return
         pending = pending?.takeUnless {
             it.requestId == requestId && it.runGeneration == generation
+        }
+        pendingAttach = pendingAttach?.takeUnless { it == (requestId to generation) }
+        awaitingAttachResult = awaitingAttachResult?.takeUnless {
+            it == (requestId to generation)
         }
         clearBindingTimeout()
         activeIdentity = null
@@ -179,6 +244,8 @@ class SenseAiBrainClient(
         }
         activeIdentity = null
         pending = null
+        pendingAttach = null
+        awaitingAttachResult = null
         clearBindingTimeout()
         remote = null
         if (bound || binding) {
@@ -209,12 +276,37 @@ class SenseAiBrainClient(
         }
     }
 
+    private fun sendAttach(identity: Pair<String, Long>) {
+        val message = Message.obtain(null, BrainMessageProtocol.ATTACH).apply {
+            data = BrainMessageCodec.encodeIdentity(identity.first, identity.second)
+            replyTo = incoming
+        }
+        try {
+            remote?.send(message) ?: error("Brain is not connected")
+            awaitingAttachResult = identity
+            scheduleBindingTimeout(identity)
+        } catch (_: Throwable) {
+            resetBinding()
+            activeIdentity = null
+            eventSink(
+                AiEvent.Failed(
+                    identity.first,
+                    identity.second,
+                    HarnessErrorCode.INTERNAL_FAILURE,
+                    retryable = true,
+                ),
+            )
+        }
+    }
+
     private fun failActiveConnection(
         errorCode: HarnessErrorCode = HarnessErrorCode.INTERNAL_FAILURE,
     ) {
         val failed = activeIdentity
         activeIdentity = null
         pending = null
+        pendingAttach = null
+        awaitingAttachResult = null
         failed?.let { (requestId, generation) ->
             eventSink(
                 AiEvent.Failed(
@@ -237,16 +329,19 @@ class SenseAiBrainClient(
         binding = false
     }
 
-    private fun scheduleBindingTimeout(request: HarnessRequestV1) {
+    private fun scheduleBindingTimeout(identity: Pair<String, Long>) {
         clearBindingTimeout()
-        val identity = request.requestId to request.runGeneration
         val timeout = Runnable {
             bindingTimeout = null
             if (
                 closed ||
                 remote != null ||
                 activeIdentity != identity ||
-                pending?.let { it.requestId to it.runGeneration } != identity
+                (
+                    pending?.let { it.requestId to it.runGeneration } != identity &&
+                        pendingAttach != identity &&
+                        awaitingAttachResult != identity
+                )
             ) {
                 return@Runnable
             }
@@ -281,7 +376,28 @@ class SenseAiBrainClient(
 
     private inner class IncomingHandler : Handler(Looper.getMainLooper()) {
         override fun handleMessage(message: Message) {
-            if (message.what != BrainMessageProtocol.EVENT || closed) return
+            if (closed) return
+            if (message.what == BrainMessageProtocol.ATTACH_RESULT) {
+                val (requestId, generation, attached) = runCatching {
+                    BrainMessageCodec.decodeAttachResult(message.data)
+                }.getOrNull() ?: return
+                if (activeIdentity != (requestId to generation)) return
+                clearBindingTimeout()
+                awaitingAttachResult = null
+                if (!attached) {
+                    activeIdentity = null
+                    eventSink(
+                        AiEvent.Failed(
+                            requestId,
+                            generation,
+                            HarnessErrorCode.INTERNAL_FAILURE,
+                            retryable = true,
+                        ),
+                    )
+                }
+                return
+            }
+            if (message.what != BrainMessageProtocol.EVENT) return
             val event = runCatching { BrainMessageCodec.decodeEvent(message.data) }.getOrNull()
                 ?: return
             if (activeIdentity != (event.requestId to event.runGeneration)) return

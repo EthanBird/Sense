@@ -7,6 +7,8 @@ import android.os.Looper
 import android.os.SystemClock
 import android.util.AtomicFile
 import io.github.ethanbird.senseime.ai.protocol.AiEvent
+import io.github.ethanbird.senseime.ai.protocol.AgentProgressKind
+import io.github.ethanbird.senseime.ai.protocol.AgentProgressState
 import io.github.ethanbird.senseime.ai.protocol.EditorIntent
 import io.github.ethanbird.senseime.ai.protocol.EditorSnapshotV1
 import io.github.ethanbird.senseime.ai.protocol.EditorTextDigest
@@ -34,10 +36,26 @@ data class AgentHubMessage(
     val createdAtEpochMs: Long,
 )
 
+enum class AgentHubToolState {
+    RUNNING,
+    COMPLETED,
+    FAILED,
+}
+
+data class AgentHubToolStep(
+    val id: String,
+    val toolCallId: String?,
+    val toolName: String?,
+    val title: String,
+    val detail: String,
+    val state: AgentHubToolState,
+)
+
 data class AgentHubProjection(
     val revision: Long = 0,
     val loaded: Boolean = false,
     val messages: List<AgentHubMessage> = emptyList(),
+    val tools: List<AgentHubToolStep> = emptyList(),
     val preview: String = "",
     val status: String = "正在读取会话…",
     val running: Boolean = false,
@@ -52,10 +70,11 @@ fun interface AgentHubObserver {
 }
 
 /**
- * Durable, process-local owner for the Agent Hub conversation.
+ * Transitional process-local owner for the Agent conversation.
  *
- * Activities attach and detach observers; this owner retains the Brain client and current run so
- * browser takeover, Activity recreation and IME window changes do not imply cancellation.
+ * IME and Activity frontends attach observers while the Brain service owns each bounded model/tool
+ * run. The next protocol migration moves the durable conversation projection behind the service;
+ * keeping this observer boundary now lets that migration preserve the new IME UI contract.
  */
 class SenseAgentHubRuntime private constructor(context: Context) {
     private val applicationContext = context.applicationContext
@@ -64,6 +83,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         Thread(runnable, "sense-agent-hub-store").apply { isDaemon = true }
     }
     private val store = AgentConversationStore(applicationContext)
+    private val durableRunStore = AgentDurableRunStore(applicationContext)
     private val observers = linkedSetOf<AgentHubObserver>()
     private val brainClient = SenseAiBrainClient(applicationContext, ::onBrainEvent)
     private var projection = AgentHubProjection()
@@ -71,14 +91,63 @@ class SenseAgentHubRuntime private constructor(context: Context) {
     init {
         io.execute {
             val loaded = store.load().getOrDefault(emptyList())
+            val durable = durableRunStore.load().getOrNull()
+            val recovered = loaded.toMutableList()
+            durable?.let { record ->
+                if (recovered.none {
+                        it.role == AgentHubMessageRole.USER &&
+                            it.createdAtEpochMs == record.userCreatedAtEpochMs
+                    }
+                ) {
+                    recovered += AgentHubMessage(
+                        role = AgentHubMessageRole.USER,
+                        text = record.userMessage,
+                        createdAtEpochMs = record.userCreatedAtEpochMs,
+                    )
+                }
+                if (
+                    record.outcome == AgentDurableRunOutcome.ANSWER &&
+                    recovered.none {
+                        it.role == AgentHubMessageRole.ASSISTANT && it.text == record.payload
+                    }
+                ) {
+                    recovered += AgentHubMessage(
+                        role = AgentHubMessageRole.ASSISTANT,
+                        text = record.payload,
+                        createdAtEpochMs = record.userCreatedAtEpochMs + 1,
+                    )
+                }
+            }
+            val recoveredMessages = recovered.takeLast(MAX_RETAINED_MESSAGES)
+            if (recoveredMessages != loaded) runCatching { store.save(recoveredMessages) }
+            if (durable != null && durable.outcome != AgentDurableRunOutcome.RUNNING) {
+                runCatching { durableRunStore.clearIf(durable.requestId, durable.generation) }
+            }
             mainHandler.post {
+                val recovering = durable?.outcome == AgentDurableRunOutcome.RUNNING
                 projection = projection.copy(
                     revision = projection.revision + 1,
                     loaded = true,
-                    messages = loaded.takeLast(MAX_RETAINED_MESSAGES),
-                    status = "Agent 已就绪",
+                    messages = recoveredMessages,
+                    status = when (durable?.outcome) {
+                        AgentDurableRunOutcome.RUNNING -> "正在恢复后台 Agent…"
+                        AgentDurableRunOutcome.ANSWER -> "回答完成"
+                        AgentDurableRunOutcome.CANCELLED -> "任务已停止"
+                        AgentDurableRunOutcome.FAILED -> "上次任务已结束"
+                        AgentDurableRunOutcome.PATCH -> "编辑提案已完成"
+                        null -> "Agent 已就绪"
+                    },
+                    running = recovering,
+                    requestId = if (recovering) durable?.requestId else null,
+                    generation = maxOf(projection.generation, durable?.generation ?: 0L),
                 )
                 publish()
+                if (recovering) {
+                    brainClient.attach(
+                        requestId = checkNotNull(durable).requestId,
+                        generation = durable.generation,
+                    )
+                }
             }
         }
     }
@@ -137,9 +206,20 @@ class SenseAgentHubRuntime private constructor(context: Context) {
             resultMode = HarnessResultMode.ASSISTANT_MESSAGE,
             maxOutputChars = MAX_ASSISTANT_CHARS,
         )
+        runCatching {
+            durableRunStore.save(
+                AgentDurableRunRecord(
+                    requestId = requestId,
+                    generation = generation,
+                    userMessage = userMessage.text,
+                    userCreatedAtEpochMs = userMessage.createdAtEpochMs,
+                ),
+            )
+        }.getOrElse { return false }
         projection = projection.copy(
             revision = projection.revision + 1,
             messages = messages,
+            tools = emptyList(),
             preview = "",
             status = "正在启动 Agent…",
             running = true,
@@ -164,9 +244,25 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         checkMainThread()
         val requestId = projection.requestId ?: return false
         if (!projection.running) return false
+        val generation = projection.generation
+        runCatching {
+            durableRunStore.complete(
+                AiEvent.Cancelled(
+                    requestId,
+                    generation,
+                    HarnessCancelReason.CALLER_REQUESTED,
+                ),
+            )
+        }
+        runCatching {
+            applicationContext.startService(
+                Intent(applicationContext, SenseAiBrainService::class.java)
+                    .setAction(SenseAiBrainService.ACTION_STOP_DURABLE_RUN),
+            )
+        }
         brainClient.cancel(
             requestId,
-            projection.generation,
+            generation,
             HarnessCancelReason.CALLER_REQUESTED,
         )
         projection = projection.copy(
@@ -186,12 +282,14 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         projection = projection.copy(
             revision = projection.revision + 1,
             messages = emptyList(),
+            tools = emptyList(),
             preview = "",
             status = "已开始新会话",
             inputTokens = 0,
             outputTokens = 0,
         )
         persist(emptyList())
+        durableRunStore.clear()
         publish()
         return true
     }
@@ -204,10 +302,20 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         ) {
             return
         }
+        if (event is AiEvent.Failed && projection.status == "正在恢复后台 Agent…") {
+            runCatching { durableRunStore.complete(event) }
+        }
         projection = when (event) {
             is AiEvent.Started -> projection.next(status = "Agent 正在理解任务…")
             is AiEvent.Status -> projection.next(status = event.label.toAgentStatus())
-            is AiEvent.AgentProgress -> projection.next(status = event.title)
+            is AiEvent.AgentProgress -> projection.next(
+                status = event.title,
+                tools = if (event.kind == AgentProgressKind.TOOL) {
+                    projection.tools.merge(event)
+                } else {
+                    projection.tools
+                },
+            )
             is AiEvent.DescriptionDelta -> projection
             is AiEvent.PreviewReset -> projection.next(preview = "")
             is AiEvent.PreviewDelta -> projection.next(
@@ -287,6 +395,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
 
     private fun AgentHubProjection.next(
         messages: List<AgentHubMessage> = this.messages,
+        tools: List<AgentHubToolStep> = this.tools,
         preview: String = this.preview,
         status: String = this.status,
         running: Boolean = this.running,
@@ -296,6 +405,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
     ): AgentHubProjection = copy(
         revision = revision + 1,
         messages = messages,
+        tools = tools,
         preview = preview,
         status = status,
         running = running,
@@ -350,6 +460,28 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         private fun nextGeneration(current: Long): Long =
             if (current == Long.MAX_VALUE) 1L else current + 1L
     }
+}
+
+internal fun List<AgentHubToolStep>.merge(event: AiEvent.AgentProgress): List<AgentHubToolStep> {
+    require(event.kind == AgentProgressKind.TOOL)
+    val next = AgentHubToolStep(
+        id = event.stepId,
+        toolCallId = event.toolCallId,
+        toolName = event.toolName,
+        title = event.title,
+        detail = event.detail,
+        state = when (event.state) {
+            AgentProgressState.RUNNING -> AgentHubToolState.RUNNING
+            AgentProgressState.COMPLETED -> AgentHubToolState.COMPLETED
+            AgentProgressState.FAILED -> AgentHubToolState.FAILED
+        },
+    )
+    val index = indexOfFirst { existing ->
+        existing.id == event.stepId ||
+            (event.toolCallId != null && existing.toolCallId == event.toolCallId)
+    }
+    if (index < 0) return (this + next).takeLast(24)
+    return toMutableList().also { it[index] = next }
 }
 
 internal class AgentConversationStore(context: Context) {

@@ -1,5 +1,7 @@
 # Sense Agent Runtime v2：面向输入法的 OpenMinis 核心能力设计
 
+> **2026-08-04 UI 决策更新：** Agent 主界面已确定进入输入法前端；设置页只承载配置，Terminal/Browser 作为对话内工具呈现。新的页面结构、视觉基线、IME 状态机与迁移顺序见 [`sense-ime-frontend-agent-openminis-ui-redesign-2026-08-04.md`](sense-ime-frontend-agent-openminis-ui-redesign-2026-08-04.md)。本文的运行时、工具和后台研究继续有效，其中独立 Agent Hub、三页签与轻量 IME 投影等 UI 放置结论由新文档取代。
+
 > 状态：Implemented in Sense `v0.4.7`
 > 设计基线：Sense `v0.4.6` / commit [`b8013ea638188fe12dd4516030a041d6573cad9f`](https://github.com/EthanBird/Sense/tree/b8013ea638188fe12dd4516030a041d6573cad9f)
 > 参考实现：OpenMinis commit [`9cf3a855fecd27bb5735b84cacbd56852a3ab8dd`](https://github.com/OpenMinis/OpenMinis/tree/9cf3a855fecd27bb5735b84cacbd56852a3ab8dd)

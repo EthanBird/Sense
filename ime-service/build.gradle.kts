@@ -25,6 +25,7 @@ android {
 dependencies {
     implementation(project(":ai-protocol"))
     implementation(project(":ai-runtime"))
+    implementation(project(":agent-ui"))
     implementation(project(":core-input"))
     implementation(project(":ime-config"))
     implementation(project(":ime-ui"))
