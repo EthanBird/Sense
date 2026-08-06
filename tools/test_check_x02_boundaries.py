@@ -159,6 +159,7 @@ def _write_good_tree(root: Path) -> None:
         "brain-api",
         "ai-brain",
         "ai-runtime",
+        "agent-ui",
         "core-input",
         "memory-protocol",
         "event-journal",
@@ -205,6 +206,7 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
         "brain-api",
         "ai-brain",
         "ai-runtime",
+        "agent-ui",
         "core-input",
         "benchmark",
     ):

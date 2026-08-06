@@ -416,6 +416,7 @@ EXPECTED_ROOT_BUILD_SCRIPT = """plugins {
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.android.test) apply false
     alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.kotlin.jvm) apply false
 }
 """
@@ -425,9 +426,9 @@ EXPECTED_OFFLINE_VERIFY_SHA256 = (
 )
 EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("settings.gradle.kts"):
-        "d5ddcd1f6435c33971a5acb0a3e1fe99facffc06221c75a85761bf617b805892",
+        "a4526ff01e5d9f608ef561df6d7e0add62d968251ff25a638c292e2189dbb045",
     Path("gradle/libs.versions.toml"):
-        "0bcda17c3ce477b3ae42c811d9317eef9f1eef7abab03022dd24623c4c5a0be1",
+        "9236819e9930ef0f74ff807278c4ad0a9b31251f684d292ebfaa55c02d664b2d",
     Path("gradle.properties"):
         "43b8f4bb2cd8ab0fbf9fcff552018a723113a5ee4532429ba694a567d225346a",
     Path("gradlew"):
@@ -437,15 +438,17 @@ EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("gradle/wrapper/gradle-wrapper.jar"):
         "81a82aaea5abcc8ff68b3dfcb58b3c3c429378efd98e7433460610fecd7ae45f",
     Path("build.gradle.kts"):
-        "16beebbe1449f27de48f7d86d6802f2c66ddeeb1081bae857e21c9f031102c9b",
+        "3364d2d26d23db125bd528b93a99d6484fe555fe67c33b56cbed279c40930d4c",
     Path("ai-brain/build.gradle.kts"):
         "6fe66f16e24069d71a5cb15251032311bf018e8ae744dad9ef1e790cc00b1566",
     Path("ai-protocol/build.gradle.kts"):
         "b1d9c1acc7f6d19450691e461fa4da6643297fff752d3f9159e7445bc91ad9ab",
     Path("ai-runtime/build.gradle.kts"):
         "175f9868685698b2f52a572ff42d4e64413b85d47674e038e1cf9219f3ca349c",
+    Path("agent-ui/build.gradle.kts"):
+        "b06fa926610cb3ed5b297faf9958d7d3db521586e2148247c8a8839170d37ede",
     Path("app/build.gradle.kts"):
-        "5a50f36ab9ab0504bb23fa69f47c42d05b4a206f45cdb399db784ee00d9c5075",
+        "d2c058209aeada2e387025571e8c512820f57b0c7a06b437ae5111a0220b7b1e",
     Path("benchmark/build.gradle.kts"):
         "999d9aba8d2813df7e108a9dece00c7f6406b3c5273e59f323d0565e650abf8b",
     Path("brain-api/build.gradle.kts"):
@@ -457,7 +460,7 @@ EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("ime-config/build.gradle.kts"):
         "3d3607e81b97c7dee10173f0f5c94b61df3f81dd6c02c62df1f33f51d368eb00",
     Path("ime-service/build.gradle.kts"):
-        "b74ee9e4af4a689b21d63dda24c78141863e25e08f8aa86fc666e43d8cea3d44",
+        "c5fe4d58e1efa3778ac591e7aee4e1782b381a3fe3a74cc3ddaeba2ac99f884e",
     Path("ime-ui/build.gradle.kts"):
         "c733d477f1e5da2a43b6fafaf3fa213b47fe55bb5ed14f99916defd0f96e7c3a",
     Path("memory-protocol/build.gradle.kts"):
