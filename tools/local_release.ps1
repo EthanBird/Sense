@@ -12,17 +12,17 @@ if ($Publish -and ($SkipBuild -or $SkipTests)) {
     throw "-Publish requires a fresh local build and the complete local test gate."
 }
 
-$ReleaseTag = "v0.4.7"
-$ReleaseApkName = "Sense-v0.4.7.apk"
-$ReleaseTitle = "Sense v0.4.7 - Agent Hub, terminal, and browser"
+$ReleaseTag = "v0.4.8"
+$ReleaseApkName = "Sense-v0.4.8.apk"
+$ReleaseTitle = "Sense v0.4.8 - Agent UX, memory, and candidate ranking"
 $ReleaseCertificateSha256 = "76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984"
-$ExpectedVersionName = "0.4.7"
-$ExpectedVersionCode = 32
+$ExpectedVersionName = "0.4.8"
+$ExpectedVersionCode = 33
 
 $RepoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
 $AppBuildFile = Join-Path $RepoRoot "app\build.gradle.kts"
 $GradleWrapper = Join-Path $RepoRoot "gradlew.bat"
-$ReleaseNotes = Join-Path $RepoRoot "docs\releases\v0.4.7.md"
+$ReleaseNotes = Join-Path $RepoRoot "docs\releases\v0.4.8.md"
 $BuiltApk = Join-Path $RepoRoot "app/build/outputs/apk/release/app-release.apk"
 $ReleaseDirectory = Join-Path $RepoRoot "build\releases\$ReleaseTag"
 $ReleaseApk = Join-Path $ReleaseDirectory $ReleaseApkName
