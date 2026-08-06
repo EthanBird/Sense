@@ -159,10 +159,12 @@ object M5MixedInputBenchmark {
 
         val funCandidates = adaptive.decode("fun", 64)
         check(
-            funCandidates.firstOrNull()?.text == "fun" &&
-                funCandidates.firstOrNull()?.matchKind == CandidateMatchKind.ENGLISH_EXACT,
+            funCandidates.firstOrNull()?.matchKind !in ENGLISH_MATCH_KINDS &&
+                funCandidates.getOrNull(1)?.text == "fun" &&
+                funCandidates.getOrNull(1)?.matchKind == CandidateMatchKind.ENGLISH_EXACT,
         ) {
-            "Exact English input must rank by evidence instead of a synthetic fixed slot: ${funCandidates.take(16)}"
+            "Complete English input must preserve the Chinese head and remain available at second place: " +
+                funCandidates.take(16)
         }
         val frostFunCandidates = funCandidates.filter { it.text in FROST_FUN_TEXTS }
         check(frostFunCandidates.map { it.text }.toSet() == FROST_FUN_TEXTS) {

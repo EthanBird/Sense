@@ -200,7 +200,7 @@ class EnglishLexiconTest {
     }
 
     @Test
-    fun bilingualCandidatesUseScoresInsteadOfAFixedEnglishSlot() {
+    fun completeEnglishWordUsesSecondPlaceDoorwayBehindChineseHead() {
         val chinese = listOf(
             Candidate("中文一", score = 20f, matchKind = CandidateMatchKind.BASE_HYBRID),
             Candidate("中文二", score = 16f, matchKind = CandidateMatchKind.BASE_HYBRID),
