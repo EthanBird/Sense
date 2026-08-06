@@ -8,13 +8,23 @@ internal object ImeWindowHeightPolicy {
         keyboardHeightPx: Int,
         density: Float,
         landscape: Boolean,
+        composing: Boolean,
     ): Int {
         if (availableHeightPx <= 0) return keyboardHeightPx
-        val hostPeek = (56f * density).roundToInt()
-        val conversationMinimum = (180f * density).roundToInt()
+        val hostPeek = ((if (composing) 56f else 96f) * density).roundToInt()
         val upperBound = (availableHeightPx - hostPeek).coerceAtLeast(keyboardHeightPx)
-        val desired = (availableHeightPx * if (landscape) 0.74f else 0.80f).roundToInt()
-        val lowerBound = (keyboardHeightPx + conversationMinimum).coerceAtMost(upperBound)
+        val desiredFraction = when {
+            composing && landscape -> 0.78f
+            composing -> 0.72f
+            landscape -> 0.70f
+            else -> 0.64f
+        }
+        val desired = (availableHeightPx * desiredFraction).roundToInt()
+        val lowerBound = if (composing) {
+            (keyboardHeightPx + (190f * density).roundToInt()).coerceAtMost(upperBound)
+        } else {
+            (320f * density).roundToInt().coerceAtMost(upperBound)
+        }
         return desired.coerceIn(lowerBound, upperBound)
     }
 }

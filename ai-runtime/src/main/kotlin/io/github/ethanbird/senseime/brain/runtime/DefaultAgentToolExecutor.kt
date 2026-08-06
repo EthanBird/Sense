@@ -337,6 +337,7 @@ class DefaultAgentToolExecutor(
             buildString {
                 append("{\"query\":")
                 appendJson(arguments.query)
+                append(",\"result_count\":").append(hits.size)
                 append(",\"results\":[")
                 hits.forEachIndexed { index, hit ->
                     if (index > 0) append(',')

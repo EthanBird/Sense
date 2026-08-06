@@ -115,6 +115,16 @@ class KeyboardArchitectureTest {
     }
 
     @Test
+    fun `agent owns the exact centre toolbar slot`() {
+        val output = ArrayList<Key>()
+        KeyboardPrimaryLayout(KeyboardMetrics.fromDensity(1f)).appendToolbar(1_120, output)
+
+        assertEquals(7, output.size)
+        assertEquals(Icon.AGENT, output[3].icon)
+        assertEquals(KeyCodes.AGENT, output[3].code)
+    }
+
+    @Test
     fun `production primary layout owns a usable t9 adapter`() {
         val layout = KeyboardPrimaryLayout(
             metrics = KeyboardMetrics.fromDensity(1f),

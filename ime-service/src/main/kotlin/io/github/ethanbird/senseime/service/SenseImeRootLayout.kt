@@ -114,6 +114,7 @@ internal class SenseImeRootLayout(context: Context) : FrameLayout(context) {
                 density = resources.displayMetrics.density,
                 landscape = resources.configuration.orientation ==
                     Configuration.ORIENTATION_LANDSCAPE,
+                composing = mode == ImeFrontMode.AGENT_COMPOSING,
             )
         }
         layoutParams = (layoutParams ?: ViewGroup.LayoutParams(

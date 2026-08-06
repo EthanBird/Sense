@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -339,11 +340,11 @@ private fun AgentHeader(
             .padding(horizontal = 12.dp),
     ) {
         CircleTextButton(
-            text = "‹",
-            contentDescription = "返回键盘",
+            text = "⌄",
+            contentDescription = "收起 Agent",
             onClick = actions.onClose,
             modifier = Modifier.align(Alignment.CenterStart),
-            textSize = 31f,
+            textSize = 25f,
         )
         Column(
             modifier = Modifier
@@ -502,75 +503,31 @@ private fun AgentHistoryScreen(
         }
 
         Text(
-            text = "最近",
+            text = "完整记录",
             color = palette.textSecondary,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(start = 24.dp, top = 12.dp, bottom = 8.dp),
         )
-        if (state.messages.isEmpty()) {
+        if (state.conversations.isEmpty()) {
             Text(
-                text = "新会话会在这里持续保留",
+                text = "每次新会话后，当前对话会完整归档在这里",
                 color = palette.textSecondary,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 18.dp),
             )
         } else {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = actions.onHistory)
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Surface(
-                        modifier = Modifier.size(44.dp),
-                        shape = CircleShape,
-                        color = palette.accentSoft,
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text("▣", color = palette.accent, fontSize = 20.sp)
-                        }
-                    }
-                    if (state.running) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(50.dp),
-                            color = palette.accent,
-                            strokeWidth = 2.dp,
-                        )
-                    }
-                }
-                Column(
-                    modifier = Modifier
-                        .padding(start = 15.dp)
-                        .weight(1f),
-                ) {
-                    Text(
-                        text = state.title,
-                        color = palette.textPrimary,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Text(
-                        text = state.messages.lastOrNull()?.text.orEmpty(),
-                        color = palette.textSecondary,
-                        fontSize = 14.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 3.dp),
+            LazyColumn(Modifier.weight(1f)) {
+                items(state.conversations, key = AgentConversationUi::id) { conversation ->
+                    AgentHistoryRow(
+                        conversation = conversation,
+                        running = state.running && conversation.current,
+                        onClick = { actions.onOpenConversation(conversation.id) },
                     )
                 }
-                Text(
-                    text = if (state.running) "运行中" else "最近",
-                    color = if (state.running) palette.accent else palette.textTertiary,
-                    fontSize = 12.sp,
-                )
             }
         }
-        Spacer(Modifier.weight(1f))
+        if (state.conversations.isEmpty()) Spacer(Modifier.weight(1f))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -591,6 +548,72 @@ private fun AgentHistoryScreen(
                 onClick = actions.onHistory,
             )
         }
+    }
+}
+
+@Composable
+private fun AgentHistoryRow(
+    conversation: AgentConversationUi,
+    running: Boolean,
+    onClick: () -> Unit,
+) {
+    val palette = LocalAgentPalette.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Surface(
+                modifier = Modifier.size(44.dp),
+                shape = CircleShape,
+                color = if (conversation.current) palette.accentSoft else palette.toolSurface,
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        if (conversation.current) "▣" else "□",
+                        color = if (conversation.current) palette.accent else palette.textSecondary,
+                        fontSize = 20.sp,
+                    )
+                }
+            }
+            if (running) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(50.dp),
+                    color = palette.accent,
+                    strokeWidth = 2.dp,
+                )
+            }
+        }
+        Column(
+            modifier = Modifier
+                .padding(start = 15.dp)
+                .weight(1f),
+        ) {
+            Text(
+                text = conversation.title,
+                color = palette.textPrimary,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = conversation.preview,
+                color = palette.textSecondary,
+                fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 3.dp),
+            )
+        }
+        Text(
+            text = if (running) "运行中" else "${conversation.messageCount} 条",
+            color = if (running) palette.accent else palette.textTertiary,
+            fontSize = 12.sp,
+        )
     }
 }
 
@@ -765,15 +788,26 @@ private fun AssistantMessage(
             markdown = message.text,
             modifier = Modifier.padding(top = 7.dp),
         )
-        Text(
-            text = "复制",
-            color = palette.textSecondary,
-            fontSize = 11.sp,
-            modifier = Modifier
-                .padding(top = 4.dp)
-                .clickable { actions.onCopyMessage(message) }
-                .padding(vertical = 4.dp, horizontal = 2.dp),
-        )
+        Row(Modifier.padding(top = 4.dp)) {
+            Text(
+                text = "写入当前输入框",
+                color = palette.accent,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier
+                    .clickable { actions.onInsertMessage(message) }
+                    .padding(vertical = 5.dp, horizontal = 2.dp),
+            )
+            Spacer(Modifier.width(16.dp))
+            Text(
+                text = "复制",
+                color = palette.textSecondary,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .clickable { actions.onCopyMessage(message) }
+                    .padding(vertical = 5.dp, horizontal = 2.dp),
+            )
+        }
     }
 }
 
@@ -1043,9 +1077,9 @@ private fun AgentComposer(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(58.dp)
+                    .heightIn(min = 84.dp, max = 108.dp)
                     .clickable(onClick = actions.onComposerTap)
-                    .padding(horizontal = 13.dp),
+                    .padding(horizontal = 13.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 ComposerText(state, Modifier.weight(1f))
@@ -1101,7 +1135,7 @@ private fun ComposerText(
         },
         fontSize = 16.5.sp,
         lineHeight = 22.sp,
-        maxLines = if (state.composing) 2 else 3,
+        maxLines = if (state.composing) 4 else 3,
         overflow = TextOverflow.Ellipsis,
         modifier = modifier,
     )

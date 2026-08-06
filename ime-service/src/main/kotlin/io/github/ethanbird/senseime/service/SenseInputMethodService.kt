@@ -22,6 +22,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import io.github.ethanbird.senseime.agent.ui.AgentMessageRole
 import io.github.ethanbird.senseime.agent.ui.AgentMessageUi
+import io.github.ethanbird.senseime.agent.ui.AgentConversationUi
 import io.github.ethanbird.senseime.agent.ui.AgentToolKind
 import io.github.ethanbird.senseime.agent.ui.AgentToolState
 import io.github.ethanbird.senseime.agent.ui.AgentToolUi
@@ -139,6 +140,8 @@ class SenseInputMethodService : InputMethodService() {
     private var preferencesLoadGeneration = 0L
     private var wubiLoadRequested = false
     private var englishInput = EnglishInputSession(EnglishLexicon.EMPTY)
+    private var englishLexicon = EnglishLexicon.EMPTY
+    private lateinit var englishWordUsage: PersistentEnglishWordUsageStore
     private var englishShiftState = EnglishShiftState.LOWERCASE
     private var chineseMode = true
     private var keyboardView: SenseKeyboardView? = null
@@ -239,6 +242,8 @@ class SenseInputMethodService : InputMethodService() {
     override fun onCreate() {
         super.onCreate()
         destroyed = false
+        englishWordUsage = PersistentEnglishWordUsageStore(this)
+        englishLexicon = EnglishLexicon.fromWords(emptyList(), englishWordUsage)
         val bootstrapLexicon = MemoryUserLexicon()
         userLexicon = bootstrapLexicon
         val bootstrapSegmenter = PinyinSyllableSegmenter(FALLBACK_SYLLABLES)
@@ -246,6 +251,7 @@ class SenseInputMethodService : InputMethodService() {
             base = FakeDecoder(),
             userLexicon = bootstrapLexicon,
             segmenter = bootstrapSegmenter,
+            englishLexicon = englishLexicon,
         )
         decoderRuntime = CandidateDecoderRuntime(
             generation = nextGeneration(decoderRuntime.generation),
@@ -253,7 +259,7 @@ class SenseInputMethodService : InputMethodService() {
             segmenter = bootstrapSegmenter,
             t9Index = T9SyllableIndex(FALLBACK_SYLLABLES),
         )
-        englishInput = EnglishInputSession(EnglishLexicon.EMPTY, DECODE_CANDIDATE_LIMIT)
+        englishInput = EnglishInputSession(englishLexicon, DECODE_CANDIDATE_LIMIT)
         candidateRunner = LatestOnlyTaskRunner(
             threadName = "sense-candidate-decoder",
             work = { request, _ ->
@@ -431,10 +437,12 @@ class SenseInputMethodService : InputMethodService() {
                     Log.e(TAG, "Pinyin syllable inventory load failed", error)
                 }.getOrElse { FALLBACK_SYLLABLES }
                 val englishLexicon = runCatching {
-                    assets.open(ENGLISH_LEXICON_ASSET).use { EnglishLexicon.load(it) }
+                    assets.open(ENGLISH_LEXICON_ASSET).use {
+                        EnglishLexicon.load(it, usageStore = englishWordUsage)
+                    }
                 }.onFailure { error ->
                     Log.e(TAG, "English lexicon load failed", error)
-                }.getOrElse { EnglishLexicon.EMPTY }
+                }.getOrElse { EnglishLexicon.fromWords(emptyList(), englishWordUsage) }
                 val learned = runCatching<UserLexicon> {
                     PersistentUserLexicon(this)
                 }.onFailure { error ->
@@ -482,6 +490,7 @@ class SenseInputMethodService : InputMethodService() {
                 localPersistenceAllowed = allowsLocalPersistence(currentEditorInfo)
 
                 val pendingEnglish = englishInput.composing
+                englishLexicon = loaded.englishLexicon
                 englishInput = EnglishInputSession(loaded.englishLexicon, DECODE_CANDIDATE_LIMIT)
                 pendingEnglish.forEach(englishInput::type)
                 previousLexicon?.takeIf { it !== learned }?.close()
@@ -653,6 +662,20 @@ class SenseInputMethodService : InputMethodService() {
                 )
                 Toast.makeText(this, "已复制回答", Toast.LENGTH_SHORT).show()
             },
+            onInsertMessage = { message ->
+                if (AgentExternalEditorWriter.insert(currentInputConnection, message.text)) {
+                    closeAgentFront()
+                    Toast.makeText(this, "已写入当前输入框", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "当前输入框未接受写入", Toast.LENGTH_SHORT).show()
+                }
+            },
+            onOpenConversation = { conversationId ->
+                if (agentRuntime?.openConversation(conversationId) == true) {
+                    agentHistoryVisible = false
+                    publishAgentUi()
+                }
+            },
         )
     }
 
@@ -738,6 +761,15 @@ class SenseInputMethodService : InputMethodService() {
             historyVisible = agentHistoryVisible,
             menuVisible = agentMenuVisible,
             openToolId = openAgentToolId,
+            conversations = agentProjection.conversations.map { conversation ->
+                AgentConversationUi(
+                    id = conversation.id,
+                    title = conversation.title,
+                    preview = conversation.preview,
+                    messageCount = conversation.messageCount,
+                    current = conversation.current,
+                )
+            },
         )
     }
 
@@ -1626,7 +1658,28 @@ class SenseInputMethodService : InputMethodService() {
         } else if (chineseMode && hasActiveChineseComposition()) {
             // Enter confirms exactly what the user can see. It never auto-selects
             // a Chinese candidate and does not append a newline in this branch.
-            commitActiveRawComposition()
+            val englishSelection = if (
+                inputScheme.scheme == ChineseInputScheme.PINYIN_QWERTY &&
+                composition.acceptedSegments.isEmpty()
+            ) {
+                ChineseEnglishEnterPolicy.select(
+                    rawInput = composition.remainingPinyin,
+                    candidates = currentDecoding()?.wholeCandidates.orEmpty(),
+                )
+            } else {
+                null
+            }
+            if (englishSelection == null) {
+                commitActiveRawComposition()
+            } else {
+                commitPrimary(
+                    englishSelection.candidate,
+                    UserLearningEvidence(
+                        UserSelectionKind.EXPLICIT_SELECTION,
+                        englishSelection.candidateRank,
+                    ),
+                )
+            }
         } else {
             val feedback =
                 prepareTextReplacementFeedback()
@@ -2840,7 +2893,15 @@ class SenseInputMethodService : InputMethodService() {
                 null
             }
         }
-        return commitComposition(output, rawInput, learnable, evidence, composingLength)
+        val acceptedEnglish = candidate?.takeIf {
+            it.matchKind == CandidateMatchKind.ENGLISH_EXACT ||
+                it.matchKind == CandidateMatchKind.ENGLISH_PREFIX
+        }
+        val committed = commitComposition(output, rawInput, learnable, evidence, composingLength)
+        if (committed && acceptedEnglish != null && localPersistenceAllowed) {
+            englishLexicon.recordAccepted(output, evidence)
+        }
+        return committed
     }
 
     private fun commitAlternativeCandidate(

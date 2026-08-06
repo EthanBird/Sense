@@ -38,13 +38,13 @@ class EnglishLexiconTest {
     }
 
     @Test
-    fun weakChineseResultsFollowTheFirstThreeEnglishSuggestions() {
+    fun completeEnglishWordIsPromotedOnlyAsHighAsSecondPlace() {
         val weakChinese = listOf(
             Candidate("好哦", score = 16.35f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "ho"),
         )
 
         assertEquals(
-            listOf("host", "hosts", "hostile", "好哦"),
+            listOf("好哦", "host", "hosts", "hostile"),
             MixedCandidateRanker.merge(weakChinese, lexicon.suggest("host", 8), 4).map { it.text },
         )
     }
@@ -62,7 +62,7 @@ class EnglishLexiconTest {
     }
 
     @Test
-    fun oneLetterPinyinKeepsAChineseHeadAndOnlyTwoEnglishEntrances() {
+    fun oneLetterPinyinKeepsFourChineseChoicesAndOnlyOneEnglishEntrance() {
         val chinese = listOf(
             Candidate("我", score = 13.4f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "w"),
             Candidate("为", score = 12.8f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "w"),
@@ -79,7 +79,7 @@ class EnglishLexiconTest {
 
         assertEquals(listOf("我", "为", "问", "无"), merged.take(4).map { it.text })
         assertEquals(
-            listOf("was", "with"),
+            listOf("was"),
             merged.filter { it.matchKind == CandidateMatchKind.ENGLISH_PREFIX }.map { it.text },
         )
     }
@@ -102,7 +102,7 @@ class EnglishLexiconTest {
 
         assertEquals("\u6015", merged.first().text)
         assertEquals(
-            2,
+            1,
             merged.count { it.matchKind == CandidateMatchKind.ENGLISH_PREFIX },
         )
     }
@@ -120,13 +120,13 @@ class EnglishLexiconTest {
 
         assertEquals(shallowChinese.single().text, merged.first().text)
         assertEquals(
-            listOf("was", "with"),
+            listOf("was"),
             merged.filter { it.matchKind == CandidateMatchKind.ENGLISH_PREFIX }.map { it.text },
         )
     }
 
     @Test
-    fun exactOneLetterEnglishKeepsOneMoreEntranceThanBroadPrefixes() {
+    fun exactOneLetterEnglishStillUsesOneBoundedEntrance() {
         val chinese = listOf(
             Candidate("啊", score = 13.6f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "a"),
             Candidate("阿", score = 13.0f, matchKind = CandidateMatchKind.BASE_PREFIX, canonicalInitials = "a"),
@@ -140,7 +140,7 @@ class EnglishLexiconTest {
         val merged = MixedCandidateRanker.merge(chinese, english, 10)
 
         assertEquals(
-            listOf("a", "about", "after"),
+            listOf("a"),
             merged
                 .filter {
                     it.matchKind == CandidateMatchKind.ENGLISH_EXACT ||
@@ -174,9 +174,29 @@ class EnglishLexiconTest {
         )
 
         assertEquals(
-            listOf("妇女", "👩🏻", "服你", "fun", "赋能", "腐女"),
+            listOf("妇女", "fun", "👩🏻", "服你", "赋能", "腐女"),
             MixedCandidateRanker.merge(strongChinese, lexicon.suggest("fun", 8), 6).map { it.text },
         )
+    }
+
+    @Test
+    fun denseChinesePageStillKeepsTheCompleteEnglishWordAtSecondPlace() {
+        val denseChinese = (0 until 24).map { index ->
+            Candidate(
+                text = "中文$index",
+                score = 100f - index,
+                matchKind = CandidateMatchKind.BASE_HYBRID,
+            )
+        }
+
+        val merged = MixedCandidateRanker.merge(
+            denseChinese,
+            lexicon.suggest("host", 8),
+            limit = 8,
+        )
+
+        assertEquals("中文0", merged[0].text)
+        assertEquals("host", merged[1].text)
     }
 
     @Test
@@ -194,6 +214,41 @@ class EnglishLexiconTest {
             listOf("中文一", "fun", "中文二", "中文三"),
             MixedCandidateRanker.merge(chinese, english, 8).map { it.text },
         )
+    }
+
+    @Test
+    fun twoLetterPrefixCannotFillTheCandidatePage() {
+        val chinese = listOf(
+            Candidate("服务", score = 15f, matchKind = CandidateMatchKind.BASE_PREFIX),
+            Candidate("富裕", score = 14f, matchKind = CandidateMatchKind.BASE_PREFIX),
+            Candidate("复印", score = 13f, matchKind = CandidateMatchKind.BASE_PREFIX),
+            Candidate("赋予", score = 12f, matchKind = CandidateMatchKind.BASE_PREFIX),
+        )
+        val english = EnglishLexicon.fromWords(
+            listOf("function", "future", "full", "fund", "funny", "further"),
+        ).suggest("fu", 16)
+
+        val merged = MixedCandidateRanker.merge(chinese, english, 8)
+
+        assertEquals(1, merged.count { it.matchKind == CandidateMatchKind.ENGLISH_PREFIX })
+        assertTrue(merged.take(3).none { it.matchKind == CandidateMatchKind.ENGLISH_PREFIX })
+    }
+
+    @Test
+    fun threeLetterPrefixStaysBehindTwoChineseCandidatesWhenItIsNotACompleteWord() {
+        val chinese = listOf(
+            Candidate("函数", score = 14f, matchKind = CandidateMatchKind.BASE_PREFIX),
+            Candidate("范式", score = 13f, matchKind = CandidateMatchKind.BASE_PREFIX),
+            Candidate("方式", score = 12f, matchKind = CandidateMatchKind.BASE_PREFIX),
+        )
+        val english = EnglishLexicon.fromWords(
+            listOf("function", "functional", "fundamental"),
+        ).suggest("fun", 8)
+
+        val merged = MixedCandidateRanker.merge(chinese, english, 8)
+
+        assertEquals(listOf("函数", "范式"), merged.take(2).map(Candidate::text))
+        assertEquals(2, merged.count { it.matchKind == CandidateMatchKind.ENGLISH_PREFIX })
     }
 
     @Test

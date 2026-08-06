@@ -220,9 +220,9 @@ object KeyboardLayoutContract {
     }
 
     /**
-     * A compact control-centre grid: four icon-first entries on the first row and the remaining
-     * entries centred on the second. The visual gaps stay generous while every slot owns its
-     * entire hit area.
+     * A compact control-centre grid. Agent owns the centre toolbar slot, so the toolbox renders
+     * only the remaining utility destinations while the activation catalogue continues to route
+     * both entry points through one policy.
      */
     fun toolboxLayout(
         viewWidth: Float,
@@ -246,10 +246,11 @@ object KeyboardLayoutContract {
         val cellWidth = availableWidth / columns
         val cellHeight = availableHeight / rows
 
-        return ToolboxItem.entries.mapIndexed { index, item ->
+        val visibleItems = ToolboxItem.entries.filterNot { it == ToolboxItem.AGENT }
+        return visibleItems.mapIndexed { index, item ->
             val row = index / columns
             val rowStart = row * columns
-            val rowCount = minOf(columns, ToolboxItem.entries.size - rowStart)
+            val rowCount = minOf(columns, visibleItems.size - rowStart)
             val column = index - rowStart
             val occupiedWidth = rowCount * cellWidth + (rowCount - 1) * horizontalGap
             val rowLeft = (viewWidth - occupiedWidth) / 2f

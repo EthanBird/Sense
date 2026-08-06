@@ -187,6 +187,8 @@ internal class KeyboardPrimaryLayout(
             Icon.TOOLS to KeyCodes.TOOLBOX,
             Icon.KEYBOARD to KeyCodes.LETTERS,
             Icon.EMOJI to KeyCodes.EMOJI,
+            // Seven equal slots give Agent the exact visual centre of the IME toolbar.
+            Icon.AGENT to KeyCodes.AGENT,
             Icon.EDITOR to KeyCodes.EDITOR,
             Icon.VOICE to KeyCodes.VOICE,
             Icon.HIDE to KeyCodes.HIDE,

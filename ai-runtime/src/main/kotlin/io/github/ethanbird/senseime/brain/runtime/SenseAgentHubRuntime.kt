@@ -51,6 +51,20 @@ data class AgentHubToolStep(
     val state: AgentHubToolState,
 )
 
+data class AgentHubConversationSummary(
+    val id: String,
+    val title: String,
+    val preview: String,
+    val updatedAtEpochMs: Long,
+    val messageCount: Int,
+    val current: Boolean,
+)
+
+internal data class AgentHubConversationArchive(
+    val id: String,
+    val messages: List<AgentHubMessage>,
+)
+
 data class AgentHubProjection(
     val revision: Long = 0,
     val loaded: Boolean = false,
@@ -63,6 +77,7 @@ data class AgentHubProjection(
     val generation: Long = 0,
     val inputTokens: Int = 0,
     val outputTokens: Int = 0,
+    val conversations: List<AgentHubConversationSummary> = emptyList(),
 )
 
 fun interface AgentHubObserver {
@@ -87,10 +102,12 @@ class SenseAgentHubRuntime private constructor(context: Context) {
     private val observers = linkedSetOf<AgentHubObserver>()
     private val brainClient = SenseAiBrainClient(applicationContext, ::onBrainEvent)
     private var projection = AgentHubProjection()
+    private var archives = emptyList<AgentHubConversationArchive>()
 
     init {
         io.execute {
             val loaded = store.load().getOrDefault(emptyList())
+            val loadedArchives = store.loadArchives().getOrDefault(emptyList())
             val durable = durableRunStore.load().getOrNull()
             val recovered = loaded.toMutableList()
             durable?.let { record ->
@@ -124,6 +141,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
                 runCatching { durableRunStore.clearIf(durable.requestId, durable.generation) }
             }
             mainHandler.post {
+                archives = loadedArchives
                 val recovering = durable?.outcome == AgentDurableRunOutcome.RUNNING
                 projection = projection.copy(
                     revision = projection.revision + 1,
@@ -140,6 +158,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
                     running = recovering,
                     requestId = if (recovering) durable?.requestId else null,
                     generation = maxOf(projection.generation, durable?.generation ?: 0L),
+                    conversations = conversationSummaries(recoveredMessages, archives),
                 )
                 publish()
                 if (recovering) {
@@ -227,6 +246,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
             generation = generation,
             inputTokens = 0,
             outputTokens = 0,
+            conversations = conversationSummaries(messages, archives),
         )
         persist(messages)
         publish()
@@ -279,6 +299,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
     fun clearConversation(): Boolean {
         checkMainThread()
         if (!projection.loaded || projection.running) return false
+        archiveCurrentConversation(projection.messages)
         projection = projection.copy(
             revision = projection.revision + 1,
             messages = emptyList(),
@@ -287,9 +308,37 @@ class SenseAgentHubRuntime private constructor(context: Context) {
             status = "已开始新会话",
             inputTokens = 0,
             outputTokens = 0,
+            conversations = conversationSummaries(emptyList(), archives),
         )
         persist(emptyList())
         durableRunStore.clear()
+        publish()
+        return true
+    }
+
+    fun openConversation(id: String): Boolean {
+        checkMainThread()
+        if (!projection.loaded || projection.running) return false
+        if (id == CURRENT_CONVERSATION_ID) return true
+        val selected = archives.firstOrNull { it.id == id } ?: return false
+        archives = archives.filterNot { it.id == id }
+        archiveCurrentConversation(projection.messages)
+        val restored = selected.messages.takeLast(MAX_RETAINED_MESSAGES)
+        projection = projection.copy(
+            revision = projection.revision + 1,
+            messages = restored,
+            tools = emptyList(),
+            preview = "",
+            status = "已打开历史会话",
+            inputTokens = 0,
+            outputTokens = 0,
+            conversations = conversationSummaries(restored, archives),
+        )
+        persist(restored)
+        // The single IO lane first archives the displaced current session and publishes the
+        // selected session as current. Deleting its old archive last makes every crash point
+        // duplicate-safe rather than loss-prone.
+        io.execute { store.deleteArchive(id) }
         publish()
         return true
     }
@@ -345,6 +394,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
                     status = "回答完成",
                     running = false,
                     requestId = null,
+                    conversations = conversationSummaries(messages, archives),
                 )
             }
             is AiEvent.FinalPatch -> projection.next(
@@ -389,6 +439,21 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         io.execute { store.save(snapshot) }
     }
 
+    private fun archiveCurrentConversation(messages: List<AgentHubMessage>) {
+        if (messages.isEmpty()) return
+        val archive = AgentHubConversationArchive(
+            id = UUID.randomUUID().toString(),
+            messages = messages.takeLast(MAX_RETAINED_MESSAGES),
+        )
+        val retained = (listOf(archive) + archives).take(MAX_ARCHIVED_CONVERSATIONS)
+        val dropped = archives.filterNot { existing -> retained.any { it.id == existing.id } }
+        archives = retained
+        io.execute {
+            store.saveArchive(archive)
+            dropped.forEach { store.deleteArchive(it.id) }
+        }
+    }
+
     private fun publish() {
         observers.toList().forEach { observer -> observer.onProjection(projection) }
     }
@@ -402,6 +467,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         requestId: String? = this.requestId,
         inputTokens: Int = this.inputTokens,
         outputTokens: Int = this.outputTokens,
+        conversations: List<AgentHubConversationSummary> = this.conversations,
     ): AgentHubProjection = copy(
         revision = revision + 1,
         messages = messages,
@@ -412,6 +478,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         requestId = requestId,
         inputTokens = inputTokens,
         outputTokens = outputTokens,
+        conversations = conversations,
     )
 
     private fun String.toAgentStatus(): String = when (this) {
@@ -453,9 +520,11 @@ class SenseAgentHubRuntime private constructor(context: Context) {
 
         const val SESSION_FIELD_IDENTITY = "sense.agent-hub.default"
         const val MAX_USER_MESSAGE_CHARS = 12_000
+        const val CURRENT_CONVERSATION_ID = "current"
         private const val MAX_ASSISTANT_CHARS = 8_192
         private const val MAX_TRANSCRIPT_CHARS = 48_000
         private const val MAX_RETAINED_MESSAGES = 80
+        private const val MAX_ARCHIVED_CONVERSATIONS = 40
 
         private fun nextGeneration(current: Long): Long =
             if (current == Long.MAX_VALUE) 1L else current + 1L
@@ -487,6 +556,7 @@ internal fun List<AgentHubToolStep>.merge(event: AiEvent.AgentProgress): List<Ag
 internal class AgentConversationStore(context: Context) {
     private val root = File(context.filesDir, "agent/sessions/default")
     private val file = AtomicFile(File(root, "conversation.v1"))
+    private val archiveRoot = File(context.filesDir, "agent/sessions/archive")
 
     fun load(): Result<List<AgentHubMessage>> = runCatching {
         if (!file.baseFile.exists()) return@runCatching emptyList()
@@ -509,6 +579,83 @@ internal class AgentConversationStore(context: Context) {
             throw failure
         }
     }
+
+    fun loadArchives(): Result<List<AgentHubConversationArchive>> = runCatching {
+        if (!archiveRoot.exists()) return@runCatching emptyList()
+        archiveRoot.listFiles { candidate -> candidate.extension == ARCHIVE_EXTENSION }
+            .orEmpty()
+            .sortedByDescending(File::lastModified)
+            .mapNotNull { archiveFile ->
+                runCatching {
+                    val atomic = AtomicFile(archiveFile)
+                    AgentHubConversationArchive(
+                        id = archiveFile.nameWithoutExtension,
+                        messages = atomic.openRead().bufferedReader(StandardCharsets.UTF_8).use {
+                            AgentConversationCodec.decode(it.readText())
+                        },
+                    )
+                }.getOrNull()
+            }
+            .take(MAX_LOADED_ARCHIVES)
+    }
+
+    fun saveArchive(archive: AgentHubConversationArchive) {
+        require(archive.id.matches(ARCHIVE_ID))
+        if (archive.messages.isEmpty()) return
+        if (!archiveRoot.exists() && !archiveRoot.mkdirs()) {
+            error("Agent archive directory could not be created")
+        }
+        val atomic = AtomicFile(File(archiveRoot, "${archive.id}.$ARCHIVE_EXTENSION"))
+        val stream = atomic.startWrite()
+        try {
+            stream.write(
+                AgentConversationCodec.encode(archive.messages).toByteArray(StandardCharsets.UTF_8),
+            )
+            stream.flush()
+            atomic.finishWrite(stream)
+        } catch (failure: Throwable) {
+            atomic.failWrite(stream)
+            throw failure
+        }
+    }
+
+    fun deleteArchive(id: String) {
+        if (!id.matches(ARCHIVE_ID)) return
+        AtomicFile(File(archiveRoot, "$id.$ARCHIVE_EXTENSION")).delete()
+    }
+
+    private companion object {
+        const val ARCHIVE_EXTENSION = "session"
+        const val MAX_LOADED_ARCHIVES = 40
+        val ARCHIVE_ID = Regex("[0-9a-fA-F-]{36}")
+    }
+}
+
+internal fun conversationSummaries(
+    current: List<AgentHubMessage>,
+    archives: List<AgentHubConversationArchive>,
+): List<AgentHubConversationSummary> = buildList {
+    if (current.isNotEmpty()) {
+        add(current.toSummary(SenseAgentHubRuntime.CURRENT_CONVERSATION_ID, current = true))
+    }
+    archives.forEach { archive ->
+        if (archive.messages.isNotEmpty()) add(archive.messages.toSummary(archive.id, current = false))
+    }
+}
+
+private fun List<AgentHubMessage>.toSummary(
+    id: String,
+    current: Boolean,
+): AgentHubConversationSummary {
+    val firstUser = firstOrNull { it.role == AgentHubMessageRole.USER }?.text.orEmpty()
+    return AgentHubConversationSummary(
+        id = id,
+        title = firstUser.lineSequence().firstOrNull().orEmpty().take(32).ifBlank { "Sense 会话" },
+        preview = lastOrNull()?.text.orEmpty().lineSequence().firstOrNull().orEmpty().take(80),
+        updatedAtEpochMs = maxOfOrNull(AgentHubMessage::createdAtEpochMs) ?: 0L,
+        messageCount = size,
+        current = current,
+    )
 }
 
 internal object AgentConversationCodec {

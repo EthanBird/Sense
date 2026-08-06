@@ -184,11 +184,8 @@ class AgentEventJournal private constructor(
             "query must contain 1..$MAX_QUERY_CHARS characters"
         }
         val normalizedQuery = query.lowercase(Locale.ROOT)
-        val queryTerms = lexicalTerms(normalizedQuery).distinct()
+        val queryTerms = boundedTerms(lexicalTerms(normalizedQuery).distinct(), MAX_QUERY_TERMS)
         require(queryTerms.isNotEmpty()) { "query must contain a letter or digit" }
-        require(queryTerms.size <= MAX_QUERY_TERMS) {
-            "query contains more than $MAX_QUERY_TERMS lexical terms"
-        }
 
         val heap = PriorityQueue<AgentMemorySearchHit>(
             compareBy<AgentMemorySearchHit> { it.score }
@@ -743,6 +740,7 @@ class AgentEventJournal private constructor(
             val normalized = candidate.lowercase(Locale.ROOT)
             var score = 0
             var firstMatch = Int.MAX_VALUE
+            var matchedTerms = 0
             queryTerms.forEach { term ->
                 var count = 0
                 var from = 0
@@ -755,10 +753,22 @@ class AgentEventJournal private constructor(
                     if (count == 1_000) break
                     from = found + term.length.coerceAtLeast(1)
                 }
-                if (count == 0) return null
-                score = Math.addExact(score, count)
-                firstMatch = minOf(firstMatch, termFirst)
+                if (count > 0) {
+                    matchedTerms += 1
+                    score = Math.addExact(score, count)
+                    firstMatch = minOf(firstMatch, termFirst)
+                }
             }
+            val minimumMatches = when (queryTerms.size) {
+                1, 2 -> queryTerms.size
+                // CJK bigrams deliberately trade strict conjunction for natural-language recall:
+                // two independently matching concepts (for example 用户 + 颜色) are already
+                // useful evidence even when the query says 喜欢什么 and the record says 偏好.
+                else -> maxOf(2, (queryTerms.size + 3) / 4)
+            }
+            if (matchedTerms < minimumMatches) return null
+            score = Math.addExact(score, matchedTerms * 100)
+            score = Math.addExact(score, matchedTerms * 1_000 / queryTerms.size)
             val phrase = normalized.indexOf(normalizedQuery)
             if (phrase >= 0) {
                 score = Math.addExact(score, 10_000)
@@ -784,17 +794,62 @@ class AgentEventJournal private constructor(
 
         private fun lexicalTerms(value: String): List<String> {
             val terms = ArrayList<String>()
-            val current = StringBuilder()
-            value.forEach { character ->
-                if (character.isLetterOrDigit()) {
-                    current.append(character)
-                } else if (current.isNotEmpty()) {
-                    terms += current.toString()
-                    current.setLength(0)
+            val latin = StringBuilder()
+            val han = ArrayList<Int>()
+
+            fun flushLatin() {
+                if (latin.isNotEmpty()) {
+                    terms += latin.toString()
+                    latin.setLength(0)
                 }
             }
-            if (current.isNotEmpty()) terms += current.toString()
+
+            fun flushHan() {
+                if (han.isEmpty()) return
+                if (han.size <= 8) {
+                    terms += buildString { han.forEach { appendCodePoint(it) } }
+                }
+                if (han.size > 1) {
+                    for (index in 0 until han.lastIndex) {
+                        terms += buildString(4) {
+                            appendCodePoint(han[index])
+                            appendCodePoint(han[index + 1])
+                        }
+                    }
+                }
+                han.clear()
+            }
+
+            var offset = 0
+            while (offset < value.length) {
+                val codePoint = value.codePointAt(offset)
+                when {
+                    Character.UnicodeScript.of(codePoint) == Character.UnicodeScript.HAN -> {
+                        flushLatin()
+                        han += codePoint
+                    }
+                    Character.isLetterOrDigit(codePoint) -> {
+                        flushHan()
+                        latin.appendCodePoint(codePoint)
+                    }
+                    else -> {
+                        flushLatin()
+                        flushHan()
+                    }
+                }
+                offset += Character.charCount(codePoint)
+            }
+            flushLatin()
+            flushHan()
             return terms
+        }
+
+        private fun boundedTerms(terms: List<String>, maximum: Int): List<String> {
+            if (terms.size <= maximum) return terms
+            if (maximum == 1) return listOf(terms.first())
+            return List(maximum) { index ->
+                terms[index * (terms.lastIndex) / (maximum - 1)]
+            }.distinct()
         }
     }
 }

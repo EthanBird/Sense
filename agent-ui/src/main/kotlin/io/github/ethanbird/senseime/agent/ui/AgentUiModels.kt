@@ -32,6 +32,14 @@ data class AgentToolUi(
     val state: AgentToolState = AgentToolState.RUNNING,
 )
 
+data class AgentConversationUi(
+    val id: String,
+    val title: String,
+    val preview: String,
+    val messageCount: Int,
+    val current: Boolean,
+)
+
 data class AgentUiState(
     val revision: Long = 0L,
     val title: String = "问候与求助",
@@ -52,6 +60,7 @@ data class AgentUiState(
     val historyVisible: Boolean = false,
     val menuVisible: Boolean = false,
     val openToolId: String? = null,
+    val conversations: List<AgentConversationUi> = emptyList(),
 )
 
 data class AgentUiActions(
@@ -73,4 +82,6 @@ data class AgentUiActions(
     val onToolOpen: (AgentToolUi) -> Unit = {},
     val onToolClose: () -> Unit = {},
     val onCopyMessage: (AgentMessageUi) -> Unit = {},
+    val onInsertMessage: (AgentMessageUi) -> Unit = {},
+    val onOpenConversation: (String) -> Unit = {},
 )

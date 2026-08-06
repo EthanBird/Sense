@@ -247,6 +247,35 @@ class AgentEventJournalTest {
     }
 
     @Test
+    fun `natural Chinese memory question recalls seeded preference record`() =
+        withJournalDirectory { directory ->
+            AgentEventJournal.open(directory).use { journal ->
+                journal.beginRun(
+                    requestId = "seeded-profile",
+                    runGeneration = 1,
+                    payload = "用户资料：我最喜欢的颜色是海军蓝，写作风格偏好简洁直接。".toByteArray(),
+                    contentType = "text/plain",
+                    lexicalText = "用户资料：我最喜欢的颜色是海军蓝，写作风格偏好简洁直接。",
+                )
+                journal.beginRun(
+                    requestId = "unrelated",
+                    runGeneration = 2,
+                    payload = "普通天气对话".toByteArray(),
+                    contentType = "text/plain",
+                    lexicalText = "普通天气对话",
+                )
+
+                val result = journal.search(
+                    query = "用户偏好 喜欢什么颜色",
+                    access = AgentMemorySearchAccess.ENABLED,
+                )
+
+                assertEquals(listOf("seeded-profile"), result.hits.map { it.requestId })
+                assertTrue(result.hits.single().excerpt.contains("海军蓝"))
+            }
+        }
+
+    @Test
     fun `deferred frames preserve exact bytes and explicit flush forces once`() =
         withJournalDirectory { directory ->
             val forceCalls = AtomicInteger()

@@ -31,8 +31,6 @@ import io.github.ethanbird.senseime.brain.api.BrainRunSpec
 import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
 import io.github.ethanbird.senseime.brain.api.toSummary
 import io.github.ethanbird.senseime.brain.memory.AgentEventJournal
-import io.github.ethanbird.senseime.brain.memory.AgentMemorySearchAccess
-import io.github.ethanbird.senseime.brain.memory.AgentMemorySearchBounds
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.Executors
@@ -94,22 +92,7 @@ class SenseAiBrainService : Service() {
                 journalOpenFailure = it
             }
         }
-        val memorySource = AgentMemorySearchSource { query, maxResults, excludeId, excludeGeneration ->
-            val source = journal ?: return@AgentMemorySearchSource emptyList()
-            source.search(
-                query = query,
-                access = AgentMemorySearchAccess.ENABLED,
-                bounds = AgentMemorySearchBounds(maxResults = maxResults),
-                excludeRequestId = excludeId,
-                excludeRunGeneration = excludeGeneration,
-            ).hits.map { hit ->
-                AgentMemorySearchHit(
-                    id = hit.sequence.toString(),
-                    text = hit.excerpt,
-                    source = "${hit.kind.name}:${hit.requestId}",
-                )
-            }
-        }
+        val memorySource = JournalAgentMemorySearchSource { journal }
         val skillSource = object : AgentSkillToolSource {
             override fun read(skillId: String, revision: Long): AgentSkillDefinition? =
                 skillStore.readRevision(skillId, revision).getOrThrow()

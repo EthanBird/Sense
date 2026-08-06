@@ -15,11 +15,13 @@ class EnglishLexicon private constructor(
     private val firstLetterBuckets: Array<IntArray>,
     private val firstTwoLetterBuckets: Array<IntArray>,
     private val alphabeticIndices: IntArray,
+    private val usageStore: EnglishWordUsageStore,
 ) {
     fun suggest(composing: String, limit: Int): List<Candidate> {
-        if (limit <= 0 || words.isEmpty()) return emptyList()
+        if (limit <= 0) return emptyList()
         val query = normalize(composing)
         if (query.isEmpty()) return emptyList()
+        if (words.isEmpty() && usageStore.find(query) == null) return emptyList()
 
         val exactIndex = findExact(query)
         val prefixMatchBudget = if (query.length == 1) {
@@ -42,12 +44,16 @@ class EnglishLexicon private constructor(
             }
         }
 
-        val ordered = ArrayList<Int>(minOf(limit, matches.size + 1))
-        val seen = HashSet<Int>()
+        val ordered = ArrayList<String>(minOf(limit, matches.size + 1))
+        val seen = HashSet<String>()
         fun add(wordIndex: Int) {
-            if (wordIndex >= 0 && ordered.size < limit && seen.add(wordIndex)) ordered += wordIndex
+            if (wordIndex >= 0 && ordered.size < limit) {
+                val word = words[wordIndex]
+                if (seen.add(word)) ordered += word
+            }
         }
 
+        if (exactIndex < 0 && usageStore.find(query) != null && seen.add(query)) ordered += query
         add(exactIndex)
         preferredInflections(query).forEach { add(findExact(it)) }
 
@@ -60,8 +66,7 @@ class EnglishLexicon private constructor(
         }
         matches.forEach(::add)
 
-        val candidates = ordered.mapIndexed { displayRank, index ->
-            val word = words[index]
+        val candidates = ordered.mapIndexed { displayRank, word ->
             val matchKind = if (word == query) {
                 CandidateMatchKind.ENGLISH_EXACT
             } else {
@@ -74,11 +79,26 @@ class EnglishLexicon private constructor(
                 // bilingual ranker does not silently restore source-file order.
                 score = ENGLISH_SCORE_BASE -
                     ln(displayRank.toFloat() + 2f) -
-                    shortQueryPenalty(query.length, matchKind),
+                    shortQueryPenalty(query.length, matchKind) +
+                    usageBoost(word),
                 matchKind = matchKind,
             )
         }
         return EnglishSuggestionBatch(query, candidates)
+    }
+
+    fun recordAccepted(
+        word: String,
+        evidence: UserLearningEvidence = UserLearningEvidence.EXPLICIT_SELECTION,
+    ): LearnedEnglishWord? {
+        if (!word.isAsciiWord()) return null
+        return usageStore.record(word.lowercase(), evidence)
+    }
+
+    private fun usageBoost(word: String): Float {
+        val usage = usageStore.find(word) ?: return 0f
+        return (ln(usage.positiveEvidence.toDouble() + 1.0).toFloat() * 0.9f)
+            .coerceAtMost(MAX_USAGE_BOOST)
     }
 
     private fun findExact(query: String): Int {
@@ -99,7 +119,11 @@ class EnglishLexicon private constructor(
     companion object {
         val EMPTY = fromWords(emptyList())
 
-        fun load(input: InputStream, maximumWords: Int = DEFAULT_MAXIMUM_WORDS): EnglishLexicon =
+        fun load(
+            input: InputStream,
+            maximumWords: Int = DEFAULT_MAXIMUM_WORDS,
+            usageStore: EnglishWordUsageStore = EnglishWordUsageStore.EMPTY,
+        ): EnglishLexicon =
             input.bufferedReader().useLines { lines ->
                 fromWords(
                     lines
@@ -107,10 +131,14 @@ class EnglishLexicon private constructor(
                         .filter { it.isNotEmpty() && !it.startsWith("#") }
                         .take(maximumWords)
                         .toList(),
+                    usageStore,
                 )
             }
 
-        fun fromWords(values: List<String>): EnglishLexicon {
+        fun fromWords(
+            values: List<String>,
+            usageStore: EnglishWordUsageStore = EnglishWordUsageStore.EMPTY,
+        ): EnglishLexicon {
             val unique = LinkedHashSet<String>(values.size)
             values.forEach { value ->
                 val normalized = normalize(value)
@@ -140,6 +168,7 @@ class EnglishLexicon private constructor(
                 firstLetterBuckets = Array(first.size) { first[it].toIntArray() },
                 firstTwoLetterBuckets = Array(second.size) { second[it].toIntArray() },
                 alphabeticIndices = alphabetic,
+                usageStore = usageStore,
             )
         }
 
@@ -183,6 +212,7 @@ class EnglishLexicon private constructor(
         private const val SINGLE_LETTER_PREFIX_PENALTY = 2.4f
         private const val SINGLE_LETTER_EXACT_PENALTY = 0.75f
         private const val TWO_LETTER_PREFIX_PENALTY = 0.8f
+        private const val MAX_USAGE_BOOST = 2.6f
         private val DEFERRED_INFLECTION_SUFFIXES = setOf("ed", "ing", "er", "ers", "ly")
         private val VALID_SINGLE_LETTER_WORDS = setOf("a", "i")
     }
