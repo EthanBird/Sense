@@ -27,6 +27,14 @@ class JournalAgentMemorySearchSourceTest {
                     AgentJournalKind.FINAL,
                     "已记录用户颜色偏好：海军蓝；表达偏好：简洁直接。",
                 )
+                seeded.appendText(
+                    AgentJournalKind.EXPERIENCE_EVENT,
+                    """{"summary":"用户喜欢的颜色是海军蓝","source_record_ids":["journal:1","journal:2"]}""",
+                    attributes = mapOf(
+                        "memory_channel" to "experience_event",
+                        "source_record_ids" to "journal:1,journal:2",
+                    ),
+                )
                 val executor = DefaultAgentToolExecutor(
                     memorySource = JournalAgentMemorySearchSource { journal },
                 )
@@ -48,6 +56,11 @@ class JournalAgentMemorySearchSourceTest {
                 assertTrue(result.content, result.content.contains("\"result_count\":"))
                 assertTrue(result.content, result.content.contains("海军蓝"))
                 assertTrue(result.content, result.content.contains("seed-profile"))
+                assertTrue(result.content, result.content.contains("\"coverage\""))
+                assertTrue(result.content, result.content.contains("session_evidence"))
+                assertTrue(result.content, result.content.contains("experience_event"))
+                assertTrue(result.content, result.content.contains("journal:1"))
+                assertTrue(result.content, result.content.contains("journal:2"))
             }
         } finally {
             directory.deleteRecursively()

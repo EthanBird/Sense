@@ -531,6 +531,7 @@ class AgentEventJournalTest {
                 AgentJournalKind.FINAL to 9,
                 AgentJournalKind.ERROR to 10,
                 AgentJournalKind.CANCELLED to 11,
+                AgentJournalKind.EXPERIENCE_EVENT to 12,
             ),
             AgentJournalKind.entries.associateWith { kind -> kind.wireId },
         )

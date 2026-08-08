@@ -23,6 +23,20 @@ data class AgentMemorySearchHit(
     val id: String,
     val text: String,
     val source: String = "",
+    val channel: String = "session_evidence",
+    val evidenceRecordIds: List<String> = emptyList(),
+)
+
+data class AgentMemorySearchCoverage(
+    val scannedRecords: Int = 0,
+    val scannedBytes: Long = 0,
+    val truncated: Boolean = false,
+    val channels: Set<String> = emptySet(),
+)
+
+data class AgentMemorySearchPage(
+    val hits: List<AgentMemorySearchHit>,
+    val coverage: AgentMemorySearchCoverage = AgentMemorySearchCoverage(),
 )
 
 fun interface AgentMemorySearchSource {
@@ -32,6 +46,15 @@ fun interface AgentMemorySearchSource {
         excludeRequestId: String?,
         excludeRunGeneration: Long?,
     ): List<AgentMemorySearchHit>
+
+    fun searchPage(
+        query: String,
+        maxResults: Int,
+        excludeRequestId: String?,
+        excludeRunGeneration: Long?,
+    ): AgentMemorySearchPage = AgentMemorySearchPage(
+        hits = search(query, maxResults, excludeRequestId, excludeRunGeneration),
+    )
 
     companion object {
         val EMPTY = AgentMemorySearchSource { _, _, _, _ -> emptyList() }
@@ -326,18 +349,28 @@ class DefaultAgentToolExecutor(
         excludeRequestId: String?,
         excludeRunGeneration: Long?,
     ): AgentToolExecutionResult {
-        val hits = memorySource.search(
+        val page = memorySource.searchPage(
             arguments.query,
             arguments.maxResults,
             excludeRequestId,
             excludeRunGeneration,
         )
-            .take(arguments.maxResults)
+        val hits = page.hits.take(arguments.maxResults)
         return success(
             buildString {
                 append("{\"query\":")
                 appendJson(arguments.query)
                 append(",\"result_count\":").append(hits.size)
+                append(",\"coverage\":{")
+                append("\"scanned_records\":").append(page.coverage.scannedRecords)
+                append(",\"scanned_bytes\":").append(page.coverage.scannedBytes)
+                append(",\"truncated\":").append(page.coverage.truncated)
+                append(",\"channels\":[")
+                page.coverage.channels.sorted().forEachIndexed { index, channel ->
+                    if (index > 0) append(',')
+                    appendJson(channel)
+                }
+                append("]}")
                 append(",\"results\":[")
                 hits.forEachIndexed { index, hit ->
                     if (index > 0) append(',')
@@ -347,6 +380,17 @@ class DefaultAgentToolExecutor(
                     appendJson(hit.text.take(MAX_MEMORY_HIT_CHARS))
                     append(",\"source\":")
                     appendJson(hit.source.take(256))
+                    append(",\"channel\":")
+                    appendJson(hit.channel.take(64))
+                    append(",\"evidence_record_ids\":[")
+                    hit.evidenceRecordIds.take(MAX_MEMORY_EVIDENCE_IDS).forEachIndexed {
+                            evidenceIndex,
+                            evidenceId,
+                        ->
+                        if (evidenceIndex > 0) append(',')
+                        appendJson(evidenceId.take(256))
+                    }
+                    append(']')
                     append('}')
                 }
                 append("]}")
@@ -439,9 +483,10 @@ class DefaultAgentToolExecutor(
         const val MAX_DOWNLOAD_BYTES = 524_288
         const val MAX_REDIRECTS = 3
         const val MAX_MEMORY_HIT_CHARS = 2_000
+        const val MAX_MEMORY_EVIDENCE_IDS = 8
         const val MOBILE_USER_AGENT =
             "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 " +
-                "(KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36 Sense-IME/0.4.8"
+                "(KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36 Sense-IME/0.4.9"
     }
 }
 

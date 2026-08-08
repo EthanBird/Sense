@@ -40,6 +40,25 @@ data class AgentConversationUi(
     val current: Boolean,
 )
 
+enum class AgentActionState {
+    RUNNING,
+    SUCCEEDED,
+    FAILED,
+    CANCELLED,
+}
+
+data class AgentActionUi(
+    val requestId: String,
+    val skillId: String,
+    val title: String,
+    val primaryValue: String = "",
+    val secondaryValue: String = "",
+    val insertText: String = "",
+    val sourceLabel: String = "",
+    val state: AgentActionState,
+    val detail: String = "",
+)
+
 data class AgentUiState(
     val revision: Long = 0L,
     val title: String = "问候与求助",
@@ -61,6 +80,7 @@ data class AgentUiState(
     val menuVisible: Boolean = false,
     val openToolId: String? = null,
     val conversations: List<AgentConversationUi> = emptyList(),
+    val action: AgentActionUi? = null,
 )
 
 data class AgentUiActions(
@@ -84,4 +104,9 @@ data class AgentUiActions(
     val onCopyMessage: (AgentMessageUi) -> Unit = {},
     val onInsertMessage: (AgentMessageUi) -> Unit = {},
     val onOpenConversation: (String) -> Unit = {},
+    val onGoldQuote: () -> Unit = {},
+    val onCancelAction: () -> Unit = {},
+    val onDismissAction: () -> Unit = {},
+    val onInsertAction: (AgentActionUi) -> Unit = {},
+    val onAnalyzeAction: (AgentActionUi) -> Unit = {},
 )

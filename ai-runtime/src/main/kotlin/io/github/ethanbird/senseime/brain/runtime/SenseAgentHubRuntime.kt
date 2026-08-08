@@ -19,11 +19,14 @@ import io.github.ethanbird.senseime.ai.protocol.HarnessResultMode
 import io.github.ethanbird.senseime.ai.protocol.PatchTarget
 import io.github.ethanbird.senseime.ai.protocol.SnapshotCapability
 import io.github.ethanbird.senseime.ai.protocol.TextSelectionV1
+import io.github.ethanbird.senseime.brain.api.ActionSkillInvocation
+import io.github.ethanbird.senseime.brain.api.ActionSkillResult
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 import java.util.Base64
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
 enum class AgentHubMessageRole {
     USER,
@@ -49,6 +52,25 @@ data class AgentHubToolStep(
     val title: String,
     val detail: String,
     val state: AgentHubToolState,
+)
+
+enum class AgentHubActionState {
+    RUNNING,
+    SUCCEEDED,
+    FAILED,
+    CANCELLED,
+}
+
+data class AgentHubActionCard(
+    val requestId: String,
+    val skillId: String,
+    val title: String,
+    val primaryValue: String = "",
+    val secondaryValue: String = "",
+    val insertText: String = "",
+    val sourceLabel: String = "",
+    val state: AgentHubActionState,
+    val detail: String = "",
 )
 
 data class AgentHubConversationSummary(
@@ -78,6 +100,7 @@ data class AgentHubProjection(
     val inputTokens: Int = 0,
     val outputTokens: Int = 0,
     val conversations: List<AgentHubConversationSummary> = emptyList(),
+    val action: AgentHubActionCard? = null,
 )
 
 fun interface AgentHubObserver {
@@ -97,12 +120,20 @@ class SenseAgentHubRuntime private constructor(context: Context) {
     private val io = Executors.newSingleThreadExecutor { runnable ->
         Thread(runnable, "sense-agent-hub-store").apply { isDaemon = true }
     }
+    private val actionExecutor = Executors.newSingleThreadExecutor { runnable ->
+        Thread(runnable, "sense-action-skills").apply { isDaemon = true }
+    }
     private val store = AgentConversationStore(applicationContext)
     private val durableRunStore = AgentDurableRunStore(applicationContext)
+    private val actionHistory = ActionHistoryStore(applicationContext)
     private val observers = linkedSetOf<AgentHubObserver>()
     private val brainClient = SenseAiBrainClient(applicationContext, ::onBrainEvent)
+    private val actionRuntime = DirectActionSkillRuntime.builtIns(
+        credentialVault = AndroidActionCredentialVault(applicationContext),
+    )
     private var projection = AgentHubProjection()
     private var archives = emptyList<AgentHubConversationArchive>()
+    private var actionFuture: Future<*>? = null
 
     init {
         io.execute {
@@ -294,6 +325,98 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         )
         publish()
         return true
+    }
+
+    /** Executes the built-in quote connector directly. No model request is created. */
+    fun runGoldQuote(): Boolean {
+        checkMainThread()
+        if (!projection.loaded || projection.action?.state == AgentHubActionState.RUNNING) return false
+        val requestId = UUID.randomUUID().toString()
+        projection = projection.copy(
+            revision = projection.revision + 1,
+            action = AgentHubActionCard(
+                requestId = requestId,
+                skillId = XauUsdActionSkill.SKILL_ID,
+                title = "XAUUSD · 现货黄金",
+                state = AgentHubActionState.RUNNING,
+                detail = "正在直连行情 API…",
+            ),
+        )
+        publish()
+        actionFuture = actionExecutor.submit {
+            val invocation = ActionSkillInvocation(requestId, XauUsdActionSkill.SKILL_ID)
+            val result = actionHistory.appendStarted(invocation, System.currentTimeMillis())
+                .mapCatching { actionRuntime.execute(invocation).getOrThrow() }
+                .mapCatching { value ->
+                    actionHistory.appendSucceeded(value).getOrThrow()
+                    value
+                }
+                .onFailure { failure ->
+                    actionHistory.appendFailed(
+                        requestId = requestId,
+                        skillId = XauUsdActionSkill.SKILL_ID,
+                        failure = failure,
+                        occurredAtEpochMs = System.currentTimeMillis(),
+                    )
+                }
+            mainHandler.post { completeAction(requestId, result) }
+        }
+        return true
+    }
+
+    fun cancelAction(): Boolean {
+        checkMainThread()
+        val current = projection.action?.takeIf { it.state == AgentHubActionState.RUNNING }
+            ?: return false
+        actionFuture?.cancel(true)
+        actionFuture = null
+        projection = projection.copy(
+            revision = projection.revision + 1,
+            action = current.copy(state = AgentHubActionState.CANCELLED, detail = "已停止"),
+        )
+        publish()
+        return true
+    }
+
+    fun dismissAction(): Boolean {
+        checkMainThread()
+        if (projection.action?.state == AgentHubActionState.RUNNING || projection.action == null) {
+            return false
+        }
+        projection = projection.copy(revision = projection.revision + 1, action = null)
+        publish()
+        return true
+    }
+
+    private fun completeAction(requestId: String, result: Result<ActionSkillResult>) {
+        checkMainThread()
+        val current = projection.action?.takeIf {
+            it.requestId == requestId && it.state == AgentHubActionState.RUNNING
+        } ?: return
+        actionFuture = null
+        projection = projection.copy(
+            revision = projection.revision + 1,
+            action = result.fold(
+                onSuccess = { value ->
+                    current.copy(
+                        title = value.title,
+                        primaryValue = value.primaryValue,
+                        secondaryValue = value.secondaryValue,
+                        insertText = value.insertText,
+                        sourceLabel = value.sourceLabel,
+                        state = AgentHubActionState.SUCCEEDED,
+                        detail = "直连完成 · 0 模型 Token",
+                    )
+                },
+                onFailure = { failure ->
+                    current.copy(
+                        state = AgentHubActionState.FAILED,
+                        detail = failure.message?.take(180).orEmpty().ifBlank { "行情请求失败" },
+                    )
+                },
+            ),
+        )
+        publish()
     }
 
     fun clearConversation(): Boolean {

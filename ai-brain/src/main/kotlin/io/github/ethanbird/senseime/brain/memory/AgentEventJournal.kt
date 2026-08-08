@@ -57,7 +57,7 @@ class AgentEventJournal private constructor(
         lexicalText: String,
         attributes: Map<String, String> = emptyMap(),
     ): AgentJournalRun {
-        appendLocked(
+        val inputRecord = appendLocked(
             AgentJournalDraft(
                 requestId = requestId,
                 runGeneration = runGeneration,
@@ -69,7 +69,12 @@ class AgentEventJournal private constructor(
             ),
             durable = true,
         )
-        return AgentJournalRun(this, requestId, runGeneration)
+        return AgentJournalRun(
+            journal = this,
+            requestId = requestId,
+            runGeneration = runGeneration,
+            inputRecordSequence = inputRecord.sequence,
+        )
     }
 
     /**
@@ -859,6 +864,8 @@ class AgentJournalRun internal constructor(
     private val journal: AgentEventJournal,
     val requestId: String,
     val runGeneration: Long,
+    /** Stable evidence id of the complete request snapshot written by [AgentEventJournal.beginRun]. */
+    val inputRecordSequence: Long,
 ) {
     fun append(
         kind: AgentJournalKind,
@@ -945,6 +952,8 @@ enum class AgentJournalKind(val wireId: Int) {
     FINAL(9),
     ERROR(10),
     CANCELLED(11),
+    /** Typed semantic sidecar. Its source_record_ids always point back to immutable raw evidence. */
+    EXPERIENCE_EVENT(12),
     ;
 
     companion object {

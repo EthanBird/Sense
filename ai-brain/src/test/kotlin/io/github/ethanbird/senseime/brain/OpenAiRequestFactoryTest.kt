@@ -12,6 +12,9 @@ import io.github.ethanbird.senseime.ai.protocol.TextSelectionV1
 import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
 import io.github.ethanbird.senseime.brain.api.AgentSkillSummary
 import io.github.ethanbird.senseime.brain.api.AgentToolId
+import io.github.ethanbird.senseime.brain.api.AgentRecallCoverage
+import io.github.ethanbird.senseime.brain.api.AgentRecallEvidence
+import io.github.ethanbird.senseime.brain.api.AgentRecallFrame
 import io.github.ethanbird.senseime.brain.api.ProviderCredential
 import io.github.ethanbird.senseime.brain.api.ProviderProfile
 import io.github.ethanbird.senseime.brain.api.ReasoningEffort
@@ -24,6 +27,50 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class OpenAiRequestFactoryTest {
+    @Test
+    fun `cross-session recall keeps raw Session and semantic evidence links in the first prompt`() {
+        val body = OpenAiRequestFactory.create(
+            profile = profile(ProviderApiStyle.OPENAI_RESPONSES),
+            request = harness().copy(
+                skill = EditorIntent.ANSWER,
+                resultMode = HarnessResultMode.ASSISTANT_MESSAGE,
+            ),
+            credential = ProviderCredential.None,
+            attempt = 0,
+            recallFrame = AgentRecallFrame(
+                query = "上次喜欢什么语气",
+                evidence = listOf(
+                    AgentRecallEvidence(
+                        recordId = "journal:41",
+                        text = "完整会话：用户希望表达冷静克制",
+                        source = "REQUEST_INPUT_SNAPSHOT:old-run",
+                        channel = "session_evidence",
+                        evidenceRecordIds = listOf("journal:41"),
+                    ),
+                    AgentRecallEvidence(
+                        recordId = "journal:45",
+                        text = "偏好事件：冷静克制",
+                        source = "EXPERIENCE_EVENT:old-run",
+                        channel = "experience_event",
+                        evidenceRecordIds = listOf("journal:41", "journal:44"),
+                    ),
+                ),
+                coverage = AgentRecallCoverage(
+                    scannedRecords = 88,
+                    scannedBytes = 4096,
+                    truncated = true,
+                    channels = setOf("session_evidence", "experience_event"),
+                ),
+            ),
+        ).body.toString(StandardCharsets.UTF_8)
+
+        assertTrue(body.contains("sense_recall"))
+        assertTrue(body.contains("session_evidence"))
+        assertTrue(body.contains("experience_event"))
+        assertTrue(body.contains("journal:41,journal:44"))
+        assertTrue(body.contains("Coverage may be partial"))
+    }
+
     @Test
     fun `Responses assistant-message request uses ordinary text without patch schema`() {
         val request = harness().copy(

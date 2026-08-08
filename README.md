@@ -10,11 +10,11 @@
 > 分帧与 SRSS WebSocket 转写，选择后无需 API Key 即可从键盘语音入口使用。协议与
 > 双实现验证见[接入记录](docs/research/sogou-asr-provider-integration-2026-08-01.md)。
 
-**项目状态：** `v0.4.8` Agent 交互、记忆与候选排序稳定版
+**项目状态：** `v0.4.9` 可进化记忆与 0 Token Action Skills 正式版
 
-**当前版本：** `v0.4.8`（`versionCode 33`）
+**当前版本：** `v0.4.9`（`versionCode 34`）
 
-**更新日期：** 2026-08-06
+**更新日期：** 2026-08-09
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
 
 本文基于《GlassIME Android AI 中文输入法产品与技术设计文档 v0.1》重新整理，并统一改名为：
@@ -30,7 +30,22 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.8 Agent 交互、记忆与候选排序
+## 0. 当前迭代：v0.4.9 可进化记忆与 0 Token Action Skills
+
+`v0.4.9` 将 Agent 历史升级为双轨事实模型：每个 Session 的完整请求、Provider 原始
+输入输出、工具交换、流式片段与终态继续作为不可变证据追加保留；结构化经历事件只在
+旁路追加，并通过 `source_record_ids` 回指原始记录。统一召回会同时保留原始 Session
+命中、经历事件与 Action Skill 历史，向工具和首轮提示词返回扫描量、字节数、通道与
+截断状态，避免事件摘要挤掉普通会话原文。
+
+输入法 Agent 前端新增直接 Action 区。内置“黄金现价”可直接调用 XAUUSD 行情 API，
+不会创建模型请求，结果卡明确显示 `0 Token`，支持刷新、交给 Agent 分析以及写入当前
+外部编辑框。Action 调用和完整响应另行追加保留并进入跨会话召回；认证型 API 的凭据
+句柄由 Android Keystore 的 AES-GCM Vault 托管。完整方案与实现边界见
+[可进化 Agent 设计](docs/design/sense-agent-evolution-hermes-event-memory-zero-token-skills-v1.md)和
+[`v0.4.9` 发布说明](docs/releases/v0.4.9.md)。
+
+## 0.1 v0.4.8 Agent 交互、记忆与候选排序
 
 `v0.4.8` 把 Agent 入口移动到键盘工具栏正中间，并进一步压缩输入法前端工作台高度；
 内置输入框可显示最多四行，左上角使用明确的收起操作。Assistant 消息可显式写入当前
@@ -165,8 +180,8 @@ initials、渐进 limit 16、渐进 limit 255 和组合 p95 分别为
 决策记录见 [ADR 0022](docs/adr/0022-gpl-rime-frost-lexicon-pipeline.md)、
 [ADR 0023](docs/adr/0023-v0.4.5-beta5-decoder-quality.md) 与
 [ADR 0025](docs/adr/0025-three-chinese-schemes-t9-dag-and-wubi86.md)，详细发布门禁见
-[`v0.4.8` 发布说明](docs/releases/v0.4.8.md)，最新发布资产见
-[`v0.4.8` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.8)。
+[`v0.4.9` 发布说明](docs/releases/v0.4.9.md)，最新发布资产见
+[`v0.4.9` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.9)。
 
 `v0.4.5.beta.4` 修复键盘刚显示、窗口切换或目录观察 catch-up 时，等价 Skill catalog
 重复发布会撤销已开始长按的问题：解析结果、显示标签与 active Skill 均未变化时保留
@@ -212,7 +227,7 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
 | Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
 | 既有质量 | AI、IME、UI、Core、M0–M7、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 33`、`versionName 0.4.8`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据 | `versionCode 34`、`versionName 0.4.9`、`minSdk 29`、`targetSdk 36` |
 
 仓库不再运行 GitHub Actions；测试、Lint、性能门禁、APK 构建和签名校验统一在 Windows
 本地执行。完整本地验证与构建：
@@ -229,11 +244,11 @@ powershell -ExecutionPolicy Bypass -File tools/local_release.ps1 -Publish
 
 `-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。
 
-> **v0.4.8 发布收口：** 本轮源码整合完成后会重新运行及人工审查 X-02
+> **v0.4.9 发布收口：** 本轮源码整合完成后会重新运行及人工审查 X-02
 > production source、build authority 与 offline gate 的 exact SHA-256，并同步刷新
 > boundary baseline。正式本地发布会在同一 release `HEAD` 上再次执行 source/artifact
 > gate，并把结果与 APK 签名、校验和一起归档到
-> [`v0.4.8` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.8)。
+> [`v0.4.9` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.9)。
 
 标准工程验证命令：
 
@@ -545,7 +560,7 @@ Provider 先实现 OpenAI-compatible 适配器，并抽象 `fast`、`smart`、`e
 
 ## 12. 迭代记录：M0 可运行骨架
 
-以下保留 M0 的实施记录；当前代码位于 `v0.4.8` Agent 工作台、中文九键、五笔 86、
+以下保留 M0 的实施记录；当前代码位于 `v0.4.9` 可进化 Agent、中文九键、五笔 86、
 流式搜狗语音、Skills 交互、Windows TSF 工程预览与个性化排序稳定阶段。
 现有输入仍需继续完成 Android 真机安装、SQLite/剪贴板进程恢复、空
 composing 跨宿主兼容、候选与 Emoji 惯性、符号字体和高速输入性能验收。

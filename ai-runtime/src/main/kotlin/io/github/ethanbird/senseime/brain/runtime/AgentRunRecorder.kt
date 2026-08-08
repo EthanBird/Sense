@@ -27,6 +27,10 @@ class AgentRunRecorder private constructor(
     val runGeneration: Long
         get() = run.runGeneration
 
+    /** Raw evidence record containing the byte-for-byte admitted request. */
+    val inputRecordSequence: Long
+        get() = run.inputRecordSequence
+
     fun record(event: AiEvent): AgentJournalRecord {
         require(event.requestId == requestId) { "event requestId does not match recorder" }
         require(event.runGeneration == runGeneration) {
@@ -127,6 +131,44 @@ class AgentRunRecorder private constructor(
                 put("tool_call_id", toolCallId.orEmpty())
                 put("tool_name", toolName.orEmpty())
                 isError?.let { put("is_error", it.toString()) }
+            },
+        )
+    }
+
+    /**
+     * Appends a typed semantic sidecar without replacing, rewriting, or pruning its raw sources.
+     *
+     * Every semantic record must remain evidence-reachable through [sourceRecordSequences]. This
+     * is intentionally an explicit operation: callers derive only stable boundaries while all raw
+     * provider, tool, preview, and terminal frames continue to be retained independently.
+     */
+    fun recordExperienceEvent(
+        type: AgentExperienceEventType,
+        summary: String,
+        sourceRecordSequences: List<Long>,
+        facts: Map<String, String> = emptyMap(),
+        occurredAtEpochMs: Long = System.currentTimeMillis(),
+    ): AgentJournalRecord {
+        require(summary.isNotBlank()) { "experience summary must be non-blank" }
+        require(sourceRecordSequences.isNotEmpty()) { "experience event requires raw evidence" }
+        require(sourceRecordSequences.all { it > 0L }) { "invalid evidence sequence" }
+        val evidenceIds = sourceRecordSequences.distinct().map { "journal:$it" }
+        val encoded = AgentRunJournalCodec.encodeExperienceEvent(
+            type = type,
+            summary = summary,
+            sourceRecordIds = evidenceIds,
+            facts = facts,
+            occurredAtEpochMs = occurredAtEpochMs,
+        )
+        return run.appendText(
+            kind = AgentJournalKind.EXPERIENCE_EVENT,
+            text = encoded,
+            contentType = JSON_CONTENT_TYPE,
+            attributes = buildMap {
+                put("schema", "sense.agent.experience.v1")
+                put("event_type", type.wireValue)
+                put("memory_channel", "experience_event")
+                put("source_record_ids", evidenceIds.joinToString(","))
             },
         )
     }
@@ -268,6 +310,23 @@ object AgentRunJournalCodec {
         isError?.let { boolean("is_error", it) }
     }
 
+    fun encodeExperienceEvent(
+        type: AgentExperienceEventType,
+        summary: String,
+        sourceRecordIds: List<String>,
+        facts: Map<String, String>,
+        occurredAtEpochMs: Long,
+    ): String = canonicalObject {
+        string("schema", "sense.agent.experience.v1")
+        string("type", type.wireValue)
+        long("occurred_at_epoch_ms", occurredAtEpochMs)
+        string("summary", summary)
+        stringArray("source_record_ids", sourceRecordIds)
+        objectValue("facts") {
+            facts.toSortedMap().forEach { (name, value) -> string(name, value) }
+        }
+    }
+
     fun eventType(event: AiEvent): String = when (event) {
         is AiEvent.Started -> "started"
         is AiEvent.Status -> "status"
@@ -378,6 +437,16 @@ object AgentRunJournalCodec {
             child.finish()
         }
 
+        fun stringArray(name: String, values: List<String>) {
+            property(name)
+            output.append('[')
+            values.forEachIndexed { index, value ->
+                if (index > 0) output.append(',')
+                output.appendJsonString(value)
+            }
+            output.append(']')
+        }
+
         fun finish() {
             output.append('}')
         }
@@ -428,6 +497,14 @@ object AgentRunJournalCodec {
         }
         append('"')
     }
+}
+
+enum class AgentExperienceEventType(val wireValue: String) {
+    RUN_ACCEPTED("run_accepted"),
+    TOOL_OBSERVATION("tool_observation"),
+    RUN_COMPLETED("run_completed"),
+    RUN_FAILED("run_failed"),
+    RUN_CANCELLED("run_cancelled"),
 }
 
 private fun AiEvent.journalKind(): AgentJournalKind = when (this) {

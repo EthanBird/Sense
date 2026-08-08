@@ -81,6 +81,7 @@ fun ImeAgentSurface(
                         actions = actions,
                     )
                 }
+                DirectActionArea(state, actions)
                 AgentComposer(state, actions)
             }
             if (state.menuVisible) {
@@ -114,6 +115,153 @@ fun ImeAgentSurface(
                 AgentOverflowMenu(state, actions)
             }
         }
+    }
+}
+
+@Composable
+private fun DirectActionArea(
+    state: AgentUiState,
+    actions: AgentUiActions,
+) {
+    val palette = LocalAgentPalette.current
+    val action = state.action
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 3.dp),
+        shape = RoundedCornerShape(14.dp),
+        color = palette.secondaryBackground,
+        border = androidx.compose.foundation.BorderStroke(0.5.dp, palette.border),
+    ) {
+        if (action == null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(enabled = state.loaded, onClick = actions.onGoldQuote)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("◉", color = Color(0xFFD89B24), fontSize = 17.sp)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "黄金现价",
+                    color = palette.textPrimary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(Modifier.width(7.dp))
+                Text("直连 API · 0 Token", color = palette.textTertiary, fontSize = 10.sp)
+                Spacer(Modifier.weight(1f))
+                Text("获取  ›", color = palette.accent, fontSize = 12.sp)
+            }
+        } else {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (action.state == AgentActionState.RUNNING) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(14.dp),
+                            color = palette.accent,
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Text(
+                            if (action.state == AgentActionState.SUCCEEDED) "✓" else "!",
+                            color = if (action.state == AgentActionState.SUCCEEDED) {
+                                palette.accent
+                            } else {
+                                palette.danger
+                            },
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                    Spacer(Modifier.width(7.dp))
+                    Text(
+                        action.title,
+                        color = palette.textPrimary,
+                        fontSize = 12.5.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        "0 Token",
+                        color = palette.accent,
+                        fontSize = 9.5.sp,
+                        modifier = Modifier.padding(end = 10.dp),
+                    )
+                    Text(
+                        if (action.state == AgentActionState.RUNNING) "停止" else "×",
+                        color = palette.textSecondary,
+                        fontSize = 12.sp,
+                        modifier = Modifier.clickable {
+                            if (action.state == AgentActionState.RUNNING) {
+                                actions.onCancelAction()
+                            } else {
+                                actions.onDismissAction()
+                            }
+                        },
+                    )
+                }
+                if (action.primaryValue.isNotBlank()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                        verticalAlignment = Alignment.Bottom,
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                action.primaryValue,
+                                color = palette.textPrimary,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Text(
+                                action.secondaryValue,
+                                color = palette.textTertiary,
+                                fontSize = 9.5.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        CompactActionButton("刷新", actions.onGoldQuote)
+                        Spacer(Modifier.width(6.dp))
+                        CompactActionButton("分析") { actions.onAnalyzeAction(action) }
+                        Spacer(Modifier.width(6.dp))
+                        CompactActionButton("写入") { actions.onInsertAction(action) }
+                    }
+                } else {
+                    Text(
+                        action.detail,
+                        color = if (action.state == AgentActionState.FAILED) {
+                            palette.danger
+                        } else {
+                            palette.textSecondary
+                        },
+                        fontSize = 10.sp,
+                        modifier = Modifier.padding(top = 4.dp),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CompactActionButton(text: String, onClick: () -> Unit) {
+    val palette = LocalAgentPalette.current
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = palette.composerBackground,
+        border = androidx.compose.foundation.BorderStroke(0.5.dp, palette.border),
+        modifier = Modifier.clickable(onClick = onClick),
+    ) {
+        Text(
+            text,
+            color = palette.textPrimary,
+            fontSize = 10.sp,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+        )
     }
 }
 

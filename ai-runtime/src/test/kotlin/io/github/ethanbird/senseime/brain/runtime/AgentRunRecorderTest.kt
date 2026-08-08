@@ -206,6 +206,29 @@ class AgentRunRecorderTest {
         }
 
     @Test
+    fun `experience sidecar cites immutable raw evidence without replacing it`() =
+        withJournalDirectory { directory ->
+            AgentEventJournal.open(directory).use { journal ->
+                val recorder = AgentRunRecorder.begin(journal, request())
+                val sidecar = recorder.recordExperienceEvent(
+                    type = AgentExperienceEventType.RUN_ACCEPTED,
+                    summary = "用户偏好冷静克制的表达",
+                    sourceRecordSequences = listOf(recorder.inputRecordSequence),
+                    facts = mapOf("kind" to "preference"),
+                    occurredAtEpochMs = 123L,
+                )
+
+                val records = journal.readLatest(limit = 2).records
+                assertEquals(AgentJournalKind.REQUEST_INPUT_SNAPSHOT, records[0].kind)
+                assertEquals(AgentJournalKind.EXPERIENCE_EVENT, records[1].kind)
+                assertEquals(sidecar.sequence, records[1].sequence)
+                assertEquals("journal:${records[0].sequence}", records[1].attributes["source_record_ids"])
+                assertTrue(records[1].lexicalText.contains("用户偏好冷静克制"))
+                assertTrue(records[1].lexicalText.contains("\"source_record_ids\":[\"journal:1\"]"))
+            }
+        }
+
+    @Test
     fun `recorder supports explicit flush and durable boundaries after deferred stream events`() =
         withJournalDirectory { directory ->
             val deferredRaw = byteArrayOf(0, -1, 7, 0, 9)

@@ -221,6 +221,7 @@ class AiBrainEngine(
                     enabledTools = spec.enabledTools,
                     skillCatalog = authorizedSkillCatalog,
                     skillCatalogGeneration = authorizedSkillCatalogGeneration,
+                    recallFrame = spec.recallFrame,
                 )
             } catch (_: Exception) {
                 failLocally(HarnessErrorCode.INTERNAL_FAILURE, retryable = false)

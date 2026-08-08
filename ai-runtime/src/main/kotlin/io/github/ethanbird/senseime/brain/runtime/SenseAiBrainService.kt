@@ -26,6 +26,10 @@ import io.github.ethanbird.senseime.brain.BrainRequestMode
 import io.github.ethanbird.senseime.brain.api.AgentSkillCatalog
 import io.github.ethanbird.senseime.brain.api.AgentSkillDefinition
 import io.github.ethanbird.senseime.brain.api.AgentSkillMutation
+import io.github.ethanbird.senseime.brain.api.AgentRecallCoverage
+import io.github.ethanbird.senseime.brain.api.AgentRecallEvidence
+import io.github.ethanbird.senseime.brain.api.AgentRecallFrame
+import io.github.ethanbird.senseime.brain.api.AgentToolId
 import io.github.ethanbird.senseime.brain.api.BrainTraceEvent
 import io.github.ethanbird.senseime.brain.api.BrainRunSpec
 import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
@@ -51,6 +55,7 @@ class SenseAiBrainService : Service() {
     private lateinit var toolSettings: AgentToolSettingsStore
     private lateinit var skillStore: AgentSkillStore
     private lateinit var durableRunStore: AgentDurableRunStore
+    private lateinit var memorySource: JournalAgentMemorySearchSource
     /*
      * Shared across Service instances in this :brain process. Android may construct a replacement
      * Service immediately after onDestroy() returns, while the old instance is still draining a
@@ -92,7 +97,11 @@ class SenseAiBrainService : Service() {
                 journalOpenFailure = it
             }
         }
-        val memorySource = JournalAgentMemorySearchSource { journal }
+        val actionHistoryStore = ActionHistoryStore(application)
+        memorySource = JournalAgentMemorySearchSource(
+            journal = { journal },
+            actionHistory = { actionHistoryStore },
+        )
         val skillSource = object : AgentSkillToolSource {
             override fun read(skillId: String, revision: Long): AgentSkillDefinition? =
                 skillStore.readRevision(skillId, revision).getOrThrow()
@@ -221,7 +230,22 @@ class SenseAiBrainService : Service() {
             return
         }
         val recorder = runCatching {
-            AgentRunRecorder.begin(activeJournal, request)
+            AgentRunRecorder.begin(activeJournal, request).also { recorder ->
+                val recallQuery = latestRecallQuery(request)
+                recorder.recordExperienceEvent(
+                    type = AgentExperienceEventType.RUN_ACCEPTED,
+                    summary = if (recallQuery.isBlank()) {
+                        "Agent run accepted: ${request.skill.wireValue}"
+                    } else {
+                        "User task: $recallQuery"
+                    },
+                    sourceRecordSequences = listOf(recorder.inputRecordSequence),
+                    facts = mapOf(
+                        "skill" to request.skill.wireValue,
+                        "result_mode" to request.resultMode.wireValue,
+                    ),
+                )
+            }
         }.getOrElse {
             emit(
                 current,
@@ -347,6 +371,11 @@ class SenseAiBrainService : Service() {
                     skillCatalog = skillCatalog.definitions.map { it.toSummary() },
                     skillCatalogGeneration = skillCatalog.generation,
                     enabledTools = enabledTools,
+                    recallFrame = if (AgentToolId.MEMORY_SEARCH in enabledTools) {
+                        assembleRecallFrame(request)
+                    } else {
+                        AgentRecallFrame.EMPTY
+                    },
                     traceSink = { trace -> recordTrace(current, trace) },
                 ),
                 sink = { event -> emit(current, event) },
@@ -454,13 +483,16 @@ class SenseAiBrainService : Service() {
             }
         } ?: return false
         runCatching {
-            current.recorder?.record(
-                AiEvent.Cancelled(
-                    current.identity.first,
-                    current.identity.second,
-                    reason,
-                ),
-            )
+            current.recorder?.let { recorder ->
+                recordPublicEvent(
+                    recorder,
+                    AiEvent.Cancelled(
+                        current.identity.first,
+                        current.identity.second,
+                        reason,
+                    ),
+                )
+            }
         }
         return true
     }
@@ -468,7 +500,7 @@ class SenseAiBrainService : Service() {
     private fun emit(expectedRun: ActiveRun, event: AiEvent) {
         if ((event.requestId to event.runGeneration) != expectedRun.identity) return
         val retained = expectedRun.recorder?.let { recorder ->
-            runCatching { recorder.record(event) }.isSuccess
+            runCatching { recordPublicEvent(recorder, event) }.isSuccess
         } ?: false
         if (!retained) {
             expectedRun.retentionGate.markFailed()?.let { handle ->
@@ -744,13 +776,121 @@ class SenseAiBrainService : Service() {
                     arguments = trace.arguments,
                 )
             }
-            is BrainTraceEvent.ToolResult -> recorder.recordToolResult(
-                toolCallId = trace.callId,
-                toolName = trace.toolName,
-                result = trace.content,
-                isError = trace.isError,
+            is BrainTraceEvent.ToolResult -> {
+                val raw = recorder.recordToolResult(
+                    toolCallId = trace.callId,
+                    toolName = trace.toolName,
+                    result = trace.content,
+                    isError = trace.isError,
+                )
+                recorder.recordExperienceEvent(
+                    type = AgentExperienceEventType.TOOL_OBSERVATION,
+                    summary = buildString {
+                        append(trace.toolName).append(if (trace.isError) " failed: " else " result: ")
+                        append(trace.content.take(MAX_EXPERIENCE_SUMMARY_CHARS))
+                    },
+                    sourceRecordSequences = listOf(raw.sequence),
+                    facts = mapOf(
+                        "tool_name" to trace.toolName,
+                        "is_error" to trace.isError.toString(),
+                    ),
+                )
+            }
+        }
+    }
+
+    private fun recordPublicEvent(
+        recorder: AgentRunRecorder,
+        event: AiEvent,
+    ) {
+        val raw = recorder.record(event)
+        val experience = when (event) {
+            is AiEvent.FinalAnswer -> Triple(
+                AgentExperienceEventType.RUN_COMPLETED,
+                event.text.take(MAX_EXPERIENCE_SUMMARY_CHARS),
+                mapOf("outcome" to "answer"),
+            )
+            is AiEvent.FinalPatch -> Triple(
+                AgentExperienceEventType.RUN_COMPLETED,
+                (event.patch.operation.text ?: "Editor patch completed")
+                    .take(MAX_EXPERIENCE_SUMMARY_CHARS),
+                mapOf("outcome" to "patch"),
+            )
+            is AiEvent.Failed -> Triple(
+                AgentExperienceEventType.RUN_FAILED,
+                "Agent run failed: ${event.code.name}",
+                mapOf("error_code" to event.code.name, "retryable" to event.retryable.toString()),
+            )
+            is AiEvent.Cancelled -> Triple(
+                AgentExperienceEventType.RUN_CANCELLED,
+                "Agent run cancelled: ${event.reason.name}",
+                mapOf("reason" to event.reason.name),
+            )
+            else -> null
+        }
+        experience?.let { (type, summary, facts) ->
+            recorder.recordExperienceEvent(
+                type = type,
+                summary = summary,
+                sourceRecordSequences = listOf(raw.sequence),
+                facts = facts,
             )
         }
+    }
+
+    private fun assembleRecallFrame(request: io.github.ethanbird.senseime.ai.protocol.HarnessRequestV1): AgentRecallFrame {
+        if (ProviderConnectionTestProtocol.isProbe(request)) return AgentRecallFrame.EMPTY
+        val query = latestRecallQuery(request)
+        if (query.isBlank()) return AgentRecallFrame.EMPTY
+        val page = runCatching {
+            memorySource.searchPage(
+                query = query,
+                maxResults = AgentRecallFrame.MAX_EVIDENCE,
+                excludeRequestId = request.requestId,
+                excludeRunGeneration = request.runGeneration,
+            )
+        }.getOrNull() ?: return AgentRecallFrame.EMPTY
+        val evidence = page.hits.mapNotNull { hit ->
+            val text = hit.text.trim().take(AgentRecallEvidence.MAX_TEXT_CHARS)
+            if (text.isBlank()) null else AgentRecallEvidence(
+                recordId = hit.id.take(256),
+                text = text,
+                source = hit.source.take(256),
+                channel = hit.channel.take(64).ifBlank { "session_evidence" },
+                evidenceRecordIds = hit.evidenceRecordIds.take(8).map { it.take(256) },
+            )
+        }.take(AgentRecallFrame.MAX_EVIDENCE)
+        if (evidence.isEmpty()) return AgentRecallFrame.EMPTY
+        return AgentRecallFrame(
+            query = query,
+            evidence = evidence,
+            coverage = AgentRecallCoverage(
+                scannedRecords = page.coverage.scannedRecords,
+                scannedBytes = page.coverage.scannedBytes,
+                truncated = page.coverage.truncated,
+                channels = page.coverage.channels,
+            ),
+        )
+    }
+
+    private fun latestRecallQuery(request: io.github.ethanbird.senseime.ai.protocol.HarnessRequestV1): String {
+        val snapshot = request.snapshot
+        val selected = snapshot.selection?.takeIf { it.start < it.end }?.let { selection ->
+            val localStart = selection.start - snapshot.textStartOffset
+            val localEnd = selection.end - snapshot.textStartOffset
+            if (localStart >= 0 && localEnd <= snapshot.text.length) {
+                snapshot.text.substring(localStart, localEnd)
+            } else {
+                null
+            }
+        }
+        val source = selected ?: snapshot.text.let { text ->
+            val marker = "\nUSER: "
+            val lastUser = text.lastIndexOf(marker)
+            if (lastUser >= 0) text.substring(lastUser + marker.length) else text
+        }
+        val compact = source.trim().takeLast(AgentRecallFrame.MAX_QUERY_CHARS)
+        return compact.takeIf { value -> value.any(Character::isLetterOrDigit) }.orEmpty()
     }
 
     /**
@@ -974,6 +1114,7 @@ class SenseAiBrainService : Service() {
         private const val TICK_INTERVAL_MS = 100L
         private const val IPC_FRAME_INTERVAL_MS = 16L
         private const val MAX_RUN_SUBSCRIBERS = 4
+        private const val MAX_EXPERIENCE_SUMMARY_CHARS = 1_500
         private val PROCESS_ADMISSION_EXECUTOR = Executors.newSingleThreadExecutor { runnable ->
             Thread(runnable, "sense-brain-admission").apply { isDaemon = true }
         }

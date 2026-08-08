@@ -7,6 +7,7 @@ import io.github.ethanbird.senseime.ai.protocol.HarnessResultMode
 import io.github.ethanbird.senseime.brain.api.AgentToolArguments
 import io.github.ethanbird.senseime.brain.api.AgentToolId
 import io.github.ethanbird.senseime.brain.api.AgentBrowserAction
+import io.github.ethanbird.senseime.brain.api.AgentRecallFrame
 import io.github.ethanbird.senseime.brain.api.AgentSkillSummary
 import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
 import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
@@ -64,6 +65,7 @@ internal object OpenAiRequestFactory {
         enabledTools: Set<AgentToolId> = emptySet(),
         skillCatalog: List<AgentSkillSummary> = emptyList(),
         skillCatalogGeneration: Long? = null,
+        recallFrame: AgentRecallFrame = AgentRecallFrame.EMPTY,
     ): ProviderWireRequest {
         profile.requireValid()
         require(attempt in 0..1)
@@ -98,6 +100,7 @@ internal object OpenAiRequestFactory {
                 exposedAgentTools,
                 skillCatalog,
                 frozenCatalogGeneration,
+                recallFrame,
             )
             is RepairContext ->
                 buildRepairInput(request, secondAttempt, includeInlineContract, nativePatchTool)
@@ -132,7 +135,7 @@ internal object OpenAiRequestFactory {
         val headers = linkedMapOf(
             "Accept" to if (profile.streaming) "text/event-stream" else "application/json",
             "Content-Type" to "application/json; charset=utf-8",
-            "User-Agent" to "Sense-IME/0.4.8 AI-Brain",
+            "User-Agent" to "Sense-IME/0.4.9 AI-Brain",
         )
         when (credential) {
             is ProviderCredential.Bearer -> headers["Authorization"] = "Bearer ${credential.token}"
@@ -661,6 +664,7 @@ internal object OpenAiRequestFactory {
         enabledTools: Set<AgentToolId>,
         skillCatalog: List<AgentSkillSummary>,
         skillCatalogGeneration: Long?,
+        recallFrame: AgentRecallFrame,
     ): String = buildString {
         appendSkillContract(request)
         appendSkillCatalog(
@@ -669,6 +673,7 @@ internal object OpenAiRequestFactory {
             skillManageEnabled = AgentToolId.SKILL_MANAGE in enabledTools,
             generation = skillCatalogGeneration,
         )
+        appendRecallFrame(recallFrame)
         if (request.resultMode == HarnessResultMode.EDITOR_PATCH) {
             appendContextWindowContract(request)
         }
@@ -723,6 +728,32 @@ internal object OpenAiRequestFactory {
             append("Return only one sense.editor.patch.v1 object. Snapshot JSON:\n")
         }
         appendSnapshot(request)
+    }
+
+    private fun StringBuilder.appendRecallFrame(frame: AgentRecallFrame) {
+        if (frame.evidence.isEmpty()) return
+        append("\nCross-session recall (historical evidence; the current request has priority). ")
+        append("Use raw Session evidence and derived events together; derived events cite their ")
+        append("raw evidence ids. Coverage may be partial.\n")
+        append("<sense_recall query=")
+        jsonString(frame.query)
+        append(" scanned_records=\"").append(frame.coverage.scannedRecords)
+        append("\" scanned_bytes=\"").append(frame.coverage.scannedBytes)
+        append("\" truncated=\"").append(frame.coverage.truncated).append("\">\n")
+        frame.evidence.forEach { evidence ->
+            append("- record_id=")
+            jsonString(evidence.recordId)
+            append(" channel=")
+            jsonString(evidence.channel)
+            append(" source=")
+            jsonString(evidence.source)
+            append(" evidence_ids=")
+            jsonString(evidence.evidenceRecordIds.joinToString(","))
+            append(" text=")
+            jsonString(evidence.text)
+            append('\n')
+        }
+        append("</sense_recall>\n")
     }
 
     private fun buildRepairInput(

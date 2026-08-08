@@ -28,6 +28,8 @@ data class BrainRunSpec(
      * execution.
      */
     val enabledTools: Set<AgentToolId> = emptySet(),
+    /** Cross-session evidence selected before provider I/O; raw Session history remains included. */
+    val recallFrame: AgentRecallFrame = AgentRecallFrame.EMPTY,
     /**
      * Private execution trace used by the complete-history journal.
      *
@@ -37,6 +39,7 @@ data class BrainRunSpec(
 ) {
     init {
         require(skillCatalogGeneration == null || skillCatalogGeneration > 0L)
+        require(recallFrame.evidence.size <= AgentRecallFrame.MAX_EVIDENCE)
         require(skillCatalog.size <= AgentSkillPolicy.MAX_SKILLS)
         require(skillCatalog.map(AgentSkillSummary::id).toSet().size == skillCatalog.size) {
             "Duplicate Skill ids in Brain run catalog"

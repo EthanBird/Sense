@@ -22,6 +22,8 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import io.github.ethanbird.senseime.agent.ui.AgentMessageRole
 import io.github.ethanbird.senseime.agent.ui.AgentMessageUi
+import io.github.ethanbird.senseime.agent.ui.AgentActionState
+import io.github.ethanbird.senseime.agent.ui.AgentActionUi
 import io.github.ethanbird.senseime.agent.ui.AgentConversationUi
 import io.github.ethanbird.senseime.agent.ui.AgentToolKind
 import io.github.ethanbird.senseime.agent.ui.AgentToolState
@@ -36,6 +38,7 @@ import io.github.ethanbird.senseime.brain.api.AgentSkillDirection
 import io.github.ethanbird.senseime.brain.api.AgentSkillSlot
 import io.github.ethanbird.senseime.brain.runtime.AgentSkillStore
 import io.github.ethanbird.senseime.brain.runtime.AgentHubMessageRole
+import io.github.ethanbird.senseime.brain.runtime.AgentHubActionState
 import io.github.ethanbird.senseime.brain.runtime.AgentHubObserver
 import io.github.ethanbird.senseime.brain.runtime.AgentHubProjection
 import io.github.ethanbird.senseime.brain.runtime.AgentHubToolState
@@ -676,6 +679,23 @@ class SenseInputMethodService : InputMethodService() {
                     publishAgentUi()
                 }
             },
+            onGoldQuote = { agentRuntime?.runGoldQuote() },
+            onCancelAction = { agentRuntime?.cancelAction() },
+            onDismissAction = { agentRuntime?.dismissAction() },
+            onInsertAction = { action ->
+                if (AgentExternalEditorWriter.insert(currentInputConnection, action.insertText)) {
+                    closeAgentFront()
+                    Toast.makeText(this, "行情已写入当前输入框", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "当前输入框未接受写入", Toast.LENGTH_SHORT).show()
+                }
+            },
+            onAnalyzeAction = { action ->
+                val prompt = "请结合上下文分析这条实时行情：${action.insertText}"
+                if (agentRuntime?.send(prompt) != true) {
+                    Toast.makeText(this, "Agent 正在执行其他任务", Toast.LENGTH_SHORT).show()
+                }
+            },
         )
     }
 
@@ -768,6 +788,24 @@ class SenseInputMethodService : InputMethodService() {
                     preview = conversation.preview,
                     messageCount = conversation.messageCount,
                     current = conversation.current,
+                )
+            },
+            action = agentProjection.action?.let { action ->
+                AgentActionUi(
+                    requestId = action.requestId,
+                    skillId = action.skillId,
+                    title = action.title,
+                    primaryValue = action.primaryValue,
+                    secondaryValue = action.secondaryValue,
+                    insertText = action.insertText,
+                    sourceLabel = action.sourceLabel,
+                    state = when (action.state) {
+                        AgentHubActionState.RUNNING -> AgentActionState.RUNNING
+                        AgentHubActionState.SUCCEEDED -> AgentActionState.SUCCEEDED
+                        AgentHubActionState.FAILED -> AgentActionState.FAILED
+                        AgentHubActionState.CANCELLED -> AgentActionState.CANCELLED
+                    },
+                    detail = action.detail,
                 )
             },
         )
