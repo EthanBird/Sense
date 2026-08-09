@@ -10,9 +10,27 @@ concurrency:
 
 permissions:
   contents: write
+  statuses: write
 
 jobs:
+  release-pending:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish observable release status
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              ...context.repo,
+              sha: context.sha,
+              state: 'pending',
+              context: 'release/v0.4.10',
+              description: 'Signed v0.4.10 release is running',
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            })
+
   verify-build-release:
+    needs: release-pending
     if: github.repository == 'EthanBird/Sense'
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -159,3 +177,24 @@ jobs:
           if [[ -n "${SENSE_RELEASE_STORE_FILE:-}" && -f "$SENSE_RELEASE_STORE_FILE" ]]; then
             shred -u "$SENSE_RELEASE_STORE_FILE" || true
           fi
+
+  release-status:
+    if: always()
+    needs: verify-build-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish final release status
+        uses: actions/github-script@v8
+        env:
+          RELEASE_RESULT: ${{ needs.verify-build-release.result }}
+        with:
+          script: |
+            const success = process.env.RELEASE_RESULT === 'success'
+            await github.rest.repos.createCommitStatus({
+              ...context.repo,
+              sha: context.sha,
+              state: success ? 'success' : 'failure',
+              context: 'release/v0.4.10',
+              description: success ? 'Signed v0.4.10 release published' : `Release ${process.env.RELEASE_RESULT}`,
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            })
