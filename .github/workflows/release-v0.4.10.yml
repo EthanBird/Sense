@@ -1,4 +1,5 @@
 name: Release v0.4.10
+# The status jobs make publication observable to GitHub API clients without Actions-list access.
 
 on:
   push:
