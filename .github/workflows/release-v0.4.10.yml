@@ -1,0 +1,161 @@
+name: Release v0.4.10
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release-v0.4.10
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  verify-build-release:
+    if: github.repository == 'EthanBird/Sense'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: release
+    env:
+      RELEASE_TAG: v0.4.10
+      RELEASE_APK: Sense-v0.4.10.apk
+      RELEASE_CERT_SHA256: 76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Verify release identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F 'versionCode = 35' app/build.gradle.kts
+          grep -F 'versionName = "0.4.10"' app/build.gradle.kts
+          python3 tools/test_release_plan.py
+
+      - name: Materialize persistent signing identity
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.SENSE_RELEASE_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.SENSE_RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.SENSE_RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.SENSE_RELEASE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$KEYSTORE_BASE64"
+          test -n "$STORE_PASSWORD"
+          test -n "$KEY_ALIAS"
+          test -n "$KEY_PASSWORD"
+          keystore="$RUNNER_TEMP/sense-release-v1.p12"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$keystore"
+          chmod 600 "$keystore"
+          {
+            echo "SENSE_RELEASE_STORE_FILE=$keystore"
+            echo "SENSE_RELEASE_STORE_PASSWORD=$STORE_PASSWORD"
+            echo "SENSE_RELEASE_KEY_ALIAS=$KEY_ALIAS"
+            echo "SENSE_RELEASE_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Test and build signed APK
+        run: >-
+          ./gradlew
+          :brain-api:test
+          :ai-brain:test
+          :ai-runtime:testDebugUnitTest
+          :app:testDebugUnitTest
+          :app:lintDebug
+          :app:assembleRelease
+
+      - name: Verify and stage release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          apk=$(find app/build/outputs/apk/release -type f -name '*.apk' -print -quit)
+          test -n "$apk"
+          build_tools=$(find "$ANDROID_SDK_ROOT/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+          "$build_tools/apksigner" verify --verbose --print-certs "$apk" | tee release/apksigner.txt
+          grep -Fx 'Number of signers: 1' release/apksigner.txt
+          grep -Fi "Signer #1 certificate SHA-256 digest: $RELEASE_CERT_SHA256" release/apksigner.txt
+          "$build_tools/zipalign" -c -P 16 4 "$apk"
+          "$build_tools/aapt2" dump badging "$apk" | tee release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='35' versionName='0.4.10'" release/apk-badging.txt
+          grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
+          grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
+          cp "$apk" "release/$RELEASE_APK"
+          (cd release && sha256sum "$RELEASE_APK" > SHA256SUMS.txt)
+
+      - name: Create tag and GitHub Release through the GitHub API
+        uses: actions/github-script@v8
+        env:
+          NOTES_PATH: docs/releases/v0.4.10.md
+          ASSET_DIR: release
+        with:
+          script: |
+            const fs = require('fs')
+            const { owner, repo } = context.repo
+            const tag = process.env.RELEASE_TAG
+            const sha = context.sha
+            let tagExists = false
+            try {
+              const ref = await github.rest.git.getRef({ owner, repo, ref: `tags/${tag}` })
+              tagExists = true
+              if (ref.data.object.sha !== sha) {
+                core.setFailed(`${tag} already targets ${ref.data.object.sha}, expected ${sha}`)
+                return
+              }
+            } catch (error) {
+              if (error.status !== 404) throw error
+            }
+            if (!tagExists) {
+              await github.rest.git.createRef({ owner, repo, ref: `refs/tags/${tag}`, sha })
+            }
+            let release
+            try {
+              release = (await github.rest.repos.getReleaseByTag({ owner, repo, tag })).data
+            } catch (error) {
+              if (error.status !== 404) throw error
+              release = (await github.rest.repos.createRelease({
+                owner,
+                repo,
+                tag_name: tag,
+                target_commitish: sha,
+                name: `Sense ${tag}`,
+                body: fs.readFileSync(process.env.NOTES_PATH, 'utf8'),
+                draft: false,
+                prerelease: false,
+              })).data
+            }
+            for (const name of [process.env.RELEASE_APK, 'SHA256SUMS.txt']) {
+              const existing = release.assets.find(asset => asset.name === name)
+              if (existing) {
+                await github.rest.repos.deleteReleaseAsset({ owner, repo, asset_id: existing.id })
+              }
+              const data = fs.readFileSync(`${process.env.ASSET_DIR}/${name}`)
+              await github.rest.repos.uploadReleaseAsset({
+                owner,
+                repo,
+                release_id: release.id,
+                name,
+                headers: {
+                  'content-type': name.endsWith('.apk') ? 'application/vnd.android.package-archive' : 'text/plain',
+                  'content-length': data.length,
+                },
+                data,
+              })
+            }
+
+      - name: Remove materialized signing key
+        if: always()
+        shell: bash
+        run: |
+          if [[ -n "${SENSE_RELEASE_STORE_FILE:-}" && -f "$SENSE_RELEASE_STORE_FILE" ]]; then
+            shred -u "$SENSE_RELEASE_STORE_FILE" || true
+          fi

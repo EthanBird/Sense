@@ -146,6 +146,19 @@ internal class SettingsViewFactory(
         setLineSpacing(0f, 1.16f)
     }
 
+    fun text(
+        value: CharSequence,
+        size: Float,
+        colorRes: Int,
+        style: Int = Typeface.NORMAL,
+    ): TextView = TextView(activity).apply {
+        text = value
+        textSize = size
+        typeface = Typeface.create(Typeface.DEFAULT, style)
+        setTextColor(activity.getColor(colorRes))
+        setLineSpacing(0f, 1.12f)
+    }
+
     fun rounded(fill: Int, radius: Float, stroke: Int? = null): GradientDrawable =
         GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE

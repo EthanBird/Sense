@@ -13,6 +13,7 @@ data class ProviderProfile(
     val schemaVersion: Int = CURRENT_SCHEMA_VERSION,
     val id: String,
     val displayName: String,
+    val authMode: ProviderAuthMode = ProviderAuthMode.API_KEY,
     val apiStyle: ProviderApiStyle = ProviderApiStyle.OPENAI_RESPONSES,
     val baseUrl: String = DEFAULT_OPENAI_BASE_URL,
     val model: String,
@@ -53,6 +54,13 @@ data class ProviderProfile(
         const val CURRENT_SCHEMA_VERSION = 1
         const val DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1"
     }
+}
+
+/** Authentication is explicit so subscription sessions are never mistaken for API keys. */
+enum class ProviderAuthMode {
+    API_KEY,
+    CODEX_SUBSCRIPTION,
+    NONE,
 }
 
 enum class ProviderApiStyle {

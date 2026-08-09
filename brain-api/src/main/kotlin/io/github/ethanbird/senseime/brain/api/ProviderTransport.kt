@@ -22,6 +22,20 @@ sealed interface ProviderCredential {
         }
     }
 
+    /** Ephemeral ChatGPT session material used by the Codex subscription Responses endpoint. */
+    data class ChatGpt(
+        val accessToken: String,
+        val accountId: String,
+    ) : ProviderCredential {
+        init {
+            Bearer(accessToken)
+            require(accountId.isNotBlank() && accountId.length <= 256)
+            require(accountId.none { it.code < 0x20 || it == '\u007f' })
+        }
+
+        override fun toString(): String = "ChatGpt(**redacted**)"
+    }
+
     data object None : ProviderCredential
 }
 
@@ -46,7 +60,10 @@ data class ProviderWireRequest(
     override fun toString(): String =
         "ProviderWireRequest(requestId=$requestId, attempt=$attempt, url=$url, method=$method, " +
             "headers=${headers.mapValues { (name, value) ->
-                if (name.equals("Authorization", ignoreCase = true)) "**redacted**" else value
+                if (
+                    name.equals("Authorization", ignoreCase = true) ||
+                    name.equals("ChatGPT-Account-ID", ignoreCase = true)
+                ) "**redacted**" else value
             }}, bodyBytes=${body.size}, connectTimeoutMs=$connectTimeoutMs, " +
             "readTimeoutMs=$readTimeoutMs)"
 }

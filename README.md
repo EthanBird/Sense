@@ -10,9 +10,9 @@
 > 分帧与 SRSS WebSocket 转写，选择后无需 API Key 即可从键盘语音入口使用。协议与
 > 双实现验证见[接入记录](docs/research/sogou-asr-provider-integration-2026-08-01.md)。
 
-**项目状态：** `v0.4.9` 可进化记忆与 0 Token Action Skills 正式版
+**项目状态：** `v0.4.10` Provider 目录、Codex 订阅与 Action Skills 管理正式版
 
-**当前版本：** `v0.4.9`（`versionCode 34`）
+**当前版本：** `v0.4.10`（`versionCode 35`）
 
 **更新日期：** 2026-08-09
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
@@ -30,7 +30,15 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.9 可进化记忆与 0 Token Action Skills
+## 0. 当前迭代：v0.4.10 Provider 与 Action Skills 管理
+
+`v0.4.10` 将设置首页继续拆分为可长期扩展的独立页面。Provider 不再通过下拉框切换，
+而是提供与 jcode 对齐的完整目录、独立详情、按钮式协议/推理选择，以及 Codex 订阅的
+OpenAI 官方设备授权流程；Android 会打开系统浏览器完成登录，刷新令牌由 Keystore
+加密。0 Token Action Skills 现在拥有独立设置入口，开关同时约束 Agent 入口和运行时。
+完整变更见 [`v0.4.10` 发布说明](docs/releases/v0.4.10.md)。
+
+## 0.1 v0.4.9 可进化记忆与 0 Token Action Skills
 
 `v0.4.9` 将 Agent 历史升级为双轨事实模型：每个 Session 的完整请求、Provider 原始
 输入输出、工具交换、流式片段与终态继续作为不可变证据追加保留；结构化经历事件只在
@@ -180,8 +188,8 @@ initials、渐进 limit 16、渐进 limit 255 和组合 p95 分别为
 决策记录见 [ADR 0022](docs/adr/0022-gpl-rime-frost-lexicon-pipeline.md)、
 [ADR 0023](docs/adr/0023-v0.4.5-beta5-decoder-quality.md) 与
 [ADR 0025](docs/adr/0025-three-chinese-schemes-t9-dag-and-wubi86.md)，详细发布门禁见
-[`v0.4.9` 发布说明](docs/releases/v0.4.9.md)，最新发布资产见
-[`v0.4.9` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.9)。
+[`v0.4.10` 发布说明](docs/releases/v0.4.10.md)，最新发布资产见
+[`v0.4.10` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.10)。
 
 `v0.4.5.beta.4` 修复键盘刚显示、窗口切换或目录观察 catch-up 时，等价 Skill catalog
 重复发布会撤销已开始长按的问题：解析结果、显示标签与 active Skill 均未变化时保留
@@ -227,24 +235,25 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
 | Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
 | 既有质量 | AI、IME、UI、Core、M0–M7、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 34`、`versionName 0.4.9`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据 | `versionCode 35`、`versionName 0.4.10`、`minSdk 29`、`targetSdk 36` |
 
-仓库不再运行 GitHub Actions；测试、Lint、性能门禁、APK 构建和签名校验统一在 Windows
-本地执行。完整本地验证与构建：
+日常完整本地验证与构建仍可在 Windows 执行：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/local_release.ps1
 ```
 
-当前提交推送到 GitHub 后，由同一脚本创建正式发布、上传 APK 与校验和，并下载资产复核：
+也可由同一脚本执行本地发布诊断：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/local_release.ps1 -Publish
 ```
 
-`-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。
+`-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。`v0.4.10`
+恢复单版本 GitHub Actions 发布门禁：主分支提交通过测试、Lint、固定证书签名与 APK 元数据
+检查后，使用 GitHub API 原子创建 tag、Release、APK 与校验和，不调用 `gh` CLI。
 
-> **v0.4.9 发布收口：** 本轮源码整合完成后会重新运行及人工审查 X-02
+> **v0.4.10 发布收口：** 本轮源码整合完成后会重新运行及人工审查 X-02
 > production source、build authority 与 offline gate 的 exact SHA-256，并同步刷新
 > boundary baseline。正式本地发布会在同一 release `HEAD` 上再次执行 source/artifact
 > gate，并把结果与 APK 签名、校验和一起归档到

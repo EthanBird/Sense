@@ -6,6 +6,7 @@ import android.security.keystore.KeyProperties
 import android.util.AtomicFile
 import android.util.Base64
 import io.github.ethanbird.senseime.brain.api.ProviderApiStyle
+import io.github.ethanbird.senseime.brain.api.ProviderAuthMode
 import io.github.ethanbird.senseime.brain.api.ProviderCompatibility
 import io.github.ethanbird.senseime.brain.api.ProviderCredential
 import io.github.ethanbird.senseime.brain.api.ProviderProfile
@@ -36,6 +37,7 @@ class ProviderSettingsStore(context: Context) {
     private val root = File(applicationContext.filesDir, STORE_DIRECTORY)
     private val file = AtomicFile(File(root, STORE_FILE))
     private val lockFile = File(root, STORE_LOCK_FILE)
+    private val codexAuth by lazy { CodexSubscriptionAuthStore(applicationContext) }
 
     data class StoredProviderConfig(
         val profile: ProviderProfile,
@@ -51,7 +53,9 @@ class ProviderSettingsStore(context: Context) {
             profile.requireValid()
             withStoreLock {
                 val previousSecret =
-                    if (apiKey == null) readDocumentOrNull()?.let(::encryptedSecret) else null
+                    if (apiKey == null && profile.authMode == ProviderAuthMode.API_KEY) {
+                        readDocumentOrNull()?.let(::encryptedSecret)
+                    } else null
                 val nextSecret = when {
                     apiKey == null -> previousSecret
                     apiKey.isEmpty() -> null
@@ -86,10 +90,12 @@ class ProviderSettingsStore(context: Context) {
             }
             val profile = decodeProfile(documentRoot.getJSONObject("profile")).requireValid()
             val secret = encryptedSecret(document)
-            val credential = if (secret == null) {
-                ProviderCredential.None
-            } else {
-                ProviderCredential.Bearer(decrypt(secret))
+            val credential = when (profile.authMode) {
+                ProviderAuthMode.CODEX_SUBSCRIPTION ->
+                    codexAuth.credential().getOrThrow() ?: ProviderCredential.None
+                ProviderAuthMode.API_KEY -> if (secret == null) ProviderCredential.None
+                    else ProviderCredential.Bearer(decrypt(secret))
+                ProviderAuthMode.NONE -> ProviderCredential.None
             }
             StoredProviderConfig(profile, credential)
         }
@@ -107,10 +113,15 @@ class ProviderSettingsStore(context: Context) {
         }
     }
 
-    fun hasCredential(): Boolean =
-        runCatching {
-            withStoreLock { readDocumentOrNull()?.let(::encryptedSecret) != null }
-        }.getOrDefault(false)
+    fun hasCredential(): Boolean = loadProfile().getOrNull()?.let { profile ->
+        when (profile.authMode) {
+            ProviderAuthMode.CODEX_SUBSCRIPTION -> codexAuth.account().getOrNull() != null
+            ProviderAuthMode.API_KEY -> runCatching {
+                withStoreLock { readDocumentOrNull()?.let(::encryptedSecret) != null }
+            }.getOrDefault(false)
+            ProviderAuthMode.NONE -> true
+        }
+    } ?: false
 
     fun clear(): Result<Unit> = runCatching {
         withStoreLock { file.delete() }
@@ -142,6 +153,7 @@ class ProviderSettingsStore(context: Context) {
                     .put("schema_version", profile.schemaVersion)
                     .put("id", profile.id)
                     .put("display_name", profile.displayName)
+                    .put("auth_mode", profile.authMode.name)
                     .put("api_style", profile.apiStyle.name)
                     .put("base_url", profile.baseUrl)
                     .put("model", profile.model)
@@ -180,9 +192,13 @@ class ProviderSettingsStore(context: Context) {
             ?.let(ThinkingMode::valueOf)
             ?: ProviderCompatibility.thinkingModeForLegacyProfile(baseUrl)
         return ProviderProfile(
-            schemaVersion = json.getInt("schema_version"),
+            schemaVersion = ProviderProfile.CURRENT_SCHEMA_VERSION,
             id = json.getString("id"),
             displayName = json.getString("display_name"),
+            authMode = json.optString("auth_mode")
+                .takeIf(String::isNotBlank)
+                ?.let(ProviderAuthMode::valueOf)
+                ?: ProviderAuthMode.API_KEY,
             apiStyle = ProviderApiStyle.valueOf(json.getString("api_style")),
             baseUrl = baseUrl,
             model = ProviderCompatibility.activeModelForSavedProfile(

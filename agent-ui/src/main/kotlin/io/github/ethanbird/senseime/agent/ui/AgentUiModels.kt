@@ -81,6 +81,7 @@ data class AgentUiState(
     val openToolId: String? = null,
     val conversations: List<AgentConversationUi> = emptyList(),
     val action: AgentActionUi? = null,
+    val actionSkillsEnabled: Boolean = true,
 )
 
 data class AgentUiActions(

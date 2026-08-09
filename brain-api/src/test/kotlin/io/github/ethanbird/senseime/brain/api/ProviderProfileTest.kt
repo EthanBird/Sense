@@ -119,6 +119,13 @@ class ProviderProfileTest {
     }
 
     @Test
+    fun `ChatGPT credential validates account header material without exposing it`() {
+        val credential = ProviderCredential.ChatGpt("access-token", "account-123")
+        assertFalse(credential.toString().contains("access-token"))
+        assertFalse(credential.toString().contains("account-123"))
+    }
+
+    @Test
     fun `bearer credential rejects values unsafe for an authorization header`() {
         listOf(
             "",

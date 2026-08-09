@@ -77,4 +77,14 @@ class SettingsNavigationStateTest {
                 )
             }
     }
+
+    @Test
+    fun nestedProviderPagesReturnToTheirParent() {
+        val state = SettingsNavigationState()
+        state.open(SettingsSection.PROVIDER)
+        state.openChild(SettingsSection.PROVIDER_CATALOG, SettingsSection.PROVIDER)
+
+        assertEquals(SettingsBackResult.CONSUMED, state.back())
+        assertEquals(SettingsSection.PROVIDER, state.current)
+    }
 }

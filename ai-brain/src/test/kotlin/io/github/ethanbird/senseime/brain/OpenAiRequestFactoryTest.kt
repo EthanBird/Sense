@@ -151,6 +151,25 @@ class OpenAiRequestFactoryTest {
     }
 
     @Test
+    fun `Codex subscription request carries account-scoped ephemeral headers`() {
+        val wire = OpenAiRequestFactory.create(
+            profile = profile(ProviderApiStyle.OPENAI_RESPONSES).copy(
+                baseUrl = "https://chatgpt.com/backend-api/codex",
+            ),
+            request = harness(),
+            credential = ProviderCredential.ChatGpt("subscription-token", "account-123"),
+            attempt = 0,
+        )
+
+        assertEquals("https://chatgpt.com/backend-api/codex/responses", wire.url)
+        assertEquals("Bearer subscription-token", wire.headers["Authorization"])
+        assertEquals("account-123", wire.headers["ChatGPT-Account-ID"])
+        assertEquals("sense_android", wire.headers["originator"])
+        assertFalse(wire.toString().contains("subscription-token"))
+        assertFalse(wire.toString().contains("account-123"))
+    }
+
+    @Test
     fun `Chat request uses compatible endpoint and response format`() {
         val wire = OpenAiRequestFactory.create(
             profile = profile(ProviderApiStyle.OPENAI_COMPATIBLE_CHAT_COMPLETIONS),

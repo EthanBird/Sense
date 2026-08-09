@@ -23,6 +23,7 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import io.github.ethanbird.senseime.config.ImeSettingsRoute
+import io.github.ethanbird.senseime.brain.api.ProviderPresetId
 
 class SettingsActivity : ComponentActivity() {
     private val navigation = SettingsNavigationState()
@@ -38,6 +39,7 @@ class SettingsActivity : ComponentActivity() {
     private var activeSectionScreen: AutoCloseable? = null
     private var activeSpeechScreen: SpeechSettingsScreen? = null
     private lateinit var skillsScreen: SkillsSettingsScreen
+    private var selectedProviderPreset: ProviderPresetId? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -166,10 +168,28 @@ class SettingsActivity : ComponentActivity() {
             }
             SettingsSection.PROVIDER -> {
                 renderDetailHeader(R.string.settings_provider_title, R.string.settings_provider_summary)
-                val screen = ProviderSettingsScreen(this, settingsViews)
+                val screen = ProviderSettingsScreen(
+                    this,
+                    settingsViews,
+                    initialPresetId = selectedProviderPreset,
+                    onChooseProvider = {
+                        navigation.openChild(SettingsSection.PROVIDER_CATALOG, SettingsSection.PROVIDER)
+                        renderCurrentSection()
+                    },
+                )
                 activeSectionScreen = screen
                 screenContent.addView(
                     card(R.string.ai_provider_title, screen.createView()).withTop(dp(20)),
+                )
+            }
+            SettingsSection.PROVIDER_CATALOG -> {
+                renderDetailHeader(R.string.ai_provider_catalog_title, R.string.ai_provider_catalog_summary)
+                screenContent.addView(
+                    ProviderCatalogScreen(this, settingsViews, selectedProviderPreset) { preset ->
+                        selectedProviderPreset = preset
+                        navigation.openChild(SettingsSection.PROVIDER, SettingsSection.PROVIDER_CATALOG)
+                        renderCurrentSection()
+                    }.createView().withTop(dp(20)),
                 )
             }
             SettingsSection.SOUL -> renderSoul()
@@ -180,6 +200,12 @@ class SettingsActivity : ComponentActivity() {
                 screenContent.addView(
                     card(R.string.agent_tools_title, screen.createView()).withTop(dp(20)),
                 )
+            }
+            SettingsSection.ACTION_SKILLS -> {
+                renderDetailHeader(R.string.settings_action_skills_title, R.string.settings_action_skills_summary)
+                val screen = ActionSkillsSettingsScreen(this, settingsViews)
+                activeSectionScreen = screen
+                screenContent.addView(screen.createView().withTop(dp(20)))
             }
             SettingsSection.SKILLS -> {
                 renderDetailHeader(
@@ -278,6 +304,11 @@ class SettingsActivity : ComponentActivity() {
             SettingsSection.TOOLS,
             R.string.settings_tools_title,
             R.string.settings_tools_summary,
+        )
+        addCategory(
+            SettingsSection.ACTION_SKILLS,
+            R.string.settings_action_skills_title,
+            R.string.settings_action_skills_summary,
         )
         addCategory(
             SettingsSection.SKILLS,

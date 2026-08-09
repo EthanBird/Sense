@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "release_plan.py"
 LOCAL_RELEASE = ROOT / "tools" / "local_release.ps1"
 APP_BUILD = ROOT / "app" / "build.gradle.kts"
-RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.9.md"
+RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.10.md"
 RELEASE_CERT = (
     ROOT
     / "docs"
@@ -306,22 +306,22 @@ class LocalReleaseContractTest(unittest.TestCase):
             APP_BUILD.read_text(encoding="utf-8"),
             str(APP_BUILD),
         )
-        self.assertEqual(AndroidVersion(name="0.4.9", code=34), current)
+        self.assertEqual(AndroidVersion(name="0.4.10", code=35), current)
         self.assertIn(current.tag, self.script)
         self.assertIn(current.apk_name, self.script)
         self.assertIn(
-            'Sense v0.4.9 - Evolvable memory and zero-token Action Skills',
+            'Sense v0.4.10 - Provider directory, Codex login, and Action Skill controls',
             self.script,
         )
         self.assertRegex(
             self.script,
-            re.compile(r"versionCode\s*(?:=|:)?\s*34", re.IGNORECASE),
+            re.compile(r"versionCode\s*(?:=|:)?\s*35", re.IGNORECASE),
         )
 
     def test_release_notes_are_pinned_and_used_for_stable_release(self) -> None:
         self.assertTrue(RELEASE_NOTES.is_file())
-        self.assertIn("# Sense v0.4.9", RELEASE_NOTES.read_text("utf-8"))
-        self.assertIn("v0.4.9.md", self.script)
+        self.assertIn("# Sense v0.4.10", RELEASE_NOTES.read_text("utf-8"))
+        self.assertIn("v0.4.10.md", self.script)
         self.assertIn("--notes-file", self.script)
         self.assertIn("--prerelease=false", self.script)
         self.assertIn("[bool]$release.isPrerelease", self.script)

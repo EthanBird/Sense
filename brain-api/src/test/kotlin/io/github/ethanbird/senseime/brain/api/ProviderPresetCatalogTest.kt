@@ -10,12 +10,21 @@ class ProviderPresetCatalogTest {
     fun `all built-in presets produce valid secret-free profiles`() {
         val builtIns = ProviderPresetCatalog.presets.filterNot(ProviderPreset::isCustom)
 
-        assertEquals(8, builtIns.size)
+        assertEquals(28, builtIns.size)
         builtIns.forEach { preset ->
             assertTrue("${preset.id} must be valid", preset.profile().validate().isValid)
             assertTrue(preset.baseUrl.startsWith("https://"))
             assertTrue(preset.model.isNotBlank())
         }
+    }
+
+    @Test
+    fun `catalog contains every jcode provider plus Codex subscription`() {
+        assertTrue(ProviderPresetCatalog.presets.any { it.id == ProviderPresetId.KIMI_FOR_CODING })
+        assertTrue(ProviderPresetCatalog.presets.any { it.id == ProviderPresetId.TENCENT_TOKENHUB_EP })
+        val codex = ProviderPresetCatalog.requirePreset(ProviderPresetId.CODEX_SUBSCRIPTION)
+        assertEquals(ProviderAuthMode.CODEX_SUBSCRIPTION, codex.authMode)
+        assertEquals("https://chatgpt.com/backend-api/codex/responses", codex.profile().endpointUrl())
     }
 
     @Test

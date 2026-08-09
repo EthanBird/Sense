@@ -81,7 +81,9 @@ fun ImeAgentSurface(
                         actions = actions,
                     )
                 }
-                DirectActionArea(state, actions)
+                if (state.actionSkillsEnabled || state.action != null) {
+                    DirectActionArea(state, actions)
+                }
                 AgentComposer(state, actions)
             }
             if (state.menuVisible) {

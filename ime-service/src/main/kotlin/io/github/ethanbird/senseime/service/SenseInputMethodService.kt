@@ -808,6 +808,7 @@ class SenseInputMethodService : InputMethodService() {
                     detail = action.detail,
                 )
             },
+            actionSkillsEnabled = agentProjection.actionSkillsEnabled,
         )
     }
 

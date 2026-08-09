@@ -486,7 +486,7 @@ class DefaultAgentToolExecutor(
         const val MAX_MEMORY_EVIDENCE_IDS = 8
         const val MOBILE_USER_AGENT =
             "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 " +
-                "(KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36 Sense-IME/0.4.9"
+                "(KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36 Sense-IME/0.4.10"
     }
 }
 

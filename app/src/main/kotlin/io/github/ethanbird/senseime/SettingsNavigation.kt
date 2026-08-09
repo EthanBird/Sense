@@ -8,8 +8,10 @@ internal enum class SettingsSection {
     HOME,
     KEYBOARD,
     PROVIDER,
+    PROVIDER_CATALOG,
     SOUL,
     TOOLS,
+    ACTION_SKILLS,
     SKILLS,
     VOICE,
     ABOUT,
@@ -30,19 +32,28 @@ internal object SettingsSectionExitPolicy {
 internal class SettingsNavigationState(initial: SettingsSection = SettingsSection.HOME) {
     var current: SettingsSection = initial
         private set
+    private var parent: SettingsSection = SettingsSection.HOME
 
     fun open(section: SettingsSection) {
         current = section
+        parent = SettingsSection.HOME
+    }
+
+    fun openChild(section: SettingsSection, parentSection: SettingsSection) {
+        current = section
+        parent = parentSection
     }
 
     fun restore(serialized: String?) {
         current = SettingsSection.entries.firstOrNull { it.name == serialized }
             ?: SettingsSection.HOME
+        parent = SettingsSection.HOME
     }
 
     fun back(): SettingsBackResult {
         if (current == SettingsSection.HOME) return SettingsBackResult.EXIT_ACTIVITY
-        current = SettingsSection.HOME
+        current = parent
+        parent = SettingsSection.HOME
         return SettingsBackResult.CONSUMED
     }
 }

@@ -135,10 +135,15 @@ internal object OpenAiRequestFactory {
         val headers = linkedMapOf(
             "Accept" to if (profile.streaming) "text/event-stream" else "application/json",
             "Content-Type" to "application/json; charset=utf-8",
-            "User-Agent" to "Sense-IME/0.4.9 AI-Brain",
+            "User-Agent" to "Sense-IME/0.4.10 AI-Brain",
         )
         when (credential) {
             is ProviderCredential.Bearer -> headers["Authorization"] = "Bearer ${credential.token}"
+            is ProviderCredential.ChatGpt -> {
+                headers["Authorization"] = "Bearer ${credential.accessToken}"
+                headers["ChatGPT-Account-ID"] = credential.accountId
+                headers["originator"] = "sense_android"
+            }
             ProviderCredential.None -> Unit
         }
         return ProviderWireRequest(

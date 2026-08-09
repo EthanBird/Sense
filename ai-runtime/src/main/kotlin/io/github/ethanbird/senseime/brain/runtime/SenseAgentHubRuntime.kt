@@ -101,6 +101,7 @@ data class AgentHubProjection(
     val outputTokens: Int = 0,
     val conversations: List<AgentHubConversationSummary> = emptyList(),
     val action: AgentHubActionCard? = null,
+    val actionSkillsEnabled: Boolean = true,
 )
 
 fun interface AgentHubObserver {
@@ -126,6 +127,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
     private val store = AgentConversationStore(applicationContext)
     private val durableRunStore = AgentDurableRunStore(applicationContext)
     private val actionHistory = ActionHistoryStore(applicationContext)
+    private val actionSettings = ActionSkillSettingsStore(applicationContext)
     private val observers = linkedSetOf<AgentHubObserver>()
     private val brainClient = SenseAiBrainClient(applicationContext, ::onBrainEvent)
     private val actionRuntime = DirectActionSkillRuntime.builtIns(
@@ -190,6 +192,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
                     requestId = if (recovering) durable?.requestId else null,
                     generation = maxOf(projection.generation, durable?.generation ?: 0L),
                     conversations = conversationSummaries(recoveredMessages, archives),
+                    actionSkillsEnabled = actionSettings.isEnabled(XauUsdActionSkill.SKILL_ID),
                 )
                 publish()
                 if (recovering) {
@@ -330,6 +333,12 @@ class SenseAgentHubRuntime private constructor(context: Context) {
     /** Executes the built-in quote connector directly. No model request is created. */
     fun runGoldQuote(): Boolean {
         checkMainThread()
+        val enabled = actionSettings.isEnabled(XauUsdActionSkill.SKILL_ID)
+        if (projection.actionSkillsEnabled != enabled) {
+            projection = projection.copy(revision = projection.revision + 1, actionSkillsEnabled = enabled)
+            publish()
+        }
+        if (!enabled) return false
         if (!projection.loaded || projection.action?.state == AgentHubActionState.RUNNING) return false
         val requestId = UUID.randomUUID().toString()
         projection = projection.copy(
