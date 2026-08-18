@@ -87,6 +87,7 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     var keyListener: KeyListener? = null
     var candidateListener: ((revision: Long, sourceIndex: Int) -> Unit)? = null
+    var associationDismissListener: (() -> Unit)? = null
     var textListener: ((text: String) -> Unit)? = null
     var clipboardActionListener: ((action: ClipboardAction, index: Int) -> Unit)? = null
     var editorActionListener: ((action: EditorAction) -> Unit)? = null
@@ -151,6 +152,10 @@ class SenseKeyboardView @JvmOverloads constructor(
 
         override fun onCandidate(revision: Long, sourceIndex: Int) {
             candidateListener?.invoke(revision, sourceIndex)
+        }
+
+        override fun onCandidateDismiss() {
+            associationDismissListener?.invoke()
         }
 
         override fun onText(text: String) {
@@ -395,11 +400,28 @@ class SenseKeyboardView @JvmOverloads constructor(
     }
 
     fun updateComposition(revision: Long, text: String) {
-        updateCandidateUi(revision, text, values = null, t9Choices = null)
+        updateCandidateUi(
+            revision,
+            text,
+            values = null,
+            t9Choices = null,
+            association = false,
+        )
     }
 
     fun updateComposing(revision: Long, text: String, values: List<String>) {
-        updateCandidateUi(revision, text, values, t9Choices = null)
+        updateCandidateUi(revision, text, values, t9Choices = null, association = false)
+    }
+
+    /** Replaces the toolbar with a dismissible, short-lived next-word strip. */
+    fun updateAssociations(revision: Long, values: List<String>) {
+        updateCandidateUi(
+            revision,
+            text = "",
+            values = values,
+            t9Choices = emptyList(),
+            association = true,
+        )
     }
 
     /** Atomically publishes the candidate strip and T9 segmentation rail for one revision. */
@@ -409,7 +431,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         values: List<String>?,
         choices: List<T9PinyinChoice>,
     ) {
-        updateCandidateUi(revision, text, values, t9Choices = choices)
+        updateCandidateUi(revision, text, values, t9Choices = choices, association = false)
     }
 
     private fun updateCandidateUi(
@@ -417,6 +439,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         text: String,
         values: List<String>?,
         t9Choices: List<T9PinyinChoice>?,
+        association: Boolean,
     ) {
         val nextT9CompositionActive =
             primaryKeyboardMode == PrimaryKeyboardMode.T9 && text.isNotEmpty()
@@ -442,7 +465,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 primaryKeyboardMode == PrimaryKeyboardMode.T9
         val nextCandidates = values ?: if (text.isEmpty()) emptyList() else null
         val nextCandidatesReady = nextCandidates != null
-        val candidatePointersChanged =
+        val candidatePointersChanged = candidatePanel.association != association ||
             CandidatePointerFence.shouldCancel(
                 previousReady = candidatePanel.candidatesReady,
                 previousCandidates = candidatePanel.candidates,
@@ -464,6 +487,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             viewHeight = height,
             editorPanelVisible = isCandidateToolbarSuppressedByPanel(),
             fontScale = resources.configuration.fontScale,
+            association = association,
         )
         if (change.cancelSettle) interaction.stopCandidateSettle()
         if (change.requiresKeySceneRebuild || t9SceneChanged) rebuildKeys(width, height)
@@ -600,6 +624,9 @@ class SenseKeyboardView @JvmOverloads constructor(
             clearVoiceSurfaceState()
         }
         panel = value
+        if (candidatePanel.association && value != KeyboardPanel.LETTERS) {
+            associationDismissListener?.invoke()
+        }
         if (value == KeyboardPanel.EMOJI) keyboardScene.emojiScrollState.reset()
         if (value == KeyboardPanel.SYMBOLS) {
             symbolCategoryIndex = 0
@@ -814,6 +841,11 @@ class SenseKeyboardView @JvmOverloads constructor(
     fun isAiSurfaceActive(): Boolean = interaction.aiSurfaceState != null
 
     fun activeAiGeneration(): Long? = interaction.aiSurfaceState?.generation
+
+    fun acceptsAssociationPresentation(): Boolean =
+        panel == KeyboardPanel.LETTERS &&
+            interaction.aiSurfaceState == null &&
+            voiceSurfaceState == null
 
     fun setKeyboardSizeProfile(profile: KeyboardSizeProfile) {
         if (keyboardSizeProfile == profile) return

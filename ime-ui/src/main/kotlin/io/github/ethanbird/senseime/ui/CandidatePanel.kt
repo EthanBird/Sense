@@ -14,6 +14,8 @@ internal interface CandidateScene {
     /** False means retained candidates are visual continuity only and are inert. */
     val candidatesReady: Boolean
     val candidates: List<String>
+    /** True while a transient next-word strip owns the toolbar row. */
+    val association: Boolean
     val visibleCandidates: List<VisibleCandidate>
     val controls: List<CandidateControlSlot>
     val expanded: Boolean
@@ -102,6 +104,9 @@ internal class CandidatePanel(
     override var candidatesReady: Boolean = true
         private set
 
+    override var association: Boolean = false
+        private set
+
     override val candidates: List<String>
         get() = mutableCandidates
 
@@ -143,15 +148,18 @@ internal class CandidatePanel(
         viewHeight: Int,
         editorPanelVisible: Boolean,
         fontScale: Float,
+        association: Boolean = false,
     ): CandidateChange {
         val previousTakeover = takesToolbar(this.editorPanelVisible)
         val previousExpanded = expanded
-        val shouldResetNavigation = CandidatePresentationPolicy.shouldResetNavigation(
-            previousRevision = compositionRevision,
-            previousComposing = composing,
-            nextRevision = revision,
-            nextComposing = text,
-        )
+        val associationChanged = this.association != association
+        val shouldResetNavigation = associationChanged ||
+            CandidatePresentationPolicy.shouldResetNavigation(
+                previousRevision = compositionRevision,
+                previousComposing = composing,
+                nextRevision = revision,
+                nextComposing = text,
+            )
         val nextCandidates = when {
             values != null -> values.toList()
             text.isEmpty() -> emptyList()
@@ -196,6 +204,8 @@ internal class CandidatePanel(
 
         compositionRevision = revision
         composing = text
+        this.association = association
+        if (associationChanged) resetMeasurementsAndGeometry()
         if (nextCandidates != null) {
             candidateRevision = revision
         }
@@ -300,6 +310,8 @@ internal class CandidatePanel(
                     delta = 1,
                 )
             }
+
+            CandidateControl.DISMISS -> Unit
         }
         val relayout = relayout(
             viewWidth = viewWidth,
@@ -345,6 +357,7 @@ internal class CandidatePanel(
     fun takesToolbar(editorPanelVisible: Boolean): Boolean =
         CandidatePresentationPolicy.takesToolbar(
             composing = composing,
+            association = association,
             editorPanelVisible = editorPanelVisible,
         )
 
@@ -570,6 +583,7 @@ internal class CandidatePanel(
         }
 
         ensureMeasuredWidths()
+        val associationControlWidth = if (association) metrics.candidateControlWidth else 0f
         collapsedLayout = stripLayoutCache.getOrBuild(
             CandidateStripLayoutCache.Key(
                 generation = geometryGeneration,
@@ -578,13 +592,13 @@ internal class CandidatePanel(
             ),
         ) {
             CandidateStripGeometry.layout(
-                viewWidth = viewWidth.toFloat(),
+                viewWidth = (viewWidth.toFloat() - associationControlWidth).coerceAtLeast(1f),
                 measuredTextWidths = measuredWidths,
                 padding = metrics.horizontalPadding,
                 textInset = metrics.candidateTextInset,
                 gap = metrics.candidateGap,
                 minimumWidth = metrics.candidateMinimumWidth,
-                overflowControlWidth = metrics.candidateControlWidth,
+                overflowControlWidth = if (association) 0f else metrics.candidateControlWidth,
             )
         }
         val collapsed = checkNotNull(collapsedLayout)
@@ -601,7 +615,7 @@ internal class CandidatePanel(
             expanded = false
             pageIndex = 0
         }
-        val canExpand = collapsed.hasOverflow && hasExpandedGridRoom
+        val canExpand = collapsed.hasOverflow && hasExpandedGridRoom && !association
 
         if (expanded && canExpand) {
             val cacheKey = CandidatePageCacheKey(geometryGeneration, viewWidth, viewHeight)
@@ -681,7 +695,18 @@ internal class CandidatePanel(
                 textAnchor = slot.textAnchor,
             )
         }
-        if (collapsed.hasOverflow && canExpand) {
+        if (association) {
+            mutableControls += CandidateControlSlot(
+                control = CandidateControl.DISMISS,
+                bounds = KeyboardRect(
+                    left = viewWidth - metrics.candidateControlWidth,
+                    top = 0f,
+                    right = viewWidth.toFloat(),
+                    bottom = collapsedBottom,
+                ),
+                enabled = true,
+            )
+        } else if (collapsed.hasOverflow && canExpand) {
             mutableControls += CandidateControlSlot(
                 control = CandidateControl.EXPAND,
                 bounds = KeyboardRect(

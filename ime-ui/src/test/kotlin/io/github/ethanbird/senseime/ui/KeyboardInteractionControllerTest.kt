@@ -105,6 +105,31 @@ class KeyboardInteractionControllerTest {
     }
 
     @Test
+    fun `association dismiss is a semantic callback and does not activate paging`() {
+        val clock = FakeClock()
+        val scheduler = FakeFrameScheduler(clock)
+        val actions = RecordingActions()
+        val dispatcher = KeyboardActionDispatcher(
+            host = FakeInteractionHost(),
+            scheduler = scheduler,
+            actions = actions,
+            effects = RecordingActionEffects(),
+        )
+        val bounds = RectF(340f, 0f, 400f, 50f)
+
+        dispatcher.activate(
+            FrozenTouchTarget.CandidateControlValue(
+                value = CandidateControl.DISMISS,
+                bounds = bounds,
+                gesturePolicy = TouchInputReducer.GesturePolicy.tapOnly(),
+            ),
+            TouchInputReducer.Gesture.TAP,
+        )
+
+        assertEquals(1, actions.associationDismissCount)
+    }
+
+    @Test
     fun `key dispatcher commits explicit swipe output instead of the visual legend`() {
         val clock = FakeClock()
         val scheduler = FakeFrameScheduler(clock)
@@ -612,12 +637,16 @@ class KeyboardInteractionControllerTest {
         val inputSchemes = ArrayList<KeyboardInputSchemeChoice>()
         val t9PinyinChoices = ArrayList<Pair<Long, Int>>()
         var t9SideSymbolSettingsCount = 0
+        var associationDismissCount = 0
 
         override fun onKey(code: Int) {
             keys += code
         }
 
         override fun onCandidate(revision: Long, sourceIndex: Int) = Unit
+        override fun onCandidateDismiss() {
+            associationDismissCount += 1
+        }
         override fun onText(text: String) {
             texts += text
         }

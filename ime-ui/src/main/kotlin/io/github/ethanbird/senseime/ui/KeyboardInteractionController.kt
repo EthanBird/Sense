@@ -14,6 +14,7 @@ import android.view.ViewConfiguration
 internal interface KeyboardInteractionActionSink {
     fun onKey(code: Int)
     fun onCandidate(revision: Long, sourceIndex: Int)
+    fun onCandidateDismiss() = Unit
     fun onText(text: String)
     fun onClipboardAction(action: KeyboardClipboardAction, index: Int)
     fun onEditorAction(action: KeyboardEditorAction)

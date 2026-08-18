@@ -138,6 +138,11 @@ internal class KeyboardActionDispatcher(
     }
 
     private fun activateCandidateControl(control: CandidateControl) {
+        if (control == CandidateControl.DISMISS) {
+            flushKeys()
+            actions.onCandidateDismiss()
+            return
+        }
         val change = candidatePanel.activate(
             control = control,
             viewWidth = host.interactionWidth,

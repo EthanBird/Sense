@@ -418,6 +418,39 @@ class CandidatePanelTest {
         assertTrue(editorTookToolbarBack.requiresKeySceneRebuild)
     }
 
+    @Test
+    fun `association strip replaces toolbar and reserves a fixed dismiss control`() {
+        val panel = panel()
+
+        val association = panel.publishAt(
+            revision = 81L,
+            text = "",
+            values = listOf("开发", "能力", "项目", "体验"),
+            association = true,
+        )
+
+        assertTrue(association.requiresKeySceneRebuild)
+        assertTrue(panel.takesToolbar(editorPanelVisible = false))
+        assertFalse(panel.expanded)
+        assertEquals(
+            listOf(CandidateControl.DISMISS),
+            panel.controls.map { it.control },
+        )
+        val dismiss = panel.controls.single()
+        assertTrue(dismiss.bounds.left >= VIEW_WIDTH - 52f)
+        assertTrue(checkNotNull(panel.collapsedViewportBounds).right <= dismiss.bounds.left)
+
+        val idle = panel.publishAt(
+            revision = 82L,
+            text = "",
+            values = emptyList(),
+            association = false,
+        )
+        assertTrue(idle.requiresKeySceneRebuild)
+        assertFalse(panel.takesToolbar(editorPanelVisible = false))
+        assertTrue(panel.controls.isEmpty())
+    }
+
     private fun panel(
         measurer: RecordingMeasurer = RecordingMeasurer(),
     ): CandidatePanel = CandidatePanel(
@@ -434,6 +467,7 @@ class CandidatePanelTest {
         viewHeight: Int = VIEW_HEIGHT,
         editorPanelVisible: Boolean = false,
         fontScale: Float = 1f,
+        association: Boolean = false,
     ): CandidateChange = publish(
         revision = revision,
         text = text,
@@ -442,6 +476,7 @@ class CandidatePanelTest {
         viewHeight = viewHeight,
         editorPanelVisible = editorPanelVisible,
         fontScale = fontScale,
+        association = association,
     )
 
     private fun CandidatePanel.relayoutAt(

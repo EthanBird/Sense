@@ -149,6 +149,7 @@ class SenseInputMethodService : InputMethodService() {
         characterBigrams = CharacterBigramModel.EMPTY,
     )
     private val associationSession = AssociationSession()
+    private val associationDisplayLifecycle = AssociationDisplayLifecycle()
     private val commitSequenceTracker = CommitSequenceTracker()
     private val pendingAssociationObservations = ArrayDeque<AssociationObservation>()
     private val pendingPinyinLearnings = PendingPinyinLearningQueue(MAX_PENDING_PINYIN_LEARNINGS)
@@ -187,6 +188,7 @@ class SenseInputMethodService : InputMethodService() {
     private val mainHandler = Handler(Looper.getMainLooper())
     private val candidateResultToken = Any()
     private val alternativeCandidateResultToken = Any()
+    private val associationDisplayToken = Any()
     private var candidateRunner: LatestOnlyTaskRunner<CandidateDecodeRequest, ProgressivePinyinDecoding>? = null
     private var alternativeCandidateRunner:
         LatestOnlyTaskRunner<AlternativeDecodeRequest, AlternativeDecoding>? = null
@@ -579,6 +581,7 @@ class SenseInputMethodService : InputMethodService() {
         )
         view.keyListener = SenseKeyboardView.KeyListener(::handleKey)
         view.candidateListener = ::commitCandidate
+        view.associationDismissListener = ::dismissIdleAssociations
         view.textListener = ::commitText
         view.clipboardActionListener = ::handleClipboardAction
         view.editorActionListener = ::handleEditorAction
@@ -1153,6 +1156,7 @@ class SenseInputMethodService : InputMethodService() {
         super.onWindowShown()
         imeWindowVisible = true
         imeRoot?.setImeWindowVisible(true) ?: keyboardSurface?.setImeWindowVisible(true)
+        render()
         /*
          * onStartInputView owns the watcher epoch rebuild. Window visibility still reconciles a
          * potentially missed CURRENT event, but must not immediately stop/start the fresh watch.
@@ -1263,6 +1267,7 @@ class SenseInputMethodService : InputMethodService() {
         mainHandler.removeCallbacks(pendingCommitTimeout)
         mainHandler.removeCallbacksAndMessages(candidateResultToken)
         mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
+        mainHandler.removeCallbacksAndMessages(associationDisplayToken)
         candidateRunner?.close()
         candidateRunner = null
         alternativeCandidateRunner?.close()
@@ -1278,6 +1283,7 @@ class SenseInputMethodService : InputMethodService() {
         pendingAssociationObservations.clear()
         pendingPinyinLearnings.clear()
         associationSession.clear()
+        associationDisplayLifecycle.cancel()
         commitSequenceTracker.breakSequence()
         wubiRuntime.userLexicon?.close()
         wubiRuntime = WubiDecoderRuntime(
@@ -1315,6 +1321,7 @@ class SenseInputMethodService : InputMethodService() {
 
     override fun onWindowHidden() {
         imeWindowVisible = false
+        cancelAssociationPresentation()
         imeRoot?.setImeWindowVisible(false) ?: keyboardSurface?.setImeWindowVisible(false)
         cancelVoiceSession(exitSurface = true)
         cancelAndExitAi(HarnessCancelReason.WINDOW_HIDDEN)
@@ -1322,12 +1329,15 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
+        val removedAssociation = cancelAssociationPresentation()
         cancelVoiceSession(exitSurface = true)
         cancelAndExitAi(HarnessCancelReason.CONFIGURATION_CHANGED)
         super.onConfigurationChanged(newConfig)
+        if (removedAssociation) render()
     }
 
     override fun onFinishInputView(finishingInput: Boolean) {
+        cancelAssociationPresentation()
         cancelVoiceSession(exitSurface = true)
         cancelAndExitAi(HarnessCancelReason.WINDOW_HIDDEN)
         super.onFinishInputView(finishingInput)
@@ -1389,6 +1399,7 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun handleKey(code: Int) {
+        dismissAssociationForInteraction()
         if (deferIfDecodeCommitPending(DeferredInput.Key(code))) return
         when (code) {
             KeyCodes.VOICE -> {
@@ -2817,6 +2828,12 @@ class SenseInputMethodService : InputMethodService() {
             composition = composition,
             decoderGeneration = decoderRuntime.generation,
         )
+        if (!associationDisplayLifecycle.visible || !associationSurfaceEligible()) {
+            if (associationDisplayLifecycle.visible) cancelAssociationPresentation()
+            associationSession.clear()
+            publishEmptyIdleCandidates()
+            return
+        }
         val context = captureAssociationContext()
         val suggestions = if (decodeContextAllowed && context.isNotEmpty()) {
             associationEngine.suggest(
@@ -2827,24 +2844,37 @@ class SenseInputMethodService : InputMethodService() {
         } else {
             emptyList()
         }
+        if (suggestions.isEmpty()) {
+            cancelAssociationPresentation()
+            associationSession.clear()
+            publishEmptyIdleCandidates()
+            return
+        }
         val presentation = associationSession.publish(
             editorSessionId = editorSessionId,
             connectionIdentity = activeAssociationConnectionIdentity(),
             context = context,
             suggestions = suggestions,
         )
+        keyboardView?.updateAssociations(
+            presentation.revision,
+            suggestions.map(AssociationSuggestion::text),
+        )
+    }
+
+    private fun publishEmptyIdleCandidates() {
         if (inputScheme.scheme == ChineseInputScheme.PINYIN_T9) {
             keyboardView?.updateT9Composing(
-                revision = presentation.revision,
+                revision = activePresentationRevision(),
                 text = "",
-                values = suggestions.map(AssociationSuggestion::text),
+                values = emptyList(),
                 choices = emptyList(),
             )
         } else {
             keyboardView?.updateComposing(
-                presentation.revision,
+                composition.revision,
                 "",
-                suggestions.map(AssociationSuggestion::text),
+                emptyList(),
             )
         }
     }
@@ -3462,7 +3492,69 @@ class SenseInputMethodService : InputMethodService() {
     private fun activeAssociationConnectionIdentity(): Any? =
         if (isAgentTextTarget()) agentDraft else currentInputConnection
 
+    private fun scheduleAssociationPresentation() {
+        mainHandler.removeCallbacksAndMessages(associationDisplayToken)
+        associationSession.clear()
+        if (!chineseMode || !decodeContextAllowed) {
+            associationDisplayLifecycle.cancel()
+            return
+        }
+        val ticket = associationDisplayLifecycle.arm()
+        mainHandler.postAtTime(
+            { revealAssociationPresentation(ticket) },
+            associationDisplayToken,
+            SystemClock.uptimeMillis() + ASSOCIATION_REVEAL_DELAY_MS,
+        )
+    }
+
+    private fun revealAssociationPresentation(ticket: Long) {
+        if (!associationDisplayLifecycle.reveal(ticket)) return
+        if (!associationSurfaceEligible()) {
+            cancelAssociationPresentation()
+            return
+        }
+        render()
+        if (!associationDisplayLifecycle.visible || associationSession.current == null) return
+        mainHandler.postAtTime(
+            { expireAssociationPresentation(ticket) },
+            associationDisplayToken,
+            SystemClock.uptimeMillis() + ASSOCIATION_AUTO_HIDE_MS,
+        )
+    }
+
+    private fun expireAssociationPresentation(ticket: Long) {
+        if (!associationDisplayLifecycle.expire(ticket)) return
+        associationSession.clear()
+        render()
+    }
+
+    private fun dismissIdleAssociations() {
+        if (cancelAssociationPresentation()) render()
+    }
+
+    private fun dismissAssociationForInteraction() {
+        if (cancelAssociationPresentation()) render()
+    }
+
+    /** Returns whether a visible strip was removed and therefore needs repainting. */
+    private fun cancelAssociationPresentation(): Boolean {
+        val wasVisible = associationDisplayLifecycle.visible
+        mainHandler.removeCallbacksAndMessages(associationDisplayToken)
+        associationDisplayLifecycle.cancel()
+        associationSession.clear()
+        return wasVisible
+    }
+
+    private fun associationSurfaceEligible(): Boolean =
+        !destroyed &&
+            imeWindowVisible &&
+            chineseMode &&
+            !hasActiveChineseComposition() &&
+            imeRoot?.mode != ImeFrontMode.AGENT_READING &&
+            keyboardView?.acceptsAssociationPresentation() == true
+
     private fun commitAssociationCandidate(suggestion: AssociationSuggestion) {
+        val removedVisibleStrip = cancelAssociationPresentation()
         val start = when {
             isAgentTextTarget() -> -1
             hasHostSelection(selectionStart, selectionEnd) -> minOf(selectionStart, selectionEnd)
@@ -3474,7 +3566,10 @@ class SenseInputMethodService : InputMethodService() {
                 text = suggestion.text,
                 expectedHostCursor = start.takeIf { it >= 0 }?.plus(suggestion.text.length),
             )
-        ) return
+        ) {
+            if (removedVisibleStrip) render()
+            return
+        }
         personalizationFeedback.complete(feedback)
         recordReliableCommit(
             text = suggestion.text,
@@ -3520,10 +3615,12 @@ class SenseInputMethodService : InputMethodService() {
                 }
             }
         }
+        scheduleAssociationPresentation()
     }
 
     private fun breakAssociationSequence() {
         commitSequenceTracker.breakSequence()
+        cancelAssociationPresentation()
         associationSession.clear()
         reliableCommitSelectionFence.clear()
     }
@@ -3926,6 +4023,8 @@ class SenseInputMethodService : InputMethodService() {
         const val MAX_PROGRESSIVE_PREFIX_CANDIDATES = DECODE_CANDIDATE_LIMIT
         const val PRESENTATION_CANDIDATE_LIMIT = DECODE_CANDIDATE_LIMIT + MAX_PROGRESSIVE_PREFIX_CANDIDATES
         const val ASSOCIATION_CANDIDATE_LIMIT = 8
+        const val ASSOCIATION_REVEAL_DELAY_MS = 420L
+        const val ASSOCIATION_AUTO_HIDE_MS = 4_500L
         const val CLIPBOARD_HISTORY_LIMIT = 30
         const val MAX_CLIPBOARD_TEXT_LENGTH = 4096
         const val MAX_VOICE_PREVIEW_CHARS = 1024

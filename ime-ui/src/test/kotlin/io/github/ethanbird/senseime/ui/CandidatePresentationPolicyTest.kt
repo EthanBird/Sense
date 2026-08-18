@@ -54,8 +54,44 @@ class CandidatePresentationPolicyTest {
 
     @Test
     fun activeCompositionTakesToolbarExceptInsideEditorPanel() {
-        assertTrue(CandidatePresentationPolicy.takesToolbar("zhongwen", editorPanelVisible = false))
-        assertFalse(CandidatePresentationPolicy.takesToolbar("", editorPanelVisible = false))
-        assertFalse(CandidatePresentationPolicy.takesToolbar("zhongwen", editorPanelVisible = true))
+        assertTrue(
+            CandidatePresentationPolicy.takesToolbar(
+                composing = "zhongwen",
+                association = false,
+                editorPanelVisible = false,
+            ),
+        )
+        assertFalse(
+            CandidatePresentationPolicy.takesToolbar(
+                composing = "",
+                association = false,
+                editorPanelVisible = false,
+            ),
+        )
+        assertFalse(
+            CandidatePresentationPolicy.takesToolbar(
+                composing = "zhongwen",
+                association = false,
+                editorPanelVisible = true,
+            ),
+        )
+    }
+
+    @Test
+    fun idleAssociationTemporarilyTakesToolbarButNeverOverridesEditorPanel() {
+        assertTrue(
+            CandidatePresentationPolicy.takesToolbar(
+                composing = "",
+                association = true,
+                editorPanelVisible = false,
+            ),
+        )
+        assertFalse(
+            CandidatePresentationPolicy.takesToolbar(
+                composing = "",
+                association = true,
+                editorPanelVisible = true,
+            ),
+        )
     }
 }

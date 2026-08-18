@@ -21,8 +21,12 @@ object CandidatePresentationPolicy {
         nextComposing: String,
     ): Boolean = previousRevision != nextRevision || previousComposing != nextComposing
 
-    fun takesToolbar(composing: String, editorPanelVisible: Boolean): Boolean =
-        composing.isNotBlank() && !editorPanelVisible
+    fun takesToolbar(
+        composing: String,
+        association: Boolean,
+        editorPanelVisible: Boolean,
+    ): Boolean =
+        (composing.isNotBlank() || association) && !editorPanelVisible
 
     /**
      * Composing text deliberately has one geometry whether candidates are

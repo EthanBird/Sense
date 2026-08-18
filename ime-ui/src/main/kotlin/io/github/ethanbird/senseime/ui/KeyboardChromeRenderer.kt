@@ -310,6 +310,7 @@ internal class KeyboardChromeRenderer(
                 CandidateControl.COLLAPSE -> "⌃"
                 CandidateControl.PREVIOUS_PAGE -> "‹"
                 CandidateControl.NEXT_PAGE -> "›"
+                CandidateControl.DISMISS -> "\u00D7"
             },
             paint,
             bounds.centerX,

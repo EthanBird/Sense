@@ -198,6 +198,7 @@ internal enum class CandidateControl {
     COLLAPSE,
     PREVIOUS_PAGE,
     NEXT_PAGE,
+    DISMISS,
 }
 
 internal data class CandidateControlSlot(
