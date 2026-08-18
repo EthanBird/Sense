@@ -13,6 +13,9 @@ enum class UserSelectionKind {
 
     /** The user selected a leading segment while the rest of the pinyin remained composing. */
     PROGRESSIVE_SELECTION,
+
+    /** The user confirmed a phrase assembled from multiple explicitly accepted segments. */
+    COMPOSED_CONFIRM,
 }
 
 /**
@@ -34,6 +37,7 @@ data class UserLearningEvidence(
         val DEFAULT_ACCEPT = UserLearningEvidence(UserSelectionKind.DEFAULT_ACCEPT)
         val EXPLICIT_SELECTION = UserLearningEvidence(UserSelectionKind.EXPLICIT_SELECTION)
         val PROGRESSIVE_SELECTION = UserLearningEvidence(UserSelectionKind.PROGRESSIVE_SELECTION)
+        val COMPOSED_CONFIRM = UserLearningEvidence(UserSelectionKind.COMPOSED_CONFIRM)
     }
 }
 
@@ -409,6 +413,8 @@ private object PersonalizationScoring {
                 1.75f + (rankInformation * 0.4f).coerceAtMost(1.25f)
             UserSelectionKind.PROGRESSIVE_SELECTION ->
                 0.65f + (rankInformation * 0.15f).coerceAtMost(0.45f)
+            UserSelectionKind.COMPOSED_CONFIRM ->
+                1.35f + (rankInformation * 0.2f).coerceAtMost(0.65f)
         }
     }
 

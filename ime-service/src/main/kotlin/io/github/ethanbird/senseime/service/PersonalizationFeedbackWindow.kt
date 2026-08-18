@@ -88,20 +88,26 @@ internal class PersonalizationFeedbackWindow(
 
     fun prepareQuickDelete(cursor: Int): Attempt? {
         val value = freshPending() ?: return null
-        val cursorMatches =
+        val cursorMatchesWholeCommit =
             value.start >= 0 &&
                 value.endExclusive > value.start &&
                 cursor >= 0 &&
-                cursor == value.endExclusive
+                cursor == value.endExclusive &&
+                value.endExclusive - value.start == value.target.text.length &&
+                value.target.text.codePointCount(0, value.target.text.length) == 1
         return Attempt(
             token = value,
-            targetToDemote = value.target.takeIf { cursorMatches },
+            // One Backspace deletes one code point. Treat it as whole-candidate rejection only
+            // when the learned commit itself is exactly one code point; deleting the last
+            // character of a multi-character word is a local correction, not a rejection of the
+            // entire learned phrase.
+            targetToDemote = value.target.takeIf { cursorMatchesWholeCommit },
         )
     }
 
     fun prepareReplacement(selectionStart: Int, selectionEnd: Int): Attempt? {
         val value = freshPending() ?: return null
-        val overlapsCommittedRange = if (
+        val exactlyMatchesCommittedRange = if (
             selectionStart < 0 ||
             selectionEnd < 0 ||
             selectionStart == selectionEnd ||
@@ -112,11 +118,11 @@ internal class PersonalizationFeedbackWindow(
         } else {
             val selectedStart = minOf(selectionStart, selectionEnd)
             val selectedEnd = maxOf(selectionStart, selectionEnd)
-            selectedStart < value.endExclusive && selectedEnd > value.start
+            selectedStart == value.start && selectedEnd == value.endExclusive
         }
         return Attempt(
             token = value,
-            targetToDemote = value.target.takeIf { overlapsCommittedRange },
+            targetToDemote = value.target.takeIf { exactlyMatchesCommittedRange },
         )
     }
 

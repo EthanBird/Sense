@@ -2,9 +2,17 @@ package io.github.ethanbird.senseime.core
 
 import java.io.InputStream
 
+data class CharacterBigramSuccessor(
+    val codePoint: Int,
+    val score: Float,
+)
+
 /** Scores a boundary between two Unicode code points without allocating. */
 fun interface CharacterBigramModel {
     fun score(previousCodePoint: Int, nextCodePoint: Int): Float
+
+    /** Enumerates the strongest next-code-point edges for idle next-word suggestions. */
+    fun successors(previousCodePoint: Int, limit: Int): List<CharacterBigramSuccessor> = emptyList()
 
     companion object {
         val EMPTY = CharacterBigramModel { _, _ -> 0f }
@@ -32,6 +40,39 @@ class BinaryCharacterBigramModel private constructor(
             }
         }
         return 0f
+    }
+
+    override fun successors(
+        previousCodePoint: Int,
+        limit: Int,
+    ): List<CharacterBigramSuccessor> {
+        if (limit <= 0 || !Character.isValidCodePoint(previousCodePoint)) return emptyList()
+        var index = lowerBound(pack(previousCodePoint, 0))
+        if (index >= keys.size || (keys[index] ushr 32).toInt() != previousCodePoint) {
+            return emptyList()
+        }
+        val values = ArrayList<CharacterBigramSuccessor>()
+        while (index < keys.size && (keys[index] ushr 32).toInt() == previousCodePoint) {
+            values += CharacterBigramSuccessor(
+                codePoint = keys[index].toInt(),
+                score = scores[index],
+            )
+            index++
+        }
+        return values.sortedWith(
+            compareByDescending<CharacterBigramSuccessor> { it.score }
+                .thenBy { it.codePoint },
+        ).take(limit)
+    }
+
+    private fun lowerBound(target: Long): Int {
+        var low = 0
+        var high = keys.size
+        while (low < high) {
+            val middle = (low + high).ushr(1)
+            if (keys[middle] < target) low = middle + 1 else high = middle
+        }
+        return low
     }
 
     companion object {

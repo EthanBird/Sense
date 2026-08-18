@@ -49,15 +49,22 @@ import io.github.ethanbird.senseime.config.ImePreferencesV1
 import io.github.ethanbird.senseime.config.ImeSettingsRoute
 import io.github.ethanbird.senseime.core.AdaptivePinyinDecoder
 import io.github.ethanbird.senseime.core.AdaptiveWubi86Decoder
+import io.github.ethanbird.senseime.core.AssociationObservation
+import io.github.ethanbird.senseime.core.AssociationSuggestion
 import io.github.ethanbird.senseime.core.BinaryCharacterBigramModel
 import io.github.ethanbird.senseime.core.Candidate
 import io.github.ethanbird.senseime.core.CandidateMatchKind
 import io.github.ethanbird.senseime.core.CharacterBigramModel
+import io.github.ethanbird.senseime.core.CommitSequenceTracker
+import io.github.ethanbird.senseime.core.CommittedTextUnit
+import io.github.ethanbird.senseime.core.CuratedLexicalCandidateCatalog
 import io.github.ethanbird.senseime.core.EnglishLexicon
 import io.github.ethanbird.senseime.core.EnglishInputSession
 import io.github.ethanbird.senseime.core.FakeDecoder
 import io.github.ethanbird.senseime.core.InputDecoder
 import io.github.ethanbird.senseime.core.LearnedPhrase
+import io.github.ethanbird.senseime.core.LocalAssociationEngine
+import io.github.ethanbird.senseime.core.MemoryUserAssociationLexicon
 import io.github.ethanbird.senseime.core.MemoryUserLexicon
 import io.github.ethanbird.senseime.core.MemoryWubiUserLexicon
 import io.github.ethanbird.senseime.core.PinyinComposition
@@ -71,6 +78,7 @@ import io.github.ethanbird.senseime.core.T9Composition
 import io.github.ethanbird.senseime.core.T9PinyinChoice as CoreT9PinyinChoice
 import io.github.ethanbird.senseime.core.T9SyllableIndex
 import io.github.ethanbird.senseime.core.UserLearningEvidence
+import io.github.ethanbird.senseime.core.UserAssociationLexicon
 import io.github.ethanbird.senseime.core.UserLexicon
 import io.github.ethanbird.senseime.core.UserNegativeFeedback
 import io.github.ethanbird.senseime.core.UserSelectionKind
@@ -135,6 +143,20 @@ class SenseInputMethodService : InputMethodService() {
     private var wubiRuntime = WubiDecoderRuntime(0L, null, null, null)
     private var adaptiveDecoder: AdaptivePinyinDecoder? = null
     private var userLexicon: UserLexicon? = null
+    private var userAssociationLexicon: UserAssociationLexicon = MemoryUserAssociationLexicon()
+    private var associationEngine = LocalAssociationEngine(
+        userLexicon = userAssociationLexicon,
+        characterBigrams = CharacterBigramModel.EMPTY,
+    )
+    private val associationSession = AssociationSession()
+    private val commitSequenceTracker = CommitSequenceTracker()
+    private val pendingAssociationObservations = ArrayDeque<AssociationObservation>()
+    private val pendingPinyinLearnings = PendingPinyinLearningQueue(MAX_PENDING_PINYIN_LEARNINGS)
+    private var associationPersistenceReady = false
+    private val reliableCommitGuard = SynchronousEditorMutationGuard()
+    private val compositionUpdateGuard = SynchronousEditorMutationGuard()
+    private val reliableCommitSelectionFence =
+        ReliableCommitSelectionFence(SystemClock::elapsedRealtime)
     private val candidateSession = CandidateDecodeSession()
     private var composition = PinyinComposition()
     private var compositionLeftContext = ""
@@ -282,7 +304,11 @@ class SenseInputMethodService : InputMethodService() {
                 )
                 decoding.copy(
                     wholeCandidates = SemanticCandidateMixer.merge(
-                        primary = decoding.wholeCandidates,
+                        primary = CuratedLexicalCandidateCatalog.merge(
+                            composing = request.composition.remainingPinyin,
+                            primary = decoding.wholeCandidates,
+                            limit = DECODE_CANDIDATE_LIMIT,
+                        ),
                         semantic = SemanticCandidateCatalog.suggest(
                             request.composition.remainingPinyin,
                         ),
@@ -465,6 +491,11 @@ class SenseInputMethodService : InputMethodService() {
                 }.getOrElse {
                     T9SyllableIndex(FALLBACK_SYLLABLES)
                 }
+                val associations = runCatching<UserAssociationLexicon> {
+                    PersistentUserAssociationLexicon(this)
+                }.onFailure { error ->
+                    Log.e(TAG, "Persistent user association load failed", error)
+                }.getOrElse { MemoryUserAssociationLexicon() }
                 LoadedCandidateDecoderRuntime(
                     runtime = CandidateDecoderRuntime(
                         generation = 0L,
@@ -475,16 +506,45 @@ class SenseInputMethodService : InputMethodService() {
                     adaptiveDecoder = loadedDecoder,
                     userLexicon = learned,
                     englishLexicon = englishLexicon,
+                    bigramModel = bigramModel,
+                    userAssociationLexicon = associations,
                 )
             },
             publish = publish@{ loaded ->
                 val learned = loaded.userLexicon
                 if (destroyed) {
                     learned.close()
+                    loaded.userAssociationLexicon.close()
                     return@publish
                 }
                 val previousLexicon = userLexicon
+                val previousAssociations = userAssociationLexicon
                 userLexicon = learned
+                userAssociationLexicon = loaded.userAssociationLexicon
+                associationEngine = LocalAssociationEngine(
+                    userLexicon = loaded.userAssociationLexicon,
+                    characterBigrams = loaded.bigramModel,
+                )
+                associationPersistenceReady = true
+                while (pendingAssociationObservations.isNotEmpty()) {
+                    val observation = pendingAssociationObservations.removeFirst()
+                    runCatching {
+                        associationEngine.observe(observation.context, observation.nextText)
+                    }.onFailure { error ->
+                        Log.e(TAG, "Queued user association replay failed", error)
+                    }
+                }
+                pendingPinyinLearnings.drain().forEach { pending ->
+                    runCatching {
+                        loaded.adaptiveDecoder.learn(
+                            pending.rawInput,
+                            pending.candidate,
+                            pending.evidence,
+                        )
+                    }.onFailure { error ->
+                        Log.e(TAG, "Queued Pinyin personalization replay failed", error)
+                    }
+                }
                 adaptiveDecoder = loaded.adaptiveDecoder
                 decoderRuntime = loaded.runtime.copy(
                     generation = nextGeneration(decoderRuntime.generation),
@@ -497,6 +557,9 @@ class SenseInputMethodService : InputMethodService() {
                 englishInput = EnglishInputSession(loaded.englishLexicon, DECODE_CANDIDATE_LIMIT)
                 pendingEnglish.forEach(englishInput::type)
                 previousLexicon?.takeIf { it !== learned }?.close()
+                previousAssociations
+                    .takeIf { it !== loaded.userAssociationLexicon }
+                    ?.close()
                 render(forceDecode = chineseMode && hasActiveChineseComposition())
             },
         )
@@ -666,6 +729,7 @@ class SenseInputMethodService : InputMethodService() {
                 Toast.makeText(this, "已复制回答", Toast.LENGTH_SHORT).show()
             },
             onInsertMessage = { message ->
+                breakAssociationSequence()
                 if (AgentExternalEditorWriter.insert(currentInputConnection, message.text)) {
                     closeAgentFront()
                     Toast.makeText(this, "已写入当前输入框", Toast.LENGTH_SHORT).show()
@@ -683,6 +747,7 @@ class SenseInputMethodService : InputMethodService() {
             onCancelAction = { agentRuntime?.cancelAction() },
             onDismissAction = { agentRuntime?.dismissAction() },
             onInsertAction = { action ->
+                breakAssociationSequence()
                 if (AgentExternalEditorWriter.insert(currentInputConnection, action.insertText)) {
                     closeAgentFront()
                     Toast.makeText(this, "行情已写入当前输入框", Toast.LENGTH_SHORT).show()
@@ -818,6 +883,7 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun beginAgentComposing() {
         ensureAgentRuntime()
+        breakAssociationSequence()
         agentFrontVisible = true
         agentComposerVisible = true
         agentHistoryVisible = false
@@ -831,12 +897,14 @@ class SenseInputMethodService : InputMethodService() {
     private fun finishAgentComposing() {
         if (!isAgentTextTarget()) return
         if (!commitActiveRawComposition()) return
+        breakAssociationSequence()
         agentComposerVisible = false
         imeRoot?.showAgent(agentUiState(), agentUiActions, composing = false)
     }
 
     private fun closeAgentFront() {
         if (isAgentTextTarget() && !commitActiveRawComposition()) return
+        breakAssociationSequence()
         agentFrontVisible = false
         agentComposerVisible = false
         agentHistoryVisible = false
@@ -852,6 +920,7 @@ class SenseInputMethodService : InputMethodService() {
         val message = agentDraft.text.trim()
         if (message.isEmpty()) return
         if (agentRuntime?.send(message) == true) {
+            breakAssociationSequence()
             agentDraft.clear()
             agentDraftComposition = ""
             agentComposerVisible = false
@@ -863,6 +932,7 @@ class SenseInputMethodService : InputMethodService() {
         if (agentProjection.running) return
         if (isAgentTextTarget() && !commitActiveRawComposition()) return
         if (agentRuntime?.clearConversation() == true) {
+            breakAssociationSequence()
             agentDraft.clear()
             agentDraftComposition = ""
             selectedAgentToolIndex = 0
@@ -1121,6 +1191,12 @@ class SenseInputMethodService : InputMethodService() {
             candidatesEnd,
         )
         val selectionChanged = selectionStart != newSelStart || selectionEnd != newSelEnd
+        val acknowledgesOwnCommit = selectionChanged && reliableCommitSelectionFence.acknowledge(
+            editorSessionId = editorSessionId,
+            connectionIdentity = currentInputConnection,
+            selectionStart = newSelStart,
+            selectionEnd = newSelEnd,
+        )
         if (selectionChanged) {
             val ownToken = aiApplicationToken
             val normalizedSelection = if (newSelStart < 0 || newSelEnd < 0) {
@@ -1146,6 +1222,7 @@ class SenseInputMethodService : InputMethodService() {
             englishInput.composing.isNotEmpty()
         }
         if (
+            !reliableCommitGuard.isActive &&
             EditorCompositionSelectionPolicy.shouldCancelLocalComposition(
                 hasActiveComposition = hasActiveComposition,
                 newSelectionStart = newSelStart,
@@ -1164,6 +1241,16 @@ class SenseInputMethodService : InputMethodService() {
         if (nextSelectionState != editorSelectionState) {
             editorSelectionState = nextSelectionState
             publishEditorSelectionState()
+        }
+        if (
+            selectionChanged &&
+            !hasAnyComposition() &&
+            !reliableCommitGuard.isActive &&
+            !compositionUpdateGuard.isActive &&
+            !acknowledgesOwnCommit
+        ) {
+            breakAssociationSequence()
+            render()
         }
     }
 
@@ -1186,6 +1273,12 @@ class SenseInputMethodService : InputMethodService() {
         clipboardManager.removePrimaryClipChangedListener(clipboardListener)
         userLexicon?.close()
         userLexicon = null
+        userAssociationLexicon.close()
+        associationPersistenceReady = false
+        pendingAssociationObservations.clear()
+        pendingPinyinLearnings.clear()
+        associationSession.clear()
+        commitSequenceTracker.breakSequence()
         wubiRuntime.userLexicon?.close()
         wubiRuntime = WubiDecoderRuntime(
             generation = nextGeneration(wubiRuntime.generation),
@@ -1327,11 +1420,17 @@ class SenseInputMethodService : InputMethodService() {
                     return
                 }
                 KeyCodes.UNDO -> {
-                    if (commitActiveRawComposition() && agentDraft.undo()) publishAgentUi()
+                    if (commitActiveRawComposition() && agentDraft.undo()) {
+                        breakAssociationSequence()
+                        publishAgentUi()
+                    }
                     return
                 }
                 KeyCodes.REDO -> {
-                    if (commitActiveRawComposition() && agentDraft.redo()) publishAgentUi()
+                    if (commitActiveRawComposition() && agentDraft.redo()) {
+                        breakAssociationSequence()
+                        publishAgentUi()
+                    }
                     return
                 }
             }
@@ -1538,7 +1637,10 @@ class SenseInputMethodService : InputMethodService() {
             }
             render()
         } else {
-            deleteOneCodePointOrSelection()
+            if (deleteOneCodePointOrSelection()) {
+                breakAssociationSequence()
+                render()
+            }
         }
     }
 
@@ -1630,6 +1732,8 @@ class SenseInputMethodService : InputMethodService() {
                     prepareTextReplacementFeedback()
                 if (commitToActiveTextTarget(" ")) {
                     completeReplacementFeedback(feedback)
+                    breakAssociationSequence()
+                    render()
                 }
             }
             return
@@ -1643,6 +1747,8 @@ class SenseInputMethodService : InputMethodService() {
                 prepareTextReplacementFeedback()
             if (commitToActiveTextTarget(" ")) {
                 completeReplacementFeedback(feedback)
+                breakAssociationSequence()
+                render()
             }
             return
         }
@@ -1668,6 +1774,8 @@ class SenseInputMethodService : InputMethodService() {
                 prepareTextReplacementFeedback()
             if (commitToActiveTextTarget(" ")) {
                 completeReplacementFeedback(feedback)
+                breakAssociationSequence()
+                render()
             }
             return
         }
@@ -1724,8 +1832,12 @@ class SenseInputMethodService : InputMethodService() {
                 prepareTextReplacementFeedback()
             if (sendDefaultEditorAction(true)) {
                 personalizationFeedback.complete(feedback)
+                breakAssociationSequence()
+                render()
             } else if (currentInputConnection?.commitText("\n", 1) == true) {
                 completeReplacementFeedback(feedback)
+                breakAssociationSequence()
+                render()
             }
         }
     }
@@ -1733,6 +1845,16 @@ class SenseInputMethodService : InputMethodService() {
     private fun commitCandidate(revision: Long, sourceIndex: Int) {
         if (!chineseMode) {
             englishInput.select(revision, sourceIndex)?.let(::commitEnglishComposition)
+            return
+        }
+        if (!hasActiveChineseComposition()) {
+            associationSession.select(
+                requestedRevision = revision,
+                sourceIndex = sourceIndex,
+                editorSessionId = editorSessionId,
+                connectionIdentity = activeAssociationConnectionIdentity(),
+                context = captureAssociationContext(),
+            )?.let(::commitAssociationCandidate)
             return
         }
         if (inputScheme.scheme != ChineseInputScheme.PINYIN_QWERTY) {
@@ -1779,7 +1901,7 @@ class SenseInputMethodService : InputMethodService() {
                 // setComposingText. Never resurrect that stale transaction.
                 if (composition != previous) return
                 composition = next
-                if (pinyinLearningReady()) progressiveLearnings.add(learning)
+                if (localPersistenceAllowed) progressiveLearnings.add(learning)
                 render()
             }
 
@@ -1845,6 +1967,8 @@ class SenseInputMethodService : InputMethodService() {
         }
         if (commitToActiveTextTarget(text)) {
             completeReplacementFeedback(feedback)
+            breakAssociationSequence()
+            render()
             // A punctuation/clipboard/tool commit after a learned word becomes the
             // newest host edit, so a later Backspace must not demote the older word.
         }
@@ -1920,6 +2044,7 @@ class SenseInputMethodService : InputMethodService() {
             }
 
             SenseKeyboardView.EditorAction.TOGGLE_SELECTION -> {
+                breakAssociationSequence()
                 editorSelectionState = editorSelectionState.toggleSelectionMode()
                 publishEditorSelectionState()
             }
@@ -1930,7 +2055,12 @@ class SenseInputMethodService : InputMethodService() {
             SenseKeyboardView.EditorAction.DOWN -> sendDirectionalKey(KeyEvent.KEYCODE_DPAD_DOWN)
             SenseKeyboardView.EditorAction.HOME -> sendDirectionalKey(KeyEvent.KEYCODE_MOVE_HOME)
             SenseKeyboardView.EditorAction.END -> sendDirectionalKey(KeyEvent.KEYCODE_MOVE_END)
-            SenseKeyboardView.EditorAction.DELETE -> deleteOneCodePointOrSelection()
+            SenseKeyboardView.EditorAction.DELETE -> {
+                if (deleteOneCodePointOrSelection()) {
+                    breakAssociationSequence()
+                    render()
+                }
+            }
             SenseKeyboardView.EditorAction.COPY ->
                 performEditorContextCommand(EditorContextCommand.COPY, android.R.id.copy)
 
@@ -1941,6 +2071,7 @@ class SenseInputMethodService : InputMethodService() {
                 performEditorContextCommand(EditorContextCommand.PASTE, android.R.id.paste)
 
             SenseKeyboardView.EditorAction.SELECT_ALL -> {
+                breakAssociationSequence()
                 currentInputConnection?.performContextMenuAction(android.R.id.selectAll)
             }
         }
@@ -1993,10 +2124,15 @@ class SenseInputMethodService : InputMethodService() {
             SenseKeyboardView.EditorAction.SELECT_ALL,
             -> Toast.makeText(this, "Agent 草稿当前按光标编辑", Toast.LENGTH_SHORT).show()
         }
-        if (changed) publishAgentUi()
+        if (changed) {
+            breakAssociationSequence()
+            publishAgentUi()
+            render()
+        }
     }
 
     private fun sendDirectionalKey(keyCode: Int) {
+        breakAssociationSequence()
         val now = SystemClock.uptimeMillis()
         val metaState = if (editorSelectionState.selectionMode) KeyEvent.META_SHIFT_ON else 0
         currentInputConnection?.sendKeyEvent(
@@ -2027,6 +2163,10 @@ class SenseInputMethodService : InputMethodService() {
                             secondaryFallbackMetaState,
                         )
                     )
+        if (accepted) {
+            breakAssociationSequence()
+            render()
+        }
         val feedback = EditorHistoryFeedbackPolicy.afterAttempt(accepted)
         keyboardView?.let { view ->
             view.performHapticFeedback(
@@ -2160,7 +2300,11 @@ class SenseInputMethodService : InputMethodService() {
             when (command) {
                 EditorContextCommand.CUT,
                 EditorContextCommand.PASTE,
-                -> completeReplacementFeedback(feedback)
+                -> {
+                    completeReplacementFeedback(feedback)
+                    breakAssociationSequence()
+                    render()
+                }
 
                 EditorContextCommand.COPY -> Unit
             }
@@ -2554,6 +2698,8 @@ class SenseInputMethodService : InputMethodService() {
         val committed = commitToActiveTextTarget(text)
         if (committed) {
             personalizationFeedback.complete(feedback)
+            breakAssociationSequence()
+            render()
             activeVoiceSession = null
             keyboardView?.exitVoiceSurface(session.id)
         } else {
@@ -2596,6 +2742,7 @@ class SenseInputMethodService : InputMethodService() {
         mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
         progressiveLearnings.clear()
         personalizationFeedback.clear()
+        breakAssociationSequence()
         englishInput.reset()
         clearPendingCommit()
         resetEnglishShiftState()
@@ -2609,6 +2756,7 @@ class SenseInputMethodService : InputMethodService() {
             return
         }
         if (!chineseMode) {
+            associationSession.clear()
             keyboardView?.updateComposing(
                 englishInput.revision,
                 englishInput.composing,
@@ -2616,6 +2764,11 @@ class SenseInputMethodService : InputMethodService() {
             )
             return
         }
+        if (!hasActiveChineseComposition()) {
+            renderIdleAssociations()
+            return
+        }
+        associationSession.clear()
         if (inputScheme.scheme != ChineseInputScheme.PINYIN_QWERTY) {
             renderAlternative(forceDecode)
             return
@@ -2654,6 +2807,45 @@ class SenseInputMethodService : InputMethodService() {
         }
         if (chineseMode && launch.shouldDecode) {
             if (candidateRunner?.submit(request) == -1L) candidateRunner = null
+        }
+    }
+
+    private fun renderIdleAssociations() {
+        mainHandler.removeCallbacksAndMessages(candidateResultToken)
+        mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
+        candidateSession.begin(
+            composition = composition,
+            decoderGeneration = decoderRuntime.generation,
+        )
+        val context = captureAssociationContext()
+        val suggestions = if (decodeContextAllowed && context.isNotEmpty()) {
+            associationEngine.suggest(
+                leftContext = context,
+                limit = ASSOCIATION_CANDIDATE_LIMIT,
+                includeUserHistory = localPersistenceAllowed,
+            )
+        } else {
+            emptyList()
+        }
+        val presentation = associationSession.publish(
+            editorSessionId = editorSessionId,
+            connectionIdentity = activeAssociationConnectionIdentity(),
+            context = context,
+            suggestions = suggestions,
+        )
+        if (inputScheme.scheme == ChineseInputScheme.PINYIN_T9) {
+            keyboardView?.updateT9Composing(
+                revision = presentation.revision,
+                text = "",
+                values = suggestions.map(AssociationSuggestion::text),
+                choices = emptyList(),
+            )
+        } else {
+            keyboardView?.updateComposing(
+                presentation.revision,
+                "",
+                suggestions.map(AssociationSuggestion::text),
+            )
         }
     }
 
@@ -2915,6 +3107,10 @@ class SenseInputMethodService : InputMethodService() {
             append(composition.remainingPinyin)
         }
         val output = composition.confirmPrimary(candidate)
+        val effectiveEvidence = PinyinCommitLearningPolicy.evidence(
+            hasAcceptedSegments = composition.acceptedSegments.isNotEmpty(),
+            requested = evidence,
+        )
         val learnable = candidate?.let { selected ->
             if (composition.acceptedSegments.isEmpty()) {
                 selected
@@ -2936,9 +3132,15 @@ class SenseInputMethodService : InputMethodService() {
             it.matchKind == CandidateMatchKind.ENGLISH_EXACT ||
                 it.matchKind == CandidateMatchKind.ENGLISH_PREFIX
         }
-        val committed = commitComposition(output, rawInput, learnable, evidence, composingLength)
+        val committed = commitComposition(
+            output,
+            rawInput,
+            learnable,
+            effectiveEvidence,
+            composingLength,
+        )
         if (committed && acceptedEnglish != null && localPersistenceAllowed) {
-            englishLexicon.recordAccepted(output, evidence)
+            englishLexicon.recordAccepted(output, effectiveEvidence)
         }
         return committed
     }
@@ -2974,7 +3176,10 @@ class SenseInputMethodService : InputMethodService() {
                 (selectionStart - commitSnapshot.editorComposingLength).coerceAtLeast(0)
             else -> -1
         }
-        val committed = commitToActiveTextTarget(output)
+        val committed = commitReliableLexicalText(
+            text = output,
+            expectedHostCursor = committedStart.takeIf { it >= 0 }?.plus(output.length),
+        )
         if (!committed) {
             clearPendingCommit()
             return false
@@ -3029,7 +3234,31 @@ class SenseInputMethodService : InputMethodService() {
                     }
                 }
             }
+        } else {
+            val pendingCandidate = candidate
+            val pendingCanonical = pendingCandidate?.canonicalPinyin
+            if (
+                localPersistenceAllowed &&
+                commitSnapshot.learningDomain == AlternativeLearningDomain.PINYIN &&
+                !pendingCanonical.isNullOrEmpty()
+            ) {
+                pendingPinyinLearnings.add(
+                    PendingPinyinLearning(
+                        rawInput = pendingCanonical,
+                        candidate = pendingCandidate,
+                        evidence = evidence,
+                    ),
+                )
+            }
         }
+        recordReliableCommit(
+            text = output,
+            canonicalPinyin = candidate?.canonicalPinyin.takeIf {
+                commitSnapshot.learningDomain == AlternativeLearningDomain.PINYIN
+            },
+            committedStart = committedStart,
+            committedEnd = committedEnd,
+        )
         if (commitSnapshot.stillOwnsComposition(inputScheme.key())) {
             clearAlternativeCompositionAfterCommit()
         }
@@ -3076,10 +3305,11 @@ class SenseInputMethodService : InputMethodService() {
         if (englishInput.composing.isEmpty()) return false
         val output = candidate?.text ?: englishInput.composing
         val feedback = prepareTextExpirationFeedback()
-        val committed = commitToActiveTextTarget(output)
+        val committed = commitReliableLexicalText(output, expectedHostCursor = null)
         if (!committed) return false
         personalizationFeedback.complete(feedback)
         englishInput.reset()
+        breakAssociationSequence()
         render()
         return true
     }
@@ -3112,13 +3342,17 @@ class SenseInputMethodService : InputMethodService() {
             selectionStart >= 0 -> (selectionStart - composingLength).coerceAtLeast(0)
             else -> -1
         }
-        val committed = commitToActiveTextTarget(output)
+        val committed = commitReliableLexicalText(
+            text = output,
+            expectedHostCursor = committedStart.takeIf { it >= 0 }?.plus(output.length),
+        )
         if (!committed) {
             if (composition == committingComposition) {
                 clearPendingCommit()
             }
             return false
         }
+        val committedEnd = committedStart.takeIf { it >= 0 }?.plus(output.length) ?: -1
         if (learningTarget != null) {
             stagedProgressiveLearnings.forEach { pending ->
                 runCatching {
@@ -3144,13 +3378,37 @@ class SenseInputMethodService : InputMethodService() {
                         personalizationFeedback.remember(
                             learned,
                             start = committedStart,
-                            endExclusive =
-                                committedStart.takeIf { it >= 0 }?.plus(output.length) ?: -1,
+                            endExclusive = committedEnd,
                         )
                     }
                 }
             }
+        } else if (localPersistenceAllowed) {
+            stagedProgressiveLearnings.forEach { pending ->
+                pendingPinyinLearnings.add(
+                    PendingPinyinLearning(
+                        rawInput = pending.rawInput,
+                        candidate = pending.candidate,
+                        evidence = pending.evidence,
+                    ),
+                )
+            }
+            if (rawInput != null && learnable != null) {
+                pendingPinyinLearnings.add(
+                    PendingPinyinLearning(
+                        rawInput = rawInput,
+                        candidate = learnable,
+                        evidence = evidence,
+                    ),
+                )
+            }
         }
+        recordReliableCommit(
+            text = output,
+            canonicalPinyin = rawInput,
+            committedStart = committedStart,
+            committedEnd = committedEnd,
+        )
         if (composition == committingComposition) {
             composition = composition.reset()
             compositionLeftContext = ""
@@ -3169,7 +3427,9 @@ class SenseInputMethodService : InputMethodService() {
             return true
         }
         val update = editorComposingTextUpdate(visibleText)
-        return currentInputConnection?.setComposingText(update.text, update.newCursorPosition) == true
+        return compositionUpdateGuard.duringMutation {
+            currentInputConnection?.setComposingText(update.text, update.newCursorPosition) == true
+        }
     }
 
     private fun captureDecodeLeftContext(): String {
@@ -3183,6 +3443,102 @@ class SenseInputMethodService : InputMethodService() {
                 ?.toString()
                 .orEmpty()
         }.getOrDefault("")
+    }
+
+    private fun captureAssociationContext(): String {
+        if (!decodeContextAllowed) return ""
+        return if (isAgentTextTarget()) {
+            agentDraft.contextBeforeCursor(MAX_ASSOCIATION_CONTEXT_CHARS)
+        } else {
+            runCatching {
+                currentInputConnection
+                    ?.getTextBeforeCursor(MAX_ASSOCIATION_CONTEXT_CHARS, 0)
+                    ?.toString()
+                    .orEmpty()
+            }.getOrDefault("")
+        }
+    }
+
+    private fun activeAssociationConnectionIdentity(): Any? =
+        if (isAgentTextTarget()) agentDraft else currentInputConnection
+
+    private fun commitAssociationCandidate(suggestion: AssociationSuggestion) {
+        val start = when {
+            isAgentTextTarget() -> -1
+            hasHostSelection(selectionStart, selectionEnd) -> minOf(selectionStart, selectionEnd)
+            else -> selectionStart
+        }
+        val feedback = prepareTextExpirationFeedback()
+        if (
+            !commitReliableLexicalText(
+                text = suggestion.text,
+                expectedHostCursor = start.takeIf { it >= 0 }?.plus(suggestion.text.length),
+            )
+        ) return
+        personalizationFeedback.complete(feedback)
+        recordReliableCommit(
+            text = suggestion.text,
+            canonicalPinyin = null,
+            committedStart = start,
+            committedEnd = start.takeIf { it >= 0 }?.plus(suggestion.text.length) ?: -1,
+        )
+        render()
+    }
+
+    private fun recordReliableCommit(
+        text: String,
+        canonicalPinyin: String?,
+        committedStart: Int,
+        committedEnd: Int,
+    ) {
+        if (!decodeContextAllowed) {
+            breakAssociationSequence()
+            return
+        }
+        val outcome = commitSequenceTracker.record(
+            CommittedTextUnit(
+                text = text,
+                canonicalPinyin = canonicalPinyin,
+                editorSessionId = editorSessionId,
+                committedAtMillis = SystemClock.elapsedRealtime(),
+                start = committedStart,
+                endExclusive = committedEnd,
+            ),
+        )
+        if (localPersistenceAllowed) {
+            outcome.association?.let { observation ->
+                if (!associationPersistenceReady) {
+                    if (pendingAssociationObservations.size >= MAX_PENDING_ASSOCIATIONS) {
+                        pendingAssociationObservations.removeFirst()
+                    }
+                    pendingAssociationObservations.addLast(observation)
+                }
+                runCatching {
+                    associationEngine.observe(observation.context, observation.nextText)
+                }.onFailure { error ->
+                    Log.e(TAG, "User association update failed", error)
+                }
+            }
+        }
+    }
+
+    private fun breakAssociationSequence() {
+        commitSequenceTracker.breakSequence()
+        associationSession.clear()
+        reliableCommitSelectionFence.clear()
+    }
+
+    private fun commitReliableLexicalText(text: String, expectedHostCursor: Int?): Boolean {
+        reliableCommitSelectionFence.expect(
+            editorSessionId = editorSessionId,
+            connectionIdentity = currentInputConnection.takeUnless { isAgentTextTarget() },
+            cursor = expectedHostCursor ?: -1,
+        )
+        val committed = reliableCommitGuard.duringMutation {
+            commitToActiveTextTarget(text)
+        }
+        if (!committed) reliableCommitSelectionFence.clear()
+        return committed
     }
 
     private fun commitToActiveTextTarget(text: String): Boolean =
@@ -3569,10 +3925,14 @@ class SenseInputMethodService : InputMethodService() {
         const val T9_EDITOR_PATH_LIMIT = 1
         const val MAX_PROGRESSIVE_PREFIX_CANDIDATES = DECODE_CANDIDATE_LIMIT
         const val PRESENTATION_CANDIDATE_LIMIT = DECODE_CANDIDATE_LIMIT + MAX_PROGRESSIVE_PREFIX_CANDIDATES
+        const val ASSOCIATION_CANDIDATE_LIMIT = 8
         const val CLIPBOARD_HISTORY_LIMIT = 30
         const val MAX_CLIPBOARD_TEXT_LENGTH = 4096
         const val MAX_VOICE_PREVIEW_CHARS = 1024
         const val MAX_DECODE_CONTEXT_CHARS = 2
+        const val MAX_ASSOCIATION_CONTEXT_CHARS = 16
+        const val MAX_PENDING_ASSOCIATIONS = 64
+        const val MAX_PENDING_PINYIN_LEARNINGS = 64
         const val MAX_DEFERRED_INPUT_EVENTS = 512
         const val PENDING_COMMIT_TIMEOUT_MS = 120L
         const val CLIPBOARD_PREFERENCES = "sense_clipboard_history"
@@ -3606,6 +3966,8 @@ private data class LoadedCandidateDecoderRuntime(
     val adaptiveDecoder: AdaptivePinyinDecoder,
     val userLexicon: UserLexicon,
     val englishLexicon: EnglishLexicon,
+    val bigramModel: CharacterBigramModel,
+    val userAssociationLexicon: UserAssociationLexicon,
 )
 
 private data class WubiDecoderRuntime(

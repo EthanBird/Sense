@@ -243,7 +243,7 @@ class HttpsActionHttpLoader(
             connection.readTimeout = readTimeoutMs
             connection.requestMethod = "GET"
             connection.setRequestProperty("Accept", "application/json")
-            connection.setRequestProperty("User-Agent", "Sense-IME/0.4.10 Action-Skills")
+            connection.setRequestProperty("User-Agent", "Sense-IME/0.4.11 Action-Skills")
             headers.forEach(connection::setRequestProperty)
             require(connection.responseCode in 200..299) {
                 "Action endpoint returned HTTP ${connection.responseCode}"

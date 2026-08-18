@@ -264,31 +264,32 @@ class AdaptivePinyinDecoder(
             val personalizationBonus = learned.rankingBoost - matchPenalty
             if (personalizationBonus <= MIN_ACTIVE_PERSONALIZATION_ADJUSTMENT) return@forEach
             val baseCandidate = baseByText[learned.text]
-            val priorCompensation = baseCandidate?.let {
-                CandidateRanker.sourcePrior(
+            val userPrior = CandidateRanker.sourcePrior(
+                userKind,
+                hasCanonicalExact,
+                hasCanonicalComposition,
+            )
+            val baseTotal = baseCandidate?.let {
+                it.score + CandidateRanker.sourcePrior(
                     it.matchKind,
                     hasCanonicalExact,
                     hasCanonicalComposition,
-                ) - CandidateRanker.sourcePrior(
-                    userKind,
-                    hasCanonicalExact,
-                    hasCanonicalComposition,
                 )
-            } ?: 0f
-            val baseScore = baseCandidate?.score ?: (
-                topBaseTotal -
-                    CandidateRanker.sourcePrior(
-                        userKind,
-                        hasCanonicalExact,
-                        hasCanonicalComposition,
-                    ) -
-                    USER_ONLY_BASE_GAP
-            )
+            } ?: (topBaseTotal - USER_ONLY_BASE_GAP)
+            // A strong, exact user observation must not inherit an arbitrarily deep composed
+            // base score. Otherwise the same learned phrase is near the front with a small decode
+            // limit (where it is user-only), yet disappears with production's 255-result limit
+            // after colliding with a deep BASE_COMPOSED row.
+            val effectiveBaseTotal = if (
+                fullMatch && learned.rankingBoost >= USER_OBSERVED_FLOOR_MIN_BOOST
+            ) {
+                maxOf(baseTotal, topBaseTotal - USER_ONLY_BASE_GAP)
+            } else {
+                baseTotal
+            }
             candidates += Candidate(
                 text = learned.text,
-                score = baseScore +
-                    priorCompensation +
-                    personalizationBonus,
+                score = effectiveBaseTotal - userPrior + personalizationBonus,
                 canonicalPinyin = learned.fullPinyin,
                 matchKind = userKind,
                 canonicalInitials = learned.initials,
@@ -576,6 +577,7 @@ class AdaptivePinyinDecoder(
                 .thenBy { it.value.candidate.text }
 
         const val USER_ONLY_BASE_GAP = 2.25f
+        const val USER_OBSERVED_FLOOR_MIN_BOOST = 1f
         const val USER_INITIALS_AMBIGUITY_PENALTY = 0.2f
         const val MIN_ACTIVE_PERSONALIZATION_ADJUSTMENT = 0.001f
         const val MAX_PROGRESSIVE_CANDIDATES = 255

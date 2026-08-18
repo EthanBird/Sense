@@ -189,6 +189,55 @@ class AdaptivePinyinDecoderTest {
     }
 
     @Test
+    fun composedConfirmationIsStrongerThanProgressiveAndBelowDeepExplicitEvidence() {
+        val lexicon = MemoryUserLexicon(clock = { 1_000L })
+        lexicon.record("ni", "n", "你", evidence = UserLearningEvidence.PROGRESSIVE_SELECTION)
+        lexicon.record("ni", "n", "泥", evidence = UserLearningEvidence.COMPOSED_CONFIRM)
+        lexicon.record(
+            "ni",
+            "n",
+            "拟",
+            evidence = UserLearningEvidence(UserSelectionKind.EXPLICIT_SELECTION, selectedRank = 7),
+        )
+
+        assertEquals(listOf("拟", "泥", "你"), lexicon.lookup("n", 3).map { it.text })
+    }
+
+    @Test
+    fun strongLearnedPhraseKeepsStableFrontRankAcrossSmallAndProductionLimits() {
+        val targetIndex = 64
+        val baseCandidates = (0..80).map { index ->
+            Candidate(
+                text = if (index == targetIndex) "程彻" else "候选$index",
+                score = 100f - index * 0.1f,
+                canonicalPinyin = "chengche",
+                canonicalInitials = "cc",
+                matchKind = CandidateMatchKind.BASE_COMPOSED,
+            )
+        }
+        val base = object : RankedCandidateDecoder {
+            override fun decode(composing: String, limit: Int): List<Candidate> =
+                baseCandidates.take(limit)
+        }
+        val decoder = AdaptivePinyinDecoder(
+            base,
+            MemoryUserLexicon(clock = { 1_000L }),
+            PinyinSyllableSegmenter(setOf("cheng", "che")),
+        )
+        decoder.learn(
+            "chengche",
+            baseCandidates[targetIndex],
+            UserLearningEvidence.COMPOSED_CONFIRM,
+        )
+
+        val rankAt12 = decoder.decode("chengche", 12).indexOfFirst { it.text == "程彻" }
+        val rankAt255 = decoder.decode("chengche", 255).indexOfFirst { it.text == "程彻" }
+
+        assertTrue(rankAt12 in 0..3)
+        assertTrue(rankAt255 in 0..3)
+    }
+
+    @Test
     fun oneExplicitSelectionDecaysInsteadOfPermanentlyPinningTheCandidate() {
         var now = 1_000L
         val lexicon = MemoryUserLexicon(clock = { now })

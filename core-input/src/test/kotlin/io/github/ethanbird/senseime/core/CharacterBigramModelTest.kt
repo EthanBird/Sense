@@ -25,6 +25,28 @@ class CharacterBigramModelTest {
     }
 
     @Test
+    fun binaryModelEnumeratesStrongestSuccessorsForOneContext() {
+        val model = BinaryCharacterBigramModel.fromBytes(
+            model(
+                Triple('我'.code, '们'.code, 2.5f),
+                Triple('我'.code, '是'.code, 3f),
+                Triple('我'.code, '想'.code, 1.5f),
+                Triple('你'.code, '好'.code, 3f),
+            ),
+        )
+
+        assertEquals(
+            listOf(
+                CharacterBigramSuccessor('是'.code, 3f),
+                CharacterBigramSuccessor('们'.code, 2.5f),
+            ),
+            model.successors('我'.code, 2),
+        )
+        assertTrue(model.successors('他'.code, 8).isEmpty())
+        assertTrue(model.successors('我'.code, 0).isEmpty())
+    }
+
+    @Test
     fun malformedOrUnsortedModelsAreRejected() {
         assertTrue(runCatching { BinaryCharacterBigramModel.fromBytes(byteArrayOf(1, 2, 3)) }.isFailure)
         val invalidMagic = model(Triple('我'.code, '是'.code, 1f)).also { it[0] = 'X'.code.toByte() }

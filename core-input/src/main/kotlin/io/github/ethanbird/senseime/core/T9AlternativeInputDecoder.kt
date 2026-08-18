@@ -434,7 +434,7 @@ object T9AlternativeInputDecoder {
             decoder.decodeAfter(previousCodePoint, query, limit)
 
         else -> decoder.decode(query, limit)
-    }
+    }.withCuratedVocabulary(query, limit)
 
     private fun probeCanonicalChinese(
         decoder: InputDecoder,
@@ -449,7 +449,16 @@ object T9AlternativeInputDecoder {
             decoder.probeCanonicalChineseOnly(query, limit)
 
         else -> decodeCanonicalChinese(decoder, query, previousCodePoint, limit)
-    }
+    }.withCuratedVocabulary(query, limit)
+
+    private fun List<Candidate>.withCuratedVocabulary(query: String, limit: Int): List<Candidate> =
+        CuratedLexicalCandidateCatalog.merge(
+            composing = query,
+            primary = this,
+            // The lexical probe normally asks for one row. Keep one bounded doorway
+            // for a curated exact term without widening any decoder query.
+            limit = if (limit == PROBE_CANDIDATE_LIMIT) 2 else limit,
+        )
 
     private val T9PinyinPath.structuralPenalty: Float
         get() = segments.fold(0f) { penalty, segment ->

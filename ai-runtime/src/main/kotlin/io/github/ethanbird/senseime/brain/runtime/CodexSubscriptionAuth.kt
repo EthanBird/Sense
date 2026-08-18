@@ -154,7 +154,7 @@ class CodexDeviceAuthClient {
             connection.instanceFollowRedirects = false
             connection.setRequestProperty("Accept", "application/json")
             connection.setRequestProperty("Content-Type", contentType)
-            connection.setRequestProperty("User-Agent", "Sense-IME/0.4.10 Codex-Auth")
+            connection.setRequestProperty("User-Agent", "Sense-IME/0.4.11 Codex-Auth")
             connection.outputStream.use { it.write(body.toByteArray(StandardCharsets.UTF_8)) }
             val status = connection.responseCode
             val input = if (status in 200..299) connection.inputStream else connection.errorStream

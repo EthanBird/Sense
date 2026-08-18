@@ -8,6 +8,29 @@ import org.junit.Test
 
 class T9AlternativeInputDecoderTest {
     @Test
+    fun curatedModernVocabularyIsAvailableThroughTheT9Path() {
+        val result = T9AlternativeInputDecoder.decode(
+            composition = compositionOf("944636484"),
+            pathSource = T9PinyinPathSource { _, _ ->
+                listOf(
+                    path(
+                        "zhi" to T9PinyinSegmentKind.SYLLABLE,
+                        "neng" to T9PinyinSegmentKind.SYLLABLE,
+                        "ti" to T9PinyinSegmentKind.SYLLABLE,
+                    ),
+                )
+            },
+            pinyinDecoder = RecordingCanonicalDecoder(
+                listOf(Candidate("智能", matchKind = CandidateMatchKind.BASE_COMPOSED)),
+            ),
+            leftContext = "",
+            limit = 8,
+        )
+
+        assertTrue(result.candidates.indexOfFirst { it.text == "智能体" } in 0..1)
+    }
+
+    @Test
     fun inferredJointsStayOutOfDecoderQueryButRemainInPresentationLabel() {
         val decoder = RecordingCanonicalDecoder(
             listOf(Candidate(text = "\u6D51\u8EAB", matchKind = CandidateMatchKind.BASE_EXACT)),

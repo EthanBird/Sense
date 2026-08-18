@@ -1,4 +1,4 @@
-name: Release v0.4.10
+name: Release v0.4.11
 # The status jobs make publication observable to GitHub API clients without Actions-list access.
 
 on:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: release-v0.4.10
+  group: release-v0.4.11
   cancel-in-progress: true
 
 permissions:
@@ -26,8 +26,8 @@ jobs:
               ...context.repo,
               sha: context.sha,
               state: 'pending',
-              context: 'release/v0.4.10',
-              description: 'Signed v0.4.10 release is running',
+              context: 'release/v0.4.11',
+              description: 'Signed v0.4.11 release is running',
               target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             })
 
@@ -38,8 +38,8 @@ jobs:
     timeout-minutes: 60
     environment: release
     env:
-      RELEASE_TAG: v0.4.10
-      RELEASE_APK: Sense-v0.4.10.apk
+      RELEASE_TAG: v0.4.11
+      RELEASE_APK: Sense-v0.4.11.apk
       RELEASE_CERT_SHA256: 76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984
 
     steps:
@@ -56,8 +56,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -F 'versionCode = 35' app/build.gradle.kts
-          grep -F 'versionName = "0.4.10"' app/build.gradle.kts
+          grep -F 'versionCode = 36' app/build.gradle.kts
+          grep -F 'versionName = "0.4.11"' app/build.gradle.kts
           python3 tools/test_release_plan.py
 
       - name: Materialize persistent signing identity
@@ -89,6 +89,8 @@ jobs:
           :brain-api:test
           :ai-brain:test
           :ai-runtime:testDebugUnitTest
+          :core-input:test
+          :ime-service:testDebugUnitTest
           :app:testDebugUnitTest
           :app:lintDebug
           :app:assembleRelease
@@ -106,7 +108,7 @@ jobs:
           grep -Fi "Signer #1 certificate SHA-256 digest: $RELEASE_CERT_SHA256" release/apksigner.txt
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" | tee release/apk-badging.txt
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='35' versionName='0.4.10'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='36' versionName='0.4.11'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           cp "$apk" "release/$RELEASE_APK"
@@ -115,7 +117,7 @@ jobs:
       - name: Create tag and GitHub Release through the GitHub API
         uses: actions/github-script@v8
         env:
-          NOTES_PATH: docs/releases/v0.4.10.md
+          NOTES_PATH: docs/releases/v0.4.11.md
           ASSET_DIR: release
         with:
           script: |
@@ -196,7 +198,7 @@ jobs:
               ...context.repo,
               sha: context.sha,
               state: success ? 'success' : 'failure',
-              context: 'release/v0.4.10',
-              description: success ? 'Signed v0.4.10 release published' : `Release ${process.env.RELEASE_RESULT}`,
+              context: 'release/v0.4.11',
+              description: success ? 'Signed v0.4.11 release published' : `Release ${process.env.RELEASE_RESULT}`,
               target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             })

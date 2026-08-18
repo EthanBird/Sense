@@ -76,6 +76,7 @@ class MemoryEnglishWordUsageStore(
             UserSelectionKind.DEFAULT_ACCEPT -> 0.5f
             UserSelectionKind.EXPLICIT_SELECTION -> 1.5f
             UserSelectionKind.PROGRESSIVE_SELECTION -> 0.75f
+            UserSelectionKind.COMPOSED_CONFIRM -> 1.25f
         }
         val learned = LearnedEnglishWord(
             word = normalized,
