@@ -257,7 +257,8 @@ def write_stats(
         "source_audit": source_stats,
     }
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    with path.open("w", encoding="utf-8", newline="\n") as stream:
+        stream.write(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
 
 
 def build(manifest_path: Path, output: Path, stats_output: Path | None = None) -> None:
