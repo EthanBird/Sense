@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sense_mic_service_description">将手机麦克风低延迟传输到电脑</string>
+    <string name="sense_mic_notification_channel">Sense Mic</string>
+    <string name="sense_mic_notification_waiting">等待电脑连接</string>
+    <string name="sense_mic_notification_connected">正在传输到 %1$s</string>
+    <string name="sense_mic_notification_muted">已静音，连接保持中</string>
+    <string name="sense_mic_action_stop">停止</string>
+    <string name="sense_mic_action_mute">静音</string>
+    <string name="sense_mic_action_unmute">取消静音</string>
+</resources>

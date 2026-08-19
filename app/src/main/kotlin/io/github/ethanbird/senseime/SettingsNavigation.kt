@@ -14,6 +14,7 @@ internal enum class SettingsSection {
     ACTION_SKILLS,
     SKILLS,
     VOICE,
+    MIC,
     ABOUT,
 }
 

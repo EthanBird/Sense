@@ -38,6 +38,7 @@ class SettingsActivity : ComponentActivity() {
     private val settingsViews by lazy { SettingsViewFactory(this) }
     private var activeSectionScreen: AutoCloseable? = null
     private var activeSpeechScreen: SpeechSettingsScreen? = null
+    private var activeMicScreen: MicSettingsScreen? = null
     private lateinit var skillsScreen: SkillsSettingsScreen
     private var selectedProviderPreset: ProviderPresetId? = null
 
@@ -71,6 +72,7 @@ class SettingsActivity : ComponentActivity() {
             SettingsSection.KEYBOARD -> Unit
             SettingsSection.SKILLS -> skillsScreen.onResume()
             SettingsSection.VOICE -> activeSpeechScreen?.onResume()
+            SettingsSection.MIC -> activeMicScreen?.onResume()
             else -> Unit
         }
     }
@@ -120,6 +122,15 @@ class SettingsActivity : ComponentActivity() {
             activeSpeechScreen?.onPermissionResult(
                 grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED,
             )
+        } else if (requestCode == REQUEST_SENSE_MIC_PERMISSIONS) {
+            val recordAudioIndex = permissions.indexOf(Manifest.permission.RECORD_AUDIO)
+            val audioGranted = if (recordAudioIndex >= 0) {
+                grantResults.getOrNull(recordAudioIndex) == PackageManager.PERMISSION_GRANTED
+            } else {
+                checkSelfPermission(Manifest.permission.RECORD_AUDIO) ==
+                    PackageManager.PERMISSION_GRANTED
+            }
+            activeMicScreen?.onPermissionResult(audioGranted)
         }
     }
 
@@ -227,6 +238,19 @@ class SettingsActivity : ComponentActivity() {
                     card(R.string.speech_provider_title, screen.createView()).withTop(dp(20)),
                 )
             }
+            SettingsSection.MIC -> {
+                renderDetailHeader(R.string.settings_mic_title, R.string.settings_mic_summary)
+                val screen = MicSettingsScreen(
+                    activity = this,
+                    views = settingsViews,
+                    emitEffect = ::handleEffect,
+                )
+                activeSectionScreen = screen
+                activeMicScreen = screen
+                screenContent.addView(
+                    card(R.string.sense_mic_service_title, screen.createView()).withTop(dp(20)),
+                )
+            }
             SettingsSection.ABOUT -> {
                 renderDetailHeader(R.string.settings_about_title, R.string.settings_about_summary)
                 val screen = AboutSettingsScreen(
@@ -246,6 +270,7 @@ class SettingsActivity : ComponentActivity() {
         activeSectionScreen?.close()
         activeSectionScreen = null
         activeSpeechScreen = null
+        activeMicScreen = null
     }
 
     private fun handleEffect(effect: SettingsEffect) {
@@ -259,6 +284,16 @@ class SettingsActivity : ComponentActivity() {
                     arrayOf(Manifest.permission.RECORD_AUDIO),
                     REQUEST_RECORD_AUDIO,
                 )
+            SettingsEffect.RequestSenseMicPermissions -> {
+                val permissions = mutableListOf(Manifest.permission.RECORD_AUDIO)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    permissions += Manifest.permission.POST_NOTIFICATIONS
+                }
+                requestPermissions(
+                    permissions.distinct().toTypedArray(),
+                    REQUEST_SENSE_MIC_PERMISSIONS,
+                )
+            }
             SettingsEffect.OpenApplicationDetails ->
                 startActivity(
                     Intent(
@@ -319,6 +354,11 @@ class SettingsActivity : ComponentActivity() {
             SettingsSection.VOICE,
             R.string.settings_voice_title,
             R.string.settings_voice_summary,
+        )
+        addCategory(
+            SettingsSection.MIC,
+            R.string.settings_mic_title,
+            R.string.settings_mic_summary,
         )
         addCategory(
             SettingsSection.ABOUT,
@@ -485,5 +525,6 @@ class SettingsActivity : ComponentActivity() {
         private const val STATE_SECTION = "settings-section"
         private const val STATE_SKILL_DRAFTS = "settings-skill-drafts"
         private const val REQUEST_RECORD_AUDIO = 40
+        private const val REQUEST_SENSE_MIC_PERMISSIONS = 41
     }
 }

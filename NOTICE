@@ -140,8 +140,29 @@ License: BSD 3-Clause
 License copy: licenses/concentus-BSD-3-Clause.txt
 APK copy: assets/CONCENTUS-BSD-3-CLAUSE.txt
 
-Sense uses Concentus to encode 16 kHz mono PCM into Opus packets for the optional
-Sogou SRSS speech provider. No Concentus native binary is bundled.
+Sense uses Concentus to encode mono PCM into Opus packets for the optional
+Sogou SRSS speech provider and the 48 kHz Sense Mic desktop stream. No
+Concentus native binary is bundled.
+
+SenseMicVAD Windows virtual audio driver
+----------------------------------------
+
+Location: sense-mic-client/driver/windows/SenseMicVAD
+
+The driver project preserves source and notices from:
+
+- Microsoft Windows Driver Samples / SysVAD / Simple Audio Sample,
+  licensed under the Microsoft Public License (MS-PL); and
+- MikeTheTech/Virtual-Audio-Driver, copyright (c) 2025 MikeTheTech,
+  https://github.com/VirtualDrivers/Virtual-Audio-Driver at commit
+  bb34fba15faf569a6ae9bdea360bc1cf4821354e, licensed under the MIT License.
+
+Complete texts and attribution are retained in
+sense-mic-client/driver/windows/SenseMicVAD/THIRD_PARTY_NOTICES.md and
+sense-mic-client/driver/windows/SenseMicVAD/LICENSE-MIT.txt. Sense-specific
+additions provide fixed endpoints, the render-to-capture ring, INF identity,
+and reproducible WDK build integration.
+
 Rime Wubi / Wubi86 dictionary
 ----------------------------------------
 Sense includes a deterministically compiled Wubi86 dictionary from Rime Wubi,

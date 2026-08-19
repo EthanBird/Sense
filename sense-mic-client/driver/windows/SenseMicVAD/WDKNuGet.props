@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <SenseMicWdkVersion>10.0.26100.6584</SenseMicWdkVersion>
+    <SenseMicPackagesDir>$(MSBuildThisFileDirectory)packages\</SenseMicPackagesDir>
+  </PropertyGroup>
+  <Import Project="$(SenseMicPackagesDir)Microsoft.Windows.SDK.CPP.x64.$(SenseMicWdkVersion)\build\native\Microsoft.Windows.SDK.cpp.x64.props"
+          Condition="Exists('$(SenseMicPackagesDir)Microsoft.Windows.SDK.CPP.x64.$(SenseMicWdkVersion)\build\native\Microsoft.Windows.SDK.cpp.x64.props')" />
+  <Import Project="$(SenseMicPackagesDir)Microsoft.Windows.SDK.CPP.$(SenseMicWdkVersion)\build\native\Microsoft.Windows.SDK.cpp.props"
+          Condition="Exists('$(SenseMicPackagesDir)Microsoft.Windows.SDK.CPP.$(SenseMicWdkVersion)\build\native\Microsoft.Windows.SDK.cpp.props')" />
+  <Import Project="$(SenseMicPackagesDir)Microsoft.Windows.WDK.x64.$(SenseMicWdkVersion)\build\native\Microsoft.Windows.WDK.x64.props"
+          Condition="Exists('$(SenseMicPackagesDir)Microsoft.Windows.WDK.x64.$(SenseMicWdkVersion)\build\native\Microsoft.Windows.WDK.x64.props')" />
+</Project>

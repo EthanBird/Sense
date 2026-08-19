@@ -86,5 +86,6 @@ include(
     ":ai-runtime",
     ":memory-protocol",
     ":event-journal",
+    ":mic-runtime",
     ":benchmark",
 )

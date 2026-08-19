@@ -1,0 +1,39 @@
+[package]
+name = "sense-mic-client"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "GPL-3.0-only"
+description = "Reliable Windows and Linux receiver for the Sense Android microphone service"
+
+[[bin]]
+name = "sense-mic"
+path = "src/main.rs"
+
+[dependencies]
+aes-gcm = "0.10.3"
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive", "env"] }
+cpal = { version = "0.18.2", default-features = false }
+ctrlc = "3.4"
+hkdf = "0.12.4"
+hmac = "0.12.1"
+if-addrs = "0.15"
+opus-rs = "0.1.29"
+p256 = { version = "0.13.2", features = ["ecdh", "pkcs8"] }
+pbkdf2 = "0.12.2"
+rand = "0.8.5"
+rtrb = "0.4"
+rpassword = "7.4"
+sha2 = "0.10.9"
+subtle = "2.6"
+zeroize = "1.8"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+cpal = { version = "0.18.2", default-features = false, features = ["pulseaudio"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+panic = "abort"

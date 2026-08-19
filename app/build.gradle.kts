@@ -103,6 +103,7 @@ dependencies {
     implementation(project(":ai-runtime"))
     implementation(project(":ime-config"))
     implementation(project(":ime-service"))
+    implementation(project(":mic-runtime"))
     implementation(libs.androidx.activity)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)

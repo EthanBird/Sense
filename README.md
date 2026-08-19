@@ -6,6 +6,11 @@
 
 > Android 原生高性能中文输入法：普通输入完全本地运行，AI、记忆与工具能力通过可配置的长按方向 Skill 显式触发。
 
+> **Sense Mic 已实装：** 设置页可开启独立的 Android 前台麦克风服务；Rust 桌面端提供
+> 加密 Opus、FEC、jitter/PLC、自动重连与 Linux PipeWire/Pulse 虚拟源；Windows 端包含
+> 可复现构建的 x64 WaveRT `Sense Mic Playback -> Sense Mic` 虚拟音频驱动。选型、构建和
+> 使用见 [Sense Mic Client](sense-mic-client/README.md) 与 [ADR 0026](docs/adr/0026-sense-mic-phone-to-pc-virtual-microphone.md)。
+
 > Android 语音 Provider 新增“搜狗在线语音（免配置）”：内置加密握手、20 ms Opus
 > 分帧与 SRSS WebSocket 转写，选择后无需 API Key 即可从键盘语音入口使用。协议与
 > 双实现验证见[接入记录](docs/research/sogou-asr-provider-integration-2026-08-01.md)。

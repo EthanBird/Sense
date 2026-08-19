@@ -20,3 +20,12 @@ __pycache__/
 windows/out/
 windows/host/**/bin/
 windows/host/**/obj/
+sense-mic-client/target/
+sense-mic-client/dist/
+sense-mic-client/driver/windows/SenseMicVAD/packages/
+sense-mic-client/driver/windows/SenseMicVAD/.cache/
+sense-mic-client/driver/windows/SenseMicVAD/x64/
+sense-mic-client/driver/windows/SenseMicVAD/Package/x64/
+sense-mic-client/driver/windows/SenseMicVAD/Source/**/x64/
+sense-mic-client/driver/windows/x64/*
+!sense-mic-client/driver/windows/x64/.gitkeep

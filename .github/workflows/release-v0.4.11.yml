@@ -91,6 +91,7 @@ jobs:
           :ai-runtime:testDebugUnitTest
           :core-input:test
           :ime-service:testDebugUnitTest
+          :mic-runtime:testDebugUnitTest
           :app:testDebugUnitTest
           :app:lintDebug
           :app:assembleRelease
