@@ -38,7 +38,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
+          # The bundled WDK 10.0.26100 VSIX targets Visual Studio 2022 (v170).
+          # Pin the image so a windows-latest migration to VS 2026 (v180) cannot
+          # silently break the WaveRT driver package.
+          - os: windows-2022
             artifact: sense-mic-release-windows-x64
             asset: SenseMicClient-v0.4.12-windows-x64.zip
           - os: ubuntu-latest

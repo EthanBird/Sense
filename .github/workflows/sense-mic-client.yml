@@ -42,7 +42,8 @@ jobs:
         run: cargo build --locked --release --manifest-path sense-mic-client/Cargo.toml
 
   windows-driver:
-    runs-on: windows-latest
+    # WDK 10.0.26100 supplies the Visual Studio 2022 (v170) integration.
+    runs-on: windows-2022
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
