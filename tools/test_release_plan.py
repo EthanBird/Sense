@@ -23,6 +23,7 @@ from release_plan import (
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "tools" / "release_plan.py"
 LOCAL_RELEASE = ROOT / "tools" / "local_release.ps1"
+RELEASE_WORKFLOW = ROOT / ".github" / "workflows" / "release-v0.4.12.yml"
 APP_BUILD = ROOT / "app" / "build.gradle.kts"
 RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.12.md"
 RELEASE_CERT = (
@@ -447,6 +448,15 @@ class LocalReleaseContractTest(unittest.TestCase):
             "benchmarks/results/m6-input-polish.json",
         ):
             self.assertIn(result, self.script_lower)
+
+
+class ReleaseWorkflowContractTest(unittest.TestCase):
+    def test_signer_digest_accepts_apksigner_scheme_labels(self) -> None:
+        workflow = RELEASE_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("certificate SHA-256 digest:", workflow)
+        self.assertIn("sort -u", workflow)
+        self.assertIn('test "$cert_sha256" = "$RELEASE_CERT_SHA256"', workflow)
+        self.assertNotIn("Signer #1 certificate SHA-256 digest", workflow)
 
 
 if __name__ == "__main__":
