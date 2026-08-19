@@ -255,7 +255,7 @@ class AgentBrowserRuntime private constructor(context: Context) {
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
             mediaPlaybackRequiresUserGesture = true
             setSupportMultipleWindows(false)
-            userAgentString = "$userAgentString Sense-Agent/0.4.11"
+            userAgentString = "$userAgentString Sense-Agent/0.4.12"
         }
         CookieManager.getInstance().setAcceptCookie(true)
         tab.webView.webViewClient = object : WebViewClient() {

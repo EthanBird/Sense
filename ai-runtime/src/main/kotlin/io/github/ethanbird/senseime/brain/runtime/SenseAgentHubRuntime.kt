@@ -37,6 +37,7 @@ data class AgentHubMessage(
     val role: AgentHubMessageRole,
     val text: String,
     val createdAtEpochMs: Long,
+    val wireTruncated: Boolean = false,
 )
 
 enum class AgentHubToolState {
@@ -89,6 +90,7 @@ internal data class AgentHubConversationArchive(
 
 data class AgentHubProjection(
     val revision: Long = 0,
+    val conversationRevision: Long = 0,
     val loaded: Boolean = false,
     val messages: List<AgentHubMessage> = emptyList(),
     val tools: List<AgentHubToolStep> = emptyList(),
@@ -102,20 +104,38 @@ data class AgentHubProjection(
     val conversations: List<AgentHubConversationSummary> = emptyList(),
     val action: AgentHubActionCard? = null,
     val actionSkillsEnabled: Boolean = true,
+    val messageWindowStart: Int = 0,
+    val messageTotalCount: Int = 0,
+    val conversationWindowStart: Int = 0,
+    val conversationTotalCount: Int = 0,
 )
+
+data class AgentHubPreparedRun(
+    val requestId: String,
+    val generation: Long,
+    val userMessage: String,
+    val userCreatedAtEpochMs: Long,
+) {
+    init {
+        require(requestId.isNotBlank())
+        require(generation > 0L)
+        require(userMessage.isNotBlank())
+        require(userCreatedAtEpochMs > 0L)
+    }
+}
 
 fun interface AgentHubObserver {
     fun onProjection(projection: AgentHubProjection)
 }
 
 /**
- * Transitional process-local owner for the Agent conversation.
+ * Process-local `:brain` owner for the Agent conversation and durable projection.
  *
- * IME and Activity frontends attach observers while the Brain service owns each bounded model/tool
- * run. The next protocol migration moves the durable conversation projection behind the service;
- * keeping this observer boundary now lets that migration preserve the new IME UI contract.
+ * The Hub activity and message-channel service use this owner directly. The IME attaches through
+ * [SenseAgentHubBridgeService] and [RemoteSenseAgentHubClient], so `:ime` never creates a second
+ * conversation, terminal or browser owner.
  */
-class SenseAgentHubRuntime private constructor(context: Context) {
+class SenseAgentHubRuntime private constructor(context: Context) : AgentHubPort {
     private val applicationContext = context.applicationContext
     private val mainHandler = Handler(Looper.getMainLooper())
     private val io = Executors.newSingleThreadExecutor { runnable ->
@@ -178,8 +198,10 @@ class SenseAgentHubRuntime private constructor(context: Context) {
                 val recovering = durable?.outcome == AgentDurableRunOutcome.RUNNING
                 projection = projection.copy(
                     revision = projection.revision + 1,
+                    conversationRevision = nextGeneration(projection.conversationRevision),
                     loaded = true,
                     messages = recoveredMessages,
+                    messageTotalCount = recoveredMessages.size,
                     status = when (durable?.outcome) {
                         AgentDurableRunOutcome.RUNNING -> "正在恢复后台 Agent…"
                         AgentDurableRunOutcome.ANSWER -> "回答完成"
@@ -192,6 +214,10 @@ class SenseAgentHubRuntime private constructor(context: Context) {
                     requestId = if (recovering) durable?.requestId else null,
                     generation = maxOf(projection.generation, durable?.generation ?: 0L),
                     conversations = conversationSummaries(recoveredMessages, archives),
+                    conversationTotalCount = conversationSummaries(
+                        recoveredMessages,
+                        archives,
+                    ).size,
                     actionSkillsEnabled = actionSettings.isEnabled(XauUsdActionSkill.SKILL_ID),
                 )
                 publish()
@@ -205,7 +231,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         }
     }
 
-    fun observe(observer: AgentHubObserver): AutoCloseable {
+    override fun observe(observer: AgentHubObserver): AutoCloseable {
         checkMainThread()
         observers += observer
         observer.onProjection(projection)
@@ -218,24 +244,66 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         }
     }
 
-    fun currentProjection(): AgentHubProjection {
+    override fun currentProjection(): AgentHubProjection {
         checkMainThread()
         return projection
     }
 
-    fun send(message: String): Boolean {
+    override fun fetchHistoryPage(request: AgentHubHistoryRequest): AgentHubHistoryPage {
+        checkMainThread()
+        val messages = when (request.conversationId) {
+            CURRENT_CONVERSATION_ID -> projection.messages
+            else -> archives.firstOrNull { it.id == request.conversationId }?.messages
+        }
+        return AgentHubHistoryPager.page(
+            request = request,
+            conversationRevision = projection.conversationRevision,
+            messages = messages,
+        )
+    }
+
+    override fun fetchConversationPage(
+        request: AgentHubConversationPageRequest,
+    ): AgentHubConversationPage {
+        checkMainThread()
+        return AgentHubConversationPager.page(
+            request = request,
+            conversationRevision = projection.conversationRevision,
+            conversations = projection.conversations,
+        )
+    }
+
+    override fun prepareRun(message: String): AgentHubPreparedRun? {
         checkMainThread()
         val text = message.trim()
-        if (!projection.loaded || projection.running || text.isEmpty()) return false
-        if (text.length > MAX_USER_MESSAGE_CHARS) return false
+        if (!projection.loaded || projection.running || text.isEmpty()) return null
+        if (text.length > MAX_USER_MESSAGE_CHARS) return null
+        return AgentHubPreparedRun(
+            requestId = UUID.randomUUID().toString(),
+            generation = nextGeneration(projection.generation),
+            userMessage = text,
+            userCreatedAtEpochMs = System.currentTimeMillis(),
+        )
+    }
+
+    override fun sendPrepared(prepared: AgentHubPreparedRun): Boolean {
+        checkMainThread()
+        if (!projection.loaded || projection.running) return false
+        if (prepared.userMessage.length > MAX_USER_MESSAGE_CHARS) return false
+        val generationAdvances = if (projection.generation == Long.MAX_VALUE) {
+            prepared.generation == 1L
+        } else {
+            prepared.generation > projection.generation
+        }
+        if (!generationAdvances) return false
         val userMessage = AgentHubMessage(
             role = AgentHubMessageRole.USER,
-            text = text,
-            createdAtEpochMs = System.currentTimeMillis(),
+            text = prepared.userMessage,
+            createdAtEpochMs = prepared.userCreatedAtEpochMs,
         )
         val messages = (projection.messages + userMessage).takeLast(MAX_RETAINED_MESSAGES)
-        val requestId = UUID.randomUUID().toString()
-        val generation = nextGeneration(projection.generation)
+        val requestId = prepared.requestId
+        val generation = prepared.generation
         val transcript = transcript(messages)
         val snapshot = EditorSnapshotV1(
             requestId = requestId,
@@ -271,7 +339,9 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         }.getOrElse { return false }
         projection = projection.copy(
             revision = projection.revision + 1,
+            conversationRevision = nextGeneration(projection.conversationRevision),
             messages = messages,
+            messageTotalCount = messages.size,
             tools = emptyList(),
             preview = "",
             status = "正在启动 Agent…",
@@ -281,6 +351,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
             inputTokens = 0,
             outputTokens = 0,
             conversations = conversationSummaries(messages, archives),
+            conversationTotalCount = conversationSummaries(messages, archives).size,
         )
         persist(messages)
         publish()
@@ -294,7 +365,9 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         return true
     }
 
-    fun stop(): Boolean {
+    override fun send(message: String): Boolean = prepareRun(message)?.let(::sendPrepared) == true
+
+    override fun stop(): Boolean {
         checkMainThread()
         val requestId = projection.requestId ?: return false
         if (!projection.running) return false
@@ -331,7 +404,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
     }
 
     /** Executes the built-in quote connector directly. No model request is created. */
-    fun runGoldQuote(): Boolean {
+    override fun runGoldQuote(): Boolean {
         checkMainThread()
         val enabled = actionSettings.isEnabled(XauUsdActionSkill.SKILL_ID)
         if (projection.actionSkillsEnabled != enabled) {
@@ -373,7 +446,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         return true
     }
 
-    fun cancelAction(): Boolean {
+    override fun cancelAction(): Boolean {
         checkMainThread()
         val current = projection.action?.takeIf { it.state == AgentHubActionState.RUNNING }
             ?: return false
@@ -387,7 +460,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         return true
     }
 
-    fun dismissAction(): Boolean {
+    override fun dismissAction(): Boolean {
         checkMainThread()
         if (projection.action?.state == AgentHubActionState.RUNNING || projection.action == null) {
             return false
@@ -428,19 +501,22 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         publish()
     }
 
-    fun clearConversation(): Boolean {
+    override fun clearConversation(): Boolean {
         checkMainThread()
         if (!projection.loaded || projection.running) return false
         archiveCurrentConversation(projection.messages)
         projection = projection.copy(
             revision = projection.revision + 1,
+            conversationRevision = nextGeneration(projection.conversationRevision),
             messages = emptyList(),
+            messageTotalCount = 0,
             tools = emptyList(),
             preview = "",
             status = "已开始新会话",
             inputTokens = 0,
             outputTokens = 0,
             conversations = conversationSummaries(emptyList(), archives),
+            conversationTotalCount = conversationSummaries(emptyList(), archives).size,
         )
         persist(emptyList())
         durableRunStore.clear()
@@ -448,7 +524,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         return true
     }
 
-    fun openConversation(id: String): Boolean {
+    override fun openConversation(id: String): Boolean {
         checkMainThread()
         if (!projection.loaded || projection.running) return false
         if (id == CURRENT_CONVERSATION_ID) return true
@@ -458,13 +534,16 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         val restored = selected.messages.takeLast(MAX_RETAINED_MESSAGES)
         projection = projection.copy(
             revision = projection.revision + 1,
+            conversationRevision = nextGeneration(projection.conversationRevision),
             messages = restored,
+            messageTotalCount = restored.size,
             tools = emptyList(),
             preview = "",
             status = "已打开历史会话",
             inputTokens = 0,
             outputTokens = 0,
             conversations = conversationSummaries(restored, archives),
+            conversationTotalCount = conversationSummaries(restored, archives).size,
         )
         persist(restored)
         // The single IO lane first archives the displaced current session and publishes the
@@ -522,6 +601,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
                 persist(messages)
                 projection.next(
                     messages = messages,
+                    conversationRevision = nextGeneration(projection.conversationRevision),
                     preview = "",
                     status = "回答完成",
                     running = false,
@@ -592,6 +672,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
 
     private fun AgentHubProjection.next(
         messages: List<AgentHubMessage> = this.messages,
+        conversationRevision: Long = this.conversationRevision,
         tools: List<AgentHubToolStep> = this.tools,
         preview: String = this.preview,
         status: String = this.status,
@@ -602,7 +683,9 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         conversations: List<AgentHubConversationSummary> = this.conversations,
     ): AgentHubProjection = copy(
         revision = revision + 1,
+        conversationRevision = conversationRevision,
         messages = messages,
+        messageTotalCount = messages.size,
         tools = tools,
         preview = preview,
         status = status,
@@ -611,6 +694,7 @@ class SenseAgentHubRuntime private constructor(context: Context) {
         inputTokens = inputTokens,
         outputTokens = outputTokens,
         conversations = conversations,
+        conversationTotalCount = conversations.size,
     )
 
     private fun String.toAgentStatus(): String = when (this) {

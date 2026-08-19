@@ -46,7 +46,7 @@ internal class KeyboardHitTester(
                     gesturePolicy = if (hit.expanded) verticalScrollPolicy else tapPolicy,
                 )
 
-                is CandidateHit.PageArea -> FrozenTouchTarget.CandidatePageArea(
+                is CandidateHit.GridArea -> FrozenTouchTarget.CandidateGridArea(
                     bounds = hit.bounds.toRectF(),
                     gesturePolicy = verticalScrollPolicy,
                 )

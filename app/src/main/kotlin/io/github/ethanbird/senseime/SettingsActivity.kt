@@ -212,6 +212,17 @@ class SettingsActivity : ComponentActivity() {
                     card(R.string.agent_tools_title, screen.createView()).withTop(dp(20)),
                 )
             }
+            SettingsSection.CHANNELS -> {
+                renderDetailHeader(
+                    R.string.settings_channels_title,
+                    R.string.settings_channels_summary,
+                )
+                val screen = AgentChannelsSettingsScreen(this, settingsViews)
+                activeSectionScreen = screen
+                screenContent.addView(
+                    card(R.string.agent_channels_title, screen.createView()).withTop(dp(20)),
+                )
+            }
             SettingsSection.ACTION_SKILLS -> {
                 renderDetailHeader(R.string.settings_action_skills_title, R.string.settings_action_skills_summary)
                 val screen = ActionSkillsSettingsScreen(this, settingsViews)
@@ -339,6 +350,11 @@ class SettingsActivity : ComponentActivity() {
             SettingsSection.TOOLS,
             R.string.settings_tools_title,
             R.string.settings_tools_summary,
+        )
+        addCategory(
+            SettingsSection.CHANNELS,
+            R.string.settings_channels_title,
+            R.string.settings_channels_summary,
         )
         addCategory(
             SettingsSection.ACTION_SKILLS,

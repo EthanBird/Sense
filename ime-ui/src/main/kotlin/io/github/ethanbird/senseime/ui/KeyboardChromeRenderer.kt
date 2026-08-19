@@ -166,15 +166,16 @@ internal class KeyboardChromeRenderer(
         canvas.restoreToCount(saveCount)
 
         drawVisibleCandidates(canvas, state)
+        drawExpandedScrollIndicator(canvas, state)
 
-        val pagerTop =
-            systemBarTop - metrics.expandedCandidatePagerHeight
+        val statusTop =
+            systemBarTop - metrics.expandedCandidateStatusHeight
         paint.color = color(0x16000000, 0x24FFFFFF)
         canvas.drawRect(
             0f,
-            pagerTop,
+            statusTop,
             state.viewWidth.toFloat(),
-            pagerTop + max(1f, density),
+            statusTop + max(1f, density),
             paint,
         )
         paint.color = color(0xFF667085.toInt(), 0xFF9B9EA5.toInt())
@@ -182,10 +183,10 @@ internal class KeyboardChromeRenderer(
         paint.textAlign = Paint.Align.CENTER
         text.drawCentered(
             canvas,
-            candidates.pageLabel,
+            candidates.expandedStatusLabel,
             paint,
             state.viewWidth / 2f,
-            pagerTop + metrics.expandedCandidatePagerHeight / 2f,
+            statusTop + metrics.expandedCandidateStatusHeight / 2f,
         )
         var controlIndex = 0
         while (controlIndex < candidates.controls.size) {
@@ -200,16 +201,26 @@ internal class KeyboardChromeRenderer(
     ) {
         val candidates = state.candidates
         if (candidates.expanded) {
-            var index = 0
+            val viewport = candidates.expandedGridBounds ?: return
+            val offset = candidates.expandedScrollOffset
+            val visibleContentTop = viewport.top + offset
+            val visibleContentBottom = viewport.bottom + offset
+            val saveCount = canvas.save()
+            canvas.clipRect(viewport.left, viewport.top, viewport.right, viewport.bottom)
+            canvas.translate(0f, -offset)
+            var index = candidates.firstExpandedCandidateEndingAfter(visibleContentTop)
             while (index < candidates.visibleCandidates.size) {
+                val candidate = candidates.visibleCandidates[index]
+                if (candidate.bounds.top >= visibleContentBottom) break
                 drawCandidateValue(
                     canvas,
                     state,
-                    candidates.visibleCandidates[index],
+                    candidate,
                     textSizeSp = 17f,
                 )
                 index += 1
             }
+            canvas.restoreToCount(saveCount)
             return
         }
 
@@ -229,6 +240,40 @@ internal class KeyboardChromeRenderer(
             candidateIndex += 1
         }
         canvas.restoreToCount(saveCount)
+    }
+
+    /** Draws one proportional thumb without allocating per animation frame. */
+    private fun drawExpandedScrollIndicator(
+        canvas: Canvas,
+        state: KeyboardRendererState,
+    ) {
+        val candidates = state.candidates
+        val viewport = candidates.expandedGridBounds ?: return
+        val maximumOffset = candidates.maximumExpandedScrollOffset
+        if (maximumOffset <= 0f) return
+
+        val trackTop = viewport.top + dp(4f)
+        val trackBottom = viewport.bottom - dp(4f)
+        val trackHeight = (trackBottom - trackTop).coerceAtLeast(1f)
+        val contentHeight = viewport.height + maximumOffset
+        val thumbHeight = maxOf(dp(18f), trackHeight * viewport.height / contentHeight)
+            .coerceAtMost(trackHeight)
+        val travel = trackHeight - thumbHeight
+        val thumbTop = trackTop + travel * (candidates.expandedScrollOffset / maximumOffset)
+
+        paint.style = Paint.Style.FILL
+        paint.color = color(0x40586477, 0x60AAAEB6)
+        val right = state.viewWidth - dp(2.5f)
+        val left = right - dp(2f)
+        canvas.drawRoundRect(
+            left,
+            thumbTop,
+            right,
+            thumbTop + thumbHeight,
+            dp(1f),
+            dp(1f),
+            paint,
+        )
     }
 
     private fun drawCandidateValue(
@@ -308,8 +353,6 @@ internal class KeyboardChromeRenderer(
             when (slot.control) {
                 CandidateControl.EXPAND -> "⌄"
                 CandidateControl.COLLAPSE -> "⌃"
-                CandidateControl.PREVIOUS_PAGE -> "‹"
-                CandidateControl.NEXT_PAGE -> "›"
                 CandidateControl.DISMISS -> "\u00D7"
             },
             paint,

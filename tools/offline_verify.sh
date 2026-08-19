@@ -120,6 +120,7 @@ cmp "$ROOT/licenses/RIME-FROST-NOTICE.md" "$ROOT/ime-service/src/main/assets/RIM
 cmp "$ROOT/licenses/popular-english-words-ISC.txt" "$ROOT/ime-service/src/main/assets/POPULAR-ENGLISH-WORDS-ISC.txt"
 cmp "$ROOT/licenses/rime-wubi-LGPL-3.0.txt" "$ROOT/ime-service/src/main/assets/RIME-WUBI-LGPL-3.0.txt"
 cmp "$ROOT/licenses/RIME-WUBI-NOTICE.md" "$ROOT/ime-service/src/main/assets/RIME-WUBI-NOTICE.txt"
+cmp "$ROOT/licenses/lark-oapi-Apache-2.0.txt" "$ROOT/ime-service/src/main/assets/LARK-OAPI-APACHE-2.0.txt"
 
 COMPILER_CP=$(find "$KOTLIN_LIB" -maxdepth 1 -name '*.jar' -print | paste -sd: -)
 STDLIB="$KOTLIN_LIB/kotlin-stdlib-2.0.21.jar"
@@ -275,6 +276,7 @@ mapfile -t APP_TEST_SOURCES < <(find "$ROOT/app/src/test/kotlin" -name '*.kt' -p
 
 if command -v rg >/dev/null 2>&1; then
     if rg -n 'java\.net\.|javax\.net\.|okhttp|retrofit' \
+        --glob '*.kt' \
         "$ROOT/ime-service" "$ROOT/ime-ui"; then
         echo "Release gate failed: network transport leaked into the IME or UI module." >&2
         exit 1
@@ -421,7 +423,7 @@ java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
 java -cp "$COMPILER_CP" org.jetbrains.kotlin.cli.jvm.K2JVMCompiler \
     -jvm-target 17 -no-stdlib -no-reflect \
     -classpath \
-        "$STDLIB:$ANDROID_JAR:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/brain-api-main:$OUT/settings-main" \
+        "$STDLIB:$ANDROID_JAR:$JUNIT:$HAMCREST:$OUT/protocol-main:$OUT/brain-api-main:$OUT/config-main:$OUT/settings-main" \
     -Xfriend-paths="$OUT/settings-main" \
     -d "$OUT/settings-test" "${SETTINGS_TEST_SOURCES[@]}"
 SETTINGS_TEST_CLASSES=()
@@ -626,6 +628,7 @@ java -cp "$STDLIB:$OUT/core-main" \
 
 "$BUILD_TOOLS/aapt2" compile --dir "$ROOT/app/src/main/res" -o "$OUT/app-res.zip"
 "$BUILD_TOOLS/aapt2" compile --dir "$ROOT/ime-service/src/main/res" -o "$OUT/ime-service-res.zip"
+"$BUILD_TOOLS/aapt2" compile --dir "$ROOT/mic-runtime/src/main/res" -o "$OUT/mic-runtime-res.zip"
 "$BUILD_TOOLS/aapt2" link \
     -I "$ANDROID_JAR" \
     --manifest "$ROOT/tools/offline/AndroidManifest.xml" \
@@ -638,6 +641,7 @@ java -cp "$STDLIB:$OUT/core-main" \
     -A "$ROOT/ime-service/src/main/assets" \
     -R "$OUT/app-res.zip" \
     -R "$OUT/ime-service-res.zip" \
+    -R "$OUT/mic-runtime-res.zip" \
     -o "$OUT/resources.apk"
 
 awk '
@@ -872,6 +876,48 @@ if (
 ):
     raise SystemExit(f"{manifest_path}: Brain special-use subtype drifted")
 
+channel = exactly_one(
+    "io.github.ethanbird.senseime.brain.runtime.SenseAgentChannelService"
+)
+if channel.get(android + "exported") != "false":
+    raise SystemExit(f"{manifest_path}: Agent channel service must be exported=false")
+if channel.get(android + "process") != ":brain":
+    raise SystemExit(f"{manifest_path}: Agent channel service must run in :brain")
+if channel.get(android + "foregroundServiceType") != "specialUse":
+    raise SystemExit(f"{manifest_path}: Agent channel service must use specialUse")
+channel_subtypes = [
+    prop
+    for prop in channel.findall("property")
+    if prop.get(android + "name")
+    == "android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+]
+if (
+    len(channel_subtypes) != 1
+    or channel_subtypes[0].get(android + "value")
+    != "user_enabled_agent_message_channels"
+):
+    raise SystemExit(f"{manifest_path}: Agent channel special-use subtype drifted")
+
+hub_bridge = exactly_one(
+    "io.github.ethanbird.senseime.brain.runtime.SenseAgentHubBridgeService"
+)
+if hub_bridge.get(android + "exported") != "false":
+    raise SystemExit(f"{manifest_path}: Agent Hub bridge must be exported=false")
+if hub_bridge.get(android + "process") != ":brain":
+    raise SystemExit(f"{manifest_path}: Agent Hub bridge must run in :brain")
+if hub_bridge.get(android + "foregroundServiceType") is not None:
+    raise SystemExit(f"{manifest_path}: Agent Hub bridge must remain bind-only")
+
+mic = exactly_one("io.github.ethanbird.senseime.mic.SenseMicService")
+if mic.get(android + "exported") != "false":
+    raise SystemExit(f"{manifest_path}: Sense Mic service must be exported=false")
+if mic.get(android + "foregroundServiceType") != "connectedDevice|microphone":
+    raise SystemExit(
+        f"{manifest_path}: Sense Mic service must use connectedDevice|microphone"
+    )
+if mic.get(android + "stopWithTask") != "false":
+    raise SystemExit(f"{manifest_path}: Sense Mic service must survive task removal")
+
 agent_hub = exactly_one_activity(
     "io.github.ethanbird.senseime.AgentHubActivity"
 )
@@ -907,6 +953,18 @@ if ! grep -Fxq "android.permission.INTERNET" <<<"$DECLARED_PERMISSIONS"; then
     echo "Release gate failed: AI build is missing android.permission.INTERNET." >&2
     exit 1
 fi
+for MIC_PERMISSION in \
+    android.permission.ACCESS_NETWORK_STATE \
+    android.permission.ACCESS_WIFI_STATE \
+    android.permission.CHANGE_NETWORK_STATE \
+    android.permission.CHANGE_WIFI_STATE \
+    android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE \
+    android.permission.FOREGROUND_SERVICE_MICROPHONE; do
+    if ! grep -Fxq "$MIC_PERMISSION" <<<"$DECLARED_PERMISSIONS"; then
+        echo "Release gate failed: Sense Mic is missing $MIC_PERMISSION." >&2
+        exit 1
+    fi
+done
 if ! grep -Fxq "android.permission.RECORD_AUDIO" <<<"$DECLARED_PERMISSIONS"; then
     echo "Release gate failed: speech input is missing android.permission.RECORD_AUDIO." >&2
     exit 1
@@ -927,6 +985,10 @@ if ! grep -Fxq "android.permission.WAKE_LOCK" <<<"$DECLARED_PERMISSIONS"; then
     echo "Release gate failed: Agent runtime is missing android.permission.WAKE_LOCK." >&2
     exit 1
 fi
+if ! grep -Fxq "android.permission.RECEIVE_BOOT_COMPLETED" <<<"$DECLARED_PERMISSIONS"; then
+    echo "Release gate failed: Agent channels are missing android.permission.RECEIVE_BOOT_COMPLETED." >&2
+    exit 1
+fi
 if ! grep -Fxq \
     "io.github.ethanbird.senseime.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" \
     <<<"$DECLARED_PERMISSIONS"; then
@@ -936,11 +998,18 @@ fi
 UNEXPECTED_PERMISSIONS=$(
     grep -Fvx \
         -e "android.permission.INTERNET" \
+        -e "android.permission.ACCESS_NETWORK_STATE" \
+        -e "android.permission.ACCESS_WIFI_STATE" \
+        -e "android.permission.CHANGE_NETWORK_STATE" \
+        -e "android.permission.CHANGE_WIFI_STATE" \
         -e "android.permission.RECORD_AUDIO" \
         -e "android.permission.FOREGROUND_SERVICE" \
+        -e "android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" \
+        -e "android.permission.FOREGROUND_SERVICE_MICROPHONE" \
         -e "android.permission.FOREGROUND_SERVICE_SPECIAL_USE" \
         -e "android.permission.POST_NOTIFICATIONS" \
         -e "android.permission.WAKE_LOCK" \
+        -e "android.permission.RECEIVE_BOOT_COMPLETED" \
         -e "io.github.ethanbird.senseime.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" \
         <<<"$DECLARED_PERMISSIONS" || true
 )
@@ -956,6 +1025,7 @@ unzip -p "$APK" assets/RIME-FROST-NOTICE.txt | cmp - "$ROOT/licenses/RIME-FROST-
 unzip -p "$APK" assets/POPULAR-ENGLISH-WORDS-ISC.txt | cmp - "$ROOT/licenses/popular-english-words-ISC.txt"
 unzip -p "$APK" assets/RIME-WUBI-LGPL-3.0.txt | cmp - "$ROOT/licenses/rime-wubi-LGPL-3.0.txt"
 unzip -p "$APK" assets/RIME-WUBI-NOTICE.txt | cmp - "$ROOT/licenses/RIME-WUBI-NOTICE.md"
+unzip -p "$APK" assets/LARK-OAPI-APACHE-2.0.txt | cmp - "$ROOT/licenses/lark-oapi-Apache-2.0.txt"
 unzip -p "$APK" sense/soul.md | cmp - "$ROOT/ai-brain/src/main/resources/sense/soul.md"
 unzip -p "$APK" assets/pinyin_lexicon.bin | sha256sum | awk '{print $1}' | grep -Fx "$LEXICON_SHA256"
 unzip -p "$APK" assets/pinyin_bigrams.bin | sha256sum | awk '{print $1}' | grep -Fx "$BIGRAM_SHA256"
@@ -972,6 +1042,7 @@ unzip -l "$APK" \
     assets/POPULAR-ENGLISH-WORDS-ISC.txt \
     assets/RIME-WUBI-LGPL-3.0.txt \
     assets/RIME-WUBI-NOTICE.txt \
+    assets/LARK-OAPI-APACHE-2.0.txt \
     sense/soul.md \
     assets/pinyin_lexicon.bin \
     assets/pinyin_bigrams.bin \

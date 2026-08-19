@@ -34,6 +34,7 @@ class MutableContractRepository:
         contract_sources = [
             ROOT / "README.md",
             ROOT / "windows" / "README.md",
+            ROOT / "sense-mic-client" / "README.md",
             ROOT / "LICENSE",
             ROOT / "NOTICE",
             *sorted((ROOT / "docs").rglob("*.md")),

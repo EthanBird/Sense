@@ -185,6 +185,7 @@ FORBIDDEN_RUNTIME_ROOTS = (
     "app",
     "ime-service",
     "ime-ui",
+    "mic-runtime",
     "brain-api",
     "ai-brain",
     "ai-runtime",
@@ -422,13 +423,13 @@ EXPECTED_ROOT_BUILD_SCRIPT = """plugins {
 """
 
 EXPECTED_OFFLINE_VERIFY_SHA256 = (
-    "468e531dd84da5c2b66605d184d5d36368926a7cca448ef4d1c006255679c4bc"
+    "957c6963146078bbcd5148064fd3b39390f6a93934e913a205e1e396e2a7a57c"
 )
 EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("settings.gradle.kts"):
-        "a4526ff01e5d9f608ef561df6d7e0add62d968251ff25a638c292e2189dbb045",
+        "934ecf34be64c36c02dd8b1566923014a852ed4014c93cdbef20e289c05da2ca",
     Path("gradle/libs.versions.toml"):
-        "9236819e9930ef0f74ff807278c4ad0a9b31251f684d292ebfaa55c02d664b2d",
+        "314f9eabd2d0ce5b786ad4eb484e75bb75c39c2731ddfb7a12243078ae252495",
     Path("gradle.properties"):
         "43b8f4bb2cd8ab0fbf9fcff552018a723113a5ee4532429ba694a567d225346a",
     Path("gradlew"):
@@ -444,11 +445,11 @@ EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("ai-protocol/build.gradle.kts"):
         "b1d9c1acc7f6d19450691e461fa4da6643297fff752d3f9159e7445bc91ad9ab",
     Path("ai-runtime/build.gradle.kts"):
-        "175f9868685698b2f52a572ff42d4e64413b85d47674e038e1cf9219f3ca349c",
+        "ae0500d86821165a8dffc033e59f91c12906d1970ba97f099ad37a5350e135bd",
     Path("agent-ui/build.gradle.kts"):
         "b06fa926610cb3ed5b297faf9958d7d3db521586e2148247c8a8839170d37ede",
     Path("app/build.gradle.kts"):
-        "b6bd13254cbbb5572b382e8698aaed2e35180dd13334cee7edc9dc09c8acb4c6",
+        "1c669e4dfdc50fbc6ffb8837b37cdbfe6c0f18bf3d86cd3856e129c4e0e89c5b",
     Path("benchmark/build.gradle.kts"):
         "999d9aba8d2813df7e108a9dece00c7f6406b3c5273e59f323d0565e650abf8b",
     Path("brain-api/build.gradle.kts"):
@@ -460,17 +461,24 @@ EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("ime-config/build.gradle.kts"):
         "3d3607e81b97c7dee10173f0f5c94b61df3f81dd6c02c62df1f33f51d368eb00",
     Path("ime-service/build.gradle.kts"):
-        "c5fe4d58e1efa3778ac591e7aee4e1782b381a3fe3a74cc3ddaeba2ac99f884e",
+        "ca2ad3d8187ebde0cf6e9a2badf2a27649347e159533de4b10a92d20fd41e261",
     Path("ime-ui/build.gradle.kts"):
         "c733d477f1e5da2a43b6fafaf3fa213b47fe55bb5ed14f99916defd0f96e7c3a",
     Path("memory-protocol/build.gradle.kts"):
         "b1d9c1acc7f6d19450691e461fa4da6643297fff752d3f9159e7445bc91ad9ab",
+    Path("mic-runtime/build.gradle.kts"):
+        "23579a88243ac2fb7c232acf2ef76fd22af2f3d67966af03b1553ade4f75c8b7",
 }
 EXPECTED_GRADLE_SCRIPT_PATHS = frozenset(
     relative
     for relative in EXPECTED_BUILD_AUTHORITY_SHA256
     if relative.name.endswith((".gradle", ".gradle.kts"))
 )
+
+# Local research checkouts live below this ignored root and are not part of the
+# product Gradle graph. The frozen root/settings scripts still make any attempt
+# to include or apply one of these scripts a reviewed build-authority change.
+NON_PRODUCT_WORKSPACE_ROOTS = frozenset({".artifacts"})
 
 FORBIDDEN_ARTIFACT_NAME_PARTS = ("TestOnly", "Test", "Fake", "Authenticator")
 DEX_MEMORY_PATHS = (
@@ -1138,6 +1146,8 @@ def _check_dependency_graph(root: Path) -> None:
                 part in {".git", "build"}
                 for part in relative.parts[:-1]
             ):
+                continue
+            if relative.parts and relative.parts[0] in NON_PRODUCT_WORKSPACE_ROOTS:
                 continue
             if relative not in EXPECTED_GRADLE_SCRIPT_PATHS:
                 unexpected_gradle_scripts.append(relative.as_posix())

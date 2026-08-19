@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "stage": "M4-core",
-  "generatedAt": "2026-08-01T10:47:37.208554100Z",
+  "generatedAt": "2026-08-19T08:20:49.577798900Z",
   "lexicon": {
     "keys": 823782,
     "bytes": 35069585,
@@ -35,25 +35,25 @@
   },
   "initialsLookup": {
     "lookupsPerSample": 7000,
-    "p95Ns": 23113.77,
+    "p95Ns": 12400.63,
     "gateNs": 250000.00
   },
   "progressiveDecode": {
     "lookupsPerSample": 1750,
-    "p95Ns": 167142.46,
+    "p95Ns": 133515.60,
     "gateNs": 500000.00
   },
   "productionLimitProgressiveDecode": {
     "candidateLimit": 255,
     "prefixCandidateCount": 51,
     "lookupsPerSample": 35,
-    "p95Ns": 698188.57,
+    "p95Ns": 483531.43,
     "gateNs": 5000000.00
   },
   "segmentedComposition": {
     "candidateLimit": 255,
     "lookupsPerSample": 35,
-    "p95Ns": 2225745.71,
+    "p95Ns": 1797280.00,
     "gateNs": 5000000.00
   }
 }

@@ -16,6 +16,7 @@ class KeyboardArchitectureTest {
     @Test
     fun `emoji category rail declares horizontal scroll projection`() {
         assertEquals(ScrollAxis.HORIZONTAL, ScrollPanel.EMOJI_CATEGORIES.axis)
+        assertEquals(ScrollAxis.VERTICAL, ScrollPanel.CANDIDATES.axis)
         assertEquals(ScrollAxis.VERTICAL, ScrollPanel.EMOJI.axis)
         assertEquals(ScrollAxis.VERTICAL, ScrollPanel.T9_LEFT_RAIL.axis)
     }

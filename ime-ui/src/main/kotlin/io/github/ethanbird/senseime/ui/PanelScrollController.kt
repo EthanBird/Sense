@@ -138,6 +138,18 @@ internal class PanelScrollController(
         flingingPanel = null
     }
 
+    /** Cancels only one panel's pointer/fling ownership during a scene revision. */
+    fun cancel(panel: ScrollPanel) {
+        if (activePanel == panel) {
+            pointerCoordinates.remove(activePointerId)
+            clearPointer()
+        }
+        if (flingingPanel == panel) {
+            if (!scroller.isFinished) scroller.forceFinished(true)
+            flingingPanel = null
+        }
+    }
+
     fun clear() {
         pointerCoordinates.clear()
         clearPointer()

@@ -105,7 +105,7 @@ class KeyboardInteractionControllerTest {
     }
 
     @Test
-    fun `association dismiss is a semantic callback and does not activate paging`() {
+    fun `association dismiss is a semantic callback and does not activate navigation`() {
         val clock = FakeClock()
         val scheduler = FakeFrameScheduler(clock)
         val actions = RecordingActions()
@@ -428,41 +428,25 @@ class KeyboardInteractionControllerTest {
     }
 
     @Test
-    fun `candidate publication fence covers readiness and same revision content changes`() {
-        val current = listOf("旧候选", "第二项")
+    fun `candidate viewport projection reuses one mutable RectF across hot frames`() {
+        val projection = ReusableKeyboardRectProjection()
+        val first = checkNotNull(
+            projection.project(KeyboardRect(left = 1f, top = 2f, right = 30f, bottom = 40f)),
+        )
+        val second = checkNotNull(
+            projection.project(KeyboardRect(left = 5f, top = 6f, right = 70f, bottom = 80f)),
+        )
 
-        assertFalse(
-            CandidatePointerFence.shouldCancel(
-                previousReady = true,
-                previousCandidates = current,
-                nextReady = true,
-                nextCandidates = current.toList(),
-            ),
-        )
-        assertTrue(
-            CandidatePointerFence.shouldCancel(
-                previousReady = true,
-                previousCandidates = current,
-                nextReady = true,
-                nextCandidates = listOf("新候选", "第二项"),
-            ),
-        )
-        assertTrue(
-            CandidatePointerFence.shouldCancel(
-                previousReady = true,
-                previousCandidates = current,
-                nextReady = false,
-                nextCandidates = null,
-            ),
-        )
-        assertTrue(
-            CandidatePointerFence.shouldCancel(
-                previousReady = false,
-                previousCandidates = current,
-                nextReady = true,
-                nextCandidates = current.toList(),
-            ),
-        )
+        assertTrue(first === second)
+        assertEquals(5f, second.left, 0f)
+        assertEquals(6f, second.top, 0f)
+        assertEquals(70f, second.right, 0f)
+        assertEquals(80f, second.bottom, 0f)
+        assertEquals(null, projection.project(null))
+        assertEquals(0f, first.left, 0f)
+        assertEquals(0f, first.top, 0f)
+        assertEquals(0f, first.right, 0f)
+        assertEquals(0f, first.bottom, 0f)
     }
 
     @Test
@@ -472,7 +456,7 @@ class KeyboardInteractionControllerTest {
         val candidateTargets: List<FrozenTouchTarget> = listOf(
             FrozenTouchTarget.CandidateValue(7L, 0, bounds, policy),
             FrozenTouchTarget.CandidateControlValue(CandidateControl.EXPAND, bounds, policy),
-            FrozenTouchTarget.CandidatePageArea(bounds, policy),
+            FrozenTouchTarget.CandidateGridArea(bounds, policy),
             FrozenTouchTarget.CandidateStripArea(bounds, policy),
         )
         val ordinaryTargets: List<FrozenTouchTarget> = listOf(

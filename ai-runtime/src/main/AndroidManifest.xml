@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <queries>
         <intent>
@@ -23,5 +24,29 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="user_initiated_agent_task" />
         </service>
+        <service
+            android:name="io.github.ethanbird.senseime.brain.runtime.SenseAgentChannelService"
+            android:directBootAware="false"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:process=":brain">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="user_enabled_agent_message_channels" />
+        </service>
+        <service
+            android:name="io.github.ethanbird.senseime.brain.runtime.SenseAgentHubBridgeService"
+            android:directBootAware="false"
+            android:exported="false"
+            android:process=":brain" />
+        <receiver
+            android:name="io.github.ethanbird.senseime.brain.runtime.AgentChannelBootReceiver"
+            android:directBootAware="false"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

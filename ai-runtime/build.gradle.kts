@@ -20,6 +20,10 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+
+    packaging {
+        resources.excludes += "META-INF/DEPENDENCIES"
+    }
 }
 
 dependencies {
@@ -28,7 +32,9 @@ dependencies {
     implementation(project(":ai-protocol"))
     implementation(libs.okhttp)
     implementation(libs.concentus)
+    implementation(libs.lark.oapi)
     testImplementation(libs.junit)
+    testImplementation("org.json:json:20240303")
     androidTestImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)

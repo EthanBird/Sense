@@ -130,6 +130,20 @@ License: Apache License 2.0
 License copy: licenses/okhttp-Apache-2.0.txt
 APK copy: assets/OKHTTP-APACHE-2.0.txt
 
+Lark/Feishu OpenAPI Java SDK
+----------------------------
+
+Source: https://github.com/larksuite/oapi-sdk-java
+Package: com.larksuite.oapi:oapi-sdk 2.7.3
+Copyright: Lark Technologies Pte. Ltd. and contributors
+License: Apache License 2.0
+License copy: licenses/lark-oapi-Apache-2.0.txt
+APK copy: assets/LARK-OAPI-APACHE-2.0.txt
+
+Sense uses the SDK's official WebSocket long-connection channel and normalized
+message/outbound APIs for the optional Feishu/Lark Agent channel. Telegram uses
+the existing OkHttp dependency and the public Telegram Bot API directly.
+
 Concentus
 ---------
 

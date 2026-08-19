@@ -295,7 +295,7 @@ class CandidateStripScrollState(
 
         val fast = abs(releaseVelocityX) >= fastFlingVelocity
         val target = when {
-            fast -> CandidateStripScrollPhysics.onePageSnapTarget(
+            fast -> CandidateStripScrollPhysics.oneViewportSnapTarget(
                 startOffset = startOffset,
                 fingerVelocityX = releaseVelocityX,
                 viewportExtent = viewportExtent,
@@ -408,7 +408,7 @@ object CandidateStripScrollPhysics {
      * A fast gesture advances no farther than one viewport and always lands on
      * a candidate start. Positive finger velocity moves to earlier content.
      */
-    fun onePageSnapTarget(
+    fun oneViewportSnapTarget(
         startOffset: Float,
         fingerVelocityX: Float,
         viewportExtent: Float,

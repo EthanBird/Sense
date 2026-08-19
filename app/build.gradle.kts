@@ -39,8 +39,8 @@ android {
         applicationId = "io.github.ethanbird.senseime"
         minSdk = 29
         targetSdk = 36
-        versionCode = 36
-        versionName = "0.4.11"
+        versionCode = 37
+        versionName = "0.4.12"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -94,6 +94,7 @@ android {
         resources.excludes += setOf(
             "DebugProbesKt.bin",
             "META-INF/AL2.0",
+            "META-INF/DEPENDENCIES",
             "META-INF/LGPL2.1",
         )
     }

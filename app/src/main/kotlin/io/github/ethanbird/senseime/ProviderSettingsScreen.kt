@@ -23,13 +23,14 @@ import io.github.ethanbird.senseime.brain.api.ProviderPresetId
 import io.github.ethanbird.senseime.brain.api.ProviderProfile
 import io.github.ethanbird.senseime.brain.api.ProviderReasoningStrength
 import io.github.ethanbird.senseime.brain.api.StructuredOutputMode
-import io.github.ethanbird.senseime.brain.runtime.CodexDeviceAuthClient
+import io.github.ethanbird.senseime.brain.runtime.CodexOAuthClient
 import io.github.ethanbird.senseime.brain.runtime.CodexSubscriptionAuthStore
 import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestEvent
 import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestFailure
 import io.github.ethanbird.senseime.brain.runtime.ProviderConnectionTestPhase
 import io.github.ethanbird.senseime.brain.runtime.ProviderSettingsStore
 import io.github.ethanbird.senseime.brain.runtime.SenseAiProviderTestClient
+import java.util.concurrent.CancellationException
 import java.util.concurrent.Executor
 
 internal data class ProviderSettingsSnapshot(
@@ -162,6 +163,7 @@ private data class ProviderSettingsBinding(
     val advanced: Switch,
     val advancedFields: LinearLayout,
     val codexArea: LinearLayout,
+    val codexLoginButton: Button,
     val status: TextView,
     val testButton: Button,
 )
@@ -199,8 +201,9 @@ internal class ProviderSettingsScreen(
 ) : AutoCloseable {
     private val controller = ProviderSettingsController(repository, tasks)
     private val testClient = SenseAiProviderTestClient(activity.applicationContext, ::onConnectionTestEvent)
-    private val codexClient = CodexDeviceAuthClient()
+    private val codexClient = CodexOAuthClient()
     private val codexStore = CodexSubscriptionAuthStore(activity.applicationContext, codexClient)
+    private val codexLoginCommitGate = CodexLoginCommitGate()
     private var binding: ProviderSettingsBinding? = null
     private var selectedPresetId = initialPresetId ?: ProviderPresetCatalog.default.id
     private var uiLoaded = false
@@ -208,6 +211,8 @@ internal class ProviderSettingsScreen(
     private var hasSavedCredential = false
     private var loadedCredentialScope: String? = null
     private var testRunning = false
+    private var codexLoginInProgress = false
+    @Volatile private var codexLoginGeneration = 0L
     @Volatile private var closed = false
     private val persistRunnable = Runnable(::autoPersist)
 
@@ -238,10 +243,11 @@ internal class ProviderSettingsScreen(
         advancedFields.addView(streaming.withTop(views.dp(10)))
         root.addView(advancedFields.withTop(views.dp(10)))
 
+        val codexLoginButton = views.primaryButton(R.string.codex_login_start, ::startCodexLogin)
         val codexArea = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
             addView(views.text(R.string.codex_login_body, 13f, R.color.sense_secondary))
-            addView(views.primaryButton(R.string.codex_login_start, ::startCodexLogin).withTop(views.dp(10)))
+            addView(codexLoginButton.withTop(views.dp(10)))
             addView(views.secondaryButton(R.string.codex_login_logout, ::logoutCodex).withTop(views.dp(8)))
         }
         root.addView(codexArea.withTop(views.dp(12)))
@@ -253,7 +259,7 @@ internal class ProviderSettingsScreen(
             accessibilityLiveRegion = View.ACCESSIBILITY_LIVE_REGION_POLITE
         }
         root.addView(status.withTop(views.dp(10)))
-        binding = ProviderSettingsBinding(root, presetTitle, name, baseUrl, model, apiKey, apiKeyContainer, apiStyle, output, reasoning, streaming, advanced, advancedFields, codexArea, status, testButton)
+        binding = ProviderSettingsBinding(root, presetTitle, name, baseUrl, model, apiKey, apiKeyContainer, apiStyle, output, reasoning, streaming, advanced, advancedFields, codexArea, codexLoginButton, status, testButton)
 
         advanced.setOnCheckedChangeListener { _, _ -> updateVisibility() }
         listOf(apiStyle, output, reasoning).forEach { it.onChange = ::autoPersist }
@@ -266,7 +272,11 @@ internal class ProviderSettingsScreen(
     fun onStop() { testClient.cancel(); flush() }
 
     override fun close() {
+        codexLoginCommitGate.close()
         closed = true
+        codexLoginGeneration += 1
+        codexLoginInProgress = false
+        codexClient.cancelLogin()
         testClient.cancel()
         testClient.close()
         flush()
@@ -379,27 +389,89 @@ internal class ProviderSettingsScreen(
     }
 
     private fun startCodexLogin() {
-        val current = binding ?: return
+        binding ?: return
+        if (codexLoginInProgress) {
+            cancelCodexLogin(showStatus = true)
+            return
+        }
+        codexLoginInProgress = true
+        val generation = ++codexLoginGeneration
+        codexLoginCommitGate.begin(generation)
+        updateCodexLoginButton()
         show(R.string.codex_login_requesting, false)
-        tasks.execute({ codexClient.requestDeviceCode() }) { requested ->
-            requested.onSuccess { code ->
-                current.status.text = activity.getString(R.string.codex_login_code, code.userCode)
-                activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(code.verificationUrl)))
-                tasks.execute({
-                    val tokens = codexClient.completeDeviceCode(code) { closed }
-                    codexStore.save(tokens).getOrThrow()
-                }) { completed ->
-                    completed.onSuccess {
-                        hasSavedCredential = true
-                        show(R.string.codex_login_succeeded, false)
-                        persist()
-                    }.onFailure { show(R.string.codex_login_failed, true) }
+        tasks.execute({
+            codexClient.beginLogin().also { session ->
+                if (!codexLoginCommitGate.isActive(generation)) codexClient.cancelLogin(session)
+            }
+        }) { started ->
+            if (!codexLoginCommitGate.isActive(generation)) {
+                started.getOrNull()?.let(codexClient::cancelLogin)
+                return@execute
+            }
+            started.onSuccess { session ->
+                val opened = runCatching {
+                    activity.startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse(session.authorizationUrl))
+                            .addCategory(Intent.CATEGORY_BROWSABLE),
+                    )
                 }
-            }.onFailure { show(R.string.codex_login_failed, true) }
+                if (opened.isFailure) {
+                    codexClient.cancelLogin()
+                    finishCodexLogin(generation, Result.failure<Unit>(opened.exceptionOrNull()!!))
+                    return@onSuccess
+                }
+                show(R.string.codex_login_waiting, false)
+                tasks.execute({
+                    val tokens = codexClient.completeLogin(session) {
+                        !codexLoginCommitGate.isActive(generation)
+                    }
+                    when (val commit = codexLoginCommitGate.commitIfActive(generation) {
+                        codexStore.save(tokens).getOrThrow()
+                    }) {
+                        is CodexLoginCommitResult.Accepted -> commit.result.getOrThrow()
+                        CodexLoginCommitResult.Rejected -> throw CancellationException(
+                            "Codex login attempt ended before credential commit",
+                        )
+                    }
+                }) { completed ->
+                    finishCodexLogin(generation, completed)
+                }
+            }.onFailure { finishCodexLogin(generation, started) }
         }
     }
 
+    private fun finishCodexLogin(generation: Long, result: Result<*>) {
+        if (generation != codexLoginGeneration || closed) return
+        codexLoginCommitGate.finish(generation)
+        codexLoginInProgress = false
+        updateCodexLoginButton()
+        result.onSuccess {
+            hasSavedCredential = true
+            show(R.string.codex_login_succeeded, false)
+            persist()
+        }.onFailure {
+            show(R.string.codex_login_failed, true)
+        }
+    }
+
+    private fun cancelCodexLogin(showStatus: Boolean) {
+        if (!codexLoginInProgress) return
+        if (!codexLoginCommitGate.cancel(codexLoginGeneration)) return
+        codexLoginGeneration += 1
+        codexLoginInProgress = false
+        codexClient.cancelLogin()
+        updateCodexLoginButton()
+        if (showStatus) show(R.string.codex_login_cancelled, false)
+    }
+
+    private fun updateCodexLoginButton() {
+        binding?.codexLoginButton?.setText(
+            if (codexLoginInProgress) R.string.codex_login_cancel else R.string.codex_login_start,
+        )
+    }
+
     private fun logoutCodex() {
+        cancelCodexLogin(showStatus = false)
         tasks.execute({ codexStore.clear().getOrThrow() }) { result ->
             result.onSuccess { hasSavedCredential = false; show(R.string.codex_login_logged_out, false) }
                 .onFailure { show(R.string.ai_provider_save_failed, true) }

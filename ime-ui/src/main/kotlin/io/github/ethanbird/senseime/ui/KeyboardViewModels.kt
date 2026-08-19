@@ -31,6 +31,7 @@ internal enum class KeyStyle {
 }
 
 internal enum class ScrollPanel {
+    CANDIDATES,
     EMOJI,
     EMOJI_CATEGORIES,
     SYMBOL_CATEGORIES,
@@ -47,6 +48,7 @@ internal val ScrollPanel.axis: ScrollAxis
     get() = when (this) {
         ScrollPanel.EMOJI_CATEGORIES -> ScrollAxis.HORIZONTAL
         ScrollPanel.EMOJI,
+        ScrollPanel.CANDIDATES,
         ScrollPanel.SYMBOL_CATEGORIES,
         ScrollPanel.SYMBOL_VALUES,
         ScrollPanel.T9_LEFT_RAIL,
@@ -196,8 +198,6 @@ internal data class VisibleCandidate(
 internal enum class CandidateControl {
     EXPAND,
     COLLAPSE,
-    PREVIOUS_PAGE,
-    NEXT_PAGE,
     DISMISS,
 }
 
@@ -207,12 +207,6 @@ internal data class CandidateControlSlot(
     val enabled: Boolean = true,
 )
 
-internal data class CandidatePageCacheKey(
-    val generation: Long,
-    val viewWidth: Int,
-    val viewHeight: Int,
-)
-
 internal sealed interface FrozenTouchTarget {
     val bounds: RectF
     val gesturePolicy: TouchInputReducer.GesturePolicy
@@ -220,7 +214,7 @@ internal sealed interface FrozenTouchTarget {
     fun isCandidatePointerTarget(): Boolean = when (this) {
         is CandidateValue,
         is CandidateControlValue,
-        is CandidatePageArea,
+        is CandidateGridArea,
         is CandidateStripArea,
         -> true
 
@@ -248,7 +242,7 @@ internal sealed interface FrozenTouchTarget {
         override val gesturePolicy: TouchInputReducer.GesturePolicy,
     ) : FrozenTouchTarget
 
-    data class CandidatePageArea(
+    data class CandidateGridArea(
         override val bounds: RectF,
         override val gesturePolicy: TouchInputReducer.GesturePolicy,
     ) : FrozenTouchTarget

@@ -167,6 +167,8 @@ internal class MutableKeyboardScene : KeyboardScene {
     }
 
     override fun viewportBounds(panel: ScrollPanel): RectF? = when (panel) {
+        // Candidate geometry belongs to CandidatePanel rather than the key scene.
+        ScrollPanel.CANDIDATES -> null
         ScrollPanel.EMOJI -> emojiGridBounds
         ScrollPanel.EMOJI_CATEGORIES -> emojiCategoryBounds
         ScrollPanel.SYMBOL_CATEGORIES -> symbolCategoryBounds
@@ -175,6 +177,7 @@ internal class MutableKeyboardScene : KeyboardScene {
     }
 
     override fun scrollOffset(panel: ScrollPanel): Float = when (panel) {
+        ScrollPanel.CANDIDATES -> 0f
         ScrollPanel.EMOJI -> emojiScrollState.offset
         ScrollPanel.EMOJI_CATEGORIES -> emojiCategoryScrollState.offset
         ScrollPanel.SYMBOL_CATEGORIES -> symbolCategoryScrollState.offset

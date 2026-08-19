@@ -303,11 +303,10 @@ class KeyboardLayoutContractTest {
     }
 
     @Test
-    fun expandedGridPagesEveryCandidateWithGlobalIndices() {
-        val pages = KeyboardLayoutContract.pagedCandidateGrid(
+    fun continuousExpandedGridKeepsEveryGlobalIndexInOneMonotonicContentSpace() {
+        val grid = KeyboardLayoutContract.continuousCandidateGrid(
             viewWidth = 220f,
             contentTop = 50f,
-            contentBottom = 150f,
             measuredTextWidths = listOf(40f, 70f, 30f, 180f, 45f, 45f, 45f),
             horizontalPadding = 6f,
             textInset = 9f,
@@ -317,22 +316,39 @@ class KeyboardLayoutContractTest {
             rowHeight = 40f,
         )
 
-        assertTrue(pages.size > 1)
-        assertEquals((0..6).toList(), pages.flatMap { page -> page.slots.map { it.sourceIndex } })
-        pages.forEach { page ->
-            val rows = page.slots.groupBy { it.top }
-            rows.values.forEach { row -> assertEquals(6f, row.first().left) }
-            assertTrue(page.slots.all { it.right <= 214f && it.bottom <= 150f })
-        }
+        assertEquals((0..6).toList(), grid.slots.map { it.sourceIndex })
+        assertTrue(grid.slots.zipWithNext().all { (left, right) -> left.top <= right.top })
+        assertTrue(grid.slots.all { it.left >= 6f && it.right <= 214f })
+        assertEquals(grid.slots.last().bottom, grid.contentBottom, 0f)
+        assertTrue(grid.contentBottom > 150f)
     }
 
     @Test
-    fun expandedGridKeeps120And255CandidatesReachableInBothDirections() {
+    fun continuousExpandedGridClampsOversizedValuesWithoutBreakingFollowingRows() {
+        val grid = KeyboardLayoutContract.continuousCandidateGrid(
+            viewWidth = 120f,
+            contentTop = 45f,
+            measuredTextWidths = listOf(500f, 20f, 20f),
+            horizontalPadding = 6f,
+            textInset = 9f,
+            horizontalGap = 3f,
+            verticalGap = 3f,
+            minimumWidth = 44f,
+            rowHeight = 40f,
+        )
+
+        assertEquals(108f, grid.slots.first().right - grid.slots.first().left, 0f)
+        assertEquals(listOf(0, 1, 2), grid.slots.map { it.sourceIndex })
+        assertTrue(grid.slots[1].top > grid.slots[0].top)
+        assertTrue(grid.contentBottom.isFinite())
+    }
+
+    @Test
+    fun continuousExpandedGridKeeps120And255GlobalIndicesReachableAtBothEdges() {
         listOf(120, 255).forEach { candidateCount ->
-            val pages = KeyboardLayoutContract.pagedCandidateGrid(
+            val grid = KeyboardLayoutContract.continuousCandidateGrid(
                 viewWidth = 360f,
                 contentTop = 50f,
-                contentBottom = 270f,
                 measuredTextWidths = List(candidateCount) { index -> 24f + index % 7 * 6f },
                 horizontalPadding = 6f,
                 textInset = 9f,
@@ -342,51 +358,15 @@ class KeyboardLayoutContractTest {
                 rowHeight = 40f,
             )
 
-            assertTrue(pages.size > 2)
+            assertTrue(grid.contentBottom > 270f)
             assertEquals(
                 (0 until candidateCount).toList(),
-                pages.flatMap { page -> page.slots.map { it.sourceIndex } },
+                grid.slots.map { it.sourceIndex },
             )
-
-            var pageIndex = 0
-            val forward = mutableListOf<Int>()
-            while (true) {
-                forward += pages[pageIndex].slots.map { it.sourceIndex }
-                val next = KeyboardLayoutContract.adjacentCandidatePage(pageIndex, pages.size, delta = 1)
-                if (next == pageIndex) break
-                pageIndex = next
-            }
-            assertEquals((0 until candidateCount).toList(), forward)
-
-            val backward = mutableListOf<Int>()
-            while (true) {
-                backward += pages[pageIndex].slots.asReversed().map { it.sourceIndex }
-                val previous = KeyboardLayoutContract.adjacentCandidatePage(pageIndex, pages.size, delta = -1)
-                if (previous == pageIndex) break
-                pageIndex = previous
-            }
-            assertEquals((0 until candidateCount).reversed().toList(), backward)
+            assertEquals(0, grid.slots.first().sourceIndex)
+            assertEquals(candidateCount - 1, grid.slots.last().sourceIndex)
+            assertTrue(grid.slots.last().top > grid.slots.first().top)
         }
-    }
-
-    @Test
-    fun oversizedCandidateIsClampedAndDoesNotStallPaging() {
-        val pages = KeyboardLayoutContract.pagedCandidateGrid(
-            viewWidth = 120f,
-            contentTop = 45f,
-            contentBottom = 90f,
-            measuredTextWidths = listOf(500f, 20f),
-            horizontalPadding = 6f,
-            textInset = 9f,
-            horizontalGap = 3f,
-            verticalGap = 3f,
-            minimumWidth = 44f,
-            rowHeight = 40f,
-        )
-
-        assertEquals(2, pages.size)
-        assertEquals(108f, pages.first().slots.single().right - pages.first().slots.single().left)
-        assertEquals(listOf(0, 1), pages.flatMap { it.slots }.map { it.sourceIndex })
     }
 
     @Test

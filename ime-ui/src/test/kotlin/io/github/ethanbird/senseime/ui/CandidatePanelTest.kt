@@ -98,7 +98,7 @@ class CandidatePanelTest {
     }
 
     @Test
-    fun `same revision pending publication disables expanded candidates and paging`() {
+    fun `same revision pending publication disables expanded continuous candidates`() {
         val panel = panel()
         panel.publishAt(
             revision = 10L,
@@ -106,9 +106,11 @@ class CandidatePanelTest {
             values = candidates(80),
         )
         panel.activateAt(CandidateControl.EXPAND)
-        panel.pageAt(delta = 1)
         assertTrue(panel.expanded)
-        assertEquals("2 / 5", panel.pageLabel)
+        assertEquals("80 项", panel.expandedStatusLabel)
+        assertTrue(panel.maximumExpandedScrollOffset > 0f)
+        assertTrue(panel.expandedScrollState.scrollTo(panel.maximumExpandedScrollOffset / 2f))
+        val retainedOffset = panel.expandedScrollOffset
 
         val pending = panel.publishAt(
             revision = 10L,
@@ -118,27 +120,21 @@ class CandidatePanelTest {
 
         assertFalse(panel.candidatesReady)
         assertTrue(pending.cancelSettle)
+        assertEquals(retainedOffset, panel.expandedScrollOffset, 0f)
         val staleCandidate = panel.visibleCandidates.first()
         assertNull(
             panel.hitTest(
                 staleCandidate.bounds.centerX,
-                staleCandidate.bounds.centerY,
+                staleCandidate.bounds.centerY - panel.expandedScrollOffset,
                 visible = true,
             ),
         )
-        assertFalse(
-            panel.controls.single { it.control == CandidateControl.PREVIOUS_PAGE }.enabled,
-        )
-        assertFalse(
-            panel.controls.single { it.control == CandidateControl.NEXT_PAGE }.enabled,
-        )
-        assertEquals("2 / 5", panel.pageLabel)
-        panel.pageAt(delta = 1)
-        assertEquals("2 / 5", panel.pageLabel)
+        assertEquals(listOf(CandidateControl.COLLAPSE), panel.controls.map { it.control })
+        assertEquals("80 项", panel.expandedStatusLabel)
     }
 
     @Test
-    fun `overflow expands into deterministic pages and preserves source indexes`() {
+    fun `overflow expands into one continuous grid and preserves global source indexes`() {
         val panel = panel()
         panel.publishAt(
             revision = 12L,
@@ -157,37 +153,49 @@ class CandidatePanelTest {
         assertTrue(expandChange.requiresKeySceneRebuild)
         assertTrue(panel.expanded)
         assertFalse(panel.canStartCollapsedDrag())
-        assertEquals("1 / 5", panel.pageLabel)
-        assertEquals((0..15).toList(), panel.visibleCandidates.map { it.sourceIndex })
+        assertEquals("80 项", panel.expandedStatusLabel)
+        assertEquals((0..79).toList(), panel.visibleCandidates.map { it.sourceIndex })
+        assertEquals(listOf(CandidateControl.COLLAPSE), panel.controls.map { it.control })
+        assertTrue(panel.maximumExpandedScrollOffset > 0f)
 
-        val firstPageHit = panel.visibleCandidates.first().let { candidate ->
+        val firstHit = panel.visibleCandidates.first().let { candidate ->
             panel.hitTest(candidate.bounds.centerX, candidate.bounds.centerY, visible = true)
         }
-        assertTrue(firstPageHit is CandidateHit.Value)
-        firstPageHit as CandidateHit.Value
-        assertEquals(0, firstPageHit.sourceIndex)
-        assertTrue(firstPageHit.expanded)
+        assertTrue(firstHit is CandidateHit.Value)
+        firstHit as CandidateHit.Value
+        assertEquals(0, firstHit.sourceIndex)
+        assertTrue(firstHit.expanded)
 
-        val nextPageChange = panel.pageAt(delta = 1)
-        assertFalse(nextPageChange.requiresKeySceneRebuild)
-        assertEquals("2 / 5", panel.pageLabel)
-        assertEquals((16..31).toList(), panel.visibleCandidates.map { it.sourceIndex })
-        assertTrue(panel.controls.single { it.control == CandidateControl.PREVIOUS_PAGE }.enabled)
-        assertTrue(panel.controls.single { it.control == CandidateControl.NEXT_PAGE }.enabled)
+        val viewport = checkNotNull(panel.expandedGridBounds)
+        val middle = panel.visibleCandidates[40]
+        val buildCountBeforeScroll = panel.sceneBuildCount
+        assertTrue(
+            panel.expandedScrollState.scrollTo(
+                middle.bounds.top - viewport.top,
+            ),
+        )
+        val middleHit = panel.hitTest(
+            x = middle.bounds.centerX,
+            y = middle.bounds.centerY - panel.expandedScrollOffset,
+            visible = true,
+        )
+        assertTrue(middleHit is CandidateHit.Value)
+        assertEquals(40, (middleHit as CandidateHit.Value).sourceIndex)
+        assertEquals(buildCountBeforeScroll, panel.sceneBuildCount)
 
-        panel.pageAt(delta = 999)
-        assertEquals("5 / 5", panel.pageLabel)
-        assertEquals((64..79).toList(), panel.visibleCandidates.map { it.sourceIndex })
-        assertFalse(panel.controls.single { it.control == CandidateControl.NEXT_PAGE }.enabled)
-
-        val buildCountAtLastPage = panel.sceneBuildCount
-        val boundaryChange = panel.pageAt(delta = 1)
-        assertFalse(boundaryChange.requiresKeySceneRebuild)
-        assertEquals(buildCountAtLastPage, panel.sceneBuildCount)
+        assertTrue(panel.expandedScrollState.scrollTo(panel.maximumExpandedScrollOffset))
+        val last = panel.visibleCandidates.last()
+        val lastHit = panel.hitTest(
+            x = last.bounds.centerX,
+            y = last.bounds.centerY - panel.expandedScrollOffset,
+            visible = true,
+        )
+        assertTrue(lastHit is CandidateHit.Value)
+        assertEquals(79, (lastHit as CandidateHit.Value).sourceIndex)
     }
 
     @Test
-    fun `expanded pending page keeps its placeholder when the ready batch is empty`() {
+    fun `expanded continuous grid keeps its placeholder when the ready batch is empty`() {
         val panel = panel()
         panel.publishAt(
             revision = 13L,
@@ -203,17 +211,59 @@ class CandidatePanelTest {
         )
 
         assertTrue(panel.expanded)
-        assertEquals("\u2026", panel.pageLabel)
+        assertEquals("\u2026", panel.expandedStatusLabel)
         assertTrue(panel.visibleCandidates.isEmpty())
         assertEquals(
-            listOf(
-                CandidateControl.COLLAPSE,
-                CandidateControl.PREVIOUS_PAGE,
-                CandidateControl.NEXT_PAGE,
-            ),
+            listOf(CandidateControl.COLLAPSE),
             panel.controls.map { it.control },
         )
         assertTrue(emptyReady.cancelSettle)
+    }
+
+    @Test
+    fun `expanded offset converges when a same revision candidate update shrinks content`() {
+        val panel = panel()
+        panel.publishAt(
+            revision = 17L,
+            text = "candidate",
+            values = candidates(120, prefix = "before"),
+        )
+        panel.activateAt(CandidateControl.EXPAND)
+        val previousMaximum = panel.maximumExpandedScrollOffset
+        assertTrue(previousMaximum > 0f)
+        assertTrue(panel.expandedScrollState.scrollTo(previousMaximum))
+
+        panel.publishAt(
+            revision = 17L,
+            text = "candidate",
+            values = candidates(30, prefix = "after"),
+        )
+
+        assertTrue(panel.expanded)
+        assertTrue(panel.maximumExpandedScrollOffset < previousMaximum)
+        assertEquals(panel.maximumExpandedScrollOffset, panel.expandedScrollOffset, 0f)
+        assertTrue(panel.expandedScrollOffset in 0f..panel.maximumExpandedScrollOffset)
+        assertEquals((0..29).toList(), panel.visibleCandidates.map { it.sourceIndex })
+    }
+
+    @Test
+    fun `revision change cancels expanded interaction even when text and candidates are equal`() {
+        val panel = panel()
+        val values = candidates(80)
+        panel.publishAt(revision = 91L, text = "same", values = values)
+        panel.activateAt(CandidateControl.EXPAND)
+        assertTrue(panel.expandedScrollState.scrollTo(panel.maximumExpandedScrollOffset))
+
+        val change = panel.publishAt(
+            revision = 92L,
+            text = "same",
+            values = values.toList(),
+        )
+
+        assertTrue(change.cancelInteraction)
+        assertTrue(change.cancelSettle)
+        assertFalse(panel.expanded)
+        assertEquals(0f, panel.expandedScrollOffset, 0f)
     }
 
     @Test
@@ -287,7 +337,7 @@ class CandidatePanelTest {
     }
 
     @Test
-    fun `510 candidate measurements are reused across relayout paging and equal publication`() {
+    fun `510 candidate measurements are reused across relayout scrolling and equal publication`() {
         val measurer = RecordingMeasurer()
         val panel = panel(measurer)
         val values = candidates(510)
@@ -309,17 +359,17 @@ class CandidatePanelTest {
         panel.relayoutAt(viewWidth = VIEW_WIDTH + 1)
         panel.relayoutAt(viewWidth = VIEW_WIDTH)
         panel.activateAt(CandidateControl.EXPAND)
-        panel.pageAt(delta = 1)
-        panel.pageAt(delta = 1)
+        panel.expandedScrollState.scrollTo(panel.maximumExpandedScrollOffset)
         panel.collapseAt()
         val buildCountBeforeEqualPublication = panel.sceneBuildCount
         val firstCandidateBeforeEqualPublication = panel.visibleCandidates.first()
-        panel.publishAt(
+        val equalPublication = panel.publishAt(
             revision = 21L,
             text = "large",
             values = values.toMutableList(),
         )
 
+        assertFalse(equalPublication.cancelInteraction)
         assertEquals(510, measurer.callCount)
         assertEquals(510, measurer.measuredTexts.distinct().size)
         assertEquals(buildCountBeforeEqualPublication, panel.sceneBuildCount)
@@ -379,6 +429,7 @@ class CandidatePanelTest {
         )
         assertFalse(idle.requiresKeySceneRebuild)
         assertFalse(idle.cancelSettle)
+        assertFalse(idle.cancelInteraction)
 
         val compositionStarted = panel.publishAt(
             revision = 1L,
@@ -387,6 +438,7 @@ class CandidatePanelTest {
         )
         assertTrue(compositionStarted.requiresKeySceneRebuild)
         assertTrue(compositionStarted.cancelSettle)
+        assertTrue(compositionStarted.cancelInteraction)
 
         val decodeReady = panel.publishAt(
             revision = 1L,
@@ -395,18 +447,21 @@ class CandidatePanelTest {
         )
         assertFalse(decodeReady.requiresKeySceneRebuild)
         assertTrue(decodeReady.cancelSettle)
+        assertTrue(decodeReady.cancelInteraction)
 
         val expanded = panel.activateAt(CandidateControl.EXPAND)
         assertTrue(expanded.requiresKeySceneRebuild)
         assertTrue(expanded.cancelSettle)
+        assertTrue(expanded.cancelInteraction)
 
-        val paged = panel.pageAt(delta = 1)
-        assertFalse(paged.requiresKeySceneRebuild)
-        assertFalse(paged.cancelSettle)
+        val sceneBuildsBeforeScroll = panel.sceneBuildCount
+        assertTrue(panel.expandedScrollState.scrollTo(panel.maximumExpandedScrollOffset))
+        assertEquals(sceneBuildsBeforeScroll, panel.sceneBuildCount)
 
         val collapsed = panel.collapseAt()
         assertTrue(collapsed.requiresKeySceneRebuild)
         assertTrue(collapsed.cancelSettle)
+        assertTrue(collapsed.cancelInteraction)
 
         val geometryOnly = panel.relayoutAt(viewWidth = VIEW_WIDTH + 10)
         assertFalse(geometryOnly.requiresKeySceneRebuild)
@@ -495,14 +550,6 @@ class CandidatePanelTest {
         control: CandidateControl,
     ): CandidateChange = activate(
         control = control,
-        viewWidth = VIEW_WIDTH,
-        viewHeight = VIEW_HEIGHT,
-        editorPanelVisible = false,
-        fontScale = 1f,
-    )
-
-    private fun CandidatePanel.pageAt(delta: Int): CandidateChange = page(
-        delta = delta,
         viewWidth = VIEW_WIDTH,
         viewHeight = VIEW_HEIGHT,
         editorPanelVisible = false,

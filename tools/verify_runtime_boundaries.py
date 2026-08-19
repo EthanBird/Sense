@@ -18,6 +18,12 @@ AGENT_HUB_ACTIVITY = "io.github.ethanbird.senseime.AgentHubActivity"
 BRAIN_SERVICE = (
     "io.github.ethanbird.senseime.brain.runtime.SenseAiBrainService"
 )
+AGENT_CHANNEL_SERVICE = (
+    "io.github.ethanbird.senseime.brain.runtime.SenseAgentChannelService"
+)
+AGENT_HUB_BRIDGE_SERVICE = (
+    "io.github.ethanbird.senseime.brain.runtime.SenseAgentHubBridgeService"
+)
 IME_SERVICE = "io.github.ethanbird.senseime.service.SenseInputMethodService"
 NETWORK_DEPENDENCY_PATTERN = re.compile(
     r"java\.net\.|javax\.net\.|okhttp|retrofit"
@@ -287,6 +293,59 @@ def verify_runtime_manifest(manifest_path: str | Path) -> None:
     ):
         raise RuntimeBoundaryError(
             f"{path}: Brain service special-use subtype drifted"
+        )
+
+    channel = _component_by_name(
+        services,
+        component_name=AGENT_CHANNEL_SERVICE,
+        manifest_path=path,
+    )
+    if channel.get(ANDROID + "exported") != "false":
+        raise RuntimeBoundaryError(
+            f"{path}: Agent channel service must be exported=false"
+        )
+    if channel.get(ANDROID + "process") != ":brain":
+        raise RuntimeBoundaryError(
+            f"{path}: Agent channel service must run in :brain"
+        )
+    if channel.get(ANDROID + "foregroundServiceType") != "specialUse":
+        raise RuntimeBoundaryError(
+            f"{path}: Agent channel service must use specialUse foreground type"
+        )
+    channel_properties = [
+        child
+        for child in channel.findall("property")
+        if child.get(ANDROID + "name")
+        == "android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+    ]
+    if len(channel_properties) != 1:
+        raise RuntimeBoundaryError(
+            f"{path}: Agent channel service must declare one special-use subtype"
+        )
+    if (
+        channel_properties[0].get(ANDROID + "value")
+        != "user_enabled_agent_message_channels"
+    ):
+        raise RuntimeBoundaryError(
+            f"{path}: Agent channel service special-use subtype drifted"
+        )
+
+    hub_bridge = _component_by_name(
+        services,
+        component_name=AGENT_HUB_BRIDGE_SERVICE,
+        manifest_path=path,
+    )
+    if hub_bridge.get(ANDROID + "exported") != "false":
+        raise RuntimeBoundaryError(
+            f"{path}: Agent Hub bridge service must be exported=false"
+        )
+    if hub_bridge.get(ANDROID + "process") != ":brain":
+        raise RuntimeBoundaryError(
+            f"{path}: Agent Hub bridge service must run in :brain"
+        )
+    if hub_bridge.get(ANDROID + "foregroundServiceType") is not None:
+        raise RuntimeBoundaryError(
+            f"{path}: Agent Hub bridge service must remain bind-only"
         )
 
     ime = _component_by_name(

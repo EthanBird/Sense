@@ -156,6 +156,7 @@ def _write_good_tree(root: Path) -> None:
         "ime-config",
         "ime-service",
         "ime-ui",
+        "mic-runtime",
         "brain-api",
         "ai-brain",
         "ai-runtime",
@@ -203,6 +204,7 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
         "ime-config",
         "ime-service",
         "ime-ui",
+        "mic-runtime",
         "brain-api",
         "ai-brain",
         "ai-runtime",
@@ -852,6 +854,14 @@ rootProject.name = "fixture"
             self.root,
             ".gradle/8.13/fileHashes/fileHashes.bin",
             "generated state\n",
+        )
+        checker.check_repository(self.root)
+
+    def test_research_artifact_checkout_is_not_product_script_authority(self) -> None:
+        _write(
+            self.root,
+            ".artifacts/reference-project/build.gradle.kts",
+            'println("reference only")\n',
         )
         checker.check_repository(self.root)
 

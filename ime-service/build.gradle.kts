@@ -30,6 +30,10 @@ android {
             )
         }
     }
+
+    packaging {
+        resources.excludes += "META-INF/DEPENDENCIES"
+    }
 }
 
 dependencies {

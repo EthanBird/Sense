@@ -45,6 +45,19 @@ def valid_runtime_manifest() -> str:
                 android:value="user_initiated_agent_task" />
         </service>
         <service
+            android:name="io.github.ethanbird.senseime.brain.runtime.SenseAgentChannelService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:process=":brain">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="user_enabled_agent_message_channels" />
+        </service>
+        <service
+            android:name="io.github.ethanbird.senseime.brain.runtime.SenseAgentHubBridgeService"
+            android:exported="false"
+            android:process=":brain" />
+        <service
             android:name="io.github.ethanbird.senseime.service.SenseInputMethodService"
             android:permission="android.permission.BIND_INPUT_METHOD">
             <intent-filter>
@@ -93,6 +106,23 @@ class RuntimeManifestVerifierTest(unittest.TestCase):
                 android:value="user_initiated_agent_task" />
         </service>
 """
+        channel = """\
+        <service
+            android:name="io.github.ethanbird.senseime.brain.runtime.SenseAgentChannelService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:process=":brain">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="user_enabled_agent_message_channels" />
+        </service>
+"""
+        hub_bridge = """\
+        <service
+            android:name="io.github.ethanbird.senseime.brain.runtime.SenseAgentHubBridgeService"
+            android:exported="false"
+            android:process=":brain" />
+"""
         agent_hub = """\
         <activity
             android:name="io.github.ethanbird.senseime.AgentHubActivity"
@@ -124,6 +154,22 @@ class RuntimeManifestVerifierTest(unittest.TestCase):
             (
                 valid.replace(brain, brain + brain),
                 "expected one .*SenseAiBrainService",
+            ),
+            (
+                valid.replace(channel, ""),
+                "expected one .*SenseAgentChannelService",
+            ),
+            (
+                valid.replace(channel, channel + channel),
+                "expected one .*SenseAgentChannelService",
+            ),
+            (
+                valid.replace(hub_bridge, ""),
+                "expected one .*SenseAgentHubBridgeService",
+            ),
+            (
+                valid.replace(hub_bridge, hub_bridge + hub_bridge),
+                "expected one .*SenseAgentHubBridgeService",
             ),
             (valid.replace(ime, ""), "expected one .*SenseInputMethodService"),
             (
@@ -241,6 +287,88 @@ class RuntimeManifestVerifierTest(unittest.TestCase):
             (
                 valid.replace("android.view.InputMethod", "fixture.InputMethod"),
                 "IME service is missing InputMethod action",
+            ),
+        )
+        for xml, pattern in cases:
+            with self.subTest(pattern=pattern):
+                self.assertRejected(xml, pattern)
+
+    def test_rejects_agent_channel_service_boundary_regressions(self) -> None:
+        valid = valid_runtime_manifest()
+        name = (
+            'android:name="io.github.ethanbird.senseime.brain.runtime.'
+            'SenseAgentChannelService"'
+        )
+        cases = (
+            (
+                valid.replace(
+                    name + '\n            android:exported="false"',
+                    name + '\n            android:exported="true"',
+                ),
+                "Agent channel service must be exported=false",
+            ),
+            (
+                valid.replace(
+                    name + '\n            android:exported="false"\n'
+                    '            android:foregroundServiceType="specialUse"\n'
+                    '            android:process=":brain"',
+                    name + '\n            android:exported="false"\n'
+                    '            android:foregroundServiceType="specialUse"\n'
+                    '            android:process=":main"',
+                ),
+                "Agent channel service must run in :brain",
+            ),
+            (
+                valid.replace(
+                    name + '\n            android:exported="false"\n'
+                    '            android:foregroundServiceType="specialUse"',
+                    name + '\n            android:exported="false"\n'
+                    '            android:foregroundServiceType="dataSync"',
+                ),
+                "Agent channel service must use specialUse foreground type",
+            ),
+            (
+                valid.replace(
+                    'android:value="user_enabled_agent_message_channels"',
+                    'android:value="fixture"',
+                ),
+                "Agent channel service special-use subtype drifted",
+            ),
+        )
+        for xml, pattern in cases:
+            with self.subTest(pattern=pattern):
+                self.assertRejected(xml, pattern)
+
+    def test_rejects_agent_hub_bridge_boundary_regressions(self) -> None:
+        valid = valid_runtime_manifest()
+        name = (
+            'android:name="io.github.ethanbird.senseime.brain.runtime.'
+            'SenseAgentHubBridgeService"'
+        )
+        cases = (
+            (
+                valid.replace(
+                    name + '\n            android:exported="false"',
+                    name + '\n            android:exported="true"',
+                ),
+                "Agent Hub bridge service must be exported=false",
+            ),
+            (
+                valid.replace(
+                    name + '\n            android:exported="false"\n'
+                    '            android:process=":brain"',
+                    name + '\n            android:exported="false"\n'
+                    '            android:process=":ime"',
+                ),
+                "Agent Hub bridge service must run in :brain",
+            ),
+            (
+                valid.replace(
+                    name + '\n            android:exported="false"',
+                    name + '\n            android:exported="false"\n'
+                    '            android:foregroundServiceType="specialUse"',
+                ),
+                "Agent Hub bridge service must remain bind-only",
             ),
         )
         for xml, pattern in cases:

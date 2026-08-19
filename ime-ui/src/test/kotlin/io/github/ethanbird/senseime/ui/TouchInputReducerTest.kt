@@ -352,6 +352,20 @@ class TouchInputReducerTest {
     }
 
     @Test
+    fun cancelMatchingDropsLatchedSceneTargetsButPreservesOrdinaryPointers() {
+        val reducer = TouchInputReducer<String>(24f, 30f)
+        reducer.onDown(1, "candidate-value", 0f, 0f)
+        reducer.onDown(2, "ordinary-key", 0f, 0f)
+        reducer.onDown(3, "candidate-grid", 0f, 0f)
+
+        assertEquals(2, reducer.cancelMatching { it.startsWith("candidate-") })
+        assertNull(reducer.target(1))
+        assertNull(reducer.target(3))
+        assertEquals("ordinary-key", reducer.target(2))
+        assertEquals(1, reducer.activePointerCount)
+    }
+
+    @Test
     fun aFreshPrimaryDownClearsAnyOrphanedPreviousStream() {
         val reducer = TouchInputReducer<String>(24f, 30f)
         reducer.onDown(4, "delete", 0f, 0f)

@@ -135,7 +135,7 @@ internal object OpenAiRequestFactory {
         val headers = linkedMapOf(
             "Accept" to if (profile.streaming) "text/event-stream" else "application/json",
             "Content-Type" to "application/json; charset=utf-8",
-            "User-Agent" to "Sense-IME/0.4.11 AI-Brain",
+            "User-Agent" to "Sense-IME/0.4.12 AI-Brain",
         )
         when (credential) {
             is ProviderCredential.Bearer -> headers["Authorization"] = "Bearer ${credential.token}"

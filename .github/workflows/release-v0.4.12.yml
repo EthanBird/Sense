@@ -1,0 +1,344 @@
+name: Release v0.4.12
+# The status jobs make publication observable to GitHub API clients without Actions-list access.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: release-v0.4.12
+  # Never cancel after the immutable tag or draft release may have been created.
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  statuses: write
+
+jobs:
+  release-pending:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish observable release status
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              ...context.repo,
+              sha: context.sha,
+              state: 'pending',
+              context: 'release/v0.4.12',
+              description: 'Signed v0.4.12 release is running',
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            })
+
+  mic-release-assets:
+    needs: release-pending
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: sense-mic-release-windows-x64
+            asset: SenseMicClient-v0.4.12-windows-x64.zip
+          - os: ubuntu-latest
+            artifact: sense-mic-release-linux-x64
+            asset: SenseMicClient-v0.4.12-linux-x64.tar.gz
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dtolnay/rust-toolchain@1.85.0
+        with:
+          components: rustfmt, clippy
+
+      - name: Install Linux audio headers
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libasound2-dev libpulse-dev pulseaudio-utils
+
+      - name: Test and lint Sense Mic Client
+        run: |
+          cargo fmt --manifest-path sense-mic-client/Cargo.toml --check
+          cargo test --locked --manifest-path sense-mic-client/Cargo.toml
+          cargo clippy --locked --manifest-path sense-mic-client/Cargo.toml --all-targets -- -D warnings
+
+      - name: Package Windows client and test-signed WaveRT driver
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $out = Join-Path $env:RUNNER_TEMP 'sense-mic-release'
+          powershell -NoProfile -ExecutionPolicy Bypass -File sense-mic-client/package-windows.ps1 -DriverSignMode Test -OutputRoot $out
+          New-Item -ItemType Directory -Path release-mic -Force | Out-Null
+          Move-Item -LiteralPath (Join-Path $out 'SenseMicClient-windows-x64.zip') -Destination (Join-Path 'release-mic' '${{ matrix.asset }}')
+
+      - name: Package Linux client
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo build --locked --release --manifest-path sense-mic-client/Cargo.toml
+          bundle="$RUNNER_TEMP/SenseMicClient-linux-x64"
+          mkdir -p "$bundle" release-mic
+          cp sense-mic-client/target/release/sense-mic "$bundle/"
+          cp sense-mic-client/README.md LICENSE NOTICE "$bundle/"
+          tar -C "$bundle" -czf "release-mic/${{ matrix.asset }}" .
+
+      - name: Upload release asset
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.artifact }}
+          path: release-mic/${{ matrix.asset }}
+          if-no-files-found: error
+
+  verify-build-release:
+    needs: [release-pending, mic-release-assets]
+    if: github.repository == 'EthanBird/Sense'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: release
+    env:
+      RELEASE_TAG: v0.4.12
+      RELEASE_APK: Sense-v0.4.12.apk
+      RELEASE_CERT_SHA256: 76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Verify release identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F 'versionCode = 37' app/build.gradle.kts
+          grep -F 'versionName = "0.4.12"' app/build.gradle.kts
+          python3 tools/test_release_plan.py
+          python3 tools/test_check_x02_boundaries.py
+          python3 tools/check_x02_boundaries.py
+
+      - name: Materialize persistent signing identity
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.SENSE_RELEASE_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.SENSE_RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.SENSE_RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.SENSE_RELEASE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$KEYSTORE_BASE64"
+          test -n "$STORE_PASSWORD"
+          test -n "$KEY_ALIAS"
+          test -n "$KEY_PASSWORD"
+          keystore="$RUNNER_TEMP/sense-release-v1.p12"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$keystore"
+          chmod 600 "$keystore"
+          {
+            echo "SENSE_RELEASE_STORE_FILE=$keystore"
+            echo "SENSE_RELEASE_STORE_PASSWORD=$STORE_PASSWORD"
+            echo "SENSE_RELEASE_KEY_ALIAS=$KEY_ALIAS"
+            echo "SENSE_RELEASE_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Test and build signed APK
+        run: >-
+          ./gradlew
+          :brain-api:test
+          :ai-brain:test
+          :ai-runtime:testDebugUnitTest
+          :core-input:test
+          :ime-service:testDebugUnitTest
+          :ime-ui:testDebugUnitTest
+          :mic-runtime:testDebugUnitTest
+          :app:testDebugUnitTest
+          :mic-runtime:lintDebug
+          :app:lintDebug
+          :app:assembleBenchmark
+          :app:assembleRelease
+
+      - name: Verify and stage release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          apk=$(find app/build/outputs/apk/release -type f -name '*.apk' -print -quit)
+          test -n "$apk"
+          build_tools=$(find "$ANDROID_SDK_ROOT/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+          "$build_tools/apksigner" verify --verbose --print-certs "$apk" | tee release/apksigner.txt
+          grep -Fx 'Number of signers: 1' release/apksigner.txt
+          grep -Fi "Signer #1 certificate SHA-256 digest: $RELEASE_CERT_SHA256" release/apksigner.txt
+          "$build_tools/zipalign" -c -P 16 4 "$apk"
+          "$build_tools/aapt2" dump badging "$apk" | tee release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='37' versionName='0.4.12'" release/apk-badging.txt
+          grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
+          grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
+          "$build_tools/aapt2" dump permissions "$apk" > release/apk-permissions.txt
+          "$build_tools/aapt2" dump xmltree "$apk" --file AndroidManifest.xml > release/apk-manifest.xmltree.txt
+          python3 tools/verify_aapt2_manifest_protection.py \
+            --permissions release/apk-permissions.txt \
+            release/apk-manifest.xmltree.txt
+          python3 tools/verify_runtime_boundaries.py
+          python3 tools/verify_wubi86_assets.py --apk "$apk"
+          cp "$apk" "release/$RELEASE_APK"
+
+      - name: Download Sense Mic desktop release assets
+        uses: actions/download-artifact@v6
+        with:
+          pattern: sense-mic-release-*
+          path: release
+          merge-multiple: true
+
+      - name: Create complete release checksum manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release
+          test -f SenseMicClient-v0.4.12-windows-x64.zip
+          test -f SenseMicClient-v0.4.12-linux-x64.tar.gz
+          sha256sum \
+            "$RELEASE_APK" \
+            SenseMicClient-v0.4.12-windows-x64.zip \
+            SenseMicClient-v0.4.12-linux-x64.tar.gz \
+            > SHA256SUMS.txt
+
+      - name: Create tag and GitHub Release through the GitHub API
+        uses: actions/github-script@v8
+        env:
+          NOTES_PATH: docs/releases/v0.4.12.md
+          ASSET_DIR: release
+        with:
+          script: |
+            const fs = require('fs')
+            const { owner, repo } = context.repo
+            const tag = process.env.RELEASE_TAG
+            const sha = context.sha
+            const expectedAssets = [
+              process.env.RELEASE_APK,
+              'SenseMicClient-v0.4.12-windows-x64.zip',
+              'SenseMicClient-v0.4.12-linux-x64.tar.gz',
+              'SHA256SUMS.txt',
+            ]
+            const findRelease = async () => {
+              try {
+                return (await github.rest.repos.getReleaseByTag({ owner, repo, tag })).data
+              } catch (error) {
+                if (error.status !== 404) throw error
+                const releases = await github.paginate(github.rest.repos.listReleases, {
+                  owner,
+                  repo,
+                  per_page: 100,
+                })
+                return releases.find(candidate => candidate.tag_name === tag) || null
+              }
+            }
+            let tagExists = false
+            let taggedRelease = null
+            try {
+              const ref = await github.rest.git.getRef({ owner, repo, ref: `tags/${tag}` })
+              tagExists = true
+              if (ref.data.object.sha !== sha) {
+                taggedRelease = await findRelease()
+                const complete = taggedRelease && !taggedRelease.draft &&
+                  expectedAssets.every(name => taggedRelease.assets.some(asset => asset.name === name))
+                if (complete) {
+                  core.notice(`${tag} is already completely published at ${ref.data.object.sha}; this later main commit does not replace the immutable release.`)
+                  return
+                }
+                core.setFailed(`${tag} targets ${ref.data.object.sha} but its release is incomplete; expected current ${sha}`)
+                return
+              }
+            } catch (error) {
+              if (error.status !== 404) throw error
+            }
+            if (!tagExists) {
+              await github.rest.git.createRef({ owner, repo, ref: `refs/tags/${tag}`, sha })
+            }
+            let release = await findRelease()
+            if (!release) {
+              release = (await github.rest.repos.createRelease({
+                owner,
+                repo,
+                tag_name: tag,
+                target_commitish: sha,
+                name: `Sense ${tag}`,
+                body: fs.readFileSync(process.env.NOTES_PATH, 'utf8'),
+                draft: true,
+                prerelease: false,
+              })).data
+            }
+            const alreadyComplete = !release.draft &&
+              expectedAssets.every(name => release.assets.some(asset => asset.name === name))
+            if (alreadyComplete) {
+              core.notice(`${tag} is already completely published for ${sha}.`)
+              return
+            }
+            for (const name of expectedAssets) {
+              const existing = release.assets.find(asset => asset.name === name)
+              if (existing) {
+                await github.rest.repos.deleteReleaseAsset({ owner, repo, asset_id: existing.id })
+              }
+              const data = fs.readFileSync(`${process.env.ASSET_DIR}/${name}`)
+              const contentType = name.endsWith('.apk')
+                ? 'application/vnd.android.package-archive'
+                : name.endsWith('.zip')
+                  ? 'application/zip'
+                  : name.endsWith('.tar.gz')
+                    ? 'application/gzip'
+                    : 'text/plain'
+              await github.rest.repos.uploadReleaseAsset({
+                owner,
+                repo,
+                release_id: release.id,
+                name,
+                headers: {
+                  'content-type': contentType,
+                  'content-length': data.length,
+                },
+                data,
+              })
+            }
+            await github.rest.repos.updateRelease({
+              owner,
+              repo,
+              release_id: release.id,
+              tag_name: tag,
+              target_commitish: sha,
+              name: `Sense ${tag}`,
+              body: fs.readFileSync(process.env.NOTES_PATH, 'utf8'),
+              draft: false,
+              prerelease: false,
+            })
+
+      - name: Remove materialized signing key
+        if: always()
+        shell: bash
+        run: |
+          if [[ -n "${SENSE_RELEASE_STORE_FILE:-}" && -f "$SENSE_RELEASE_STORE_FILE" ]]; then
+            shred -u "$SENSE_RELEASE_STORE_FILE" || true
+          fi
+
+  release-status:
+    if: always()
+    needs: verify-build-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish final release status
+        uses: actions/github-script@v8
+        env:
+          RELEASE_RESULT: ${{ needs.verify-build-release.result }}
+        with:
+          script: |
+            const success = process.env.RELEASE_RESULT === 'success'
+            await github.rest.repos.createCommitStatus({
+              ...context.repo,
+              sha: context.sha,
+              state: success ? 'success' : 'failure',
+              context: 'release/v0.4.12',
+              description: success ? 'Signed v0.4.12 release published' : `Release ${process.env.RELEASE_RESULT}`,
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+            })

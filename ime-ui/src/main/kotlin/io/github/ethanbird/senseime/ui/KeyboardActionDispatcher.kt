@@ -3,6 +3,7 @@ package io.github.ethanbird.senseime.ui
 internal interface KeyboardActionEffects {
     fun stopPanelFling()
     fun stopCandidateSettle()
+    fun cancelCandidateInteraction() = Unit
 }
 
 /**
@@ -34,8 +35,6 @@ internal class KeyboardActionDispatcher(
             is FrozenTouchTarget.CandidateValue -> if (gesture == TouchInputReducer.Gesture.TAP) {
                 flushKeys()
                 actions.onCandidate(target.revision, target.sourceIndex)
-            } else if (candidatePanel.expanded) {
-                scrollCandidatePage(if (gesture == TouchInputReducer.Gesture.SWIPE_UP) 1 else -1)
             }
 
             is FrozenTouchTarget.CandidateControlValue ->
@@ -43,12 +42,9 @@ internal class KeyboardActionDispatcher(
                     activateCandidateControl(target.value)
                 }
 
-            is FrozenTouchTarget.CandidatePageArea ->
-                if (gesture != TouchInputReducer.Gesture.TAP) {
-                    scrollCandidatePage(
-                        if (gesture == TouchInputReducer.Gesture.SWIPE_UP) 1 else -1,
-                    )
-                }
+            // Continuous drag/fling is owned by PanelScrollController. The
+            // semantic dispatcher intentionally has no page-step action.
+            is FrozenTouchTarget.CandidateGridArea -> Unit
 
             is FrozenTouchTarget.CandidateStripArea -> Unit
             is FrozenTouchTarget.PanelScrollArea -> Unit
@@ -150,6 +146,7 @@ internal class KeyboardActionDispatcher(
             editorPanelVisible = host.interactionCandidateToolbarSuppressed(),
             fontScale = host.interactionFontScale,
         )
+        if (change.cancelInteraction) effects.cancelCandidateInteraction()
         if (change.cancelSettle) effects.stopCandidateSettle()
         if (change.requiresKeySceneRebuild) host.interactionRebuildKeys()
         scheduler.invalidate()
@@ -287,18 +284,6 @@ internal class KeyboardActionDispatcher(
         actions.onClipboardAction(action, index)
         host.interactionRebuildKeys()
         scheduler.invalidate()
-    }
-
-    private fun scrollCandidatePage(delta: Int) {
-        val sceneBuildsBefore = candidatePanel.sceneBuildCount
-        candidatePanel.page(
-            delta = delta,
-            viewWidth = host.interactionWidth,
-            viewHeight = host.interactionHeight,
-            editorPanelVisible = host.interactionCandidateToolbarSuppressed(),
-            fontScale = host.interactionFontScale,
-        )
-        if (candidatePanel.sceneBuildCount != sceneBuildsBefore) scheduler.invalidate()
     }
 
     private fun scrollClipboard(delta: Int) {

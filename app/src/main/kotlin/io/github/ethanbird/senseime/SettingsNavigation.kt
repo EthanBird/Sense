@@ -11,6 +11,7 @@ internal enum class SettingsSection {
     PROVIDER_CATALOG,
     SOUL,
     TOOLS,
+    CHANNELS,
     ACTION_SKILLS,
     SKILLS,
     VOICE,

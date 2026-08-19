@@ -23,14 +23,27 @@ def manifest(
     ),
     used_permissions: tuple[tuple[str, str], ...] = (
         ("uses-permission", "android.permission.INTERNET"),
+        ("uses-permission", "android.permission.ACCESS_NETWORK_STATE"),
+        ("uses-permission", "android.permission.ACCESS_WIFI_STATE"),
+        ("uses-permission", "android.permission.CHANGE_NETWORK_STATE"),
+        ("uses-permission", "android.permission.CHANGE_WIFI_STATE"),
         ("uses-permission", "android.permission.RECORD_AUDIO"),
         ("uses-permission", "android.permission.FOREGROUND_SERVICE"),
+        (
+            "uses-permission",
+            "android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE",
+        ),
+        (
+            "uses-permission",
+            "android.permission.FOREGROUND_SERVICE_MICROPHONE",
+        ),
         (
             "uses-permission",
             "android.permission.FOREGROUND_SERVICE_SPECIAL_USE",
         ),
         ("uses-permission", "android.permission.POST_NOTIFICATIONS"),
         ("uses-permission", "android.permission.WAKE_LOCK"),
+        ("uses-permission", "android.permission.RECEIVE_BOOT_COMPLETED"),
         ("uses-permission", DYNAMIC_RECEIVER_PERMISSION),
     ),
 ) -> str:
@@ -205,14 +218,27 @@ class ManifestPermissionVerifierTest(unittest.TestCase):
     def test_uses_permission_set_rejects_missing_extra_and_duplicate(self) -> None:
         required = (
             ("uses-permission", "android.permission.INTERNET"),
+            ("uses-permission", "android.permission.ACCESS_NETWORK_STATE"),
+            ("uses-permission", "android.permission.ACCESS_WIFI_STATE"),
+            ("uses-permission", "android.permission.CHANGE_NETWORK_STATE"),
+            ("uses-permission", "android.permission.CHANGE_WIFI_STATE"),
             ("uses-permission", "android.permission.RECORD_AUDIO"),
             ("uses-permission", "android.permission.FOREGROUND_SERVICE"),
+            (
+                "uses-permission",
+                "android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE",
+            ),
+            (
+                "uses-permission",
+                "android.permission.FOREGROUND_SERVICE_MICROPHONE",
+            ),
             (
                 "uses-permission",
                 "android.permission.FOREGROUND_SERVICE_SPECIAL_USE",
             ),
             ("uses-permission", "android.permission.POST_NOTIFICATIONS"),
             ("uses-permission", "android.permission.WAKE_LOCK"),
+            ("uses-permission", "android.permission.RECEIVE_BOOT_COMPLETED"),
             ("uses-permission", DYNAMIC_RECEIVER_PERMISSION),
         )
         cases = (
@@ -286,14 +312,27 @@ class ManifestPermissionVerifierTest(unittest.TestCase):
             manifest(
                 used_permissions=(
                     ("uses-permission", "android.permission.INTERNET"),
+                    ("uses-permission", "android.permission.ACCESS_NETWORK_STATE"),
+                    ("uses-permission", "android.permission.ACCESS_WIFI_STATE"),
+                    ("uses-permission", "android.permission.CHANGE_NETWORK_STATE"),
+                    ("uses-permission", "android.permission.CHANGE_WIFI_STATE"),
                     ("uses-permission-sdk-23", "android.permission.RECORD_AUDIO"),
                     ("uses-permission", "android.permission.FOREGROUND_SERVICE"),
+                    (
+                        "uses-permission",
+                        "android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE",
+                    ),
+                    (
+                        "uses-permission",
+                        "android.permission.FOREGROUND_SERVICE_MICROPHONE",
+                    ),
                     (
                         "uses-permission",
                         "android.permission.FOREGROUND_SERVICE_SPECIAL_USE",
                     ),
                     ("uses-permission", "android.permission.POST_NOTIFICATIONS"),
                     ("uses-permission", "android.permission.WAKE_LOCK"),
+                    ("uses-permission", "android.permission.RECEIVE_BOOT_COMPLETED"),
                     ("uses-permission", DYNAMIC_RECEIVER_PERMISSION),
                 ),
             ),

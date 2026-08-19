@@ -18,6 +18,7 @@ internal val ABOUT_NOTICE_ASSETS = listOf(
     "Rime Wubi NOTICE" to "RIME-WUBI-NOTICE.txt",
     "Rime Wubi LGPL-3.0" to "RIME-WUBI-LGPL-3.0.txt",
     "OkHttp Apache-2.0" to "OKHTTP-APACHE-2.0.txt",
+    "Lark OpenAPI Apache-2.0" to "LARK-OAPI-APACHE-2.0.txt",
     "Concentus BSD-3-Clause" to "CONCENTUS-BSD-3-CLAUSE.txt",
 )
 

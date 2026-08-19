@@ -120,6 +120,8 @@ internal class KeyboardInteractionController(
             .scaledMaximumFlingVelocity.toFloat(),
         host = this,
     )
+    /** Reused by candidate drag/fling frames; callers consume it synchronously. */
+    private val candidateViewportProjection = ReusableKeyboardRectProjection()
     private val actionDispatcher = KeyboardActionDispatcher(
         host = host,
         scheduler = scheduler,
@@ -444,7 +446,7 @@ internal class KeyboardInteractionController(
         }
         gestureCoordinator.beginPointer(pointerId, key, x, y, event.eventTime)
         if (
-            target !is FrozenTouchTarget.CandidatePageArea &&
+            target !is FrozenTouchTarget.CandidateGridArea &&
             target !is FrozenTouchTarget.CandidateStripArea &&
             target !is FrozenTouchTarget.PanelScrollArea
         ) {
@@ -528,7 +530,7 @@ internal class KeyboardInteractionController(
             actionDispatcher.activate(activationTarget, activationGesture)
             if (
                 activationGesture == TouchInputReducer.Gesture.TAP &&
-                activationTarget !is FrozenTouchTarget.CandidatePageArea &&
+                activationTarget !is FrozenTouchTarget.CandidateGridArea &&
                 activationTarget !is FrozenTouchTarget.CandidateStripArea &&
                 activationTarget !is FrozenTouchTarget.PanelScrollArea
             ) {
@@ -556,13 +558,16 @@ internal class KeyboardInteractionController(
             val target = pressedTargets.valueAt(index)
             if (!target.isCandidatePointerTarget()) continue
             val pointerId = pressedTargets.keyAt(index)
-            touchReducer.cancel(pointerId)
             pressedTargets.removeAt(index)
             panelScroll.forgetPointer(pointerId)
             changed = true
         }
+        if (touchReducer.cancelMatching { it.isCandidatePointerTarget() } > 0) changed = true
+        panelScroll.cancel(ScrollPanel.CANDIDATES)
         if (changed) invalidateCandidateViewport()
     }
+
+    override fun cancelCandidateInteraction() = cancelCandidatePointers()
 
     /** Cancels only frozen targets whose left-rail spelling changed after an async decode. */
     fun cancelT9PinyinRailPointers() {
@@ -619,6 +624,7 @@ internal class KeyboardInteractionController(
 
     fun collapseCandidates() {
         stopCandidateSettle()
+        if (candidatePanel.expanded) panelScroll.stopFling()
         candidatePanel.collapse(
             viewWidth = width,
             viewHeight = height,
@@ -736,10 +742,14 @@ internal class KeyboardInteractionController(
     private fun scrollPanelFor(target: FrozenTouchTarget): ScrollPanel? = when (target) {
         is FrozenTouchTarget.PanelScrollArea -> target.panel
         is FrozenTouchTarget.KeyValue -> target.key.scrollPanel
+        is FrozenTouchTarget.CandidateGridArea -> ScrollPanel.CANDIDATES
+        is FrozenTouchTarget.CandidateValue ->
+            if (candidatePanel.expanded) ScrollPanel.CANDIDATES else null
         else -> null
     }
 
     fun panelViewportBounds(panel: ScrollPanel): RectF? = when (panel) {
+        ScrollPanel.CANDIDATES -> expandedCandidateViewportBounds()
         ScrollPanel.EMOJI -> scene.emojiGridBounds
         ScrollPanel.EMOJI_CATEGORIES -> scene.emojiCategoryBounds
         ScrollPanel.SYMBOL_CATEGORIES -> scene.symbolCategoryBounds
@@ -832,6 +842,7 @@ internal class KeyboardInteractionController(
 
     override fun scrollStateFor(panel: ScrollPanel): ContinuousVerticalScrollState =
         when (panel) {
+            ScrollPanel.CANDIDATES -> candidatePanel.expandedScrollState
             ScrollPanel.EMOJI -> scene.emojiScrollState
             ScrollPanel.EMOJI_CATEGORIES -> scene.emojiCategoryScrollState
             ScrollPanel.SYMBOL_CATEGORIES -> scene.symbolCategoryScrollState
@@ -867,6 +878,14 @@ internal class KeyboardInteractionController(
     private val candidatePanel: CandidatePanel
         get() = host.interactionCandidatePanel
     private fun dp(value: Float): Float = value * density
+
+    private fun expandedCandidateViewportBounds(): RectF? {
+        val bounds = candidatePanel.expandedGridBounds
+        if (!candidatePanel.expanded || !candidatePanel.candidatesReady || bounds == null) {
+            return candidateViewportProjection.project(null)
+        }
+        return candidateViewportProjection.project(bounds)
+    }
 
     private companion object {
         const val VERTICAL_GESTURE_DOMINANCE = 1.15f

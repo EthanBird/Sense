@@ -348,6 +348,20 @@ class TouchInputReducer<T>(
         return target
     }
 
+    /** Cancels every frozen target matching one scene-owned interaction class. */
+    fun cancelMatching(predicate: (T) -> Boolean): Int {
+        var canceledCount = 0
+        for (slot in pointerIds.indices) {
+            if (pointerIds[slot] == NONE) continue
+            @Suppress("UNCHECKED_CAST")
+            val target = targets[slot] as T
+            if (!predicate(target)) continue
+            release(slot)
+            canceledCount += 1
+        }
+        return canceledCount
+    }
+
     fun cancelAll() {
         for (index in pointerIds.indices) {
             pointerIds[index] = NONE

@@ -1,14 +1,14 @@
     {
       "schemaVersion": 3,
       "stage": "quality-replay",
-      "generatedAt": "2026-08-01T10:47:25.952262500Z",
+      "generatedAt": "2026-08-19T08:20:40.117298500Z",
       "assets": {
         "lexiconBytes": 35069585,
         "lexiconSha256": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
         "bigramRecords": 65536,
         "bigramBytes": 786442,
         "bigramSha256": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
-        "bigramLoadMs": 22.784
+        "bigramLoadMs": 25.324
       },
       "corpus": {
         "cases": 126,
@@ -172,13 +172,13 @@
         "unit": "nanoseconds",
         "cleanCasesExcludeMode": "typo",
         "cleanByCandidateLimit": {
-"10": {"baseline":{"samples":228,"p50Ns":901300,"p95Ns":3799500,"p99Ns":5396300,"p50Ms":0.901,"p95Ms":3.800,"p99Ms":5.396},"contextual":{"samples":228,"p50Ns":943500,"p95Ns":4090100,"p99Ns":5581500,"p50Ms":0.944,"p95Ms":4.090,"p99Ms":5.582}},
-"64": {"baseline":{"samples":228,"p50Ns":1631800,"p95Ns":10982500,"p99Ns":13019600,"p50Ms":1.632,"p95Ms":10.983,"p99Ms":13.020},"contextual":{"samples":228,"p50Ns":1760000,"p95Ns":11799500,"p99Ns":13574500,"p50Ms":1.760,"p95Ms":11.800,"p99Ms":13.575}},
-"255": {"baseline":{"samples":228,"p50Ns":1693000,"p95Ns":10579300,"p99Ns":15480400,"p50Ms":1.693,"p95Ms":10.579,"p99Ms":15.480},"contextual":{"samples":228,"p50Ns":1759400,"p95Ns":11901500,"p99Ns":15852500,"p50Ms":1.759,"p95Ms":11.902,"p99Ms":15.853}}
+"10": {"baseline":{"samples":228,"p50Ns":914200,"p95Ns":4177300,"p99Ns":5114300,"p50Ms":0.914,"p95Ms":4.177,"p99Ms":5.114},"contextual":{"samples":228,"p50Ns":866700,"p95Ns":3721200,"p99Ns":5148100,"p50Ms":0.867,"p95Ms":3.721,"p99Ms":5.148}},
+"64": {"baseline":{"samples":228,"p50Ns":1579400,"p95Ns":10164600,"p99Ns":12153000,"p50Ms":1.579,"p95Ms":10.165,"p99Ms":12.153},"contextual":{"samples":228,"p50Ns":1656300,"p95Ns":10413100,"p99Ns":13774800,"p50Ms":1.656,"p95Ms":10.413,"p99Ms":13.775}},
+"255": {"baseline":{"samples":228,"p50Ns":1596900,"p95Ns":10403600,"p99Ns":12868500,"p50Ms":1.597,"p95Ms":10.404,"p99Ms":12.869},"contextual":{"samples":228,"p50Ns":1691200,"p95Ns":10484700,"p99Ns":13100800,"p50Ms":1.691,"p95Ms":10.485,"p99Ms":13.101}}
         },
         "typoAtProductionLimit": {
-          "baseline": {"samples":36,"p50Ns":2718300,"p95Ns":11228700,"p99Ns":11274800,"p50Ms":2.718,"p95Ms":11.229,"p99Ms":11.275},
-          "contextual": {"samples":36,"p50Ns":2420600,"p95Ns":10079800,"p99Ns":10310400,"p50Ms":2.421,"p95Ms":10.080,"p99Ms":10.310}
+          "baseline": {"samples":36,"p50Ns":2670300,"p95Ns":9383400,"p99Ns":9434900,"p50Ms":2.670,"p95Ms":9.383,"p99Ms":9.435},
+          "contextual": {"samples":36,"p50Ns":2219000,"p95Ns":9750500,"p99Ns":10389800,"p50Ms":2.219,"p95Ms":9.751,"p99Ms":10.390}
         }
       },
       "gates": {

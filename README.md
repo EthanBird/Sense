@@ -15,11 +15,11 @@
 > 分帧与 SRSS WebSocket 转写，选择后无需 API Key 即可从键盘语音入口使用。协议与
 > 双实现验证见[接入记录](docs/research/sogou-asr-provider-integration-2026-08-01.md)。
 
-**项目状态：** `v0.4.11` 候选记忆与本地智能联想正式版
+**项目状态：** `v0.4.12` OAuth、Agent 远程信道、连续候选与 Sense Mic 正式版
 
-**当前版本：** `v0.4.11`（`versionCode 36`）
+**当前版本：** `v0.4.12`（`versionCode 37`）
 
-**更新日期：** 2026-08-18
+**更新日期：** 2026-08-19
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
 
 本文基于《GlassIME Android AI 中文输入法产品与技术设计文档 v0.1》重新整理，并统一改名为：
@@ -35,7 +35,30 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.11 候选记忆与本地智能联想
+## 0. 当前迭代：v0.4.12 OAuth、Agent 信道与连续候选
+
+`v0.4.12` 将 Codex 订阅登录升级为浏览器 Authorization Code + PKCE：Sense 先绑定
+`127.0.0.1:1455` 回调，再打开 ChatGPT 登录页，成功后自动返回并把可刷新令牌写入
+Android Keystore，不再要求复制设备码。实现对齐当前 OpenAI Codex localhost 登录约定，
+并参考 jcode 的移动端浏览器交互。
+
+Agent 新增 Hermes 风格的信道适配层。设置页可开启 Telegram Bot API 长轮询或飞书/Lark
+官方 WebSocket 长连接，用一次性 `/pair` 将机器人绑定到指定用户和会话；普通消息可在
+后台驱动本机 Sense Agent，流式结果通过同一条远端消息持续更新，`/status`、`/stop`、
+`/new` 提供前台之外的管理入口。消息先进入崩溃安全的幂等 Journal，再推进 Telegram
+offset 或执行 Agent；前台服务通知可持久暂停整套信道，设置页可显式恢复且状态查询不会
+自行启动服务。本版实际 target 为本机 `sense`，
+两个信道共享当前 Hub 会话；远端 Agent 与外部 conversation id 的扩展契约见 ADR 0027。
+飞书默认消息合并已关闭，并通过有界单通道将并发 callback 串行写入 Journal；Prompt 采用
+PREPARED/ACTIVE exact identity 两阶段启动，重启恢复不会重复执行已经跨过启动边界的请求。
+
+候选展开区从离散翻页改为单一纵向 content-space 网格，可逐像素拖动并惯性滚动；绘制
+只遍历当前可见行，点击始终映射回稳定的全局候选索引，折叠候选条原有横向滑动保持不变。
+本版同时交付 Sense Mic 的 Android 后台服务、Rust Windows/Linux 客户端与可复现构建的
+Windows WaveRT 虚拟麦克风驱动。完整变更见
+[`v0.4.12` 发布说明](docs/releases/v0.4.12.md)。
+
+## 0.1 v0.4.11 候选记忆与本地智能联想
 
 `v0.4.11` 修复用户词条在生产候选深度下排序漂移，以及删除多字词末字时误把整词降权的问题。
 分段确认会形成强组合证据，启动期的可靠选择也会在正式词库就绪后重放，因此 `程彻`、`智能体` 等词在一次可靠输入后即可稳定进入候选；
@@ -44,15 +67,16 @@ Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 A
 外部编辑器并继续联想，全程不产生模型 Token。
 完整变更见 [`v0.4.11` 发布说明](docs/releases/v0.4.11.md)。
 
-## 0.1 v0.4.10 Provider 与 Action Skills 管理
+## 0.2 v0.4.10 Provider 与 Action Skills 管理
 
 `v0.4.10` 将设置首页继续拆分为可长期扩展的独立页面。Provider 不再通过下拉框切换，
 而是提供与 jcode 对齐的完整目录、独立详情、按钮式协议/推理选择，以及 Codex 订阅的
-OpenAI 官方设备授权流程；Android 会打开系统浏览器完成登录，刷新令牌由 Keystore
-加密。0 Token Action Skills 现在拥有独立设置入口，开关同时约束 Agent 入口和运行时。
+OpenAI 设备授权流程；Android 会打开系统浏览器完成登录，刷新令牌由 Keystore
+加密。该历史流程已在 v0.4.12 由自动回调的 Authorization Code + PKCE 取代。0 Token
+Action Skills 现在拥有独立设置入口，开关同时约束 Agent 入口和运行时。
 完整变更见 [`v0.4.10` 发布说明](docs/releases/v0.4.10.md)。
 
-## 0.1 v0.4.9 可进化记忆与 0 Token Action Skills
+## 0.3 v0.4.9 可进化记忆与 0 Token Action Skills
 
 `v0.4.9` 将 Agent 历史升级为双轨事实模型：每个 Session 的完整请求、Provider 原始
 输入输出、工具交换、流式片段与终态继续作为不可变证据追加保留；结构化经历事件只在
@@ -67,7 +91,7 @@ OpenAI 官方设备授权流程；Android 会打开系统浏览器完成登录�
 [可进化 Agent 设计](docs/design/sense-agent-evolution-hermes-event-memory-zero-token-skills-v1.md)和
 [`v0.4.9` 发布说明](docs/releases/v0.4.9.md)。
 
-## 0.1 v0.4.8 Agent 交互、记忆与候选排序
+## 0.4 v0.4.8 Agent 交互、记忆与候选排序
 
 `v0.4.8` 把 Agent 入口移动到键盘工具栏正中间，并进一步压缩输入法前端工作台高度；
 内置输入框可显示最多四行，左上角使用明确的收起操作。Assistant 消息可显式写入当前
@@ -143,6 +167,7 @@ hash/CAS/写后验证继续有效；这些边界防止状态错写，但不限�
 - [Skills 互操作与 Android 边界研究记录](docs/research/skills-interop-and-android-boundaries-2026-07-27.md)
 - [OpenMinis Android Agent 核心能力研究](docs/research/openminis-android-agent-architecture-analysis-2026-08-03.md)
 - [Sense Agent Runtime v2：输入法生命周期、终端、浏览器与对话设计](docs/design/sense-agent-runtime-v2-openminis-core-design-2026-08-03.md)
+- [ADR 0027：ChatGPT OAuth、Agent 信道平台与连续候选交互](docs/adr/0027-chatgpt-oauth-agent-channels-and-continuous-candidates.md)
 - [X-02 Stage Substrate 实施记录](docs/development/x02-stage-substrate-implementation.md)
 
 `v0.4.5` 已交付方向选择器、已提交状态驱动的 Aurora、
@@ -202,8 +227,8 @@ initials、渐进 limit 16、渐进 limit 255 和组合 p95 分别为
 决策记录见 [ADR 0022](docs/adr/0022-gpl-rime-frost-lexicon-pipeline.md)、
 [ADR 0023](docs/adr/0023-v0.4.5-beta5-decoder-quality.md) 与
 [ADR 0025](docs/adr/0025-three-chinese-schemes-t9-dag-and-wubi86.md)，详细发布门禁见
-[`v0.4.11` 发布说明](docs/releases/v0.4.11.md)，最新发布资产见
-[`v0.4.11` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.11)。
+[`v0.4.12` 发布说明](docs/releases/v0.4.12.md)，最新发布资产见
+[`v0.4.12` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.12)。
 
 `v0.4.5.beta.4` 修复键盘刚显示、窗口切换或目录观察 catch-up 时，等价 Skill catalog
 重复发布会撤销已开始长按的问题：解析结果、显示标签与 active Skill 均未变化时保留
@@ -249,7 +274,7 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
 | Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
 | 既有质量 | AI、IME、UI、Core、M0–M7、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 36`、`versionName 0.4.11`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据 | `versionCode 37`、`versionName 0.4.12`、`minSdk 29`、`targetSdk 36` |
 
 日常完整本地验证与构建仍可在 Windows 执行：
 
@@ -263,15 +288,15 @@ powershell -ExecutionPolicy Bypass -File tools/local_release.ps1
 powershell -ExecutionPolicy Bypass -File tools/local_release.ps1 -Publish
 ```
 
-`-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。`v0.4.11`
+`-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。`v0.4.12`
 恢复单版本 GitHub Actions 发布门禁：主分支提交通过测试、Lint、固定证书签名与 APK 元数据
 检查后，使用 GitHub API 原子创建 tag、Release、APK 与校验和，不调用 `gh` CLI。
 
-> **v0.4.11 发布收口：** 本轮源码整合完成后会重新运行及人工审查 X-02
+> **v0.4.12 发布收口：** 本轮源码整合完成后会重新运行及人工审查 X-02
 > production source、build authority 与 offline gate 的 exact SHA-256，并同步刷新
 > boundary baseline。正式本地发布会在同一 release `HEAD` 上再次执行 source/artifact
 > gate，并把结果与 APK 签名、校验和一起归档到
-> [`v0.4.11` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.11)。
+> [`v0.4.12` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.12)。
 
 标准工程验证命令：
 

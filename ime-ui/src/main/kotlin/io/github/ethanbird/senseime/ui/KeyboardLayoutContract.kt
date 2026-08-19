@@ -37,8 +37,14 @@ object KeyboardLayoutContract {
         val hasOverflow: Boolean,
     )
 
-    data class CandidatePage(
+    /**
+     * One content-space candidate grid. [contentBottom] is the end of the last
+     * row, so callers can configure a bounded continuous viewport without
+     * deriving a synthetic page count.
+     */
+    data class ContinuousCandidateGrid(
         val slots: List<IndexedCandidateSlot>,
+        val contentBottom: Float,
     )
 
     data class WeightedKey(
@@ -674,15 +680,9 @@ object KeyboardLayoutContract {
         )
     }
 
-    fun adjacentCandidatePage(currentPage: Int, pageCount: Int, delta: Int): Int {
-        if (pageCount <= 0) return 0
-        return (currentPage.coerceIn(0, pageCount - 1) + delta).coerceIn(0, pageCount - 1)
-    }
-
-    fun pagedCandidateGrid(
+    fun continuousCandidateGrid(
         viewWidth: Float,
         contentTop: Float,
-        contentBottom: Float,
         measuredTextWidths: List<Float>,
         horizontalPadding: Float,
         textInset: Float,
@@ -690,10 +690,9 @@ object KeyboardLayoutContract {
         verticalGap: Float,
         minimumWidth: Float,
         rowHeight: Float,
-    ): List<CandidatePage> = pagedCandidateGrid(
+    ): ContinuousCandidateGrid = continuousCandidateGrid(
         viewWidth = viewWidth,
         contentTop = contentTop,
-        contentBottom = contentBottom,
         measuredTextWidths = measuredTextWidths.toFloatArray(),
         horizontalPadding = horizontalPadding,
         textInset = textInset,
@@ -703,13 +702,10 @@ object KeyboardLayoutContract {
         rowHeight = rowHeight,
     )
 
-    /**
-     * Primitive-width production path for large candidate snapshots.
-     */
-    fun pagedCandidateGrid(
+    /** Primitive-width production path for the continuously scrolling grid. */
+    fun continuousCandidateGrid(
         viewWidth: Float,
         contentTop: Float,
-        contentBottom: Float,
         measuredTextWidths: FloatArray,
         horizontalPadding: Float,
         textInset: Float,
@@ -717,28 +713,31 @@ object KeyboardLayoutContract {
         verticalGap: Float,
         minimumWidth: Float,
         rowHeight: Float,
-    ): List<CandidatePage> {
-        if (measuredTextWidths.isEmpty()) return emptyList()
+    ): ContinuousCandidateGrid {
         require(viewWidth > horizontalPadding * 2)
-        require(contentBottom - contentTop >= rowHeight)
+        require(contentTop >= 0f)
+        require(horizontalPadding >= 0f)
+        require(textInset >= 0f)
+        require(horizontalGap >= 0f)
+        require(verticalGap >= 0f)
+        require(minimumWidth > 0f)
+        require(rowHeight > 0f)
+        if (measuredTextWidths.isEmpty()) {
+            return ContinuousCandidateGrid(emptyList(), contentTop)
+        }
+
         val rightLimit = viewWidth - horizontalPadding
         val maximumWidth = rightLimit - horizontalPadding
-        val pages = mutableListOf<CandidatePage>()
-        var slots = mutableListOf<IndexedCandidateSlot>()
+        val slots = ArrayList<IndexedCandidateSlot>(measuredTextWidths.size)
         var left = horizontalPadding
         var top = contentTop
-
         measuredTextWidths.forEachIndexed { sourceIndex, textWidth ->
-            val width = maxOf(minimumWidth, textWidth + textInset * 2).coerceAtMost(maximumWidth)
+            require(textWidth.isFinite() && textWidth >= 0f)
+            val width = maxOf(minimumWidth, textWidth + textInset * 2f)
+                .coerceAtMost(maximumWidth)
             if (left > horizontalPadding && left + width > rightLimit) {
                 left = horizontalPadding
                 top += rowHeight + verticalGap
-            }
-            if (top + rowHeight > contentBottom) {
-                pages += CandidatePage(slots)
-                slots = mutableListOf()
-                left = horizontalPadding
-                top = contentTop
             }
             slots += IndexedCandidateSlot(
                 sourceIndex = sourceIndex,
@@ -750,7 +749,10 @@ object KeyboardLayoutContract {
             )
             left += width + horizontalGap
         }
-        if (slots.isNotEmpty()) pages += CandidatePage(slots)
-        return pages
+        return ContinuousCandidateGrid(
+            slots = slots,
+            contentBottom = slots.last().bottom,
+        )
     }
+
 }

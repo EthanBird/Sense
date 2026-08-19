@@ -39,10 +39,15 @@ import io.github.ethanbird.senseime.brain.api.AgentSkillSlot
 import io.github.ethanbird.senseime.brain.runtime.AgentSkillStore
 import io.github.ethanbird.senseime.brain.runtime.AgentHubMessageRole
 import io.github.ethanbird.senseime.brain.runtime.AgentHubActionState
+import io.github.ethanbird.senseime.brain.runtime.AgentHubCommandCallback
+import io.github.ethanbird.senseime.brain.runtime.AgentHubCommandHandle
+import io.github.ethanbird.senseime.brain.runtime.AgentHubCommandOutcome
+import io.github.ethanbird.senseime.brain.runtime.AgentHubCommandOutcomeCode
+import io.github.ethanbird.senseime.brain.runtime.AgentHubPort
 import io.github.ethanbird.senseime.brain.runtime.AgentHubObserver
 import io.github.ethanbird.senseime.brain.runtime.AgentHubProjection
 import io.github.ethanbird.senseime.brain.runtime.AgentHubToolState
-import io.github.ethanbird.senseime.brain.runtime.SenseAgentHubRuntime
+import io.github.ethanbird.senseime.brain.runtime.RemoteSenseAgentHubClient
 import io.github.ethanbird.senseime.config.ChineseInputScheme
 import io.github.ethanbird.senseime.config.ImePreferencesStore
 import io.github.ethanbird.senseime.config.ImePreferencesV1
@@ -176,8 +181,10 @@ class SenseInputMethodService : InputMethodService() {
     private val agentDraft = AgentDraftBuffer()
     private var agentDraftComposition = ""
     private var agentProjection = AgentHubProjection()
-    private var agentRuntime: SenseAgentHubRuntime? = null
+    private var agentRuntime: AgentHubPort? = null
     private var agentSubscription: AutoCloseable? = null
+    private val agentCommandHandles = linkedMapOf<String, AgentHubCommandHandle>()
+    private var agentCommandLifecycle = 0L
     private var selectedAgentToolIndex = 0
     private var agentHistoryVisible = false
     private var agentMenuVisible = false
@@ -694,7 +701,9 @@ class SenseInputMethodService : InputMethodService() {
             },
             onComposerTap = ::beginAgentComposing,
             onSend = ::sendAgentDraft,
-            onStop = { agentRuntime?.stop() },
+            onStop = {
+                submitAgentCommand { runtime, callback -> runtime.stopAsync(callback) }
+            },
             onNewChat = ::startNewAgentConversation,
             onAdd = ::attachCurrentSelectionToAgentDraft,
             onSlash = {
@@ -741,14 +750,25 @@ class SenseInputMethodService : InputMethodService() {
                 }
             },
             onOpenConversation = { conversationId ->
-                if (agentRuntime?.openConversation(conversationId) == true) {
-                    agentHistoryVisible = false
-                    publishAgentUi()
-                }
+                submitAgentCommand(
+                    submit = { runtime, callback ->
+                        runtime.openConversationAsync(conversationId, callback)
+                    },
+                    onAccepted = {
+                        agentHistoryVisible = false
+                        publishAgentUi()
+                    },
+                )
             },
-            onGoldQuote = { agentRuntime?.runGoldQuote() },
-            onCancelAction = { agentRuntime?.cancelAction() },
-            onDismissAction = { agentRuntime?.dismissAction() },
+            onGoldQuote = {
+                submitAgentCommand { runtime, callback -> runtime.runGoldQuoteAsync(callback) }
+            },
+            onCancelAction = {
+                submitAgentCommand { runtime, callback -> runtime.cancelActionAsync(callback) }
+            },
+            onDismissAction = {
+                submitAgentCommand { runtime, callback -> runtime.dismissActionAsync(callback) }
+            },
             onInsertAction = { action ->
                 breakAssociationSequence()
                 if (AgentExternalEditorWriter.insert(currentInputConnection, action.insertText)) {
@@ -760,16 +780,47 @@ class SenseInputMethodService : InputMethodService() {
             },
             onAnalyzeAction = { action ->
                 val prompt = "请结合上下文分析这条实时行情：${action.insertText}"
-                if (agentRuntime?.send(prompt) != true) {
-                    Toast.makeText(this, "Agent 正在执行其他任务", Toast.LENGTH_SHORT).show()
-                }
+                submitAgentCommand { runtime, callback -> runtime.sendAsync(prompt, callback) }
             },
         )
     }
 
+    private fun submitAgentCommand(
+        onAccepted: (AgentHubCommandOutcome) -> Unit = {},
+        submit: (AgentHubPort, AgentHubCommandCallback) -> AgentHubCommandHandle,
+    ) {
+        ensureAgentRuntime()
+        val runtime = agentRuntime ?: return
+        val lifecycle = agentCommandLifecycle
+        var completedInline = false
+        val callback = AgentHubCommandCallback { outcome ->
+            completedInline = true
+            agentCommandHandles.remove(outcome.clientCommandId)
+            if (destroyed || lifecycle != agentCommandLifecycle) return@AgentHubCommandCallback
+            when (outcome.code) {
+                AgentHubCommandOutcomeCode.ACCEPTED -> onAccepted(outcome)
+                AgentHubCommandOutcomeCode.REJECTED -> Toast.makeText(
+                    this,
+                    "Agent 请求未接受，请稍后重试",
+                    Toast.LENGTH_SHORT,
+                ).show()
+                AgentHubCommandOutcomeCode.CANCELLED -> Toast.makeText(
+                    this,
+                    "Agent 请求已取消",
+                    Toast.LENGTH_SHORT,
+                ).show()
+            }
+        }
+        val handle = runCatching { submit(runtime, callback) }.getOrElse {
+            Toast.makeText(this, "Agent 请求发送失败", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (!completedInline) agentCommandHandles[handle.clientCommandId] = handle
+    }
+
     private fun ensureAgentRuntime() {
         if (agentRuntime == null) {
-            agentRuntime = SenseAgentHubRuntime.get(applicationContext)
+            agentRuntime = RemoteSenseAgentHubClient.get(applicationContext)
         }
         if (agentSubscription != null) return
         agentSubscription = agentRuntime?.observe(
@@ -806,9 +857,9 @@ class SenseInputMethodService : InputMethodService() {
             loaded = agentProjection.loaded,
             running = agentProjection.running,
             status = agentProjection.status,
-            messages = agentProjection.messages.mapIndexed { index, message ->
+            messages = agentProjection.messages.map { message ->
                 AgentMessageUi(
-                    id = "${message.createdAtEpochMs}-${message.role}-$index",
+                    id = "${message.createdAtEpochMs}-${message.role}-${message.text.hashCode()}",
                     role = when (message.role) {
                         AgentHubMessageRole.USER -> AgentMessageRole.USER
                         AgentHubMessageRole.ASSISTANT -> AgentMessageRole.ASSISTANT
@@ -922,28 +973,39 @@ class SenseInputMethodService : InputMethodService() {
         if (isAgentTextTarget() && !commitActiveRawComposition()) return
         val message = agentDraft.text.trim()
         if (message.isEmpty()) return
-        if (agentRuntime?.send(message) == true) {
-            breakAssociationSequence()
-            agentDraft.clear()
-            agentDraftComposition = ""
-            agentComposerVisible = false
-            imeRoot?.showAgent(agentUiState(), agentUiActions, composing = false)
-        }
+        submitAgentCommand(
+            submit = { runtime, callback -> runtime.sendAsync(message, callback) },
+            onAccepted = {
+                // An ACK may arrive after the user has edited a new draft. Only consume the exact
+                // text accepted by :brain; newer IME input remains untouched.
+                if (agentDraft.text.trim() == message && agentDraftComposition.isEmpty()) {
+                    breakAssociationSequence()
+                    agentDraft.clear()
+                    agentComposerVisible = false
+                    imeRoot?.showAgent(agentUiState(), agentUiActions, composing = false)
+                }
+            },
+        )
     }
 
     private fun startNewAgentConversation() {
         if (agentProjection.running) return
         if (isAgentTextTarget() && !commitActiveRawComposition()) return
-        if (agentRuntime?.clearConversation() == true) {
-            breakAssociationSequence()
-            agentDraft.clear()
-            agentDraftComposition = ""
-            selectedAgentToolIndex = 0
-            agentHistoryVisible = false
-            agentMenuVisible = false
-            openAgentToolId = null
-            publishAgentUi()
-        }
+        val draftAtSubmit = agentDraft.text
+        submitAgentCommand(
+            submit = { runtime, callback -> runtime.clearConversationAsync(callback) },
+            onAccepted = {
+                breakAssociationSequence()
+                if (agentDraft.text == draftAtSubmit && agentDraftComposition.isEmpty()) {
+                    agentDraft.clear()
+                }
+                selectedAgentToolIndex = 0
+                agentHistoryVisible = false
+                agentMenuVisible = false
+                openAgentToolId = null
+                publishAgentUi()
+            },
+        )
     }
 
     private fun toggleAgentHistory() {
@@ -1304,6 +1366,9 @@ class SenseInputMethodService : InputMethodService() {
         if (::agentSkillProjection.isInitialized) {
             agentSkillProjection.close()
         }
+        agentCommandLifecycle = nextGeneration(agentCommandLifecycle)
+        agentCommandHandles.values.toList().forEach(AgentHubCommandHandle::close)
+        agentCommandHandles.clear()
         agentSubscription?.close()
         agentSubscription = null
         /*

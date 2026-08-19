@@ -20,7 +20,7 @@ internal class KeyboardMetrics private constructor(
     val candidateMinimumWidth: Float,
     val candidateControlWidth: Float,
     val expandedCandidateRowHeight: Float,
-    val expandedCandidatePagerHeight: Float,
+    val expandedCandidateStatusHeight: Float,
 ) {
     fun dp(value: Float): Float = value * density
 
@@ -40,7 +40,7 @@ internal class KeyboardMetrics private constructor(
                 candidateMinimumWidth = 44f * density,
                 candidateControlWidth = 44f * density,
                 expandedCandidateRowHeight = 42f * density,
-                expandedCandidatePagerHeight = 38f * density,
+                expandedCandidateStatusHeight = 38f * density,
             )
         }
     }

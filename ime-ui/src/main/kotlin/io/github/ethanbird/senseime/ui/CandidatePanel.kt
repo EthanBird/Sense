@@ -19,20 +19,27 @@ internal interface CandidateScene {
     val visibleCandidates: List<VisibleCandidate>
     val controls: List<CandidateControlSlot>
     val expanded: Boolean
-    val pageLabel: String
+    val expandedStatusLabel: String
     val expandedGridBounds: KeyboardRect?
     val collapsedViewportBounds: KeyboardRect?
     val hasCollapsedOverflow: Boolean
+    /** Horizontal offset of the compact strip. */
     val scrollOffset: Float
     val maximumScrollOffset: Float
+    /** Vertical content offset of the expanded continuous grid. */
+    val expandedScrollOffset: Float
+    val maximumExpandedScrollOffset: Float
     val sceneBuildCount: Long
 
     fun firstCandidateEndingAfter(contentX: Float): Int
+    fun firstExpandedCandidateEndingAfter(contentY: Float): Int
 }
 
 internal data class CandidateChange(
     val requiresKeySceneRebuild: Boolean,
     val cancelSettle: Boolean = false,
+    /** Invalidates frozen candidate pointers and expanded kinetic scrolling. */
+    val cancelInteraction: Boolean = false,
 )
 
 internal sealed interface CandidateHit {
@@ -50,7 +57,7 @@ internal sealed interface CandidateHit {
         override val bounds: KeyboardRect,
     ) : CandidateHit
 
-    data class PageArea(
+    data class GridArea(
         override val bounds: KeyboardRect,
     ) : CandidateHit
 
@@ -61,7 +68,7 @@ internal sealed interface CandidateHit {
 
 /**
  * Deep module owning candidate publication, cached scene layout, hit testing,
- * paging, and horizontal drag state.
+ * continuous expanded scrolling, and compact-strip horizontal drag state.
  *
  * Android frame scheduling and Canvas rendering deliberately remain in the
  * View. This module has no View, Canvas, MotionEvent, or RectF dependency.
@@ -73,19 +80,19 @@ internal class CandidatePanel(
 ) : CandidateScene {
     private val mutableVisibleCandidates = ArrayList<VisibleCandidate>()
     private val mutableControls = ArrayList<CandidateControlSlot>(3)
-    private var candidatePages: List<KeyboardLayoutContract.CandidatePage> = emptyList()
     private var mutableCandidates: List<String> = emptyList()
     private var measuredWidths = FloatArray(0)
     private var widthsMeasured = false
     private var geometryGeneration = 0L
-    private var pageCacheKey: CandidatePageCacheKey? = null
+    private var expandedGridCacheKey: CandidateGridCacheKey? = null
+    private var expandedGrid: KeyboardLayoutContract.ContinuousCandidateGrid? = null
     private var sceneCacheKey: CandidateSceneCacheKey? = null
     private val stripLayoutCache = CandidateStripLayoutCache()
     private var collapsedLayout: CandidateStripGeometry.Layout? = null
     private var configuredStripLayout: CandidateStripGeometry.Layout? = null
     private val stripScrollState = CandidateStripScrollState(touchSlop = touchSlop)
+    internal val expandedScrollState = ContinuousVerticalScrollState()
 
-    private var pageIndex = 0
     private var editorPanelVisible = false
     private var fontScale = 1f
     private var viewWidth = 0
@@ -119,7 +126,7 @@ internal class CandidatePanel(
     override var expanded: Boolean = false
         private set
 
-    override var pageLabel: String = "1 / 1"
+    override var expandedStatusLabel: String = ""
         private set
 
     override var expandedGridBounds: KeyboardRect? = null
@@ -136,6 +143,12 @@ internal class CandidatePanel(
 
     override val maximumScrollOffset: Float
         get() = stripScrollState.maximumOffset
+
+    override val expandedScrollOffset: Float
+        get() = expandedScrollState.offset
+
+    override val maximumExpandedScrollOffset: Float
+        get() = expandedScrollState.maximumOffset
 
     override var sceneBuildCount: Long = 0L
         private set
@@ -191,7 +204,7 @@ internal class CandidatePanel(
         }
         if (shouldResetNavigation) {
             expanded = false
-            pageIndex = 0
+            expandedScrollState.reset()
         }
 
         if (candidateSnapshotChanged) {
@@ -226,6 +239,7 @@ internal class CandidatePanel(
                 previousExpanded != expanded ||
                     previousTakeover != takesToolbar(editorPanelVisible),
             cancelSettle = shouldResetStripInteraction,
+            cancelInteraction = shouldResetStripInteraction,
         )
     }
 
@@ -259,7 +273,7 @@ internal class CandidatePanel(
     ): CandidateChange {
         val previousExpanded = expanded
         expanded = false
-        pageIndex = 0
+        expandedScrollState.reset()
         val relayout = relayout(
             viewWidth = viewWidth,
             viewHeight = viewHeight,
@@ -270,6 +284,7 @@ internal class CandidatePanel(
             requiresKeySceneRebuild =
                 relayout.requiresKeySceneRebuild || previousExpanded,
             cancelSettle = relayout.cancelSettle || previousExpanded,
+            cancelInteraction = relayout.cancelInteraction || previousExpanded,
         )
     }
 
@@ -287,28 +302,12 @@ internal class CandidatePanel(
         when (control) {
             CandidateControl.EXPAND -> {
                 expanded = true
-                pageIndex = 0
+                expandedScrollState.reset()
             }
 
             CandidateControl.COLLAPSE -> {
                 expanded = false
-                pageIndex = 0
-            }
-
-            CandidateControl.PREVIOUS_PAGE -> {
-                pageIndex = KeyboardLayoutContract.adjacentCandidatePage(
-                    currentPage = pageIndex,
-                    pageCount = candidatePages.size,
-                    delta = -1,
-                )
-            }
-
-            CandidateControl.NEXT_PAGE -> {
-                pageIndex = KeyboardLayoutContract.adjacentCandidatePage(
-                    currentPage = pageIndex,
-                    pageCount = candidatePages.size,
-                    delta = 1,
-                )
+                expandedScrollState.reset()
             }
 
             CandidateControl.DISMISS -> Unit
@@ -324,33 +323,7 @@ internal class CandidatePanel(
             requiresKeySceneRebuild =
                 relayout.requiresKeySceneRebuild || expandedChanged,
             cancelSettle = relayout.cancelSettle || expandedChanged,
-        )
-    }
-
-    fun page(
-        delta: Int,
-        viewWidth: Int,
-        viewHeight: Int,
-        editorPanelVisible: Boolean,
-        fontScale: Float,
-    ): CandidateChange {
-        if (!candidatesReady || !expanded || candidatePages.isEmpty()) {
-            return CandidateChange(requiresKeySceneRebuild = false)
-        }
-        val nextPage = KeyboardLayoutContract.adjacentCandidatePage(
-            currentPage = pageIndex,
-            pageCount = candidatePages.size,
-            delta = delta,
-        )
-        if (nextPage == pageIndex) {
-            return CandidateChange(requiresKeySceneRebuild = false)
-        }
-        pageIndex = nextPage
-        return relayout(
-            viewWidth = viewWidth,
-            viewHeight = viewHeight,
-            editorPanelVisible = editorPanelVisible,
-            fontScale = fontScale,
+            cancelInteraction = relayout.cancelInteraction || expandedChanged,
         )
     }
 
@@ -375,7 +348,24 @@ internal class CandidatePanel(
                 collapsedViewportBounds?.contains(x, y) == true
         if (candidatesReady && canHitValue) {
             val candidate = if (expanded) {
-                mutableVisibleCandidates.firstOrNull { it.bounds.contains(x, y) }
+                val viewport = expandedGridBounds
+                if (viewport?.contains(x, y) == true) {
+                    val contentY = y + expandedScrollOffset
+                    var candidateIndex = firstExpandedCandidateEndingAfter(contentY)
+                    var match: VisibleCandidate? = null
+                    while (candidateIndex < mutableVisibleCandidates.size) {
+                        val value = mutableVisibleCandidates[candidateIndex]
+                        if (value.bounds.top > contentY) break
+                        if (value.bounds.contains(x, contentY)) {
+                            match = value
+                            break
+                        }
+                        candidateIndex += 1
+                    }
+                    match
+                } else {
+                    null
+                }
             } else {
                 val candidateX = KeyboardScrollProjection.contentCoordinate(
                     screenCoordinate = x,
@@ -387,7 +377,16 @@ internal class CandidatePanel(
             }
             if (candidate != null) {
                 val frozenBounds = if (expanded) {
-                    candidate.bounds
+                    val viewport = checkNotNull(expandedGridBounds)
+                    KeyboardRect(
+                        left = maxOf(candidate.bounds.left, viewport.left),
+                        top = maxOf(candidate.bounds.top - expandedScrollOffset, viewport.top),
+                        right = minOf(candidate.bounds.right, viewport.right),
+                        bottom = minOf(
+                            candidate.bounds.bottom - expandedScrollOffset,
+                            viewport.bottom,
+                        ),
+                    )
                 } else {
                     val viewport = checkNotNull(collapsedViewportBounds)
                     KeyboardRect(
@@ -427,7 +426,7 @@ internal class CandidatePanel(
         }
         expandedGridBounds?.let { bounds ->
             if (candidatesReady && bounds.contains(x, y)) {
-                return CandidateHit.PageArea(bounds)
+                return CandidateHit.GridArea(bounds)
             }
         }
         return null
@@ -439,6 +438,20 @@ internal class CandidatePanel(
         while (low < high) {
             val middle = (low + high) ushr 1
             if (mutableVisibleCandidates[middle].bounds.right <= contentX) {
+                low = middle + 1
+            } else {
+                high = middle
+            }
+        }
+        return low
+    }
+
+    override fun firstExpandedCandidateEndingAfter(contentY: Float): Int {
+        var low = 0
+        var high = mutableVisibleCandidates.size
+        while (low < high) {
+            val middle = (low + high) ushr 1
+            if (mutableVisibleCandidates[middle].bounds.bottom <= contentY) {
                 low = middle + 1
             } else {
                 high = middle
@@ -521,8 +534,8 @@ internal class CandidatePanel(
 
     private fun invalidateGeometry() {
         geometryGeneration += 1L
-        candidatePages = emptyList()
-        pageCacheKey = null
+        expandedGrid = null
+        expandedGridCacheKey = null
         collapsedLayout = null
         configuredStripLayout = null
         stripLayoutCache.invalidate()
@@ -545,8 +558,8 @@ internal class CandidatePanel(
 
         val systemBarTop = viewHeight - metrics.systemBarHeight
         val gridTop = metrics.candidateHeight + metrics.dp(5f)
-        val pagerTop = systemBarTop - metrics.expandedCandidatePagerHeight
-        val gridBottom = pagerTop - metrics.dp(4f)
+        val statusTop = systemBarTop - metrics.expandedCandidateStatusHeight
+        val gridBottom = statusTop - metrics.dp(4f)
         val hasExpandedGridRoom =
             viewHeight > 0 &&
                 gridBottom - gridTop >= metrics.expandedCandidateRowHeight
@@ -560,6 +573,7 @@ internal class CandidatePanel(
                 viewportExtent = 0f,
                 snapOffsets = listOf(0f),
             )
+            expandedScrollState.configure(contentExtent = 0f, viewportExtent = 0f)
             if (expanded && composing.isNotBlank() && hasExpandedGridRoom) {
                 expandedGridBounds = KeyboardRect(
                     left = 0f,
@@ -567,17 +581,12 @@ internal class CandidatePanel(
                     right = viewWidth.toFloat(),
                     bottom = gridBottom,
                 )
-                pageLabel = "…"
-                addExpandedControls(
-                    systemBarTop = systemBarTop,
-                    pagerTop = pagerTop,
-                    previousEnabled = false,
-                    nextEnabled = false,
-                )
+                expandedStatusLabel = "…"
+                addExpandedControls()
             } else {
                 expanded = false
-                pageIndex = 0
-                pageLabel = "1 / 1"
+                expandedScrollState.reset()
+                expandedStatusLabel = ""
             }
             return
         }
@@ -613,17 +622,20 @@ internal class CandidatePanel(
 
         if (!collapsed.hasOverflow) {
             expanded = false
-            pageIndex = 0
+            expandedScrollState.reset()
         }
-        val canExpand = collapsed.hasOverflow && hasExpandedGridRoom && !association
+        val canExpand =
+            collapsed.hasOverflow &&
+                hasExpandedGridRoom &&
+                viewWidth.toFloat() > metrics.horizontalPadding * 2f &&
+                !association
 
         if (expanded && canExpand) {
-            val cacheKey = CandidatePageCacheKey(geometryGeneration, viewWidth, viewHeight)
-            if (pageCacheKey != cacheKey) {
-                candidatePages = KeyboardLayoutContract.pagedCandidateGrid(
+            val cacheKey = CandidateGridCacheKey(geometryGeneration, viewWidth)
+            if (expandedGridCacheKey != cacheKey) {
+                expandedGrid = KeyboardLayoutContract.continuousCandidateGrid(
                     viewWidth = viewWidth.toFloat(),
                     contentTop = gridTop,
-                    contentBottom = gridBottom,
                     measuredTextWidths = measuredWidths,
                     horizontalPadding = metrics.horizontalPadding,
                     textInset = metrics.candidateTextInset,
@@ -632,11 +644,12 @@ internal class CandidatePanel(
                     minimumWidth = metrics.candidateMinimumWidth,
                     rowHeight = metrics.expandedCandidateRowHeight,
                 )
-                pageCacheKey = cacheKey
+                expandedGridCacheKey = cacheKey
             }
-            if (candidatePages.isEmpty()) {
+            val grid = checkNotNull(expandedGrid)
+            if (grid.slots.isEmpty()) {
                 expanded = false
-                pageIndex = 0
+                expandedScrollState.reset()
             } else {
                 expandedGridBounds = KeyboardRect(
                     left = 0f,
@@ -644,9 +657,12 @@ internal class CandidatePanel(
                     right = viewWidth.toFloat(),
                     bottom = gridBottom,
                 )
-                pageIndex = pageIndex.coerceIn(0, candidatePages.lastIndex)
-                pageLabel = "${pageIndex + 1} / ${candidatePages.size}"
-                candidatePages[pageIndex].slots.forEach { slot ->
+                expandedScrollState.configure(
+                    contentExtent = (grid.contentBottom - gridTop).coerceAtLeast(0f),
+                    viewportExtent = (gridBottom - gridTop).coerceAtLeast(0f),
+                )
+                expandedStatusLabel = "${mutableCandidates.size} 项"
+                grid.slots.forEach { slot ->
                     mutableVisibleCandidates += VisibleCandidate(
                         sourceIndex = slot.sourceIndex,
                         bounds = KeyboardRect(
@@ -658,17 +674,12 @@ internal class CandidatePanel(
                         textAnchor = slot.textAnchor,
                     )
                 }
-                addExpandedControls(
-                    systemBarTop = systemBarTop,
-                    pagerTop = pagerTop,
-                    previousEnabled = candidatesReady && pageIndex > 0,
-                    nextEnabled = candidatesReady && pageIndex < candidatePages.lastIndex,
-                )
+                addExpandedControls()
                 return
             }
         } else if (expanded) {
             expanded = false
-            pageIndex = 0
+            expandedScrollState.reset()
         }
 
         val collapsedBottom = KeyboardLayoutContract.collapsedCandidateBottom(
@@ -725,7 +736,6 @@ internal class CandidatePanel(
         candidatesReady = candidatesReady,
         composingBlank = composing.isBlank(),
         expanded = expanded,
-        pageIndex = pageIndex,
         viewWidth = viewWidth,
         viewHeight = viewHeight,
         takesToolbar = takesToolbar(editorPanelVisible),
@@ -742,12 +752,7 @@ internal class CandidatePanel(
         widthsMeasured = true
     }
 
-    private fun addExpandedControls(
-        systemBarTop: Float,
-        pagerTop: Float,
-        previousEnabled: Boolean,
-        nextEnabled: Boolean,
-    ) {
+    private fun addExpandedControls() {
         mutableControls += CandidateControlSlot(
             control = CandidateControl.COLLAPSE,
             bounds = KeyboardRect(
@@ -756,27 +761,6 @@ internal class CandidatePanel(
                 right = viewWidth.toFloat(),
                 bottom = metrics.candidateHeight,
             ),
-        )
-        val pagerButtonWidth = metrics.dp(68f)
-        mutableControls += CandidateControlSlot(
-            control = CandidateControl.PREVIOUS_PAGE,
-            bounds = KeyboardRect(
-                left = metrics.horizontalPadding,
-                top = pagerTop,
-                right = metrics.horizontalPadding + pagerButtonWidth,
-                bottom = systemBarTop,
-            ),
-            enabled = previousEnabled,
-        )
-        mutableControls += CandidateControlSlot(
-            control = CandidateControl.NEXT_PAGE,
-            bounds = KeyboardRect(
-                left = viewWidth - metrics.horizontalPadding - pagerButtonWidth,
-                top = pagerTop,
-                right = viewWidth - metrics.horizontalPadding,
-                bottom = systemBarTop,
-            ),
-            enabled = nextEnabled,
         )
     }
 
@@ -790,9 +774,13 @@ internal class CandidatePanel(
         val candidatesReady: Boolean,
         val composingBlank: Boolean,
         val expanded: Boolean,
-        val pageIndex: Int,
         val viewWidth: Int,
         val viewHeight: Int,
         val takesToolbar: Boolean,
+    )
+
+    private data class CandidateGridCacheKey(
+        val geometryGeneration: Long,
+        val viewWidth: Int,
     )
 }

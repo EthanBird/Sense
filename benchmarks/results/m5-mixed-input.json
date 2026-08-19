@@ -1,14 +1,14 @@
 {
   "schemaVersion": 4,
   "stage": "M5-mixed-input",
-  "generatedAt": "2026-08-01T10:50:29.993610900Z",
+  "generatedAt": "2026-08-19T08:23:22.203957700Z",
   "correctness": {
     "w": "我",
     "wChineseHead": ["我", "为", "啊", "万"],
-    "wChineseCandidates": 14,
-    "wEnglishCandidates": 2,
-    "wFirstEnglishRank": 8,
-    "singleLetters": [{"letter":"a","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":13,"englishCandidates":3,"firstEnglishRank":4}, {"letter":"b","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":7}, {"letter":"c","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":6}, {"letter":"d","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":12}, {"letter":"e","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":16,"englishCandidates":0,"firstEnglishRank":null}, {"letter":"f","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":3}, {"letter":"g","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":8}, {"letter":"h","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":9}, {"letter":"i","hasPinyinEvidence":false,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":2}, {"letter":"j","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":8}, {"letter":"k","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":4}, {"letter":"l","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":7}, {"letter":"m","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":9}, {"letter":"n","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":8}, {"letter":"o","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":4}, {"letter":"p","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":4}, {"letter":"q","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":9}, {"letter":"r","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":5}, {"letter":"s","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":10}, {"letter":"t","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":8}, {"letter":"u","hasPinyinEvidence":false,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":3}, {"letter":"v","hasPinyinEvidence":false,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":2}, {"letter":"w","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":8}, {"letter":"x","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":9}, {"letter":"y","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":12}, {"letter":"z","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":14,"englishCandidates":2,"firstEnglishRank":12}],
+    "wChineseCandidates": 15,
+    "wEnglishCandidates": 1,
+    "wFirstEnglishRank": 5,
+    "singleLetters": [{"letter":"a","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"b","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"c","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"d","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"e","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"f","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"g","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"h","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"i","hasPinyinEvidence":false,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"j","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"k","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"l","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"m","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"n","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"o","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"p","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"q","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"r","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"s","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"t","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"u","hasPinyinEvidence":false,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"v","hasPinyinEvidence":false,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"w","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"x","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"y","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}, {"letter":"z","hasPinyinEvidence":true,"firstChineseRank":1,"chineseCandidates":15,"englishCandidates":1,"firstEnglishRank":5}],
     "z": "在",
     "hangFirstChineseSource": "BASE_EXACT",
     "host": ["host", "hosts", "hostile", "后|st"],
@@ -23,23 +23,23 @@
     "words": 20000,
     "bytes": 161139,
     "sha256": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624",
-    "p95Ns": 2341.66,
+    "p95Ns": 1832.16,
     "gateNs": 500000.00
   },
   "mixedProgressiveDecode": {
-    "p95Ns": 568018.00,
+    "p95Ns": 531024.00,
     "gateNs": 5000000.00
   },
   "hybridDecode": {
-    "p95Ns": 170460.40,
+    "p95Ns": 129502.90,
     "gateNs": 5000000.00
   },
   "dynamicMixedDecode": {
     "cases": 10,
     "candidateLimit": 255,
-    "p95Ns": 2405300.00,
-    "maxNs": 2792300,
+    "p95Ns": 1865000.00,
+    "maxNs": 3452400,
     "gateNs": 5000000.00,
-    "byQuery": [{"query":"hunshenxs","p95Ns":117100.00,"maxNs":920800}, {"query":"kaiyuanxy","p95Ns":251900.00,"maxNs":1308900}, {"query":"suanfafzd","p95Ns":94000.00,"maxNs":943100}, {"query":"yemianxs","p95Ns":169500.00,"maxNs":696900}, {"query":"wenjianxz","p95Ns":133200.00,"maxNs":796800}, {"query":"quanxiansz","p95Ns":95600.00,"maxNs":1082800}, {"query":"yisscp","p95Ns":1225800.00,"maxNs":1372600}, {"query":"xiaszf","p95Ns":1628400.00,"maxNs":2658700}, {"query":"dancs","p95Ns":1827000.00,"maxNs":1919600}, {"query":"gongjijin","p95Ns":2405300.00,"maxNs":2792300}]
+    "byQuery": [{"query":"hunshenxs","p95Ns":113600.00,"maxNs":825300}, {"query":"kaiyuanxy","p95Ns":74600.00,"maxNs":891500}, {"query":"suanfafzd","p95Ns":62100.00,"maxNs":720900}, {"query":"yemianxs","p95Ns":113400.00,"maxNs":631700}, {"query":"wenjianxz","p95Ns":108800.00,"maxNs":771900}, {"query":"quanxiansz","p95Ns":73700.00,"maxNs":1022500}, {"query":"yisscp","p95Ns":1004700.00,"maxNs":1136800}, {"query":"xiaszf","p95Ns":1187000.00,"maxNs":1385700}, {"query":"dancs","p95Ns":1397100.00,"maxNs":3452400}, {"query":"gongjijin","p95Ns":1865000.00,"maxNs":2335300}]
   }
 }

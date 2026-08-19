@@ -15,7 +15,7 @@ class KeyboardMetricsTest {
         assertEquals(12.5f, metrics.keyGap, 0f)
         assertEquals(15f, metrics.horizontalPadding, 0f)
         assertEquals(20f, metrics.keyRadius, 0f)
-        assertEquals(95f, metrics.expandedCandidatePagerHeight, 0f)
+        assertEquals(95f, metrics.expandedCandidateStatusHeight, 0f)
     }
 
     @Test

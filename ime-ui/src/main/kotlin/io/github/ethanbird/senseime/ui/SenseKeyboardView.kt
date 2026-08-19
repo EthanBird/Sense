@@ -463,21 +463,9 @@ class SenseKeyboardView @JvmOverloads constructor(
             (t9ChoicesChanged || t9CompositionStateChanged) &&
                 panel == KeyboardPanel.LETTERS &&
                 primaryKeyboardMode == PrimaryKeyboardMode.T9
-        val nextCandidates = values ?: if (text.isEmpty()) emptyList() else null
-        val nextCandidatesReady = nextCandidates != null
-        val candidatePointersChanged = candidatePanel.association != association ||
-            CandidatePointerFence.shouldCancel(
-                previousReady = candidatePanel.candidatesReady,
-                previousCandidates = candidatePanel.candidates,
-                nextReady = nextCandidatesReady,
-                nextCandidates = nextCandidates,
-            )
         if (t9SceneChanged) {
             interaction.cancelT9PinyinRailPointers()
             keyboardScene.t9LeftRailScrollState.reset()
-        }
-        if (candidatePointersChanged) {
-            interaction.cancelCandidatePointers()
         }
         val change = candidatePanel.publish(
             revision = revision,
@@ -489,6 +477,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             fontScale = resources.configuration.fontScale,
             association = association,
         )
+        if (change.cancelInteraction) interaction.cancelCandidatePointers()
         if (change.cancelSettle) interaction.stopCandidateSettle()
         if (change.requiresKeySceneRebuild || t9SceneChanged) rebuildKeys(width, height)
         invalidate()
@@ -991,20 +980,4 @@ class SenseKeyboardView @JvmOverloads constructor(
         const val CLIPBOARD_ITEMS_PER_PAGE = 3
         const val MAX_T9_PINYIN_CHOICES = 8
     }
-}
-
-/**
- * Candidate touches freeze a source index on DOWN. A readiness transition or a
- * content replacement invalidates that index even when the decoder reuses the
- * same composition revision.
- */
-internal object CandidatePointerFence {
-    fun shouldCancel(
-        previousReady: Boolean,
-        previousCandidates: List<String>,
-        nextReady: Boolean,
-        nextCandidates: List<String>?,
-    ): Boolean =
-        previousReady != nextReady ||
-            (nextCandidates != null && previousCandidates != nextCandidates)
 }

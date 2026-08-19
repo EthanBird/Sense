@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.github.ethanbird.senseime"
-    android:versionCode="22"
-    android:versionName="0.4.5.beta.1">
+    android:versionCode="37"
+    android:versionName="0.4.12">
     <uses-sdk
         android:minSdkVersion="29"
         android:targetSdkVersion="36" />
@@ -11,11 +11,18 @@
         android:name="io.github.ethanbird.senseime.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
         android:protectionLevel="signature" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission
         android:name="io.github.ethanbird.senseime.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
 
@@ -64,6 +71,13 @@
         </service>
 
         <service
+            android:name="io.github.ethanbird.senseime.mic.SenseMicService"
+            android:description="@string/sense_mic_service_description"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice|microphone"
+            android:stopWithTask="false" />
+
+        <service
             android:name="io.github.ethanbird.senseime.brain.runtime.SenseAiBrainService"
             android:directBootAware="false"
             android:exported="false"
@@ -73,5 +87,29 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="user_initiated_agent_task" />
         </service>
+        <service
+            android:name="io.github.ethanbird.senseime.brain.runtime.SenseAgentChannelService"
+            android:directBootAware="false"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:process=":brain">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="user_enabled_agent_message_channels" />
+        </service>
+        <service
+            android:name="io.github.ethanbird.senseime.brain.runtime.SenseAgentHubBridgeService"
+            android:directBootAware="false"
+            android:exported="false"
+            android:process=":brain" />
+        <receiver
+            android:name="io.github.ethanbird.senseime.brain.runtime.AgentChannelBootReceiver"
+            android:directBootAware="false"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>
