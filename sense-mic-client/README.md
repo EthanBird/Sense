@@ -30,7 +30,7 @@ Sense Mic Client 是 Sense Android 输入法“电脑麦克风”服务的 Rust 
 
 ## 构建 Rust 客户端
 
-要求 Rust 1.85+。
+要求 Rust 1.88+（`opus-rs` 与 Linux PulseAudio 依赖使用了 Rust 1.87/1.88 稳定的语言与标准库能力）。
 
 ```powershell
 cargo test --manifest-path sense-mic-client/Cargo.toml

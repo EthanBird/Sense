@@ -2,7 +2,7 @@
 name = "sense-mic-client"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.85"
+rust-version = "1.88"
 license = "GPL-3.0-only"
 description = "Reliable Windows and Linux receiver for the Sense Android microphone service"
 
