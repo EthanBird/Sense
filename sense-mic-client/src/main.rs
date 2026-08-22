@@ -117,7 +117,6 @@ fn print_discovery(args: &DiscoveryArgs) -> Result<()> {
 }
 
 fn serve(args: ServeArgs) -> Result<()> {
-    driver::ensure_virtual_output()?;
     let pair_code = match args.code {
         Some(code) => code,
         None => rpassword::prompt_password("Sense Mic six-digit pairing code: ")?,
@@ -138,6 +137,11 @@ fn serve(args: ServeArgs) -> Result<()> {
             .and_then(|devices| select_device(devices, args.device_id));
         match discovered {
             Ok(device) => {
+                // Discovery is deliberately completed before touching the host audio stack.
+                // Besides avoiding unnecessary endpoint changes when the phone is offline,
+                // this keeps discovery failures actionable on headless Linux hosts where an
+                // audio daemon may only be started when a streaming session is requested.
+                driver::ensure_virtual_output()?;
                 println!(
                     "Pairing with {} at {}...",
                     device.response.device_name,
