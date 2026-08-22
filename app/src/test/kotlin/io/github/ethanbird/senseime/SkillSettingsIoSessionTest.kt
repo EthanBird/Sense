@@ -192,6 +192,10 @@ class SkillSettingsIoSessionTest {
             assertFalse(durabilityCompleted.await(25L, TimeUnit.MILLISECONDS))
             releaseBlocker.countDown()
             assertTrue(durabilityCompleted.await(2, TimeUnit.SECONDS))
+            // CountDownLatch is released from inside the operation, just before FutureTask marks
+            // itself complete. Fence the single-thread executor so this assertion never races
+            // that final state transition on slower CI hosts.
+            worker.submit { }.get(2, TimeUnit.SECONDS)
             assertTrue(
                 barrier.execute("same-snapshot") {
                     durabilityRuns += 1
