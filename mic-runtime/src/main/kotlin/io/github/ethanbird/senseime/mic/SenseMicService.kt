@@ -15,11 +15,17 @@ import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.net.ConnectivityManager
+import android.net.LinkProperties
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.provider.Settings
+import android.util.Log
 import io.github.jaredmdobson.concentus.OpusApplication
 import io.github.jaredmdobson.concentus.OpusEncoder
 import java.io.BufferedInputStream
@@ -31,18 +37,20 @@ import java.net.DatagramSocket
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.InetSocketAddress
-import java.net.NetworkInterface
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.security.KeyPair
 import java.security.SecureRandom
-import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -56,15 +64,21 @@ import java.util.concurrent.atomic.AtomicReference
  * notification provides mute and stop controls for the complete background lifetime.
  */
 class SenseMicService : Service() {
+    private val lifecycleLock = Any()
     private val running = AtomicBoolean(false)
-    private val clientActive = AtomicBoolean(false)
     private val muted = AtomicBoolean(false)
     private val sentPackets = AtomicLong(0)
+    private val discoveryReceivedPackets = AtomicLong(0)
+    private val discoveryRejectedPackets = AtomicLong(0)
+    private val discoveryResponses = AtomicLong(0)
     private val latestStats = AtomicReference(SenseMicClientStats(0, 0, 0))
     private val secureRandom = SecureRandom()
     private val authFailures = ConcurrentHashMap<InetAddress, AuthFailureWindow>()
     private val executor: ExecutorService = Executors.newCachedThreadPool(SenseMicThreadFactory())
+    private val lifecycleExecutor: ScheduledExecutorService =
+        Executors.newSingleThreadScheduledExecutor(SenseMicLifecycleThreadFactory())
     private val handshakeMaterialLock = Any()
+    private val nextClientId = AtomicLong(1)
 
     private lateinit var settingsStore: SenseMicSettingsStore
     @Volatile private var settings = SenseMicSettings()
@@ -72,11 +86,41 @@ class SenseMicService : Service() {
     @Volatile private var serverNonce: ByteArray = SenseMicCrypto.randomBytes(16)
     @Volatile private var deviceId: Long = 0L
     @Volatile private var discoverySocket: DatagramSocket? = null
+    @Volatile private var discoveryEndpoint: SenseMicDiscoveryEndpoint? = null
     @Volatile private var controlSocket: ServerSocket? = null
-    @Volatile private var activeClientSocket: Socket? = null
-    @Volatile private var captureFuture: Future<*>? = null
     @Volatile private var wakeLock: PowerManager.WakeLock? = null
     @Volatile private var wifiLock: WifiManager.WifiLock? = null
+    @Volatile private var multicastLock: WifiManager.MulticastLock? = null
+    @Volatile private var discoveryLockGeneration: Long? = null
+    @Volatile private var activeLanNetwork: Network? = null
+    @Volatile private var activeLanAddresses: List<String> = emptyList()
+    @Volatile private var runtimeGeneration: Long? = null
+    @Volatile private var activeClient: ClientOwner? = null
+    @Volatile private var streamingLocksClient: ClientOwner? = null
+    @Volatile private var destroying = false
+    private val pendingClientSockets = LinkedHashMap<Socket, ClientOwner>()
+    private val rebindGate = SenseMicRebindGate()
+    private val runtimeTransitionGate = SenseMicRuntimeTransitionGate()
+    private var pendingNetworkRebind: ScheduledFuture<*>? = null
+    private var networkCallbackRegistered = false
+
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            requestNetworkRebind("available:${network.networkHandle}")
+        }
+
+        override fun onLost(network: Network) {
+            requestNetworkRebind("lost:${network.networkHandle}")
+        }
+
+        override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) {
+            requestNetworkRebind("capabilities:${network.networkHandle}")
+        }
+
+        override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) {
+            requestNetworkRebind("link-properties:${network.networkHandle}")
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -84,6 +128,7 @@ class SenseMicService : Service() {
         settings = settingsStore.load()
         deviceId = installationDeviceId()
         createNotificationChannel()
+        registerLanNetworkCallback()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -96,21 +141,20 @@ class SenseMicService : Service() {
             }
             ACTION_TOGGLE_MUTE -> {
                 muted.set(!muted.get())
-                publishStreamingStatus()
+                activeClient?.let(::publishStreamingStatus)
                 updateNotification()
             }
             ACTION_RELOAD -> {
-                settings = settingsStore.load()
-                if (!settings.enabled) {
+                val previous = settings
+                val reloaded = settingsStore.load()
+                settings = reloaded
+                if (!reloaded.enabled) {
                     stopRuntime()
                     stopSelf()
                     return START_NOT_STICKY
                 }
-                if (running.get()) {
-                    // A quality or pairing-code change applies at the next authenticated session.
-                    // Closing the current control socket also stops AudioRecord in handleClient.finally.
-                    rotateHandshakeMaterial()
-                    activeClientSocket.closeQuietly()
+                if (running.get() && reloaded != previous) {
+                    requestRuntimeRestart("settings changed")
                 }
             }
             ACTION_START, null -> {
@@ -123,133 +167,207 @@ class SenseMicService : Service() {
     }
 
     override fun onDestroy() {
+        synchronized(lifecycleLock) {
+            destroying = true
+            pendingNetworkRebind?.cancel(false)
+            pendingNetworkRebind = null
+        }
+        unregisterLanNetworkCallback()
         stopRuntime()
+        lifecycleExecutor.shutdownNow()
         executor.shutdownNow()
         super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private fun startRuntime() {
-        if (!running.compareAndSet(false, true)) {
+    private fun startRuntime(forceRestart: Boolean = false, expectedGeneration: Long? = null) {
+        runtimeTransitionGate.run {
+            startRuntimeTransition(forceRestart, expectedGeneration)
+        }
+    }
+
+    private fun startRuntimeTransition(forceRestart: Boolean, expectedGeneration: Long?) {
+        if (destroying) return
+        if (!forceRestart && running.get()) {
             updateNotification()
             return
         }
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            running.set(false)
             settings = settingsStore.update { it.copy(enabled = false) }
-            SenseMicRuntime.publish(
-                SenseMicStatus(
-                    phase = SenseMicPhase.ERROR,
-                    errorMessage = "麦克风权限尚未授予",
-                ),
-            )
+            val detached = synchronized(lifecycleLock) {
+                running.set(false)
+                val resources = detachRuntimeLocked()
+                runtimeGeneration = null
+                SenseMicRuntime.reset(
+                    SenseMicStatus(
+                        phase = SenseMicPhase.ERROR,
+                        errorMessage = "麦克风权限尚未授予",
+                    ),
+                )
+                resources
+            }
+            closeDetachedRuntime(detached)
             stopSelf()
             return
         }
 
+        val detached: DetachedRuntime
+        val generation: Long
+        synchronized(lifecycleLock) {
+            if (destroying || !settings.enabled) return
+            if (expectedGeneration != null && runtimeGeneration != expectedGeneration) return
+            if (!forceRestart && running.get()) return
+            detached = detachRuntimeLocked()
+            generation = SenseMicRuntime.begin(
+                SenseMicStatus(
+                    phase = SenseMicPhase.STARTING,
+                    endpointSummary = localEndpointSummary(),
+                ),
+            )
+            runtimeGeneration = generation
+            running.set(true)
+            muted.set(false)
+            sentPackets.set(0)
+            discoveryReceivedPackets.set(0)
+            discoveryRejectedPackets.set(0)
+            discoveryResponses.set(0)
+            latestStats.set(SenseMicClientStats(0, 0, 0))
+        }
+        closeDetachedRuntime(detached)
         rotateHandshakeMaterial()
-        sentPackets.set(0)
-        latestStats.set(SenseMicClientStats(0, 0, 0))
         startForegroundCompat(waitingNotification())
-        SenseMicRuntime.publish(
-            SenseMicStatus(
-                phase = SenseMicPhase.STARTING,
-                endpointSummary = localEndpointSummary(),
-            ),
-        )
         var discovery: DatagramSocket? = null
+        var endpoint: SenseMicDiscoveryEndpoint? = null
         var control: ServerSocket? = null
         try {
+            val selectedLan = selectLanNetwork()
+            if (!isCurrentRuntime(generation)) return
+            if (selectedLan == null) {
+                Log.w(TAG, "No physical LAN network found; endpoints remain unbound")
+                SenseMicRuntime.publish(
+                    generation,
+                    SenseMicStatus(
+                        phase = SenseMicPhase.STARTING,
+                        endpointSummary = "等待 Wi-Fi 或以太网",
+                        errorMessage = "局域网尚未就绪",
+                    ),
+                )
+                updateNotification()
+                return
+            }
+            Log.i(
+                TAG,
+                "Selected ${selectedLan.transportLabel} network=${selectedLan.network.networkHandle} " +
+                    "addresses=${selectedLan.addresses.joinToString()}",
+            )
+
             // Bind both public endpoints before advertising WAITING. This prevents a half-started
             // service (for example TCP ready while discovery failed) from looking healthy.
-            val boundDiscovery = DatagramSocket(null).apply {
-                reuseAddress = true
-                broadcast = true
-                bind(InetSocketAddress(SenseMicProtocol.DISCOVERY_PORT))
-                soTimeout = 1_000
-            }
+            val boundDiscovery = SenseMicDiscoveryEndpoint.openSocket(
+                port = SenseMicProtocol.DISCOVERY_PORT,
+                bindToNetwork = { socket -> selectedLan.network.bindSocket(socket) },
+            )
             discovery = boundDiscovery
+            val boundEndpoint = SenseMicDiscoveryEndpoint(
+                socket = boundDiscovery,
+                createResponse = { nonce -> createDiscoveryResponse(generation, nonce) },
+                observer = discoveryObserver(generation),
+            )
+            endpoint = boundEndpoint
             val boundControl = ServerSocket().apply {
                 reuseAddress = true
-                bind(InetSocketAddress(SenseMicProtocol.CONTROL_PORT))
+                bind(InetSocketAddress(IPV4_ANY_ADDRESS, SenseMicProtocol.CONTROL_PORT))
                 soTimeout = 1_000
             }
             control = boundControl
-            discoverySocket = boundDiscovery
-            controlSocket = boundControl
-            publishWaitingStatus()
+            val installed = synchronized(lifecycleLock) {
+                if (!isCurrentRuntimeLocked(generation)) {
+                    false
+                } else {
+                    activeLanNetwork = selectedLan.network
+                    activeLanAddresses = selectedLan.addresses
+                    discoverySocket = boundDiscovery
+                    discoveryEndpoint = boundEndpoint
+                    controlSocket = boundControl
+                    acquireDiscoveryLockLocked(generation)
+                    true
+                }
+            }
+            if (!installed) {
+                boundEndpoint.close()
+                boundDiscovery.closeQuietly()
+                boundControl.closeQuietly()
+                return
+            }
+            Log.i(
+                TAG,
+                "Discovery UDP bound on ${boundDiscovery.localSocketAddress}; " +
+                    "control TCP bound on ${boundControl.localSocketAddress}",
+            )
+            publishWaitingStatus(generation)
             updateNotification()
-            executor.execute { runDiscoveryLoop(boundDiscovery) }
-            executor.execute { runControlLoop(boundControl) }
+            executor.execute { runDiscoveryLoop(generation, boundEndpoint, boundDiscovery) }
+            executor.execute { runControlLoop(generation, boundControl) }
         } catch (error: Exception) {
+            endpoint?.close()
             discovery.closeQuietly()
             control.closeQuietly()
-            abortRuntime("服务端口启动失败：${error.message ?: error.javaClass.simpleName}")
+            Log.e(TAG, "Sense Mic endpoint startup failed", error)
+            abortRuntime(generation, "服务端口启动失败：${error.message ?: error.javaClass.simpleName}")
         }
     }
 
     private fun stopRuntime() {
-        if (!running.getAndSet(false) && SenseMicRuntime.status().phase == SenseMicPhase.OFF) return
-        activeClientSocket.closeQuietly()
-        activeClientSocket = null
-        discoverySocket.closeQuietly()
-        discoverySocket = null
-        controlSocket.closeQuietly()
-        controlSocket = null
-        captureFuture?.cancel(true)
-        captureFuture = null
-        clientActive.set(false)
-        releaseStreamingLocks()
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        SenseMicRuntime.publish(SenseMicStatus())
+        runtimeTransitionGate.run(::stopRuntimeTransition)
     }
 
-    private fun runDiscoveryLoop(socket: DatagramSocket) {
+    private fun stopRuntimeTransition() {
+        val detached = synchronized(lifecycleLock) {
+            pendingNetworkRebind?.cancel(false)
+            pendingNetworkRebind = null
+            rebindGate.cancel()
+            running.set(false)
+            val resources = detachRuntimeLocked()
+            runtimeGeneration = null
+            SenseMicRuntime.reset()
+            resources
+        }
+        closeDetachedRuntime(detached)
+        stopForeground(STOP_FOREGROUND_REMOVE)
+    }
+
+    private fun runDiscoveryLoop(
+        generation: Long,
+        endpoint: SenseMicDiscoveryEndpoint,
+        socket: DatagramSocket,
+    ) {
         try {
-            val buffer = ByteArray(256)
-            while (
-                running.get() &&
-                discoverySocket === socket &&
-                !Thread.currentThread().isInterrupted
-            ) {
-                try {
-                    val request = DatagramPacket(buffer, buffer.size)
-                    socket.receive(request)
-                    val requestNonce = SenseMicWireCodec.decodeDiscoveryRequest(request.data, request.length)
-                        ?: continue
-                    val material = snapshotHandshakeMaterial()
-                    val response = SenseMicWireCodec.encodeDiscoveryResponse(
-                        SenseMicDiscoveryResponse(
-                            controlPort = SenseMicProtocol.CONTROL_PORT,
-                            deviceId = deviceId,
-                            requestNonce = requestNonce,
-                            serverNonce = material.nonce,
-                            serverPublicKey = material.keyPair.public.encoded,
-                            deviceName = Build.MODEL.take(63).ifBlank { "Sense Android" },
-                        ),
-                    )
-                    socket.send(DatagramPacket(response, response.size, request.address, request.port))
-                } catch (_: SocketTimeoutException) {
-                    // Periodic cancellation point.
-                }
+            endpoint.run {
+                isCurrentRuntime(generation) &&
+                    discoverySocket === socket &&
+                    discoveryEndpoint === endpoint
             }
         } catch (error: Exception) {
-            if (running.get() && discoverySocket === socket) {
-                abortRuntime("发现服务已结束：${error.message ?: error.javaClass.simpleName}")
+            if (isCurrentRuntime(generation) && discoverySocket === socket) {
+                Log.e(TAG, "Discovery endpoint terminated", error)
+                abortRuntime(generation, "发现服务已结束：${error.message ?: error.javaClass.simpleName}")
             }
         } finally {
-            socket.closeQuietly()
-            if (discoverySocket === socket) discoverySocket = null
+            endpoint.close()
+            synchronized(lifecycleLock) {
+                if (runtimeGeneration == generation && discoverySocket === socket) discoverySocket = null
+                if (runtimeGeneration == generation && discoveryEndpoint === endpoint) discoveryEndpoint = null
+            }
         }
     }
 
-    private fun runControlLoop(server: ServerSocket) {
+    private fun runControlLoop(generation: Long, server: ServerSocket) {
         try {
             while (
-                running.get() &&
-                controlSocket === server &&
-                !Thread.currentThread().isInterrupted
+                isCurrentRuntime(generation) &&
+                    controlSocket === server &&
+                    !Thread.currentThread().isInterrupted
             ) {
                 try {
                     val socket = server.accept().apply {
@@ -257,47 +375,99 @@ class SenseMicService : Service() {
                         keepAlive = true
                         soTimeout = CONTROL_READ_TIMEOUT_MILLIS
                     }
-                    if (!clientActive.compareAndSet(false, true)) {
-                        sendError(socket.getOutputStream(), 2, "Sense Mic 正在服务另一台电脑")
+                    val reservation = synchronized(lifecycleLock) {
+                        if (!isCurrentRuntimeLocked(generation) || controlSocket !== server) {
+                            null to false
+                        } else if (activeClient != null || pendingClientSockets.isNotEmpty()) {
+                            null to true
+                        } else {
+                            val owner = ClientOwner(generation, nextClientId.getAndIncrement(), socket)
+                            pendingClientSockets[socket] = owner
+                            owner to false
+                        }
+                    }
+                    val client = reservation.first
+                    if (client == null) {
+                        if (reservation.second) {
+                            sendError(socket.getOutputStream(), 2, "Sense Mic 正在服务另一台电脑")
+                        }
                         socket.closeQuietly()
                         continue
                     }
-                    executor.execute { handleClient(socket) }
+                    try {
+                        executor.execute { beginPendingClient(client) }
+                    } catch (error: RejectedExecutionException) {
+                        synchronized(lifecycleLock) { pendingClientSockets.remove(socket) }
+                        sendError(socket.getOutputStream(), 2, "Sense Mic 正在服务另一台电脑")
+                        socket.closeQuietly()
+                        throw error
+                    }
                 } catch (_: SocketTimeoutException) {
                     // Periodic cancellation point.
                 }
             }
         } catch (error: Exception) {
-            if (running.get() && controlSocket === server) {
-                abortRuntime("控制服务已结束：${error.message ?: error.javaClass.simpleName}")
+            if (isCurrentRuntime(generation) && controlSocket === server) {
+                abortRuntime(generation, "控制服务已结束：${error.message ?: error.javaClass.simpleName}")
             }
         } finally {
             server.closeQuietly()
-            if (controlSocket === server) controlSocket = null
+            synchronized(lifecycleLock) {
+                if (runtimeGeneration == generation && controlSocket === server) controlSocket = null
+            }
         }
     }
 
     /** Keep the foreground error visible and make ACTION_RELOAD able to start a fresh runtime. */
-    private fun abortRuntime(message: String) {
-        if (!running.getAndSet(false)) return
-        activeClientSocket.closeQuietly()
-        activeClientSocket = null
-        discoverySocket.closeQuietly()
-        controlSocket.closeQuietly()
-        captureFuture?.cancel(true)
-        captureFuture = null
-        clientActive.set(false)
-        releaseStreamingLocks()
-        publishError(message)
+    private fun abortRuntime(generation: Long, message: String) {
+        val aborted = runtimeTransitionGate.run {
+            val detached = synchronized(lifecycleLock) {
+                if (!isCurrentRuntimeLocked(generation)) return@run false
+                running.set(false)
+                val resources = detachRuntimeLocked()
+                runtimeGeneration = null
+                SenseMicRuntime.finish(
+                    generation,
+                    SenseMicStatus(
+                        phase = SenseMicPhase.ERROR,
+                        endpointSummary = resources.endpointSummary,
+                        discoveryReceivedPackets = discoveryReceivedPackets.get(),
+                        discoveryRejectedPackets = discoveryRejectedPackets.get(),
+                        discoveryResponses = discoveryResponses.get(),
+                        errorMessage = message,
+                    ),
+                )
+                resources
+            }
+            closeDetachedRuntime(detached)
+            updateNotification()
+            true
+        }
+        if (aborted) requestRuntimeRecovery("endpoint failure")
     }
 
-    private fun handleClient(socket: Socket) {
+    private fun beginPendingClient(client: ClientOwner) {
+        val claimed = synchronized(lifecycleLock) {
+            pendingClientSockets.remove(client.socket)
+            if (!isCurrentRuntimeLocked(client.generation) || activeClient != null) {
+                false
+            } else {
+                activeClient = client
+                true
+            }
+        }
+        if (claimed) handleClient(client) else client.socket.closeQuietly()
+    }
+
+    private fun handleClient(client: ClientOwner) {
+        val socket = client.socket
         var sessionKey: ByteArray? = null
         var pairKey: ByteArray? = null
         var transcript: ByteArray? = null
         try {
-            activeClientSocket = socket
-            SenseMicRuntime.publish(
+            if (!isCurrentClient(client)) return
+            publishForClient(
+                client,
                 SenseMicStatus(
                     phase = SenseMicPhase.AUTHENTICATING,
                     endpointSummary = localEndpointSummary(),
@@ -353,33 +523,51 @@ class SenseMicService : Service() {
             writeControlFrame(output, SenseMicControlType.WELCOME, SenseMicWireCodec.encodeWelcome(welcome))
 
             val destination = InetSocketAddress(socket.inetAddress, hello.udpPort)
+            val streamNetwork = selectLanNetwork(socket.inetAddress)?.network ?: activeLanNetwork
             val streamKey = sessionKey.copyOf()
-            captureFuture = executor.submit {
+            val future = executor.submit {
                 runCatching {
                     runCaptureLoop(
+                        client = client,
                         clientName = hello.clientName,
                         destination = destination,
                         sessionId = sessionId,
                         sessionKey = streamKey,
                         streamSettings = currentSettings,
+                        streamNetwork = streamNetwork,
                     )
                 }.onFailure { error ->
-                    if (running.get() && clientActive.get()) {
-                        publishError(
+                    if (isCurrentClient(client)) {
+                        publishErrorForClient(
+                            client,
                             "麦克风传输已结束：${error.message ?: error.javaClass.simpleName}",
-                            recoverable = true,
                         )
                         socket.closeQuietly()
                     }
                 }
             }
+            val futureInstalled = synchronized(lifecycleLock) {
+                if (activeClient === client && isCurrentRuntimeLocked(client.generation)) {
+                    client.captureFuture = future
+                    true
+                } else {
+                    false
+                }
+            }
+            if (!futureInstalled) future.cancel(true)
 
-            while (running.get() && !socket.isClosed) {
+            while (isCurrentClient(client) && !socket.isClosed) {
                 val frame = readControlFrame(input) ?: break
                 when (frame.first) {
                     SenseMicControlType.PING -> {
-                        SenseMicWireCodec.decodeStats(frame.second)?.let(latestStats::set)
-                        publishStreamingStatus(hello.clientName)
+                        SenseMicWireCodec.decodeStats(frame.second)?.let { stats ->
+                            synchronized(lifecycleLock) {
+                                if (activeClient === client && isCurrentRuntimeLocked(client.generation)) {
+                                    latestStats.set(stats)
+                                }
+                            }
+                        }
+                        publishStreamingStatus(client, hello.clientName)
                         writeControlFrame(output, SenseMicControlType.PONG)
                     }
                     SenseMicControlType.STOP -> break
@@ -389,22 +577,28 @@ class SenseMicService : Service() {
         } catch (_: SocketTimeoutException) {
             // Missing heartbeats terminate the client and release the microphone.
         } catch (error: Exception) {
-            if (running.get()) {
-                publishError("电脑连接已结束：${error.message ?: error.javaClass.simpleName}", recoverable = true)
+            if (isCurrentClient(client)) {
+                publishErrorForClient(client, "电脑连接已结束：${error.message ?: error.javaClass.simpleName}")
             }
         } finally {
-            captureFuture?.cancel(true)
-            captureFuture = null
+            client.captureFuture?.cancel(true)
+            client.captureFuture = null
             socket.closeQuietly()
-            activeClientSocket = null
             sessionKey?.fill(0)
             pairKey?.fill(0)
             transcript?.fill(0)
-            clientActive.set(false)
-            releaseStreamingLocks()
-            if (running.get()) {
-                muted.set(false)
-                publishWaitingStatus()
+            releaseStreamingLocks(client)
+            val releasedCurrent = synchronized(lifecycleLock) {
+                if (activeClient === client) {
+                    activeClient = null
+                    muted.set(false)
+                    isCurrentRuntimeLocked(client.generation)
+                } else {
+                    false
+                }
+            }
+            if (releasedCurrent) {
+                publishWaitingStatus(client.generation)
                 updateNotification()
             }
         }
@@ -412,11 +606,13 @@ class SenseMicService : Service() {
 
     @SuppressLint("MissingPermission")
     private fun runCaptureLoop(
+        client: ClientOwner,
         clientName: String,
         destination: InetSocketAddress,
         sessionId: Int,
         sessionKey: ByteArray,
         streamSettings: SenseMicSettings,
+        streamNetwork: Network?,
     ) {
         var recorder: AudioRecord? = null
         var udp: DatagramSocket? = null
@@ -424,7 +620,7 @@ class SenseMicService : Service() {
         val encoded = ByteArray(SenseMicProtocol.MAX_AUDIO_PAYLOAD_BYTES)
         val parity = ByteArray(SenseMicProtocol.MAX_AUDIO_PAYLOAD_BYTES)
         try {
-            acquireStreamingLocks()
+            if (!acquireStreamingLocks(client)) return
             val minimum = AudioRecord.getMinBufferSize(
                 SenseMicProtocol.DEFAULT_SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO,
@@ -456,12 +652,19 @@ class SenseMicService : Service() {
                 complexity = 8
                 useDTX = false
             }
-            udp = DatagramSocket().apply {
+            udp = DatagramSocket(null).apply {
+                streamNetwork?.bindSocket(this)
+                bind(InetSocketAddress(IPV4_ANY_ADDRESS, 0))
                 sendBufferSize = 64 * 1024
                 connect(destination)
             }
+            Log.i(
+                TAG,
+                "Audio UDP connected to $destination via network=" +
+                    (streamNetwork?.networkHandle?.toString() ?: "system-default"),
+            )
             recorder.startRecording()
-            publishStreamingStatus(clientName)
+            publishStreamingStatus(client, clientName)
             updateNotification()
 
             var frameSequence = 0
@@ -471,9 +674,9 @@ class SenseMicService : Service() {
             var parityLength = 0
             var parityStartSequence = 0
             var parityStartTimestamp = 0L
-            while (running.get() && clientActive.get() && !Thread.currentThread().isInterrupted) {
+            while (isCurrentClient(client) && !Thread.currentThread().isInterrupted) {
                 var filled = 0
-                while (filled < pcmFrame.size && running.get() && clientActive.get()) {
+                while (filled < pcmFrame.size && isCurrentClient(client)) {
                     val read = recorder.read(
                         pcmFrame,
                         filled,
@@ -498,6 +701,7 @@ class SenseMicService : Service() {
                 require(encodedLength in 1..SenseMicProtocol.MAX_AUDIO_PAYLOAD_BYTES)
                 val payload = encoded.copyOf(encodedLength)
                 sendEncryptedDatagram(
+                    generation = client.generation,
                     socket = udp,
                     sessionKey = sessionKey,
                     destination = destination,
@@ -527,6 +731,7 @@ class SenseMicService : Service() {
                 if (parityCount == SenseMicProtocol.FEC_GROUP_SIZE) {
                     val fecPayload = parity.copyOf(parityLength)
                     sendEncryptedDatagram(
+                        generation = client.generation,
                         socket = udp,
                         sessionKey = sessionKey,
                         destination = destination,
@@ -557,11 +762,12 @@ class SenseMicService : Service() {
             encoded.fill(0)
             parity.fill(0)
             sessionKey.fill(0)
-            releaseStreamingLocks()
+            releaseStreamingLocks(client)
         }
     }
 
     private fun sendEncryptedDatagram(
+        generation: Long,
         socket: DatagramSocket,
         sessionKey: ByteArray,
         destination: InetSocketAddress,
@@ -570,7 +776,9 @@ class SenseMicService : Service() {
     ) {
         val packet = SenseMicCrypto.encryptAudio(sessionKey, header, payload).datagram
         socket.send(DatagramPacket(packet, packet.size, destination))
-        sentPackets.incrementAndGet()
+        synchronized(lifecycleLock) {
+            if (isCurrentRuntimeLocked(generation)) sentPackets.incrementAndGet()
+        }
     }
 
     private fun readControlFrame(input: DataInputStream): Pair<SenseMicControlType, ByteArray>? {
@@ -688,20 +896,30 @@ class SenseMicService : Service() {
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
 
-    private fun publishWaitingStatus() {
-        if (!running.get() || clientActive.get()) return
-        SenseMicRuntime.publish(
-            SenseMicStatus(
-                phase = SenseMicPhase.WAITING,
-                endpointSummary = localEndpointSummary(),
-                sentPackets = sentPackets.get(),
-            ),
-        )
+    private fun publishWaitingStatus(generation: Long) {
+        synchronized(lifecycleLock) {
+            if (!isCurrentRuntimeLocked(generation) || activeClient != null || pendingClientSockets.isNotEmpty()) return
+            SenseMicRuntime.publish(
+                generation,
+                SenseMicStatus(
+                    phase = SenseMicPhase.WAITING,
+                    endpointSummary = localEndpointSummary(),
+                    sentPackets = sentPackets.get(),
+                    discoveryReceivedPackets = discoveryReceivedPackets.get(),
+                    discoveryRejectedPackets = discoveryRejectedPackets.get(),
+                    discoveryResponses = discoveryResponses.get(),
+                ),
+            )
+        }
     }
 
-    private fun publishStreamingStatus(clientName: String? = SenseMicRuntime.status().clientName) {
+    private fun publishStreamingStatus(
+        client: ClientOwner,
+        clientName: String? = SenseMicRuntime.status().clientName,
+    ) {
         val stats = latestStats.get()
-        SenseMicRuntime.publish(
+        publishForClient(
+            client,
             SenseMicStatus(
                 phase = if (muted.get()) SenseMicPhase.MUTED else SenseMicPhase.STREAMING,
                 clientName = clientName,
@@ -710,38 +928,322 @@ class SenseMicService : Service() {
                 receivedPackets = stats.receivedPackets,
                 lostPackets = stats.lostPackets,
                 jitterMillis = stats.jitterMillis,
+                discoveryReceivedPackets = discoveryReceivedPackets.get(),
+                discoveryRejectedPackets = discoveryRejectedPackets.get(),
+                discoveryResponses = discoveryResponses.get(),
             ),
         )
     }
 
-    private fun publishError(message: String, recoverable: Boolean = false) {
-        SenseMicRuntime.publish(
+    private fun publishErrorForClient(client: ClientOwner, message: String) {
+        publishForClient(
+            client,
             SenseMicStatus(
-                phase = if (recoverable) SenseMicPhase.WAITING else SenseMicPhase.ERROR,
+                phase = SenseMicPhase.WAITING,
                 endpointSummary = localEndpointSummary(),
+                discoveryReceivedPackets = discoveryReceivedPackets.get(),
+                discoveryRejectedPackets = discoveryRejectedPackets.get(),
+                discoveryResponses = discoveryResponses.get(),
                 errorMessage = message,
             ),
         )
         updateNotification()
     }
 
+    private fun publishForClient(client: ClientOwner, status: SenseMicStatus): Boolean =
+        synchronized(lifecycleLock) {
+            if (activeClient !== client || !isCurrentRuntimeLocked(client.generation)) return@synchronized false
+            SenseMicRuntime.publish(client.generation, status)
+        }
+
+    private fun publishDiscoveryDiagnostics(generation: Long) {
+        SenseMicRuntime.update(generation) { current ->
+            current.copy(
+                discoveryReceivedPackets = discoveryReceivedPackets.get(),
+                discoveryRejectedPackets = discoveryRejectedPackets.get(),
+                discoveryResponses = discoveryResponses.get(),
+            )
+        }
+    }
+
+    private fun discoveryObserver(generation: Long): SenseMicDiscoveryObserver =
+        object : SenseMicDiscoveryObserver {
+            override fun onReceived(remote: InetSocketAddress, byteCount: Int) {
+                val accepted = synchronized(lifecycleLock) {
+                    if (!isCurrentRuntimeLocked(generation)) return@synchronized false
+                    discoveryReceivedPackets.incrementAndGet()
+                    true
+                }
+                if (!accepted) return
+                Log.i(TAG, "Discovery datagram received from $remote ($byteCount bytes)")
+            }
+
+            override fun onRejected(remote: InetSocketAddress, byteCount: Int) {
+                val rejected = synchronized(lifecycleLock) {
+                    if (!isCurrentRuntimeLocked(generation)) return@synchronized null
+                    discoveryRejectedPackets.incrementAndGet()
+                } ?: return
+                if (rejected == 1L || rejected and (rejected - 1L) == 0L) {
+                    Log.w(TAG, "Rejected malformed discovery datagram #$rejected from $remote ($byteCount bytes)")
+                }
+                publishDiscoveryDiagnostics(generation)
+            }
+
+            override fun onResponded(remote: InetSocketAddress, byteCount: Int) {
+                val accepted = synchronized(lifecycleLock) {
+                    if (!isCurrentRuntimeLocked(generation)) return@synchronized false
+                    discoveryResponses.incrementAndGet()
+                    true
+                }
+                if (!accepted) return
+                Log.i(TAG, "Discovery response sent to $remote ($byteCount bytes)")
+                publishDiscoveryDiagnostics(generation)
+            }
+
+            override fun onFailure(
+                stage: SenseMicDiscoveryStage,
+                remote: InetSocketAddress?,
+                error: Throwable,
+            ) {
+                if (!isCurrentRuntime(generation)) return
+                Log.e(TAG, "Discovery $stage failed${remote?.let { " for $it" }.orEmpty()}", error)
+                publishDiscoveryDiagnostics(generation)
+            }
+        }
+
+    private fun createDiscoveryResponse(generation: Long, requestNonce: ByteArray): ByteArray {
+        check(isCurrentRuntime(generation)) { "runtime generation expired" }
+        val material = snapshotHandshakeMaterial()
+        return SenseMicWireCodec.encodeDiscoveryResponse(
+            SenseMicDiscoveryResponse(
+                controlPort = SenseMicProtocol.CONTROL_PORT,
+                deviceId = deviceId,
+                requestNonce = requestNonce,
+                serverNonce = material.nonce,
+                serverPublicKey = material.keyPair.public.encoded,
+                deviceName = fitSenseMicDiscoveryDeviceName(Build.MODEL),
+            ),
+        )
+    }
+
     private fun localEndpointSummary(): String {
-        val addresses = runCatching {
-            Collections.list(NetworkInterface.getNetworkInterfaces())
-                .asSequence()
-                .filter { it.isUp && !it.isLoopback }
-                .flatMap { Collections.list(it.inetAddresses).asSequence() }
-                .filterIsInstance<Inet4Address>()
-                .filterNot { it.isLoopbackAddress || it.isLinkLocalAddress }
-                .mapNotNull { it.hostAddress }
-                .distinct()
-                .sorted()
-                .toList()
-        }.getOrDefault(emptyList())
+        val addresses = activeLanAddresses
         return if (addresses.isEmpty()) {
             "UDP ${SenseMicProtocol.DISCOVERY_PORT} · TCP ${SenseMicProtocol.CONTROL_PORT}"
         } else {
             addresses.joinToString(" / ") { "$it:${SenseMicProtocol.CONTROL_PORT}" }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun selectLanNetwork(remoteAddress: InetAddress? = null): ActiveLanNetwork? {
+        val manager = getSystemService(ConnectivityManager::class.java)
+        val candidates = runCatching {
+            manager.allNetworks.mapNotNull { network ->
+                val capabilities = manager.getNetworkCapabilities(network) ?: return@mapNotNull null
+                val isWifi = capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+                val isEthernet = capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+                if (!isWifi && !isEthernet) return@mapNotNull null
+                val properties = manager.getLinkProperties(network) ?: return@mapNotNull null
+                SenseMicLanNetworkCandidate(
+                    value = network,
+                    isWifi = isWifi,
+                    isEthernet = isEthernet,
+                    isVpn = capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN),
+                    links = properties.linkAddresses.map { link ->
+                        SenseMicLanLink(link.address, link.prefixLength)
+                    },
+                )
+            }
+        }.onFailure { error ->
+            Log.w(TAG, "Failed to enumerate LAN networks", error)
+        }.getOrDefault(emptyList())
+        val selected = SenseMicLanNetworkSelector.select(candidates, remoteAddress) ?: return null
+        return ActiveLanNetwork(
+            network = selected.value,
+            addresses = SenseMicLanNetworkSelector.usableIpv4Addresses(selected)
+                .mapNotNull { it.hostAddress }
+                .sorted(),
+            transportLabel = if (selected.isWifi) "Wi-Fi" else "Ethernet",
+        )
+    }
+
+    private fun registerLanNetworkCallback() {
+        val manager = getSystemService(ConnectivityManager::class.java)
+        val request = NetworkRequest.Builder()
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET)
+            .build()
+        runCatching {
+            manager.registerNetworkCallback(request, networkCallback)
+            synchronized(lifecycleLock) { networkCallbackRegistered = true }
+        }.onFailure { error ->
+            Log.w(TAG, "Failed to register LAN network callback", error)
+        }
+    }
+
+    private fun unregisterLanNetworkCallback() {
+        val registered = synchronized(lifecycleLock) {
+            val value = networkCallbackRegistered
+            networkCallbackRegistered = false
+            value
+        }
+        if (!registered) return
+        runCatching {
+            getSystemService(ConnectivityManager::class.java).unregisterNetworkCallback(networkCallback)
+        }.onFailure { error ->
+            Log.w(TAG, "Failed to unregister LAN network callback", error)
+        }
+    }
+
+    private fun requestNetworkRebind(reason: String) {
+        val generation = synchronized(lifecycleLock) {
+            if (destroying || !settings.enabled) return
+            runtimeGeneration?.takeIf { isCurrentRuntimeLocked(it) }
+        }
+        scheduleRuntimeRestart(
+            generation = generation,
+            delayMillis = NETWORK_REBIND_DEBOUNCE_MILLIS,
+            reason = "network $reason",
+            skipIfLanUnchanged = true,
+        )
+    }
+
+    private fun requestRuntimeRestart(reason: String) {
+        val generation = synchronized(lifecycleLock) {
+            if (destroying || !settings.enabled || !running.get()) return
+            runtimeGeneration ?: return
+        }
+        scheduleRuntimeRestart(generation, 0L, reason)
+    }
+
+    private fun requestRuntimeRecovery(reason: String) {
+        val recoverable = synchronized(lifecycleLock) {
+            !destroying && settings.enabled && !running.get() && runtimeGeneration == null
+        }
+        if (recoverable) {
+            scheduleRuntimeRestart(null, ENDPOINT_RETRY_MILLIS, reason)
+        }
+    }
+
+    private fun scheduleRuntimeRestart(
+        generation: Long?,
+        delayMillis: Long,
+        reason: String,
+        skipIfLanUnchanged: Boolean = false,
+    ) {
+        synchronized(lifecycleLock) {
+            if (destroying || !settings.enabled) return
+            if (generation == null) {
+                if (running.get() || runtimeGeneration != null) return
+            } else if (!isCurrentRuntimeLocked(generation)) {
+                return
+            }
+            val ticket = rebindGate.request(generation)
+            pendingNetworkRebind?.cancel(false)
+            pendingNetworkRebind = try {
+                lifecycleExecutor.schedule(
+                    {
+                        val stillCurrent = synchronized(lifecycleLock) {
+                            rebindGate.isLatest(ticket, runtimeGeneration) &&
+                                !destroying &&
+                                settings.enabled &&
+                                if (generation == null) {
+                                    !running.get() && runtimeGeneration == null
+                                } else {
+                                    isCurrentRuntimeLocked(generation)
+                                }
+                        }
+                        if (stillCurrent) {
+                            if (
+                                generation != null &&
+                                skipIfLanUnchanged &&
+                                isLanBindingCurrent(generation)
+                            ) {
+                                Log.i(TAG, "Keeping Sense Mic runtime generation=$generation after unchanged $reason")
+                                return@schedule
+                            }
+                            Log.i(TAG, "Restarting Sense Mic runtime generation=$generation after $reason")
+                            startRuntime(
+                                forceRestart = generation != null,
+                                expectedGeneration = generation,
+                            )
+                        }
+                    },
+                    delayMillis,
+                    TimeUnit.MILLISECONDS,
+                )
+            } catch (_: RejectedExecutionException) {
+                null
+            }
+        }
+    }
+
+    private fun isLanBindingCurrent(generation: Long): Boolean {
+        val selected = selectLanNetwork()
+        return synchronized(lifecycleLock) {
+            if (!isCurrentRuntimeLocked(generation)) return@synchronized false
+            if (selected == null) {
+                activeLanNetwork == null &&
+                    discoverySocket == null &&
+                    controlSocket == null
+            } else {
+                activeLanNetwork == selected.network &&
+                    activeLanAddresses == selected.addresses &&
+                    discoverySocket != null &&
+                    controlSocket != null
+            }
+        }
+    }
+
+    private fun isCurrentRuntime(generation: Long): Boolean = synchronized(lifecycleLock) {
+        isCurrentRuntimeLocked(generation)
+    }
+
+    private fun isCurrentRuntimeLocked(generation: Long): Boolean =
+        running.get() && runtimeGeneration == generation && SenseMicRuntime.isCurrent(generation)
+
+    private fun isCurrentClient(client: ClientOwner): Boolean = synchronized(lifecycleLock) {
+        activeClient === client && isCurrentRuntimeLocked(client.generation)
+    }
+
+    private fun detachRuntimeLocked(): DetachedRuntime {
+        val generation = runtimeGeneration
+        val endpointSummary = localEndpointSummary()
+        val clients = buildList {
+            activeClient?.let(::add)
+            pendingClientSockets.values.forEach(::add)
+        }.distinctBy { it.id }
+        val detached = DetachedRuntime(
+            generation = generation,
+            discoveryEndpoint = discoveryEndpoint,
+            discoverySocket = discoverySocket,
+            controlSocket = controlSocket,
+            clients = clients,
+            endpointSummary = endpointSummary,
+        )
+        discoveryEndpoint = null
+        discoverySocket = null
+        controlSocket = null
+        activeClient = null
+        pendingClientSockets.clear()
+        activeLanNetwork = null
+        activeLanAddresses = emptyList()
+        return detached
+    }
+
+    private fun closeDetachedRuntime(runtime: DetachedRuntime) {
+        runtime.discoveryEndpoint?.close()
+        runtime.discoverySocket.closeQuietly()
+        runtime.controlSocket.closeQuietly()
+        runtime.clients.forEach { client ->
+            client.socket.closeQuietly()
+            client.captureFuture?.cancel(true)
+            client.captureFuture = null
+            releaseStreamingLocks(client)
+        }
+        runtime.generation?.let { generation ->
+            releaseDiscoveryLock(generation)
         }
     }
 
@@ -798,7 +1300,36 @@ class SenseMicService : Service() {
         authFailures.remove(address)
     }
 
-    private fun acquireStreamingLocks() {
+    @SuppressLint("MissingPermission")
+    private fun acquireDiscoveryLockLocked(generation: Long) {
+        check(Thread.holdsLock(lifecycleLock))
+        if (!isCurrentRuntimeLocked(generation)) return
+        if (multicastLock != null) return
+        multicastLock = applicationContext.getSystemService(WifiManager::class.java)
+            .createMulticastLock("$packageName:SenseMicDiscovery")
+            .apply {
+                setReferenceCounted(false)
+                acquire()
+            }
+        discoveryLockGeneration = generation
+        Log.i(TAG, "Wi-Fi multicast lock acquired for discovery")
+    }
+
+    private fun releaseDiscoveryLock(generation: Long) {
+        synchronized(lifecycleLock) {
+            if (discoveryLockGeneration != generation) return
+            runCatching { multicastLock?.takeIf { it.isHeld }?.release() }
+                .onFailure { error -> Log.w(TAG, "Failed to release discovery multicast lock", error) }
+            multicastLock = null
+            discoveryLockGeneration = null
+        }
+    }
+
+    private fun acquireStreamingLocks(client: ClientOwner): Boolean = synchronized(lifecycleLock) {
+        if (activeClient !== client || !isCurrentRuntimeLocked(client.generation)) return@synchronized false
+        if (streamingLocksClient != null && streamingLocksClient !== client) {
+            return@synchronized false
+        }
         if (wakeLock == null) {
             wakeLock = getSystemService(PowerManager::class.java)
                 .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "$packageName:SenseMic")
@@ -812,23 +1343,59 @@ class SenseMicService : Service() {
                 "$packageName:SenseMic",
             ).apply { setReferenceCounted(false); acquire() }
         }
+        streamingLocksClient = client
+        true
     }
 
-    private fun releaseStreamingLocks() {
-        runCatching { wakeLock?.takeIf { it.isHeld }?.release() }
-        wakeLock = null
-        runCatching { wifiLock?.takeIf { it.isHeld }?.release() }
-        wifiLock = null
+    private fun releaseStreamingLocks(client: ClientOwner) {
+        synchronized(lifecycleLock) {
+            if (streamingLocksClient !== client) return
+            runCatching { wakeLock?.takeIf { it.isHeld }?.release() }
+            wakeLock = null
+            runCatching { wifiLock?.takeIf { it.isHeld }?.release() }
+            wifiLock = null
+            streamingLocksClient = null
+        }
     }
 
     private data class HandshakeMaterial(val keyPair: KeyPair, val nonce: ByteArray)
 
     private data class AuthFailureWindow(val startedAtMillis: Long, val failures: Int)
 
+    private data class ClientOwner(
+        val generation: Long,
+        val id: Long,
+        val socket: Socket,
+        @Volatile var captureFuture: Future<*>? = null,
+    )
+
+    private data class DetachedRuntime(
+        val generation: Long?,
+        val discoveryEndpoint: SenseMicDiscoveryEndpoint?,
+        val discoverySocket: DatagramSocket?,
+        val controlSocket: ServerSocket?,
+        val clients: List<ClientOwner>,
+        val endpointSummary: String,
+    )
+
+    private data class ActiveLanNetwork(
+        val network: Network,
+        val addresses: List<String>,
+        val transportLabel: String,
+    )
+
     private class SenseMicThreadFactory : ThreadFactory {
         private val nextId = AtomicLong(1)
         override fun newThread(task: Runnable): Thread =
             Thread(task, "Sense-Mic-${nextId.getAndIncrement()}").apply {
+                isDaemon = true
+                priority = Thread.NORM_PRIORITY
+            }
+    }
+
+    private class SenseMicLifecycleThreadFactory : ThreadFactory {
+        override fun newThread(task: Runnable): Thread =
+            Thread(task, "Sense-Mic-Lifecycle").apply {
                 isDaemon = true
                 priority = Thread.NORM_PRIORITY
             }
@@ -846,6 +1413,10 @@ class SenseMicService : Service() {
         private const val AUTH_WINDOW_MILLIS = 60_000L
         private const val AUTH_LOCKOUT_MILLIS = 1_500L
         private const val AUTH_FAILURE_DELAY_MILLIS = 300L
+        private const val NETWORK_REBIND_DEBOUNCE_MILLIS = 350L
+        private const val ENDPOINT_RETRY_MILLIS = 2_000L
+        private const val TAG = "SenseMicService"
+        private val IPV4_ANY_ADDRESS: InetAddress = InetAddress.getByAddress(byteArrayOf(0, 0, 0, 0))
         private const val SETTINGS_SECTION_EXTRA =
             "io.github.ethanbird.senseime.extra.INITIAL_SETTINGS_SECTION"
         private const val SETTINGS_MIC_SECTION = "MIC"

@@ -32,6 +32,9 @@ zeroize = "1.8"
 [target.'cfg(target_os = "linux")'.dependencies]
 cpal = { version = "0.18.2", default-features = false, features = ["pulseaudio"] }
 
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-sys = { version = "0.61.2", features = ["Win32_Globalization", "Win32_System_Console"] }
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

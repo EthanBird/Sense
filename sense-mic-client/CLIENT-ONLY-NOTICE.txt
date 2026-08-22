@@ -1,0 +1,5 @@
+Sense Mic Windows client-only package
+
+This archive intentionally contains no virtual microphone driver. Install a separately supplied
+Microsoft-signed HLK/WHQL Sense Mic driver package before using the virtual microphone endpoint.
+Development-test and attestation-test driver packages are not public release assets.

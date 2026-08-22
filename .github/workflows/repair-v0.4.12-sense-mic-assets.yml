@@ -1,0 +1,309 @@
+name: Repair v0.4.12 Sense Mic release assets
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: repair-v0.4.12-sense-mic-assets
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  RELEASE_TAG: v0.4.12
+  RELEASE_TAG_SHA: 5da18356653779415bd80d4fcc400fdba77c43da
+  RELEASE_APK: Sense-v0.4.12.apk
+  RELEASE_APK_SHA256: dcb2c9664880523ea010ecc8eb532629c20b1a1772c33ecea45d4e5d4aef628e
+  LEGACY_WINDOWS_ASSET: SenseMicClient-v0.4.12-windows-x64.zip
+  WINDOWS_ASSET: SenseMicClient-v0.4.12-windows-x64-client-only.zip
+  LINUX_ASSET: SenseMicClient-v0.4.12-linux-x64.tar.gz
+  LINUX_ASSET_SHA256: aaca4dd9c90bf7cb2b4b73c72ac6188ea6ecc465e2365ab7958855cf9f2fe8ae
+  WINDOWS_README_SHA256: 5c212ceb139ecd72c989f337ce3deed11f32ce8db2323beadca3d8df51fee419
+  WINDOWS_LICENSE_SHA256: 3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986
+  WINDOWS_NOTICE_SHA256: a744e966ead990130cd5cfe97e0848d461dc00778ec0fbe122370bacb7fd9024
+  WINDOWS_CLIENT_ONLY_NOTICE_SHA256: c4e7f1f6a3df4bca7afaf30a9e08724469588dce1f16cad52ab3ae69e0be68be
+
+jobs:
+  build-client-only:
+    runs-on: windows-2022
+    timeout-minutes: 35
+    steps:
+      - name: Check out repair policy
+        uses: actions/checkout@v6
+        with:
+          path: policy
+
+      - name: Check out immutable v0.4.12 source
+        uses: actions/checkout@v6
+        with:
+          ref: 5da18356653779415bd80d4fcc400fdba77c43da
+          path: tag-source
+
+      - uses: dtolnay/rust-toolchain@1.88.0
+
+      - name: Verify immutable source and release policy
+        shell: powershell
+        run: |
+          $actual = (git -C tag-source rev-parse HEAD).Trim().ToLowerInvariant()
+          if ($actual -ne $env:RELEASE_TAG_SHA) {
+            throw "Immutable source mismatch: expected $env:RELEASE_TAG_SHA, observed $actual"
+          }
+          powershell -NoProfile -ExecutionPolicy Bypass -File policy/sense-mic-client/scripts/Test-WindowsReleasePolicy.ps1
+
+      - name: Build v0.4.12 client and create client-only package
+        shell: powershell
+        run: |
+          cargo build --locked --release --manifest-path tag-source/sense-mic-client/Cargo.toml
+          if ($LASTEXITCODE -ne 0) { throw "cargo build failed with exit code $LASTEXITCODE" }
+          $out = Join-Path $env:RUNNER_TEMP 'sense-mic-v0.4.12-client-only'
+          powershell -NoProfile -ExecutionPolicy Bypass -File policy/sense-mic-client/package-windows.ps1 `
+            -PackageFlavor ClientOnly `
+             -ClientExecutable tag-source/sense-mic-client/target/release/sense-mic.exe `
+             -BundleReadmePath tag-source/sense-mic-client/README.md `
+             -LicensePath tag-source/LICENSE `
+             -NoticePath tag-source/NOTICE `
+             -ClientOnlyNoticePath policy/sense-mic-client/CLIENT-ONLY-NOTICE.txt `
+             -SourceCommit $env:RELEASE_TAG_SHA `
+            -OutputRoot $out
+          New-Item -ItemType Directory -Path candidate -Force | Out-Null
+          Copy-Item -LiteralPath (Join-Path $out 'SenseMicClient-windows-x64-client-only.zip') `
+            -Destination (Join-Path candidate $env:WINDOWS_ASSET)
+
+      - name: Upload immutable repair candidate
+        uses: actions/upload-artifact@v6
+        with:
+          name: v0.4.12-windows-client-only-candidate
+          path: candidate/${{ env.WINDOWS_ASSET }}
+          if-no-files-found: error
+          retention-days: 30
+
+  repair-release-assets:
+    needs: build-client-only
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: release
+    steps:
+      - name: Download repair candidate
+        uses: actions/download-artifact@v6
+        with:
+          name: v0.4.12-windows-client-only-candidate
+          path: candidate
+
+      - name: Verify tag, release, and prepare recoverable asset set
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          remote_sha=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" "refs/tags/$RELEASE_TAG" | awk '{print $1}')
+          test "$remote_sha" = "$RELEASE_TAG_SHA"
+
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > release-before.json
+          jq -e --arg tag "$RELEASE_TAG" '.tag_name == $tag and .draft == false' release-before.json >/dev/null
+          for asset in "$RELEASE_APK" "$LINUX_ASSET"; do
+            jq -e --arg name "$asset" '.assets | any(.name == $name)' release-before.json >/dev/null
+          done
+
+          rm -rf current prepared inspect
+          mkdir -p current prepared inspect
+
+          validate_client_only() {
+            local archive=$1
+            local destination=$2
+            rm -rf "$destination"
+            mkdir -p "$destination"
+            unzip -q "$archive" -d "$destination" || return 1
+            local expected_entries actual_entries
+            expected_entries=$(printf '%s\n' CLIENT-ONLY-NOTICE.txt LICENSE NOTICE PACKAGE-MANIFEST.json README.md sense-mic.exe)
+            actual_entries=$(unzip -Z1 "$archive" | sed 's#\\#/#g' | LC_ALL=C sort) || return 1
+            [[ "$actual_entries" = "$expected_entries" ]] || return 1
+            jq -e --arg sha "$RELEASE_TAG_SHA" '
+              .artifactClass == "windows-client-only" and
+              .releaseEligible == true and
+              .driverIncluded == false and
+              .sourceCommit == $sha and
+              (.builtAtUtc | type == "string")
+            ' "$destination/PACKAGE-MANIFEST.json" >/dev/null || return 1
+            [[ "$(sha256sum "$destination/README.md" | awk '{print $1}')" = "$WINDOWS_README_SHA256" ]] || return 1
+            [[ "$(sha256sum "$destination/LICENSE" | awk '{print $1}')" = "$WINDOWS_LICENSE_SHA256" ]] || return 1
+            [[ "$(sha256sum "$destination/NOTICE" | awk '{print $1}')" = "$WINDOWS_NOTICE_SHA256" ]] || return 1
+            [[ "$(sha256sum "$destination/CLIENT-ONLY-NOTICE.txt" | awk '{print $1}')" = "$WINDOWS_CLIENT_ONLY_NOTICE_SHA256" ]] || return 1
+          }
+
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern "$RELEASE_APK" --pattern "$LINUX_ASSET" --dir current
+          test "$(sha256sum "current/$RELEASE_APK" | awk '{print $1}')" = "$RELEASE_APK_SHA256"
+          test "$(sha256sum "current/$LINUX_ASSET" | awk '{print $1}')" = "$LINUX_ASSET_SHA256"
+          cp "current/$RELEASE_APK" "prepared/$RELEASE_APK"
+          cp "current/$LINUX_ASSET" "prepared/$LINUX_ASSET"
+
+          validate_client_only "candidate/$WINDOWS_ASSET" inspect/candidate
+          jq -S 'del(.builtAtUtc)' inspect/candidate/PACKAGE-MANIFEST.json > inspect/candidate-manifest.json
+
+          preserve_existing=false
+          if jq -e --arg name "$WINDOWS_ASSET" '.assets | any(.name == $name)' release-before.json >/dev/null; then
+            gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+              --pattern "$WINDOWS_ASSET" --dir current
+            if validate_client_only "current/$WINDOWS_ASSET" inspect/existing; then
+              jq -S 'del(.builtAtUtc)' inspect/existing/PACKAGE-MANIFEST.json > inspect/existing-manifest.json
+              if cmp -s inspect/candidate-manifest.json inspect/existing-manifest.json && \
+                [[ "$(sha256sum inspect/candidate/sense-mic.exe | awk '{print $1}')" = \
+                  "$(sha256sum inspect/existing/sense-mic.exe | awk '{print $1}')" ]]; then
+                preserve_existing=true
+              fi
+            fi
+          fi
+          if [[ "$preserve_existing" = true ]]; then
+            cp "current/$WINDOWS_ASSET" "prepared/$WINDOWS_ASSET"
+          else
+            cp "candidate/$WINDOWS_ASSET" "prepared/$WINDOWS_ASSET"
+          fi
+
+          (
+            cd prepared
+            sha256sum "$RELEASE_APK" "$WINDOWS_ASSET" "$LINUX_ASSET" > SHA256SUMS.txt
+          )
+          ! grep -F "$LEGACY_WINDOWS_ASSET" prepared/SHA256SUMS.txt
+
+      - name: Preserve candidate and checksum before mutating the release
+        uses: actions/upload-artifact@v6
+        with:
+          name: v0.4.12-sense-mic-release-recovery-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            prepared/${{ env.RELEASE_APK }}
+            prepared/${{ env.WINDOWS_ASSET }}
+            prepared/${{ env.LINUX_ASSET }}
+            prepared/SHA256SUMS.txt
+            release-before.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload new asset, retire legacy asset, then replace checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          remote_sha=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" "refs/tags/$RELEASE_TAG" | awk '{print $1}')
+          test "$remote_sha" = "$RELEASE_TAG_SHA"
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > release-live.json
+
+          candidate_sha=$(sha256sum "prepared/$WINDOWS_ASSET" | awk '{print $1}')
+          replace_windows=false
+          if jq -e --arg name "$WINDOWS_ASSET" '.assets | any(.name == $name)' release-live.json >/dev/null; then
+            rm -rf verify-existing-windows
+            mkdir verify-existing-windows
+            gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+              --pattern "$WINDOWS_ASSET" --dir verify-existing-windows
+            existing_sha=$(sha256sum "verify-existing-windows/$WINDOWS_ASSET" | awk '{print $1}')
+            [[ "$existing_sha" = "$candidate_sha" ]] || replace_windows=true
+          else
+            replace_windows=true
+          fi
+
+          windows_pending="SenseMicClient-v0.4.12-windows-x64-client-only.repair-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.zip"
+          if [[ "$replace_windows" = true ]]; then
+            cp "prepared/$WINDOWS_ASSET" "prepared/$windows_pending"
+            gh release upload "$RELEASE_TAG" "prepared/$windows_pending" --repo "$GITHUB_REPOSITORY"
+            rm -rf verify-windows-pending
+            mkdir verify-windows-pending
+            gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+              --pattern "$windows_pending" --dir verify-windows-pending
+            test "$candidate_sha" = \
+              "$(sha256sum "verify-windows-pending/$windows_pending" | awk '{print $1}')"
+
+            gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > release-windows-live.json
+            if jq -e --arg name "$WINDOWS_ASSET" '.assets | any(.name == $name)' release-windows-live.json >/dev/null; then
+              gh release delete-asset "$RELEASE_TAG" "$WINDOWS_ASSET" --repo "$GITHUB_REPOSITORY" --yes
+            fi
+            gh release upload "$RELEASE_TAG" "prepared/$WINDOWS_ASSET" --repo "$GITHUB_REPOSITORY"
+          fi
+
+          rm -rf verify-new
+          mkdir verify-new
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern "$WINDOWS_ASSET" --dir verify-new
+          test "$(sha256sum "prepared/$WINDOWS_ASSET" | awk '{print $1}')" = \
+            "$(sha256sum "verify-new/$WINDOWS_ASSET" | awk '{print $1}')"
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --json assets --jq '.assets[].name' | grep -Fxq "$windows_pending"; then
+            gh release delete-asset "$RELEASE_TAG" "$windows_pending" --repo "$GITHUB_REPOSITORY" --yes
+          fi
+
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > release-live.json
+          if jq -e --arg name "$LEGACY_WINDOWS_ASSET" '.assets | any(.name == $name)' release-live.json >/dev/null; then
+            gh release delete-asset "$RELEASE_TAG" "$LEGACY_WINDOWS_ASSET" --repo "$GITHUB_REPOSITORY" --yes
+          fi
+
+          checksum_matches=false
+          if jq -e '.assets | any(.name == "SHA256SUMS.txt")' release-live.json >/dev/null; then
+            rm -rf verify-checksum
+            mkdir verify-checksum
+            gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+              --pattern SHA256SUMS.txt --dir verify-checksum
+            if cmp -s prepared/SHA256SUMS.txt verify-checksum/SHA256SUMS.txt; then
+              checksum_matches=true
+            fi
+          fi
+
+          pending="SHA256SUMS.v0.4.12.repair-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.txt"
+          if [[ "$checksum_matches" != true ]]; then
+            cp prepared/SHA256SUMS.txt "prepared/$pending"
+            gh release upload "$RELEASE_TAG" "prepared/$pending" --repo "$GITHUB_REPOSITORY"
+
+            rm -rf verify-pending
+            mkdir verify-pending
+            gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+              --pattern "$pending" --dir verify-pending
+            cmp prepared/SHA256SUMS.txt "verify-pending/$pending"
+
+            gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > release-checksum-live.json
+            if jq -e '.assets | any(.name == "SHA256SUMS.txt")' release-checksum-live.json >/dev/null; then
+              gh release delete-asset "$RELEASE_TAG" SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --yes
+            fi
+            gh release upload "$RELEASE_TAG" prepared/SHA256SUMS.txt --repo "$GITHUB_REPOSITORY"
+
+            rm -rf verify-checksum
+            mkdir verify-checksum
+            gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+              --pattern SHA256SUMS.txt --dir verify-checksum
+            cmp prepared/SHA256SUMS.txt verify-checksum/SHA256SUMS.txt
+            gh release delete-asset "$RELEASE_TAG" "$pending" --repo "$GITHUB_REPOSITORY" --yes
+          fi
+
+      - name: Assert corrected release state
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          remote_sha=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" "refs/tags/$RELEASE_TAG" | awk '{print $1}')
+          test "$remote_sha" = "$RELEASE_TAG_SHA"
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > release-after.json
+          for asset in "$RELEASE_APK" "$WINDOWS_ASSET" "$LINUX_ASSET" SHA256SUMS.txt; do
+            jq -e --arg name "$asset" '.assets | any(.name == $name)' release-after.json >/dev/null
+          done
+          ! jq -e --arg name "$LEGACY_WINDOWS_ASSET" '.assets | any(.name == $name)' release-after.json >/dev/null
+
+          rm -rf final-check
+          mkdir final-check
+          gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern "$RELEASE_APK" --pattern "$WINDOWS_ASSET" \
+            --pattern "$LINUX_ASSET" --pattern SHA256SUMS.txt --dir final-check
+          (
+            cd final-check
+            sha256sum --check SHA256SUMS.txt
+            ! grep -F "$LEGACY_WINDOWS_ASSET" SHA256SUMS.txt
+          )
+
+          jq -r '.assets[].name | select(startswith("SHA256SUMS.v0.4.12.repair-"))' release-after.json |
+            while IFS= read -r pending; do
+              [[ -z "$pending" ]] || gh release delete-asset "$RELEASE_TAG" "$pending" --repo "$GITHUB_REPOSITORY" --yes
+            done
+          jq -r '.assets[].name | select(startswith("SenseMicClient-v0.4.12-windows-x64-client-only.repair-"))' release-after.json |
+            while IFS= read -r pending; do
+              [[ -z "$pending" ]] || gh release delete-asset "$RELEASE_TAG" "$pending" --repo "$GITHUB_REPOSITORY" --yes
+            done

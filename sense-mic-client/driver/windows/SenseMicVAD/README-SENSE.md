@@ -45,7 +45,11 @@ WDK VSIX，产物写入 `driver/windows/x64`。生成目录和证书均被 Git �
 1. x64 Release 全量重建，C++ 使用 `/W4 /WX`；
 2. `Inf2Cat` signability；
 3. `InfVerif /v /w`；
-4. 测试签名或正式证书签名；
+4. 开发测试签名，或生成不带公开发行签名的 Partner Center staging 目录；
 5. INF/SYS/CAT 大小和 SHA-256 manifest。
 
-普通 Windows 10/11 发行包还需要 Microsoft 的 attestation 或 HLK 签名结果。
+`-SignMode Test` 的 manifest 标记为 `development-test-only`；`-SignMode Submission` 额外
+收集 PDB 并标记为 `unsigned-partner-center-staging`。两者都不是公开发行驱动。
+普通 Windows 10/11 发行包只接收 Microsoft Partner Center 返回且通过
+`Assert-WindowsDriverPackage.ps1 -ExpectedClass MicrosoftSigned` 的目录；普通用户发行优先
+使用 HLK/WHQL，attestation 只按 Microsoft 当前支持边界用于对应测试场景。

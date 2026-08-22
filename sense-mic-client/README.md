@@ -57,26 +57,49 @@ VSIX 集成到仓库私有 MSBuild overlay，不修改机器上的 Visual Studio
 powershell -ExecutionPolicy Bypass -File `
   sense-mic-client/driver/windows/build-driver.ps1 -SignMode Test
 
-# 提交 Microsoft 签名流程前的正式证书包
-$env:SENSE_MIC_DRIVER_CERT_PASSWORD = 'PFX_PASSWORD'
+# Partner Center staging 目录：不带公开发行签名，并包含 PDB
 powershell -ExecutionPolicy Bypass -File `
   sense-mic-client/driver/windows/build-driver.ps1 `
-  -SignMode Production -CertificatePath X:\path\sense-driver.pfx
+  -SignMode Submission -OutputDirectory X:\submission\SenseMicVAD
 ```
 
-面向普通 Windows 10/11 设备分发时，把生成包送入 Microsoft Partner Center 的
-attestation/HLK 签名流程，再将返回的目录作为客户端发行资产。开发测试包使用 WDK
-test certificate，适用于启用了测试签名的开发机。
+这两个构建类别的 `build-manifest.json` 都明确写入 `releaseEligible: false`：`Test` 仅用于
+启用了测试签名的开发机；`Submission` 仅生成用于 CAB 签名与 Microsoft Partner Center
+提交的 staging 目录。面向普通 Windows 10/11 设备分发的驱动目录必须来自 Partner Center，
+并通过 Microsoft catalog
+签名、Windows kernel policy、catalog 成员关系和 EKU 检查。当前 Microsoft 文档把
+[attestation 定位于测试场景](https://learn.microsoft.com/windows-hardware/drivers/dashboard/code-signing-attestation)；
+面向普通用户强制使用 HLK/WHQL 签名；组合打包脚本会拦截 attestation 目录。Partner Center 返回文件的 Microsoft EKU 判定遵循
+[Validate the Microsoft Signature](https://learn.microsoft.com/windows-hardware/drivers/dashboard/code-signing-validate)。
+staging 目录仍需按 Hardware Dev Center 流程制作 CAB，并使用已登记的代码签名证书签署
+CAB 后提交；仓库不会把未完成这一步的目录称为正式驱动。
 
 把 Rust EXE 与 Microsoft 返回的正式驱动目录打成同一个发行 ZIP：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File sense-mic-client/package-windows.ps1 `
+  -PackageFlavor MicrosoftSigned `
+  -MicrosoftSigningPolicy WHQL `
   -DriverPackage X:\partner-center\SenseMicVAD
 ```
 
 脚本生成 `dist/SenseMicClient-windows-x64.zip` 和对应 SHA-256 文件；EXE 旁保持
 `driver/windows/x64/SenseMicVAD.inf` 布局，因此 `sense-mic driver install` 可直接定位。
+验证过程会生成 `driver-validation.json`；缺少 Microsoft 签名、EKU 不匹配、catalog 未覆盖
+INF/SYS 或 kernel-policy 校验失败都会终止打包。
+EKU 分类会先识别 `1.3.6.1.4.1.311.10.3.5.1` 为 attestation，再识别
+`1.3.6.1.4.1.311.10.3.5` 为 HLK/WHQL；attestation 目录不需要同时携带后一个 EKU。
+
+没有 Partner Center 返回包时，只生成名称明确的 client-only 发行资产：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File sense-mic-client/package-windows.ps1 `
+  -PackageFlavor ClientOnly
+```
+
+产物名为 `SenseMicClient-windows-x64-client-only.zip`，根目录的
+`PACKAGE-MANIFEST.json` 同时声明 `driverIncluded: false`。开发测试驱动需要显式选择
+`-PackageFlavor DevelopmentTest`，产物名固定包含 `development-test`，不会进入公开 Release。
 
 以管理员终端安装已签名包：
 
@@ -90,6 +113,11 @@ powershell -ExecutionPolicy Bypass -File sense-mic-client/package-windows.ps1 `
 ```powershell
 ./sense-mic.exe driver uninstall
 ```
+
+安装命令的边界是调用系统 `pnputil`；管理员权限、catalog 信任与内核加载策略由 Windows
+执行。公开发行资产的自动查找目录只在 Microsoft-signed 组合包中出现；名称带
+`development-test` 的开发包也保留相同布局，但仅用于测试签名环境。client-only 包需要先
+单独取得 Microsoft-signed 驱动目录，再通过 `--package` 指定其 INF 或所在目录。
 
 ## 连接
 
@@ -126,7 +154,8 @@ Windows 应用的麦克风列表中选择 **Sense Mic**。Linux 首次连接会�
 ./sense-mic.exe driver status
 ```
 
-`doctor` 同时输出虚拟端点、CPAL 输出设备和局域网发现结果。运行中每 5 秒输出收到、
+`doctor` 同时输出虚拟端点、CPAL 输出设备和局域网发现结果；虚拟端点尚未就绪或未发现
+手机时以非零状态退出，便于安装器和 CI 把它作为 readiness gate。运行中每 5 秒输出收到、
 恢复、丢失、jitter、缓存深度与丢弃样本计数。默认链路预算约为：20 ms 采集帧 +
 100 ms 网络缓冲 + 40 ms 音频线程预滚，常见局域网端到端约 140–220 ms；可用
 `--latency-ms 80` 换取更低延迟。

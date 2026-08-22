@@ -1,10 +1,8 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('Test', 'Unsigned', 'Production')]
-    [string]$SignMode = 'Test',
-    [string]$CertificatePath,
-    [string]$CertificatePassword = $env:SENSE_MIC_DRIVER_CERT_PASSWORD,
-    [string]$TimestampServer = 'http://timestamp.digicert.com',
+    [Parameter(Mandatory = $true)]
+    [ValidateSet('Test', 'Submission')]
+    [string]$SignMode,
     [string]$OutputDirectory
 )
 
@@ -155,21 +153,10 @@ $infToolPath = Join-Path $wdkRoot "bin\$kitVersion\x64\"
 $inf2CatToolPath = Join-Path $wdkRoot "bin\$kitVersion\x86\"
 $driverSignToolPath = Join-Path $sdkRoot "bin\$kitVersion\x86\"
 $infVerif = Join-Path $wdkRoot "tools\$kitVersion\x64\infverif.exe"
-$signTool = Join-Path $sdkRoot "bin\$kitVersion\x64\signtool.exe"
 
 $msbuildSignMode = switch ($SignMode) {
     'Test' { 'TestSign' }
-    'Unsigned' { 'Off' }
-    'Production' { 'ProductionSign' }
-}
-if ($SignMode -eq 'Production') {
-    if (-not $CertificatePath) {
-        throw 'Production mode requires -CertificatePath.'
-    }
-    $CertificatePath = [IO.Path]::GetFullPath($CertificatePath)
-    if (-not (Test-Path -LiteralPath $CertificatePath -PathType Leaf)) {
-        throw "Production certificate was not found at $CertificatePath"
-    }
+    'Submission' { 'Off' }
 }
 
 $properties = @(
@@ -182,11 +169,6 @@ $properties = @(
     "/p:DrvCatToolPath=$infToolPath", "/p:DriverSignToolPath=$driverSignToolPath",
     "/p:VCTargetsPath=$overlay\"
 )
-if ($SignMode -eq 'Production') {
-    $properties += "/p:ProductionCertificate=$CertificatePath"
-    if ($CertificatePassword) { $properties += "/p:Password=$CertificatePassword" }
-    if ($TimestampServer) { $properties += "/p:TimestampServer=$TimestampServer" }
-}
 
 Write-Host "Building SenseMicVAD x64 Release ($SignMode) with WDK $wdkVersion"
 & $msbuild $solution @properties
@@ -210,7 +192,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "InfVerif failed with exit code $LASTEXITCODE"
 }
 
-foreach ($name in @('SenseMicVAD.inf', 'SenseMicVAD.sys', 'sensemicvad.cat', 'package.cer', 'build-manifest.json')) {
+foreach ($name in @('SenseMicVAD.inf', 'SenseMicVAD.sys', 'sensemicvad.cat', 'SenseMicVAD.pdb', 'package.cer', 'build-manifest.json')) {
     $candidate = Join-Path $OutputDirectory $name
     if (Test-Path -LiteralPath $candidate) { Remove-Item -LiteralPath $candidate -Force }
 }
@@ -220,24 +202,53 @@ if (($SignMode -eq 'Test') -and (Test-Path -LiteralPath $testCertificate)) {
     Copy-Item -LiteralPath $testCertificate -Destination $OutputDirectory -Force
 }
 
-if ($SignMode -eq 'Production') {
-    & $signTool verify /pa /v $cat
-    if ($LASTEXITCODE -ne 0) { throw 'Production catalog signature verification failed.' }
-} elseif ($SignMode -eq 'Test') {
+if ($SignMode -eq 'Test') {
     $signature = Get-AuthenticodeSignature -LiteralPath $cat
     if (-not $signature.SignerCertificate) { throw 'The test-signed catalog has no signer certificate.' }
+} else {
+    $signature = Get-AuthenticodeSignature -LiteralPath $cat
+    if ($signature.SignerCertificate) {
+        throw 'Partner Center staging output unexpectedly contains a signed catalog.'
+    }
+
+    $pdb = Get-ChildItem -LiteralPath (Join-Path $solutionRoot 'Source\Main') -Filter 'SenseMicVAD.pdb' -File -Recurse |
+        Where-Object { $_.FullName -match '[\\/]x64[\\/]Release[\\/]' } |
+        Sort-Object LastWriteTimeUtc -Descending |
+        Select-Object -First 1
+    if (-not $pdb) {
+        throw 'Partner Center staging output requires SenseMicVAD.pdb, but the Release build did not produce it.'
+    }
+    Copy-Item -LiteralPath $pdb.FullName -Destination $OutputDirectory -Force
 }
 
+$distributionClass = if ($SignMode -eq 'Test') {
+    'development-test-only'
+} else {
+    'unsigned-partner-center-staging'
+}
+$intendedUse = if ($SignMode -eq 'Test') {
+    'development machines with test-signing enabled'
+} else {
+    'staging input for CAB signing and Microsoft Partner Center; not a public release asset'
+}
 $manifest = [ordered]@{
-    schema = 1
+    schema = 2
     builtAtUtc = [DateTimeOffset]::UtcNow.ToString('O')
     architecture = 'x64'
     configuration = 'Release'
     signMode = $SignMode
+    distributionClass = $distributionClass
+    releaseEligible = $false
+    intendedUse = $intendedUse
     wdk = $wdkVersion
     files = @{}
 }
-foreach ($name in @('SenseMicVAD.inf', 'SenseMicVAD.sys', 'sensemicvad.cat')) {
+$manifestFiles = @('SenseMicVAD.inf', 'SenseMicVAD.sys', 'sensemicvad.cat')
+if ($SignMode -eq 'Submission') { $manifestFiles += 'SenseMicVAD.pdb' }
+if (($SignMode -eq 'Test') -and (Test-Path -LiteralPath (Join-Path $OutputDirectory 'package.cer') -PathType Leaf)) {
+    $manifestFiles += 'package.cer'
+}
+foreach ($name in $manifestFiles) {
     $path = Join-Path $OutputDirectory $name
     $manifest.files[$name] = [ordered]@{
         bytes = (Get-Item -LiteralPath $path).Length

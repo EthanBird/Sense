@@ -98,7 +98,11 @@ fn main() -> Result<()> {
 fn print_discovery(args: &DiscoveryArgs) -> Result<()> {
     let devices = run_discovery(args)?;
     if devices.is_empty() {
-        println!("No Sense Mic phone replied during the discovery window.");
+        let target = args.host.as_deref().unwrap_or("active IPv4 broadcasts");
+        bail!(
+            "no Sense Mic phone replied within {} ms (target: {target})",
+            args.timeout_ms.clamp(100, 15_000)
+        );
     }
     for device in devices {
         println!(
@@ -130,7 +134,9 @@ fn serve(args: ServeArgs) -> Result<()> {
     };
     let mut failure_count = 0u32;
     while !shutdown.load(Ordering::Acquire) {
-        match select_device(run_discovery(&args.discovery)?, args.device_id) {
+        let discovered = run_discovery(&args.discovery)
+            .and_then(|devices| select_device(devices, args.device_id));
+        match discovered {
             Ok(device) => {
                 println!(
                     "Pairing with {} at {}...",
@@ -141,12 +147,18 @@ fn serve(args: ServeArgs) -> Result<()> {
                     Ok(()) if shutdown.load(Ordering::Acquire) => break,
                     Ok(()) => failure_count = 0,
                     Err(error) => {
+                        if args.once {
+                            return Err(error).context("Sense Mic streaming session failed");
+                        }
                         failure_count = failure_count.saturating_add(1);
                         eprintln!("session ended: {error:#}");
                     }
                 }
             }
             Err(error) => {
+                if args.once {
+                    return Err(error).context("Sense Mic discovery failed");
+                }
                 failure_count = failure_count.saturating_add(1);
                 eprintln!("discovery: {error:#}");
             }
@@ -177,11 +189,12 @@ fn doctor() -> Result<()> {
     );
     println!("backend: {}", status.detail);
     println!("output devices:");
-    for device in list_output_devices().unwrap_or_default() {
+    for device in list_output_devices().context("enumerate desktop audio output devices")? {
         println!("  - {device}");
     }
-    let devices = discover(Duration::from_millis(800), None).unwrap_or_default();
-    println!("phones discovered: {}", devices.len());
+    let devices = doctor_discovery(discover(Duration::from_millis(800), None))?;
+    let discovered_phone_count = devices.len();
+    println!("phones discovered: {discovered_phone_count}");
     for device in devices {
         println!(
             "  - {} ({})",
@@ -189,7 +202,29 @@ fn doctor() -> Result<()> {
             device.source.ip()
         );
     }
-    Ok(())
+    doctor_readiness(status.installed, discovered_phone_count)
+}
+
+fn doctor_discovery(result: Result<Vec<DiscoveredDevice>>) -> Result<Vec<DiscoveredDevice>> {
+    result.context("Sense Mic LAN discovery diagnostic failed")
+}
+
+fn doctor_readiness(virtual_endpoint_ready: bool, discovered_phone_count: usize) -> Result<()> {
+    let mut missing = Vec::new();
+    if !virtual_endpoint_ready {
+        missing.push("virtual microphone endpoint");
+    }
+    if discovered_phone_count == 0 {
+        missing.push("discoverable Sense Mic phone");
+    }
+    if missing.is_empty() {
+        Ok(())
+    } else {
+        bail!(
+            "Sense Mic readiness check failed: missing {}",
+            missing.join(" and ")
+        )
+    }
 }
 
 fn driver_command(command: DriverCommand) -> Result<()> {
@@ -253,5 +288,44 @@ fn sleep_until_shutdown(duration: Duration, shutdown: &AtomicBool) {
             break;
         }
         thread::sleep(Duration::from_millis(100));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn doctor_preserves_discovery_error_chain() {
+        let error = doctor_discovery(Err(anyhow::anyhow!("UDP route failed"))).unwrap_err();
+        let rendered = format!("{error:#}");
+        assert!(
+            rendered.contains("Sense Mic LAN discovery diagnostic failed"),
+            "{rendered}"
+        );
+        assert!(rendered.contains("UDP route failed"), "{rendered}");
+    }
+
+    #[test]
+    fn doctor_discovery_preserves_a_successful_empty_window_for_readiness_reporting() {
+        assert!(doctor_discovery(Ok(Vec::new())).unwrap().is_empty());
+    }
+
+    #[test]
+    fn doctor_readiness_requires_both_endpoint_and_phone() {
+        assert!(doctor_readiness(true, 1).is_ok());
+
+        let endpoint = doctor_readiness(false, 1).unwrap_err().to_string();
+        assert!(
+            endpoint.contains("virtual microphone endpoint"),
+            "{endpoint}"
+        );
+
+        let phone = doctor_readiness(true, 0).unwrap_err().to_string();
+        assert!(phone.contains("discoverable Sense Mic phone"), "{phone}");
+
+        let both = doctor_readiness(false, 0).unwrap_err().to_string();
+        assert!(both.contains("virtual microphone endpoint"), "{both}");
+        assert!(both.contains("discoverable Sense Mic phone"), "{both}");
     }
 }

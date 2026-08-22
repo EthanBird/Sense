@@ -6,16 +6,18 @@
 
 > Android 原生高性能中文输入法：普通输入完全本地运行，AI、记忆与工具能力通过可配置的长按方向 Skill 显式触发。
 
-> **Sense Mic 已实装：** 设置页可开启独立的 Android 前台麦克风服务；Rust 桌面端提供
+> **Sense Mic 工程预览已实装：** 设置页可开启独立的 Android 前台麦克风服务；Rust 桌面端提供
 > 加密 Opus、FEC、jitter/PLC、自动重连与 Linux PipeWire/Pulse 虚拟源；Windows 端包含
-> 可复现构建的 x64 WaveRT `Sense Mic Playback -> Sense Mic` 虚拟音频驱动。选型、构建和
-> 使用见 [Sense Mic Client](sense-mic-client/README.md) 与 [ADR 0026](docs/adr/0026-sense-mic-phone-to-pc-virtual-microphone.md)。
+> 可复现构建的 x64 WaveRT `Sense Mic Playback -> Sense Mic` 虚拟音频驱动源码。公开 Windows
+> 客户端包在取得并验证 Microsoft 签名目录前明确保持 `client-only`；开发测试签名驱动不进入
+> 普通用户发行资产。选型、构建和使用见 [Sense Mic Client](sense-mic-client/README.md) 与
+> [ADR 0026](docs/adr/0026-sense-mic-phone-to-pc-virtual-microphone.md)。
 
 > Android 语音 Provider 新增“搜狗在线语音（免配置）”：内置加密握手、20 ms Opus
 > 分帧与 SRSS WebSocket 转写，选择后无需 API Key 即可从键盘语音入口使用。协议与
 > 双实现验证见[接入记录](docs/research/sogou-asr-provider-integration-2026-08-01.md)。
 
-**项目状态：** `v0.4.12` OAuth、Agent 远程信道、连续候选与 Sense Mic 正式版
+**项目状态：** `v0.4.12` OAuth、Agent 远程信道、连续候选与 Sense Mic 工程预览
 
 **当前版本：** `v0.4.12`（`versionCode 37`）
 
@@ -54,8 +56,9 @@ PREPARED/ACTIVE exact identity 两阶段启动，重启恢复不会重复执行�
 
 候选展开区从离散翻页改为单一纵向 content-space 网格，可逐像素拖动并惯性滚动；绘制
 只遍历当前可见行，点击始终映射回稳定的全局候选索引，折叠候选条原有横向滑动保持不变。
-本版同时交付 Sense Mic 的 Android 后台服务、Rust Windows/Linux 客户端与可复现构建的
-Windows WaveRT 虚拟麦克风驱动。完整变更见
+本版同时交付 Sense Mic 的 Android 后台服务、Rust Windows/Linux 客户端、可复现构建的
+Windows WaveRT 虚拟麦克风驱动源码及签名门禁；普通 Windows 发行包在 Microsoft 签名目录
+就绪前保持 `client-only`。完整变更见
 [`v0.4.12` 发布说明](docs/releases/v0.4.12.md)。
 
 ## 0.1 v0.4.11 候选记忆与本地智能联想

@@ -67,9 +67,27 @@ jobs:
         run: >-
           powershell -NoProfile -ExecutionPolicy Bypass -File
           sense-mic-client/driver/windows/build-driver.ps1 -SignMode Test
+      - name: Enforce Windows release packaging policy
+        shell: powershell
+        run: >-
+          powershell -NoProfile -ExecutionPolicy Bypass -File
+          sense-mic-client/scripts/Test-WindowsReleasePolicy.ps1
+          -TestDriverPackage sense-mic-client/driver/windows/x64
+      - name: Build and validate unsigned Partner Center staging directory
+        shell: powershell
+        run: |
+          $submission = Join-Path $env:RUNNER_TEMP 'SenseMicVAD-partner-center-submission'
+          powershell -NoProfile -ExecutionPolicy Bypass -File sense-mic-client/driver/windows/build-driver.ps1 -SignMode Submission -OutputDirectory $submission
+          powershell -NoProfile -ExecutionPolicy Bypass -File sense-mic-client/scripts/Assert-WindowsDriverPackage.ps1 -PackagePath $submission -ExpectedClass UnsignedSubmission
       - name: Upload driver evidence
         uses: actions/upload-artifact@v6
         with:
           name: SenseMicVAD-windows-x64-test
           path: sense-mic-client/driver/windows/x64/
+          if-no-files-found: error
+      - name: Upload Partner Center staging evidence
+        uses: actions/upload-artifact@v6
+        with:
+          name: SenseMicVAD-windows-x64-unsigned-partner-center-staging
+          path: ${{ runner.temp }}/SenseMicVAD-partner-center-submission/
           if-no-files-found: error

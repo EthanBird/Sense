@@ -85,6 +85,31 @@ C++ WDK driver 只负责稳定的 render-to-capture 字节路由。
 [Install the WDK using NuGet](https://learn.microsoft.com/windows-hardware/drivers/install-the-wdk-using-nuget)。
 仓库构建脚本还固定并校验 WDK VSIX，最终强制运行 Inf2Cat 和 InfVerif。
 
+### 3.4.1 驱动签名与发行门禁修订（2026-08-21）
+
+驱动构建与公开发行拆成三个不可混用的类别：
+
+| 类别 | 产物标记 | 用途 | 公开 Release |
+|---|---|---|---|
+| `Test` | `development-test-only` | 开发机测试签名 | 禁止 |
+| `Submission` | `unsigned-partner-center-staging` | CAB 签名与 Partner Center 输入 staging，包含 PDB | 禁止 |
+| `MicrosoftSigned` | `microsoft-whql-or-hlk` | Partner Center 返回目录 | 通过验证后允许 |
+
+正式组合包不会用本地 PFX 或 Authenticode 签名冒充 Microsoft 签名。门禁验证 catalog 的
+Microsoft Windows Hardware Compatibility Publisher signer、Windows Hardware Driver
+Verification EKU、`signtool /kp /c` 对 INF/SYS 的 catalog 成员关系与 kernel policy，并生成
+独立验证 manifest。没有 Partner Center 返回目录时只发布名称和 manifest 都明确标识的
+`client-only` 包。根据 Microsoft 2026 年更新的
+[attestation 支持边界](https://learn.microsoft.com/windows-hardware/drivers/dashboard/code-signing-attestation)，
+面向普通用户强制走 HLK/WHQL；attestation 仅进入其支持的测试场景，组合打包脚本会终止
+将其标记为公开发行资产。Microsoft-signed
+分类按官方 [EKU 验证方法](https://learn.microsoft.com/windows-hardware/drivers/dashboard/code-signing-validate)
+执行。
+
+Rust 安装命令只负责以 `pnputil` 注册/移除包，管理员权限与最终内核信任仍由 Windows
+裁决。公开发行资产的标准自动发现目录只由通过上述门禁的 Microsoft-signed 组合包创建；
+测试包使用带 `development-test` 的独立文件名并保留相同目录布局。
+
 ### 3.5 Linux
 
 Linux 不安装内核模块。Rust client 调用 `pactl load-module module-null-sink` 创建

@@ -1222,6 +1222,7 @@ dependencies = [
  "rtrb",
  "sha2",
  "subtle",
+ "windows-sys 0.61.2",
  "zeroize",
 ]
 
