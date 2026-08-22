@@ -958,6 +958,7 @@ for MIC_PERMISSION in \
     android.permission.ACCESS_WIFI_STATE \
     android.permission.CHANGE_NETWORK_STATE \
     android.permission.CHANGE_WIFI_STATE \
+    android.permission.CHANGE_WIFI_MULTICAST_STATE \
     android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE \
     android.permission.FOREGROUND_SERVICE_MICROPHONE; do
     if ! grep -Fxq "$MIC_PERMISSION" <<<"$DECLARED_PERMISSIONS"; then
@@ -1002,6 +1003,7 @@ UNEXPECTED_PERMISSIONS=$(
         -e "android.permission.ACCESS_WIFI_STATE" \
         -e "android.permission.CHANGE_NETWORK_STATE" \
         -e "android.permission.CHANGE_WIFI_STATE" \
+        -e "android.permission.CHANGE_WIFI_MULTICAST_STATE" \
         -e "android.permission.RECORD_AUDIO" \
         -e "android.permission.FOREGROUND_SERVICE" \
         -e "android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" \

@@ -21,6 +21,7 @@ EXPECTED_USED_PERMISSIONS = frozenset(
         "android.permission.ACCESS_WIFI_STATE",
         "android.permission.CHANGE_NETWORK_STATE",
         "android.permission.CHANGE_WIFI_STATE",
+        "android.permission.CHANGE_WIFI_MULTICAST_STATE",
         "android.permission.RECORD_AUDIO",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE",

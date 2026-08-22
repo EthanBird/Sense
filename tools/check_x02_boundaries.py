@@ -423,7 +423,7 @@ EXPECTED_ROOT_BUILD_SCRIPT = """plugins {
 """
 
 EXPECTED_OFFLINE_VERIFY_SHA256 = (
-    "957c6963146078bbcd5148064fd3b39390f6a93934e913a205e1e396e2a7a57c"
+    "1962fc2b2a10d1d705fde71644f55d38b83bc2ba4e561ed7d7a3b686fe4daeef"
 )
 EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("settings.gradle.kts"):

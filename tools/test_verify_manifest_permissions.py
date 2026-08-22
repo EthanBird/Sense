@@ -27,6 +27,10 @@ def manifest(
         ("uses-permission", "android.permission.ACCESS_WIFI_STATE"),
         ("uses-permission", "android.permission.CHANGE_NETWORK_STATE"),
         ("uses-permission", "android.permission.CHANGE_WIFI_STATE"),
+        (
+            "uses-permission",
+            "android.permission.CHANGE_WIFI_MULTICAST_STATE",
+        ),
         ("uses-permission", "android.permission.RECORD_AUDIO"),
         ("uses-permission", "android.permission.FOREGROUND_SERVICE"),
         (
@@ -222,6 +226,10 @@ class ManifestPermissionVerifierTest(unittest.TestCase):
             ("uses-permission", "android.permission.ACCESS_WIFI_STATE"),
             ("uses-permission", "android.permission.CHANGE_NETWORK_STATE"),
             ("uses-permission", "android.permission.CHANGE_WIFI_STATE"),
+            (
+                "uses-permission",
+                "android.permission.CHANGE_WIFI_MULTICAST_STATE",
+            ),
             ("uses-permission", "android.permission.RECORD_AUDIO"),
             ("uses-permission", "android.permission.FOREGROUND_SERVICE"),
             (
@@ -316,6 +324,10 @@ class ManifestPermissionVerifierTest(unittest.TestCase):
                     ("uses-permission", "android.permission.ACCESS_WIFI_STATE"),
                     ("uses-permission", "android.permission.CHANGE_NETWORK_STATE"),
                     ("uses-permission", "android.permission.CHANGE_WIFI_STATE"),
+                    (
+                        "uses-permission",
+                        "android.permission.CHANGE_WIFI_MULTICAST_STATE",
+                    ),
                     ("uses-permission-sdk-23", "android.permission.RECORD_AUDIO"),
                     ("uses-permission", "android.permission.FOREGROUND_SERVICE"),
                     (
