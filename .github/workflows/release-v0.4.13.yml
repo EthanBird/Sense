@@ -1,11 +1,13 @@
-name: Release v0.4.12
+name: Release v0.4.13
 # The status jobs make publication observable to GitHub API clients without Actions-list access.
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
-  group: release-v0.4.12
+  group: release-v0.4.13
   # Never cancel after the immutable tag or draft release may have been created.
   cancel-in-progress: false
 
@@ -25,8 +27,8 @@ jobs:
               ...context.repo,
               sha: context.sha,
               state: 'pending',
-              context: 'release/v0.4.12',
-              description: 'Signed v0.4.12 release is running',
+              context: 'release/v0.4.13',
+              description: 'Signed v0.4.13 release is running',
               target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             })
 
@@ -41,10 +43,10 @@ jobs:
           # silently break the WaveRT driver package.
           - os: windows-2022
             artifact: sense-mic-release-windows-x64
-            asset: SenseMicClient-v0.4.12-windows-x64-client-only.zip
+            asset: SenseMicSetup-v0.4.13-windows-x64.exe
           - os: ubuntu-latest
             artifact: sense-mic-release-linux-x64
-            asset: SenseMicClient-v0.4.12-linux-x64.tar.gz
+            asset: SenseMicClient-v0.4.13-linux-x64.tar.gz
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     steps:
@@ -89,15 +91,39 @@ jobs:
           powershell -NoProfile -ExecutionPolicy Bypass -File
           sense-mic-client/scripts/Test-WindowsReleasePolicy.ps1
 
-      - name: Package Windows client-only artifact
+      - name: Install verified Inno Setup compiler
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $download = Join-Path $env:RUNNER_TEMP 'innosetup-6.7.3.exe'
+          $install = Join-Path $env:RUNNER_TEMP 'inno-6.7.3'
+          Invoke-WebRequest `
+            -Uri 'https://github.com/jrsoftware/issrc/releases/download/is-6_7_3/innosetup-6.7.3.exe' `
+            -OutFile $download
+          $signature = Get-AuthenticodeSignature -LiteralPath $download
+          if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'Pyrsys B.V.') {
+            throw "Unexpected Inno Setup signature: $($signature.Status) / $($signature.SignerCertificate.Subject)"
+          }
+          $process = Start-Process -FilePath $download -ArgumentList @(
+            '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=$install"
+          ) -PassThru -Wait -WindowStyle Hidden
+          if ($process.ExitCode -ne 0) { throw "Inno Setup install failed: $($process.ExitCode)" }
+          if (-not (Test-Path -LiteralPath (Join-Path $install 'ISCC.exe'))) {
+            throw 'ISCC.exe was not installed.'
+          }
+          "INNO_ISCC=$(Join-Path $install 'ISCC.exe')" >> $env:GITHUB_ENV
+
+      - name: Package Windows GUI Setup
         if: runner.os == 'Windows'
         shell: powershell
         run: |
           $out = Join-Path $env:RUNNER_TEMP 'sense-mic-release'
-          powershell -NoProfile -ExecutionPolicy Bypass -File sense-mic-client/package-windows.ps1 `
-            -PackageFlavor ClientOnly -SourceCommit '${{ github.sha }}' -OutputRoot $out
+          powershell -NoProfile -ExecutionPolicy Bypass -File sense-mic-client/package-setup.ps1 `
+            -Version 0.4.13 -SourceCommit '${{ github.sha }}' -OutputRoot $out `
+            -IsccPath $env:INNO_ISCC
           New-Item -ItemType Directory -Path release-mic -Force | Out-Null
-          Move-Item -LiteralPath (Join-Path $out 'SenseMicClient-windows-x64-client-only.zip') -Destination (Join-Path 'release-mic' '${{ matrix.asset }}')
+          Move-Item -LiteralPath (Join-Path $out 'setup\SenseMicSetup-v0.4.13-windows-x64.exe') `
+            -Destination (Join-Path 'release-mic' '${{ matrix.asset }}')
 
       - name: Package Linux client
         if: runner.os == 'Linux'
@@ -125,8 +151,8 @@ jobs:
     timeout-minutes: 60
     environment: release
     env:
-      RELEASE_TAG: v0.4.12
-      RELEASE_APK: Sense-v0.4.12.apk
+      RELEASE_TAG: v0.4.13
+      RELEASE_APK: Sense-v0.4.13.apk
       RELEASE_CERT_SHA256: 76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984
 
     steps:
@@ -143,8 +169,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -F 'versionCode = 37' app/build.gradle.kts
-          grep -F 'versionName = "0.4.12"' app/build.gradle.kts
+          grep -F 'versionCode = 38' app/build.gradle.kts
+          grep -F 'versionName = "0.4.13"' app/build.gradle.kts
           python3 tools/test_release_plan.py
           python3 tools/test_check_x02_boundaries.py
           python3 tools/check_x02_boundaries.py
@@ -210,7 +236,7 @@ jobs:
           test "$cert_sha256" = "$RELEASE_CERT_SHA256"
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" | tee release/apk-badging.txt
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='37' versionName='0.4.12'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='38' versionName='0.4.13'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           "$build_tools/aapt2" dump permissions "$apk" > release/apk-permissions.txt
@@ -234,18 +260,18 @@ jobs:
         run: |
           set -euo pipefail
           cd release
-          test -f SenseMicClient-v0.4.12-windows-x64-client-only.zip
-          test -f SenseMicClient-v0.4.12-linux-x64.tar.gz
+          test -f SenseMicSetup-v0.4.13-windows-x64.exe
+          test -f SenseMicClient-v0.4.13-linux-x64.tar.gz
           sha256sum \
             "$RELEASE_APK" \
-            SenseMicClient-v0.4.12-windows-x64-client-only.zip \
-            SenseMicClient-v0.4.12-linux-x64.tar.gz \
+            SenseMicSetup-v0.4.13-windows-x64.exe \
+            SenseMicClient-v0.4.13-linux-x64.tar.gz \
             > SHA256SUMS.txt
 
       - name: Create tag and GitHub Release through the GitHub API
         uses: actions/github-script@v8
         env:
-          NOTES_PATH: docs/releases/v0.4.12.md
+          NOTES_PATH: docs/releases/v0.4.13.md
           ASSET_DIR: release
         with:
           script: |
@@ -255,17 +281,8 @@ jobs:
             const sha = context.sha
             const expectedAssets = [
               process.env.RELEASE_APK,
-              'SenseMicClient-v0.4.12-windows-x64-client-only.zip',
-              'SenseMicClient-v0.4.12-linux-x64.tar.gz',
-              'SHA256SUMS.txt',
-            ]
-            // The tag is immutable. A later main commit may observe either the
-            // original asset set or the corrected client-only set. Asset migration
-            // is performed only by repair-v0.4.12-sense-mic-assets.yml.
-            const legacyPublishedAssets = [
-              process.env.RELEASE_APK,
-              'SenseMicClient-v0.4.12-windows-x64.zip',
-              'SenseMicClient-v0.4.12-linux-x64.tar.gz',
+              'SenseMicSetup-v0.4.13-windows-x64.exe',
+              'SenseMicClient-v0.4.13-linux-x64.tar.gz',
               'SHA256SUMS.txt',
             ]
             const findRelease = async () => {
@@ -288,10 +305,9 @@ jobs:
               tagExists = true
               if (ref.data.object.sha !== sha) {
                 taggedRelease = await findRelease()
-                const publishedAssetSets = [expectedAssets, legacyPublishedAssets]
                 const complete = taggedRelease && !taggedRelease.draft &&
-                  publishedAssetSets.some(assetSet =>
-                    assetSet.every(name => taggedRelease.assets.some(asset => asset.name === name)))
+                  expectedAssets.every(name =>
+                    taggedRelease.assets.some(asset => asset.name === name))
                 if (complete) {
                   core.notice(`${tag} is already completely published at ${ref.data.object.sha}; this later main commit does not replace the immutable release.`)
                   return
@@ -332,6 +348,8 @@ jobs:
               const data = fs.readFileSync(`${process.env.ASSET_DIR}/${name}`)
               const contentType = name.endsWith('.apk')
                 ? 'application/vnd.android.package-archive'
+                : name.endsWith('.exe')
+                  ? 'application/vnd.microsoft.portable-executable'
                 : name.endsWith('.zip')
                   ? 'application/zip'
                   : name.endsWith('.tar.gz')
@@ -385,7 +403,7 @@ jobs:
               ...context.repo,
               sha: context.sha,
               state: success ? 'success' : 'failure',
-              context: 'release/v0.4.12',
-              description: success ? 'Signed v0.4.12 release published' : `Release ${process.env.RELEASE_RESULT}`,
+              context: 'release/v0.4.13',
+              description: success ? 'Signed v0.4.13 release published' : `Release ${process.env.RELEASE_RESULT}`,
               target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             })

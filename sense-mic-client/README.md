@@ -6,6 +6,10 @@ Sense Mic Client 是 Sense Android 输入法“电脑麦克风”服务的 Rust 
 
 ## 已实现能力
 
+- Windows 10/11 x64 原生 GUI：自动扫描、IP 直连、配对码、延迟选择、连接/停止、
+  实时运行记录和驱动状态；
+- Windows Setup：安装 GUI 与命令行核心，创建开始菜单入口，并提供可选桌面快捷方式和
+  可选开机启动；
 - Windows 10/11 x64：仓库内置 WaveRT 虚拟音频驱动源码、可复现 WDK 构建脚本、
   `pnputil` 安装/卸载与状态诊断；
 - Linux x64/ARM64：通过 PipeWire 的 PulseAudio 兼容接口自动创建 `sense_mic` null sink，
@@ -36,6 +40,28 @@ Sense Mic Client 是 Sense Android 输入法“电脑麦克风”服务的 Rust 
 cargo test --manifest-path sense-mic-client/Cargo.toml
 cargo build --release --manifest-path sense-mic-client/Cargo.toml
 ```
+
+Windows GUI 产物为 `target/release/sense-mic-gui.exe`，命令行核心为
+`target/release/sense-mic.exe`。两者应保持在同一目录。
+
+## Windows GUI 与 Setup
+
+GUI 启动后会自动检查虚拟麦克风并扫描手机。也可以直接填写手机 IP；配对码只通过
+`SENSE_MIC_CODE` 传入受控的接收子进程，不出现在命令行、运行记录或磁盘配置中。关闭
+窗口会同时结束该子进程。
+
+使用 Inno Setup 6 构建正式安装器：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File sense-mic-client/package-setup.ps1 `
+  -Version 0.4.13
+```
+
+默认生成 `dist/setup/SenseMicSetup-v0.4.13-windows-x64.exe`。这是面向普通设备的
+GUI 客户端 Setup，内含 GUI、CLI、许可与构建信息。若已有 Partner Center 返回的 WHQL
+驱动目录，可传入 `-DriverStage X:\partner-center\SenseMicVAD`；脚本先执行签名、EKU、
+catalog 成员关系与 kernel-policy 门禁，再把驱动纳入安装器并在安装阶段部署。测试证书
+驱动不会进入该路径。
 
 Linux 需要 PipeWire Pulse 或 PulseAudio 开发库；Debian/Ubuntu 可安装
 `pkg-config libasound2-dev libpulse-dev pulseaudio-utils`，然后运行相同的 Cargo 命令。

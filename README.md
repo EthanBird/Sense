@@ -17,11 +17,11 @@
 > 分帧与 SRSS WebSocket 转写，选择后无需 API Key 即可从键盘语音入口使用。协议与
 > 双实现验证见[接入记录](docs/research/sogou-asr-provider-integration-2026-08-01.md)。
 
-**项目状态：** `v0.4.12` OAuth、Agent 远程信道、连续候选与 Sense Mic 工程预览
+**项目状态：** `v0.4.13` Sense Mic Windows GUI、Setup 与稳定传输
 
-**当前版本：** `v0.4.12`（`versionCode 37`）
+**当前版本：** `v0.4.13`（`versionCode 38`）
 
-**更新日期：** 2026-08-19
+**更新日期：** 2026-08-22
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
 
 本文基于《GlassIME Android AI 中文输入法产品与技术设计文档 v0.1》重新整理，并统一改名为：
@@ -37,7 +37,18 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.12 OAuth、Agent 信道与连续候选
+## 0. 当前迭代：v0.4.13 Sense Mic Windows GUI 与 Setup
+
+`v0.4.13` 为 Sense Mic 增加原生 Windows GUI：自动扫描局域网手机，也支持 IP 直连；
+输入六位配对码后即可连接，可选择 80–240 ms 缓冲并在界面中实时查看接收核心输出，
+随时停止音频进程。新的 Inno Setup 安装器会安装 GUI、Rust 命令行核心、开始菜单入口、
+可选桌面快捷方式与可选开机启动项；GUI 还提供驱动状态和经过微软签名的驱动包安装入口。
+
+本版同时修复 Android 前台麦克风服务的启动回滚、局域网广播、地址选择、控制连接与重连
+生命周期，以及 Windows 发现、错误输出、停止清理和本地化命令输出。完整变更见
+[`v0.4.13` 发布说明](docs/releases/v0.4.13.md)。
+
+## 0.1 v0.4.12 OAuth、Agent 信道与连续候选
 
 `v0.4.12` 将 Codex 订阅登录升级为浏览器 Authorization Code + PKCE：Sense 先绑定
 `127.0.0.1:1455` 回调，再打开 ChatGPT 登录页，成功后自动返回并把可刷新令牌写入
@@ -230,8 +241,8 @@ initials、渐进 limit 16、渐进 limit 255 和组合 p95 分别为
 决策记录见 [ADR 0022](docs/adr/0022-gpl-rime-frost-lexicon-pipeline.md)、
 [ADR 0023](docs/adr/0023-v0.4.5-beta5-decoder-quality.md) 与
 [ADR 0025](docs/adr/0025-three-chinese-schemes-t9-dag-and-wubi86.md)，详细发布门禁见
-[`v0.4.12` 发布说明](docs/releases/v0.4.12.md)，最新发布资产见
-[`v0.4.12` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.12)。
+[`v0.4.13` 发布说明](docs/releases/v0.4.13.md)，最新发布资产见
+[`v0.4.13` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.13)。
 
 `v0.4.5.beta.4` 修复键盘刚显示、窗口切换或目录观察 catch-up 时，等价 Skill catalog
 重复发布会撤销已开始长按的问题：解析结果、显示标签与 active Skill 均未变化时保留
@@ -277,7 +288,7 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
 | Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
 | 既有质量 | AI、IME、UI、Core、M0–M7、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 37`、`versionName 0.4.12`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据 | `versionCode 38`、`versionName 0.4.13`、`minSdk 29`、`targetSdk 36` |
 
 日常完整本地验证与构建仍可在 Windows 执行：
 
@@ -291,15 +302,15 @@ powershell -ExecutionPolicy Bypass -File tools/local_release.ps1
 powershell -ExecutionPolicy Bypass -File tools/local_release.ps1 -Publish
 ```
 
-`-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。`v0.4.12`
+`-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。`v0.4.13`
 恢复单版本 GitHub Actions 发布门禁：主分支提交通过测试、Lint、固定证书签名与 APK 元数据
 检查后，使用 GitHub API 原子创建 tag、Release、APK 与校验和，不调用 `gh` CLI。
 
-> **v0.4.12 发布收口：** 本轮源码整合完成后会重新运行及人工审查 X-02
+> **v0.4.13 发布收口：** 本轮源码整合完成后会重新运行及人工审查 X-02
 > production source、build authority 与 offline gate 的 exact SHA-256，并同步刷新
 > boundary baseline。正式本地发布会在同一 release `HEAD` 上再次执行 source/artifact
 > gate，并把结果与 APK 签名、校验和一起归档到
-> [`v0.4.12` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.12)。
+> [`v0.4.13` GitHub Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.13)。
 
 标准工程验证命令：
 
