@@ -54,10 +54,10 @@ GUI 启动后会自动检查虚拟麦克风并扫描手机。也可以直接填�
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File sense-mic-client/package-setup.ps1 `
-  -Version 0.4.14
+  -Version 0.4.15
 ```
 
-默认生成 `dist/setup/SenseMicSetup-v0.4.14-windows-x64.exe`。正式 Release 先从 VB-Audio
+默认生成 `dist/setup/SenseMicSetup-v0.4.15-windows-x64.exe`。正式 Release 先从 VB-Audio
 官方地址下载基础版 VB-CABLE Pack 45，固定校验归档 SHA-256，并验证 Setup Authenticode、
 Microsoft Hardware Compatibility Publisher catalog、kernel-policy 与 catalog 成员关系；
 随后把完整原始包传给 `-VbCableStage`。Setup 以管理员权限安装 GUI、CLI 和正式签名的
@@ -66,7 +66,7 @@ Microsoft Hardware Compatibility Publisher catalog、kernel-policy 与 catalog �
 ```powershell
 $stage = & sense-mic-client/scripts/Get-VbCablePackage.ps1
 powershell -ExecutionPolicy Bypass -File sense-mic-client/package-setup.ps1 `
-  -Version 0.4.14 -VbCableStage $stage.PackagePath
+  -Version 0.4.15 -VbCableStage $stage.PackagePath
 ```
 
 VB-CABLE 由 VB-Audio Software 提供，是 donationware；Setup 与 GUI 明确显示实际后端，

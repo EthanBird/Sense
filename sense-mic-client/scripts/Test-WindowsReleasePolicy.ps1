@@ -31,7 +31,7 @@ $validator = Join-Path $scriptRoot 'Assert-WindowsDriverPackage.ps1'
 $signingPolicy = Join-Path $scriptRoot 'WindowsDriverSigningPolicy.ps1'
 $releaseWorkflow = Join-Path $repoRoot '.github\workflows\release-v0.4.12.yml'
 $repairWorkflow = Join-Path $repoRoot '.github\workflows\repair-v0.4.12-sense-mic-assets.yml'
-$currentWorkflow = Join-Path $repoRoot '.github\workflows\release-v0.4.14.yml'
+$currentWorkflow = Join-Path $repoRoot '.github\workflows\release-v0.4.15.yml'
 $vbFetcher = Join-Path $scriptRoot 'Get-VbCablePackage.ps1'
 $vbValidator = Join-Path $scriptRoot 'Assert-VbCablePackage.ps1'
 $setupScript = Join-Path $clientRoot 'installer\SenseMic.iss'
@@ -97,12 +97,12 @@ foreach ($workflow in $releaseWorkflows) {
         "Public release workflow $($workflow.Name) packages a development test driver."
 }
 Assert-True (Test-Path -LiteralPath $currentWorkflow -PathType Leaf) `
-    'The v0.4.14 release workflow is missing.'
+    'The v0.4.15 release workflow is missing.'
 $currentWorkflowSource = Get-Content -LiteralPath $currentWorkflow -Raw -Encoding utf8
 Assert-True ($currentWorkflowSource -match 'Get-VbCablePackage\.ps1') `
-    'The v0.4.14 workflow must fetch the pinned production VB-CABLE package.'
+    'The v0.4.15 workflow must fetch the pinned production VB-CABLE package.'
 Assert-True ($currentWorkflowSource -match 'VbCableStage\s+\$env:VB_CABLE_STAGE') `
-    'The v0.4.14 Setup must bundle the verified VB-CABLE stage.'
+    'The v0.4.15 Setup must bundle the verified VB-CABLE stage.'
 foreach ($policyScript in @($vbFetcher, $vbValidator)) {
     $source = Get-Content -LiteralPath $policyScript -Raw -Encoding utf8
     Assert-True ($source -match 'b950e39f01af1d04ea623c8f6d8eb9b6ea5c477c637295fabf20631c85116bfb') `

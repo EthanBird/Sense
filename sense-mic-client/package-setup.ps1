@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$Version = '0.4.14',
+    [string]$Version = '0.4.15',
     [string]$OutputRoot = (Join-Path $PSScriptRoot 'dist'),
     [string]$DriverStage,
     [string]$VbCableStage,

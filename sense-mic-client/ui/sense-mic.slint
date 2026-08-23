@@ -1,0 +1,621 @@
+import { ComboBox, LineEdit, ScrollView } from "std-widgets.slint";
+
+component BrandMark inherits Rectangle {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: @linear-gradient(135deg, #665cf6 0%, #3b82f6 100%);
+    drop-shadow-blur: 14px;
+    drop-shadow-offset-y: 5px;
+    drop-shadow-color: #665cf633;
+
+    Rectangle {
+        x: 9px;
+        y: 13px;
+        width: 19px;
+        height: 12px;
+        border-width: 2px;
+        border-color: #ffffff;
+        border-radius: 8px;
+        background: transparent;
+    }
+    Rectangle {
+        x: 16px;
+        y: 19px;
+        width: 19px;
+        height: 12px;
+        border-width: 2px;
+        border-color: #bff8ee;
+        border-radius: 8px;
+        background: transparent;
+    }
+}
+
+component StatusPill inherits Rectangle {
+    in property <string> text;
+    in property <string> kind: "idle";
+    height: 30px;
+    min-width: 112px;
+    border-radius: 15px;
+    background: root.kind == "live" ? #e8fbf4 :
+                root.kind == "busy" ? #f0efff :
+                root.kind == "error" ? #fff0f0 : #f1f4f8;
+
+    HorizontalLayout {
+        padding-left: 12px;
+        padding-right: 13px;
+        spacing: 8px;
+        alignment: center;
+
+        Rectangle {
+            width: 8px;
+            height: 8px;
+            border-radius: 4px;
+            background: root.kind == "live" ? #25b77a :
+                        root.kind == "busy" ? #665cf6 :
+                        root.kind == "error" ? #ef5b5b : #95a1b2;
+        }
+        Text {
+            text: root.text;
+            color: root.kind == "live" ? #177653 :
+                   root.kind == "busy" ? #5549d9 :
+                   root.kind == "error" ? #bd3f3f : #647084;
+            font-size: 13px;
+            font-weight: 600;
+            vertical-alignment: center;
+        }
+    }
+}
+
+component PrimaryButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> action-enabled: true;
+    in property <bool> destructive: false;
+    callback clicked;
+
+    height: 48px;
+    border-radius: 13px;
+    background: !root.action-enabled ? #c9cedb :
+                root.destructive ? (touch.pressed ? #c94343 : touch.has-hover ? #ef6666 : #e45454) :
+                touch.pressed ? #5146d8 : touch.has-hover ? #756cf7 : #665cf6;
+    animate background { duration: 110ms; }
+    drop-shadow-blur: root.action-enabled ? 14px : 0px;
+    drop-shadow-offset-y: 5px;
+    drop-shadow-color: root.destructive ? #e4545433 : #665cf63d;
+
+    Text {
+        text: root.text;
+        color: white;
+        font-size: 15px;
+        font-weight: 700;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+    touch := TouchArea {
+        enabled: root.action-enabled;
+        clicked => { root.clicked(); }
+    }
+}
+
+component SecondaryButton inherits Rectangle {
+    in property <string> text;
+    in property <bool> action-enabled: true;
+    callback clicked;
+
+    height: 42px;
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: #dce2ec;
+    background: !root.action-enabled ? #f3f5f8 :
+                touch.pressed ? #e9ecf3 : touch.has-hover ? #f7f8fb : white;
+    animate background { duration: 100ms; }
+
+    Text {
+        text: root.text;
+        color: root.action-enabled ? #3f4b60 : #9ba4b3;
+        font-size: 14px;
+        font-weight: 600;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+    touch := TouchArea {
+        enabled: root.action-enabled;
+        clicked => { root.clicked(); }
+    }
+}
+
+component LatencyChoice inherits Rectangle {
+    in property <string> text;
+    in property <bool> selected: false;
+    callback clicked;
+
+    height: 34px;
+    border-radius: 10px;
+    border-width: 1px;
+    border-color: root.selected ? #665cf6 : #dfe4ed;
+    background: root.selected ? #efedff : touch.has-hover ? #f7f8fb : white;
+
+    Text {
+        text: root.text;
+        color: root.selected ? #5549da : #657084;
+        font-size: 12px;
+        font-weight: root.selected ? 700 : 500;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+    touch := TouchArea { clicked => { root.clicked(); } }
+}
+
+export component SenseMicWindow inherits Window {
+    title: "Sense Mic";
+    preferred-width: 940px;
+    preferred-height: 718px;
+    min-width: 820px;
+    min-height: 660px;
+    background: #f5f7fb;
+    default-font-family: "Microsoft YaHei UI";
+
+    in-out property <[string]> devices: [];
+    in-out property <int> selected-device: 0;
+    in-out property <string> host-text: "";
+    in-out property <string> code-text: "";
+    in-out property <int> latency-ms: 100;
+    in property <string> app-version: "";
+
+    in property <bool> scanning: false;
+    in property <bool> connecting: false;
+    in property <bool> session-running: false;
+    in property <bool> streaming: false;
+    in property <bool> driver-ready: false;
+    in property <bool> driver-busy: false;
+    in property <string> connection-title: "等待连接";
+    in property <string> connection-caption: "选择手机并输入配对码，即可开始传输";
+    in property <string> connection-kind: "idle";
+    in property <string> phone-name: "尚未发现手机";
+    in property <string> phone-address: "扫描同一局域网中的 Sense 设备";
+    in property <string> endpoint-name: "正在检查…";
+    in property <string> driver-detail: "";
+    in property <string> packet-summary: "—";
+    in property <string> jitter-summary: "—";
+    in-out property <string> log-text: "Sense Mic 已启动。";
+    in-out property <bool> show-details: false;
+    in-out property <int> pulse-step: 0;
+
+    callback scan;
+    callback connect;
+    callback stop;
+    callback install-driver;
+    callback refresh-driver;
+    callback copy-endpoint;
+    callback device-selected(int);
+
+    Timer {
+        interval: 150ms;
+        running: root.streaming;
+        triggered => { root.pulse-step = Math.mod(root.pulse-step + 1, 8); }
+    }
+
+    VerticalLayout {
+        padding-left: 30px;
+        padding-right: 30px;
+        padding-top: 24px;
+        padding-bottom: 22px;
+        spacing: 16px;
+
+        HorizontalLayout {
+            height: 52px;
+            spacing: 13px;
+            alignment: center;
+
+            BrandMark { }
+            VerticalLayout {
+                spacing: 1px;
+                Text {
+                    text: "Sense Mic";
+                    color: #172033;
+                    font-size: 22px;
+                    font-weight: 700;
+                    vertical-alignment: bottom;
+                }
+                Text {
+                    text: "把手机声音清晰地送到电脑";
+                    color: #778296;
+                    font-size: 12px;
+                    vertical-alignment: top;
+                }
+            }
+            Rectangle { horizontal-stretch: 1; background: transparent; }
+            StatusPill { text: root.connection-title; kind: root.connection-kind; }
+        }
+
+        Rectangle {
+            height: 322px;
+            border-radius: 20px;
+            background: white;
+            border-width: 1px;
+            border-color: #e9edf4;
+            drop-shadow-blur: 22px;
+            drop-shadow-offset-y: 8px;
+            drop-shadow-color: #33415512;
+
+            HorizontalLayout {
+                padding: 24px;
+                spacing: 26px;
+
+                VerticalLayout {
+                    width: 43%;
+                    spacing: 15px;
+
+                    Text {
+                        text: "音频连接";
+                        color: #20293a;
+                        font-size: 15px;
+                        font-weight: 700;
+                    }
+
+                    Rectangle {
+                        height: 156px;
+                        border-radius: 16px;
+                        background: @linear-gradient(145deg, #f3f1ff 0%, #eef8ff 100%);
+                        border-width: 1px;
+                        border-color: #e8e4ff;
+
+                        Rectangle {
+                            x: 26px;
+                            y: 39px;
+                            width: 64px;
+                            height: 64px;
+                            border-radius: 22px;
+                            background: white;
+                            border-width: 1px;
+                            border-color: #e3e1f7;
+                            drop-shadow-blur: 12px;
+                            drop-shadow-offset-y: 4px;
+                            drop-shadow-color: #665cf622;
+                            Text {
+                                text: "手机";
+                                color: #5549da;
+                                font-size: 14px;
+                                font-weight: 700;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        HorizontalLayout {
+                            x: 105px;
+                            y: 58px;
+                            width: parent.width - 210px;
+                            height: 28px;
+                            spacing: 5px;
+                            alignment: center;
+                            for bar[i] in 8: Rectangle {
+                                width: 5px;
+                                height: root.streaming ? (8px + Math.mod(i * 7 + root.pulse-step * 5, 20) * 1px) : 5px;
+                                border-radius: 3px;
+                                background: root.streaming ? #42c8b4 : #c8c9ec;
+                                animate height { duration: 130ms; easing: ease-in-out; }
+                            }
+                        }
+
+                        Rectangle {
+                            x: parent.width - 90px;
+                            y: 39px;
+                            width: 64px;
+                            height: 64px;
+                            border-radius: 22px;
+                            background: root.streaming ? #665cf6 : white;
+                            border-width: 1px;
+                            border-color: root.streaming ? #665cf6 : #e3e1f7;
+                            animate background { duration: 180ms; }
+                            Text {
+                                text: "电脑";
+                                color: root.streaming ? white : #5549da;
+                                font-size: 14px;
+                                font-weight: 700;
+                                horizontal-alignment: center;
+                                vertical-alignment: center;
+                            }
+                        }
+
+                        Text {
+                            x: 22px;
+                            y: 118px;
+                            width: parent.width - 44px;
+                            height: 24px;
+                            text: root.connection-caption;
+                            color: #68748a;
+                            font-size: 11px;
+                            horizontal-alignment: center;
+                            overflow: elide;
+                        }
+                    }
+
+                    Rectangle {
+                        height: 78px;
+                        border-radius: 14px;
+                        background: #f8fafc;
+                        border-width: 1px;
+                        border-color: #edf0f5;
+
+                        VerticalLayout {
+                            padding: 13px;
+                            spacing: 3px;
+                            Text {
+                                text: root.phone-name;
+                                color: #283246;
+                                font-size: 14px;
+                                font-weight: 650;
+                                overflow: elide;
+                            }
+                            Text {
+                                text: root.phone-address;
+                                color: #8490a2;
+                                font-size: 11px;
+                                overflow: elide;
+                            }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    width: 1px;
+                    background: #edf0f5;
+                }
+
+                VerticalLayout {
+                    spacing: 10px;
+
+                    HorizontalLayout {
+                        height: 24px;
+                        Text {
+                            text: "连接手机";
+                            color: #20293a;
+                            font-size: 15px;
+                            font-weight: 700;
+                            vertical-alignment: center;
+                        }
+                        Rectangle { horizontal-stretch: 1; background: transparent; }
+                        Text {
+                            text: root.scanning ? "正在扫描…" : (root.devices.length > 0 ? root.devices.length + " 台在线" : "等待扫描");
+                            color: root.scanning ? #665cf6 : #8b95a6;
+                            font-size: 11px;
+                            vertical-alignment: center;
+                        }
+                    }
+
+                    HorizontalLayout {
+                        height: 42px;
+                        spacing: 9px;
+                        ComboBox {
+                            horizontal-stretch: 1;
+                            model: root.devices;
+                            current-index <=> root.selected-device;
+                            enabled: !root.session-running && root.devices.length > 0;
+                            selected(value) => { root.device-selected(self.current-index); }
+                        }
+                        SecondaryButton {
+                            width: 86px;
+                            text: root.scanning ? "扫描中" : "扫描";
+                            action-enabled: !root.scanning && !root.session-running;
+                            clicked => { root.scan(); }
+                        }
+                    }
+
+                    HorizontalLayout {
+                        height: 57px;
+                        spacing: 10px;
+                        VerticalLayout {
+                            spacing: 5px;
+                            Text { text: "手机 IP"; color: #69758a; font-size: 11px; }
+                            LineEdit {
+                                text <=> root.host-text;
+                                placeholder-text: "192.168.1.16";
+                                enabled: !root.session-running;
+                            }
+                        }
+                        VerticalLayout {
+                            width: 148px;
+                            spacing: 5px;
+                            Text { text: "6 位配对码"; color: #69758a; font-size: 11px; }
+                            LineEdit {
+                                text <=> root.code-text;
+                                placeholder-text: "000000";
+                                input-type: number;
+                                enabled: !root.session-running;
+                                accepted(value) => { root.connect(); }
+                            }
+                        }
+                    }
+
+                    VerticalLayout {
+                        height: 52px;
+                        spacing: 5px;
+                        Text { text: "延迟偏好"; color: #69758a; font-size: 11px; }
+                        HorizontalLayout {
+                            spacing: 8px;
+                            LatencyChoice {
+                                text: "低延迟 · 80 ms";
+                                selected: root.latency-ms == 80;
+                                clicked => { root.latency-ms = 80; }
+                            }
+                            LatencyChoice {
+                                text: "平衡 · 100 ms";
+                                selected: root.latency-ms == 100;
+                                clicked => { root.latency-ms = 100; }
+                            }
+                            LatencyChoice {
+                                text: "更稳定 · 180 ms";
+                                selected: root.latency-ms == 180;
+                                clicked => { root.latency-ms = 180; }
+                            }
+                        }
+                    }
+
+                    PrimaryButton {
+                        text: root.session-running ? (root.streaming ? "停止传输" : "停止连接") : root.connecting ? "正在启动…" : "开始传输";
+                        destructive: root.session-running;
+                        action-enabled: root.session-running || (!root.connecting && root.driver-ready);
+                        clicked => {
+                            if root.session-running { root.stop(); }
+                            else { root.connect(); }
+                        }
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            height: 126px;
+            border-radius: 18px;
+            background: white;
+            border-width: 1px;
+            border-color: #e9edf4;
+
+            HorizontalLayout {
+                padding: 18px;
+                spacing: 18px;
+                alignment: center;
+
+                Rectangle {
+                    width: 46px;
+                    height: 46px;
+                    border-radius: 15px;
+                    background: root.driver-ready ? #e8fbf4 : #fff4e7;
+                    Text {
+                        text: root.driver-ready ? "MIC" : "SET";
+                        color: root.driver-ready ? #1d9a69 : #c87921;
+                        font-size: 11px;
+                        font-weight: 800;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+
+                VerticalLayout {
+                    spacing: 4px;
+                    Text {
+                        text: "Sense Mic 虚拟麦克风";
+                        color: #263044;
+                        font-size: 14px;
+                        font-weight: 700;
+                    }
+                    Text {
+                        text: root.driver-ready ? "在微信、OBS、Discord 等应用中选择：" : "首次使用需要安装音频组件";
+                        color: #7b879a;
+                        font-size: 11px;
+                    }
+                    Text {
+                        text: root.endpoint-name;
+                        color: root.driver-ready ? #5549da : #b06c20;
+                        font-size: 13px;
+                        font-weight: 650;
+                        overflow: elide;
+                    }
+                }
+
+                Rectangle { horizontal-stretch: 1; background: transparent; }
+
+                VerticalLayout {
+                    width: 138px;
+                    spacing: 6px;
+                    if root.driver-ready: SecondaryButton {
+                        text: "复制设备名称";
+                        clicked => { root.copy-endpoint(); }
+                    }
+                    if !root.driver-ready: PrimaryButton {
+                        text: root.driver-busy ? "正在安装…" : "安装音频组件";
+                        action-enabled: !root.driver-busy;
+                        clicked => { root.install-driver(); }
+                    }
+                    Text {
+                        text: root.driver-ready ? "驱动已就绪" : "安装时需要管理员确认";
+                        color: root.driver-ready ? #2a9d70 : #9a6a2d;
+                        font-size: 10px;
+                        horizontal-alignment: center;
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            height: root.show-details ? 154px : 46px;
+            border-radius: 14px;
+            background: #eef2f7;
+            clip: true;
+            animate height { duration: 170ms; easing: ease-out; }
+
+            VerticalLayout {
+                padding-left: 14px;
+                padding-right: 14px;
+                padding-top: 6px;
+                padding-bottom: 8px;
+                spacing: 7px;
+
+                Rectangle {
+                    height: 34px;
+                    background: transparent;
+                    HorizontalLayout {
+                        spacing: 12px;
+                        Text {
+                            text: root.show-details ? "收起运行详情" : "运行详情";
+                            color: #566276;
+                            font-size: 12px;
+                            font-weight: 650;
+                            vertical-alignment: center;
+                        }
+                        Text {
+                            text: "数据包 " + root.packet-summary + "   ·   抖动 " + root.jitter-summary;
+                            color: #8a95a6;
+                            font-size: 11px;
+                            vertical-alignment: center;
+                        }
+                        Rectangle { horizontal-stretch: 1; background: transparent; }
+                        Text {
+                            text: root.show-details ? "-" : "+";
+                            color: #6a7586;
+                            font-size: 16px;
+                            vertical-alignment: center;
+                        }
+                    }
+                    TouchArea { clicked => { root.show-details = !root.show-details; } }
+                }
+
+                if root.show-details: Rectangle {
+                    border-radius: 10px;
+                    background: #182235;
+                    clip: true;
+                    ScrollView {
+                        Text {
+                            x: 12px;
+                            y: 9px;
+                            width: parent.width - 24px;
+                            text: root.log-text + "\n\n驱动：" + root.driver-detail;
+                            color: #c9d2df;
+                            font-family: "Cascadia Mono";
+                            font-size: 10px;
+                            wrap: word-wrap;
+                        }
+                    }
+                }
+            }
+        }
+
+        HorizontalLayout {
+            height: 22px;
+            Text {
+                text: "手机和电脑保持在同一局域网 · 配对码仅保存在当前运行内存中";
+                color: #929cad;
+                font-size: 10px;
+                vertical-alignment: center;
+            }
+            Rectangle { horizontal-stretch: 1; background: transparent; }
+            Text {
+                text: "Sense Mic " + root.app-version;
+                color: #a0a8b6;
+                font-size: 10px;
+                vertical-alignment: center;
+            }
+        }
+    }
+}

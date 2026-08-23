@@ -1,4 +1,4 @@
-name: Release v0.4.14
+name: Release v0.4.15
 # The status jobs make publication observable to GitHub API clients without Actions-list access.
 
 on:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: release-v0.4.14
+  group: release-v0.4.15
   # Never cancel after the immutable tag or draft release may have been created.
   cancel-in-progress: false
 
@@ -27,8 +27,8 @@ jobs:
               ...context.repo,
               sha: context.sha,
               state: 'pending',
-              context: 'release/v0.4.14',
-              description: 'Signed v0.4.14 release is running',
+              context: 'release/v0.4.15',
+              description: 'Signed v0.4.15 release is running',
               target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             })
 
@@ -43,10 +43,10 @@ jobs:
           # silently break the WaveRT driver package.
           - os: windows-2022
             artifact: sense-mic-release-windows-x64
-            asset: SenseMicSetup-v0.4.14-windows-x64.exe
+            asset: SenseMicSetup-v0.4.15-windows-x64.exe
           - os: ubuntu-latest
             artifact: sense-mic-release-linux-x64
-            asset: SenseMicClient-v0.4.14-linux-x64.tar.gz
+            asset: SenseMicClient-v0.4.15-linux-x64.tar.gz
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     steps:
@@ -129,10 +129,10 @@ jobs:
         run: |
           $out = Join-Path $env:RUNNER_TEMP 'sense-mic-release'
           powershell -NoProfile -ExecutionPolicy Bypass -File sense-mic-client/package-setup.ps1 `
-            -Version 0.4.14 -SourceCommit '${{ github.sha }}' -OutputRoot $out `
+            -Version 0.4.15 -SourceCommit '${{ github.sha }}' -OutputRoot $out `
             -VbCableStage $env:VB_CABLE_STAGE -IsccPath $env:INNO_ISCC
           New-Item -ItemType Directory -Path release-mic -Force | Out-Null
-          Move-Item -LiteralPath (Join-Path $out 'setup\SenseMicSetup-v0.4.14-windows-x64.exe') `
+          Move-Item -LiteralPath (Join-Path $out 'setup\SenseMicSetup-v0.4.15-windows-x64.exe') `
             -Destination (Join-Path 'release-mic' '${{ matrix.asset }}')
 
       - name: Package Linux client
@@ -161,8 +161,8 @@ jobs:
     timeout-minutes: 60
     environment: release
     env:
-      RELEASE_TAG: v0.4.14
-      RELEASE_APK: Sense-v0.4.14.apk
+      RELEASE_TAG: v0.4.15
+      RELEASE_APK: Sense-v0.4.15.apk
       RELEASE_CERT_SHA256: 76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984
 
     steps:
@@ -179,8 +179,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -F 'versionCode = 39' app/build.gradle.kts
-          grep -F 'versionName = "0.4.14"' app/build.gradle.kts
+          grep -F 'versionCode = 40' app/build.gradle.kts
+          grep -F 'versionName = "0.4.15"' app/build.gradle.kts
           python3 tools/test_release_plan.py
           python3 tools/test_check_x02_boundaries.py
           python3 tools/check_x02_boundaries.py
@@ -246,7 +246,7 @@ jobs:
           test "$cert_sha256" = "$RELEASE_CERT_SHA256"
           "$build_tools/zipalign" -c -P 16 4 "$apk"
           "$build_tools/aapt2" dump badging "$apk" | tee release/apk-badging.txt
-          grep -F "package: name='io.github.ethanbird.senseime' versionCode='39' versionName='0.4.14'" release/apk-badging.txt
+          grep -F "package: name='io.github.ethanbird.senseime' versionCode='40' versionName='0.4.15'" release/apk-badging.txt
           grep -Fx "minSdkVersion:'29'" release/apk-badging.txt
           grep -Fx "targetSdkVersion:'36'" release/apk-badging.txt
           "$build_tools/aapt2" dump permissions "$apk" > release/apk-permissions.txt
@@ -270,18 +270,18 @@ jobs:
         run: |
           set -euo pipefail
           cd release
-          test -f SenseMicSetup-v0.4.14-windows-x64.exe
-          test -f SenseMicClient-v0.4.14-linux-x64.tar.gz
+          test -f SenseMicSetup-v0.4.15-windows-x64.exe
+          test -f SenseMicClient-v0.4.15-linux-x64.tar.gz
           sha256sum \
             "$RELEASE_APK" \
-            SenseMicSetup-v0.4.14-windows-x64.exe \
-            SenseMicClient-v0.4.14-linux-x64.tar.gz \
+            SenseMicSetup-v0.4.15-windows-x64.exe \
+            SenseMicClient-v0.4.15-linux-x64.tar.gz \
             > SHA256SUMS.txt
 
       - name: Create tag and GitHub Release through the GitHub API
         uses: actions/github-script@v8
         env:
-          NOTES_PATH: docs/releases/v0.4.14.md
+          NOTES_PATH: docs/releases/v0.4.15.md
           ASSET_DIR: release
         with:
           script: |
@@ -291,8 +291,8 @@ jobs:
             const sha = context.sha
             const expectedAssets = [
               process.env.RELEASE_APK,
-              'SenseMicSetup-v0.4.14-windows-x64.exe',
-              'SenseMicClient-v0.4.14-linux-x64.tar.gz',
+              'SenseMicSetup-v0.4.15-windows-x64.exe',
+              'SenseMicClient-v0.4.15-linux-x64.tar.gz',
               'SHA256SUMS.txt',
             ]
             const findRelease = async () => {
@@ -413,7 +413,7 @@ jobs:
               ...context.repo,
               sha: context.sha,
               state: success ? 'success' : 'failure',
-              context: 'release/v0.4.14',
-              description: success ? 'Signed v0.4.14 release published' : `Release ${process.env.RELEASE_RESULT}`,
+              context: 'release/v0.4.15',
+              description: success ? 'Signed v0.4.15 release published' : `Release ${process.env.RELEASE_RESULT}`,
               target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             })

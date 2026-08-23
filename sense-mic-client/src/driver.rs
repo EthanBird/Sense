@@ -442,16 +442,6 @@ fn select_windows_backend(
             .find(|name| name.to_ascii_lowercase().contains(needle))
             .cloned()
     };
-    let sense_playback = find(outputs, "sense mic playback");
-    let sense_capture = find(captures, "sense mic");
-    if sense_playback.is_some() && sense_capture.is_some() {
-        return (
-            sense_playback,
-            sense_capture,
-            "SenseMicVAD WaveRT virtual cable".to_owned(),
-            true,
-        );
-    }
     let cable_playback = find(outputs, "cable input");
     let cable_capture = find(captures, "cable output");
     if cable_playback.is_some() && cable_capture.is_some() {
@@ -462,9 +452,19 @@ fn select_windows_backend(
             true,
         );
     }
+    let sense_playback = find(outputs, "sense mic playback");
+    let sense_capture = find(captures, "sense mic");
+    if sense_playback.is_some() && sense_capture.is_some() {
+        return (
+            sense_playback,
+            sense_capture,
+            "SenseMicVAD WaveRT virtual cable (legacy compatibility)".to_owned(),
+            true,
+        );
+    }
     (
-        sense_playback.or(cable_playback),
-        sense_capture.or(cable_capture),
+        cable_playback.or(sense_playback),
+        cable_capture.or(sense_capture),
         "Windows virtual audio endpoint pair is incomplete".to_owned(),
         false,
     )
@@ -721,6 +721,30 @@ mod tests {
         assert!(!installed);
 
         let outputs = vec!["CABLE Input (VB-Audio Virtual Cable)".to_owned()];
+        let (playback, capture, detail, installed) = select_windows_backend(&outputs, &captures);
+        assert_eq!(
+            playback.as_deref(),
+            Some("CABLE Input (VB-Audio Virtual Cable)")
+        );
+        assert_eq!(
+            capture.as_deref(),
+            Some("CABLE Output (VB-Audio Virtual Cable)")
+        );
+        assert!(detail.contains("VB-CABLE"));
+        assert!(installed);
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn prefers_vb_cable_when_legacy_endpoints_are_also_present() {
+        let outputs = vec![
+            "Sense Mic Playback".to_owned(),
+            "CABLE Input (VB-Audio Virtual Cable)".to_owned(),
+        ];
+        let captures = vec![
+            "Sense Mic".to_owned(),
+            "CABLE Output (VB-Audio Virtual Cable)".to_owned(),
+        ];
         let (playback, capture, detail, installed) = select_windows_backend(&outputs, &captures);
         assert_eq!(
             playback.as_deref(),

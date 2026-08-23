@@ -39,8 +39,8 @@ android {
         applicationId = "io.github.ethanbird.senseime"
         minSdk = 29
         targetSdk = 36
-        versionCode = 39
-        versionName = "0.4.14"
+        versionCode = 40
+        versionName = "0.4.15"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

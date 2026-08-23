@@ -7,21 +7,20 @@
 > Android 原生高性能中文输入法：普通输入完全本地运行，AI、记忆与工具能力通过可配置的长按方向 Skill 显式触发。
 
 > **Sense Mic 工程预览已实装：** 设置页可开启独立的 Android 前台麦克风服务；Rust 桌面端提供
-> 加密 Opus、FEC、jitter/PLC、自动重连与 Linux PipeWire/Pulse 虚拟源；Windows 端包含
-> 可复现构建的 x64 WaveRT `Sense Mic Playback -> Sense Mic` 虚拟音频驱动源码。公开 Windows
-> 客户端包在取得并验证 Microsoft 签名目录前明确保持 `client-only`；开发测试签名驱动不进入
-> 普通用户发行资产。选型、构建和使用见 [Sense Mic Client](sense-mic-client/README.md) 与
+> 加密 Opus、FEC、jitter/PLC、自动重连与 Linux PipeWire/Pulse 虚拟源；Windows Setup 内置
+> 固定版本并完成签名校验的 VB-CABLE，GUI 统一包装为 Sense Mic 虚拟麦克风，同时保留系统
+> 中实际录音端点名称供会议、直播软件选择。选型、构建和使用见 [Sense Mic Client](sense-mic-client/README.md) 与
 > [ADR 0026](docs/adr/0026-sense-mic-phone-to-pc-virtual-microphone.md)。
 
 > Android 语音 Provider 新增“搜狗在线语音（免配置）”：内置加密握手、20 ms Opus
 > 分帧与 SRSS WebSocket 转写，选择后无需 API Key 即可从键盘语音入口使用。协议与
 > 双实现验证见[接入记录](docs/research/sogou-asr-provider-integration-2026-08-01.md)。
 
-**项目状态：** `v0.4.13` Sense Mic Windows GUI、Setup 与稳定传输
+**项目状态：** `v0.4.15` Sense Mic 现代化 Windows 前端
 
-**当前版本：** `v0.4.13`（`versionCode 38`）
+**当前版本：** `v0.4.15`（`versionCode 40`）
 
-**更新日期：** 2026-08-22
+**更新日期：** 2026-08-24
 **目标平台：** Android 10+（`minSdk 29`，首版按 `targetSdk 36` 建设）
 
 本文基于《GlassIME Android AI 中文输入法产品与技术设计文档 v0.1》重新整理，并统一改名为：
@@ -37,16 +36,15 @@
 
 Android 官方要求自 2026 年 8 月 31 日起，新应用和更新需面向 Android 16（API 36）或更高版本，因此项目从第一天按 API 36 的行为约束构建，而不是后期再迁移。
 
-## 0. 当前迭代：v0.4.13 Sense Mic Windows GUI 与 Setup
+## 0. 当前迭代：v0.4.15 Sense Mic 现代化 Windows 前端
 
-`v0.4.13` 为 Sense Mic 增加原生 Windows GUI：自动扫描局域网手机，也支持 IP 直连；
-输入六位配对码后即可连接，可选择 80–240 ms 缓冲并在界面中实时查看接收核心输出，
-随时停止音频进程。新的 Inno Setup 安装器会安装 GUI、Rust 命令行核心、开始菜单入口、
-可选桌面快捷方式与可选开机启动项；GUI 还提供驱动状态和经过微软签名的驱动包安装入口。
+`v0.4.15` 将 Windows GUI 从固定坐标控件升级为 Slint 响应式界面：自动扫描局域网手机，
+也支持 IP 直连；连接状态、手机到电脑的音频路径、延迟档位、驱动状态和关键传输指标集中
+呈现在卡片式首页。开始与停止复用一个主操作，原始日志默认折叠，连接或重连阶段仍可立即停止。
 
-本版同时修复 Android 前台麦克风服务的启动回滚、局域网广播、地址选择、控制连接与重连
-生命周期，以及 Windows 发现、错误输出、停止清理和本地化命令输出。完整变更见
-[`v0.4.13` 发布说明](docs/releases/v0.4.13.md)。
+Windows 正式路径继续使用经过校验的 VB-CABLE；界面以“Sense Mic 虚拟麦克风”呈现，
+并显示、复制系统中的 `CABLE Output` 录音端点。完整变更见
+[`v0.4.15` 发布说明](docs/releases/v0.4.15.md)。
 
 ## 0.1 v0.4.12 OAuth、Agent 信道与连续候选
 
@@ -288,7 +286,7 @@ opt-in 的固定实体设备绝对性能门禁 1 项明确跳过。当前环境�
 | Agent ABI | description discovery、分页 read、代际 manage、单 Run 冻结 |
 | Android 设备 | Parcel、FileObserver/StrictMode、MotionEvent、Settings recreation |
 | 既有质量 | AI、IME、UI、Core、M0–M7、Lint、APK、签名、权限与资产哈希无回退 |
-| APK 元数据 | `versionCode 38`、`versionName 0.4.13`、`minSdk 29`、`targetSdk 36` |
+| APK 元数据 | `versionCode 40`、`versionName 0.4.15`、`minSdk 29`、`targetSdk 36` |
 
 日常完整本地验证与构建仍可在 Windows 执行：
 
@@ -302,7 +300,7 @@ powershell -ExecutionPolicy Bypass -File tools/local_release.ps1
 powershell -ExecutionPolicy Bypass -File tools/local_release.ps1 -Publish
 ```
 
-`-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。`v0.4.13`
+`-SkipTests` 与 `-SkipBuild` 仅用于本地诊断复用已有产物，不用于正式发布。`v0.4.15`
 恢复单版本 GitHub Actions 发布门禁：主分支提交通过测试、Lint、固定证书签名与 APK 元数据
 检查后，使用 GitHub API 原子创建 tag、Release、APK 与校验和，不调用 `gh` CLI。
 

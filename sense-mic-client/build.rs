@@ -1,9 +1,13 @@
 fn main() {
     println!("cargo:rerun-if-changed=windows/sense-mic.manifest");
     println!("cargo:rerun-if-changed=../windows/native/tsf/resources/sense.ico");
+    println!("cargo:rerun-if-changed=ui/sense-mic.slint");
 
     #[cfg(target_os = "windows")]
     {
+        let config = slint_build::CompilerConfiguration::new().with_style("fluent-light".into());
+        slint_build::compile_with_config("ui/sense-mic.slint", config)
+            .expect("compile Sense Mic Slint UI");
         let mut resource = winres::WindowsResource::new();
         resource
             .set_manifest_file("windows/sense-mic.manifest")
