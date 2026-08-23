@@ -1,0 +1,16 @@
+VB-CABLE redistribution notice
+==============================
+
+Sense Mic for Windows bundles the base VB-CABLE package from VB-Audio Software.
+VB-CABLE is donationware by Vincent Burel / VB-Audio Software. All
+participations are welcome.
+
+Product and donation page: https://vb-audio.com/Cable/
+Origin: https://www.vb-cable.com/
+Licensing and distribution terms: https://vb-audio.com/Services/licensing.htm
+
+The official VB-CABLE package is redistributed without modification in the
+driver\vb-cable directory. Its original readme.txt contains the end-user license
+and copyright notice. VB-CABLE remains a separately identifiable shared Windows
+audio component and is not removed automatically when Sense Mic is uninstalled,
+because another application may be using it.

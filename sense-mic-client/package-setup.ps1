@@ -1,8 +1,9 @@
 [CmdletBinding()]
 param(
-    [string]$Version = '0.4.13',
+    [string]$Version = '0.4.14',
     [string]$OutputRoot = (Join-Path $PSScriptRoot 'dist'),
     [string]$DriverStage,
+    [string]$VbCableStage,
     [string]$SourceCommit,
     [string]$IsccPath,
     [switch]$SkipBuild
@@ -10,6 +11,10 @@ param(
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+
+if ($DriverStage -and $VbCableStage) {
+    throw 'Select exactly one Windows driver backend: DriverStage or VbCableStage.'
+}
 
 function Resolve-Iscc {
     param([string]$ExplicitPath)
@@ -62,6 +67,7 @@ foreach ($file in @('sense-mic.exe', 'sense-mic-gui.exe')) {
 }
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'README.md') -Destination $stage
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'CLIENT-ONLY-NOTICE.txt') -Destination $stage
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'VB-CABLE-NOTICE.txt') -Destination $stage
 $repoRoot = Split-Path $PSScriptRoot -Parent
 Copy-Item -LiteralPath (Join-Path $repoRoot 'LICENSE') -Destination $stage
 Copy-Item -LiteralPath (Join-Path $repoRoot 'NOTICE') -Destination $stage
@@ -81,6 +87,15 @@ if ($DriverStage) {
     $driverDefine = "/DDriverStage=$driverPath"
 }
 
+$vbCableDefine = $null
+if ($VbCableStage) {
+    $vbCablePath = (Resolve-Path -LiteralPath $VbCableStage -ErrorAction Stop).Path
+    & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'scripts\Assert-VbCablePackage.ps1') `
+        -PackagePath $vbCablePath
+    if ($LASTEXITCODE -ne 0) { throw 'VB-CABLE release policy rejected the supplied package.' }
+    $vbCableDefine = "/DVbCableStage=$vbCablePath"
+}
+
 $iscc = Resolve-Iscc $IsccPath
 $iss = Join-Path $PSScriptRoot 'installer\SenseMic.iss'
 $arguments = @(
@@ -90,6 +105,7 @@ $arguments = @(
     "/DSourceCommit=$SourceCommit"
 )
 if ($driverDefine) { $arguments += $driverDefine }
+if ($vbCableDefine) { $arguments += $vbCableDefine }
 $arguments += $iss
 & $iscc @arguments
 if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
@@ -101,6 +117,7 @@ $hash = (Get-FileHash -LiteralPath $setup -Algorithm SHA256).Hash.ToLowerInvaria
 [pscustomobject]@{
     Setup = $setup
     Sha256 = $hash
-    DriverBundled = [bool]$DriverStage
+    DriverBundled = [bool]($DriverStage -or $VbCableStage)
+    DriverBackend = if ($DriverStage) { 'SenseMicVAD' } elseif ($VbCableStage) { 'VB-CABLE' } else { 'none' }
     SourceCommit = $SourceCommit
 }

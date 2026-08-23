@@ -31,6 +31,10 @@ $validator = Join-Path $scriptRoot 'Assert-WindowsDriverPackage.ps1'
 $signingPolicy = Join-Path $scriptRoot 'WindowsDriverSigningPolicy.ps1'
 $releaseWorkflow = Join-Path $repoRoot '.github\workflows\release-v0.4.12.yml'
 $repairWorkflow = Join-Path $repoRoot '.github\workflows\repair-v0.4.12-sense-mic-assets.yml'
+$currentWorkflow = Join-Path $repoRoot '.github\workflows\release-v0.4.14.yml'
+$vbFetcher = Join-Path $scriptRoot 'Get-VbCablePackage.ps1'
+$vbValidator = Join-Path $scriptRoot 'Assert-VbCablePackage.ps1'
+$setupScript = Join-Path $clientRoot 'installer\SenseMic.iss'
 
 . $signingPolicy
 
@@ -92,6 +96,30 @@ foreach ($workflow in $releaseWorkflows) {
     Assert-True ($source -notmatch '(?i)PackageFlavor\s+DevelopmentTest') `
         "Public release workflow $($workflow.Name) packages a development test driver."
 }
+Assert-True (Test-Path -LiteralPath $currentWorkflow -PathType Leaf) `
+    'The v0.4.14 release workflow is missing.'
+$currentWorkflowSource = Get-Content -LiteralPath $currentWorkflow -Raw -Encoding utf8
+Assert-True ($currentWorkflowSource -match 'Get-VbCablePackage\.ps1') `
+    'The v0.4.14 workflow must fetch the pinned production VB-CABLE package.'
+Assert-True ($currentWorkflowSource -match 'VbCableStage\s+\$env:VB_CABLE_STAGE') `
+    'The v0.4.14 Setup must bundle the verified VB-CABLE stage.'
+foreach ($policyScript in @($vbFetcher, $vbValidator)) {
+    $source = Get-Content -LiteralPath $policyScript -Raw -Encoding utf8
+    Assert-True ($source -match 'b950e39f01af1d04ea623c8f6d8eb9b6ea5c477c637295fabf20631c85116bfb') `
+        "$([IO.Path]::GetFileName($policyScript)) does not pin the approved Pack 45 archive."
+}
+$vbValidatorSource = Get-Content -LiteralPath $vbValidator -Raw -Encoding utf8
+Assert-True ($vbValidatorSource -match 'Microsoft Windows Hardware Compatibility Publisher') `
+    'VB-CABLE validation must require the Microsoft hardware publisher catalog signer.'
+Assert-True ($vbValidatorSource -match 'verify /kp /v /c') `
+    'VB-CABLE validation must apply kernel-policy catalog verification.'
+$setupSource = Get-Content -LiteralPath $setupScript -Raw -Encoding utf8
+Assert-True ($setupSource -match 'profile=private protocol=UDP') `
+    'The Windows Setup must create a Private-profile inbound UDP audio rule.'
+Assert-True ($setupSource -match 'program=""\{app\}\\sense-mic\.exe""') `
+    'The inbound UDP rule must be scoped to the installed Sense Mic executable.'
+Assert-True ($setupSource -match 'firewall delete rule name=""Sense Mic Audio \(Private LAN\)""') `
+    'The Windows uninstaller must remove the Sense Mic audio firewall rule.'
 Assert-True ($workflowSource -match 'SenseMicClient-v0\.4\.12-windows-x64-client-only\.zip') `
     'The v0.4.12 repair workflow must name the Windows artifact client-only.'
 Assert-True ($workflowSource -match '(?i)PackageFlavor\s+ClientOnly') `

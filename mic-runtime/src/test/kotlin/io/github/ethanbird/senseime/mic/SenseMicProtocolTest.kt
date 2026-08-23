@@ -80,6 +80,13 @@ class SenseMicProtocolTest {
         val stats = SenseMicClientStats(1_000, 23, 108)
         assertEquals(stats, SenseMicWireCodec.decodeStats(SenseMicWireCodec.encodeStats(stats)))
 
+        val serverStats = SenseMicServerStats(2_345)
+        assertEquals(
+            serverStats,
+            SenseMicWireCodec.decodeServerStats(SenseMicWireCodec.encodeServerStats(serverStats)),
+        )
+        assertNull(SenseMicWireCodec.decodeServerStats(byteArrayOf()))
+
         val frame = SenseMicWireCodec.encodeControlFrame(SenseMicControlType.PING, byteArrayOf(1, 2))
         assertEquals(SenseMicControlType.PING to 2, SenseMicWireCodec.decodeControlFrameHeader(frame.copyOf(12)))
         frame[6] = 1

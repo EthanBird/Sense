@@ -177,6 +177,20 @@ sense-mic-client/driver/windows/SenseMicVAD/LICENSE-MIT.txt. Sense-specific
 additions provide fixed endpoints, the render-to-capture ring, INF identity,
 and reproducible WDK build integration.
 
+VB-CABLE Windows virtual audio driver
+-------------------------------------
+
+Source and product page: https://vb-audio.com/Cable/
+Distribution terms: https://vb-audio.com/Services/licensing.htm
+Copyright: Vincent Burel / VB-Audio Software
+License model: Donationware
+
+The Windows Sense Mic Setup redistributes the base VB-CABLE package without
+modification. VB-CABLE stays visibly identified as a VB-Audio application and
+the installed licenses/VB-CABLE-NOTICE.txt provides the product, donation and
+licensing links. The original package readme.txt remains alongside the driver.
+VB-CABLE A+B and C+D are not bundled.
+
 Rime Wubi / Wubi86 dictionary
 ----------------------------------------
 Sense includes a deterministically compiled Wubi86 dictionary from Rime Wubi,

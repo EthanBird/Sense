@@ -1,10 +1,18 @@
 #[cfg(target_os = "windows")]
 use crate::audio::list_output_devices;
 use anyhow::{anyhow, Context, Result};
+#[cfg(target_os = "windows")]
+use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+#[cfg(target_os = "windows")]
+use cpal::{FromSample, Sample, SampleFormat, SizedSample, Stream, StreamConfig};
+#[cfg(target_os = "windows")]
+use std::f32::consts::TAU;
 use std::path::Path;
 #[cfg(target_os = "windows")]
 use std::path::PathBuf;
 use std::process::{Command, Output};
+#[cfg(target_os = "windows")]
+use std::sync::{Arc, Mutex};
 #[cfg(target_os = "windows")]
 use std::thread;
 #[cfg(target_os = "windows")]
@@ -21,6 +29,16 @@ pub const WINDOWS_CAPTURE_NAME: &str = "Sense Mic";
 pub const LINUX_SINK_NAME: &str = "sense_mic";
 pub const LINUX_SOURCE_NAME: &str = "sense_mic.monitor";
 
+#[cfg(target_os = "windows")]
+const VB_CABLE_SETUP: &str = "VBCABLE_Setup_x64.exe";
+
+#[cfg(target_os = "windows")]
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum WindowsDriverPackage {
+    VbCable(PathBuf),
+    SenseMicInf(PathBuf),
+}
+
 #[derive(Clone, Debug)]
 pub struct DriverStatus {
     pub platform: &'static str,
@@ -34,17 +52,14 @@ pub fn status() -> Result<DriverStatus> {
     #[cfg(target_os = "windows")]
     {
         let outputs = list_output_devices().unwrap_or_default();
-        let playback = outputs.into_iter().find(|name| {
-            let name = name.to_ascii_lowercase();
-            name.contains("sense mic playback") || name.contains("cable input")
-        });
-        let capture = windows_capture_endpoint();
+        let captures = windows_capture_endpoints();
+        let (playback, capture, detail, installed) = select_windows_backend(&outputs, &captures);
         Ok(DriverStatus {
             platform: "windows",
-            installed: playback.is_some() && capture.is_some(),
+            installed,
             playback_endpoint: playback,
             capture_endpoint: capture,
-            detail: "WaveRT render-to-capture virtual cable".to_owned(),
+            detail,
         })
     }
     #[cfg(target_os = "linux")]
@@ -82,29 +97,37 @@ pub fn status() -> Result<DriverStatus> {
 pub fn install(package_hint: Option<&Path>) -> Result<String> {
     #[cfg(target_os = "windows")]
     {
-        let inf = package_hint
-            .map(Path::to_path_buf)
-            .unwrap_or_else(default_windows_inf_path);
-        let inf = if inf.is_dir() {
-            inf.join("SenseMicVAD.inf")
-        } else {
-            inf
+        if status().is_ok_and(|value| value.installed) {
+            return Ok("Windows virtual microphone is already ready".to_owned());
+        }
+        let package = resolve_windows_package(package_hint)?;
+        let (output, description) = match &package {
+            WindowsDriverPackage::VbCable(setup) => (
+                Command::new(setup)
+                    .current_dir(setup.parent().unwrap_or_else(|| Path::new(".")))
+                    .args(["-i", "-h"])
+                    .output()
+                    .with_context(|| format!("launch {}", setup.display()))?,
+                format!("VB-CABLE from {}", setup.display()),
+            ),
+            WindowsDriverPackage::SenseMicInf(inf) => (
+                Command::new("pnputil.exe")
+                    .args(["/add-driver", &inf.to_string_lossy(), "/install"])
+                    .output()
+                    .context("launch pnputil.exe")?,
+                format!("SenseMicVAD from {}", inf.display()),
+            ),
         };
-        if !inf.is_file() {
-            anyhow::bail!("driver package was not found at {}", inf.display());
-        }
-        let output = Command::new("pnputil.exe")
-            .args(["/add-driver", &inf.to_string_lossy(), "/install"])
-            .output()
-            .context("launch pnputil.exe")?;
-        ensure_success(output, "install Sense Mic Windows driver")?;
-        for _ in 0..20 {
+        ensure_success(output, &format!("install {description}"))?;
+        for _ in 0..60 {
             if status().is_ok_and(|value| value.installed) {
-                return Ok(format!("installed Windows driver from {}", inf.display()));
+                return Ok(format!("installed {description}"));
             }
-            thread::sleep(Duration::from_millis(250));
+            thread::sleep(Duration::from_millis(500));
         }
-        anyhow::bail!("pnputil completed but the Sense Mic endpoints did not become ready")
+        anyhow::bail!(
+            "the installer completed but the playback/capture endpoint pair is not ready; restart Windows to finalize the audio driver"
+        )
     }
     #[cfg(target_os = "linux")]
     {
@@ -196,49 +219,316 @@ pub fn ensure_virtual_output() -> Result<()> {
     Ok(())
 }
 
-#[cfg(target_os = "windows")]
-fn windows_capture_endpoint() -> Option<String> {
-    let script = r#"
-$endpoint = Get-PnpDevice -Class AudioEndpoint -ErrorAction SilentlyContinue |
-  Where-Object { $_.FriendlyName -eq 'Sense Mic' -or $_.FriendlyName -like 'CABLE Output*' } |
-  Select-Object -First 1 -ExpandProperty FriendlyName
-if (-not $endpoint) {
-  $endpoint = Get-CimInstance Win32_PnPEntity |
-    Where-Object { $_.Name -eq 'Sense Mic' -or $_.Name -like 'CABLE Output*' } |
-    Select-Object -First 1 -ExpandProperty Name
+pub fn verify_audio_loopback() -> Result<String> {
+    #[cfg(target_os = "windows")]
+    {
+        let state = status()?;
+        if !state.installed {
+            anyhow::bail!("Windows virtual playback/capture endpoint pair is not ready");
+        }
+        let playback_name = state
+            .playback_endpoint
+            .context("missing playback endpoint")?;
+        let capture_name = state.capture_endpoint.context("missing capture endpoint")?;
+        let host = cpal::default_host();
+        let output = host
+            .output_devices()
+            .context("enumerate output endpoints")?
+            .find(|device| device.to_string() == playback_name)
+            .with_context(|| format!("CPAL output endpoint disappeared: {playback_name}"))?;
+        let input = host
+            .input_devices()
+            .context("enumerate input endpoints")?
+            .find(|device| device.to_string() == capture_name)
+            .with_context(|| format!("CPAL input endpoint disappeared: {capture_name}"))?;
+        let output_supported = output
+            .default_output_config()
+            .context("query playback format")?;
+        let input_supported = input
+            .default_input_config()
+            .context("query capture format")?;
+        let output_format = output_supported.sample_format();
+        let input_format = input_supported.sample_format();
+        let output_config = output_supported.config();
+        let input_config = input_supported.config();
+        let stats = Arc::new(Mutex::new(LoopbackStats::default()));
+        let input_stream =
+            build_loopback_input(&input, input_config, input_format, Arc::clone(&stats))?;
+        let output_stream = build_loopback_output(&output, output_config, output_format)?;
+        input_stream.play().context("start capture test stream")?;
+        thread::sleep(Duration::from_millis(250));
+        output_stream.play().context("start playback test stream")?;
+        thread::sleep(Duration::from_millis(1_500));
+        drop(output_stream);
+        thread::sleep(Duration::from_millis(150));
+        drop(input_stream);
+        let stats = stats
+            .lock()
+            .map_err(|_| anyhow!("capture statistics lock poisoned"))?;
+        if stats.samples == 0 {
+            anyhow::bail!("virtual capture endpoint returned no samples");
+        }
+        let rms = (stats.square_sum / stats.samples as f64).sqrt();
+        if stats.peak < 0.05 || rms < 0.01 {
+            anyhow::bail!(
+                "virtual cable captured only silence (samples={}, peak={:.4}, rms={:.4})",
+                stats.samples,
+                stats.peak,
+                rms
+            );
+        }
+        Ok(format!(
+            "loopback passed: {playback_name} -> {capture_name}; samples={}, peak={:.4}, rms={:.4}, playback={} Hz/{} ch, capture={} Hz/{} ch",
+            stats.samples,
+            stats.peak,
+            rms,
+            output_config.sample_rate,
+            output_config.channels,
+            input_config.sample_rate,
+            input_config.channels
+        ))
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        anyhow::bail!("audio loopback verification is currently implemented on Windows")
+    }
 }
-if ($endpoint) { Write-Output $endpoint }
+
+#[cfg(target_os = "windows")]
+#[derive(Default)]
+struct LoopbackStats {
+    samples: u64,
+    square_sum: f64,
+    peak: f32,
+}
+
+#[cfg(target_os = "windows")]
+fn build_loopback_input(
+    device: &cpal::Device,
+    config: StreamConfig,
+    format: SampleFormat,
+    stats: Arc<Mutex<LoopbackStats>>,
+) -> Result<Stream> {
+    match format {
+        SampleFormat::F32 => build_typed_loopback_input::<f32>(device, config, stats),
+        SampleFormat::F64 => build_typed_loopback_input::<f64>(device, config, stats),
+        SampleFormat::I16 => build_typed_loopback_input::<i16>(device, config, stats),
+        SampleFormat::I32 => build_typed_loopback_input::<i32>(device, config, stats),
+        SampleFormat::I64 => build_typed_loopback_input::<i64>(device, config, stats),
+        SampleFormat::I8 => build_typed_loopback_input::<i8>(device, config, stats),
+        SampleFormat::U16 => build_typed_loopback_input::<u16>(device, config, stats),
+        SampleFormat::U32 => build_typed_loopback_input::<u32>(device, config, stats),
+        SampleFormat::U64 => build_typed_loopback_input::<u64>(device, config, stats),
+        SampleFormat::U8 => build_typed_loopback_input::<u8>(device, config, stats),
+        other => anyhow::bail!("capture sample format {other} is not supported by the verifier"),
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn build_typed_loopback_input<T>(
+    device: &cpal::Device,
+    config: StreamConfig,
+    stats: Arc<Mutex<LoopbackStats>>,
+) -> Result<Stream>
+where
+    T: SizedSample + Sample,
+    f32: FromSample<T>,
+{
+    device
+        .build_input_stream(
+            config,
+            move |input: &[T], _| {
+                if let Ok(mut stats) = stats.try_lock() {
+                    for &sample in input {
+                        let value = f32::from_sample(sample);
+                        stats.samples += 1;
+                        stats.square_sum += f64::from(value) * f64::from(value);
+                        stats.peak = stats.peak.max(value.abs());
+                    }
+                }
+            },
+            move |error| eprintln!("loopback capture error: {error}"),
+            None,
+        )
+        .context("build capture test stream")
+}
+
+#[cfg(target_os = "windows")]
+fn build_loopback_output(
+    device: &cpal::Device,
+    config: StreamConfig,
+    format: SampleFormat,
+) -> Result<Stream> {
+    match format {
+        SampleFormat::F32 => build_typed_loopback_output::<f32>(device, config),
+        SampleFormat::F64 => build_typed_loopback_output::<f64>(device, config),
+        SampleFormat::I16 => build_typed_loopback_output::<i16>(device, config),
+        SampleFormat::I32 => build_typed_loopback_output::<i32>(device, config),
+        SampleFormat::I64 => build_typed_loopback_output::<i64>(device, config),
+        SampleFormat::I8 => build_typed_loopback_output::<i8>(device, config),
+        SampleFormat::U16 => build_typed_loopback_output::<u16>(device, config),
+        SampleFormat::U32 => build_typed_loopback_output::<u32>(device, config),
+        SampleFormat::U64 => build_typed_loopback_output::<u64>(device, config),
+        SampleFormat::U8 => build_typed_loopback_output::<u8>(device, config),
+        other => anyhow::bail!("playback sample format {other} is not supported by the verifier"),
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn build_typed_loopback_output<T>(device: &cpal::Device, config: StreamConfig) -> Result<Stream>
+where
+    T: SizedSample + Sample + FromSample<f32>,
+{
+    let channels = usize::from(config.channels.max(1));
+    let phase_step = 997.0 * TAU / config.sample_rate.max(1) as f32;
+    let mut phase = 0.0f32;
+    device
+        .build_output_stream(
+            config,
+            move |output: &mut [T], _| {
+                for frame in output.chunks_mut(channels) {
+                    let value = (phase.sin() * 0.25).clamp(-1.0, 1.0);
+                    phase = (phase + phase_step) % TAU;
+                    for sample in frame {
+                        *sample = T::from_sample(value);
+                    }
+                }
+            },
+            move |error| eprintln!("loopback playback error: {error}"),
+            None,
+        )
+        .context("build playback test stream")
+}
+
+#[cfg(target_os = "windows")]
+fn windows_capture_endpoints() -> Vec<String> {
+    let script = r#"
+$endpoints = Get-PnpDevice -Class AudioEndpoint -ErrorAction SilentlyContinue |
+  Where-Object { $_.FriendlyName -eq 'Sense Mic' -or $_.FriendlyName -like 'CABLE Output*' } |
+  Select-Object -ExpandProperty FriendlyName -Unique
+if (-not $endpoints) {
+  $endpoints = Get-CimInstance Win32_PnPEntity |
+    Where-Object { $_.Name -eq 'Sense Mic' -or $_.Name -like 'CABLE Output*' } |
+    Select-Object -ExpandProperty Name -Unique
+}
+if ($endpoints) { $endpoints | ForEach-Object { Write-Output $_ } }
 "#;
     let output = Command::new("powershell.exe")
         .args(["-NoProfile", "-NonInteractive", "-Command", script])
         .output()
-        .ok()?;
+        .ok();
+    let Some(output) = output else {
+        return Vec::new();
+    };
     if !output.status.success() {
-        return None;
+        return Vec::new();
     }
-    let value = decode_command_output(&output.stdout).trim().to_owned();
-    (!value.is_empty()).then_some(value)
+    decode_command_output(&output.stdout)
+        .lines()
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(str::to_owned)
+        .collect()
 }
 
 #[cfg(target_os = "windows")]
-fn default_windows_inf_path() -> PathBuf {
-    let beside_executable = std::env::current_exe()
-        .ok()
-        .and_then(|path| path.parent().map(Path::to_path_buf))
-        .map(|path| {
-            path.join("driver")
-                .join("windows")
-                .join("x64")
-                .join("SenseMicVAD.inf")
-        });
-    if let Some(path) = beside_executable.filter(|path| path.is_file()) {
-        return path;
+fn select_windows_backend(
+    outputs: &[String],
+    captures: &[String],
+) -> (Option<String>, Option<String>, String, bool) {
+    let find = |values: &[String], needle: &str| {
+        values
+            .iter()
+            .find(|name| name.to_ascii_lowercase().contains(needle))
+            .cloned()
+    };
+    let sense_playback = find(outputs, "sense mic playback");
+    let sense_capture = find(captures, "sense mic");
+    if sense_playback.is_some() && sense_capture.is_some() {
+        return (
+            sense_playback,
+            sense_capture,
+            "SenseMicVAD WaveRT virtual cable".to_owned(),
+            true,
+        );
     }
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("driver")
-        .join("windows")
-        .join("x64")
-        .join("SenseMicVAD.inf")
+    let cable_playback = find(outputs, "cable input");
+    let cable_capture = find(captures, "cable output");
+    if cable_playback.is_some() && cable_capture.is_some() {
+        return (
+            cable_playback,
+            cable_capture,
+            "VB-CABLE by VB-Audio Software (Microsoft WHQL signed)".to_owned(),
+            true,
+        );
+    }
+    (
+        sense_playback.or(cable_playback),
+        sense_capture.or(cable_capture),
+        "Windows virtual audio endpoint pair is incomplete".to_owned(),
+        false,
+    )
+}
+
+#[cfg(target_os = "windows")]
+fn resolve_windows_package(package_hint: Option<&Path>) -> Result<WindowsDriverPackage> {
+    if let Some(hint) = package_hint {
+        return package_from_path(hint).with_context(|| {
+            format!(
+                "Windows virtual microphone package was not found at {}",
+                hint.display()
+            )
+        });
+    }
+    let executable_root = std::env::current_exe()
+        .ok()
+        .and_then(|path| path.parent().map(Path::to_path_buf));
+    let source_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let candidates = [
+        executable_root
+            .as_ref()
+            .map(|root| root.join("driver").join("vb-cable")),
+        executable_root
+            .as_ref()
+            .map(|root| root.join("driver").join("windows").join("x64")),
+        Some(source_root.join("driver").join("vb-cable")),
+        Some(source_root.join("driver").join("windows").join("x64")),
+    ];
+    for candidate in candidates.into_iter().flatten() {
+        if let Ok(package) = package_from_path(&candidate) {
+            return Ok(package);
+        }
+    }
+    anyhow::bail!(
+        "bundled VB-CABLE package was not found beside sense-mic.exe under driver\\vb-cable"
+    )
+}
+
+#[cfg(target_os = "windows")]
+fn package_from_path(path: &Path) -> Result<WindowsDriverPackage> {
+    if path.is_file() {
+        return match path.file_name().and_then(|name| name.to_str()) {
+            Some(name) if name.eq_ignore_ascii_case(VB_CABLE_SETUP) => {
+                Ok(WindowsDriverPackage::VbCable(path.to_path_buf()))
+            }
+            Some(name) if name.eq_ignore_ascii_case("SenseMicVAD.inf") => {
+                Ok(WindowsDriverPackage::SenseMicInf(path.to_path_buf()))
+            }
+            _ => anyhow::bail!("unsupported driver package entry {}", path.display()),
+        };
+    }
+    let vb_cable = path.join(VB_CABLE_SETUP);
+    if vb_cable.is_file() {
+        return Ok(WindowsDriverPackage::VbCable(vb_cable));
+    }
+    let sense_inf = path.join("SenseMicVAD.inf");
+    if sense_inf.is_file() {
+        return Ok(WindowsDriverPackage::SenseMicInf(sense_inf));
+    }
+    anyhow::bail!(
+        "no supported Windows driver installer below {}",
+        path.display()
+    )
 }
 
 #[cfg(target_os = "linux")]
@@ -417,5 +707,30 @@ mod tests {
         let big = [0xfe, 0xff, 0x9a, 0x71, 0x52, 0xa8];
         assert_eq!(decode_command_output(&little), "驱动");
         assert_eq!(decode_command_output(&big), "驱动");
+    }
+
+    #[cfg(target_os = "windows")]
+    #[test]
+    fn selects_only_a_coherent_windows_endpoint_pair() {
+        let outputs = vec!["Sense Mic Playback".to_owned()];
+        let captures = vec!["CABLE Output (VB-Audio Virtual Cable)".to_owned()];
+        let (playback, capture, detail, installed) = select_windows_backend(&outputs, &captures);
+        assert!(playback.is_some());
+        assert!(capture.is_some());
+        assert!(detail.contains("incomplete"));
+        assert!(!installed);
+
+        let outputs = vec!["CABLE Input (VB-Audio Virtual Cable)".to_owned()];
+        let (playback, capture, detail, installed) = select_windows_backend(&outputs, &captures);
+        assert_eq!(
+            playback.as_deref(),
+            Some("CABLE Input (VB-Audio Virtual Cable)")
+        );
+        assert_eq!(
+            capture.as_deref(),
+            Some("CABLE Output (VB-Audio Virtual Cable)")
+        );
+        assert!(detail.contains("VB-CABLE"));
+        assert!(installed);
     }
 }

@@ -568,7 +568,13 @@ class SenseMicService : Service() {
                             }
                         }
                         publishStreamingStatus(client, hello.clientName)
-                        writeControlFrame(output, SenseMicControlType.PONG)
+                        writeControlFrame(
+                            output,
+                            SenseMicControlType.PONG,
+                            SenseMicWireCodec.encodeServerStats(
+                                SenseMicServerStats(sentPackets.get()),
+                            ),
+                        )
                     }
                     SenseMicControlType.STOP -> break
                     else -> Unit

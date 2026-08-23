@@ -109,6 +109,11 @@ pub struct ClientStats {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct ServerStats {
+    pub sent_packets: u64,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct AudioHeader {
     pub kind: AudioKind,
     pub session_id: u32,
@@ -225,6 +230,13 @@ pub fn encode_stats(stats: ClientStats) -> [u8; 18] {
     out[8..16].copy_from_slice(&stats.lost_packets.to_be_bytes());
     out[16..18].copy_from_slice(&stats.jitter_millis.to_be_bytes());
     out
+}
+
+pub fn decode_server_stats(payload: &[u8]) -> Option<ServerStats> {
+    let bytes: [u8; 8] = payload.try_into().ok()?;
+    Some(ServerStats {
+        sent_packets: u64::from_be_bytes(bytes),
+    })
 }
 
 pub fn parse_audio_header(datagram: &[u8]) -> Result<AudioHeader> {
@@ -527,6 +539,16 @@ mod tests {
         });
         assert_eq!(&bytes[7..9], &[1, 0]);
         assert_eq!(&bytes[15..], &[2, 0, 3]);
+    }
+
+    #[test]
+    fn server_stats_layout_is_big_endian_and_strict() {
+        assert_eq!(
+            decode_server_stats(&42u64.to_be_bytes()),
+            Some(ServerStats { sent_packets: 42 })
+        );
+        assert_eq!(decode_server_stats(&[]), None);
+        assert_eq!(decode_server_stats(&[0; 9]), None);
     }
 
     #[test]

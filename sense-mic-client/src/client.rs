@@ -2,9 +2,9 @@ use crate::audio::AudioOutput;
 use crate::discovery::DiscoveredDevice;
 use crate::jitter::{JitterBuffer, PlayoutFrame};
 use crate::protocol::{
-    decrypt_audio, encode_stats, parse_audio_header, perform_handshake, read_control_frame,
-    write_control_frame, ClientStats, ControlType, ReplayWindow, AUDIO_HEADER_BYTES, FRAME_MILLIS,
-    FRAME_SAMPLES, GCM_TAG_BYTES, MAX_AUDIO_PAYLOAD_BYTES,
+    decode_server_stats, decrypt_audio, encode_stats, parse_audio_header, perform_handshake,
+    read_control_frame, write_control_frame, ClientStats, ControlType, ReplayWindow,
+    AUDIO_HEADER_BYTES, FRAME_MILLIS, FRAME_SAMPLES, GCM_TAG_BYTES, MAX_AUDIO_PAYLOAD_BYTES,
 };
 use anyhow::{bail, ensure, Context, Result};
 use opus_rs::OpusDecoder;
@@ -31,6 +31,8 @@ struct SharedStats {
     received: AtomicU64,
     lost: AtomicU64,
     jitter_millis: AtomicU64,
+    phone_sent: AtomicU64,
+    phone_stats_known: AtomicBool,
 }
 
 pub fn stream_device(
@@ -56,11 +58,16 @@ pub fn stream_device(
     )?;
 
     let mut output = AudioOutput::open(options.output_device.as_deref())?;
+    let microphone = crate::driver::status()
+        .ok()
+        .and_then(|status| status.capture_endpoint)
+        .unwrap_or_else(|| "—".to_owned());
     println!(
-        "Connected to {} ({}) · {} kbps · output {}",
+        "Connected to {} ({}) · {} kbps · microphone {} · audio write path {}",
         device.response.device_name,
         phone_ip,
         secrets.welcome.bitrate / 1_000,
+        microphone,
         output.summary(),
     );
     let stats = Arc::new(SharedStats::default());
@@ -163,7 +170,12 @@ fn receive_audio(
 
         if last_report.elapsed() >= Duration::from_secs(5) {
             println!(
-                "audio: received={} recovered={} lost={} jitter={}ms buffered={} dropped_samples={}",
+                "audio: phone_sent={} received={} recovered={} lost={} jitter={}ms buffered={} dropped_samples={}",
+                if shared.phone_stats_known.load(Ordering::Acquire) {
+                    shared.phone_sent.load(Ordering::Relaxed).to_string()
+                } else {
+                    "?".to_owned()
+                },
                 current.received,
                 current.recovered,
                 current.lost,
@@ -175,10 +187,23 @@ fn receive_audio(
         }
         ensure!(output.is_healthy(), "virtual microphone audio stream ended");
         if last_audio.elapsed() > AUDIO_IDLE_TIMEOUT {
-            bail!("phone audio timed out");
+            bail!(audio_timeout_message(shared));
         }
     }
     Ok(())
+}
+
+fn audio_timeout_message(shared: &SharedStats) -> String {
+    if shared.phone_stats_known.load(Ordering::Acquire) {
+        let phone_sent = shared.phone_sent.load(Ordering::Relaxed);
+        if phone_sent > 0 {
+            return format!(
+                "phone sent {phone_sent} audio packets but Windows received none; check the Sense Mic Private-network UDP firewall rule and LAN client-isolation setting"
+            );
+        }
+        return "phone capture produced no UDP audio packets; check microphone permission and the Sense Mic service status on the phone".to_owned();
+    }
+    "phone audio timed out before any UDP packet arrived; update the phone app for packet diagnostics and check the Sense Mic Private-network UDP firewall rule".to_owned()
 }
 
 fn decode_and_queue(
@@ -235,11 +260,17 @@ fn spawn_heartbeat(
                 });
                 let result = write_control_frame(&mut control, ControlType::Ping, &payload)
                     .and_then(|_| read_control_frame(&mut control))
-                    .and_then(|(kind, _)| {
+                    .and_then(|(kind, payload)| {
                         ensure!(
                             kind == ControlType::Pong,
                             "phone heartbeat response was {kind:?}"
                         );
+                        if let Some(server) = decode_server_stats(&payload) {
+                            stats
+                                .phone_sent
+                                .store(server.sent_packets, Ordering::Relaxed);
+                            stats.phone_stats_known.store(true, Ordering::Release);
+                        }
                         Ok(())
                     });
                 if let Err(error) = result {
@@ -268,5 +299,23 @@ fn unspecified_for(ip: IpAddr) -> IpAddr {
     match ip {
         IpAddr::V4(_) => "0.0.0.0".parse().expect("valid IPv4"),
         IpAddr::V6(_) => "::".parse().expect("valid IPv6"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn timeout_diagnosis_distinguishes_phone_capture_from_windows_udp() {
+        let stats = SharedStats::default();
+        assert!(audio_timeout_message(&stats).contains("update the phone app"));
+
+        stats.phone_stats_known.store(true, Ordering::Release);
+        assert!(audio_timeout_message(&stats).contains("capture produced no UDP"));
+
+        stats.phone_sent.store(321, Ordering::Relaxed);
+        assert!(audio_timeout_message(&stats).contains("sent 321 audio packets"));
+        assert!(audio_timeout_message(&stats).contains("firewall rule"));
     }
 }

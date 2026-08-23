@@ -18,7 +18,7 @@ mod windows_app {
     use std::io::{BufRead, BufReader};
     use std::os::windows::ffi::OsStrExt;
     use std::os::windows::process::CommandExt;
-    use std::path::{Path, PathBuf};
+    use std::path::Path;
     use std::process::{Command, Stdio};
     use std::sync::mpsc::{self, Receiver, Sender};
     use std::thread;
@@ -69,7 +69,7 @@ mod windows_app {
         #[nwg_control(text: "刷新", position: (532, 88), size: (86, 32))]
         #[nwg_events(OnButtonClick: [SenseMicApp::refresh_driver])]
         driver_refresh: nwg::Button,
-        #[nwg_control(text: "安装驱动…", position: (626, 88), size: (108, 32))]
+        #[nwg_control(text: "安装驱动", position: (626, 88), size: (108, 32))]
         #[nwg_events(OnButtonClick: [SenseMicApp::install_driver])]
         driver_install: nwg::Button,
 
@@ -113,9 +113,6 @@ mod windows_app {
         #[nwg_control]
         #[nwg_events(OnNotice: [SenseMicApp::drain_messages])]
         notice: nwg::Notice,
-
-        #[nwg_resource(title: "选择 SenseMicVAD.inf", action: nwg::FileDialogAction::Open, filters: "Sense Mic driver (SenseMicVAD.inf)|INF driver (*.inf)|All files (*.*)")]
-        driver_dialog: nwg::FileDialog,
 
         receiver: RefCell<Option<Receiver<GuiMessage>>>,
         sender: RefCell<Option<Sender<GuiMessage>>>,
@@ -275,25 +272,14 @@ mod windows_app {
         }
 
         fn install_driver(&self) {
-            if !self.driver_dialog.run(Some(&self.window)) {
-                return;
-            }
-            let Ok(selected) = self.driver_dialog.get_selected_item() else {
-                return;
-            };
-            let path = PathBuf::from(selected);
-            if path.file_name().and_then(OsStr::to_str) != Some("SenseMicVAD.inf") {
-                nwg::simple_message("Sense Mic", "请选择名为 SenseMicVAD.inf 的驱动入口文件。");
-                return;
-            }
             self.driver_install.set_enabled(false);
             self.driver_status.set_text("等待管理员确认…");
-            self.append_log(&format!("请求安装驱动：{}", path.display()));
+            self.append_log("正在安装内置的 Microsoft WHQL 签名虚拟音频驱动…");
             let Some((sender, notice)) = self.sender_and_notice() else {
                 return;
             };
             thread::spawn(move || {
-                let result = run_elevated_driver_install(&path);
+                let result = run_elevated_driver_install();
                 let _ = sender.send(GuiMessage::DriverInstall(result));
                 notice.notice();
             });
@@ -338,6 +324,15 @@ mod windows_app {
                             Ok(status) if status.installed => {
                                 self.driver_status.set_text("已就绪 · Sense Mic");
                                 self.driver_install.set_enabled(false);
+                                self.append_log(&format!("驱动后端：{}", status.detail));
+                                self.append_log(&format!(
+                                    "电脑应用请选择麦克风：{}",
+                                    status.capture_endpoint.as_deref().unwrap_or("—")
+                                ));
+                                self.append_log(&format!(
+                                    "Sense Mic 音频写入端：{}",
+                                    status.playback_endpoint.as_deref().unwrap_or("—")
+                                ));
                             }
                             Ok(_) => {
                                 self.driver_status.set_text("待安装驱动");
@@ -476,7 +471,7 @@ mod windows_app {
         value.encode_wide().chain(std::iter::once(0)).collect()
     }
 
-    fn run_elevated_driver_install(inf: &Path) -> Result<(), String> {
+    fn run_elevated_driver_install() -> Result<(), String> {
         let cli = std::env::current_exe()
             .map_err(|error| error.to_string())?
             .parent()
@@ -484,10 +479,7 @@ mod windows_app {
             .join("sense-mic.exe");
         let verb = wide(OsStr::new("runas"));
         let file = wide(cli.as_os_str());
-        let parameters = wide(OsStr::new(&format!(
-            "driver install --package \"{}\"",
-            inf.display()
-        )));
+        let parameters = wide(OsStr::new("driver install"));
         let mut info = SHELLEXECUTEINFOW {
             cbSize: std::mem::size_of::<SHELLEXECUTEINFOW>() as u32,
             fMask: SEE_MASK_NOCLOSEPROCESS,

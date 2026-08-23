@@ -54,14 +54,25 @@ GUI 启动后会自动检查虚拟麦克风并扫描手机。也可以直接填�
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File sense-mic-client/package-setup.ps1 `
-  -Version 0.4.13
+  -Version 0.4.14
 ```
 
-默认生成 `dist/setup/SenseMicSetup-v0.4.13-windows-x64.exe`。这是面向普通设备的
-GUI 客户端 Setup，内含 GUI、CLI、许可与构建信息。若已有 Partner Center 返回的 WHQL
-驱动目录，可传入 `-DriverStage X:\partner-center\SenseMicVAD`；脚本先执行签名、EKU、
-catalog 成员关系与 kernel-policy 门禁，再把驱动纳入安装器并在安装阶段部署。测试证书
-驱动不会进入该路径。
+默认生成 `dist/setup/SenseMicSetup-v0.4.14-windows-x64.exe`。正式 Release 先从 VB-Audio
+官方地址下载基础版 VB-CABLE Pack 45，固定校验归档 SHA-256，并验证 Setup Authenticode、
+Microsoft Hardware Compatibility Publisher catalog、kernel-policy 与 catalog 成员关系；
+随后把完整原始包传给 `-VbCableStage`。Setup 以管理员权限安装 GUI、CLI 和正式签名的
+虚拟音频端点，不再要求用户手选 INF：
+
+```powershell
+$stage = & sense-mic-client/scripts/Get-VbCablePackage.ps1
+powershell -ExecutionPolicy Bypass -File sense-mic-client/package-setup.ps1 `
+  -Version 0.4.14 -VbCableStage $stage.PackagePath
+```
+
+VB-CABLE 由 VB-Audio Software 提供，是 donationware；Setup 与 GUI 明确显示实际后端，
+安装目录的 `licenses/VB-CABLE-NOTICE.txt` 保留来源、捐赠与许可入口。它是共享音频组件，
+卸载 Sense Mic 时予以保留，避免影响其他应用。若已有 Partner Center 返回的 SenseMicVAD
+WHQL 目录，仍可通过 `-DriverStage X:\partner-center\SenseMicVAD` 构建自有驱动版本。
 
 Linux 需要 PipeWire Pulse 或 PulseAudio 开发库；Debian/Ubuntu 可安装
 `pkg-config libasound2-dev libpulse-dev pulseaudio-utils`，然后运行相同的 Cargo 命令。
@@ -69,7 +80,14 @@ Linux 需要 PipeWire Pulse 或 PulseAudio 开发库；Debian/Ubuntu 可安装
 
 ## Windows 驱动
 
-驱动源码位于 [`driver/windows/SenseMicVAD`](driver/windows/SenseMicVAD)。它提供两个端点：
+公开 Setup 使用经过 Microsoft WHQL 签名的基础版 VB-CABLE。Windows 设备名沿用其官方
+命名，GUI 会解释实际用途：
+
+- `CABLE Input`：Sense Mic 客户端写入手机音频的播放端；
+- `CABLE Output`：会议、直播、游戏等软件选择的麦克风端。
+
+仓库内的自有驱动源码位于 [`driver/windows/SenseMicVAD`](driver/windows/SenseMicVAD)，
+它提供两个对应端点：
 
 - `Sense Mic Playback`：Rust 客户端写入的 render endpoint；
 - `Sense Mic`：会议、直播、游戏等软件选择的 capture endpoint。
@@ -127,23 +145,24 @@ powershell -ExecutionPolicy Bypass -File sense-mic-client/package-windows.ps1 `
 `PACKAGE-MANIFEST.json` 同时声明 `driverIncluded: false`。开发测试驱动需要显式选择
 `-PackageFlavor DevelopmentTest`，产物名固定包含 `development-test`，不会进入公开 Release。
 
-以管理员终端安装已签名包：
+正式 Setup 会自动安装虚拟音频端点。也可在管理员终端手动安装内置 VB-CABLE 包或已签名
+SenseMicVAD 包：
 
 ```powershell
-./sense-mic.exe driver install --package ./driver/windows/x64
+./sense-mic.exe driver install --package ./driver/vb-cable
 ./sense-mic.exe driver status
+./sense-mic.exe driver verify-audio
 ```
 
-卸载：
+下面的卸载命令只清理 SenseMicVAD；共享的 VB-CABLE 使用其原始安装器维护：
 
 ```powershell
 ./sense-mic.exe driver uninstall
 ```
 
-安装命令的边界是调用系统 `pnputil`；管理员权限、catalog 信任与内核加载策略由 Windows
-执行。公开发行资产的自动查找目录只在 Microsoft-signed 组合包中出现；名称带
-`development-test` 的开发包也保留相同布局，但仅用于测试签名环境。client-only 包需要先
-单独取得 Microsoft-signed 驱动目录，再通过 `--package` 指定其 INF 或所在目录。
+Windows 安装命令优先寻找 EXE 同目录下的 `driver/vb-cable/VBCABLE_Setup_x64.exe`，调用
+官方静默参数 `-i -h`，并等待完整播放/录音端点对出现。`driver verify-audio` 会生成本地
+997 Hz 测试音并从虚拟麦克风捕获回来，用峰值和 RMS 判断链路是否真的传声。
 
 ## 连接
 
@@ -161,10 +180,15 @@ powershell -ExecutionPolicy Bypass -File sense-mic-client/package-windows.ps1 `
 ./sense-mic.exe serve --device-id 123456 --latency-ms 120
 ```
 
-也可通过一次性的 `SENSE_MIC_CODE` 环境变量提供配对码。客户端默认只匹配
-`Sense Mic Playback`；`--output default` 可用于不经过虚拟驱动的声卡回放诊断。
+也可通过一次性的 `SENSE_MIC_CODE` 环境变量提供配对码。客户端默认依次匹配
+`Sense Mic Playback`、`Sense Mic Input`、`CABLE Input`；`--output default` 可用于不经过
+虚拟驱动的声卡回放诊断。
 
-Windows 应用的麦克风列表中选择 **Sense Mic**。Linux 首次连接会自动加载虚拟源，
+Windows 应用的麦克风列表中选择 **CABLE Output (VB-Audio Virtual Cable)**（自有正式
+SenseMicVAD 构建选择 **Sense Mic**）。这里的命名来自虚拟音频线的信号方向：Sense Mic
+把手机音频写入 `CABLE Input`，会议/录音应用从 `CABLE Output` 把它当作麦克风读取。
+GUI 会把前者标为“音频写入端”、后者标为“电脑应用麦克风”，避免把两个端点混为一谈。
+Linux 首次连接会自动加载虚拟源，
 也可提前执行：
 
 ```bash

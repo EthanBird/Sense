@@ -71,8 +71,10 @@ struct ServeArgs {
 #[derive(Subcommand, Debug)]
 enum DriverCommand {
     Status,
+    /// Play a private test tone through the virtual cable and capture it back.
+    VerifyAudio,
     Install {
-        /// Path to SenseMicVAD.inf or its package directory on Windows.
+        /// Path to VBCABLE_Setup_x64.exe, SenseMicVAD.inf, or its package directory.
         #[arg(long)]
         package: Option<PathBuf>,
     },
@@ -237,6 +239,7 @@ fn driver_command(command: DriverCommand) -> Result<()> {
             let status = driver::status()?;
             println!("{status:#?}");
         }
+        DriverCommand::VerifyAudio => println!("{}", driver::verify_audio_loopback()?),
         DriverCommand::Install { package } => {
             println!("{}", driver::install(package.as_deref())?);
         }

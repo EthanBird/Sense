@@ -93,6 +93,10 @@ data class SenseMicClientStats(
     val jitterMillis: Int,
 )
 
+data class SenseMicServerStats(
+    val sentPackets: Long,
+)
+
 data class SenseMicAudioHeader(
     val kind: SenseMicAudioKind,
     val sessionId: Int,
@@ -280,6 +284,16 @@ object SenseMicWireCodec {
         require(payload.size == 18)
         val input = ByteBuffer.wrap(payload).order(ByteOrder.BIG_ENDIAN)
         SenseMicClientStats(input.long, input.long, input.u16())
+    }.getOrNull()
+
+    fun encodeServerStats(value: SenseMicServerStats): ByteArray =
+        ByteBuffer.allocate(8).order(ByteOrder.BIG_ENDIAN).apply {
+            putLong(value.sentPackets)
+        }.array()
+
+    fun decodeServerStats(payload: ByteArray): SenseMicServerStats? = runCatching {
+        require(payload.size == 8)
+        SenseMicServerStats(ByteBuffer.wrap(payload).order(ByteOrder.BIG_ENDIAN).long)
     }.getOrNull()
 
     fun encodeAudioHeader(header: SenseMicAudioHeader): ByteArray {
