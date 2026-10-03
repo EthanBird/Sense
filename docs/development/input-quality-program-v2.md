@@ -2,16 +2,18 @@
 
 更新：2026-10-04。状态：持续开发；本轮最高优先级。主要路径：26 键全拼。
 
-### 当前交付：v0.4.16-rc.4
+### 当前交付：v0.4.16-rc.5
 
-已使用原正式证书发布 versionCode 44：
-[Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.16-rc.4) /
-[APK](https://github.com/EthanBird/Sense/releases/download/v0.4.16-rc.4/Sense-v0.4.16-rc.4.apk)。
-标签提交 `7517dcf43c58aee8aed5e5811964883a4e035717`，纳入 E33 个人词库恢复优化与 E34 跨音节换位纠错。
-本次仅修改版本和发布元数据，复用 E34 的 955 项主机测试及 34 项 Android 功能回归，未把它们记作重新执行。
-新运行正式签名构建、Release lint（0 错误，28 警告）、33 项发布契约检查及当前发布包身份/资源/模块边界检查。
-线上四个附件摘要与本地一致，rc.3 附件身份保持不变，v0.4.15 仍是最新稳定版。
-完整范围、摘要与发布回执见 `benchmarks/results/release-v0.4.16-rc.4*.json`。
+已使用原正式证书发布 versionCode 45：
+[Release](https://github.com/EthanBird/Sense/releases/tag/v0.4.16-rc.5) /
+[APK](https://github.com/EthanBird/Sense/releases/download/v0.4.16-rc.5/Sense-v0.4.16-rc.5.apk)。
+标签提交 `7af31104e9e48d2fb959c6be875ee0e7ce3a7954`，在 rc.4 基础上纳入 E42 组词码表前缀区间查找优化。
+E42 固定模拟器确认中位数 136→131.5 ms、P95 338→300 ms；三个查询中位数变慢仍完整披露。
+发布打包仅修改版本和元数据，复用 E42 的 964 项主机测试及 40 项 Android 功能回归，未记作发布包重新执行。
+新运行正式签名构建、Release lint（0 错误，28 警告）、33 项发布契约、128 项边界契约（127 通过、1 项既有 Windows 权限跳过），
+以及当前 APK/JAR 和运行清单边界检查。25 个输入/许可资产与 rc.4 一致，两个自动生成的 dexopt profile 变化单独记录。
+线上四个附件摘要与本地一致，rc.4 附件身份保持不变，v0.4.15 仍是最新稳定版。
+完整范围、摘要与发布回执见 `benchmarks/results/release-v0.4.16-rc.5*.json`。
 下一阶段仍需改善自然同音句、首次确认长尾及更广设备/UI 生命周期；整个质量目标尚未完成。
 
 ### E42：组词码表前缀区间查找已接纳
