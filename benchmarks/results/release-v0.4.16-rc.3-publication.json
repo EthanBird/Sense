@@ -1,0 +1,73 @@
+{
+  "assets": [
+    {
+      "apiUrl": "https://api.github.com/repos/EthanBird/Sense/releases/assets/608174746",
+      "contentType": "application/json",
+      "createdAt": "2026-10-03T16:57:30Z",
+      "digest": "sha256:bad177ecacd0a34cde97b95f9337045ea8ce6e5f3b43e088a98c1fde23585800",
+      "downloadCount": 0,
+      "id": "RA_kwDOTfLtas4kQAKa",
+      "label": "",
+      "name": "BUILD-INFO.json",
+      "size": 5874,
+      "state": "uploaded",
+      "updatedAt": "2026-10-03T16:57:30Z",
+      "url": "https://github.com/EthanBird/Sense/releases/download/v0.4.16-rc.3/BUILD-INFO.json"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/EthanBird/Sense/releases/assets/608174747",
+      "contentType": "text/markdown; charset=utf-8",
+      "createdAt": "2026-10-03T16:57:30Z",
+      "digest": "sha256:0995b22472a44fba50c65a3551912f4a205d6feff164773e968e221af281c8ef",
+      "downloadCount": 0,
+      "id": "RA_kwDOTfLtas4kQAKb",
+      "label": "",
+      "name": "RELEASE-NOTES.md",
+      "size": 2236,
+      "state": "uploaded",
+      "updatedAt": "2026-10-03T16:57:30Z",
+      "url": "https://github.com/EthanBird/Sense/releases/download/v0.4.16-rc.3/RELEASE-NOTES.md"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/EthanBird/Sense/releases/assets/608174748",
+      "contentType": "application/vnd.android.package-archive",
+      "createdAt": "2026-10-03T16:57:30Z",
+      "digest": "sha256:790e0bb4148ebca59801c4de1096da8c64d552c31cdcd02f94c510ced92081e3",
+      "downloadCount": 0,
+      "id": "RA_kwDOTfLtas4kQAKc",
+      "label": "",
+      "name": "Sense-v0.4.16-rc.3.apk",
+      "size": 73102399,
+      "state": "uploaded",
+      "updatedAt": "2026-10-03T16:57:41Z",
+      "url": "https://github.com/EthanBird/Sense/releases/download/v0.4.16-rc.3/Sense-v0.4.16-rc.3.apk"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/EthanBird/Sense/releases/assets/608174750",
+      "contentType": "text/plain; charset=utf-8",
+      "createdAt": "2026-10-03T16:57:30Z",
+      "digest": "sha256:da1b603a42bec76965fb9bb6651369ec106333303871fe0814c3ce77ed538ba6",
+      "downloadCount": 0,
+      "id": "RA_kwDOTfLtas4kQAKe",
+      "label": "",
+      "name": "SHA256SUMS.txt",
+      "size": 89,
+      "state": "uploaded",
+      "updatedAt": "2026-10-03T16:57:30Z",
+      "url": "https://github.com/EthanBird/Sense/releases/download/v0.4.16-rc.3/SHA256SUMS.txt"
+    }
+  ],
+  "isDraft": false,
+  "isPrerelease": true,
+  "publishedAt": "2026-10-03T16:58:25Z",
+  "tagName": "v0.4.16-rc.3",
+  "url": "https://github.com/EthanBird/Sense/releases/tag/v0.4.16-rc.3",
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-03T16:59:34.378622+00:00",
+  "tagCommit": "c9ad798da955d4890bcf9aaeee45539fc5f08a10",
+  "allFourAssetDigestsMatchLocal": true,
+  "latestStableTag": "v0.4.15",
+  "previousReleasesOverwritten": false,
+  "sourceBranch": "codex/input-quality-v2",
+  "sourceMergedToMain": false
+}
