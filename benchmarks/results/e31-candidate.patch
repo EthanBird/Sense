@@ -1,0 +1,165 @@
+diff --git a/core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt b/core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt
+index b34f712..15f2106 100644
+--- a/core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt
++++ b/core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt
+@@ -35,6 +35,10 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
+         .distinct()
+         .sortedWith(compareBy<String> { it.first() }.thenByDescending { it.length }.thenBy { it })
+         .toList()
++    private val inventorySet = inventory.toHashSet()
++    private val inventoryLengths = inventory.map { it.length }.distinct().sorted()
++    private val lengthsByFirst = inventory.groupBy { it.first() }
++        .mapValues { (_, units) -> units.map { it.length }.distinct().sorted() }
+ 
+     fun paths(
+         rawInput: String,
+@@ -80,7 +84,14 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
+                     target += PathState(
+                         canonical = state.canonical + edge.syllable,
+                         cost = nextCost,
+-                        syllableEnds = state.syllableEnds + (state.canonical.length + edge.syllable.length),
++                        syllableEnds = if (edge.internalJoint == 0) {
++                            state.syllableEnds + (state.canonical.length + edge.syllable.length)
++                        } else {
++                            state.syllableEnds + listOf(
++                                state.canonical.length + edge.internalJoint,
++                                state.canonical.length + edge.syllable.length,
++                            )
++                        },
+                         firstEditOffset = when {
+                             state.firstEditOffset != NO_EDIT_OFFSET -> state.firstEditOffset
+                             edge.editOffset != NO_EDIT_OFFSET -> edge.editOffset
+@@ -134,21 +145,49 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
+                 }
+             }
+         }
++        // A swap across two syllables is one typo, not two unrelated substitutions.
++        // Enumerate only present unit lengths and validate both units in the inventory;
++        // this avoids the quadratic inventory-pair cross product at every offset.
++        crossJointTranspositions(parsed, start).forEach { edge ->
++            best[EdgeIdentity(edge.end, edge.syllable, edge.internalJoint)] = edge
++        }
+         val ordered = best.values.sortedWith(EDGE_ORDER)
+         val retained = LinkedHashMap<EdgeIdentity, Edge>(MAX_EDGES_PER_OFFSET)
+         EdgeCostTier.entries.forEach { tier ->
+             ordered.asSequence()
+                 .filter { edge -> edgeCostTier(edge.cost) == tier }
+                 .take(MIN_EDGES_PER_COST_TIER)
+-                .forEach { edge -> retained[EdgeIdentity(edge.end, edge.syllable)] = edge }
++                .forEach { edge -> retained[EdgeIdentity(edge.end, edge.syllable, edge.internalJoint)] = edge }
+         }
+         ordered.forEach { edge ->
+             if (retained.size >= MAX_EDGES_PER_OFFSET) return@forEach
+-            retained.putIfAbsent(EdgeIdentity(edge.end, edge.syllable), edge)
++            retained.putIfAbsent(EdgeIdentity(edge.end, edge.syllable, edge.internalJoint), edge)
+         }
+         return retained.values.toList()
+     }
+ 
++    private fun crossJointTranspositions(parsed: ParsedInput, start: Int): List<Edge> {
++        val query = parsed.code
++        val result = ArrayList<Edge>()
++        for (firstLength in inventoryLengths) {
++            DecodeWorkScope.checkpoint()
++            val joint = start + firstLength
++            if (joint >= query.length) break
++            if (query[joint - 1] == query[joint] || parsed.hasJointInside(start, joint + 1)) continue
++            val first = query.substring(start, joint - 1) + query[joint]
++            if (first !in inventorySet) continue
++            for (secondLength in lengthsByFirst[query[joint - 1]].orEmpty()) {
++                val end = joint + secondLength
++                if (end > query.length) break
++                if (parsed.hasJointInside(joint, end)) continue
++                val second = query[joint - 1] + query.substring(joint + 1, end)
++                if (second !in inventorySet) continue
++                result += Edge(end, first + second, TRANSPOSITION_COST, joint - 1, firstLength)
++            }
++        }
++        return result
++    }
++
+     private fun editCost(
+         expected: String,
+         typed: String,
+@@ -385,6 +424,8 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
+         val syllable: String,
+         val cost: Float,
+         val editOffset: Int,
++        /** Canonical offset of a two-syllable edit edge; zero for ordinary single-unit edges. */
++        val internalJoint: Int = 0,
+     )
+ 
+     @JvmInline
+@@ -399,6 +440,7 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
+     private data class EdgeIdentity(
+         val end: Int,
+         val syllable: String,
++        val internalJoint: Int = 0,
+     )
+ 
+     private enum class EdgeCostTier {
+diff --git a/core-input/src/test/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraphTest.kt b/core-input/src/test/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraphTest.kt
+index 07f653c..076c17f 100644
+--- a/core-input/src/test/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraphTest.kt
++++ b/core-input/src/test/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraphTest.kt
+@@ -27,6 +27,34 @@ class PinyinSpellingGraphTest {
+         assertEquals(listOf(2, 5), corrected.syllableEnds)
+     }
+ 
++    @Test
++    fun transpositionAcrossASyllableJointIsOneEditWithBothEndsPreserved() {
++        val units = PinyinSpellingGraph(listOf("ni", "hao", "hen"))
++        data class Example(val typed: String, val canonical: String, val ends: List<Int>, val offset: Int)
++        for ((typed, canonical, ends, offset) in listOf(
++            Example("nhiao", "nihao", listOf(2, 5), 1),
++            Example("hehnao", "henhao", listOf(3, 6), 2),
++        )) {
++            val path = units.paths(typed, maxPaths = 48, maxCost = .45f)
++                .firstOrNull { it.canonical == canonical && it.syllableEnds == ends }
++            assertTrue("Missing one-edit cross-joint path for $typed", path != null)
++            assertEquals(.45f, requireNotNull(path).cost, .00001f)
++            assertEquals(offset, path.firstEditOffset)
++            assertEquals(false, path.singleInsertionDeletion)
++        }
++    }
++
++    @Test
++    fun crossJointSwapRespectsExplicitJointsAndEditBudget() {
++        val units = PinyinSpellingGraph(listOf("ni", "hao", "wo"))
++        assertTrue(units.paths("nh'iao", 48, .45f).none { it.canonical == "nihao" })
++        assertTrue(units.paths("nhiao", 48, .44f).none { it.canonical == "nihao" })
++        assertTrue(units.paths("wo'nhiao", 48, .45f).any {
++            it.canonical == "wonihao" && it.syllableEnds == listOf(2, 4, 7) && it.firstEditOffset == 3
++        })
++        assertEquals(0f, units.paths("nihao", 48).first { it.canonical == "nihao" }.cost)
++    }
++
+     @Test
+     fun apostropheForcesASyllableJoint() {
+         val paths = graph.paths("xi'an")
+diff --git a/input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorCorrectionTest.kt b/input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorCorrectionTest.kt
+index 46a6271..5e544a1 100644
+--- a/input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorCorrectionTest.kt
++++ b/input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorCorrectionTest.kt
+@@ -18,6 +18,8 @@ class ExternalEditorCorrectionTest : ExternalEditorTestFixture() {
+     @Test fun unknownInterjectionDoesNotDisplaceTheObservedSentence() = confirm("geimianbaoderenbuhuie", "给面包的人不会饿")
+     @Test fun unknownNameGlyphDoesNotDisplaceTheObservedPhrase() = confirm("ruguoniquwennaxiebainianrenrui", "如果你去问那些百年人瑞")
+     @Test fun supplementalIntelligentAgentIsFirstWithoutLearning() = confirm("zhinengti", "智能体")
++    @Test fun swappedKeysAcrossSyllablesKeepTheSentenceContext() = confirm("wobuxihuaznuoye", "我不喜欢作业")
++    @Test fun swappedKeysAcrossWordBoundaryCanBeConfirmed() = confirm("wobujieyizaiyuzhonmganbu", "我不介意在雨中漫步")
+ 
+     private fun confirm(typed: String, expected: String) {
+         type(typed, 12)
+diff --git a/tools/test_external_editor.ps1 b/tools/test_external_editor.ps1
+index 3db49b7..d3343aa 100644
+--- a/tools/test_external_editor.ps1
++++ b/tools/test_external_editor.ps1
+@@ -85,7 +85,7 @@ try {
+     if ($Correction) {
+         $class = "io.github.ethanbird.senseime.inputqualityfixture.ExternalEditorCorrectionTest"
+         $testArgs += @("-e", "noLearning", "true")
+-        $expectedTests = 8
++        $expectedTests = 10
+     }
+     if ($Association) {
+         $class = "io.github.ethanbird.senseime.inputqualityfixture.ExternalEditorAssociationTest"

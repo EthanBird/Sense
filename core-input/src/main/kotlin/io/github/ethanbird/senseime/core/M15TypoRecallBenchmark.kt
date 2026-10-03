@@ -48,7 +48,7 @@ object M15TypoRecallBenchmark {
             lateinit var decoding: ProgressivePinyinDecoding
             var correctionTrace: CorrectionSearchDiagnostics.Trace? = null
             val ns = measureNanoTime {
-                CorrectionSearchDiagnostics.observe({ if (it.query == effectiveQuery) correctionTrace = it }) {
+                CorrectionSearchDiagnostics.observe({ if (it.query == row.typed) correctionTrace = it }) {
                     decoding = decoder.decodeProgressively(PinyinComposition(remainingPinyin = row.typed), "", 255)
                 }
             }
@@ -61,7 +61,7 @@ object M15TypoRecallBenchmark {
             val top = candidates.take(5).joinToString { """{"text":${quote(it.text)},"canonical":${quote(it.canonicalPinyin.orEmpty())},"kind":${quote(it.matchKind.name)},"score":${it.score}}""" }
             val selected = correctionTrace?.selected.orEmpty().joinToString { """{"canonical":${quote(it.canonical)},"cost":${it.cost},"syllableEnds":${it.syllableEnds}}""" }
             if ((index+1)%100 == 0) println("Processed ${index+1}/${rows.size}")
-            """{"id":${quote(row.id)},"sourceId":${quote(row.sourceId)},"typed":${quote(row.typed)},"effectiveQuery":${quote(effectiveQuery)},"canonical":${quote(row.canonical)},"expected":${quote(row.expected)},"operation":${quote(row.operation)},"zone":${quote(row.zone)},"stratum":${quote(row.stratum)},"editOffset":${row.editOffset},"rank":$rank,"graphCanonicalRank":$graphRank,"graphAlignedRank":$alignedRank,"probeRank":${correctionTrace?.probes?.indexOfFirst { it.canonical == row.canonical }?.plus(1) ?: 0},"selectedExpectedSpelling":${correctionTrace?.selected?.any { it.canonical == row.canonical } == true},"selectedProbes":[$selected],"canonicalCandidateCount":${candidates.count { it.canonicalPinyin == row.canonical }},"candidateCount":${candidates.size},"characterErrors":${M8DailyInputBenchmark.editDistance(candidates.firstOrNull()?.text.orEmpty(),row.expected)},"decodeNs":$ns,"top5":[$top]}"""
+            """{"id":${quote(row.id)},"sourceId":${quote(row.sourceId)},"typed":${quote(row.typed)},"effectiveQuery":${quote(effectiveQuery)},"decoderInput":${quote(row.typed)},"canonical":${quote(row.canonical)},"expected":${quote(row.expected)},"operation":${quote(row.operation)},"zone":${quote(row.zone)},"stratum":${quote(row.stratum)},"editOffset":${row.editOffset},"rank":$rank,"graphCanonicalRank":$graphRank,"graphAlignedRank":$alignedRank,"probeRank":${correctionTrace?.probes?.indexOfFirst { it.canonical == row.canonical }?.plus(1) ?: 0},"selectedExpectedSpelling":${correctionTrace?.selected?.any { it.canonical == row.canonical } == true},"selectedProbes":[$selected],"canonicalCandidateCount":${candidates.count { it.canonicalPinyin == row.canonical }},"candidateCount":${candidates.size},"characterErrors":${M8DailyInputBenchmark.editDistance(candidates.firstOrNull()?.text.orEmpty(),row.expected)},"decodeNs":$ns,"top5":[$top]}"""
         }
         val core = File(root,"core-input/src/main/kotlin")
         val sources = core.walkTopDown().filter { it.isFile && it.extension == "kt" }.sortedBy { it.relativeTo(core).invariantSeparatorsPath }
@@ -69,7 +69,7 @@ object M15TypoRecallBenchmark {
         val assets = listOf("pinyin_lexicon.bin","pinyin_bigrams.bin","pinyin_character_lm.scng","pinyin_syllables.txt","english_lexicon.txt")
             .joinToString { quote(it)+":"+quote(sha(asset(it))) }
         out.parentFile?.mkdirs()
-        out.writeText("""{"schemaVersion":3,"oovFeature":$oovFeature,"correctionCompositionBoost":$correctionBoost,"progressiveJoints":"Apostrophes removed; joints rows are duplicate clean controls, not forced-boundary coverage","scope":"Known source reconstruction with frozen synthetic errors; host final progressive decode, not Android latency or natural-error accuracy","inputSha256":${quote(sha(input))},"candidateLimit":255,"graphDiagnosticLimit":$graphLimit,"lmWeight":0.5,"learning":false,"assets":{$assets},"sources":{$sources},"observations":[${observations.joinToString()}]}"""+"\n")
+        out.writeText("""{"schemaVersion":4,"oovFeature":$oovFeature,"correctionCompositionBoost":$correctionBoost,"progressiveJoints":"Explicit joints are passed unchanged to progressive decoding; effectiveQuery denotes only normalized dictionary lookup","scope":"Known source reconstruction with frozen synthetic errors; host final progressive decode, not Android latency or natural-error accuracy","inputSha256":${quote(sha(input))},"candidateLimit":255,"graphDiagnosticLimit":$graphLimit,"lmWeight":0.5,"learning":false,"assets":{$assets},"sources":{$sources},"observations":[${observations.joinToString()}]}"""+"\n")
         println("Wrote ${rows.size} observations to $out") // No held-out scores printed before freeze.
     }
     private fun sha(file: File) = MessageDigest.getInstance("SHA-256").digest(file.readBytes()).joinToString("") { "%02x".format(it) }

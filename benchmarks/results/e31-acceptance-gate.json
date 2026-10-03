@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "stage": "E31",
+  "decision": "reject-for-release-pending-cost-improvement",
+  "candidateQualityImproved": true,
+  "candidateLatencyGatePassed": false,
+  "promotionPassed": false,
+  "candidatePatch": "benchmarks/results/e31-candidate.patch",
+  "candidateTests": {
+    "core-input": {
+      "tests": 393,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 317,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "pythonTests": {
+    "run": 439,
+    "passed": 438,
+    "skipped": 1
+  },
+  "androidCorrectionTests": 10,
+  "baselineCorrectionFailures": 2,
+  "pairedConfirmationsPassed": 64,
+  "pairedFollowupsPassed": 8,
+  "confirmationMs": {
+    "baseline": {
+      "count": 32,
+      "medianMs": 136.5,
+      "observedP95Ms": 265,
+      "maxMs": 271
+    },
+    "optimized": {
+      "count": 32,
+      "medianMs": 139.5,
+      "observedP95Ms": 291,
+      "maxMs": 332
+    }
+  },
+  "knownRegressionReport": ".artifacts/input-quality/e31/full-comparison.json",
+  "firstCandidateLosses": 0,
+  "heldOutDeleteTop10Losses": 2,
+  "naturalErrorDataset": false,
+  "physicalPhoneTested": false,
+  "productionGraphRestoredTo": "2a1d0b9",
+  "benchmarkMetadataFixRetained": true,
+  "goalComplete": false,
+  "evidenceManifestSha256": "7af1a12af4698bea087fbb6e0bc5dbdca016c5873736a565120471552a7c00e3",
+  "archivedFiles": 291
+}
