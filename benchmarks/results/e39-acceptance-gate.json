@@ -1,0 +1,1695 @@
+{
+  "schemaVersion": 1,
+  "stage": "E39",
+  "decision": "reject-fixed-student",
+  "qualityGate": false,
+  "hostCostGate": true,
+  "domains": {
+    "aishell": {
+      "before": {
+        "states": 128,
+        "top1": 65,
+        "top5": 97,
+        "top10": 105,
+        "recall255": 118,
+        "characterErrors": 142,
+        "characters": 1087
+      },
+      "after": {
+        "states": 128,
+        "top1": 69,
+        "top5": 96,
+        "top10": 105,
+        "recall255": 118,
+        "characterErrors": 136,
+        "characters": 1087
+      },
+      "qualityGate": false,
+      "latencyAll": {
+        "count": 128,
+        "medianMs": 7.84995,
+        "p95Ms": 11.4356,
+        "maxMs": 12.7103,
+        "totalMs": 908.2137
+      },
+      "latencyScored": {
+        "count": 107,
+        "medianMs": 8.0778,
+        "p95Ms": 11.4573,
+        "maxMs": 12.7103,
+        "totalMs": 907.1848
+      },
+      "skipReasons": {
+        "scored": 107,
+        "protected-source": 15,
+        "unknown-character": 6
+      },
+      "zeroResidualEquivalent": 128,
+      "gains": [
+        {
+          "id": "00d2bffa0584b7b690fe3b40c58be552f8c96bfa6768cd439eb5727b345afb8a",
+          "cut": 4,
+          "context": "案案",
+          "query": "qingbijiaofuza",
+          "expected": "情比较复杂",
+          "beforeRank": 2,
+          "afterRank": 1,
+          "hostNanos": 6939000,
+          "beforeTop5": [
+            "请比较复杂",
+            "情比较复杂",
+            "轻比较复杂",
+            "清比较复杂",
+            "青比较复杂"
+          ],
+          "afterTop5": [
+            "情比较复杂",
+            "请比较复杂",
+            "轻比较复杂",
+            "清比较复杂",
+            "青比较复杂"
+          ]
+        },
+        {
+          "id": "01801a4d5a1f2b542f41570222532f9f3f33bd29cc8bad7c6b169ab30be111a7",
+          "cut": 0,
+          "context": "",
+          "query": "gaishijianyinqiwangyourelun",
+          "expected": "该事件引起网友热论",
+          "beforeRank": 7,
+          "afterRank": 1,
+          "hostNanos": 7857100,
+          "beforeTop5": [
+            "该时间引起网友热论",
+            "该时间引起网游热论",
+            "该是件引起网友热论",
+            "该时间引起往右热论",
+            "该时间引起网友惹论"
+          ],
+          "afterTop5": [
+            "该事件引起网友热论",
+            "该时间引起网友热论",
+            "该是件引起网友热论",
+            "该时间引起往右热论",
+            "该时间引起网游热论"
+          ]
+        },
+        {
+          "id": "02dce1acd6c4d8f5ca694dab382ab0bb8fd6306c322d43deeefb803391224f9e",
+          "cut": 0,
+          "context": "",
+          "query": "tiaozhengrengshiloushizhujidiao",
+          "expected": "调整仍是楼市主基调",
+          "beforeRank": 2,
+          "afterRank": 1,
+          "hostNanos": 8105400,
+          "beforeTop5": [
+            "调整仍是楼是主基调",
+            "调整仍是楼市主基调",
+            "调整仍是喽是主基调",
+            "调整仍是搂是主基调",
+            "调整仍是漏是主基调"
+          ],
+          "afterTop5": [
+            "调整仍是楼市主基调",
+            "调整仍是楼是主基调",
+            "调整仍是喽是主基调",
+            "调整仍是搂是主基调",
+            "调整仍是陋室主基调"
+          ]
+        },
+        {
+          "id": "0002953dd647c00d2ec30ec8495703eb47610dbbdf2689afd07abec8037a9070",
+          "cut": 0,
+          "context": "",
+          "query": "womenqiantianganggangjieshouwanzonghangdezicha",
+          "expected": "我们前天刚刚接受完总行的自查",
+          "beforeRank": 3,
+          "afterRank": 1,
+          "hostNanos": 9952100,
+          "beforeTop5": [
+            "我们前天刚刚接受万总行的自查",
+            "我们前天刚刚接受玩总行的自查",
+            "我们前天刚刚接受完总行的自查",
+            "我们前天刚刚接受晚总行的自查",
+            "我们前天刚刚接手腕总行的自查"
+          ],
+          "afterTop5": [
+            "我们前天刚刚接受完总行的自查",
+            "我们前天刚刚接受万总行的自查",
+            "我们前天刚刚接受玩总行的自查",
+            "我们前天刚刚接受晚总行的自查",
+            "我们前天刚刚接受弯总行的自查"
+          ]
+        },
+        {
+          "id": "0005d0c47439eebaa5482f61161ff07ae91977c6192c15d5ff040447bec41612",
+          "cut": 0,
+          "context": "",
+          "query": "meiershifenzhongshoujimeiyoubeijiesuo",
+          "expected": "每二十分钟手机没有被解锁",
+          "beforeRank": 2,
+          "afterRank": 1,
+          "hostNanos": 9184700,
+          "beforeTop5": [
+            "没二十分钟手机没有被解锁",
+            "每二十分钟手机没有被解锁",
+            "美二十分钟手机没有被解锁",
+            "没二十分钟收集没有被解锁",
+            "每二十分钟收集没有被解锁"
+          ],
+          "afterTop5": [
+            "每二十分钟手机没有被解锁",
+            "没二十分钟手机没有被解锁",
+            "美二十分钟手机没有被解锁",
+            "没二十分钟收集没有被解锁",
+            "每二十分钟收集没有被解锁"
+          ]
+        },
+        {
+          "id": "009da91a67aa6f09cb9813374bedd599549b9f1f5e4aac759ac055e07d503bcb",
+          "cut": 0,
+          "context": "",
+          "query": "bizuihaodeyicimanlesifenzhong",
+          "expected": "比最好的一次慢了四分钟",
+          "beforeRank": 2,
+          "afterRank": 1,
+          "hostNanos": 8690700,
+          "beforeTop5": [
+            "比最好的一次满了四分钟",
+            "比最好的一次慢了四分钟",
+            "笔最好的一次满了四分钟",
+            "闭嘴好的一次满了四分钟",
+            "必最好的一次满了四分钟"
+          ],
+          "afterTop5": [
+            "比最好的一次慢了四分钟",
+            "比最好的一次满了四分钟",
+            "必最好的一次满了四分钟",
+            "闭嘴好的一次满了四分钟",
+            "笔最好的一次满了四分钟"
+          ]
+        },
+        {
+          "id": "00b1e963fe81dc8e2770dcb990d5e238f1f073b8ee035fed9f67176a33bb4691",
+          "cut": 8,
+          "context": "日游",
+          "query": "gangaoyunnanshigaofengxian",
+          "expected": "港澳云南是高风险",
+          "beforeRank": 2,
+          "afterRank": 1,
+          "hostNanos": 8795600,
+          "beforeTop5": [
+            "刚奥运男士高风险",
+            "港澳云南是高风险",
+            "敢告云南是高风险",
+            "赶稿云南是高风险",
+            "刚奥运难事高风险"
+          ],
+          "afterTop5": [
+            "港澳云南是高风险",
+            "刚奥运男士高风险",
+            "港奥运男士高风险",
+            "刚奥运难事高风险",
+            "赶稿云南是高风险"
+          ]
+        }
+      ],
+      "losses": [
+        {
+          "id": "00131b8f2680d784c5500d7280ab54962b29e16b954bd20ea3f1ff2114452e70",
+          "cut": 0,
+          "context": "",
+          "query": "nanmeidadouyechuxianlejianchan",
+          "expected": "南美大豆也出现了减产",
+          "beforeRank": 1,
+          "afterRank": 2,
+          "hostNanos": 8250800,
+          "beforeTop5": [
+            "南美大豆也出现了减产",
+            "南美大都也出现了减产",
+            "南美打斗也出现了减产",
+            "南美打都也出现了减产",
+            "南美大都页出现了减产"
+          ],
+          "afterTop5": [
+            "南美大都也出现了减产",
+            "南美大豆也出现了减产",
+            "南美打斗也出现了减产",
+            "南美打都也出现了减产",
+            "南美大都页出现了减产"
+          ]
+        },
+        {
+          "id": "005eb1bf10682154ccd587f607e5d9d520d8fa96607ee2b35f50fbf8c603ae3f",
+          "cut": 0,
+          "context": "",
+          "query": "shouhuanbenshenweifeiwanqudechangfangxing",
+          "expected": "手环本身为非弯曲的长方形",
+          "beforeRank": 1,
+          "afterRank": 2,
+          "hostNanos": 9065300,
+          "beforeTop5": [
+            "手环本身为非弯曲的长方形",
+            "手环本身为非湾区的长方形",
+            "手环本身位非弯曲的长方形",
+            "手环本身为飞弯曲的长方形",
+            "手环本身为费弯曲的长方形"
+          ],
+          "afterTop5": [
+            "手环本身为飞弯曲的长方形",
+            "手环本身为非弯曲的长方形",
+            "手环本身为费弯曲的长方形",
+            "手环本身位非弯曲的长方形",
+            "手环本身为非玩去的长方形"
+          ]
+        },
+        {
+          "id": "0085c1c1ca0f31d4789e1a6a233202a9bf9d3df3f5413b380488ca062cc47f87",
+          "cut": 0,
+          "context": "",
+          "query": "guifanyuzhaiquanrenliyiyouguandegexiangxingwei",
+          "expected": "规范与债权人利益有关的各项行为",
+          "beforeRank": 1,
+          "afterRank": 2,
+          "hostNanos": 10375900,
+          "beforeTop5": [
+            "规范与债权人利益有关的各项行为",
+            "规范于债权人利益有关的各项行为",
+            "规范与债权人利益有关的个想行为",
+            "规范与债权人利益有关的个像行为",
+            "规范与债权人利益有关的个向行为"
+          ],
+          "afterTop5": [
+            "规范于债权人利益有关的各项行为",
+            "规范与债权人利益有关的各项行为",
+            "规范与债权人利益有关的个像行为",
+            "规范与债权人利益有关的个想行为",
+            "规范与债权人礼仪有关的各项行为"
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "id": "00160e84c797cd08e4721149ac9b99d2e17d02afb99cb85565d634625ad31b25",
+          "cut": 0,
+          "context": "",
+          "query": "dangweiwurenjiashizhuangtaishi",
+          "expected": "当为无人驾驶状态时",
+          "beforeRank": 2,
+          "afterRank": 4,
+          "hostNanos": 7978000,
+          "beforeTop5": [
+            "当为无人驾驶状态是",
+            "当为无人驾驶状态时",
+            "挡位无人驾驶状态是",
+            "挡位无人驾驶状态时",
+            "党委无人驾驶状态是"
+          ],
+          "afterTop5": [
+            "当为无人驾驶状态是",
+            "党委无人驾驶状态是",
+            "当位无人驾驶状态是",
+            "当为无人驾驶状态时",
+            "党为无人驾驶状态是"
+          ]
+        },
+        {
+          "id": "005423e7e0ddeb4cd52c7339526c1cfdce88a0384a358e454000fa5ec95f11d8",
+          "cut": 0,
+          "context": "",
+          "query": "gedakaifashangmoquancazhang",
+          "expected": "各大开发商磨拳擦掌",
+          "beforeRank": 5,
+          "afterRank": 7,
+          "hostNanos": 11010000,
+          "beforeTop5": [
+            "各大开发商摩拳擦掌",
+            "各大开发上摩拳擦掌",
+            "哥大开发商摩拳擦掌",
+            "哥大开发上摩拳擦掌",
+            "各大开发商磨拳擦掌"
+          ],
+          "afterTop5": [
+            "各大开发上摩拳擦掌",
+            "各大开发商摩拳擦掌",
+            "哥大开发上摩拳擦掌",
+            "个打开发商摩拳擦掌",
+            "哥大开发商摩拳擦掌"
+          ]
+        },
+        {
+          "id": "0089ab9f7b7c4e7e5105e6a883e7c83eb85abc4395ac1a1c1a2964d39c9a7446",
+          "cut": 0,
+          "context": "",
+          "query": "womeijiameixiaohai",
+          "expected": "我没家没小孩",
+          "beforeRank": 4,
+          "afterRank": 3,
+          "hostNanos": 6563300,
+          "beforeTop5": [
+            "我每家没小孩",
+            "我没加没小孩",
+            "我每家每小孩",
+            "我没家没小孩",
+            "我没假没小孩"
+          ],
+          "afterTop5": [
+            "我每家每小孩",
+            "我每家没小孩",
+            "我没家没小孩",
+            "我没佳美小孩",
+            "我没假没小孩"
+          ]
+        },
+        {
+          "id": "00d2bffa0584b7b690fe3b40c58be552f8c96bfa6768cd439eb5727b345afb8a",
+          "cut": 4,
+          "context": "案案",
+          "query": "qingbijiaofuza",
+          "expected": "情比较复杂",
+          "beforeRank": 2,
+          "afterRank": 1,
+          "hostNanos": 6939000,
+          "beforeTop5": [
+            "请比较复杂",
+            "情比较复杂",
+            "轻比较复杂",
+            "清比较复杂",
+            "青比较复杂"
+          ],
+          "afterTop5": [
+            "情比较复杂",
+            "请比较复杂",
+            "轻比较复杂",
+            "清比较复杂",
+            "青比较复杂"
+          ]
+        },
+        {
+          "id": "01801a4d5a1f2b542f41570222532f9f3f33bd29cc8bad7c6b169ab30be111a7",
+          "cut": 0,
+          "context": "",
+          "query": "gaishijianyinqiwangyourelun",
+          "expected": "该事件引起网友热论",
+          "beforeRank": 7,
+          "afterRank": 1,
+          "hostNanos": 7857100,
+          "beforeTop5": [
+            "该时间引起网友热论",
+            "该时间引起网游热论",
+            "该是件引起网友热论",
+            "该时间引起往右热论",
+            "该时间引起网友惹论"
+          ],
+          "afterTop5": [
+            "该事件引起网友热论",
+            "该时间引起网友热论",
+            "该是件引起网友热论",
+            "该时间引起往右热论",
+            "该时间引起网游热论"
+          ]
+        },
+        {
+          "id": "02dce1acd6c4d8f5ca694dab382ab0bb8fd6306c322d43deeefb803391224f9e",
+          "cut": 0,
+          "context": "",
+          "query": "tiaozhengrengshiloushizhujidiao",
+          "expected": "调整仍是楼市主基调",
+          "beforeRank": 2,
+          "afterRank": 1,
+          "hostNanos": 8105400,
+          "beforeTop5": [
+            "调整仍是楼是主基调",
+            "调整仍是楼市主基调",
+            "调整仍是喽是主基调",
+            "调整仍是搂是主基调",
+            "调整仍是漏是主基调"
+          ],
+          "afterTop5": [
+            "调整仍是楼市主基调",
+            "调整仍是楼是主基调",
+            "调整仍是喽是主基调",
+            "调整仍是搂是主基调",
+            "调整仍是陋室主基调"
+          ]
+        },
+        {
+          "id": "036a2b433505093465b058a5d3e597dcef9b747810d01bdda0bfbaa6178f9ec6",
+          "cut": 0,
+          "context": "",
+          "query": "shoulibianyoudabadeyinzi",
+          "expected": "手里边有大把的银子",
+          "beforeRank": 2,
+          "afterRank": 3,
+          "hostNanos": 7770300,
+          "beforeTop5": [
+            "手里边有大把的因子",
+            "手里边有大把的银子",
+            "手里边有大把的引子",
+            "手里边有大把的引自",
+            "手里边有大巴的因子"
+          ],
+          "afterTop5": [
+            "手里边有大巴的银子",
+            "手里边有大巴的因子",
+            "手里边有大把的银子",
+            "手里边有大把的因子",
+            "手里边有大把的印子"
+          ]
+        },
+        {
+          "id": "03933f5f169a766ceff1603ea43c4119ddfbe448fc1b3b0c8040febe67fa0596",
+          "cut": 4,
+          "context": "差比",
+          "query": "jiajisuangongshi",
+          "expected": "价计算公式",
+          "beforeRank": 4,
+          "afterRank": 3,
+          "hostNanos": 7114100,
+          "beforeTop5": [
+            "家计算公式",
+            "加计算公式",
+            "假计算公式",
+            "价计算公式",
+            "甲计算公式"
+          ],
+          "afterTop5": [
+            "家计算公式",
+            "加计算公式",
+            "价计算公式",
+            "假计算公式",
+            "甲计算公式"
+          ]
+        },
+        {
+          "id": "03d55d2c695e011b2efece13a381dc31657c492a63cdbe261bb1a1ef159e7cfe",
+          "cut": 0,
+          "context": "",
+          "query": "yinweiquanjiayeshouhui",
+          "expected": "因为全家也受惠",
+          "beforeRank": 6,
+          "afterRank": 4,
+          "hostNanos": 6732400,
+          "beforeTop5": [
+            "因为全家也收回",
+            "因为全家野兽会",
+            "因为全家也手绘",
+            "因为全家也受贿",
+            "因为全家也受会"
+          ],
+          "afterTop5": [
+            "因为全家野兽会",
+            "因为全家也受贿",
+            "因为全家野兽回",
+            "因为全家也受惠",
+            "因为全家也收回"
+          ]
+        },
+        {
+          "id": "043073942dbff83a18855193b72c16836b6eba00b1af8ff824bf8aba85b48054",
+          "cut": 0,
+          "context": "",
+          "query": "youkeyijieshihenduopengyou",
+          "expected": "又可以结识很多朋友",
+          "beforeRank": 5,
+          "afterRank": 7,
+          "hostNanos": 7936300,
+          "beforeTop5": [
+            "有可以解释很多朋友",
+            "又可以解释很多朋友",
+            "由可以解释很多朋友",
+            "有可以结识很多朋友",
+            "又可以结识很多朋友"
+          ],
+          "afterTop5": [
+            "有可以解释很多朋友",
+            "有可以结实很多朋友",
+            "有可以结识很多朋友",
+            "又可以解释很多朋友",
+            "有可以揭示很多朋友"
+          ]
+        },
+        {
+          "id": "043073942dbff83a18855193b72c16836b6eba00b1af8ff824bf8aba85b48054",
+          "cut": 4,
+          "context": "以结",
+          "query": "shihenduopengyou",
+          "expected": "识很多朋友",
+          "beforeRank": 5,
+          "afterRank": 4,
+          "hostNanos": 6633500,
+          "beforeTop5": [
+            "是很多朋友",
+            "时很多朋友",
+            "实很多朋友",
+            "事很多朋友",
+            "识很多朋友"
+          ],
+          "afterTop5": [
+            "是很多朋友",
+            "事很多朋友",
+            "实很多朋友",
+            "识很多朋友",
+            "时很多朋友"
+          ]
+        },
+        {
+          "id": "0002953dd647c00d2ec30ec8495703eb47610dbbdf2689afd07abec8037a9070",
+          "cut": 0,
+          "context": "",
+          "query": "womenqiantianganggangjieshouwanzonghangdezicha",
+          "expected": "我们前天刚刚接受完总行的自查",
+          "beforeRank": 3,
+          "afterRank": 1,
+          "hostNanos": 9952100,
+          "beforeTop5": [
+            "我们前天刚刚接受万总行的自查",
+            "我们前天刚刚接受玩总行的自查",
+            "我们前天刚刚接受完总行的自查",
+            "我们前天刚刚接受晚总行的自查",
+            "我们前天刚刚接手腕总行的自查"
+          ],
+          "afterTop5": [
+            "我们前天刚刚接受完总行的自查",
+            "我们前天刚刚接受万总行的自查",
+            "我们前天刚刚接受玩总行的自查",
+            "我们前天刚刚接受晚总行的自查",
+            "我们前天刚刚接受弯总行的自查"
+          ]
+        },
+        {
+          "id": "0005d0c47439eebaa5482f61161ff07ae91977c6192c15d5ff040447bec41612",
+          "cut": 0,
+          "context": "",
+          "query": "meiershifenzhongshoujimeiyoubeijiesuo",
+          "expected": "每二十分钟手机没有被解锁",
+          "beforeRank": 2,
+          "afterRank": 1,
+          "hostNanos": 9184700,
+          "beforeTop5": [
+            "没二十分钟手机没有被解锁",
+            "每二十分钟手机没有被解锁",
+            "美二十分钟手机没有被解锁",
+            "没二十分钟收集没有被解锁",
+            "每二十分钟收集没有被解锁"
+          ],
+          "afterTop5": [
+            "每二十分钟手机没有被解锁",
+            "没二十分钟手机没有被解锁",
+            "美二十分钟手机没有被解锁",
+            "没二十分钟收集没有被解锁",
+            "每二十分钟收集没有被解锁"
+          ]
+        },
+        {
+          "id": "00131b8f2680d784c5500d7280ab54962b29e16b954bd20ea3f1ff2114452e70",
+          "cut": 0,
+          "context": "",
+          "query": "nanmeidadouyechuxianlejianchan",
+          "expected": "南美大豆也出现了减产",
+          "beforeRank": 1,
+          "afterRank": 2,
+          "hostNanos": 8250800,
+          "beforeTop5": [
+            "南美大豆也出现了减产",
+            "南美大都也出现了减产",
+            "南美打斗也出现了减产",
+            "南美打都也出现了减产",
+            "南美大都页出现了减产"
+          ],
+          "afterTop5": [
+            "南美大都也出现了减产",
+            "南美大豆也出现了减产",
+            "南美打斗也出现了减产",
+            "南美打都也出现了减产",
+            "南美大都页出现了减产"
+          ]
+        },
+        {
+          "id": "005e6a24991b0dde7d32956730d500878255e1cb3b33f562d360c5ad7b924008",
+          "cut": 9,
+          "context": "零一",
+          "query": "sicainiandierjiducaibao",
+          "expected": "四财年第二季度财报",
+          "beforeRank": 7,
+          "afterRank": 8,
+          "hostNanos": 8917600,
+          "beforeTop5": [
+            "死才年底二季度财报",
+            "死财年第二季度财报",
+            "丝才年底二季度财报",
+            "死才年第二季度财报",
+            "四才年底二季度财报"
+          ],
+          "afterTop5": [
+            "死财年第二季度财报",
+            "死才年底二季度财报",
+            "丝才年底二季度财报",
+            "死才年第二季度财报",
+            "丝财年第二季度财报"
+          ]
+        },
+        {
+          "id": "005eb1bf10682154ccd587f607e5d9d520d8fa96607ee2b35f50fbf8c603ae3f",
+          "cut": 0,
+          "context": "",
+          "query": "shouhuanbenshenweifeiwanqudechangfangxing",
+          "expected": "手环本身为非弯曲的长方形",
+          "beforeRank": 1,
+          "afterRank": 2,
+          "hostNanos": 9065300,
+          "beforeTop5": [
+            "手环本身为非弯曲的长方形",
+            "手环本身为非湾区的长方形",
+            "手环本身位非弯曲的长方形",
+            "手环本身为飞弯曲的长方形",
+            "手环本身为费弯曲的长方形"
+          ],
+          "afterTop5": [
+            "手环本身为飞弯曲的长方形",
+            "手环本身为非弯曲的长方形",
+            "手环本身为费弯曲的长方形",
+            "手环本身位非弯曲的长方形",
+            "手环本身为非玩去的长方形"
+          ]
+        },
+        {
+          "id": "0085c1c1ca0f31d4789e1a6a233202a9bf9d3df3f5413b380488ca062cc47f87",
+          "cut": 0,
+          "context": "",
+          "query": "guifanyuzhaiquanrenliyiyouguandegexiangxingwei",
+          "expected": "规范与债权人利益有关的各项行为",
+          "beforeRank": 1,
+          "afterRank": 2,
+          "hostNanos": 10375900,
+          "beforeTop5": [
+            "规范与债权人利益有关的各项行为",
+            "规范于债权人利益有关的各项行为",
+            "规范与债权人利益有关的个想行为",
+            "规范与债权人利益有关的个像行为",
+            "规范与债权人利益有关的个向行为"
+          ],
+          "afterTop5": [
+            "规范于债权人利益有关的各项行为",
+            "规范与债权人利益有关的各项行为",
+            "规范与债权人利益有关的个像行为",
+            "规范与债权人利益有关的个想行为",
+            "规范与债权人礼仪有关的各项行为"
+          ]
+        },
+        {
+          "id": "009da91a67aa6f09cb9813374bedd599549b9f1f5e4aac759ac055e07d503bcb",
+          "cut": 0,
+          "context": "",
+          "query": "bizuihaodeyicimanlesifenzhong",
+          "expected": "比最好的一次慢了四分钟",
+          "beforeRank": 2,
+          "afterRank": 1,
+          "hostNanos": 8690700,
+          "beforeTop5": [
+            "比最好的一次满了四分钟",
+            "比最好的一次慢了四分钟",
+            "笔最好的一次满了四分钟",
+            "闭嘴好的一次满了四分钟",
+            "必最好的一次满了四分钟"
+          ],
+          "afterTop5": [
+            "比最好的一次慢了四分钟",
+            "比最好的一次满了四分钟",
+            "必最好的一次满了四分钟",
+            "闭嘴好的一次满了四分钟",
+            "笔最好的一次满了四分钟"
+          ]
+        },
+        {
+          "id": "00adcb34e7129c153ca3d6d4c27a0821e1a3aa2dcda48a5daf4cab8cc4d421a5",
+          "cut": 9,
+          "context": "龙鱼",
+          "query": "shiyongyouzhangjiabaifenzhiqi",
+          "expected": "食用油涨价百分之七",
+          "beforeRank": 5,
+          "afterRank": 6,
+          "hostNanos": 9074200,
+          "beforeTop5": [
+            "是拥有涨价百分之七",
+            "是拥有张家百分之七",
+            "使用有涨价百分之七",
+            "时拥有涨价百分之七",
+            "食用油涨价百分之七"
+          ],
+          "afterTop5": [
+            "是拥有涨价百分之七",
+            "是拥有张家百分之七",
+            "是用有涨价百分之七",
+            "使用有涨价百分之七",
+            "时拥有涨价百分之七"
+          ]
+        },
+        {
+          "id": "00b1e963fe81dc8e2770dcb990d5e238f1f073b8ee035fed9f67176a33bb4691",
+          "cut": 8,
+          "context": "日游",
+          "query": "gangaoyunnanshigaofengxian",
+          "expected": "港澳云南是高风险",
+          "beforeRank": 2,
+          "afterRank": 1,
+          "hostNanos": 8795600,
+          "beforeTop5": [
+            "刚奥运男士高风险",
+            "港澳云南是高风险",
+            "敢告云南是高风险",
+            "赶稿云南是高风险",
+            "刚奥运难事高风险"
+          ],
+          "afterTop5": [
+            "港澳云南是高风险",
+            "刚奥运男士高风险",
+            "港奥运男士高风险",
+            "刚奥运难事高风险",
+            "赶稿云南是高风险"
+          ]
+        }
+      ],
+      "allCandidateMembershipUnchanged": true
+    },
+    "tatoeba": {
+      "before": {
+        "states": 128,
+        "top1": 83,
+        "top5": 113,
+        "top10": 120,
+        "recall255": 121,
+        "characterErrors": 70,
+        "characters": 941
+      },
+      "after": {
+        "states": 128,
+        "top1": 78,
+        "top5": 113,
+        "top10": 120,
+        "recall255": 121,
+        "characterErrors": 85,
+        "characters": 941
+      },
+      "qualityGate": false,
+      "latencyAll": {
+        "count": 128,
+        "medianMs": 7.7274,
+        "p95Ms": 11.6326,
+        "maxMs": 14.897,
+        "totalMs": 838.9051
+      },
+      "latencyScored": {
+        "count": 96,
+        "medianMs": 8.2237,
+        "p95Ms": 13.3919,
+        "maxMs": 14.897,
+        "totalMs": 837.7144
+      },
+      "skipReasons": {
+        "scored": 96,
+        "protected-source": 28,
+        "unknown-character": 4
+      },
+      "zeroResidualEquivalent": 128,
+      "gains": [
+        {
+          "id": "01f416918e81483f053ccb4fbefa92ae3dc050765fd55d21c3ed26abf36d3129",
+          "cut": 5,
+          "context": "的时",
+          "query": "houhuaxiaohenda",
+          "expected": "候花销很大",
+          "beforeRank": 3,
+          "afterRank": 1,
+          "hostNanos": 6995000,
+          "beforeTop5": [
+            "后话小很大",
+            "后花销很大",
+            "候花销很大",
+            "后话笑很大",
+            "候画小很大"
+          ],
+          "afterTop5": [
+            "候花销很大",
+            "后话小很大",
+            "后花销很大",
+            "候华校很大",
+            "候画小很大"
+          ]
+        },
+        {
+          "id": "02a8d04df0e76bc949f44ef42f201749d1375343056197dde85da93f000247ed",
+          "cut": 6,
+          "context": "解释",
+          "query": "letakandaodeshi",
+          "expected": "了他看到的事",
+          "beforeRank": 4,
+          "afterRank": 1,
+          "hostNanos": 7566200,
+          "beforeTop5": [
+            "了他看到的是",
+            "了他看到的时",
+            "了她看到的是",
+            "了他看到的事",
+            "了她看到的时"
+          ],
+          "afterTop5": [
+            "了他看到的事",
+            "了她看到的事",
+            "了他看到的是",
+            "了她看到的是",
+            "了它看到的是"
+          ]
+        }
+      ],
+      "losses": [
+        {
+          "id": "0173167b078836bf5debb5eb641a42201d4e524b85f76b8dbe1e7c6af33b0048",
+          "cut": 0,
+          "context": "",
+          "query": "tingqilaihencanren",
+          "expected": "听起来很残忍",
+          "beforeRank": 1,
+          "afterRank": 2,
+          "hostNanos": 6881900,
+          "beforeTop5": [
+            "听起来很残忍",
+            "听起来很惨人",
+            "听起来很惨任",
+            "听起来很惨认",
+            "听起来很惨忍"
+          ],
+          "afterTop5": [
+            "听起来很惨人",
+            "听起来很残忍",
+            "听起来很惨任",
+            "听起来很惨认",
+            "听起来很惨忍"
+          ]
+        },
+        {
+          "id": "018c27fd252840fdae96ddc839a46789714a4a2207ac11b4c0d62598da224304",
+          "cut": 0,
+          "context": "",
+          "query": "biaochunibudongdeciyu",
+          "expected": "标出你不懂的词语",
+          "beforeRank": 1,
+          "afterRank": 2,
+          "hostNanos": 8217100,
+          "beforeTop5": [
+            "标出你不懂的词语",
+            "表出你不懂的词语",
+            "标出你不懂得词语",
+            "标出你不动的词语",
+            "表处你不懂的词语"
+          ],
+          "afterTop5": [
+            "表出你不懂的词语",
+            "标出你不懂的词语",
+            "表处你不懂的词语",
+            "标出你不懂得词语",
+            "标出你不动的词语"
+          ]
+        },
+        {
+          "id": "01f1a219674ca40cae774499e9ce65cdbc476b9e4bc98273a90783d0ac013790",
+          "cut": 0,
+          "context": "",
+          "query": "zheliganggangxiaguoyichangdaxue",
+          "expected": "这里刚刚下过一场大雪",
+          "beforeRank": 1,
+          "afterRank": 2,
+          "hostNanos": 8080600,
+          "beforeTop5": [
+            "这里刚刚下过一场大雪",
+            "这里刚刚下过一场大学",
+            "这里刚刚下锅一场大雪",
+            "这里刚刚下锅一场大学",
+            "这里刚刚下国一场大雪"
+          ],
+          "afterTop5": [
+            "这里刚刚下过一场大学",
+            "这里刚刚下过一场大雪",
+            "这里刚刚下过一长大学",
+            "这里刚刚下过异常大学",
+            "这里刚刚下锅一场大雪"
+          ]
+        },
+        {
+          "id": "02fe6ba9666669a8f38bca3a3afc5245990bd98e23e4fa95021bd5ca6a209380",
+          "cut": 5,
+          "context": "在附",
+          "query": "jinlutianguoyema",
+          "expected": "近露天过夜吗",
+          "beforeRank": 1,
+          "afterRank": 3,
+          "hostNanos": 7271500,
+          "beforeTop5": [
+            "近露天过夜吗",
+            "近路天国也吗",
+            "近路天过夜吗",
+            "近路天国野马",
+            "近露天过也吗"
+          ],
+          "afterTop5": [
+            "近路天过夜吗",
+            "近路天过也吗",
+            "近露天过夜吗",
+            "近路天国也吗",
+            "近露天过也吗"
+          ]
+        },
+        {
+          "id": "0430c781a4501cecb005f4f544b080f2bf033d6285c016e8b19553b842aa6d93",
+          "cut": 0,
+          "context": "",
+          "query": "nijiukeyikandaoshizhengtingweiyuzhengqianfang",
+          "expected": "你就可以看到市政厅位于正前方",
+          "beforeRank": 1,
+          "afterRank": 3,
+          "hostNanos": 9800300,
+          "beforeTop5": [
+            "你就可以看到市政厅位于正前方",
+            "你就可以看到市政厅为与正前方",
+            "你就可以看到市政厅位于挣钱放",
+            "你就可以看到市政厅维语正前方",
+            "你就可以看到市政厅谓语正前方"
+          ],
+          "afterTop5": [
+            "你就可以看到市政厅位于挣钱方",
+            "你就可以看到市政厅位于挣钱放",
+            "你就可以看到市政厅位于正前方",
+            "你就可以看到市政厅维语正前方",
+            "你就可以看到市政厅谓语正前方"
+          ]
+        },
+        {
+          "id": "060af6d8285fb92729c2d6161c8e10d03e20ada8175433f7fa7635c9d60629b0",
+          "cut": 0,
+          "context": "",
+          "query": "niyidingbuyaocuoguozhebujingcaidedianying",
+          "expected": "你一定不要错过这部精彩的电影",
+          "beforeRank": 1,
+          "afterRank": 3,
+          "hostNanos": 10616900,
+          "beforeTop5": [
+            "你一定不要错过这部精彩的电影",
+            "你一定不要错过这不精彩的电影",
+            "你一定不要错过着不精彩的电影",
+            "你一定不要错过者不精彩的电影",
+            "你一定不要错过这步精彩的电影"
+          ],
+          "afterTop5": [
+            "你一定不要错过这不精彩的电影",
+            "你一定不要错过着不精彩的电影",
+            "你一定不要错过这部精彩的电影",
+            "你一定不要错过这步精彩的电影",
+            "你一定不要错过者不精彩的电影"
+          ]
+        },
+        {
+          "id": "060af6d8285fb92729c2d6161c8e10d03e20ada8175433f7fa7635c9d60629b0",
+          "cut": 7,
+          "context": "错过",
+          "query": "zhebujingcaidedianying",
+          "expected": "这部精彩的电影",
+          "beforeRank": 1,
+          "afterRank": 2,
+          "hostNanos": 8076600,
+          "beforeTop5": [
+            "这部精彩的电影",
+            "这不精彩的电影",
+            "着不精彩的电影",
+            "这步精彩的电影",
+            "者不精彩的电影"
+          ],
+          "afterTop5": [
+            "这不精彩的电影",
+            "这部精彩的电影",
+            "着不精彩的电影",
+            "这步精彩的电影",
+            "者不精彩的电影"
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "id": "00551a894e6a43a18dcd87652970c2f0ab08c4a8181f9555e541e6873fb54f81",
+          "cut": 0,
+          "context": "",
+          "query": "nihuibuhuijiangdaobenyu",
+          "expected": "你会不会讲道本语",
+          "beforeRank": 6,
+          "afterRank": 5,
+          "hostNanos": 7967600,
+          "beforeTop5": [
+            "你会不会讲到本与",
+            "你会不会讲到本于",
+            "你会不会降到本与",
+            "你会不会降到本于",
+            "你会不会讲道本与"
+          ],
+          "afterTop5": [
+            "你会不会降到本于",
+            "你会不会讲到本与",
+            "你会不会讲到本于",
+            "你会不会讲到本语",
+            "你会不会讲道本语"
+          ]
+        },
+        {
+          "id": "00d9780e663d0ce4ffb8fb3988d973fd05dc3078018bcf73d6ac105e22533772",
+          "cut": 0,
+          "context": "",
+          "query": "womenxihuanzaiyuzhonggaoge",
+          "expected": "我们喜欢在雨中高歌",
+          "beforeRank": 3,
+          "afterRank": 2,
+          "hostNanos": 8023400,
+          "beforeTop5": [
+            "我们喜欢在雨中高个",
+            "我们喜欢在雨中搞个",
+            "我们喜欢在雨中高歌",
+            "我们喜欢在于中高个",
+            "我们喜欢在于中搞个"
+          ],
+          "afterTop5": [
+            "我们喜欢在雨中高个",
+            "我们喜欢在雨中高歌",
+            "我们喜欢在雨中搞个",
+            "我们喜欢在于中高个",
+            "我们喜欢在于中高歌"
+          ]
+        },
+        {
+          "id": "00d9780e663d0ce4ffb8fb3988d973fd05dc3078018bcf73d6ac105e22533772",
+          "cut": 4,
+          "context": "喜欢",
+          "query": "zaiyuzhonggaoge",
+          "expected": "在雨中高歌",
+          "beforeRank": 3,
+          "afterRank": 2,
+          "hostNanos": 7013900,
+          "beforeTop5": [
+            "在雨中高个",
+            "在雨中搞个",
+            "在雨中高歌",
+            "在于中高个",
+            "在于中搞个"
+          ],
+          "afterTop5": [
+            "在雨中高个",
+            "在雨中高歌",
+            "在雨中搞个",
+            "在于中高个",
+            "在雨中高阁"
+          ]
+        },
+        {
+          "id": "00e687d99822dbbc88f0515f08836d949b546b9c606e818142f50421951a3b34",
+          "cut": 0,
+          "context": "",
+          "query": "wodadiantiqulesilou",
+          "expected": "我搭电梯去了四楼",
+          "beforeRank": 5,
+          "afterRank": 4,
+          "hostNanos": 7092300,
+          "beforeTop5": [
+            "我打电梯去了四楼",
+            "我大电梯去了四楼",
+            "我答电梯去了四楼",
+            "我打点提取了四楼",
+            "我搭电梯去了四楼"
+          ],
+          "afterTop5": [
+            "我大电梯去了四楼",
+            "我打电梯去了四楼",
+            "我答电梯去了四楼",
+            "我搭电梯去了四楼",
+            "我打点提取了四楼"
+          ]
+        },
+        {
+          "id": "00fcd136ccedbbf7196e82738e17d88d48c0f3f8f83d555814a620ec560db1ad",
+          "cut": 0,
+          "context": "",
+          "query": "nimeibiyaonamezhengshi",
+          "expected": "你没必要那么正式",
+          "beforeRank": 2,
+          "afterRank": 6,
+          "hostNanos": 8704900,
+          "beforeTop5": [
+            "你没必要那么正是",
+            "你没必要那么正式",
+            "你没必要那么证实",
+            "你没必要那么正视",
+            "你没必要那么正史"
+          ],
+          "afterTop5": [
+            "你没必要那么政事",
+            "你没必要那么正事",
+            "你没必要那么证实",
+            "你没必要那么正史",
+            "你没必要那么正是"
+          ]
+        },
+        {
+          "id": "011783cf28ddb16cc331ff86b1e9c144de45239171d5f6f9bafea51c7991dbd6",
+          "cut": 3,
+          "context": "片寂",
+          "query": "jingwusheng",
+          "expected": "静无声",
+          "beforeRank": 2,
+          "afterRank": 5,
+          "hostNanos": 9571900,
+          "beforeTop5": [
+            "静物生",
+            "静无声",
+            "静物声",
+            "经无声",
+            "景物生"
+          ],
+          "afterTop5": [
+            "静物生",
+            "景物生",
+            "静物升",
+            "静物省",
+            "静无声"
+          ]
+        },
+        {
+          "id": "0173167b078836bf5debb5eb641a42201d4e524b85f76b8dbe1e7c6af33b0048",
+          "cut": 0,
+          "context": "",
+          "query": "tingqilaihencanren",
+          "expected": "听起来很残忍",
+          "beforeRank": 1,
+          "afterRank": 2,
+          "hostNanos": 6881900,
+          "beforeTop5": [
+            "听起来很残忍",
+            "听起来很惨人",
+            "听起来很惨任",
+            "听起来很惨认",
+            "听起来很惨忍"
+          ],
+          "afterTop5": [
+            "听起来很惨人",
+            "听起来很残忍",
+            "听起来很惨任",
+            "听起来很惨认",
+            "听起来很惨忍"
+          ]
+        },
+        {
+          "id": "018c27fd252840fdae96ddc839a46789714a4a2207ac11b4c0d62598da224304",
+          "cut": 0,
+          "context": "",
+          "query": "biaochunibudongdeciyu",
+          "expected": "标出你不懂的词语",
+          "beforeRank": 1,
+          "afterRank": 2,
+          "hostNanos": 8217100,
+          "beforeTop5": [
+            "标出你不懂的词语",
+            "表出你不懂的词语",
+            "标出你不懂得词语",
+            "标出你不动的词语",
+            "表处你不懂的词语"
+          ],
+          "afterTop5": [
+            "表出你不懂的词语",
+            "标出你不懂的词语",
+            "表处你不懂的词语",
+            "标出你不懂得词语",
+            "标出你不动的词语"
+          ]
+        },
+        {
+          "id": "01c073a54e94dfdf175d02337ef109133f96d692aefc8eb4b248e3d4c6f94ba6",
+          "cut": 0,
+          "context": "",
+          "query": "zitaqulelundunhou",
+          "expected": "自她去了伦敦后",
+          "beforeRank": 4,
+          "afterRank": 5,
+          "hostNanos": 8047300,
+          "beforeTop5": [
+            "自他去了伦敦后",
+            "字他去了伦敦后",
+            "子他去了伦敦后",
+            "自她去了伦敦后",
+            "字她去了伦敦后"
+          ],
+          "afterTop5": [
+            "子他去了伦敦后",
+            "自他去了伦敦后",
+            "子她去了伦敦后",
+            "字他去了伦敦后",
+            "自她去了伦敦后"
+          ]
+        },
+        {
+          "id": "020ed0a261bf79d86c52513118656542e82b5b328352faae466e44a7eb4156bb",
+          "cut": 0,
+          "context": "",
+          "query": "tazaiyougechangduan",
+          "expected": "他再有个长短",
+          "beforeRank": 6,
+          "afterRank": 3,
+          "hostNanos": 7032700,
+          "beforeTop5": [
+            "他在有个长短",
+            "她在有个长短",
+            "他在有个唱段",
+            "它在有个长短",
+            "她在有个唱段"
+          ],
+          "afterTop5": [
+            "他在有个长短",
+            "她在有个长短",
+            "他再有个长短",
+            "他在有个唱段",
+            "她在有个唱段"
+          ]
+        },
+        {
+          "id": "005a0cea93e1a1452258022b029fca54ef58623dcf409fca2224b74ec3fe1d47",
+          "cut": 7,
+          "context": "放在",
+          "query": "tadegezidetoushang",
+          "expected": "他的鸽子的头上",
+          "beforeRank": 2,
+          "afterRank": 3,
+          "hostNanos": 8404500,
+          "beforeTop5": [
+            "他的各自的头上",
+            "他的鸽子的头上",
+            "她的各自的头上",
+            "他的个子的头上",
+            "他的格子的头上"
+          ],
+          "afterTop5": [
+            "他的各自的头上",
+            "她的鸽子的头上",
+            "他的鸽子的头上",
+            "他的个子的头上",
+            "她的各自的头上"
+          ]
+        },
+        {
+          "id": "01499b732bbb1aca0266829abab246c2ba9d5539281aa39bb9bfd48efc941e4f",
+          "cut": 0,
+          "context": "",
+          "query": "tadeqizishengxialeyiduishuangbaotainanhai",
+          "expected": "他的妻子生下了一对双胞胎男孩",
+          "beforeRank": 4,
+          "afterRank": 2,
+          "hostNanos": 9795400,
+          "beforeTop5": [
+            "他的妻子剩下了一堆双胞胎男孩",
+            "他的妻子剩下了一对双胞胎男孩",
+            "他的妻子生下了一堆双胞胎男孩",
+            "他的妻子生下了一对双胞胎男孩",
+            "他的妻子省下了一堆双胞胎男孩"
+          ],
+          "afterTop5": [
+            "他的妻子剩下了一对双胞胎男孩",
+            "他的妻子生下了一对双胞胎男孩",
+            "他的妻子省下了一对双胞胎男孩",
+            "他的妻子剩下了一堆双胞胎男孩",
+            "他的妻子剩下了一队双胞胎男孩"
+          ]
+        },
+        {
+          "id": "01f1a219674ca40cae774499e9ce65cdbc476b9e4bc98273a90783d0ac013790",
+          "cut": 0,
+          "context": "",
+          "query": "zheliganggangxiaguoyichangdaxue",
+          "expected": "这里刚刚下过一场大雪",
+          "beforeRank": 1,
+          "afterRank": 2,
+          "hostNanos": 8080600,
+          "beforeTop5": [
+            "这里刚刚下过一场大雪",
+            "这里刚刚下过一场大学",
+            "这里刚刚下锅一场大雪",
+            "这里刚刚下锅一场大学",
+            "这里刚刚下国一场大雪"
+          ],
+          "afterTop5": [
+            "这里刚刚下过一场大学",
+            "这里刚刚下过一场大雪",
+            "这里刚刚下过一长大学",
+            "这里刚刚下过异常大学",
+            "这里刚刚下锅一场大雪"
+          ]
+        },
+        {
+          "id": "01f416918e81483f053ccb4fbefa92ae3dc050765fd55d21c3ed26abf36d3129",
+          "cut": 0,
+          "context": "",
+          "query": "tachuguodeshihouhuaxiaohenda",
+          "expected": "她出国的时候花销很大",
+          "beforeRank": 2,
+          "afterRank": 3,
+          "hostNanos": 8131600,
+          "beforeTop5": [
+            "他出国的时候花销很大",
+            "她出国的时候花销很大",
+            "他出国的时候画小很大",
+            "他出国的时候华校很大",
+            "他出过的时候花销很大"
+          ],
+          "afterTop5": [
+            "他出过的时候花销很大",
+            "他出国的时候花销很大",
+            "她出国的时候花销很大",
+            "他出国的时候花小很大",
+            "他出国的时候华校很大"
+          ]
+        },
+        {
+          "id": "01f416918e81483f053ccb4fbefa92ae3dc050765fd55d21c3ed26abf36d3129",
+          "cut": 5,
+          "context": "的时",
+          "query": "houhuaxiaohenda",
+          "expected": "候花销很大",
+          "beforeRank": 3,
+          "afterRank": 1,
+          "hostNanos": 6995000,
+          "beforeTop5": [
+            "后话小很大",
+            "后花销很大",
+            "候花销很大",
+            "后话笑很大",
+            "候画小很大"
+          ],
+          "afterTop5": [
+            "候花销很大",
+            "后话小很大",
+            "后花销很大",
+            "候华校很大",
+            "候画小很大"
+          ]
+        },
+        {
+          "id": "02672cab6124aeea96e5c9da9c3c6f6bd50a76a44e8afde470c39883870dff91",
+          "cut": 0,
+          "context": "",
+          "query": "kongjuyongyuandoushiyouwuzhisuozaochengde",
+          "expected": "恐惧永远都是由无知所造成的",
+          "beforeRank": 4,
+          "afterRank": 6,
+          "hostNanos": 10261300,
+          "beforeTop5": [
+            "恐惧永远都是由物质所造成的",
+            "恐惧永远都是有无知所造成的",
+            "恐惧永远都是有物质所造成的",
+            "恐惧永远都是由无知所造成的",
+            "恐惧永远都是又无知所造成的"
+          ],
+          "afterTop5": [
+            "恐惧永远都是有物质所造成的",
+            "恐惧永远都是有无之所造成的",
+            "恐惧永远都是有无知所造成的",
+            "恐惧永远都是由物质所造成的",
+            "恐惧永远都是有五只所造成的"
+          ]
+        },
+        {
+          "id": "02a8d04df0e76bc949f44ef42f201749d1375343056197dde85da93f000247ed",
+          "cut": 6,
+          "context": "解释",
+          "query": "letakandaodeshi",
+          "expected": "了他看到的事",
+          "beforeRank": 4,
+          "afterRank": 1,
+          "hostNanos": 7566200,
+          "beforeTop5": [
+            "了他看到的是",
+            "了他看到的时",
+            "了她看到的是",
+            "了他看到的事",
+            "了她看到的时"
+          ],
+          "afterTop5": [
+            "了他看到的事",
+            "了她看到的事",
+            "了他看到的是",
+            "了她看到的是",
+            "了它看到的是"
+          ]
+        },
+        {
+          "id": "02ccda90abfb2f85e66757c6574f2cc3100fd4bbe56389f2acffb11eda9ef4de",
+          "cut": 0,
+          "context": "",
+          "query": "tabuzhidaozijixuyaodaiyanjing",
+          "expected": "他不知道自己需要带眼镜",
+          "beforeRank": 5,
+          "afterRank": 3,
+          "hostNanos": 8609200,
+          "beforeTop5": [
+            "他不知道自己需要戴眼镜",
+            "她不知道自己需要戴眼镜",
+            "它不知道自己需要戴眼镜",
+            "他不知道自己需要带眼睛",
+            "他不知道自己需要带眼镜"
+          ],
+          "afterTop5": [
+            "他不知道自己需要带眼睛",
+            "她不知道自己需要带眼睛",
+            "他不知道自己需要带眼镜",
+            "他不知道自己需要戴眼镜",
+            "她不知道自己需要戴眼镜"
+          ]
+        },
+        {
+          "id": "02ccda90abfb2f85e66757c6574f2cc3100fd4bbe56389f2acffb11eda9ef4de",
+          "cut": 5,
+          "context": "道自",
+          "query": "jixuyaodaiyanjing",
+          "expected": "己需要带眼镜",
+          "beforeRank": 4,
+          "afterRank": 3,
+          "hostNanos": 7156300,
+          "beforeTop5": [
+            "己需要戴眼镜",
+            "己需要带眼睛",
+            "急需要戴眼镜",
+            "己需要带眼镜",
+            "己需要戴眼睛"
+          ],
+          "afterTop5": [
+            "己需要戴眼镜",
+            "己需要带眼睛",
+            "己需要带眼镜",
+            "急需要戴眼镜",
+            "己需要戴眼睛"
+          ]
+        },
+        {
+          "id": "02fe6ba9666669a8f38bca3a3afc5245990bd98e23e4fa95021bd5ca6a209380",
+          "cut": 5,
+          "context": "在附",
+          "query": "jinlutianguoyema",
+          "expected": "近露天过夜吗",
+          "beforeRank": 1,
+          "afterRank": 3,
+          "hostNanos": 7271500,
+          "beforeTop5": [
+            "近露天过夜吗",
+            "近路天国也吗",
+            "近路天过夜吗",
+            "近路天国野马",
+            "近露天过也吗"
+          ],
+          "afterTop5": [
+            "近路天过夜吗",
+            "近路天过也吗",
+            "近露天过夜吗",
+            "近路天国也吗",
+            "近露天过也吗"
+          ]
+        },
+        {
+          "id": "0430c781a4501cecb005f4f544b080f2bf033d6285c016e8b19553b842aa6d93",
+          "cut": 0,
+          "context": "",
+          "query": "nijiukeyikandaoshizhengtingweiyuzhengqianfang",
+          "expected": "你就可以看到市政厅位于正前方",
+          "beforeRank": 1,
+          "afterRank": 3,
+          "hostNanos": 9800300,
+          "beforeTop5": [
+            "你就可以看到市政厅位于正前方",
+            "你就可以看到市政厅为与正前方",
+            "你就可以看到市政厅位于挣钱放",
+            "你就可以看到市政厅维语正前方",
+            "你就可以看到市政厅谓语正前方"
+          ],
+          "afterTop5": [
+            "你就可以看到市政厅位于挣钱方",
+            "你就可以看到市政厅位于挣钱放",
+            "你就可以看到市政厅位于正前方",
+            "你就可以看到市政厅维语正前方",
+            "你就可以看到市政厅谓语正前方"
+          ]
+        },
+        {
+          "id": "0538a93a87c867f61d00c378e3a5b4f7a418c65fdf42dc305db75c6ba265a504",
+          "cut": 0,
+          "context": "",
+          "query": "maliyarangwobangtaxueshuxue",
+          "expected": "玛丽亚让我帮她学数学",
+          "beforeRank": 8,
+          "afterRank": 6,
+          "hostNanos": 8230300,
+          "beforeTop5": [
+            "玛利亚让我帮她学数学",
+            "玛利亚让我帮他学数学",
+            "玛利亚让我帮她学术学",
+            "玛利亚让我帮他学术学",
+            "马利亚让我帮她学数学"
+          ],
+          "afterTop5": [
+            "玛利亚让我帮他学数学",
+            "玛利亚让我帮她学数学",
+            "玛利亚让我帮他学术学",
+            "玛利亚让我帮她学术学",
+            "马利亚让我帮他学数学"
+          ]
+        },
+        {
+          "id": "060af6d8285fb92729c2d6161c8e10d03e20ada8175433f7fa7635c9d60629b0",
+          "cut": 0,
+          "context": "",
+          "query": "niyidingbuyaocuoguozhebujingcaidedianying",
+          "expected": "你一定不要错过这部精彩的电影",
+          "beforeRank": 1,
+          "afterRank": 3,
+          "hostNanos": 10616900,
+          "beforeTop5": [
+            "你一定不要错过这部精彩的电影",
+            "你一定不要错过这不精彩的电影",
+            "你一定不要错过着不精彩的电影",
+            "你一定不要错过者不精彩的电影",
+            "你一定不要错过这步精彩的电影"
+          ],
+          "afterTop5": [
+            "你一定不要错过这不精彩的电影",
+            "你一定不要错过着不精彩的电影",
+            "你一定不要错过这部精彩的电影",
+            "你一定不要错过这步精彩的电影",
+            "你一定不要错过者不精彩的电影"
+          ]
+        },
+        {
+          "id": "060af6d8285fb92729c2d6161c8e10d03e20ada8175433f7fa7635c9d60629b0",
+          "cut": 7,
+          "context": "错过",
+          "query": "zhebujingcaidedianying",
+          "expected": "这部精彩的电影",
+          "beforeRank": 1,
+          "afterRank": 2,
+          "hostNanos": 8076600,
+          "beforeTop5": [
+            "这部精彩的电影",
+            "这不精彩的电影",
+            "着不精彩的电影",
+            "这步精彩的电影",
+            "者不精彩的电影"
+          ],
+          "afterTop5": [
+            "这不精彩的电影",
+            "这部精彩的电影",
+            "着不精彩的电影",
+            "这步精彩的电影",
+            "者不精彩的电影"
+          ]
+        }
+      ],
+      "allCandidateMembershipUnchanged": true
+    }
+  },
+  "training": {
+    "history": [
+      {
+        "epoch": 1,
+        "groups": 751,
+        "steps": 188,
+        "meanTrainLoss": 1.5771846500275821
+      },
+      {
+        "epoch": 2,
+        "groups": 751,
+        "steps": 188,
+        "meanTrainLoss": 1.4396607412081757
+      },
+      {
+        "epoch": 3,
+        "groups": 751,
+        "steps": 188,
+        "meanTrainLoss": 1.2515548212314327
+      },
+      {
+        "epoch": 4,
+        "groups": 751,
+        "steps": 188,
+        "meanTrainLoss": 1.120169691590425
+      }
+    ],
+    "finalEpoch": 4,
+    "zeroResidualGroupsEquivalent": 751,
+    "changedEncoderTensors": 101,
+    "parameters": 10279698,
+    "parameterBytes": 41118792,
+    "checkpointBytes": 41130880,
+    "checkpointSha256": "4345575fa7b4195a8dcc68a676354e367c072ea2b9e591272439d159eea5d60f",
+    "configSha256": "0a7bce07eb0267e4105303bae071ab6366c56ef345c2f921afee0dfc98126a90",
+    "vocabSha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c",
+    "elapsedNanos": 102758199300,
+    "sourceFiles": {
+      "tools/candidate_student.py": "cd366886e5776c765ca6c0eb958c4aa608f02bbb9a0d7588f55943646c638289",
+      "tools/run_e39_student.py": "a08ead512b523664adaaabae6fca4e79558e79622a8afc7ecbb51ec7ee23b5d9",
+      "tools/qualified_masked_lm.py": "bfbbc8a67c60c845dfd7d0f56754322b38da7d84aebb8739451e731cea08869b",
+      "tools/masked_lm_rescore.py": "1589165849c75fcd543f4be22c2fc2dddeab4db0d2dd3fac371e3e01d13f0ca6",
+      "tools/train_candidate_ranker.py": "ecda9b5707d3311e395c74eb801fd3f5b54094d96a5d1e234c1f18b125ebc8b5",
+      "tools/audit_score_features.py": "0fc5ffadf5bcaabf60818fbf9517266e5f6b48ae73cfc8bf9c0e2f0e445fae6f",
+      "tools/evaluate_cross_domain.py": "5fcfc61ace1bedeffa68e9ca77fd32806108a2a33123dbf89be7b1b3bf89f253",
+      "tools/run_e37_rescoring.py": "37571b0f82c5b0fa88a1c7936386212d98e157aa704e2a530272a445909d9472",
+      "tools/run_e38_rescoring.py": "c9135eea064f9c3e5569b8c8e0a2df86290652d9cca9a4f5217b007c2b7b7082",
+      "tools/fetch_e37_model.py": "50ed8cd5c6faea61403aaa8cff822c8b0159276baa8a5a67b5e7032083c1e281"
+    },
+    "trainingGroupsSha256": "d62b14ebe18584c33cb18c171e682a75dde8a48214592916f43e091cd52c7d8b",
+    "noDevCheckpointSelection": true
+  },
+  "teacherGroups": 751,
+  "teacherSkips": {
+    "protected-source": 201,
+    "student-unknown-character": 28,
+    "reference-outside-eligible-pool": 44
+  },
+  "tests": {
+    "tests": 50,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "minimalTests": {
+    "tests": 50,
+    "passed": 43,
+    "skipped": 7
+  },
+  "sourceFamiliesDisjoint": true,
+  "all256CandidateSetsPreserved": true,
+  "productionChanged": false,
+  "androidMeasured": false,
+  "releaseUnchanged": "v0.4.16-rc.4",
+  "releaseApkSha256": "f571badcd03361fe4b80a096553ca566ffecd117c4ad7694a22f4686ee2de528",
+  "goalComplete": false,
+  "evidenceManifestSha256": "5591635402bb9a30e94472dbc3b078e7431cad05268816a7c6a10cb93e249258",
+  "archivedFiles": 84
+}

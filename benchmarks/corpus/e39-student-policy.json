@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "stage": "E39",
+  "sourceBaseCommit": "4591b4c55e10ccecd9d0299957f73823c57dd5e2",
+  "purpose": "One fixed, falsifiable residual student experiment; no Android model adoption or release dependency.",
+  "training": {
+    "source": "benchmarks/corpus/ranker-train-v1",
+    "sentencesBeforeExclusions": 512,
+    "labels": "Existing automatic pypinyin weak supervision, not reviewed gold",
+    "isolation": "Verify full train/dev/test source-group separation. Remove exact/substring or <=1 edit sentence overlap with all declared evaluation inputs, before candidate export. Preserve attribution. No replacement sampling.",
+    "export": "Current M19 actual-path-v1, sampled whole/midpoint, production LM/weights, empty personalization; independently audit every actual score component.",
+    "teacher": "Pinned E38 Google Chinese BERT, qualified again before train scores; unchanged character PLL. Only eligible train groups whose reference is recalled in eligible slots provide supervision.",
+    "seed": 39,
+    "epochs": 4,
+    "optimizer": "AdamW",
+    "encoderLearningRate": 0.0001,
+    "headLearningRate": 0.001,
+    "weightDecay": 0.01,
+    "gradientClip": 1.0,
+    "groupsPerStep": 4,
+    "teacherTemperature": 2.0,
+    "loss": "0.75 gold cross entropy + 0.25 T^2 KL(teacher PLL/T || student total/T), mean over groups",
+    "checkpoint": "Final epoch only; no dev checkpoint selection, restart seed sweep, or hyperparameter search"
+  },
+  "student": {
+    "repo": "hfl/minirbt-h256",
+    "revision": "446e1b4012b10946f479563005700c54c9db3f7c",
+    "weightsSha256": "6728ca573fd5197f28198eb7e6119a76e4d5dc626f953fca8c0dc5ba2798f9fc",
+    "architecture": "Pretrained BertModel encoder without pooler/MLM head; concatenate CLS with 16 actual path features plus source prior, scaled /32 and clipped [-4,4]; new zero-initialized scalar linear head",
+    "scoring": "original total + 8*tanh(new head/8). Stable ties preserve original order. Zero head exactly reproduces baseline. One encoder forward per candidate, all candidates batched.",
+    "inputs": "[CLS] 0..2 left Han context + candidate [SEP]; no expected text, reference rank or teacher score at inference",
+    "eligibility": "E38 first-8 same-length Han slots, length 2..24. Entire row falls back for unknown characters, missing features, nonfinite scores, or any selected source other than BASE_EXACT/BASE_COMPOSED. This excludes personal/correction overrides.",
+    "runtime": "CPU float32 eager, 2 intraop/1 interop, deterministic training seed, no query cache"
+  },
+  "evaluationInputs": [
+    "benchmarks/corpus/p2c-aishell-v7/dev.tsv",
+    "benchmarks/corpus/p2c-supervised-v6/dev.tsv",
+    "benchmarks/corpus/p2c-aishell-v7/test.tsv",
+    "benchmarks/corpus/p2c-daily-mixture-v8/test.tsv",
+    ".artifacts/input-quality/e28/diagnostic.tsv"
+  ],
+  "developmentGate": "Each domain top1/top5 nondecreasing, recall unchanged, character errors nonincreasing; combined top1 strictly improves. Compare same current-production E36 streams. No new blind-data claim.",
+  "costGate": "Warm extra host P95 <=100ms. Passing host timing is not Android eligibility.",
+  "stopRule": "Failure of development stops this fixed student trial. Preserve losses and full evidence; do not run old test accuracy or Android integration merely to seek a pass. If it passes, separate old regression/device/lifecycle gates remain mandatory.",
+  "release": "rc.4 and production sources/assets remain unchanged; public training data stays local, no real user input sent to a teacher service."
+}
