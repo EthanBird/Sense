@@ -1,0 +1,292 @@
+{
+  "qualityGate": false,
+  "hostCostGate": true,
+  "eligibleForFurtherValidation": false,
+  "soleAdoptionCandidate": "expanded",
+  "smallControlSelectable": false,
+  "productionChanged": false,
+  "modelSha256": "6afcd35c7e5d12bdadecc2f8c8c80307061465c0b141efaf1d1c7bea88d6fb5a",
+  "modelBytes": 834600,
+  "scope": "Known-source reconstruction and offline fixed-pool scoring; no Android or release adoption",
+  "stage": "E44",
+  "reports": {
+    "small": {
+      "aishell": {
+        "before": {
+          "states": 128,
+          "top1": 65,
+          "top5": 97,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 142,
+          "characters": 1087
+        },
+        "after": {
+          "states": 128,
+          "top1": 65,
+          "top5": 97,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 142,
+          "characters": 1087
+        },
+        "nonregression": true,
+        "reasons": {
+          "scored": 113,
+          "protected-source": 15
+        },
+        "timing": {
+          "count": 113,
+          "medianMs": 0.2589,
+          "p95Ms": 0.4309,
+          "maxMs": 0.4524,
+          "totalMs": 29.6176
+        }
+      },
+      "tatoeba": {
+        "before": {
+          "states": 128,
+          "top1": 83,
+          "top5": 113,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        },
+        "after": {
+          "states": 128,
+          "top1": 83,
+          "top5": 113,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        },
+        "nonregression": true,
+        "reasons": {
+          "scored": 100,
+          "protected-source": 28
+        },
+        "timing": {
+          "count": 100,
+          "medianMs": 0.2291,
+          "p95Ms": 0.3605,
+          "maxMs": 0.422,
+          "totalMs": 24.2773
+        }
+      },
+      "diagnostic": {
+        "before": {
+          "states": 6,
+          "top1": 4,
+          "top5": 6,
+          "top10": 6,
+          "recall255": 6,
+          "characterErrors": 2,
+          "characters": 21
+        },
+        "after": {
+          "states": 6,
+          "top1": 4,
+          "top5": 6,
+          "top10": 6,
+          "recall255": 6,
+          "characterErrors": 2,
+          "characters": 21
+        },
+        "nonregression": true,
+        "reasons": {
+          "scored": 4,
+          "protected-source": 2
+        },
+        "timing": {
+          "count": 4,
+          "medianMs": 0.1344,
+          "p95Ms": 0.2697,
+          "maxMs": 0.2697,
+          "totalMs": 0.6033
+        }
+      }
+    },
+    "expanded": {
+      "aishell": {
+        "before": {
+          "states": 128,
+          "top1": 65,
+          "top5": 97,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 142,
+          "characters": 1087
+        },
+        "after": {
+          "states": 128,
+          "top1": 65,
+          "top5": 96,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 142,
+          "characters": 1087
+        },
+        "nonregression": false,
+        "reasons": {
+          "scored": 113,
+          "protected-source": 15
+        },
+        "timing": {
+          "count": 113,
+          "medianMs": 0.2653,
+          "p95Ms": 0.4527,
+          "maxMs": 0.4701,
+          "totalMs": 30.4374
+        }
+      },
+      "tatoeba": {
+        "before": {
+          "states": 128,
+          "top1": 83,
+          "top5": 113,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        },
+        "after": {
+          "states": 128,
+          "top1": 83,
+          "top5": 113,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        },
+        "nonregression": true,
+        "reasons": {
+          "scored": 100,
+          "protected-source": 28
+        },
+        "timing": {
+          "count": 100,
+          "medianMs": 0.2392,
+          "p95Ms": 0.3681,
+          "maxMs": 0.422,
+          "totalMs": 24.6679
+        }
+      },
+      "diagnostic": {
+        "before": {
+          "states": 6,
+          "top1": 4,
+          "top5": 6,
+          "top10": 6,
+          "recall255": 6,
+          "characterErrors": 2,
+          "characters": 21
+        },
+        "after": {
+          "states": 6,
+          "top1": 4,
+          "top5": 6,
+          "top10": 6,
+          "recall255": 6,
+          "characterErrors": 2,
+          "characters": 21
+        },
+        "nonregression": true,
+        "reasons": {
+          "scored": 4,
+          "protected-source": 2
+        },
+        "timing": {
+          "count": 4,
+          "medianMs": 0.13755,
+          "p95Ms": 0.2337,
+          "maxMs": 0.2337,
+          "totalMs": 0.5744
+        }
+      }
+    }
+  },
+  "trainingAudit": {
+    "states": 8188,
+    "actualPaths": 1017351,
+    "retainedGroups": 6145,
+    "reasons": {
+      "retained": 6145,
+      "target-not-recalled": 137,
+      "protected-source": 1713,
+      "target-outside-top8-eligible": 188,
+      "fewer-than-two-eligible": 5
+    },
+    "sourceSha256": "007b0c0f555499cb4d02ce4228f0827ae9b200e1e935ece140512db5bc67ee8c",
+    "exportSha256": "63768cc423766e726efadc8da934a20adf8e2997979d5da656966ab6210ded2b",
+    "groupsSha256": "6b1a145258e9860701346e51b5af79e4f90b7a78a3fd10d10a46ea12753f8f6a",
+    "streamedOneFullPathRowAtATime": true,
+    "scope": "Every actual path independently audited, only bounded candidate groups retained in memory"
+  },
+  "trainingCoverageDiagnostics": {
+    "trainingWrongBaselineMargin": {
+      "count": 1183,
+      "median": 0.4803123474121094,
+      "p95": 2.2486276626586914,
+      "max": 16.517871379852295
+    },
+    "trainedGoldMinusWrongResidualGap": {
+      "count": 1183,
+      "median": 0.0031723440371713707,
+      "p95": 0.034743498028781516,
+      "max": 0.12270041370010887
+    },
+    "trainFirstGains": 6,
+    "trainFirstLosses": 1,
+    "featureCoverage": {
+      "allFeatures": 728727,
+      "knownFeatures": 340549
+    },
+    "overallRecallRegardlessOfSourceProtection": {
+      "states": 8188,
+      "targetRecalled255": 8038,
+      "targetInEligibleSlots": 7790,
+      "protectedAndTargetAbsent": 13
+    },
+    "weights": {
+      "count": 18764,
+      "median": 0.0009761788454366268,
+      "p95": 0.007601268749876281,
+      "max": 0.12547440976141397
+    },
+    "scope": "Post-decision train-only diagnosis; no refit or adoption threshold change"
+  },
+  "sourcePreparation": {
+    "proposed": 4096,
+    "retained": 4094,
+    "smallRetained": 512,
+    "exclusions": {
+      "substring": 1,
+      "contains-heldout": 1
+    }
+  },
+  "models": {
+    "small": {
+      "parameters": 1278,
+      "trainingGroups": 779,
+      "iterations": 3,
+      "converged": true,
+      "trainTop1Before": 630,
+      "trainTop1After": 633
+    },
+    "expanded": {
+      "parameters": 18764,
+      "trainingGroups": 6145,
+      "iterations": 4,
+      "converged": true,
+      "trainTop1Before": 4962,
+      "trainTop1After": 4967
+    }
+  },
+  "finalTests": 75,
+  "publishedApkUnchanged": true,
+  "goalComplete": false,
+  "evidenceManifestSha256": "f9a5baa371cd297c82761e3765152d080e3685a7e353302499932d67351667a6",
+  "archives": 46
+}

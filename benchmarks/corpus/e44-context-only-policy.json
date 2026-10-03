@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "stage": "E44",
+  "sourceBaseCommit": "25fb1b8bbe54a5d6128a35c1561570a52a274755",
+  "purpose": "Separate train-only coverage from global prior recalibration. The expanded context-only model is the only adoption candidate; small context-only is a diagnostic control, never a fallback winner.",
+  "train": {
+    "source": "Pinned Tatoeba CC-BY-2.0-FR train partition",
+    "base": "E39 selected 512 weak sources; re-audit against every declared heldout text and retain only clean rows",
+    "additionalProposals": 3584,
+    "seed": "sense-e44-context-only-v1",
+    "strata": [{"name": "short", "minCharacters": 6, "maxCharacters": 9}, {"name": "long", "minCharacters": 10, "maxCharacters": 18}],
+    "isolation": "Full corpus family separation plus exact, symmetric substring and edit-distance-at-most-one exclusions against all current corpus dev.tsv/test.tsv and E28 diagnostics before candidate export; no replacement after exclusion",
+    "proposal": {"package": "pypinyin", "version": "0.55.0", "style": "NORMAL", "vToU": false, "toneSandhi": false},
+    "supervision": "Automatic weak labels, not reviewed gold; only expected candidates actually recalled inside the eligible pool; no reference injection or teacher call",
+    "loss": "Mean gold cross entropy plus 0.01/2 times squared parameter norm",
+    "optimizer": "Zero initialization, float64 full-batch L-BFGS-B, maxiter 200, ftol 1e-10, gtol 1e-7; final result only, no sweep"
+  },
+  "features": "Only character bigrams/trigrams ending in the candidate and containing at least two real Han characters; 0..2 left Han context or BOS; no EOS. Counts divided by sqrt(candidate length). At least two distinct train families per feature. No single-character features, BOS-only unigram proxies, learned decoder-score coefficients or intercept.",
+  "scoring": "Unchanged baseline total + 8*tanh(context-only linear score/8); stable ties and unknown ngrams contribute zero",
+  "eligibility": "Same first-eight equal-length Han 2..24 slots/source protection as E43; no corrected/personal source rows; all candidate arrays retained",
+  "evaluation": "Current production M19 exports and full-result identity checked. Reuse pinned E43 dev baselines since no core/asset changes. Known dev data, not a new blind test.",
+  "gate": "Expanded model: per-domain top1/top5 nondecreasing, recall unchanged, character errors nonincreasing, combined top1 strictly increases; host additional P95 <=100ms. Small model result does not affect acceptance.",
+  "stopRule": "A failed expanded dev gate ends this fixed trial, with all changes and losses archived; no parameter/retraining selection, old test opening or Android install. A passing gate still requires independent regression and Android lifecycle/cost validation.",
+  "release": "Preserve rc.5, production source and resources throughout this offline trial"
+}
