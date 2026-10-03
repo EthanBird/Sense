@@ -1,0 +1,1062 @@
+{
+  "schemaVersion": 1,
+  "stage": "E35",
+  "sourceBaseCommit": "7d20a2839e1bd5268f21b2b865631f91c772c528",
+  "decision": "short-input-blocker-cleared-hold-default-for-runtime-cost-and-unresolved-natural-homophones",
+  "defaultFactoryChanged": false,
+  "modelRetrained": false,
+  "parametersTuned": false,
+  "newBlindTest": false,
+  "modelSha256": "75371c3861341bee9a0b0bb488ac1e95295aec317a8de1cc48360be13f818bb4",
+  "baselineModelSha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+  "interaction": {
+    "type": "summary",
+    "states": 1468,
+    "completeEqual": 1062,
+    "repeatedCompleteResults": 2936,
+    "shortStates": 1188,
+    "shortCompleteEqual": 995,
+    "shortTop1Equal": 1188,
+    "personalAssertions": 12,
+    "passed": true
+  },
+  "developmentAndKnownRegressionGatePassed": true,
+  "quality": {
+    "development": {
+      "aishell": {
+        "before": {
+          "states": 128,
+          "top1": 65,
+          "top5": 97,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 142,
+          "characters": 1087
+        },
+        "after": {
+          "states": 128,
+          "top1": 72,
+          "top5": 100,
+          "top10": 104,
+          "recall255": 119,
+          "characterErrors": 124,
+          "characters": 1087
+        },
+        "nonregressionPassed": true,
+        "firstGains": [
+          {
+            "id": "01801a4d5a1f2b542f41570222532f9f3f33bd29cc8bad7c6b169ab30be111a7",
+            "cut": 4,
+            "mode": "editor",
+            "stratum": "short",
+            "query": "qiwangyourelun",
+            "context": "件引",
+            "expected": "起网友热论",
+            "beforeRank": 3,
+            "afterRank": 1,
+            "beforeTop5": [
+              "起网友而论",
+              "起网游而论",
+              "起网友热论",
+              "起网游热论",
+              "起往右而论"
+            ],
+            "afterTop5": [
+              "起网友热论",
+              "起网友热轮",
+              "起网友而论",
+              "起网友热抡",
+              "起网友热伦"
+            ],
+            "beforeFirstKind": "CORRECTED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "047ef9e4bcb123bc7f7c6badf069cc5fb25674976540942ce33d173cdcdea96f",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "short",
+            "query": "zaiqunianrenchuanyayunhuishang",
+            "context": "",
+            "expected": "在去年仁川亚运会上",
+            "beforeRank": 4,
+            "afterRank": 1,
+            "beforeTop5": [
+              "在去年人穿亚运会上",
+              "在去年人传亚运会上",
+              "在去年人船亚运会上",
+              "在去年仁川亚运会上",
+              "在去年人川亚运会上"
+            ],
+            "afterTop5": [
+              "在去年仁川亚运会上",
+              "在去年人穿亚运会上",
+              "在去年人传亚运会上",
+              "再去年仁川亚运会上",
+              "在去年人川亚运会上"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "047ef9e4bcb123bc7f7c6badf069cc5fb25674976540942ce33d173cdcdea96f",
+            "cut": 4,
+            "mode": "editor",
+            "stratum": "short",
+            "query": "chuanyayunhuishang",
+            "context": "年仁",
+            "expected": "川亚运会上",
+            "beforeRank": 5,
+            "afterRank": 1,
+            "beforeTop5": [
+              "穿亚运会上",
+              "传亚运会上",
+              "船亚运会上",
+              "串亚运会上",
+              "川亚运会上"
+            ],
+            "afterTop5": [
+              "川亚运会上",
+              "穿亚运会上",
+              "传亚运会上",
+              "船亚运会上",
+              "串亚运会上"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "049b254e2c29b2bae6c7eee8cdd1201bffb57a0b2340935578857d561a8270d6",
+            "cut": 4,
+            "mode": "editor",
+            "stratum": "short",
+            "query": "ribaobaodaocheng",
+            "context": "财经",
+            "expected": "日报报道称",
+            "beforeRank": 2,
+            "afterRank": 1,
+            "beforeTop5": [
+              "日报报道成",
+              "日报报道称",
+              "日报报道城",
+              "日报报道呈",
+              "日报报道乘"
+            ],
+            "afterTop5": [
+              "日报报道称",
+              "日报报道成",
+              "日报报道城",
+              "日报报道呈",
+              "日报报道乘"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "0039aa9108173e5ae9b3b3b86e7be19a2968ce78fbeea468234bcdededf2d687",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "long",
+            "query": "quanmiantuijinshuishoufadingdeluxiantushishenme",
+            "context": "",
+            "expected": "全面推进税收法定的路线图是什么",
+            "beforeRank": 2,
+            "afterRank": 1,
+            "beforeTop5": [
+              "全面推进水手法定的路线图是什么",
+              "全面推进税收法定的路线图是什么",
+              "全面推进水受法定的路线图是什么",
+              "全面推进水手法顶的路线图是什么",
+              "全面推进水守法定的路线图是什么"
+            ],
+            "afterTop5": [
+              "全面推进税收法定的路线图是什么",
+              "全面推进水手法定的路线图是什么",
+              "全面推进税收法定的路线图时什么",
+              "全面推进水受法定的路线图是什么",
+              "全面推进税收法定地路线图是什么"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "005e6a24991b0dde7d32956730d500878255e1cb3b33f562d360c5ad7b924008",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "long",
+            "query": "suonigongsifabuerlingyisicainiandierjiducaibao",
+            "context": "",
+            "expected": "索尼公司发布二零一四财年第二季度财报",
+            "beforeRank": 0,
+            "afterRank": 1,
+            "beforeTop5": [
+              "索尼公司发布二零一丝才年底二季度财报",
+              "索尼公司发布而另一丝才年底二季度财报",
+              "索尼公司发布二零意思才年底二季度财报",
+              "索尼公司发布而另一死才年底二季度财报",
+              "索尼公司发布二零一死才年底二季度财报"
+            ],
+            "afterTop5": [
+              "索尼公司发布二零一四财年第二季度财报",
+              "索尼公司法不二零一四财年第二季度财报",
+              "所你公司发布二零一四财年第二季度财报",
+              "所拟公司发布二零一四财年第二季度财报",
+              "索尼公司发布二零一四财年第二季度财宝"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "005e6a24991b0dde7d32956730d500878255e1cb3b33f562d360c5ad7b924008",
+            "cut": 9,
+            "mode": "editor",
+            "stratum": "long",
+            "query": "sicainiandierjiducaibao",
+            "context": "零一",
+            "expected": "四财年第二季度财报",
+            "beforeRank": 7,
+            "afterRank": 1,
+            "beforeTop5": [
+              "死才年底二季度财报",
+              "死财年第二季度财报",
+              "丝才年底二季度财报",
+              "死才年第二季度财报",
+              "四才年底二季度财报"
+            ],
+            "afterTop5": [
+              "四财年第二季度财报",
+              "四财年第二季度财宝",
+              "四财年第二季度菜包",
+              "死财年第二季度财报",
+              "丝财年第二季度财报"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          }
+        ],
+        "firstLosses": [],
+        "rankLosses": [
+          {
+            "id": "005423e7e0ddeb4cd52c7339526c1cfdce88a0384a358e454000fa5ec95f11d8",
+            "cut": 4,
+            "mode": "editor",
+            "stratum": "short",
+            "query": "shangmoquancazhang",
+            "context": "开发",
+            "expected": "商磨拳擦掌",
+            "beforeRank": 10,
+            "afterRank": 16,
+            "beforeTop5": [
+              "上摩拳擦掌",
+              "上磨拳擦掌",
+              "熵摩拳擦掌",
+              "商摩拳擦掌",
+              "伤摩拳擦掌"
+            ],
+            "afterTop5": [
+              "上摩拳擦掌",
+              "熵摩拳擦掌",
+              "商摩拳擦掌",
+              "上磨拳擦掌",
+              "伤摩拳擦掌"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "00b4582530d1c7f11c2e1ba040b06d2e92b4e49daf6396e4264cf259a37e1546",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "short",
+            "query": "jiangganqingshifangzaiyimian",
+            "context": "",
+            "expected": "将感情事放在一面",
+            "beforeRank": 48,
+            "afterRank": 49,
+            "beforeTop5": [
+              "将感情释放在一面",
+              "将感情是放在一面",
+              "讲感情释放在一面",
+              "将感情是放在以免",
+              "讲感情是放在一面"
+            ],
+            "afterTop5": [
+              "将感情释放在一面",
+              "将感情是放在一面",
+              "讲感情释放在一面",
+              "将感情是放在以免",
+              "讲感情是放在一面"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "001fa82f34464044f26f3b021c2703286578ddc7afc672e1b33e12406285e5b8",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "long",
+            "query": "zijinchilicaizuizhongfengxiancunzaiyuyinhang",
+            "context": "",
+            "expected": "资金池理财最终风险存在于银行",
+            "beforeRank": 22,
+            "afterRank": 28,
+            "beforeTop5": [
+              "资金吃力才最终风险存在于银行",
+              "资金吃理财最终风险存在于银行",
+              "资金吃力菜最终风险存在于银行",
+              "资金吃力才最终奉献存在于银行",
+              "资金池里才最终风险存在于银行"
+            ],
+            "afterTop5": [
+              "资金吃力才最终风险存在于银行",
+              "资金吃理财最终风险存在于银行",
+              "资金吃力菜最终风险存在于银行",
+              "资金吃力才最终奉献存在于银行",
+              "资金斥力才最终风险存在于银行"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "009da91a67aa6f09cb9813374bedd599549b9f1f5e4aac759ac055e07d503bcb",
+            "cut": 5,
+            "mode": "editor",
+            "stratum": "long",
+            "query": "cimanlesifenzhong",
+            "context": "的一",
+            "expected": "次慢了四分钟",
+            "beforeRank": 2,
+            "afterRank": 3,
+            "beforeTop5": [
+              "次满了四分钟",
+              "次慢了四分钟",
+              "次满了十分钟",
+              "次瞒了四分钟",
+              "次看了四分钟"
+            ],
+            "afterTop5": [
+              "次满了四分钟",
+              "次满了十分钟",
+              "次慢了四分钟",
+              "次瞒了四分钟",
+              "次看了四分钟"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "00a0d1fb11c3c1a806eb509b351d7f88e4f99e8797ed185038f324278caee332",
+            "cut": 5,
+            "mode": "editor",
+            "stratum": "long",
+            "query": "dawuwanpingmi",
+            "context": "面积",
+            "expected": "达五万平米",
+            "beforeRank": 10,
+            "afterRank": 16,
+            "beforeTop5": [
+              "大五万平米",
+              "大雾万平米",
+              "打五万平米",
+              "大雾玩平米",
+              "大雾完平米"
+            ],
+            "afterTop5": [
+              "大雾万平米",
+              "大雾玩平米",
+              "大五万平米",
+              "大雾完平米",
+              "打五万平米"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          }
+        ]
+      },
+      "tatoeba": {
+        "before": {
+          "states": 128,
+          "top1": 83,
+          "top5": 113,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        },
+        "after": {
+          "states": 128,
+          "top1": 83,
+          "top5": 113,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        },
+        "nonregressionPassed": true,
+        "firstGains": [],
+        "firstLosses": [],
+        "rankLosses": [
+          {
+            "id": "014b4defa8c2ebc5fed99afe9620542409b8aedb4bb0d4ac4947ed99bf645dfd",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "short",
+            "query": "tashizenyangderenne",
+            "context": "",
+            "expected": "她是怎样的人呢",
+            "beforeRank": 2,
+            "afterRank": 3,
+            "beforeTop5": [
+              "他是怎样的人呢",
+              "她是怎样的人呢",
+              "它是怎样的人呢",
+              "他是怎样的人了",
+              "她是怎样的人了"
+            ],
+            "afterTop5": [
+              "他是怎样的人呢",
+              "它是怎样的人呢",
+              "她是怎样的人呢",
+              "他是怎样的人了",
+              "它是怎样的人了"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "05397e8cff72bf85c3adb52cc9792816453a5ea7f2ccb8496a71392cbbbdcd56",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "long",
+            "query": "tapingzhijuefaxiantazaisahuang",
+            "context": "",
+            "expected": "他凭直觉发现她在撒谎",
+            "beforeRank": 4,
+            "afterRank": 5,
+            "beforeTop5": [
+              "她凭直觉发现他在撒谎",
+              "他凭直觉发现他在撒谎",
+              "她凭直觉发现她在撒谎",
+              "他凭直觉发现她在撒谎",
+              "她凭直觉发现它在撒谎"
+            ],
+            "afterTop5": [
+              "她凭直觉发现他在撒谎",
+              "他凭直觉发现他在撒谎",
+              "她凭直觉发现她在撒谎",
+              "她凭直觉发现它在撒谎",
+              "他凭直觉发现她在撒谎"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          }
+        ]
+      }
+    },
+    "knownTestRegressions": {
+      "aishell": {
+        "before": {
+          "states": 248,
+          "top1": 150,
+          "top5": 194,
+          "top10": 204,
+          "recall255": 223,
+          "characterErrors": 226,
+          "characters": 2033
+        },
+        "after": {
+          "states": 248,
+          "top1": 152,
+          "top5": 196,
+          "top10": 204,
+          "recall255": 227,
+          "characterErrors": 222,
+          "characters": 2033
+        },
+        "nonregressionPassed": true,
+        "firstGains": [
+          {
+            "id": "00e0eb48f617c3c6b91a164381d9327823c7d8796c72ca3499e51f7198c1ead8",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "long",
+            "query": "zaicijiangdigongjijindaikuanshoufubili",
+            "context": "",
+            "expected": "再次降低公积金贷款首付比例",
+            "beforeRank": 4,
+            "afterRank": 1,
+            "beforeTop5": [
+              "再次降低公积金贷款首府比例",
+              "再次降低公积金贷款首富比例",
+              "再次降低公积金贷款收服比例",
+              "再次降低公积金贷款首付比例",
+              "再次降低公积金贷款收复比例"
+            ],
+            "afterTop5": [
+              "再次降低公积金贷款首付比例",
+              "在此降低公积金贷款首付比例",
+              "再次将地公积金贷款首付比例",
+              "在次降低公积金贷款首付比例",
+              "再次降低公积金贷款首付比里"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "00e0eb48f617c3c6b91a164381d9327823c7d8796c72ca3499e51f7198c1ead8",
+            "cut": 6,
+            "mode": "editor",
+            "stratum": "long",
+            "query": "jindaikuanshoufubili",
+            "context": "公积",
+            "expected": "金贷款首付比例",
+            "beforeRank": 4,
+            "afterRank": 1,
+            "beforeTop5": [
+              "金贷款首府比例",
+              "金贷款首富比例",
+              "金贷款收服比例",
+              "金贷款首付比例",
+              "金贷款收复比例"
+            ],
+            "afterTop5": [
+              "金贷款首付比例",
+              "进贷款首付比例",
+              "近贷款首付比例",
+              "今贷款首付比例",
+              "仅贷款首付比例"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "01081041cef2bbec776eb781015a576398ffad4677d7b03023437684d094dd1e",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "long",
+            "query": "touzizhedanxinzhejiangjiazhongrenminbisuomianlindeyali",
+            "context": "",
+            "expected": "投资者担心这将加重人民币所面临的压力",
+            "beforeRank": 7,
+            "afterRank": 1,
+            "beforeTop5": [
+              "投资者担心浙江家中人民币所面临的压力",
+              "投资者担心着将家中人民币所面临的压力",
+              "投资者担心这将家中人民币所面临的压力",
+              "投资者担心浙江加重人民币所面临的压力",
+              "投资者担心着将加重人民币所面临的压力"
+            ],
+            "afterTop5": [
+              "投资者担心这将加重人民币所面临的压力",
+              "投资者担心浙江家中人民币所面临的压力",
+              "投资者担心着将家中人民币所面临的压力",
+              "投资者担心这将家中人民币所面临的压力",
+              "投资者担心浙江加重人民币所面临的压力"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          }
+        ],
+        "firstLosses": [
+          {
+            "id": "00c632e4c1b2ffd2ee8581bb55258df65be33b3584f638db550d2da51c285cbf",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "long",
+            "query": "sanshikejizhichengjianggengjiayouli",
+            "context": "",
+            "expected": "三是科技支撑将更加有力",
+            "beforeRank": 1,
+            "afterRank": 2,
+            "beforeTop5": [
+              "三是科技支撑将更加有力",
+              "三十科技支撑将更加有力",
+              "三是科技支撑讲更加有力",
+              "三是科技制成将更加有力",
+              "三十科技支撑讲更加有力"
+            ],
+            "afterTop5": [
+              "三十科技支撑将更加有力",
+              "三是科技支撑将更加有力",
+              "三十科技支撑讲更加有力",
+              "三是科技支撑讲更加有力",
+              "三十科技制成将更加有力"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          }
+        ],
+        "rankLosses": [
+          {
+            "id": "0422ce3374b6c498bbb43c46f3ab9725ddb81beabbb5f61ce4da7d527ea1cb1c",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "short",
+            "query": "duizhejingtouduzuitushe",
+            "context": "",
+            "expected": "对着镜头嘟嘴吐舌",
+            "beforeRank": 8,
+            "afterRank": 9,
+            "beforeTop5": [
+              "对着镜头度最吐舌",
+              "对着镜头都最吐舌",
+              "对着镜头度最突射",
+              "对这镜头度最吐舌",
+              "对着镜头都最突射"
+            ],
+            "afterTop5": [
+              "对着镜头度最吐舌",
+              "对着镜头都最吐舌",
+              "对这镜头度最吐舌",
+              "对这镜头都最吐舌",
+              "对着镜头度最突射"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "0c77b7762265a96f03e4cf87ffad1c0d36f8cc3f04d7535c6f9f4ead8b22c35b",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "short",
+            "query": "yiwunianhouluowang",
+            "context": "",
+            "expected": "一五年后落网",
+            "beforeRank": 3,
+            "afterRank": 4,
+            "beforeTop5": [
+              "一五年后罗网",
+              "以五年后罗网",
+              "一五年后落网",
+              "以五年后落网",
+              "已五年后罗网"
+            ],
+            "afterTop5": [
+              "以五年后罗网",
+              "一五年后罗网",
+              "以五年后落网",
+              "一五年后落网",
+              "已五年后罗网"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "00c632e4c1b2ffd2ee8581bb55258df65be33b3584f638db550d2da51c285cbf",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "long",
+            "query": "sanshikejizhichengjianggengjiayouli",
+            "context": "",
+            "expected": "三是科技支撑将更加有力",
+            "beforeRank": 1,
+            "afterRank": 2,
+            "beforeTop5": [
+              "三是科技支撑将更加有力",
+              "三十科技支撑将更加有力",
+              "三是科技支撑讲更加有力",
+              "三是科技制成将更加有力",
+              "三十科技支撑讲更加有力"
+            ],
+            "afterTop5": [
+              "三十科技支撑将更加有力",
+              "三是科技支撑将更加有力",
+              "三十科技支撑讲更加有力",
+              "三是科技支撑讲更加有力",
+              "三十科技制成将更加有力"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          }
+        ]
+      },
+      "tatoeba": {
+        "before": {
+          "states": 248,
+          "top1": 170,
+          "top5": 213,
+          "top10": 223,
+          "recall255": 236,
+          "characterErrors": 129,
+          "characters": 1833
+        },
+        "after": {
+          "states": 248,
+          "top1": 170,
+          "top5": 213,
+          "top10": 222,
+          "recall255": 236,
+          "characterErrors": 127,
+          "characters": 1833
+        },
+        "nonregressionPassed": true,
+        "firstGains": [],
+        "firstLosses": [],
+        "rankLosses": [
+          {
+            "id": "00202e08baf8108f41416aee524c331656c59706a82b5bdd877b248c2872988b",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "short",
+            "query": "wohuileyibangnizuo",
+            "context": "",
+            "expected": "我会乐意帮你做",
+            "beforeRank": 2,
+            "afterRank": 3,
+            "beforeTop5": [
+              "我会了一帮你做",
+              "我会乐意帮你做",
+              "我会了以帮你做",
+              "我会了一磅你做",
+              "我回了一帮你做"
+            ],
+            "afterTop5": [
+              "我会了一帮你做",
+              "我会了以帮你做",
+              "我会乐意帮你做",
+              "我会了一磅你做",
+              "我回了一帮你做"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "006d40df9e51a1353e82cb1520960fc2c788d186a9ad9690985c37618dac272d",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "short",
+            "query": "xueyijingkaishirongle",
+            "context": "",
+            "expected": "雪已经开始溶了",
+            "beforeRank": 8,
+            "afterRank": 11,
+            "beforeTop5": [
+              "学已经开始融了",
+              "学已经开始溶了",
+              "学已经开始戎了",
+              "学已经开始容了",
+              "雪已经开始融了"
+            ],
+            "afterTop5": [
+              "学已经开始融了",
+              "学已经开始溶了",
+              "学已经开始戎了",
+              "学已经开始容了",
+              "学已经开始熔了"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "0798507123d10ce88d8f372704e0d56ca119b10135581f7e1c813ade60ba5b40",
+            "cut": 4,
+            "mode": "editor",
+            "stratum": "short",
+            "query": "lishigeshou",
+            "context": "和玛",
+            "expected": "莉是歌手",
+            "beforeRank": 11,
+            "afterRank": 12,
+            "beforeTop5": [
+              "丽是歌手",
+              "历史歌手",
+              "丽是个手",
+              "丽是个受",
+              "里是歌手"
+            ],
+            "afterTop5": [
+              "丽是歌手",
+              "历史歌手",
+              "丽是个手",
+              "丽是个受",
+              "里是歌手"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "00e874f06236f9adbf8bc99927c3d4847611e1013926160e05fbc645268a521d",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "long",
+            "query": "tabuxiangyaorenhezhongleidehua",
+            "context": "",
+            "expected": "他不想要任何种类的花",
+            "beforeRank": 6,
+            "afterRank": 7,
+            "beforeTop5": [
+              "他不想要任何种类的话",
+              "她不想要任何种类的话",
+              "它不想要任何种类的话",
+              "他不想要人和种类的话",
+              "她不想要人和种类的话"
+            ],
+            "afterTop5": [
+              "他不想要任何种类的话",
+              "她不想要任何种类的话",
+              "它不想要任何种类的话",
+              "他不想要人和种类的话",
+              "她不想要人和种类的话"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "03117fb34dbee454074a88954de67d24993cdd1804b0eba7cd933d46af81819d",
+            "cut": 0,
+            "mode": "empty",
+            "stratum": "long",
+            "query": "weilexiangshutamendejiazhiguan",
+            "context": "",
+            "expected": "为了详述它们的价值观",
+            "beforeRank": 13,
+            "afterRank": 17,
+            "beforeTop5": [
+              "为了橡树他们的价值观",
+              "为了详述他们的价值观",
+              "为了橡树它们的价值观",
+              "为了相熟他们的价值观",
+              "为了橡树她们的价值观"
+            ],
+            "afterTop5": [
+              "为了橡树他们的价值观",
+              "为了详述他们的价值观",
+              "为了相熟他们的价值观",
+              "为了橡树它们的价值观",
+              "为了想书他们的价值观"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          },
+          {
+            "id": "054aee3cdf0323637cd30325363af6f444a100183ddc9da434b83c3f840c5c63",
+            "cut": 5,
+            "mode": "editor",
+            "stratum": "long",
+            "query": "shenmeyansede",
+            "context": "车是",
+            "expected": "甚么颜色的",
+            "beforeRank": 14,
+            "afterRank": 15,
+            "beforeTop5": [
+              "什么颜色的",
+              "什么颜色地",
+              "什么颜色得",
+              "什么眼色的",
+              "什么颜色德"
+            ],
+            "afterTop5": [
+              "什么颜色的",
+              "什么颜色地",
+              "什么颜色得",
+              "什么眼色的",
+              "什么颜色德"
+            ],
+            "beforeFirstKind": "BASE_EXACT",
+            "afterFirstKind": "BASE_EXACT"
+          },
+          {
+            "id": "0efd9f9fe8bd64e654b8518992a66c03ac0148a94c551899bdc4aa542173aa51",
+            "cut": 5,
+            "mode": "editor",
+            "stratum": "long",
+            "query": "yuzhongdaibiaoshenme",
+            "context": "拉伯",
+            "expected": "语中代表什么",
+            "beforeRank": 4,
+            "afterRank": 5,
+            "beforeTop5": [
+              "语种代表什么",
+              "与中代表什么",
+              "雨中代表什么",
+              "语中代表什么",
+              "与众代表什么"
+            ],
+            "afterTop5": [
+              "语种代表什么",
+              "与中代表什么",
+              "雨中代表什么",
+              "与众代表什么",
+              "语中代表什么"
+            ],
+            "beforeFirstKind": "BASE_COMPOSED",
+            "afterFirstKind": "BASE_COMPOSED"
+          }
+        ]
+      }
+    }
+  },
+  "knownHomophoneDiagnostic": {
+    "beforeTop1": 4,
+    "afterTop1": 4,
+    "states": 6,
+    "leiStillSecond": true
+  },
+  "android": {
+    "models": {
+      "0": {
+        "pooled": {
+          "count": 64,
+          "medianMs": 24.972,
+          "observedP95Ms": 169.2194,
+          "maxMs": 177.4202
+        },
+        "queries": {
+          "nihao": {
+            "count": 8,
+            "medianMs": 9.0027,
+            "observedP95Ms": 14.0004,
+            "maxMs": 14.0004,
+            "first": "你好"
+          },
+          "chengche": {
+            "count": 8,
+            "medianMs": 10.277899999999999,
+            "observedP95Ms": 15.8262,
+            "maxMs": 15.8262,
+            "first": "乘车"
+          },
+          "zhinengti": {
+            "count": 8,
+            "medianMs": 4.07405,
+            "observedP95Ms": 5.9045,
+            "maxMs": 5.9045,
+            "first": "智能体"
+          },
+          "wox": {
+            "count": 8,
+            "medianMs": 5.53245,
+            "observedP95Ms": 8.2082,
+            "maxMs": 8.2082,
+            "first": "我想"
+          },
+          "woxiangchifan": {
+            "count": 8,
+            "medianMs": 37.593,
+            "observedP95Ms": 41.7599,
+            "maxMs": 41.7599,
+            "first": "我想吃饭"
+          },
+          "womenmingtianjian": {
+            "count": 8,
+            "medianMs": 75.1371,
+            "observedP95Ms": 79.0163,
+            "maxMs": 79.0163,
+            "first": "我们明天见"
+          },
+          "qingfageweizhigeiwo": {
+            "count": 8,
+            "medianMs": 54.197649999999996,
+            "observedP95Ms": 59.1459,
+            "maxMs": 59.1459,
+            "first": "请发个位置给我"
+          },
+          "tangmumeiyouzhuyidaomalihuanlexinfaxing": {
+            "count": 8,
+            "medianMs": 161.13305,
+            "observedP95Ms": 177.4202,
+            "maxMs": 177.4202,
+            "first": "汤姆没有注意到玛丽换了新发型"
+          }
+        },
+        "loadingWarm": {
+          "count": 3,
+          "medianMs": 50.1278,
+          "observedP95Ms": 51.0733,
+          "maxMs": 51.0733
+        },
+        "loadingFirstMs": 354.972
+      },
+      "1": {
+        "pooled": {
+          "count": 64,
+          "medianMs": 25.532249999999998,
+          "observedP95Ms": 196.409,
+          "maxMs": 218.5276
+        },
+        "queries": {
+          "nihao": {
+            "count": 8,
+            "medianMs": 9.460550000000001,
+            "observedP95Ms": 13.0702,
+            "maxMs": 13.0702,
+            "first": "你好"
+          },
+          "chengche": {
+            "count": 8,
+            "medianMs": 11.757200000000001,
+            "observedP95Ms": 16.2161,
+            "maxMs": 16.2161,
+            "first": "乘车"
+          },
+          "zhinengti": {
+            "count": 8,
+            "medianMs": 4.168699999999999,
+            "observedP95Ms": 5.7364,
+            "maxMs": 5.7364,
+            "first": "智能体"
+          },
+          "wox": {
+            "count": 8,
+            "medianMs": 4.7089,
+            "observedP95Ms": 9.1377,
+            "maxMs": 9.1377,
+            "first": "我想"
+          },
+          "woxiangchifan": {
+            "count": 8,
+            "medianMs": 41.276650000000004,
+            "observedP95Ms": 45.4172,
+            "maxMs": 45.4172,
+            "first": "我想吃饭"
+          },
+          "womenmingtianjian": {
+            "count": 8,
+            "medianMs": 86.74345,
+            "observedP95Ms": 92.7918,
+            "maxMs": 92.7918,
+            "first": "我们明天见"
+          },
+          "qingfageweizhigeiwo": {
+            "count": 8,
+            "medianMs": 68.28455,
+            "observedP95Ms": 74.3444,
+            "maxMs": 74.3444,
+            "first": "请发个位置给我"
+          },
+          "tangmumeiyouzhuyidaomalihuanlexinfaxing": {
+            "count": 8,
+            "medianMs": 189.24085,
+            "observedP95Ms": 218.5276,
+            "maxMs": 218.5276,
+            "first": "汤姆没有注意到玛丽换了新发型"
+          }
+        },
+        "loadingWarm": {
+          "count": 3,
+          "medianMs": 135.8932,
+          "observedP95Ms": 140.6365,
+          "maxMs": 140.6365
+        },
+        "loadingFirstMs": 214.2615
+      }
+    },
+    "costViabilityPassed": false,
+    "scope": "Single API 37 emulator ART process; fixed queries, shared immutable dictionary, warm in-process decoding; not end-to-end IME latency or phone testing",
+    "memoryBytes": {
+      "baseline": 3090904,
+      "extension": 6072092
+    },
+    "factoryChanged": false
+  },
+  "androidLibraryTests": 1,
+  "androidCalls": 128,
+  "androidUiTestsThisStage": 0,
+  "productApkAndImeUnchanged": true,
+  "releaseUnchanged": "v0.4.16-rc.4",
+  "releaseApkSha256": "f571badcd03361fe4b80a096553ca566ffecd117c4ad7694a22f4686ee2de528",
+  "physicalPhoneTested": false,
+  "goalComplete": false,
+  "evidenceManifestSha256": "3172d0bc9b21bfe4381fc460086eef3295b86b2ad89826fec2f8b334570a1acd",
+  "archivedFiles": 47
+}

@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 1,
+  "dependencyManifests": {
+    "e18": "9ff6cde832e31f7517b6486763951d31e92db988939be5ce071d134806749426",
+    "e34": "e1ee8b0cb118066607422889ddc152b5fa7033ff2103219b9884c4da08e5106e"
+  },
+  "files": {
+    ".artifacts/input-quality/e35/aishell-baseline.jsonl": {
+      "archive": "benchmarks/results/e35-evidence/4843cdcba73b77b27ae2.gz",
+      "sha256": "4479f50837256b950fdec0b43bc34e97fae0b4cec6d7f5029e36ad9529b607a0",
+      "archiveSha256": "4124a7fa3dde2c5e7bbd47c55e052d1bfe13a62a292a38d86efa5d69424d5714",
+      "bytes": 595021
+    },
+    ".artifacts/input-quality/e35/aishell-baseline.log": {
+      "archive": "benchmarks/results/e35-evidence/997f78f97d020d4de39a.gz",
+      "sha256": "871c43e36364a650734d33a0e7a815b7fe32b1ebde4d60e8832269622cbebbd6",
+      "archiveSha256": "2e164b8bd722840246702d97846a5172e3cac19ead9dbf0462dad6c439dd0ddf",
+      "bytes": 113
+    },
+    ".artifacts/input-quality/e35/aishell-comparison.json": {
+      "archive": "benchmarks/results/e35-evidence/f24af41090eff196a407.gz",
+      "sha256": "4ce4a8c497748aa47144e43be37918634e7fee3282f54e26db634af55b1c9860",
+      "archiveSha256": "9bcd2bd21fe486102514ae928ddf7b0c120e51d66f786082dff990fdf4a2f62d",
+      "bytes": 13744
+    },
+    ".artifacts/input-quality/e35/aishell-fourgram.jsonl": {
+      "archive": "benchmarks/results/e35-evidence/10a9320fc7aea3b1d9b3.gz",
+      "sha256": "4fa4b64a88764c085183a58fc59c044a01fcaf1a9dd7df1a1446bb5084dfd948",
+      "archiveSha256": "f18dd555fb0f1c248308889051d0265f332970d0a95421155f7bb9c3926cbc3d",
+      "bytes": 589309
+    },
+    ".artifacts/input-quality/e35/aishell-fourgram.log": {
+      "archive": "benchmarks/results/e35-evidence/5ee71c18c5146222c431.gz",
+      "sha256": "6cad64d2f876876f7126194fb8461150083717a996ecf740ffef076b587d9ba2",
+      "archiveSha256": "e63af7444d82e38ea8edb45148b97b38c62f43d11d364b431527350c824cd29b",
+      "bytes": 113
+    },
+    ".artifacts/input-quality/e35/android-art.json": {
+      "archive": "benchmarks/results/e35-evidence/752e02300ad8babc1821.gz",
+      "sha256": "559cf426894b2dafd4159059b27da22e8a3807160ef674e77f9e6d0e03c0264d",
+      "archiveSha256": "16c307da0ecd7bbb4cd394bbef1678e2112feda9b312dbed3b67404f70f94048",
+      "bytes": 12183
+    },
+    ".artifacts/input-quality/e35/android-build.log": {
+      "archive": "benchmarks/results/e35-evidence/97357219cdf7adc408e6.gz",
+      "sha256": "ca23286c4c8867db68852cb94f91d6bf0d3510bfade4f78d189135bd433bdec1",
+      "archiveSha256": "b6419c24ce4908ab2806efc1faa65746ff5d3d0cfbcb1bcfa63ce9940da5c5b8",
+      "bytes": 10489
+    },
+    ".artifacts/input-quality/e35/android-comparison.json": {
+      "archive": "benchmarks/results/e35-evidence/7c8b40cdc347062f3969.gz",
+      "sha256": "b0d3ef84fcc1d317a0476222ca6063b3ab624b6cb6fc582337119902ebded860",
+      "archiveSha256": "c7439ec68efae9f2ebb4d31f516c182e03e838aec7e10f1851e65b125d90c632",
+      "bytes": 4345
+    },
+    ".artifacts/input-quality/e35/android-environment.json": {
+      "archive": "benchmarks/results/e35-evidence/c104213439cdb90e1b0e.gz",
+      "sha256": "42235ea737e9a072577d68118cd4502d52ddf660434fcdf691a43e993deddfa4",
+      "archiveSha256": "66411f0f3c5a93936ec2e730237d83a85cdcc3b5e1b3bd3e35f8b693a8375603",
+      "bytes": 691
+    },
+    ".artifacts/input-quality/e35/android-instrumentation.log": {
+      "archive": "benchmarks/results/e35-evidence/afb7920fbaca67862caa.gz",
+      "sha256": "f0d5aa5c0b61d4697f55d05b9c09d603ac04541275e4ed9964eb942a91165ade",
+      "archiveSha256": "790fc1b747f5d0c1554dbe085fff2d7b2a26085d4abcf2acffb587ecdb6898cc",
+      "bytes": 854
+    },
+    ".artifacts/input-quality/e35/android-protocol.json": {
+      "archive": "benchmarks/results/e35-evidence/375cd9e20b982fb625e9.gz",
+      "sha256": "f25b4b4dce97e1cfa427b2cbea27a0fcf8513beface0f62c647e32a51364c116",
+      "archiveSha256": "044116d96b4639c9b77e46bc36b6fafd66872ee5cb66611ece3acc0aade4952f",
+      "bytes": 736
+    },
+    ".artifacts/input-quality/e35/android-run.log": {
+      "archive": "benchmarks/results/e35-evidence/1f017f370ea50bef68fc.gz",
+      "sha256": "240727c4ca47d88da4e26004c52c6cfa46389f1a8397a4c002b90575cebc5194",
+      "archiveSha256": "7ccbdd7b15c06d339578ff2cd0385d1ed9245dea0d29e51bc7bbb71d4c3cb3b3",
+      "bytes": 74
+    },
+    ".artifacts/input-quality/e35/classes/VerifyFourgramInteraction.class": {
+      "archive": "benchmarks/results/e35-evidence/d5403b2e70a9234377b2.gz",
+      "sha256": "d208dbb1ac14b6ff863da4dc8663c58cdafbaf9065acbe3240ecebcf01315c90",
+      "archiveSha256": "22fce4cc3a52114fc279eb5acca837ad7e09500f009ad95c30deff649dc79f68",
+      "bytes": 15728
+    },
+    ".artifacts/input-quality/e35/collect.py": {
+      "archive": "benchmarks/results/e35-evidence/a8c8a9a1636b7d7c22a3.gz",
+      "sha256": "9bf27b7397b8428fb4f2115ecc9cdc80807c209d10cb5f94ee2eb327ae3bcb15",
+      "archiveSha256": "37b5b43f6f2ac38c36a1844ddac012cbd9ec0a0fda9aef77621b6f23160bc1af",
+      "bytes": 6367
+    },
+    ".artifacts/input-quality/e35/diagnostic-baseline.jsonl": {
+      "archive": "benchmarks/results/e35-evidence/5645301500dc31c92f9b.gz",
+      "sha256": "ccbcd86fceda17ce09163b500d682c2ccf094fb95fc0a43a089d944fa734b7c5",
+      "archiveSha256": "0039da25ab08ae126c1d5a0e74b598e433a08bfd867d844e970857cc74ab8622",
+      "bytes": 25770
+    },
+    ".artifacts/input-quality/e35/diagnostic-baseline.log": {
+      "archive": "benchmarks/results/e35-evidence/3025fe651e82e8b8701e.gz",
+      "sha256": "20adb79d6d0ed3df91e86a155c9128a519e3c04ea33a5b161b1f73a2f414a6f6",
+      "archiveSha256": "9918f4f41eb1da62ed5fb5b1f676534bef96d42970ac25f447fac9b8a6325bb3",
+      "bytes": 93
+    },
+    ".artifacts/input-quality/e35/diagnostic-comparison.json": {
+      "archive": "benchmarks/results/e35-evidence/e4dfc334deba8205de89.gz",
+      "sha256": "896640a1a8995fdf11924ce5d08e595fc9b637aec769200f8aab4525b1864ed4",
+      "archiveSha256": "93691b15107a11269925cef71369165e92898ee8102197e895b299aaa71ad129",
+      "bytes": 2797
+    },
+    ".artifacts/input-quality/e35/diagnostic-fourgram.jsonl": {
+      "archive": "benchmarks/results/e35-evidence/f77f4017e34289e17a64.gz",
+      "sha256": "81b997b5b7be1115157226c4df5ee8ceac76c240d158ba90ad89aba3de054ac0",
+      "archiveSha256": "21c1ebc5ee226cc2663ff8eb7ea436720c70bc4e29538d6b00840d7271f013a1",
+      "bytes": 25826
+    },
+    ".artifacts/input-quality/e35/diagnostic-fourgram.log": {
+      "archive": "benchmarks/results/e35-evidence/cfc0ddc6a1a438f2763d.gz",
+      "sha256": "9a0aeaf3f44f10b0ca33b1d26423fa580084eaef7de4cfe1b671451b72d3eb02",
+      "archiveSha256": "28f17e7d9ddf98987913166e3b4062f2ec2e08b370497a9b451438ed62d0d2e0",
+      "bytes": 93
+    },
+    ".artifacts/input-quality/e35/homophone-model-diagnostic.json": {
+      "archive": "benchmarks/results/e35-evidence/52cccd92a31d6de75da8.gz",
+      "sha256": "fc92a6b0e8ca6cafb0738494ad445c797d933789b8c25258dd0e7c09b0bb6b61",
+      "archiveSha256": "4c7242af9c4d2131e9c8848c5215f36338d2eab6d1d9af35b41d96eae41f9723",
+      "bytes": 573
+    },
+    ".artifacts/input-quality/e35/interaction-compile.log": {
+      "archive": "benchmarks/results/e35-evidence/e266e96eb0ed495eb2d1.gz",
+      "sha256": "191b24a90bc95ff4f64d84325c4806b8f96236b9d1b96c66535752c47df94e93",
+      "archiveSha256": "81acd65c516540f176dd337fd31047a91a7869a40ac13c8d467429d9669bcd71",
+      "bytes": 174
+    },
+    ".artifacts/input-quality/e35/interaction.jsonl": {
+      "archive": "benchmarks/results/e35-evidence/9136fe6635bfa950839d.gz",
+      "sha256": "3dc68d50fcefdefde5c3cdba956f8b0e9d00cc1460f6df00607b02f36b0f3a66",
+      "archiveSha256": "d4c63f32e37cf733983433bcb2c339d17e8f955c9a4ff30a930fc68079d0e4e0",
+      "bytes": 267633
+    },
+    ".artifacts/input-quality/e35/interaction.log": {
+      "archive": "benchmarks/results/e35-evidence/9a4dd63c2eb84ffe05e0.gz",
+      "sha256": "53f6628832f077a828ad48fc3040f0bce7a3fb57f53d39b1c40e1c6b0c180350",
+      "archiveSha256": "aadeb6aea30c2add6791c8b8b6f9771172b448f661fd904ddb1182f7a3bac991",
+      "bytes": 65
+    },
+    ".artifacts/input-quality/e35/pre-run-lock.json": {
+      "archive": "benchmarks/results/e35-evidence/f7af83d64ad4bceaceb2.gz",
+      "sha256": "1760e66202410225bd4094817ba8649f41b39fd01f74a5f41f4d78bb523d199a",
+      "archiveSha256": "35b96e5ab94ec1a0d03338a878aed143a73ae4d9d2c0095cba35fd3104818fc3",
+      "bytes": 25372
+    },
+    ".artifacts/input-quality/e35/run_android.py": {
+      "archive": "benchmarks/results/e35-evidence/a7129ff48c139e269e83.gz",
+      "sha256": "92b0b625d7bd701d3a4cc8256e9d2a40c8ed10a93e58b61fca328bbe6f410f3b",
+      "archiveSha256": "bdcc54f4a76646b140cde319c0dcd4993fcf374a86b19b72789e851d873e0b63",
+      "bytes": 3205
+    },
+    ".artifacts/input-quality/e35/tatoeba-baseline.jsonl": {
+      "archive": "benchmarks/results/e35-evidence/8e1609fb8af570b72fe7.gz",
+      "sha256": "e5efe2c732328ef6fc0b2979915b95bb676545aac906a887551ae772fdea8c4f",
+      "archiveSha256": "51cc0f3beb2caffb573efbf42da6048c84e80d5d5e39a8b74bd3a46d2f1237b5",
+      "bytes": 470285
+    },
+    ".artifacts/input-quality/e35/tatoeba-baseline.log": {
+      "archive": "benchmarks/results/e35-evidence/ee0089d2a5817d295ef5.gz",
+      "sha256": "bffc4b242b034e2eda6ee4e02158900593fb0950e5996dfb359b1b6294bb42a6",
+      "archiveSha256": "9cca733911d765344ffaafb8bf98bf6fd7a7720d912ae330a7d39165f4680a07",
+      "bytes": 113
+    },
+    ".artifacts/input-quality/e35/tatoeba-comparison.json": {
+      "archive": "benchmarks/results/e35-evidence/74a4afbe8535ae5ef6cf.gz",
+      "sha256": "1f79e515b88b4bc9917545638a0b1b410f234b86e62a45c8092ebcd00630941b",
+      "archiveSha256": "54f1184a20d310efe272a8f48b9d4694e25385e6b5a3514d1ac558dbe3fc25fb",
+      "bytes": 5028
+    },
+    ".artifacts/input-quality/e35/tatoeba-fourgram.jsonl": {
+      "archive": "benchmarks/results/e35-evidence/4ea749287c4277efd6d8.gz",
+      "sha256": "649de46aa9aea573e9d35a2e8631625b121a8bf3588dcb9e6d3c3be1c879e85c",
+      "archiveSha256": "a497cd5d950c8b81a36290f15c870a0e4277c485451037d0b064b006ec70a916",
+      "bytes": 469110
+    },
+    ".artifacts/input-quality/e35/tatoeba-fourgram.log": {
+      "archive": "benchmarks/results/e35-evidence/80ea309cecaf28fa77bd.gz",
+      "sha256": "c4b1b9a0174da94128bda0ac256e44bd0a7fa5d5943edc44e9fbf5bdc3732094",
+      "archiveSha256": "c89cdab494a9597ed1e46bf60761e1631fdb4a8eb2e8390b54bff5b6e6d9f94b",
+      "bytes": 113
+    },
+    ".artifacts/input-quality/e35/test-aishell-baseline.jsonl": {
+      "archive": "benchmarks/results/e35-evidence/1553abf47d382e7af6e9.gz",
+      "sha256": "c9e098993f6dc1c60413759a4cc2e202c37eaf99c9cba79bcda145e8384fc099",
+      "archiveSha256": "1fd08d88f15666b4cf9810d819cc62d1eb12129d93403161ed7dc5b9d1e12216",
+      "bytes": 1120316
+    },
+    ".artifacts/input-quality/e35/test-aishell-baseline.log": {
+      "archive": "benchmarks/results/e35-evidence/70638de39d7683aab2de.gz",
+      "sha256": "29989b30169a6c9c50008d8bd70aa11c5354f88aa2266c7173d33e3459f72688",
+      "archiveSha256": "3ead6c4cb6103a12fb54cfffdb943589c9ed2ce45c3398448823ad66034f0a9f",
+      "bytes": 139
+    },
+    ".artifacts/input-quality/e35/test-aishell-comparison.json": {
+      "archive": "benchmarks/results/e35-evidence/6006eca0061316f06077.gz",
+      "sha256": "617a6633c12ff7e0edb9a4daa64cce6458ac387b85c4e57cf16beee17e970c77",
+      "archiveSha256": "8285388a6f8c46bc7be2118829214cd34fcebfc8e09a74dc989779f422cd330e",
+      "bytes": 9901
+    },
+    ".artifacts/input-quality/e35/test-aishell-fourgram.jsonl": {
+      "archive": "benchmarks/results/e35-evidence/06f4a5db26f3dc72ec8b.gz",
+      "sha256": "e24c98da3da7bc965304080752e703aa0283136663db559d33ff12b031c85345",
+      "archiveSha256": "819b972bd2a740e41212014b7110a9079f023947644c12a1366789fa6682d2b2",
+      "bytes": 1114044
+    },
+    ".artifacts/input-quality/e35/test-aishell-fourgram.log": {
+      "archive": "benchmarks/results/e35-evidence/858387021b5ae0297fe1.gz",
+      "sha256": "b7c5c52450881b22de65305cb1b70e0c79172468035df920cd2255843a47428a",
+      "archiveSha256": "2a7e01d22793d7c045293ba0e2fd95357ed5a67c0b9df2d965ce21e334cf2dbe",
+      "bytes": 139
+    },
+    ".artifacts/input-quality/e35/test-start.json": {
+      "archive": "benchmarks/results/e35-evidence/b1b7419617a7e9677628.gz",
+      "sha256": "9d41281e1a5c48bf8449736c139fd5d8c4b0b32a6826b4860913bcaaa501ddb0",
+      "archiveSha256": "dad1ab5b42b07ec11e69a6bbafb7463c93f56644df99744bc4fe86cc6b26ed41",
+      "bytes": 153
+    },
+    ".artifacts/input-quality/e35/test-tatoeba-baseline.jsonl": {
+      "archive": "benchmarks/results/e35-evidence/0d5033303ef0d3341564.gz",
+      "sha256": "032a162a3b6d69e45440c79c345357af4cfcb8d6604af3312cfabdf20872b8f2",
+      "archiveSha256": "3aaba43713f6b2c1892b087f7a32ff5ad861207f4cab9afb11d8207b36061a9a",
+      "bytes": 931532
+    },
+    ".artifacts/input-quality/e35/test-tatoeba-baseline.log": {
+      "archive": "benchmarks/results/e35-evidence/5cc6155e3dbb66586532.gz",
+      "sha256": "33a06f00eb430d457b9e154da2a2eeb593aca3f97b4a2b625502a6ddb07e5a2d",
+      "archiveSha256": "6449859efbea56c64efb48aa265911046e80e17c1f2b91d5446aa8046bb8e704",
+      "bytes": 139
+    },
+    ".artifacts/input-quality/e35/test-tatoeba-comparison.json": {
+      "archive": "benchmarks/results/e35-evidence/dbef07872e07f9eaaddb.gz",
+      "sha256": "e38b659c16ea3b684ac49bcd38aebb70af102aaf88d4662104ac5c38556bfbd2",
+      "archiveSha256": "64e36532349cea6b4bff09b05b172ab949de04bfaea509c5b7b9350a3ab2620a",
+      "bytes": 9018
+    },
+    ".artifacts/input-quality/e35/test-tatoeba-fourgram.jsonl": {
+      "archive": "benchmarks/results/e35-evidence/d34ef5bbd53b4de12f6b.gz",
+      "sha256": "d696ae7216e823ededddf09410ab5a656081c7478d5e9ee81ad9a57221f33165",
+      "archiveSha256": "85c4ff035ef119ce1dccde5df138fd056fdd8a5cecae1a6ac8d4304ab9e495b8",
+      "bytes": 933184
+    },
+    ".artifacts/input-quality/e35/test-tatoeba-fourgram.log": {
+      "archive": "benchmarks/results/e35-evidence/a6b66ee3d1901a04b6d0.gz",
+      "sha256": "9174154378921d888f271cacbfae969f7f7edbf53ff4d24d85200f2d18d82b19",
+      "archiveSha256": "1b348d3a8d7ef23f64892ff56aa13885cf96458d12d3f37eb8d21e25c2c2b59e",
+      "bytes": 139
+    },
+    "benchmarks/corpus/e35-fourgram-reassessment-policy.json": {
+      "archive": "benchmarks/results/e35-evidence/fd59ad67baf27c9c80c2.gz",
+      "sha256": "bbe309c3c97cc739516832eee92b79612de4a607dde8e426939b297eee981285",
+      "archiveSha256": "a4b9503ca269f91bb15b59d76b2dfdcde3b3f0f7b4cd3da882b47ab1048950ff",
+      "bytes": 2382
+    },
+    "docs/development/input-quality-program-v2.md": {
+      "archive": "benchmarks/results/e35-evidence/de8546f0b6d172d6a066.gz",
+      "sha256": "04c7c4b744ae99c1f8a91db548275707f11b1f7faf32c1ee75f53339f36067be",
+      "archiveSha256": "8ddd114f530ecdb2bf8d989f665ae794f604f4bf15f3644eaf4e5af2edb46217",
+      "bytes": 52592
+    },
+    "docs/research/input-quality-stage-e35-2026-10-04.md": {
+      "archive": "benchmarks/results/e35-evidence/857558015cec50a8d9ef.gz",
+      "sha256": "46b6dce07cfaf9541cfd66e30ffbcbc204c2aca6201f09bb62f536ae4261e465",
+      "archiveSha256": "7e9a93ceb5ccc0afe0ebe3f4f63383f8a0dd2d07ef80c280c7b229a904cfe9bf",
+      "bytes": 5709
+    },
+    "ime-service/src/androidTest/kotlin/io/github/ethanbird/senseime/service/FourgramModelDeviceTest.kt": {
+      "archive": "benchmarks/results/e35-evidence/a4d0f6d00f22ce8d74dc.gz",
+      "sha256": "6bcc63a6ea0b737c7a0fa2783ab6f46d97fcba6716fc594dca77b5d3d8d83745",
+      "archiveSha256": "2decd0b8b940541722b08dcdf9a34f4e4921c2a76d77c7905f88386ae5c4f1d4",
+      "bytes": 4779
+    },
+    "tools/evaluate_cross_domain.py": {
+      "archive": "benchmarks/results/e35-evidence/307d6972470bf6d5c911.gz",
+      "sha256": "5fcfc61ace1bedeffa68e9ca77fd32806108a2a33123dbf89be7b1b3bf89f253",
+      "archiveSha256": "a0d6cbd8e76a8fee6c546e55701c44dda8a9b8bcf930372b69041d16c34d9799",
+      "bytes": 5853
+    },
+    "tools/VerifyFourgramInteraction.java": {
+      "archive": "benchmarks/results/e35-evidence/1030fa9001588b480901.gz",
+      "sha256": "f64d4eb201f7703f9974397eb32325fe0526c50ed17cf9f4264a1049deb9c41b",
+      "archiveSha256": "7f356e5e98743a38f8646eab097e3a336b42ae816a0845d0ca6638a215100bf7",
+      "bytes": 7207
+    }
+  }
+}

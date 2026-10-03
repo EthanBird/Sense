@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "stage": "E35",
+  "sourceBaseCommit": "7d20a2839e1bd5268f21b2b865631f91c772c528",
+  "scope": "Reassess the frozen E18 model after E19-E34 changes to completion evidence, correction protection and search reuse; all workloads are known regressions, not new blind data.",
+  "trial": "balanced-fourgram only; no training, smoothing, weight or beam changes",
+  "baselineSha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+  "extensionSha256": "75371c3861341bee9a0b0bb488ac1e95295aec317a8de1cc48360be13f818bb4",
+  "hypotheses": [
+    "H1: completion evidence fixes remove E18 wox long-completion takeover without changing the model.",
+    "H2: the previously frozen extension retains cross-domain nonregression under current production search.",
+    "H3: longer observed context can resolve known natural homophones such as the E28 lei diagnosis; diagnostic examples are not an accuracy gate.",
+    "H4: even if interaction improves, incremental fourgram query/load cost can still block default adoption and must be measured separately."
+  ],
+  "interaction": {
+    "runner": "tools/VerifyFourgramInteraction.java",
+    "expectedStates": 1468,
+    "expectedShortStates": 1188,
+    "expectedRepeatedCompleteResults": 2936,
+    "personalAssertions": 12,
+    "gate": "Every 1-3 letter state retains baseline first text; personal learning/reload assertions and complete-result repetition pass. Preserve every changed top five."
+  },
+  "development": {
+    "aishell": "benchmarks/corpus/p2c-aishell-v7/dev.tsv",
+    "tatoeba": "benchmarks/corpus/p2c-supervised-v6/dev.tsv",
+    "gate": "Per-domain top1/top5/recall255 nondecreasing and character errors nonincreasing; combined top1 strictly increases. No post-result parameter search."
+  },
+  "knownTestRegressions": {
+    "aishell": "benchmarks/corpus/p2c-aishell-v7/test.tsv",
+    "tatoeba": "benchmarks/corpus/p2c-daily-mixture-v8/test.tsv",
+    "gate": "Run only if development and short-input gates pass, using the same frozen model; same per-domain nonregression and combined strict top1 increase. These were opened in E18 and are not independent evidence now."
+  },
+  "deployment": "No factory or asset change in this reassessment. Default adoption additionally needs current Android end-to-end latency/lifecycle, model load/memory and redistribution evidence. Keep rc.4 unchanged."
+}

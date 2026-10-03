@@ -16,7 +16,9 @@ class FourgramModelDeviceTest {
     @Test fun frozenExtensionCostAndRepeatedResultsOnArt() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val directory = requireNotNull(context.getExternalFilesDir(null))
-        val output = File(directory, "e18-fourgram-art.json")
+        val runName = InstrumentationRegistry.getArguments().getString("fourgramRunName") ?: "e18"
+        require(runName.matches(Regex("[a-z][a-z0-9-]{0,47}"))) { "Invalid run name" }
+        val output = File(directory, "$runName-fourgram-art.json")
         check(!output.exists()) { "Keep previous measurement" }
         val baseBytes = context.assets.open("pinyin_character_lm.scng").use { it.readBytes() }
         val extension = File(directory, "e18-balanced-fourgram.scq4").readBytes()

@@ -25,6 +25,7 @@ class VerifyFourgramInteraction {
         return rows.stream().filter(c->c.getText().equals(word)).findFirst().orElse(null);
     }
     public static void main(String[] args) throws Exception {
+        check(args.length==3,"Usage: <root> <frozen extension> <new jsonl>");
         Path root=Path.of(args[0]),assets=root.resolve("ime-service/src/main/assets"),out=Path.of(args[2]);
         check(!Files.exists(out),"Preserve evidence");
         var baseBytes=Files.readAllBytes(assets.resolve("pinyin_character_lm.scng"));
@@ -74,10 +75,10 @@ class VerifyFourgramInteraction {
                 var candidate=find(d.decode(row[0],255),row[1]);
                 // A composed explicit selection can teach a previously absent name.
                 if(candidate==null)candidate=new Candidate(row[1],0f,row[0],CandidateMatchKind.USER_FULL,row[2],null,null);
-                var learned=d.learn(row[0],candidate,new UserLearningEvidence(UserSelectionKind.EXPLICIT_SELECTION,20));
+                var learned=d.learn(row[0],candidate,new UserLearningEvidence(UserSelectionKind.EXPLICIT_SELECTION,20,""));
                 check(learned!=null,"Learning lost");
                 for(int n=0;n<2;n++) {var first=d.decode(row[0],255).get(0);check(first.getText().equals(row[1]),"Personal word disappeared");
-                    d.learn(row[0],first,new UserLearningEvidence(UserSelectionKind.DEFAULT_ACCEPT,0));personal++;}
+                    d.learn(row[0],first,new UserLearningEvidence(UserSelectionKind.DEFAULT_ACCEPT,0,""));personal++;}
                 var reloaded=store(memory.lookup(row[0],255));
                 var restored=new AdaptivePinyinDecoder(base.withLanguageModel(models[m],.5f,-4f),reloaded,segmenter,english);
                 check(restored.decode(row[0],255).get(0).getText().equals(row[1]),"Reload lost preference");personal++;
