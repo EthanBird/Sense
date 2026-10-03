@@ -576,6 +576,7 @@ class PinyinDecoder private constructor(
         userWords: UserPinyinLattice = UserPinyinLattice.EMPTY,
         language: PinyinLanguageScorer? = null,
         lexicalCache: QueryLexicalCache? = null,
+        selectionCache: QuerySelectionCache<LanguageOption>? = null,
     ): List<CompositionPath> {
         val beams = arrayOfNulls<MutableList<CompositionPath>>(query.length + 1)
         val syllableIndexByOffset = spellingSyllableEnds?.let { ends ->
@@ -640,12 +641,15 @@ class PinyinDecoder private constructor(
                     // Paths sharing the same LM state share one edge selection. Evaluate
                     // once before sorting; comparator calls must not query the model.
                     val selected = if (language == null) null else languageSelections!!.getOrPut(path.languageState) {
-                        stableTopK(edgeOptions.map { edge ->
-                            val option = edge.candidate
-                            val step = language.extend(path.languageState, option.text)
-                            LanguageOption(edge, step, option.score + step.score +
-                                if (start == 0 && previousCodePoint != NO_CODE_POINT) contextScore(previousCodePoint, option) * language.normalizer else 0f)
-                        }, segmentCandidatesPerKey, languageOptionOrder)
+                        fun select(): List<LanguageOption> = stableTopK(edgeOptions.map { edge ->
+                                val option = edge.candidate
+                                val step = language.extend(path.languageState, option.text)
+                                LanguageOption(edge, step, option.score + step.score +
+                                    if (start == 0 && previousCodePoint != NO_CODE_POINT) contextScore(previousCodePoint, option) * language.normalizer else 0f)
+                            }, segmentCandidatesPerKey, languageOptionOrder)
+                        if (selectionCache != null && lexicalCache != null && learned.isEmpty() && !crossesJoint) {
+                            selectionCache.getOrCompute(options, path.languageState, segmentCandidatesPerKey, context, ::select)
+                        } else select()
                     }
                     fun append(edge: CompositionOption, step: PinyinLanguageScorer.Step?) {
                         val option = edge.candidate
@@ -1139,6 +1143,9 @@ class PinyinDecoder private constructor(
                 mergePersonalWordOptions(lexical, emptyList(), MAX_DECODE_CANDIDATES, context)
             })
         } else null
+        // Same immutable lexical list + reaching state has the same selection across
+        // correction spellings. Scout/full widths remain distinct; budgets are unchanged.
+        val selectionCache = if (lexicalCache == null) null else QuerySelectionCache<LanguageOption>()
         paths.forEach { path ->
             DecodeWorkScope.checkpoint()
             val exact = findExact(path.canonical)
@@ -1169,6 +1176,7 @@ class PinyinDecoder private constructor(
                         userWords = personalWords(path.canonical), language = language,
                         previousCodePoint = previousCodePoint,
                         lexicalCache = lexicalCache,
+                        selectionCache = selectionCache,
                     ).firstOrNull()?.let { unigramLogMass + it.searchScore / language.normalizer }
                 }
                 estimate?.let {
@@ -1235,6 +1243,7 @@ class PinyinDecoder private constructor(
                     language = language,
                     previousCodePoint = if (language == null) NO_CODE_POINT else previousCodePoint,
                     lexicalCache = lexicalCache,
+                    selectionCache = selectionCache,
                 ).asSequence()
                     .filter { sentence ->
                         sentence.initials.length == probe.path.syllableCount
