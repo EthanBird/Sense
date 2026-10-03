@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "stage": "E28",
+  "sourceCommit": "39c2f423a65fc1e53bdce5cdacf70de0a6d36b14",
+  "decision": "retain-default-model-development-top5-gate-failed",
+  "domains": {
+    "tatoeba": {
+      "before": {
+        "states": 128,
+        "top1": 83,
+        "top5": 113,
+        "top10": 120,
+        "recall255": 121,
+        "characterErrors": 70,
+        "characters": 941
+      },
+      "after": {
+        "states": 128,
+        "top1": 85,
+        "top5": 111,
+        "top10": 119,
+        "recall255": 121,
+        "characterErrors": 68,
+        "characters": 941
+      },
+      "nonregressionPassed": false,
+      "firstGains": 2,
+      "firstLosses": 0,
+      "rankLosses": 10
+    },
+    "aishell": {
+      "before": {
+        "states": 128,
+        "top1": 65,
+        "top5": 97,
+        "top10": 105,
+        "recall255": 118,
+        "characterErrors": 142,
+        "characters": 1087
+      },
+      "after": {
+        "states": 128,
+        "top1": 65,
+        "top5": 101,
+        "top10": 105,
+        "recall255": 120,
+        "characterErrors": 138,
+        "characters": 1087
+      },
+      "nonregressionPassed": true,
+      "firstGains": 3,
+      "firstLosses": 3,
+      "rankLosses": 10
+    },
+    "diagnostic": {
+      "before": {
+        "states": 6,
+        "top1": 4,
+        "top5": 6,
+        "top10": 6,
+        "recall255": 6,
+        "characterErrors": 2,
+        "characters": 21
+      },
+      "after": {
+        "states": 6,
+        "top1": 4,
+        "top5": 6,
+        "top10": 6,
+        "recall255": 6,
+        "characterErrors": 2,
+        "characters": 21
+      },
+      "nonregressionPassed": true,
+      "firstGains": 0,
+      "firstLosses": 0,
+      "rankLosses": 0
+    }
+  },
+  "training": {
+    "schemaVersion": 1,
+    "scriptSha256": "b2a4204ee55fdb66eb4a7bb1426c124152228939cc8cfe5b1a7d77d3da264b37",
+    "modelSha256": "5d28ec4e96944c3013ee21f1e6891e2be2dece052ae23bd9227c0eb844c04e4f",
+    "modelBytes": 3090930,
+    "baselineSha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+    "corpusManifestSha256": "a15434cad002c282b2cc12d3146abc3bbe0114e6e9c450fc504bdaffa7a4c988",
+    "train": {
+      "fileName": "train.jsonl",
+      "sha256": "e710abf1ccdfcffe416bed9e99304cb898d71ff4c1bc5f702ab11e54eff4b0de",
+      "records": 76736,
+      "segments": 94195,
+      "characters": 776701,
+      "domains": {
+        "conversational-heuristic": 29292,
+        "general-heuristic": 47185,
+        "technical-heuristic": 259
+      }
+    },
+    "attribution": {
+      "fileName": "attribution.jsonl",
+      "sha256": "bdaedcfb006619e9f852f4a20cae9a50877be809d0431e795ba919718db03d93",
+      "rows": 85962
+    },
+    "source": {
+      "id": "tatoeba-cmn-detailed-20260926",
+      "fileName": "cmn_sentences_detailed.tsv.bz2",
+      "format": "tatoeba-detailed-bz2",
+      "url": "https://downloads.tatoeba.org/exports/per_language/cmn/cmn_sentences_detailed.tsv.bz2",
+      "sha256": "8b689948972ff7676dd3fb28bef092e893959e6c561dbf06c8434e3d668adfea",
+      "license": "CC-BY-2.0-FR",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0/fr/",
+      "licenseEvidence": "https://tatoeba.org/ar/downloads",
+      "attributionPolicy": "Preserve sentence id, contributor, https://tatoeba.org/en/sentences/show/<id>, license and modification metadata per selected sentence; preserve the contributor index with any future model distribution"
+    },
+    "algorithm": "Train-only continuation-count character trigram, in the existing SCNG/1 format.\n\nModified Kneser-Ney style: estimated D1/D2/D3+, raw BOS-context counts,\ncontinuation lower orders. The explicit additive unigram floor and pruning\nare Sense choices; this is not a reproduction of KenLM's scalable estimator.",
+    "estimates": {
+      "bigram": {
+        "countOfCounts": {
+          "1": 83200,
+          "2": 17670,
+          "3": 7665,
+          "4": 4234
+        },
+        "discounts": [
+          0.7018727855576177,
+          1.0866120710867335,
+          1.4491953690536448
+        ],
+        "fallbackBuckets": []
+      },
+      "trigram": {
+        "countOfCounts": {
+          "1": 253106,
+          "2": 41519,
+          "3": 15875,
+          "4": 8207
+        },
+        "discounts": [
+          0.7529689656813747,
+          1.136295503490559,
+          1.44293132564484
+        ],
+        "fallbackBuckets": []
+      }
+    },
+    "vocabularyUnchanged": true,
+    "counts": {
+      "vocabulary": 3352,
+      "bigrams": 127109,
+      "trigrams": 89418
+    },
+    "developmentEvaluated": false,
+    "testEvaluated": false,
+    "productionChanged": false
+  },
+  "changesAfterTraining": {
+    "tools/test_train_mkn_character_lm.py": {
+      "before": "44387e4bb8810f6d027db16eea54f4e7dfbedd2ae2fbe6d99166b94043347365",
+      "after": "c74a27ad3e179994a78b0c60f602660dcb07dc5e2e7fd2ad8337a57f21dc46c6",
+      "reason": "Added sixth CLI isolation test after training; fitter and all model/data/decoder inputs unchanged."
+    }
+  },
+  "developmentGatePassed": false,
+  "testCandidatesEvaluated": false,
+  "productionChanged": false,
+  "androidRemeasured": false,
+  "stableReleaseReady": false,
+  "goalComplete": false,
+  "python": {
+    "run": 436,
+    "passed": 435,
+    "skipped": 1
+  },
+  "archivedFiles": 30,
+  "evidenceManifestSha256": "2eaa2ff93e1f175f0862a67b63975e9b8867a0bc839afc464ff5e25598d6f900"
+}

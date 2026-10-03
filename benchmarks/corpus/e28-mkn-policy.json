@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "sense-character-mkn-v1",
+  "trialCount": 1,
+  "baselineSha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+  "training": "Only existing attributed lm-corpus-v1/train.jsonl; no new corpus or held-out references",
+  "algorithm": "Interpolated modified Kneser-Ney style character trigram: raw highest-order counts; distinct-predecessor bigram counts except raw BOS contexts; distinct-predecessor unigram counts with existing additive 0.1 floor. Per-order discounts estimated from full adjusted count-of-counts before pruning. Sparse/invalid estimates use 0.75. Pruned direct mass backs off exactly.",
+  "configuration": {"minCharCount": 2, "minBigramCount": 1, "minTrigramCount": 2, "unigramFloor": 0.1, "discountFallback": 0.75},
+  "scope": "A character-model smoothing experiment, not the KenLM scalable estimator, not a copied binary, and not yet a production change",
+  "invariants": ["Same vocabulary", "SCNG/1 format and <=16 MiB budget", "No runtime scoring/search/budget changes", "No test-based phrase/character exceptions", "No discount or cutoff sweep"],
+  "runtime": {"lmWeight": 0.5, "oovFeature": -4, "correctionBoost": 12, "limit": 255},
+  "development": {
+    "tatoeba": "benchmarks/corpus/p2c-supervised-v6/dev.tsv",
+    "aishell": "benchmarks/corpus/p2c-aishell-v7/dev.tsv",
+    "gate": "Each domain top1/top5/recall255 nondecreasing and top1 character errors nonincreasing; combined top1 strictly higher. Keep every regression. Known development data, not new blind evaluation."
+  },
+  "test": "Do not open additional held-out candidate results unless development passes. Any previously viewed test is labeled known regression, not new evidence.",
+  "deployment": "No factory/asset change during this experiment. Offline development success alone does not authorize promotion: independent quality, progressive short-input, personalization and Android lifecycle/cost remain required.",
+  "references": ["https://aclanthology.org/P13-2121/", "https://kheafield.com/code/kenlm/estimation/"]
+}

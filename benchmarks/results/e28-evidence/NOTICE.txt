@@ -1,0 +1,16 @@
+E28 experimental character model and source-derived evidence
+===========================================================
+Data/model license: CC BY 2.0 France
+https://creativecommons.org/licenses/by/2.0/fr/
+Source: Tatoeba Mandarin export, 2026-09-26, Tatoeba contributors.
+https://tatoeba.org/en/downloads
+Changes: Sense simplified-character normalization/filtering and train-only
+MKN-style character trigram estimation; experimental, not enabled in the APK.
+
+Full training-source contributor and sentence URL mapping is preserved at:
+ime-service/src/main/assets/pinyin_character_lm_attribution.tsv
+Contributor list and original model/data notice:
+ime-service/src/main/assets/PINYIN-LM-NOTICE.txt
+Rebuild input hashes and source snapshot are recorded in the archived training
+report and the existing benchmarks/corpus provenance. See the manifest for
+the .scng archive and all source/result hashes. No change to Sense code license.
