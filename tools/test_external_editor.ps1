@@ -12,6 +12,7 @@ param(
     [switch]$Mixed,
     [switch]$Completion,
     [switch]$BoundedCompletion,
+    [switch]$InjectionCadence,
     [switch]$Context
 )
 $ErrorActionPreference = "Stop"
@@ -28,8 +29,8 @@ function Invoke-Adb([string[]]$Arguments) {
     if ($LASTEXITCODE -ne 0) { throw "adb failed: $value" }
     return $value
 }
-if ((@($ColdStart, $Learning, $Correction, $Association, $Boundary, $Mixed, $Completion, $BoundedCompletion, $Context) | Where-Object { $_ }).Count -gt 1) { throw "Select only one specialized scenario group." }
-if ($ColdStart -or $Learning -or $Correction -or $Association -or $Boundary -or $Mixed -or $Completion -or $BoundedCompletion -or $Context) {
+if ((@($ColdStart, $Learning, $Correction, $Association, $Boundary, $Mixed, $Completion, $BoundedCompletion, $InjectionCadence, $Context) | Where-Object { $_ }).Count -gt 1) { throw "Select only one specialized scenario group." }
+if ($ColdStart -or $Learning -or $Correction -or $Association -or $Boundary -or $Mixed -or $Completion -or $BoundedCompletion -or $InjectionCadence -or $Context) {
     $avd = ((Invoke-Adb @("emu", "avd", "name"))[0]).Trim()
     if ($avd -ne "sense-input-quality") { throw "Lifecycle/learning fixtures target only the dedicated sense-input-quality AVD's debug IME." }
 }
@@ -115,6 +116,16 @@ try {
         $class = "io.github.ethanbird.senseime.inputqualityfixture.ExternalEditorContextTest"
         $testArgs += @("-e", "noLearning", "true")
         $expectedTests = 8
+    }
+    if ($InjectionCadence) {
+        & (Join-Path $PSScriptRoot 'prepare_touch_injector.ps1') -Serial $Serial | Out-Host
+        if ($LASTEXITCODE -ne 0) { throw 'Shell touch fixture preparation failed.' }
+        $helperSha = (Get-FileHash (Join-Path $root 'build/input-quality-touch/classes.dex') -Algorithm SHA256).Hash.ToLowerInvariant()
+        $metadata.touchInjectorSha256 = $helperSha
+        $metadata.touchInjectorSourceSha256 = (Get-FileHash (Join-Path $PSScriptRoot 'android-fixture/TouchBurst.java') -Algorithm SHA256).Hash.ToLowerInvariant()
+        $class = "io.github.ethanbird.senseime.inputqualityfixture.ExternalEditorInjectionCadenceTest"
+        $testArgs += @("-e", "noLearning", "true", "-e", "touchInjectorSha256", $helperSha)
+        $expectedTests = 1
     }
     if ($ColdStart) {
         $testArgs += @("-e", "coldStart", "true", "-e", "noLearning", "true")

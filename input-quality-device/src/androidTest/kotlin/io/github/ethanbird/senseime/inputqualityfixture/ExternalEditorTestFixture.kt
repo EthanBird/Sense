@@ -144,6 +144,11 @@ abstract class ExternalEditorTestFixture {
     // Known 26-key layout geometry, measured against the actual IME window (not screen constants).
     // This fixture deliberately avoids adding a privileged test bridge to the shipping IME.
     protected fun key(char: Char, synchronous: Boolean = true, waitForAnimations: Boolean = true) {
+        val (x, y) = keyLocation(char)
+        tap(x, y, synchronous, waitForAnimations)
+    }
+
+    protected fun keyLocation(char: Char): Pair<Float, Float> {
         val box = typingBounds
         val fontScale = activity.resources.configuration.fontScale.coerceAtLeast(1f)
         val top = dp(45f * fontScale + 7f)
@@ -168,7 +173,7 @@ abstract class ExternalEditorTestFixture {
             char == ' ' || char == '\n' -> rowPoint(3, listOf(.9f, 1.05f, .8f, 2.7f, .8f, 1f, 1.2f), if (char == ' ') 3 else 6)
             else -> error("Unsupported fixture key $char")
         }
-        tap(box.left + point.first, box.top + point.second, synchronous, waitForAnimations)
+        return (box.left + point.first) to (box.top + point.second)
     }
 
     // Diagnostic test API only. The public two-argument overload always waits for
