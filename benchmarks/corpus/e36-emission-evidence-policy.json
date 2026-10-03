@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "stage": "E36",
+  "sourceBaseCommit": "91dee1f769d02d7cf5bbc9172eb0bfb12eea1278",
+  "trial": "One candidate: remove only the per-known-character lower feature floor of -6 in the trigram and fourgram scorer. Preserve insertion prior +6, upper guard, finite-value guard, OOV -4, LM .5, dictionary weights, personal-word backoff, correction calibration and search budgets.",
+  "hypotheses": [
+    "Clipping unequal rare emissions can collapse log odds and prevent common backoff offsets from cancelling; a synthetic score-level regression must fail before the change and pass afterward.",
+    "Retaining low-probability evidence may reduce nonsensical homophone combinations; it may also hurt valid rare words, so actual candidate regressions decide adoption.",
+    "User-new-word backoff, OOV handling, completion insertion-prior removal and no-LM paths must retain their existing protection."
+  ],
+  "development": {
+    "aishell": "benchmarks/corpus/p2c-aishell-v7/dev.tsv",
+    "tatoeba": "benchmarks/corpus/p2c-supervised-v6/dev.tsv",
+    "gate": "Each domain top1/top5/recall255 nondecreasing and character errors nonincreasing; combined top1 strictly increases. These are known regressions, not new blind accuracy."
+  },
+  "stopRule": "If development fails, retain every output and the candidate patch, restore the original scorer, and do not sweep new floors/weights or open further accuracy data for this candidate.",
+  "laterGates": "Only after development pass: whole known-test and typo regression, short/progressive/personal controls, service/UI tests and one fixed Android timing comparison. No production release before those gates.",
+  "diagnosticOnly": "The known E28 lei examples are observed but not a separate promotion gate; no word-specific scoring.",
+  "release": "Keep published rc.4 unchanged."
+}

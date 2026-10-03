@@ -1,0 +1,481 @@
+{
+  "schemaVersion": 1,
+  "stage": "E36",
+  "sourceBaseCommit": "91dee1f769d02d7cf5bbc9172eb0bfb12eea1278",
+  "decision": "reject-unclipped-emissions-restore-original-scoring-retain-sparse-context-recall-tests",
+  "developmentGatePassed": false,
+  "domains": {
+    "aishell": {
+      "before": {
+        "states": 128,
+        "top1": 65,
+        "top5": 97,
+        "top10": 105,
+        "recall255": 118,
+        "characterErrors": 142,
+        "characters": 1087
+      },
+      "after": {
+        "states": 128,
+        "top1": 65,
+        "top5": 97,
+        "top10": 106,
+        "recall255": 120,
+        "characterErrors": 136,
+        "characters": 1087
+      },
+      "nonregressionPassed": true,
+      "firstGains": [],
+      "firstLosses": [],
+      "rankLosses": [
+        {
+          "id": "01d9133db425ebc0787ad5399651dcc527b298e79b2d89efebd5ae8706066b02",
+          "cut": 0,
+          "mode": "empty",
+          "stratum": "short",
+          "query": "buduanmanyandeshijidahan",
+          "context": "",
+          "expected": "不断蔓延的世纪大旱",
+          "beforeRank": 35,
+          "afterRank": 68,
+          "beforeTop5": [
+            "不断蔓延的实际大喊",
+            "不断满眼的实际大喊",
+            "不断蔓延的世纪大喊",
+            "不断蔓延的时机大喊",
+            "不断满眼的世纪大喊"
+          ],
+          "afterTop5": [
+            "不断蔓延的实际大喊",
+            "不断满眼的实际大喊",
+            "不断蔓延的世纪大喊",
+            "不断满眼的世纪大喊",
+            "不断蔓延的时机大喊"
+          ],
+          "beforeFirstKind": "BASE_COMPOSED",
+          "afterFirstKind": "BASE_COMPOSED"
+        },
+        {
+          "id": "01d9133db425ebc0787ad5399651dcc527b298e79b2d89efebd5ae8706066b02",
+          "cut": 4,
+          "mode": "editor",
+          "stratum": "short",
+          "query": "deshijidahan",
+          "context": "蔓延",
+          "expected": "的世纪大旱",
+          "beforeRank": 20,
+          "afterRank": 39,
+          "beforeTop5": [
+            "的实际大喊",
+            "的世纪大喊",
+            "的时机大喊",
+            "的实际大汉",
+            "的实际大汗"
+          ],
+          "afterTop5": [
+            "的实际大喊",
+            "的世纪大喊",
+            "的时机大喊",
+            "的实际大汉",
+            "的实际大汗"
+          ],
+          "beforeFirstKind": "BASE_COMPOSED",
+          "afterFirstKind": "BASE_COMPOSED"
+        },
+        {
+          "id": "03d55d2c695e011b2efece13a381dc31657c492a63cdbe261bb1a1ef159e7cfe",
+          "cut": 0,
+          "mode": "empty",
+          "stratum": "short",
+          "query": "yinweiquanjiayeshouhui",
+          "context": "",
+          "expected": "因为全家也受惠",
+          "beforeRank": 6,
+          "afterRank": 8,
+          "beforeTop5": [
+            "因为全家也收回",
+            "因为全家野兽会",
+            "因为全家也手绘",
+            "因为全家也受贿",
+            "因为全家也受会"
+          ],
+          "afterTop5": [
+            "因为全家也收回",
+            "因为全家野兽会",
+            "因为全家也手绘",
+            "因为全家也受贿",
+            "因为全家也受会"
+          ],
+          "beforeFirstKind": "BASE_COMPOSED",
+          "afterFirstKind": "BASE_COMPOSED"
+        },
+        {
+          "id": "03d55d2c695e011b2efece13a381dc31657c492a63cdbe261bb1a1ef159e7cfe",
+          "cut": 3,
+          "mode": "editor",
+          "stratum": "short",
+          "query": "jiayeshouhui",
+          "context": "为全",
+          "expected": "家也受惠",
+          "beforeRank": 15,
+          "afterRank": 23,
+          "beforeTop5": [
+            "家业收回",
+            "家也收回",
+            "家野兽会",
+            "家业手绘",
+            "价格收回"
+          ],
+          "afterTop5": [
+            "家业收回",
+            "家也收回",
+            "家野兽会",
+            "家业手绘",
+            "价格收回"
+          ],
+          "beforeFirstKind": "BASE_COMPOSED",
+          "afterFirstKind": "BASE_COMPOSED"
+        },
+        {
+          "id": "047ef9e4bcb123bc7f7c6badf069cc5fb25674976540942ce33d173cdcdea96f",
+          "cut": 0,
+          "mode": "empty",
+          "stratum": "short",
+          "query": "zaiqunianrenchuanyayunhuishang",
+          "context": "",
+          "expected": "在去年仁川亚运会上",
+          "beforeRank": 4,
+          "afterRank": 6,
+          "beforeTop5": [
+            "在去年人穿亚运会上",
+            "在去年人传亚运会上",
+            "在去年人船亚运会上",
+            "在去年仁川亚运会上",
+            "在去年人川亚运会上"
+          ],
+          "afterTop5": [
+            "在去年人穿亚运会上",
+            "在去年人传亚运会上",
+            "在去年人船亚运会上",
+            "在去年人川亚运会上",
+            "在去年人氚亚运会上"
+          ],
+          "beforeFirstKind": "BASE_COMPOSED",
+          "afterFirstKind": "BASE_COMPOSED"
+        },
+        {
+          "id": "04995368a91cf2a28121566a13bb9c68fc9e565dd8007a6a1a50b844bb87bf85",
+          "cut": 0,
+          "mode": "empty",
+          "stratum": "short",
+          "query": "tamendexuejiyuanzaiwenshan",
+          "context": "",
+          "expected": "他们的学籍远在文山",
+          "beforeRank": 2,
+          "afterRank": 5,
+          "beforeTop5": [
+            "他们的学妓院在文山",
+            "他们的学籍远在文山",
+            "他们的血迹远在文山",
+            "他们的学计院在文山",
+            "他们的学籍元在文山"
+          ],
+          "afterTop5": [
+            "他们的血迹远在文山",
+            "他们的学妓院在文山",
+            "他们的学计院在文山",
+            "他们的血迹元在文山",
+            "他们的学籍远在文山"
+          ],
+          "beforeFirstKind": "BASE_COMPOSED",
+          "afterFirstKind": "BASE_COMPOSED"
+        },
+        {
+          "id": "00b1e963fe81dc8e2770dcb990d5e238f1f073b8ee035fed9f67176a33bb4691",
+          "cut": 0,
+          "mode": "empty",
+          "stratum": "long",
+          "query": "lvyoucongyezheyiriyougangaoyunnanshigaofengxian",
+          "context": "",
+          "expected": "旅游从业者一日游港澳云南是高风险",
+          "beforeRank": 2,
+          "afterRank": 3,
+          "beforeTop5": [
+            "旅游从业者一日游刚奥运男士高风险",
+            "旅游从业者一日游港澳云南是高风险",
+            "旅游从业者一日游敢告云南是高风险",
+            "旅游从业者一日游赶稿云南是高风险",
+            "旅游从业者一日游刚奥运难事高风险"
+          ],
+          "afterTop5": [
+            "旅游从业者一日游刚奥运男士高风险",
+            "旅游从业者一日游敢告云南是高风险",
+            "旅游从业者一日游港澳云南是高风险",
+            "旅游从业者一日游刚奥运难事高风险",
+            "旅游从业者一日游赶稿云南是高风险"
+          ],
+          "beforeFirstKind": "BASE_COMPOSED",
+          "afterFirstKind": "BASE_COMPOSED"
+        },
+        {
+          "id": "00b1e963fe81dc8e2770dcb990d5e238f1f073b8ee035fed9f67176a33bb4691",
+          "cut": 8,
+          "mode": "editor",
+          "stratum": "long",
+          "query": "gangaoyunnanshigaofengxian",
+          "context": "日游",
+          "expected": "港澳云南是高风险",
+          "beforeRank": 2,
+          "afterRank": 3,
+          "beforeTop5": [
+            "刚奥运男士高风险",
+            "港澳云南是高风险",
+            "敢告云南是高风险",
+            "赶稿云南是高风险",
+            "刚奥运难事高风险"
+          ],
+          "afterTop5": [
+            "刚奥运男士高风险",
+            "敢告云南是高风险",
+            "港澳云南是高风险",
+            "刚奥运难事高风险",
+            "赶稿云南是高风险"
+          ],
+          "beforeFirstKind": "BASE_COMPOSED",
+          "afterFirstKind": "BASE_COMPOSED"
+        }
+      ]
+    },
+    "tatoeba": {
+      "before": {
+        "states": 128,
+        "top1": 83,
+        "top5": 113,
+        "top10": 120,
+        "recall255": 121,
+        "characterErrors": 70,
+        "characters": 941
+      },
+      "after": {
+        "states": 128,
+        "top1": 83,
+        "top5": 113,
+        "top10": 119,
+        "recall255": 119,
+        "characterErrors": 71,
+        "characters": 941
+      },
+      "nonregressionPassed": false,
+      "firstGains": [],
+      "firstLosses": [],
+      "rankLosses": [
+        {
+          "id": "005a0cea93e1a1452258022b029fca54ef58623dcf409fca2224b74ec3fe1d47",
+          "cut": 7,
+          "mode": "editor",
+          "stratum": "long",
+          "query": "tadegezidetoushang",
+          "context": "放在",
+          "expected": "他的鸽子的头上",
+          "beforeRank": 2,
+          "afterRank": 4,
+          "beforeTop5": [
+            "他的各自的头上",
+            "他的鸽子的头上",
+            "她的各自的头上",
+            "他的个子的头上",
+            "他的格子的头上"
+          ],
+          "afterTop5": [
+            "他的各自的头上",
+            "她的各自的头上",
+            "他的个子的头上",
+            "他的鸽子的头上",
+            "他的格子的头上"
+          ],
+          "beforeFirstKind": "BASE_COMPOSED",
+          "afterFirstKind": "BASE_COMPOSED"
+        },
+        {
+          "id": "01e2b34c46333c9574c6fdfaab7b4ab9a0ac228ec063041d0496826a39073e36",
+          "cut": 0,
+          "mode": "empty",
+          "stratum": "long",
+          "query": "qingbanidexinglifangzaizhechengshang",
+          "context": "",
+          "expected": "请把你的行李放在这秤上",
+          "beforeRank": 9,
+          "afterRank": 0,
+          "beforeTop5": [
+            "请把你的行李放在这乘上",
+            "请把你的行李放在这呈上",
+            "请把你的行李放在这盛上",
+            "请把你的行李放在这城上",
+            "请把你的行李放在这承上"
+          ],
+          "afterTop5": [
+            "请把你的行李放在这乘上",
+            "请把你的行李放在这城上",
+            "请把你的行李放在这呈上",
+            "请把你的行李放在这成上",
+            "请把你的行李放在这承上"
+          ],
+          "beforeFirstKind": "BASE_COMPOSED",
+          "afterFirstKind": "BASE_COMPOSED"
+        },
+        {
+          "id": "01e2b34c46333c9574c6fdfaab7b4ab9a0ac228ec063041d0496826a39073e36",
+          "cut": 5,
+          "mode": "editor",
+          "stratum": "long",
+          "query": "lifangzaizhechengshang",
+          "context": "的行",
+          "expected": "李放在这秤上",
+          "beforeRank": 11,
+          "afterRank": 0,
+          "beforeTop5": [
+            "李放在这乘上",
+            "李放在这呈上",
+            "李放在这盛上",
+            "李放在这城上",
+            "里放在这乘上"
+          ],
+          "afterTop5": [
+            "李放在这乘上",
+            "李放在这城上",
+            "李放在这呈上",
+            "李放在这成上",
+            "里放在这乘上"
+          ],
+          "beforeFirstKind": "BASE_COMPOSED",
+          "afterFirstKind": "BASE_COMPOSED"
+        },
+        {
+          "id": "02672cab6124aeea96e5c9da9c3c6f6bd50a76a44e8afde470c39883870dff91",
+          "cut": 6,
+          "mode": "editor",
+          "stratum": "long",
+          "query": "youwuzhisuozaochengde",
+          "context": "都是",
+          "expected": "由无知所造成的",
+          "beforeRank": 8,
+          "afterRank": 9,
+          "beforeTop5": [
+            "有无知所造成的",
+            "有物质所造成的",
+            "由物质所造成的",
+            "有无之所造成的",
+            "有误之所造成的"
+          ],
+          "afterTop5": [
+            "有物质所造成的",
+            "有无知所造成的",
+            "由物质所造成的",
+            "有无之所造成的",
+            "有误之所造成的"
+          ],
+          "beforeFirstKind": "BASE_COMPOSED",
+          "afterFirstKind": "BASE_COMPOSED"
+        },
+        {
+          "id": "05397e8cff72bf85c3adb52cc9792816453a5ea7f2ccb8496a71392cbbbdcd56",
+          "cut": 0,
+          "mode": "empty",
+          "stratum": "long",
+          "query": "tapingzhijuefaxiantazaisahuang",
+          "context": "",
+          "expected": "他凭直觉发现她在撒谎",
+          "beforeRank": 4,
+          "afterRank": 5,
+          "beforeTop5": [
+            "她凭直觉发现他在撒谎",
+            "他凭直觉发现他在撒谎",
+            "她凭直觉发现她在撒谎",
+            "他凭直觉发现她在撒谎",
+            "她凭直觉发现它在撒谎"
+          ],
+          "afterTop5": [
+            "她凭直觉发现他在撒谎",
+            "他凭直觉发现他在撒谎",
+            "她凭直觉发现她在撒谎",
+            "她凭直觉发现它在撒谎",
+            "他凭直觉发现她在撒谎"
+          ],
+          "beforeFirstKind": "BASE_COMPOSED",
+          "afterFirstKind": "BASE_COMPOSED"
+        }
+      ]
+    },
+    "diagnostic": {
+      "before": {
+        "states": 6,
+        "top1": 4,
+        "top5": 6,
+        "top10": 6,
+        "recall255": 6,
+        "characterErrors": 2,
+        "characters": 21
+      },
+      "after": {
+        "states": 6,
+        "top1": 4,
+        "top5": 6,
+        "top10": 6,
+        "recall255": 6,
+        "characterErrors": 2,
+        "characters": 21
+      },
+      "nonregressionPassed": true,
+      "firstGains": [],
+      "firstLosses": [],
+      "rankLosses": []
+    }
+  },
+  "candidateCoreTests": {
+    "tests": 408,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "restoredCoreTests": {
+    "tests": 405,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "candidateSemantics": {
+    "originalFailures": 4,
+    "tests": 5,
+    "candidatePassed": true
+  },
+  "newRecallRegression": {
+    "candidateFailures": 2,
+    "restoredFailures": 0,
+    "tests": 2
+  },
+  "restoration": {
+    "host": {
+      "tests": 405,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "baselineJarSha256": "f95024cd975d28965b508590ffe560efdbd3430e4f4a3e79c28c90bee695caa1",
+    "restoredJarSha256": "b55756c3de63faa15966b3ea528e76e5ac599ff75d609b4851508119487620e4",
+    "jarByteIdentical": false,
+    "productionSourceDifferences": [],
+    "jarEntriesByteIdentical": true,
+    "jarEntryDifferences": [],
+    "entries": 421
+  },
+  "productionSourceChanged": false,
+  "modelOrLexiconChanged": false,
+  "additionalAccuracyDataOpened": false,
+  "parametersRetuned": false,
+  "androidTestsThisStage": 0,
+  "releaseUnchanged": "v0.4.16-rc.4",
+  "releaseApkSha256": "f571badcd03361fe4b80a096553ca566ffecd117c4ad7694a22f4686ee2de528",
+  "goalComplete": false,
+  "evidenceManifestSha256": "33ee25f30131205b3167ebbd4d2dccbf8ef929e9bbaadabcc37bda2d9d45e7af",
+  "archivedFiles": 166
+}

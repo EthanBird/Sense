@@ -1,0 +1,1005 @@
+{
+  "schemaVersion": 1,
+  "dependencyManifests": {
+    "e34": "e1ee8b0cb118066607422889ddc152b5fa7033ff2103219b9884c4da08e5106e",
+    "e35": "3172d0bc9b21bfe4381fc460086eef3295b86b2ad89826fec2f8b334570a1acd"
+  },
+  "files": {
+    ".artifacts/input-quality/e36/aishell-baseline.jsonl": {
+      "archive": "benchmarks/results/e36-evidence/a8eea45a936bd6a2e550.gz",
+      "sha256": "17b8701d1ba96d8c7fe84d8e284c08b42b2b69617a5edbd0b366082d401b95ea",
+      "archiveSha256": "75b7a4a2b8e3f223f205524bdd583cb5d6dd3a581651d182355c6fac6957922c",
+      "bytes": 594764
+    },
+    ".artifacts/input-quality/e36/aishell-baseline.log": {
+      "archive": "benchmarks/results/e36-evidence/5d5ac6b71428bca74cdb.gz",
+      "sha256": "e26cb91cecdcfd926f5e56908413cbde6b4a1150a867ea607199fbc293191527",
+      "archiveSha256": "65613ebefcfbd7452b5e5216e75274a22319e6cc6b169b857c8286c71c5b8d9a",
+      "bytes": 169
+    },
+    ".artifacts/input-quality/e36/aishell-candidate.jsonl": {
+      "archive": "benchmarks/results/e36-evidence/737fe7c1c09b77031ae2.gz",
+      "sha256": "860ee22fd07f3cf737b384421aadfc82d087c4b3cdab2f0ab6f4df06aa1e7c4b",
+      "archiveSha256": "ee6f4faa89f98fb3cfd47bf752268710a52a47fdb6cbe088ced4e6f97b22f1b4",
+      "bytes": 593235
+    },
+    ".artifacts/input-quality/e36/aishell-candidate.log": {
+      "archive": "benchmarks/results/e36-evidence/8f9abc55ec2fa14c9748.gz",
+      "sha256": "27728941c2dd120a1c2a28166b25447719eb57acfeade7ae2500b85bdea1a0f9",
+      "archiveSha256": "1c9f9faee379169c29b7b54e71ef5588324324acb339672062f68a7f451ecc8c",
+      "bytes": 170
+    },
+    ".artifacts/input-quality/e36/aishell-comparison.json": {
+      "archive": "benchmarks/results/e36-evidence/6fd80b168600cdf7578a.gz",
+      "sha256": "58de2b73421642afd6d4ea222782a570c7b96e9986d61952054a973966dca261",
+      "archiveSha256": "7d2b019c2d9727a66786a79b40628acd348f6f84e65182341ea8097f965d89c3",
+      "bytes": 10550
+    },
+    ".artifacts/input-quality/e36/baseline-root/core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinLanguageScorer.kt": {
+      "archive": "benchmarks/results/e36-evidence/dfd65c647bc41ee47ce3.gz",
+      "sha256": "c4c569bcde6ff5a65e010ef159e557aad50f08ac9cf56c7af2907ddec73b3cbb",
+      "archiveSha256": "fe8be555e305f36b876aa6b7d805ff66204ae6b62f917cc6acae0eaf8347b13f",
+      "bytes": 8814
+    },
+    ".artifacts/input-quality/e36/baseline.jar": {
+      "archive": "benchmarks/results/e36-evidence/ad67a4fd414b0a2e928f.gz",
+      "sha256": "f95024cd975d28965b508590ffe560efdbd3430e4f4a3e79c28c90bee695caa1",
+      "archiveSha256": "2cb22bba63094f022d307a5afab19971af386e736778b4fc89fb0f9f65f6d291",
+      "bytes": 1102515
+    },
+    ".artifacts/input-quality/e36/candidate-core.log": {
+      "archive": "benchmarks/results/e36-evidence/4225625a489352ebc35c.gz",
+      "sha256": "a5c743d792400a515a6ff56738c29385369814c931223fa0b3e66bcb6902e53f",
+      "archiveSha256": "477d514360e597a75391f8392762e6e3edf4555ba16da9f5d01d9d2df53b335b",
+      "bytes": 38845
+    },
+    ".artifacts/input-quality/e36/candidate.jar": {
+      "archive": "benchmarks/results/e36-evidence/b5428920939993b1c467.gz",
+      "sha256": "9f3dbf66d4f1208f885b0ae0e8182807bca86e67cdd554978ade97a7efa5951d",
+      "archiveSha256": "a783844609582391ca74b9e2ae950e1cd1032eb95bebed86a23cf05a2ec5cb24",
+      "bytes": 1102509
+    },
+    ".artifacts/input-quality/e36/candidate.patch": {
+      "archive": "benchmarks/results/e36-evidence/65dc4f36453373cf547b.gz",
+      "sha256": "0712030413fae0ad0adad8be23f99b7858a617d30f3da68e87b4e8670b61e9fa",
+      "archiveSha256": "7f3cd9183b05ed13fad95a98cb632745139cbbb04f95cc35cff87b0982f3a532",
+      "bytes": 4768
+    },
+    ".artifacts/input-quality/e36/collect.py": {
+      "archive": "benchmarks/results/e36-evidence/0146df14dcd12a9b3281.gz",
+      "sha256": "86b9f0d4a41f1dfc723dc201df21991a05d15c1d73686b50552c76770dd43aec",
+      "archiveSha256": "cf3cb37f71bbeb09e4baa4990a7e5bc22647cbcc86f061992ab47a853a21c8e7",
+      "bytes": 6217
+    },
+    ".artifacts/input-quality/e36/development-decision.json": {
+      "archive": "benchmarks/results/e36-evidence/aab2c2840e715b5476ea.gz",
+      "sha256": "fe695079e8d4623dbab8cbe000641776caae199ed2c0263a57a2358420024fd3",
+      "archiveSha256": "817b5dea92a73ae4fdbe8f836596bce34223990f16257a1931e19afd4e12eb55",
+      "bytes": 1507
+    },
+    ".artifacts/input-quality/e36/diagnostic-baseline.jsonl": {
+      "archive": "benchmarks/results/e36-evidence/2b99ac4944aeba26b244.gz",
+      "sha256": "63f58815eaf1462ce77bfcba3920914682ab3d50351349d81f63c7dec900e6dc",
+      "archiveSha256": "4f70739d3de1f379780ce65072cbdb979bae87d1bced0cf3ab7fa99a376a37ce",
+      "bytes": 25513
+    },
+    ".artifacts/input-quality/e36/diagnostic-baseline.log": {
+      "archive": "benchmarks/results/e36-evidence/dc2b2f116c8f9838337d.gz",
+      "sha256": "4d0fc31ce1047e03854b33609c062d10bfcd2ecbaf0d70f82da74548a13ba35d",
+      "archiveSha256": "e176f37d5fd29a990f821019f7aa35fc8debf18b3dd73e4c0946131d968d1a34",
+      "bytes": 149
+    },
+    ".artifacts/input-quality/e36/diagnostic-candidate.jsonl": {
+      "archive": "benchmarks/results/e36-evidence/e2f01256e1a537443a07.gz",
+      "sha256": "08bd6f89c4bc3e90dc48df28a0ba998d5e8097da03b34944ef6183147d2e6ccb",
+      "archiveSha256": "3b791b2a4ffb04c5ddd2690f9ddcdc0fa59db24afb483419265e4aa82a077ff8",
+      "bytes": 25473
+    },
+    ".artifacts/input-quality/e36/diagnostic-candidate.log": {
+      "archive": "benchmarks/results/e36-evidence/d5f4b9b87fed10f6c1e6.gz",
+      "sha256": "8e31daa6993987c514b6160deec299c5dc8bcaa7a5bbcf22ffb8fb7ca53a6fa4",
+      "archiveSha256": "13a2514965214736b0674a300ab0724ca50986277b23c827cdd34f01e70af828",
+      "bytes": 150
+    },
+    ".artifacts/input-quality/e36/diagnostic-comparison.json": {
+      "archive": "benchmarks/results/e36-evidence/484a9021c6606a0977e7.gz",
+      "sha256": "8ce6fecf59b123ced75b0d0818877548df6c32a0612a836db13064d4815a569f",
+      "archiveSha256": "7a08050768b1487fcc5c52a4ec61d02a89586c4e48292945e334a7a269de333b",
+      "bytes": 3167
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.AdaptivePinyinDecoderTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/ea179b45f2c1207112ad.gz",
+      "sha256": "3a5cfd19ec3812125ef3829f5c9be6f8e68861793e19f5fe11fdf2ffc95a3ce1",
+      "archiveSha256": "cdd3ac877e603ff5e3b24e5f2f8728237191b338ef7689cd3ab4690202f150c6",
+      "bytes": 6261
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.CandidateRankerTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/ed5e3e83da8ef9cca6eb.gz",
+      "sha256": "e0c48f06cb9deb316347820876f27b736942e603516f4bf366d4a588e7dea226",
+      "archiveSha256": "74f95d5c862e3418c8a7d9496f563683f70e91d631b35c899ed4f9e547752539",
+      "bytes": 1272
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.CandidateRankingCalibrationTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/5692b528e575b9917fc5.gz",
+      "sha256": "4ba8a222dcfe8b4554c33a5ffa8ae9c441d255a0946b58160089ca25422b246b",
+      "archiveSha256": "7a97a1cac63d6e25b5a75b3bfbe332939ac0f49546f39d59edffe6e0a5e6976e",
+      "bytes": 1246
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.CandidateSnapshotTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/781269b6b826090abbe8.gz",
+      "sha256": "70c033d5b9933cf5afe6d471cb36ebd63af4249b5aa224be25d94dd5dca2fc88",
+      "archiveSha256": "74e41f0b567b71187c3fed44b488ceb3a1c1ec946a7d8d44b3fff10aacf5b94f",
+      "bytes": 640
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.CharacterBigramModelTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/1c523446d0994e6c16ab.gz",
+      "sha256": "664b326dfa709e4951d6dd7151a13c8424044cb197a463121b0ec7edec275224",
+      "archiveSha256": "53793045ba1a2fce4e50f315a27854047dcba3969440c84d5af5548cd78cdcd8",
+      "bytes": 799
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.CharacterLanguageModelTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/73895b91b32cd3a54c18.gz",
+      "sha256": "d8d924bd6ee7ffe265441d851fe59cd84f9729692fdf8ea8cd146e6345809af5",
+      "archiveSha256": "e512f42c8a9916f948eb42ee0d609588337ae7c8a3df36ca80b8ba07cfc57bae",
+      "bytes": 1172
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.CommitSequenceTrackerTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/15378757a74e592e3ae7.gz",
+      "sha256": "ea7a24d52cdf4b188d61e0b05cd9b29f1b709fad64f80abcc0bd21776f5862ab",
+      "archiveSha256": "e14bfd9e7ec9ac21013fb17bd164623dea2403fecf21238a4ac3d7b1c59015c2",
+      "bytes": 991
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.ContextAssociationModelTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/4200bad9226190d90d54.gz",
+      "sha256": "a675cf79904eb592012c3587ea7785bedb2a9367edbf6cf1c7832f7318ae2763",
+      "archiveSha256": "c89f7167a2dad1fc38b1de0e961682407b40638471aeb4d008e9590cad704aeb",
+      "bytes": 1210
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.ContextualLearningScaleTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/f726e071904388d9750d.gz",
+      "sha256": "13b46d617c52c86ef136ef53dc0f8e51a50f4b6ace23909b04865ef939e830ad",
+      "archiveSha256": "1199284693886d1062f08a7b39a6cbd0c3d50daff793c95bebd0747dde19df31",
+      "bytes": 3482
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.ContextualLearningTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/e848b2bd4c787eb70416.gz",
+      "sha256": "cca44a8fd850ea171ef8a66dcd0d2ef050e16c0457e013aa56471f255891bfd0",
+      "archiveSha256": "b1f23d0862ba0814261d57b66fc1959c761360e2920345b7bb41fe3bad35aa65",
+      "bytes": 997
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.CorrectionProbeLanguageTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/5627f55ef8a363693e66.gz",
+      "sha256": "f051aa52e114890122f3ff3e7a65275b7e58a37ae1d025fe51a2175fa61d2434",
+      "archiveSha256": "f72ea168fd0c5c8be980067563cdefd922dd7e3e1ee007eee65fa4b428cb5917",
+      "bytes": 1218
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.CorrectionSearchBudgetTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/379c5d06e79876e0f313.gz",
+      "sha256": "5f6b274367753bf7f5cd6087bdb0d38ab1d16adc5527882191825db7ab72a27f",
+      "archiveSha256": "b1f85b68ff821c35f1dc37294e8b4356d0d9cf7b2629ad8988873524209970e0",
+      "bytes": 511
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.CuratedLexicalCandidateCatalogTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/53de9a13e895b99dcba8.gz",
+      "sha256": "05e831fa2d461bcbc5953bee707c26ae10023216c3afca8c5031b463c9d2adb9",
+      "archiveSha256": "362e1453862806f5fc79b8de0670a31e42aa782ecc53c031a06fb89d739b0cd8",
+      "bytes": 1044
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.DecodeWorkScopeTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/f4b5d4f66924715d3aa8.gz",
+      "sha256": "6034b795aa879dd1d36191d9f0f11e8a28adc7459debf2314f6ffe25cf430269",
+      "archiveSha256": "f3c654e74c0854b2f1d7a5d9f2433bd33a0ed58f061c3cdc4285aefaf8b86ea0",
+      "bytes": 1158
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.EnglishInputSessionTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/5dc93119fd1f0ba5aad8.gz",
+      "sha256": "f7c3f801541b2308ca00cd6406c8c4ae3c2e33f0dad046573be88f319eed641e",
+      "archiveSha256": "3dcafeeb5770aeb787f583337051cdd147d0e8817f68c3a04833ff149df97f15",
+      "bytes": 1278
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.EnglishLexiconTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/3e49e2ed42382641eb4e.gz",
+      "sha256": "4c90d7a00cb6d22969c8d5e147483ab90570adf9658683fad884b24b1c867178",
+      "archiveSha256": "fb10c2bbac76ec3277d041033aba2dc639000c3e602afcfaaf9c0d5addb9628d",
+      "bytes": 2987
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.FakeDecoderTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/e432c8aca7c9743a22b9.gz",
+      "sha256": "80b25af7fb62530339402df884c5dc531b06b43ec9ed8d05cf6f3bd54a5d20f5",
+      "archiveSha256": "89e49c147c9d788e735b6806924dd052251a0599bd008fc556f346a6ee803a78",
+      "bytes": 736
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.FourgramLanguageModelTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/5b44a47632d136c61889.gz",
+      "sha256": "d20e0a053eb019a331d0f5d639bbec54001ffac36e291139cd58548efe1942a6",
+      "archiveSha256": "376f194974ba4c62aa1894f6473af753c21bcb45a4d03197482f9525760309e1",
+      "bytes": 1202
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.FourgramPinyinIntegrationTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/30567e1a60355269907f.gz",
+      "sha256": "03d1e8ebe9489dd7241ea95de2f56bb5cdc4391ae24a0bbd6cec303c8ae8d514",
+      "archiveSha256": "441e23e5e2c4b5c665f237b589598286aba6b941087c5090929bfe7fbcd26115",
+      "bytes": 881
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.FullSpellingBoundaryTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/d1d8fbdae10756f4e319.gz",
+      "sha256": "61f991e939afa954f85d26877fbb9cf59a488c2f211714565601b982c5cac2e3",
+      "archiveSha256": "fd7085fff60cff61af0c4409a267bdb50d6069ae5800d199cd0d8f4ecca6b0b1",
+      "bytes": 673
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.InputReducerTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/25e6bfae63de347ef779.gz",
+      "sha256": "139e2b112aca495e818f3bd5f43ef9e4c4c2ec2f7be229bb47b3a88a7dc05a3a",
+      "archiveSha256": "1dc11e0a2bc57742ef29061f290a175afa91972e1fc9d418c5b2742774a0dd1e",
+      "bytes": 1036
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.LayeredMixedRecallTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/f7b21ce947b3cb59d437.gz",
+      "sha256": "86a920813ac3a67a70cf4096347addf2a41901a49d1deca86f2ebec1af1eb462",
+      "archiveSha256": "96b471f1b3068a8de8991df91d03d49b05157aec38b04106ab41f30c41eacec9",
+      "bytes": 675
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.LayeredPinyinLexiconTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/ba4078fb0674aaa4d6cb.gz",
+      "sha256": "c7b94d15e64fdb3d7ccd024be7574e89233d9cd3352929421a8259621568611c",
+      "archiveSha256": "a5b187713077dc76f0e70bb7ed2d5b29660dc4cc4db418a0fe7980d0bbae56f1",
+      "bytes": 1060
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.LinearMixtureBinaryTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/3bc89057c25417c16732.gz",
+      "sha256": "1c77c1552f10c924593f5198deb71e728cec99aa95a5cabc6d3b1d7ba23b4667",
+      "archiveSha256": "9de8fdad2d45f63dc5d4f1ec62ec43067601151eaa55dea976126b84e4fbc50d",
+      "bytes": 847
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.LinearMixtureCharacterModelTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/d735fb0c21bb4a9d069e.gz",
+      "sha256": "cda67107f2bc0bc17b3d2a382310c852772d57edf2891a3fef88cdda62c2f7ee",
+      "archiveSha256": "12d9dcdf053620b9bd6d3bb5b5f871f9463e4e38c8205b0dda0261b93d831f58",
+      "bytes": 1366
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.M12P2cBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/60ff73d0cbf385f25453.gz",
+      "sha256": "a874d2539b67860037883a2fae5d9a6c2fc6be311a7a460f1d62ebea66d5a4a9",
+      "archiveSha256": "1e3d4a2aed3f35b8db07675e88270cdebe13999bb6eae67f64055a238ef3306e",
+      "bytes": 658
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.M15TypoRecallBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/9c7d6f07a2adb804f9a3.gz",
+      "sha256": "caa19db21102c431552447157c2619c8c988f503dd9f01d5dd86e638df5f8885",
+      "archiveSha256": "77c78e3671908d6495306f6c8cc138df8371adefab49cc0cb9652d6e9b87a2a2",
+      "bytes": 691
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.M2AdaptiveBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/1d339cbefafc187948f9.gz",
+      "sha256": "0f8542a97fb3b8ebd8221e5d27e2e286e5f3d95c50d22554f6a1054ad4f47382",
+      "archiveSha256": "ca19a547068bf0dffecbac9dd2a645756a77f913673d169f56af84c4cf25bdf2",
+      "bytes": 506
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.M3SentenceBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/eaf243635e124430ec0b.gz",
+      "sha256": "d0c5d037311fecb4e63c141c701e9652d2cfdfe7c7e69e8d4c6d38b2ebbe31e3",
+      "archiveSha256": "0b8501f710f37e6bed7675f5fec22a93a89c08fa7525b8099e0b78a25e6ea0d6",
+      "bytes": 1255
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.M8DailyInputBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/9d82533ac0d1de889fb8.gz",
+      "sha256": "1bb0ba7990a0e8446d0f5efa446aa09692a7a3737a20034c56aec4b5a72d524e",
+      "archiveSha256": "6add243ce6be81332bd90b8d2c0d8036ea266b5f5c0c0e4e3837c84712465d42",
+      "bytes": 878
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.M9PersonalSentenceBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/105ac35a13c8238827c7.gz",
+      "sha256": "24154502c9d73512a6ea9c6878480505fa54f4bef9628fe86a29198c8460cf77",
+      "archiveSha256": "d8d21bb6e89579322a502bc21b7522db913e931de602bbc0b4edcd92a02647e4",
+      "bytes": 715
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.OovLanguageModelAblationTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/26b98c2cdd7670bc951a.gz",
+      "sha256": "b4f059632b27f5b7b89fb3d852beb6ddd42a44f03b808d869942e0b263e67af7",
+      "archiveSha256": "20491410a16a0e9e712b554bdafbfeb2148fb676620b95d57712ba4cd703fd09",
+      "bytes": 1039
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.PersonalDictionaryEvictionTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/7973082704d29fb2b76a.gz",
+      "sha256": "a305b55735b01f159946315713a51ae782697842cd099e66737b991d8dca155f",
+      "archiveSha256": "0926f4ca3af5d8fbbc9cb9fd8a9cf0341f3faeeda6e3c4f53abba035223a7301",
+      "bytes": 1260
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.PersonalizationEvidenceRetentionTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/2ced3aa09f8d12ff834b.gz",
+      "sha256": "9183dd72d53361c2c7187d9d5147ca07b1f3e418c2af5d22d987a4904c884221",
+      "archiveSha256": "70d3a5bd619328404299bb9b4f5d3f729493ba790061312d7f75fecd89febe38",
+      "bytes": 899
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.PinyinBoundedCompletionTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/120af7270fe40435d31d.gz",
+      "sha256": "3b8e185d979eff380dfe98fc22c518e7e0b7e4c6ecb72b3605762d2d0c9d9ffb",
+      "archiveSha256": "cebeccf724ebc778e2b8f7aae48018a207e19f721d95fb4481b2a13bc3280188",
+      "bytes": 1567
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.PinyinCompletionLanguageTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/3e1faee7323e255c9187.gz",
+      "sha256": "de46bde2f405d43846837a1bd31b31c482c875d33bd7bf8567832fb0c7024ac9",
+      "archiveSha256": "c812a18b9e981873fe158c77a8c68843e57ed6fe20bb09b1d9be774846fbded4",
+      "bytes": 3786
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.PinyinDecoderResourceTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/1372d343a5bf0a5aee6c.gz",
+      "sha256": "02a8c9748b168a9c289c17e4470fb186e9fb15a7685d01842b45f11e7cb27329",
+      "archiveSha256": "46fa3882dd15664b7e5c01900364af62527376fc44c721deed297f63b95f0b38",
+      "bytes": 1290
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.PinyinDecoderTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/7e79a8edef55367d821b.gz",
+      "sha256": "4d1142ca10929146270437bbb8432f0213b463e3c3af73c6234f908a1b9617c7",
+      "archiveSha256": "064b72809d85f27174edf10cb7a10c8e8387248f16995eec1335bd2b1021e466",
+      "bytes": 7692
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.PinyinExplicitBoundaryTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/9e090a8c7312f8dcfe64.gz",
+      "sha256": "fce4bb2feb59f8560ab5c09c73b9030232c0abe9a70cf7b26b4b54e2e96dc4d3",
+      "archiveSha256": "87c73024ce4dfa3d94d3ffbe4ed85bca938ff04a8dcb0772868c487664d0cef5",
+      "bytes": 1894
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.PinyinLanguageModelSearchTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/a11c0a6d6625bf8543ee.gz",
+      "sha256": "65804cb779473210d76d9e5a220a1887a6c14f9d3958d59c399af878c6888858",
+      "archiveSha256": "2f6cdf955e524f6a8b5b9b9777402cbaa6d12189b1ccfe98c064f8db5dafe11c",
+      "bytes": 1593
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.PinyinLanguageScorerTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/b7fc74723f572e409894.gz",
+      "sha256": "08ee383d72dfdfb6992ac18372bc1457f83f4003ae5b90bf19791c620a492c2c",
+      "archiveSha256": "74afa5093b72af9e92da6a52a63572edd4cf77ca63b3b29dff4ba3a3652bc574",
+      "bytes": 691
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.PinyinScoreDiagnosticsTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/bf6763bf42aac8b69a50.gz",
+      "sha256": "c9eba42af6ee067bcf94eaa59ed8d43a06b23b0d7ecab23086d1751387f9b5aa",
+      "archiveSha256": "a6fd08f3cc952456578cd4cc22e1dfb61d491fa270b7570c57f38e69c1b40a69",
+      "bytes": 2598
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.PinyinSpellingGraphTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/0db0a4fea3489d3c4987.gz",
+      "sha256": "ad8bb599a44b1dd8458fcd39853df32492d24a99b2d550ed758121afce057ece",
+      "archiveSha256": "de513cd190cc298b861134a1154f98957ecd8048536bc72e0b67a71aece088af",
+      "bytes": 1956
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.PrefixCandidateCacheTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/0e976210f26434fbe3a9.gz",
+      "sha256": "c7de36277fefc2373d6055adc3dd80b5be5d5f169d2712051c2d3ac8f474ed69",
+      "archiveSha256": "6d446992dbaf4ce9baee8dcda28b1627bcef863dab7dad9da55dacb9f2bbd5d1",
+      "bytes": 998
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.ProductionLearningQualityTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/98d2ef53745c754a29aa.gz",
+      "sha256": "f6db18a35a79a0915a8a066beef7ef0f611822cc19a61bf64351a2eaf414168f",
+      "archiveSha256": "c20fd2625c358e9b559d1d88c52057fe5e4d7096d2f5a95daafc9a5a96fda3b3",
+      "bytes": 1929
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.ProgressivePinyinTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/711a6c9898cadebe1323.gz",
+      "sha256": "5d341b55d65749ef0856e2a306dc3d4329eebc4968796ee6dc3e87dfb435404f",
+      "archiveSha256": "2f731c59beed71c88f94cd7b6922274538f074e43b24e5dce2d527d09f02323f",
+      "bytes": 2672
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.QueryLexicalCacheTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/3e31d55d5d8876681111.gz",
+      "sha256": "3853ee263a230ab80bbff22c27872d84124c9c26e6bb2ac789a1498550c0a88b",
+      "archiveSha256": "8a3d5125a5997dceecb80db509b42de3d4f552a424501c023e999c3aba2d97c8",
+      "bytes": 1164
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.QuerySelectionCacheTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/58c0c02a3d0b7c47b9f3.gz",
+      "sha256": "b08944fc98b3a8692ceeb2dd497dde2d96995c28a4e0fa9212502862bde8e805",
+      "archiveSha256": "b1d2a913f834846dc80fa324f323afb06056f214ca8ceef3b48edca15684bd92",
+      "bytes": 841
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.SemanticCandidateCatalogTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/b92fe2f9fe40f266e500.gz",
+      "sha256": "d1333d218ece90868273ca5df68dff83885d1c469aace09b1c444f86bc0c135c",
+      "archiveSha256": "feb4d549ad401bccdb171662f6bfe320271d3dbcc589b6dfc810e4139a2ba1a1",
+      "bytes": 1000
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.SerialPersistenceQueueTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/979a7098b5a84f897204.gz",
+      "sha256": "681ce20eca78bc2f6fe287b3b247f422b7f2622a405a7ad557ecc4a4f6013f06",
+      "archiveSha256": "7b96c1ae95d91d947edbc5175414abebe32fbe583ab12394593f12a74b948cd9",
+      "bytes": 517
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.SpellingEdgeCacheTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/4b726817ad1c23fc7ab4.gz",
+      "sha256": "20f1cc7b2efcd5a0a9bb69dbd70e4d437ac40e0a0e11a6216bbd12b0fa2c28c8",
+      "archiveSha256": "b8ba07178cc7b99ae81a5062a32ef43fed8d195706087ea6d6bc0b71fdec53eb",
+      "bytes": 1011
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.SpellingEdgeReuseTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/af9cc5590b17704baca9.gz",
+      "sha256": "3213b309995f0f95d943aa024e074581261341720ac4173b89d354a6aa07a355",
+      "archiveSha256": "5cb81aee1d193d713298e9fc0f31abb012aa9a13ce8ff2edfb6059729a974aa0",
+      "bytes": 521
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.StableTopKTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/3e07b27cce7c4e1fc0cd.gz",
+      "sha256": "f14bdda8713116fb06cf04a7bbbdf602992fafbb4382a94fd638069acf870a23",
+      "archiveSha256": "4c4a27c51ffe75c03bb6e61afc923f0c677a7b72154488769b6a5a7804423b49",
+      "bytes": 661
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.T9AlternativeInputDecoderTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/8440fa3398c89f9a7b33.gz",
+      "sha256": "cbc45f4dce013255a8a37250b8d56b494ff42dcfe90c3b8f1accf2f849e2b5bc",
+      "archiveSha256": "4f2d6be98ea4be16c6208ebe0e30b17c61d90be4a2d21b112ad3a3282bf45006",
+      "bytes": 2713
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.T9CompositionTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/45d4ebcfa1ac9516f3af.gz",
+      "sha256": "7e7fccbe6ec64403397f6b5f5082ffd7d42bd194cdd620ab646aa412ef1652b0",
+      "archiveSha256": "14af1ff02b6605bd2a8b83b220f521319cc287d10a902ab7b2934a914e0073f6",
+      "bytes": 1251
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.T9PersonalizationContractTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/edcaf3f763b1611a8b80.gz",
+      "sha256": "6a635ec27b58f8eed7e4f456a17fdfe2f495782420649dd32c91645ae840d7fe",
+      "archiveSha256": "a95ff228f99f126a174903d2e815dd23529a71ba0c9bed0affbf1340006bce2a",
+      "bytes": 687
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.T9PinyinChoiceTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/4b871d6fa17c91d527c5.gz",
+      "sha256": "9e370230bf730c8ef85d0de3600efac02b60215177c67bdee9948ffb6db24662",
+      "archiveSha256": "73fe41bdf03844c0593de007bd00f7b59fccdf2f421070ab259fe74831361fde",
+      "bytes": 1134
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.T9SyllableIndexTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/95b41b4dedfa18188301.gz",
+      "sha256": "aa9709a072d8ca687a9783d89fe2be66020d5c04d7d443494cc38f6eb7c489aa",
+      "archiveSha256": "4cd12765107d80648ecc35f835b3ea4e71e03ef56c1d8ca69cb93b8ecce17465",
+      "bytes": 1447
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.UnclippedLanguageEvidenceTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/d7f6ac9a007f4f6acbe7.gz",
+      "sha256": "e8f3af0bd44c25a369dc79a5b57f95ff8cd11962faed2e5d43e0edd462303142",
+      "archiveSha256": "eb33df47074cbf8e35da0341dab92108798d598e21f38ffe05a7e3bb303ce93d",
+      "bytes": 1172
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.UserAssociationTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/95db4cbdbbccc7b1cf15.gz",
+      "sha256": "f136d670012018b647239345ed4f0a172f4cfba0e86c83bc9140ae9c6d8b7e78",
+      "archiveSha256": "dd254d52291156e0cf34254e5f75edadae4edc439f8ef09f79304e1bf3ab4e96",
+      "bytes": 813
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.UserContextSelectionTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/686726a8b208d645e449.gz",
+      "sha256": "82750a6513c43049e0e47ae75d80fa952ca1c016f3c09786594558ef53f5fa5e",
+      "archiveSha256": "5deadc9debd6cbf9ac662aa1866ef281aa69a7f10453844e39a95f9a6d5c50bf",
+      "bytes": 854
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.UserPinyinLatticeTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/12088910be2596d7fcca.gz",
+      "sha256": "ba0c47cb3bd580b46013d8fcc247f6011e3e4dc09c8e5ce48e03543f2b45e24f",
+      "archiveSha256": "8f8e63b3068d97461368f8ddffbb4adfcccae8e3e90eecaa6e325f8053e19c49",
+      "bytes": 1469
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.Wubi86LexiconTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/1547d2f11c77f12a5e22.gz",
+      "sha256": "708b5ed1b095bbae9038163bb77331f028f62986b46cfb3aff4a45d13498bfb7",
+      "archiveSha256": "ee06e4ae3f9e6313bdca7725accd9aa22865139b6144fb520616528e53682ade",
+      "bytes": 1383
+    },
+    ".artifacts/input-quality/e36/host-results/TEST-io.github.ethanbird.senseime.core.Wubi86PersonalizationTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/1e4607133b74e0dc713e.gz",
+      "sha256": "0fcb924985ff366e6ce8038b7a5dc74d37135061f3ac99d73494b74b1dd11926",
+      "archiveSha256": "8e6ecdb3aad092ece79d6f69005c334ed5e9b25d12f552c23ae4c9e2b5fdfe14",
+      "bytes": 1879
+    },
+    ".artifacts/input-quality/e36/pre-replay-lock.json": {
+      "archive": "benchmarks/results/e36-evidence/d3406854a6fe2cf0d7c0.gz",
+      "sha256": "531def61804f0aadfaa2b204cf798e089a82cc36b1f18c49430143f375f906df",
+      "archiveSha256": "f60bc56e374d4583c2d8023be264358db649dbb7525c23df15dced404df912d8",
+      "bytes": 809
+    },
+    ".artifacts/input-quality/e36/recall-candidate-red.log": {
+      "archive": "benchmarks/results/e36-evidence/49410b65f898b6a0144a.gz",
+      "sha256": "7adee739afa766d9b87570f3876028da4970102d337b7331b5ea0bcfefcd514d",
+      "archiveSha256": "3c1adc4173aa36d1946db233f24b34afe1878eaf010258d1eaa8a4afe8ccbd3e",
+      "bytes": 1253
+    },
+    ".artifacts/input-quality/e36/recall-candidate-red.xml": {
+      "archive": "benchmarks/results/e36-evidence/9b64a6bf93fdc24adc86.gz",
+      "sha256": "ef711400babb48edae202dbbd4a897ac653476e4a02e7f33b0b09985d4ccea7b",
+      "archiveSha256": "ec2818d975b5cfac1c52cca1230a662f31485fb6a069b34c81cda722ab77d1c2",
+      "bytes": 9655
+    },
+    ".artifacts/input-quality/e36/red.log": {
+      "archive": "benchmarks/results/e36-evidence/17b7bc115683d5159528.gz",
+      "sha256": "4413c27d339514c062b8842c7d528f3dbf34fe27e61ee9572a5c37cc79190b5a",
+      "archiveSha256": "c2cb1adefad16f9e69d7a38894083840cfadd95e36f70a9b7a8a83fd466237dc",
+      "bytes": 1659
+    },
+    ".artifacts/input-quality/e36/red.xml": {
+      "archive": "benchmarks/results/e36-evidence/d2cc9673be6085dc4fac.gz",
+      "sha256": "fa168492ca6fe9975de68932659dd7558e8115603c20b9a1c36adc4414c02dda",
+      "archiveSha256": "80219c5faddfa740c87fb4903f6311ca80bd2e393836811aa818221a29cd34d4",
+      "bytes": 18879
+    },
+    ".artifacts/input-quality/e36/restoration.json": {
+      "archive": "benchmarks/results/e36-evidence/758ef62bb49446a1bc65.gz",
+      "sha256": "6310fff947c7cd7964cb24a348e0325286ec81b241019acb0f5dd3dc502f29f4",
+      "archiveSha256": "bf0365d6332990b1dcdfe4e25b38aec20b5572b4285e18319cf26a0ee1326ecb",
+      "bytes": 436
+    },
+    ".artifacts/input-quality/e36/restored-core.log": {
+      "archive": "benchmarks/results/e36-evidence/02703ccf032fac6120f8.gz",
+      "sha256": "d6e399e7d936a72dc0a11c60c78d990f1d18002c2a294d0f0a1e6214f92410e3",
+      "archiveSha256": "90995be1abc5b526c5d1284bc2bfdf4f397249ee4df6f52766a71b4eee3a59d4",
+      "bytes": 38585
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.AdaptivePinyinDecoderTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/320a4764315099b3e138.gz",
+      "sha256": "21b0c00998ca8a1142b96933569e5f41a8064aed2de671a0cc3f42651b32b1ae",
+      "archiveSha256": "7f1d0f08c7825447b954233a01ffe555012288ddc8ccadf72c0370a65dd80893",
+      "bytes": 6260
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.CandidateRankerTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/3fcc8edd441fb8603ace.gz",
+      "sha256": "4a37dbf3e463300b19a05dc78cc00e2a9bd88596a56bbafc46c1ec0a8d8ee0a3",
+      "archiveSha256": "b1703deb2d1bed2fcb8e3cecff4189831f9c78de02cd3b30ea52a6b99015cb54",
+      "bytes": 1272
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.CandidateRankingCalibrationTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/0a8de5d3f0621f95f41b.gz",
+      "sha256": "5d964cb8729966dc07c912ceec66b52f5f8ce812fdc33ab5a76e8b935e60d104",
+      "archiveSha256": "23a5c5e9459257e753e1c9801de388fa0ac1f0844a687329c17f61dd2a044f29",
+      "bytes": 1243
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.CandidateSnapshotTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/0ba4f9e1e33f15441ff2.gz",
+      "sha256": "dad3d6c5bb969eb41cd57bd2e7be69e89305e23b08175d48ac9881ad75188a8d",
+      "archiveSha256": "f9bac0a8e520f3a0330e77c0fb04d763f63839132843270a183847445ebe7666",
+      "bytes": 640
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.CharacterBigramModelTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/d07f75a7024481e10c7b.gz",
+      "sha256": "f1d969711a9b9f98a6843b676aad0c1a03d84a7b739272a69c7b805b45708078",
+      "archiveSha256": "73be9a989f50ab607fb9a84b52a7bbe70b48c6fae91f920fe6307dbc15446149",
+      "bytes": 799
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.CharacterLanguageModelTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/ce9e4a03cfe24992d84a.gz",
+      "sha256": "58c6e155419ebbd4110f2e791d4e718cc543d39c78c00e370b0e572a0c6eaecc",
+      "archiveSha256": "b89b773a55b4c492fd46b51d3910c34840728701a966c351c604d73ae6618d75",
+      "bytes": 1172
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.CommitSequenceTrackerTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/f104669c9294de14277a.gz",
+      "sha256": "c2a923096ded2df072dc3c41458e0cc1fa064a0bc20c1f6d5aae0c94d390ffaa",
+      "archiveSha256": "35f8ea228c721648f5fa8b350944d938f12f264857c9c47f3fe825820c56bd14",
+      "bytes": 991
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.ContextAssociationModelTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/15fc79abd5b685212287.gz",
+      "sha256": "f0a45360bb8d324bda8d6af67371e0c0fd4b988b0db0cbed2bb4fbcb88ebaff3",
+      "archiveSha256": "1aaa80e14471b17dbf4dfbe70bae55eef6e59db91ad62d9a78446165919398a3",
+      "bytes": 1210
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.ContextualLearningScaleTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/0c9c39ac9b6db6469089.gz",
+      "sha256": "f0fc8986c4574756083b119974e65b59978b70268ba7e28145516ba07d566faf",
+      "archiveSha256": "3945868bffeef27260a3d2f792f0c5a0e1f42d43312b012bf3527344e9b75c52",
+      "bytes": 3482
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.ContextualLearningTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/e315efd373eace5927ae.gz",
+      "sha256": "2d025a734cc2e10d8b3be9b550d2655f1a9d9561a970d2c7e2792345a2e2327e",
+      "archiveSha256": "49b89c2bdf36f0023cd5fe5c1940f9a091f478bf1d713b3655f9f57fc095f955",
+      "bytes": 1001
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.CorrectionProbeLanguageTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/8294b0de12b11afc228e.gz",
+      "sha256": "83d9cd6c92ef2942dde5687187f653ca978dc9a568e9a5be6703eb835531aeb5",
+      "archiveSha256": "a5fa9a59990e933e04429e93da969873ec33fe5cf6e8295c6004282d0b785797",
+      "bytes": 1218
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.CorrectionSearchBudgetTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/1f5915e96642f434b770.gz",
+      "sha256": "981a10b5f8705c6d453d8a186bfbfabc9ae0e930c4bac104b530a6dfa1d4ed31",
+      "archiveSha256": "7850f31c235cc7e382bf786b872fef5aa3717cb3c552a3f5a6db9d57d19f5994",
+      "bytes": 511
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.CuratedLexicalCandidateCatalogTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/75660d8c7964421be1f6.gz",
+      "sha256": "c9b9be03aa435296193e83fba1327432416b734215bd1ae70655c1a757c55ef2",
+      "archiveSha256": "0401f8aa8588aa7040e7c25a0b4ba89fcb13bba9f19d1cdd224739ebc413c0c1",
+      "bytes": 1044
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.DecodeWorkScopeTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/44fd0d928228b3aa706e.gz",
+      "sha256": "ddb9d5549c3f264c48f2f15ad4a85e52eee23a4a1ec3ebecf82baa6a65b2bd3f",
+      "archiveSha256": "510b19d5408dcd92798ce941d3b1fcda89aa70a3d1e98fc2f230b8aab9013fae",
+      "bytes": 1158
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.EnglishInputSessionTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/bb29d885a62f4886d86b.gz",
+      "sha256": "c5453662355b2aece914cf2f1cd265e6a1e48206f10a7f71da9f9d79663bfa3b",
+      "archiveSha256": "a4f5fbc330dc9e1abf79bd5f8afa61917dbbb28555409b98fd3a760649714a6b",
+      "bytes": 1274
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.EnglishLexiconTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/72ad7b3cfe4ee79a3356.gz",
+      "sha256": "77b933ff2c689cf9ce0ece7a31631f0ede5b37eaf6198068f6eb39ed095dcbff",
+      "archiveSha256": "c42d1e8646accf00e1290398d343968871db2af0a6d7ee07e0f6280010c56af9",
+      "bytes": 2983
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.FakeDecoderTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/7080b5b823b3ecd62cda.gz",
+      "sha256": "5d51e1e90968ce723ce7d875864c0aa20d43d45519840243084f6fb152402f05",
+      "archiveSha256": "e03a35066f0c36f27ba3dc6741ccea95ea2f4ec4b284f2227f1691c35494dc9e",
+      "bytes": 732
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.FourgramLanguageModelTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/94de88a38b3fb11211ee.gz",
+      "sha256": "c5e8cb5e2755e0b9b2e4925359d57333aae6aaf3e4d266d2c529ce35df12b306",
+      "archiveSha256": "329c6226b3566c741468453a3ae5b1f235b31374cc6767abefb0977f701839f3",
+      "bytes": 1201
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.FourgramPinyinIntegrationTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/cfda8d6faafd964191a4.gz",
+      "sha256": "e3f5164a6e954b584f91fb25e53295774d712542e4c0063db45bd8c82d379f51",
+      "archiveSha256": "fa7aeccdc6f9111df62b9e5b734d242505d1ad07c9c3398a559331f40f5b4d82",
+      "bytes": 883
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.FullSpellingBoundaryTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/f8165e3234330d94e084.gz",
+      "sha256": "290b78622b138925167c279891e51ffb069813e8bb54c9bd6f14142f74daef5e",
+      "archiveSha256": "cfe9a9e2def4a440faad30b43666cedf1a78ff4a536f1afa54d57c3d120fcfa5",
+      "bytes": 673
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.InputReducerTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/f6a28291dbca0f870fe5.gz",
+      "sha256": "80e206f20af749c0d7ca3a5858df320b4d229c7efdeaff8a3c26539644356a94",
+      "archiveSha256": "65679c128f3b7a81068cf96bbe8ec6416a8a1e03b247c88bc50d37c5fb6f4bc3",
+      "bytes": 1038
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.LayeredMixedRecallTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/3f21b41659b8753f845a.gz",
+      "sha256": "32ca9ef304e1962348fbaee65d3fe13d207b2abe3b5d1e00b63e77f1b1d7a821",
+      "archiveSha256": "7f48ed10f0441867dbe21f71c0e14d23cfab0d3d48fe7c27f6940b26529722a1",
+      "bytes": 675
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.LayeredPinyinLexiconTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/2608876531cf68da3412.gz",
+      "sha256": "89014369e2dc21295bf756bc8f702a2f64a08cbef8b8ad98276cbf1a9804d8c3",
+      "archiveSha256": "d0662a2e533df810369e695da7ef28c02e5e59f5856a98799faec1ba26627769",
+      "bytes": 1060
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.LinearMixtureBinaryTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/086cf6341c7e6db82960.gz",
+      "sha256": "1240c84c5376a8d06e4d27ea1b80c2267aaeeeb1e86243cb5afdf172352ae024",
+      "archiveSha256": "f6cfd2469977fced7fc4d4eaf77731b0ef44ad80380243c35d8d55276579fb10",
+      "bytes": 847
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.LinearMixtureCharacterModelTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/482f51a243ef5a2d3e6b.gz",
+      "sha256": "c626535066daf4501d6c9c117d87c30d32982d0a9b56a9717c516467bcdfaf16",
+      "archiveSha256": "070f485a3a149dab9b1e0a1acd532e6aa6fea5f0f3f778699748ec52dd9fda98",
+      "bytes": 1362
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.M12P2cBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/8386aa0072d4c372676d.gz",
+      "sha256": "f0ffc082f9e72d11a0b194c95be1b47acfc109c76da9880b9b2690f62573c284",
+      "archiveSha256": "34e66140fe726630a8ed8a2b3f3c1db8abf186f2f7715811dff69d47c5fdec6b",
+      "bytes": 657
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.M15TypoRecallBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/6ae654e75428a8be6a53.gz",
+      "sha256": "e36c0c2c18f2af88b25843c0cb8030ddd8c86b3a228c251e569cc1b8cb9f3fb0",
+      "archiveSha256": "0fcad55761b32ffa55b36d5f38b0b24908a896281abca9c1fb0e007f1d62c47c",
+      "bytes": 691
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.M2AdaptiveBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/30eda9b0e1b645204d84.gz",
+      "sha256": "d76425e20198ca871405c2b21acf11ba462f41ce9e2b62515879c5f5a08be298",
+      "archiveSha256": "d839533ae0401854e1abccf6c331e1c2bf585198e47ec62b80eb4735b591adaa",
+      "bytes": 506
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.M3SentenceBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/7a1cf3bc2a83042e068d.gz",
+      "sha256": "13d9052dae0d3d9a5d5d61178f928a2c9156366063a5ecefb154ddf7d586aafc",
+      "archiveSha256": "47a0f0b515b644258ac223c1101fb1bab8bbb8ebf5659fd298bc845a8d264a6a",
+      "bytes": 1255
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.M8DailyInputBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/3e6b2d70da4fdac32204.gz",
+      "sha256": "4f80ac17bc740f3e33820876cc1e8f0553683346adeea8b4b199cf5dae15439e",
+      "archiveSha256": "3a58bd22c91b92ded63a4472dfbc35afaee97df94025c43cbaf4196e65ac1f16",
+      "bytes": 876
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.M9PersonalSentenceBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/1b4d5e039036018f3bdb.gz",
+      "sha256": "7198a9167d70d3f4c673d4ed2f27e4015fa731af8eb22fefc79528a67086be46",
+      "archiveSha256": "6523e90cd1925c91305fbba2e384d3af8e8775e1c3ea0646b2344c0ccad675cf",
+      "bytes": 715
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.OovLanguageModelAblationTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/cacb0604f337e6d545b4.gz",
+      "sha256": "7c23157bbeea60886888814d2774aaf181db0450fd0ad798ea3d140f115ad36d",
+      "archiveSha256": "f6e049fc1a4de2f14fd85fbf29937dafb58a68d1a19a77b671dfd96cb0b6a76e",
+      "bytes": 1039
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.PersonalDictionaryEvictionTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/2ecd3eacd927573dd570.gz",
+      "sha256": "e49875c70a5e93d61821cc2dd7922c1c52be82487e36eac6b4acb1be91df2e55",
+      "archiveSha256": "0b71eed83cacc2015a41c1190f9872d8b2b07a3c8764ddc2ef8afb3ae661613d",
+      "bytes": 1260
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.PersonalizationEvidenceRetentionTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/3f7779639540c5a0e1b6.gz",
+      "sha256": "bc9f4613a7faeb500b2fe53782703fa08e20636035a646ab74022895cc1f6054",
+      "archiveSha256": "c00d74c1d8226a6fdf841e72b23368bd1f2a8c128af84024352ac32d7aeb6241",
+      "bytes": 899
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.PinyinBoundedCompletionTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/80b6e9ddf260483e8725.gz",
+      "sha256": "a253219b4a5197fbd8503b94217c7b4776b0bdf47f9652cdb222dc66bbc5dea6",
+      "archiveSha256": "39f3ff067b8eaae3ae89016398fbeea5d4a583c28e300d75f4790c201bcca780",
+      "bytes": 1563
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.PinyinCompletionLanguageTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/179f33ff729519ecbe2f.gz",
+      "sha256": "df6fff573310e11d32d6b494d81eaf07410b5e8205beb8f2a4e63402e63e4b29",
+      "archiveSha256": "6c5d9c42f41ad89c84097dfe275f7be850ff595aafcdc6105cbd2685cbdb8430",
+      "bytes": 3784
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.PinyinDecoderResourceTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/1a3e006234969ab01d73.gz",
+      "sha256": "ca0c2aa3ef74b7c8e70942642d15eca90dd63f97cc531a3f8236c7ae9696178a",
+      "archiveSha256": "bf56b47202a3db6edfea1224de6f0df54591101bc49210059138588e97dd8110",
+      "bytes": 1290
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.PinyinDecoderTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/7a8a72cf68b078f3a2f5.gz",
+      "sha256": "6877ac86f68f3487714c2d7fba2d3319205c90a4d3e2f8668f1ed623a4e36132",
+      "archiveSha256": "637385a3fb3b5baa91d4b6a1b97434c753662ab9fd3d7b944b74d6da64cfa6d5",
+      "bytes": 7689
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.PinyinExplicitBoundaryTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/28c139b8357b437d5f13.gz",
+      "sha256": "8c85d38f96dfee0d796fe0c6e1a7731f5c3986151fa848a07b20094cfdaaf736",
+      "archiveSha256": "04762c1df882dbceb7b14eb1c93d4e0b2e8b2c41165c7b2be9315993432b7c58",
+      "bytes": 1892
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.PinyinLanguageModelSearchTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/30e13e0c08acbdaae677.gz",
+      "sha256": "aac0d98249aa32d80fd73f620bf859eda51db9d3f73b4ac513e4e784603f1883",
+      "archiveSha256": "7e94136f83c26493ef5ce2906748e55a2e233afa226378537be239d957c20a61",
+      "bytes": 1595
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.PinyinLanguageScorerTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/8b9003d61817e64d4065.gz",
+      "sha256": "955ba36a47d2a1ca4b8e230a51f8749c74d05f7fa7262568a0827f0b0ee51d87",
+      "archiveSha256": "71b9fe2619861fef45193a01f5586a7f22f327c8be58f06c8f13927626e4b768",
+      "bytes": 691
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.PinyinScoreDiagnosticsTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/f3d5ef2a9816e705cdf4.gz",
+      "sha256": "2273e1b672e8975895d4bb35bb29d4839a54338b58acacba9e9f2c3e5f6f62d4",
+      "archiveSha256": "6324d979ca7f996c1fbe5d2b3c467a8aff3868d7674c71aaea090d712141da09",
+      "bytes": 2594
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.PinyinSpellingGraphTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/0cd74f9075fac6273ba7.gz",
+      "sha256": "09d4e98258e106b4786e4f93b1b99d62b3a14daf54f7f895cda57edb691984bf",
+      "archiveSha256": "5a2d88ff76af15a2a4fbabe3e360a87977cbf506a700e1fd4e07436c0528af23",
+      "bytes": 1954
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.PrefixCandidateCacheTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/c87031d36d3edb848e38.gz",
+      "sha256": "e273c5bfce84d148b81eaff0e38361711de60d0e444c408b6bc57b78b8556bef",
+      "archiveSha256": "bba27f07046df5b65e0277deac921dbe9d47ff486ba0b129377f750795e9749a",
+      "bytes": 1000
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.ProductionLearningQualityTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/c60d1f4658d08869c70a.gz",
+      "sha256": "823727436a12d3af17f4e01a577a28d65be488435b12daf8da01bb1d5b5e6cc8",
+      "archiveSha256": "2245a8884a6794e15f087d71da4dcc2eec69f03760ce2e62dfbbb116b93debef",
+      "bytes": 1929
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.ProgressivePinyinTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/90e60463535e97c74398.gz",
+      "sha256": "fefdd979fa162956baa9fb1c02b43d7d41cd2cfdd7806f3a9a9c37a2de358679",
+      "archiveSha256": "c51764ba89ecbec01a2e81f0ef5daec23fcb1156b7843e85515358b43524093e",
+      "bytes": 2670
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.QueryLexicalCacheTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/e63117e9ca7a4958bffd.gz",
+      "sha256": "d6bdd9bde77cd44725bf4957376e765f40964963912c03d856420fdc59e4fd6c",
+      "archiveSha256": "a196208dbd84399ab03d1beef29b1cf23d6e6ecfd66186fa267e04523334f045",
+      "bytes": 1164
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.QuerySelectionCacheTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/b20c60360686b18641c6.gz",
+      "sha256": "03eef57dd80ced9b75bee2a9e6472dbe3a1fae9c648837c1aa6aaef0be346189",
+      "archiveSha256": "cae0aeb7b01470b35bf737f11a8b9ec071ba33303a1f01a697d2f562d3054f5f",
+      "bytes": 841
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.SemanticCandidateCatalogTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/a3f6c28dfd3d6f281938.gz",
+      "sha256": "e60ce5772d647de1548d9ae714686dc78778f48f57680290139b78d9ee3f1883",
+      "archiveSha256": "54c26fe55bdf0ca3cb7c7d5b09f0e0069e4f6ddb5ccc89bd824482fc3bd24124",
+      "bytes": 1000
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.SerialPersistenceQueueTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/fb09c3a5324cd371729e.gz",
+      "sha256": "37e7397aff8857cb75996cc70d34336089fbcae3d49c32f329a608e61d2ba158",
+      "archiveSha256": "99eb3c8da9789518a95cd96f7899850a1792057042bf367e0c130f90a5c78194",
+      "bytes": 517
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.SparseContextCandidateRecallTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/5e02ff1dd31520c5400a.gz",
+      "sha256": "d441f471a012984010e9167241d0d8cc1f9bf0d6ec1192baa59416c322df81fc",
+      "archiveSha256": "762002766e9acec6a30f18520e6467641c25965ae5d7350e97cd356fb55d7c6f",
+      "bytes": 696
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.SpellingEdgeCacheTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/d62fbbe1ef66b8943bf7.gz",
+      "sha256": "2c459f848f2b2f7958674458d8ee4a762d1d0feef4253e90d2d43c8b04cd5f02",
+      "archiveSha256": "381f91e337f870940e974e959319e12ed98264c078470cb4b2237830ffd1736d",
+      "bytes": 1011
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.SpellingEdgeReuseTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/fcbd1c86f989c8eefd41.gz",
+      "sha256": "143974790bce6d4e43198c38786084d97f19f8e2b819475ac4d537ad89a92e20",
+      "archiveSha256": "dd54a98c325cbf2be53611d7204a27b89694000921c0e6a11ca338c44d25fe5d",
+      "bytes": 521
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.StableTopKTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/9aed5a51f47574163f95.gz",
+      "sha256": "c37bc9bd7bda31439cd1066b876e80af4eeaaa300fd88d69caa17d375672cd6f",
+      "archiveSha256": "1bc48784a3ed5e72197f04ba61859c4b6217325e11e08f3702ed8655cabbbf23",
+      "bytes": 661
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.T9AlternativeInputDecoderTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/557bee25d300023850e6.gz",
+      "sha256": "b3efddb50cd2920042c056306d6411d64651e5b5db1085354f311010addcfca3",
+      "archiveSha256": "35df0a6bb7ace47f86d2eefc0a8d4323b5f6a644dacff6dd329524f8024c502c",
+      "bytes": 2717
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.T9CompositionTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/96eda2f1271f8b732219.gz",
+      "sha256": "dc7c61299251f70bdf81a307553492d803cb0c7cbb7ac497027cbf4c17b54716",
+      "archiveSha256": "c77de11ad58f714f1b177376ce33a18f07d3fa196b52599292cf49326e18152e",
+      "bytes": 1253
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.T9PersonalizationContractTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/32ee2de182ddaff1ac4f.gz",
+      "sha256": "8e5358fcc07a2adc0b91bf5c7d06842bf7095cf3209adb00a5151744fbdfda23",
+      "archiveSha256": "9a8834c2ef6a93871356f34d7242028c06e72e4310381a689cd84fdf0cff4bb0",
+      "bytes": 689
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.T9PinyinChoiceTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/ba3c6167ca838c5f15b2.gz",
+      "sha256": "8a295c4daf19b552d1754f442bcc365945c10fd0f7622641ddcc1d1f07ebecd9",
+      "archiveSha256": "b7a02c87a2f568de7d67e026bfdc768c76ad59c1ea7b5b31fecdef90c6c6966a",
+      "bytes": 1133
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.T9SyllableIndexTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/6f4e5251d15a43fc1b0e.gz",
+      "sha256": "5feb81c03445385bb3b987f74568836f139605ec41a6e3e78f01d8e887f029c5",
+      "archiveSha256": "d8896068f7f0ef08cbe9a49dfe0afac98afcd5d4e459ca22729c1ef4f0afaed2",
+      "bytes": 1448
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.UserAssociationTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/cb6647520a1c610ec021.gz",
+      "sha256": "594de5e824c9078ae56fcadfb578a12f3532555678901c5ca7474806679c9fcb",
+      "archiveSha256": "0b906dcc9799eb4dc711f2d3a0faffc454e47a3a339afba2789c40d045a87a07",
+      "bytes": 811
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.UserContextSelectionTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/fc3376308948f61972e4.gz",
+      "sha256": "210ff3b526ff5a1dfb7f117d54fc7349bfe1b8b1bacd1525b31fc61cfc9e780a",
+      "archiveSha256": "694c88e9c4af685accf9c16f07aeac70bb30ba56c771c2631e8553343a882461",
+      "bytes": 854
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.UserPinyinLatticeTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/2fd0debf987755f34352.gz",
+      "sha256": "4f0a7514d641eca49d9b80294ab3ef34aac2854f6a6e1cb9a7aef2a8c2380426",
+      "archiveSha256": "22ea5dcec6fa0a3967ea9dcd6f217fda30a408f9134f072cf8f5430f72d76b2f",
+      "bytes": 1469
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.Wubi86LexiconTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/c3d9586bc9b5ec1ed2f9.gz",
+      "sha256": "8198d0088eb9dc84af5a666cf750f5138f8e0f5fec0805f352d015e969f49669",
+      "archiveSha256": "d5dfdd5fdd0f86d1af3a6e9281b871d1a1efff0164ade8f81cd9bea535f5ae15",
+      "bytes": 1383
+    },
+    ".artifacts/input-quality/e36/restored-host-results/TEST-io.github.ethanbird.senseime.core.Wubi86PersonalizationTest.xml": {
+      "archive": "benchmarks/results/e36-evidence/dffb09c8b49ba6ee528f.gz",
+      "sha256": "23085acc3c30798fae73a55fca380f30e76bb9aa27a5f6c7bcb4879b8f10cd68",
+      "archiveSha256": "75ca83c1765f9207f58f155ee2de8fbf69be97e33cae3bee8eddca41ff06fced",
+      "bytes": 1877
+    },
+    ".artifacts/input-quality/e36/run.py": {
+      "archive": "benchmarks/results/e36-evidence/95d8469e2cee1efc3d5f.gz",
+      "sha256": "093817bbc1a4a0315ae72cf1881c44895d6c38e957a665cec0824aa1addbef64",
+      "archiveSha256": "8c933083dabb64dd742f73bfb8913143ba9718d85564dbc043966461c4250949",
+      "bytes": 3670
+    },
+    ".artifacts/input-quality/e36/start-lock.json": {
+      "archive": "benchmarks/results/e36-evidence/7a133da8ef09cee12ed1.gz",
+      "sha256": "10c2e14b5f9bd20a8ed62479e9c4bb786c6b498c5e990586a731f07a2c4ad717",
+      "archiveSha256": "1ec8aeaf3427bf2c5ca7dae061cee2d4a3e8790df6a8674a01d3088a0cb23f59",
+      "bytes": 1529
+    },
+    ".artifacts/input-quality/e36/tatoeba-baseline.jsonl": {
+      "archive": "benchmarks/results/e36-evidence/fa55ad4aa964c256c8a4.gz",
+      "sha256": "297de2b33272310bf31bcf2182624f4e9a619d92d2c42ac87b2f5ba2d12145f5",
+      "archiveSha256": "5e3748d2b973fe01c511c739d7476ace9e6f51b1cc2e84b4e64aa872f0b9da05",
+      "bytes": 470029
+    },
+    ".artifacts/input-quality/e36/tatoeba-baseline.log": {
+      "archive": "benchmarks/results/e36-evidence/1871fd417621a377b48c.gz",
+      "sha256": "0e85aa0b893e160b418f75eb89a0c746477c49cda593c344a1bda4658fbe4399",
+      "archiveSha256": "f07e51ea828207ad86c76a8b1850a4de60ebb1e9ca0d36c13b6410122f8778c0",
+      "bytes": 169
+    },
+    ".artifacts/input-quality/e36/tatoeba-candidate.jsonl": {
+      "archive": "benchmarks/results/e36-evidence/f3a7f3f255b51202d1a3.gz",
+      "sha256": "5ecf089a8031293f68f6dce94b683a2abcb57bffd502550c68d16e299f0317c7",
+      "archiveSha256": "2cdb440e9161ee423648afbacc098187264a110cc098cb4499a4b2f05e296bd1",
+      "bytes": 468351
+    },
+    ".artifacts/input-quality/e36/tatoeba-candidate.log": {
+      "archive": "benchmarks/results/e36-evidence/80664fd414a8ef22873d.gz",
+      "sha256": "27c54d2b3f40b47e50584a022cdd615629e4b19812786995b50b42b67e6ec8a5",
+      "archiveSha256": "a9eaddda4f6cc315de9bff2cd197cbc431bf4474e8184746302b07e16d5f9786",
+      "bytes": 170
+    },
+    ".artifacts/input-quality/e36/tatoeba-comparison.json": {
+      "archive": "benchmarks/results/e36-evidence/43fe1a6d74e98f34809b.gz",
+      "sha256": "10d6dcc52f91d521ecac5d4e77e7a45d30a829bd9cc90df5269ab4c77b391b86",
+      "archiveSha256": "23710c0fb2398bb2e8138ae79dad2468af982e45b8e11d9de640269f709e35bc",
+      "bytes": 7952
+    },
+    ".artifacts/input-quality/e36/trial-source/PinyinLanguageScorer.kt": {
+      "archive": "benchmarks/results/e36-evidence/a42b37a07735114944f1.gz",
+      "sha256": "b0ee0b4338d0fa2a30973a3098b4bafc5663a3b1770fda28831294413167a492",
+      "archiveSha256": "3422dcab735fe198050ea7fc806a660be8a4106471d3102f1df62d565af46082",
+      "bytes": 8904
+    },
+    ".artifacts/input-quality/e36/trial-source/UnclippedLanguageEvidenceTest.kt": {
+      "archive": "benchmarks/results/e36-evidence/3079eeab130e5ce335c6.gz",
+      "sha256": "3388eb49bd2b21b50496fcb76231d9b08f44ff356127b0504edbf56f7b353f17",
+      "archiveSha256": "ce711369aaf267fc8ed8f1d65d920751488b7f44ef5cf3c6b960881282766f26",
+      "bytes": 3019
+    },
+    "benchmarks/corpus/e36-emission-evidence-policy.json": {
+      "archive": "benchmarks/results/e36-evidence/486877a14e135b76d56d.gz",
+      "sha256": "d72a73072bb9cedde6a74ad223534df8ee2f48fa98f7d5bf28758a59ff215155",
+      "archiveSha256": "96b6a9012fdd01fbd0ac874891b2f65e3cf70196f2dbb9e11948e99e07510214",
+      "bytes": 1845
+    },
+    "core-input/src/test/kotlin/io/github/ethanbird/senseime/core/SparseContextCandidateRecallTest.kt": {
+      "archive": "benchmarks/results/e36-evidence/114b769353fac801af0b.gz",
+      "sha256": "0232b60c7afdcd2fe522bdb14295bd2c59d635c253af6fdc1966d398c405a522",
+      "archiveSha256": "dcdf6912292cfd237596a8282fbdbcaf4d9e47f8926d075ee29baf7bfdfe5922",
+      "bytes": 1813
+    },
+    "docs/development/input-quality-program-v2.md": {
+      "archive": "benchmarks/results/e36-evidence/de8546f0b6d172d6a066.gz",
+      "sha256": "4d293d2d82a43810952f24150ffde3f943535bdbfe1d4e1f3e301a8928fb632a",
+      "archiveSha256": "649efe02c91584738f2ecfd6f1d19ca0bc3119c670a75e90e7e6f22121634ca0",
+      "bytes": 53242
+    },
+    "docs/research/input-quality-stage-e36-2026-10-04.md": {
+      "archive": "benchmarks/results/e36-evidence/5eda6a27104a20f8c57b.gz",
+      "sha256": "000395170cb8b7fb3752186015e53fcc64b0fdeb3b81f40e1ed878d3034b00d2",
+      "archiveSha256": "53fa9c9ab9b6fe6d16632824d0ab31a244d167d9283809d245207a8ed4e29d8e",
+      "bytes": 4484
+    },
+    "tools/evaluate_cross_domain.py": {
+      "archive": "benchmarks/results/e36-evidence/307d6972470bf6d5c911.gz",
+      "sha256": "5fcfc61ace1bedeffa68e9ca77fd32806108a2a33123dbf89be7b1b3bf89f253",
+      "archiveSha256": "a0d6cbd8e76a8fee6c546e55701c44dda8a9b8bcf930372b69041d16c34d9799",
+      "bytes": 5853
+    }
+  }
+}
