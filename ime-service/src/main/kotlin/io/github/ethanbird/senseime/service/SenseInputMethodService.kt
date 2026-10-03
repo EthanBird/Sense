@@ -3907,7 +3907,13 @@ class SenseInputMethodService : InputMethodService() {
             clearPendingCommit()
             return false
         }
-        if (!pendingDecodeCommit.needsAttention && !pendingDecodeCommit.isFull) return false
+        // Without a later input, Enter/Delete unambiguously concern the visible waiting
+        // composition. Respond immediately, including during cold loading; the notice timer
+        // is presentation, not permission to edit. With a queued next word, keep normal FIFO
+        // semantics until explicit slow-recovery controls are shown (Enter belongs to it).
+        if (!pendingDecodeCommit.needsAttention && !pendingDecodeCommit.isFull &&
+            pendingDecodeCommit.lastQueuedInput != null
+        ) return false
         when (code) {
             KeyCodes.ENTER -> {
                 // The visible recovery action concerns the CURRENT waiting composition. Inputs

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "stage": "E30",
+  "decision": "retain-immediate-controls-for-visible-pending-composition-without-followups",
+  "productionChanged": true,
+  "hostTests": {
+    "core-input": {
+      "tests": 391,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 317,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "pythonTests": {
+    "run": 439,
+    "passed": 438,
+    "skipped": 1
+  },
+  "baselineAndroid": {
+    "run": 4,
+    "passed": 2,
+    "failed": 2
+  },
+  "baselineHost": {
+    "run": 13,
+    "passed": 11,
+    "failed": 2
+  },
+  "sameFixtureApkAndHelper": true,
+  "finalAndroid": {
+    "controlledCold": 4,
+    "slowCandidate": 4,
+    "default": 10,
+    "learning": 6,
+    "context": 8
+  },
+  "finalAndroidTotal": 32,
+  "debugApkSha256": "36df42836be3177a26f40ba662f3dfc13e3cb8182e8c5a971cc5727b11173d1a",
+  "fixtureApkSha256": "4e06e87c2b1feb7df4009b1d83fbdca1ff6975f09ed84122439fd39e0c4a9bee",
+  "deterministicDelayedLoaderCoverage": true,
+  "naturalColdStartupTimingMeasured": false,
+  "dictionaryAndModelAssetsUnchanged": true,
+  "physicalPhoneTested": false,
+  "testBridgeShipped": false,
+  "publishedReleaseChanged": false,
+  "latestPublishedPreview": "v0.4.16-rc.2",
+  "publishedPreviewContainsThisFix": false,
+  "performanceRemeasured": false,
+  "goalComplete": false,
+  "evidenceManifestSha256": "3fe2472d9f9ad46970e35095283b2d28779cb2b47da9d0c84ec4bd122ca7ed61",
+  "archivedFiles": 475
+}

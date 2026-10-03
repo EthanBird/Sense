@@ -23,6 +23,49 @@ import org.robolectric.Shadows.shadowOf
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class PendingPinyinWaitServiceTest {
+    @Test fun enterBeforeNoticeDeadlineRecoversTheWaitingCompositionImmediately() {
+        for (loaded in listOf(false, true)) {
+            val f = Fixture()
+            field(f.service, "productionDecoderReady").set(f.service, loaded)
+            // The real handleSpace boundary after startPendingCommit, before its soft timer.
+            // A null runner in this unit fixture otherwise marks delayed synchronously.
+            f.pending.start(PendingDecodeCommit.Candidate(14))
+            assertFalse(f.pending.needsAttention)
+            val old = f.request()
+            f.key(KeyCodes.ENTER)
+            assertEquals("woxihuanbeijing", f.editor.text.toString())
+            assertEquals(-1, BaseInputConnection.getComposingSpanStart(f.editor.text))
+            assertFalse(f.pending.isPending)
+            invoke(f.service, "applyDecodedCandidates", old,
+                ProgressivePinyinDecoding(14, "woxihuanbeijing", listOf(Candidate("我喜欢北京")), emptyList()))
+            assertEquals("woxihuanbeijing", f.editor.text.toString())
+        }
+    }
+
+    @Test fun deleteBeforeNoticeDeadlineEditsCurrentSpellingImmediately() {
+        val f = Fixture()
+        f.pending.start(PendingDecodeCommit.Candidate(14))
+        assertFalse(f.pending.needsAttention)
+        f.key(KeyCodes.DELETE)
+        assertEquals("woxihuanbeijin", f.editor.text.toString())
+        assertTrue(BaseInputConnection.getComposingSpanStart(f.editor.text) >= 0)
+        assertFalse(f.pending.isPending)
+    }
+
+    @Test fun earlyEnterWithLaterQueuedWordStillAppliesToThatLaterWordInOrder() {
+        val f = Fixture()
+        f.pending.start(PendingDecodeCommit.Candidate(14))
+        "nihao".forEach { f.key(it.code) }
+        f.key(KeyCodes.ENTER)
+        assertFalse(f.pending.needsAttention)
+        assertTrue(f.pending.isPending)
+        assertEquals("woxihuanbeijing", f.editor.text.toString())
+        f.deliver("我喜欢北京")
+        assertEquals("我喜欢北京nihao", f.editor.text.toString())
+        assertEquals(-1, BaseInputConnection.getComposingSpanStart(f.editor.text))
+        assertFalse(f.pending.isPending)
+    }
+
     @Test fun lateChineseResultStillCommitsOnceAfterSeveralSoftDeadlinesAndReplaysFifo() {
         val f = Fixture()
         f.key(KeyCodes.SPACE)
