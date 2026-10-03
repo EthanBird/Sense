@@ -70,6 +70,7 @@ def main():
                    startedAt=datetime.now(timezone.utc).isoformat(), protocolSha256=sha(args.protocol),
                    sdk=adb("shell", "getprop", "ro.build.version.sdk").strip(),
                    originalIme=original, apkSha256={m: v["sha256"] for m, v in lock["apks"].items()},
+                   productInstallFlags=["-r", "-d"],
                    helperSha256=lock["helperSha256"], installedFixtureApks={}, runs=[], restoration={})
     sources = [Path(__file__), root / "tools/android-fixture/TouchBurst.java",
                root / "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorFastLatencyTest.kt",
@@ -100,7 +101,9 @@ def main():
             save()
             trace_started = False
             try:
-                install = adb("install", "-r", lock["apks"][mode]["path"])
+                # Pinned debug references may precede a release version bump.
+                # Downgrade only within the already-verified disposable AVD.
+                install = adb("install", "-r", "-d", lock["apks"][mode]["path"])
                 (folder / "install.log").write_text(install, encoding="utf-8")
                 if "Success" not in install or "Success" not in adb("shell", "pm", "clear", PACKAGE):
                     raise RuntimeError("Debug profile preparation failed")
@@ -151,7 +154,7 @@ def main():
     finally:
         # Do not leave the older baseline installed after the last ABBA block.
         try:
-            output = adb("install", "-r", lock["apks"]["optimized"]["path"])
+            output = adb("install", "-r", "-d", lock["apks"]["optimized"]["path"])
             remote = adb("shell", "pm", "path", PACKAGE).strip().removeprefix("package:")
             results["restoration"]["apkSha256"] = adb("shell", "sha256sum", remote).split()[0]
             results["restoration"]["apkRestored"] = ("Success" in output and results["restoration"]["apkSha256"] == lock["apks"]["optimized"]["sha256"])

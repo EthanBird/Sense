@@ -1,0 +1,436 @@
+{
+  "schemaVersion": 1,
+  "stage": "E26",
+  "decision": "membership-index-rejected-by-fixed-median-gate-default-restored",
+  "productionChanged": false,
+  "experimentalProductionChangeArchived": true,
+  "performance": {
+    "schemaVersion": 1,
+    "protocol": "shell-touch-v1",
+    "scope": "Fixed known-query ABBA, genuine 32ms-target system touch; clean debug profile, runtime ready, no learning. Not phone certification.",
+    "apkSha256": {
+      "baseline": "7ce9874adf9f9b0a84408aa67c90727b8d98ab5f4e7f1433e1d4eded05ee16ed",
+      "optimized": "c109ccaf78da46f863a2368dc00ffa50c47912337617589f319b386555545fab"
+    },
+    "blocks": [
+      {
+        "block": 1,
+        "mode": "baseline",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 35,
+          "maxMs": 40
+        }
+      },
+      {
+        "block": 2,
+        "mode": "optimized",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 36,
+          "maxMs": 40
+        }
+      },
+      {
+        "block": 3,
+        "mode": "optimized",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 36,
+          "maxMs": 44
+        }
+      },
+      {
+        "block": 4,
+        "mode": "baseline",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 35,
+          "maxMs": 44
+        }
+      }
+    ],
+    "failures": [],
+    "comparison": {
+      "schemaVersion": 1,
+      "scope": "Fixed known-query ABBA, genuine 32ms-target system touch; clean debug profile, runtime ready, no learning. Not phone certification.",
+      "apkSha256": {
+        "baseline": "7ce9874adf9f9b0a84408aa67c90727b8d98ab5f4e7f1433e1d4eded05ee16ed",
+        "optimized": "c109ccaf78da46f863a2368dc00ffa50c47912337617589f319b386555545fab"
+      },
+      "limitations": [
+        "Eight fixed known queries, four observations per query/mode, one API 37 x86_64 emulator and debug builds.",
+        "Observed percentiles describe this workload, not a population or real-phone tail-latency guarantee.",
+        "32ms-target shell touch; measured actual sender cadence and external editor callbacks. Includes injection and scheduling, excludes initial loading; not rendered-frame timing.",
+        "A known 类/累 semantic error is deliberately retained as baseline output; this is not an accuracy score.",
+        "Complete decode trace slices also include short prefixes completed while typing, not only final confirmations."
+      ],
+      "confirmationMs": {
+        "baseline": {
+          "count": 32,
+          "medianMs": 134.5,
+          "observedP95Ms": 326,
+          "maxMs": 353
+        },
+        "optimized": {
+          "count": 32,
+          "medianMs": 145.0,
+          "observedP95Ms": 300,
+          "maxMs": 313
+        }
+      },
+      "perQuery": [
+        {
+          "query": "nihao",
+          "baseline": {
+            "samples": [
+              119,
+              19,
+              136,
+              18
+            ],
+            "count": 4,
+            "medianMs": 69.0,
+            "observedP95Ms": 136,
+            "maxMs": 136
+          },
+          "optimized": {
+            "samples": [
+              127,
+              30,
+              112,
+              18
+            ],
+            "count": 4,
+            "medianMs": 71.0,
+            "observedP95Ms": 127,
+            "maxMs": 127
+          }
+        },
+        {
+          "query": "woxihuanbeijing",
+          "baseline": {
+            "samples": [
+              326,
+              86,
+              353,
+              114
+            ],
+            "count": 4,
+            "medianMs": 220.0,
+            "observedP95Ms": 353,
+            "maxMs": 353
+          },
+          "optimized": {
+            "samples": [
+              300,
+              83,
+              313,
+              100
+            ],
+            "count": 4,
+            "medianMs": 200.0,
+            "observedP95Ms": 313,
+            "maxMs": 313
+          }
+        },
+        {
+          "query": "qingfageweizhigeiwo",
+          "baseline": {
+            "samples": [
+              168,
+              105,
+              163,
+              106
+            ],
+            "count": 4,
+            "medianMs": 134.5,
+            "observedP95Ms": 168,
+            "maxMs": 168
+          },
+          "optimized": {
+            "samples": [
+              148,
+              69,
+              171,
+              86
+            ],
+            "count": 4,
+            "medianMs": 117.0,
+            "observedP95Ms": 171,
+            "maxMs": 171
+          }
+        },
+        {
+          "query": "qingjianchayixiayoujian",
+          "baseline": {
+            "samples": [
+              218,
+              130,
+              214,
+              119
+            ],
+            "count": 4,
+            "medianMs": 172.0,
+            "observedP95Ms": 218,
+            "maxMs": 218
+          },
+          "optimized": {
+            "samples": [
+              177,
+              137,
+              217,
+              154
+            ],
+            "count": 4,
+            "medianMs": 165.5,
+            "observedP95Ms": 217,
+            "maxMs": 217
+          }
+        },
+        {
+          "query": "zhegeyingyonghenhaoyong",
+          "baseline": {
+            "samples": [
+              128,
+              118,
+              117,
+              101
+            ],
+            "count": 4,
+            "medianMs": 117.5,
+            "observedP95Ms": 128,
+            "maxMs": 128
+          },
+          "optimized": {
+            "samples": [
+              158,
+              102,
+              142,
+              101
+            ],
+            "count": 4,
+            "medianMs": 122.0,
+            "observedP95Ms": 158,
+            "maxMs": 158
+          }
+        },
+        {
+          "query": "jintianyouyidianlei",
+          "baseline": {
+            "samples": [
+              149,
+              132,
+              133,
+              117
+            ],
+            "count": 4,
+            "medianMs": 132.5,
+            "observedP95Ms": 149,
+            "maxMs": 149
+          },
+          "optimized": {
+            "samples": [
+              119,
+              116,
+              125,
+              124
+            ],
+            "count": 4,
+            "medianMs": 121.5,
+            "observedP95Ms": 125,
+            "maxMs": 125
+          }
+        },
+        {
+          "query": "tangmuhemalimeitianwanshangdoukandianshi",
+          "baseline": {
+            "samples": [
+              233,
+              195,
+              240,
+              172
+            ],
+            "count": 4,
+            "medianMs": 214.0,
+            "observedP95Ms": 240,
+            "maxMs": 240
+          },
+          "optimized": {
+            "samples": [
+              201,
+              201,
+              195,
+              196
+            ],
+            "count": 4,
+            "medianMs": 198.5,
+            "observedP95Ms": 201,
+            "maxMs": 201
+          }
+        },
+        {
+          "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+          "baseline": {
+            "samples": [
+              208,
+              233,
+              222,
+              247
+            ],
+            "count": 4,
+            "medianMs": 227.5,
+            "observedP95Ms": 247,
+            "maxMs": 247
+          },
+          "optimized": {
+            "samples": [
+              229,
+              212,
+              234,
+              208
+            ],
+            "count": 4,
+            "medianMs": 220.5,
+            "observedP95Ms": 234,
+            "maxMs": 234
+          }
+        }
+      ],
+      "traces": [
+        {
+          "block": 1,
+          "mode": "baseline",
+          "sha256": "1d518a1f2caac1dc937680be5785dcf99395b975218c9ce044d34ed2d594d70e",
+          "canceledDecodes": 357,
+          "completedDecodes": 77,
+          "completedDecodeMs": {
+            "count": 77,
+            "medianMs": 17.43,
+            "observedP95Ms": 242.938,
+            "maxMs": 329.499
+          }
+        },
+        {
+          "block": 2,
+          "mode": "optimized",
+          "sha256": "3e0aef8649738bc1b49cc7622a85dedc83d53cd15aeb5c4b502c31db35a6f747",
+          "canceledDecodes": 351,
+          "completedDecodes": 81,
+          "completedDecodeMs": {
+            "count": 81,
+            "medianMs": 19.323,
+            "observedP95Ms": 221.826,
+            "maxMs": 318.228
+          }
+        },
+        {
+          "block": 3,
+          "mode": "optimized",
+          "sha256": "e67607d0d748a03afd3010f11d36c574ab6de75d8da445da18f573bc10c22467",
+          "canceledDecodes": 357,
+          "completedDecodes": 77,
+          "completedDecodeMs": {
+            "count": 77,
+            "medianMs": 20.884,
+            "observedP95Ms": 223.322,
+            "maxMs": 330.219
+          }
+        },
+        {
+          "block": 4,
+          "mode": "baseline",
+          "sha256": "ea652626c2779f0dc6294340483316922dc2eaabf22c2355319ef6743266c3c8",
+          "canceledDecodes": 354,
+          "completedDecodes": 79,
+          "completedDecodeMs": {
+            "count": 79,
+            "medianMs": 20.43,
+            "observedP95Ms": 253.899,
+            "maxMs": 365.364
+          }
+        }
+      ],
+      "latencyGate": {
+        "scope": "Fixed ABBA workload only; not statistical significance or phone certification",
+        "rule": "paired median and observed P95 each no worse than reference",
+        "checks": {
+          "medianMs": false,
+          "observedP95Ms": true
+        },
+        "passed": false
+      }
+    },
+    "promotionPassed": false,
+    "stableReleaseReady": false
+  },
+  "fullResultEquivalence": {
+    "scope": "Known host JVM progressive replay; not Android latency or new held-out accuracy",
+    "observations": 1790,
+    "fullFingerprintMismatches": [],
+    "assetAndInputPinsEqual": true,
+    "baselineHostMedianMs": 7.08875,
+    "candidateHostMedianMs": 6.63515
+  },
+  "modelEquivalence": {
+    "passed": true,
+    "membershipQueries": 1114116,
+    "unigramQueries": 3352,
+    "transitionQueries": 236527,
+    "baselineRetainedBytes": 3090904,
+    "candidateRetainedBytes": 3099096
+  },
+  "restoration": {
+    "allProductionSourcePinsRestored": true,
+    "coreClassPayloadsRestored": 420,
+    "installedDebugApkSha256": "7ce9874adf9f9b0a84408aa67c90727b8d98ab5f4e7f1433e1d4eded05ee16ed",
+    "defaultIme": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+    "rejectedCandidateApkSha256": "c109ccaf78da46f863a2368dc00ffa50c47912337617589f319b386555545fab",
+    "restoredBuildApkSha256": "501465c5b5fd34e16d4cd6af5e55b453b2cfcb63870aebb91100b848f848ee70",
+    "releaseApkSha256": "48b24fded1430f7aa85dedffb93122607013d65e4015ba03945ef3998b413e23",
+    "candidateCoreJarSha256": "aecc9c9b6560295924251906e5df5d0d2d7462439da8211318e2c5db7779ca06",
+    "baselineCoreJarSha256": "96479bc629648bf6e9edd09f60cc7db56817b00b1a73dfd57882d0c05c57320d"
+  },
+  "hostTests": {
+    "core-input": {
+      "tests": 380,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 312,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "python": {
+    "run": 430,
+    "passed": 429,
+    "skipped": 1
+  },
+  "stableReleaseReady": false,
+  "goalComplete": false,
+  "previewRelease": "v0.4.16-rc.1",
+  "archivedFiles": 77,
+  "evidenceManifestSha256": "cb034fd0ba4c780373e7c691c28b44b70596db0b06869eb4ad541893bf54a334"
+}
