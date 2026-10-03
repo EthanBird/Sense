@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "releaseVersion": "0.4.16-rc.3",
+  "versionCode": 43,
+  "releaseType": "preview",
+  "sourceBaseCommit": "1effea53ddab99adf60ec66d6c8a2499db0db8f9",
+  "branch": "codex/input-quality-v2",
+  "createdAt": "2026-10-03T16:56:22.603015+00:00",
+  "apkSha256": "790e0bb4148ebca59801c4de1096da8c64d552c31cdcd02f94c510ced92081e3",
+  "bytes": 73102399,
+  "certificateSha256": "76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984",
+  "packageName": "io.github.ethanbird.senseime",
+  "minSdk": 29,
+  "targetSdk": 36,
+  "e30ProductionInputLogicUnchanged": true,
+  "mainSourceDifferences": [
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M15TypoRecallBenchmark.kt"
+  ],
+  "e31CandidateIncluded": false,
+  "e31Decision": "Known quality gain, rejected for paired latency regression; archived patch retained",
+  "hostTests": {
+    "core-input": {
+      "tests": 391,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 317,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "hostTotal": 943,
+  "unchangedGradleTasksMayBeUpToDate": true,
+  "pythonTests": {
+    "run": 439,
+    "passed": 438,
+    "skipped": 1,
+    "skipReason": "Windows symlink permission fixture"
+  },
+  "androidFunctionalEvidence": {
+    "debugApkSha256": "2d0f42c1bd6944b1a2fff1ab296d3065d6fbd3e75dceea9624fd6fa060010da1",
+    "freshGroups": {
+      "default": 10,
+      "learning": 6,
+      "context": 8
+    },
+    "freshTotal": 24,
+    "scope": "Dedicated API 37 x86_64 emulator; actual IME to external editor. Release APK verified statically, not installed on user phone."
+  },
+  "inheritedE30FaultInjectionEvidence": {
+    "controlledColdLoader": 4,
+    "slowCandidate": 4,
+    "inputLogicUnchanged": true,
+    "report": "benchmarks/results/e30-acceptance-gate.json",
+    "naturalColdLatencyMeasured": false
+  },
+  "pairedE30ReferenceTiming": {
+    "medianMs": 136.5,
+    "observedP95Ms": 265,
+    "maxMs": 271,
+    "count": 32,
+    "scope": "E31 same-session ABBA baseline; same E30 input logic, earlier Debug APK; not current Release APK frame timing"
+  },
+  "assetHashes": {
+    "assets/dexopt/baseline.prof": "74d7c2dacdbdbbfa37c5c190ba29012fbdcb4c377b6b0c3a31e11a84600ecd87",
+    "assets/dexopt/baseline.profm": "92f0e8541e19bd54e7bb0d21435d9f4a14f688cda4b0981e94c2ac146975d070",
+    "assets/ASSOCIATION-MODEL-NOTICE.txt": "4629a89db03218238cd3b9651da106b9100d5f07a7386f1b1ab155c6ecf27433",
+    "assets/CONCENTUS-BSD-3-CLAUSE.txt": "fa08d794f35b8c2517a2b929ff388cf179e6eb452383e8dc13de81452741a564",
+    "assets/LARK-OAPI-APACHE-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "assets/LICENSE.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "assets/NOTICE.txt": "bfcfbe84562a5a614b2790d85465f18f809dc700fa44e7e51e2db633fc37dd14",
+    "assets/OKHTTP-APACHE-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "assets/PINYIN-LM-NOTICE.txt": "42e67712562a6b3b2e491f42146efd7235d7fcd6d3ac2a156eabfbae1e6565d0",
+    "assets/POPULAR-ENGLISH-WORDS-ISC.txt": "f432301e16a48011db30f6fd74d5ec906745d5c9bfcacb91c924e4738d7e4fa7",
+    "assets/PublicSuffixDatabase.list": "c75ab827afd7ffff59a51b14729c25dbfc3b45237eb40ccf02bec7b7d44304a4",
+    "assets/RIME-FROST-GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "assets/RIME-FROST-NOTICE.txt": "bacf7e02bf7b78343aa6c718021d24c701092cb0e14b737a84f13c551b181a83",
+    "assets/RIME-ICE-GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "assets/RIME-ICE-NOTICE.txt": "268b2226666b6597f6ebcc2e084888ecd6288a9655eedbdea3e1e9b6e092a496",
+    "assets/RIME-WUBI-LGPL-3.0.txt": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+    "assets/RIME-WUBI-NOTICE.txt": "c1ccba91f1ba2ebe970ef62a80e69feef1d1a61b568d078a20e9b904782035a8",
+    "assets/association_words.snwp": "d0b157b46ee6df5fe0466870f6a5bf2951b0498a081d4860b3791bb2f123bf39",
+    "assets/association_words_notice.json": "7648de91d2fc68049d9ea7dca14c3cb7b80432d395b3a19b7b9bcf246a88ae4f",
+    "assets/english_lexicon.txt": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624",
+    "assets/pinyin_bigrams.bin": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
+    "assets/pinyin_character_lm.scng": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+    "assets/pinyin_character_lm_attribution.tsv": "acfb932b806f02bd53b57f4a902628fea2c29f6efda7a785a11be432ac22173a",
+    "assets/pinyin_character_lm_notice.json": "131039406d56f7b729331d91bdb4c8891d4e79d36ab7bd1fc95d761a4f881d7a",
+    "assets/pinyin_lexicon.bin": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232",
+    "assets/pinyin_syllables.txt": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+    "assets/wubi86_lexicon.bin": "e2d47d43ab702862c349cd7f9ad36b2d4cbd72963c95cdb6f7911bf849937207"
+  },
+  "changesVsRc2": [
+    "assets/dexopt/baseline.prof"
+  ],
+  "dictionaryAndModelsUnchanged": true,
+  "lint": {
+    "app": {
+      "Warning": 28
+    },
+    "ime-service": {
+      "Warning": 2
+    },
+    "ime-ui": {
+      "Warning": 9,
+      "Hint": 1
+    }
+  },
+  "fixtureDexExcluded": true,
+  "physicalPhoneTested": false,
+  "goalComplete": false,
+  "staticVerification": "Fresh signed Gradle build, then local_release.ps1 -SkipBuild -SkipTests static checks, plus asset and runtime-boundary audits; tests invoked separately.",
+  "publication": "Feature-branch prerelease; manual gh draft/tag/publish, not main-only local_release -Publish pipeline",
+  "evidenceManifestSha256": "21f0ea02792e8a1533f9b1f54e9de377796026c1e3a9ecdd523acdcdd1955831",
+  "archivedFiles": 285
+}
