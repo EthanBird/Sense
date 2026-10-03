@@ -30,16 +30,21 @@ def main():
     p.add_argument('output',type=Path)
     p.add_argument('--adb',default='F:/Android/Sdk/platform-tools/adb.exe')
     p.add_argument('--serial',default='emulator-5580')
+    p.add_argument('--apk',type=Path,help='Explicit candidate artifact; requires --apk-sha256')
+    p.add_argument('--apk-sha256',help='Pinned candidate SHA-256; default remains the rc.3 evidence artifact')
     args=p.parse_args()
     if not re.fullmatch(r'emulator-\d+',args.serial) or not re.fullmatch(r'[a-zA-Z0-9_-]+',args.output.name):
         raise ValueError('Dedicated emulator and simple evidence name required')
     if args.output.exists(): raise ValueError('Retain prior evidence; choose a fresh directory')
     root=Path(__file__).resolve().parents[1]
     source=root/'ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/PersistentUserLexicon.kt'
-    apk=root/'app/build/outputs/apk/debug/app-debug.apk'
+    apk=args.apk or root/'app/build/outputs/apk/debug/app-debug.apk'
     release=json.loads((root/'benchmarks/results/release-v0.4.16-rc.3.json').read_text('utf-8'))
-    if sha(apk)!=release['androidFunctionalEvidence']['debugApkSha256']:
-        raise ValueError('This fixed capacity run targets the tested rc.3 debug artifact')
+    baseline_sha=release['androidFunctionalEvidence']['debugApkSha256']
+    if bool(args.apk)!=bool(args.apk_sha256): raise ValueError('Candidate path and pinned SHA are required together')
+    expected_sha=args.apk_sha256 or baseline_sha
+    if not re.fullmatch('[0-9a-f]{64}',expected_sha) or sha(apk)!=expected_sha:
+        raise ValueError('APK differs from the explicitly pinned artifact')
 
     def adb(*parts,data=None,required=True,instrument=False):
         result=subprocess.run([args.adb,'-s',args.serial,*map(str,parts)],input=data,
@@ -60,7 +65,8 @@ def main():
                 serial=args.serial,sdk=text('shell','getprop','ro.build.version.sdk').strip(),
                 scope='Fixed synthetic personal capacity, genuine system touch and SQLite restoration; not natural accuracy or phone frames',
                 policy='Four blocks, seven inputs before/after real process restart. Require every prefix, final commit, durable count and all database rows/context maps intact. No timing pass threshold; retain all blocks.',
-                noProductionChanges=True,originalIme=original,fixtureApks={},runs=[],restoration={})
+                noProductionChanges=sha(apk)==baseline_sha,baselineRc3DebugSha256=baseline_sha,
+                originalIme=original,fixtureApks={},runs=[],restoration={})
     report['sources']={str(path.relative_to(root)).replace('\\','/'):sha(path) for path in [Path(__file__),root/'tools/personal_dictionary_fixture.py',source,
         root/'input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorCapacityTest.kt']}
     def save(): write(args.output/'result.json',report)

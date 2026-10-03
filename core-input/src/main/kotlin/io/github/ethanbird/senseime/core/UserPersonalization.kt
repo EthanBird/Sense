@@ -404,6 +404,9 @@ class MemoryUserLexicon(
         current: Collection<String>,
         retained: Collection<String>,
     ): Set<String> {
+        // Most restored words have no alternate spelling. Avoid constructing a set and
+        // two normalization/distinct/sort pipelines when both sources are empty.
+        if (current.isEmpty() && retained.isEmpty()) return emptySet()
         val result = LinkedHashSet<String>(maximumAliasesPerRecord)
         sequenceOf(current, retained).forEach { source ->
             source
@@ -447,15 +450,29 @@ class MemoryUserLexicon(
 
     private fun weakestKey(keys: Collection<Pair<String, String>>): Pair<String, String>? {
         val now = clock()
-        return keys.minWithOrNull(
-            compareBy<Pair<String, String>> {
-                records[it]?.let { phrase ->
-                    PersonalizationScoring.rankingBoost(phrase, now)
-                } ?: Float.NEGATIVE_INFINITY
+        val iterator = keys.iterator()
+        if (!iterator.hasNext()) return null
+        var weakest = iterator.next()
+        val first = records[weakest]
+        var weakestBoost = if (first == null) Float.NEGATIVE_INFINITY else PersonalizationScoring.rankingBoost(first, now)
+        var weakestTime = if (first == null) Long.MIN_VALUE else first.lastUsedAtMillis
+        // Saturated initials/alias buckets visit this path for every restored row. Score each
+        // entry once; a generic chained comparator rescored the running minimum and boxed both
+        // Float and Long on every comparison. Keep its exact ordering and first-on-complete-tie.
+        while (iterator.hasNext()) {
+            val key = iterator.next()
+            val phrase = records[key]
+            val boost = if (phrase == null) Float.NEGATIVE_INFINITY else PersonalizationScoring.rankingBoost(phrase, now)
+            val time = if (phrase == null) Long.MIN_VALUE else phrase.lastUsedAtMillis
+            val scoreOrder = java.lang.Float.compare(boost, weakestBoost)
+            if (scoreOrder < 0 || (scoreOrder == 0 &&
+                    (time < weakestTime || (time == weakestTime && key.second > weakest.second)))) {
+                weakest = key
+                weakestBoost = boost
+                weakestTime = time
             }
-                .thenBy { records[it]?.lastUsedAtMillis ?: Long.MIN_VALUE }
-                .thenByDescending { it.second },
-        )
+        }
+        return weakest
     }
 
     private fun removeRecord(key: Pair<String, String>): Boolean {

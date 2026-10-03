@@ -20,6 +20,13 @@ class ArtProfileTest(unittest.TestCase):
         self.assertEqual(30, dict(result["inclusiveCpuUs"])["Test.child"])
         self.assertEqual(10, dict(result["exclusiveCpuUs"])["Test.leaf"])
 
+    def test_other_diagnostic_root_excludes_parent_cpu_and_wrong_thread(self):
+        result = summarize(self.trace(), root_method="Test.child")
+        self.assertEqual(30, result["observedDecodeCpuUs"])
+        self.assertNotIn("io.github.ethanbird.senseime.core.AdaptivePinyinDecoder.decodeProgressively", dict(result["exclusiveCpuUs"]))
+        with self.assertRaises(ValueError):
+            summarize(self.trace(), thread_name="different-thread", root_method="Test.child")
+
     def test_overflow_truncation_and_broken_stack_are_rejected(self):
         for data in [self.trace().replace(b"overflow=false", b"overflow=true"), self.trace()[:-1],
                      self.trace()[:-14] + struct.pack("<HIII", 16, 9, 60, 160)]:

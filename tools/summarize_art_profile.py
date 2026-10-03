@@ -11,7 +11,8 @@ from pathlib import Path
 import struct
 
 
-def summarize(data, thread_name="sense-candidate-decoder", include_all_methods=False):
+def summarize(data, thread_name="sense-candidate-decoder", include_all_methods=False,
+              root_method="io.github.ethanbird.senseime.core.AdaptivePinyinDecoder.decodeProgressively"):
     end = data.index(b"*end\n") + 5
     header = data[:end].decode("utf-8")
     if "clock=dual\n" not in header or "data-file-overflow=false\n" not in header or "is_streaming=true" in header:
@@ -33,7 +34,7 @@ def summarize(data, thread_name="sense-candidate-decoder", include_all_methods=F
         raise ValueError("Unsupported or truncated ART record layout")
     stacks, clocks = defaultdict(list), {}
     exclusive, inclusive = Counter(), Counter()
-    root = "io.github.ethanbird.senseime.core.AdaptivePinyinDecoder.decodeProgressively"
+    root = root_method
     for position in range(end + offset, len(data), size):
         tid, encoded, cpu, _wall = struct.unpack_from("<HIII", data, position)
         method, action = encoded & ~3, encoded & 3
@@ -56,7 +57,7 @@ def summarize(data, thread_name="sense-candidate-decoder", include_all_methods=F
         else:
             raise ValueError("Unbalanced method record")
     if not exclusive:
-        raise ValueError("No progressive decoder CPU intervals observed")
+        raise ValueError("No requested root/thread CPU intervals observed")
     return {"schemaVersion": 1, "scope": "Intrusive ART method trace diagnostic, not normal latency; intervals assigned from recorded thread CPU clocks",
             "traceSha256": hashlib.sha256(data).hexdigest(), "thread": thread_name,
             "observedDecodeCpuUs": sum(exclusive.values()), "exclusiveCpuUs": exclusive.most_common(None if include_all_methods else 30),

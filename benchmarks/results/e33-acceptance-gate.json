@@ -1,0 +1,513 @@
+{
+  "schemaVersion": 1,
+  "stage": "E33",
+  "decision": "accept-exact-eviction-scan-and-empty-alias-fast-path",
+  "sourceBaseCommit": "6963b12",
+  "productionFilesChanged": [
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPersonalization.kt"
+  ],
+  "candidateDebugApkSha256": "404ababaee1b040b9192c3ae08f3e238563cb75b506aecc04aa58b9f04e85b0e",
+  "baselineDebugApkSha256": "2d0f42c1bd6944b1a2fff1ab296d3065d6fbd3e75dceea9624fd6fa060010da1",
+  "all25ApkAssetsIdentical": true,
+  "publishedRelease": "v0.4.16-rc.3",
+  "publishedApkChanged": false,
+  "releaseApkSha256": "790e0bb4148ebca59801c4de1096da8c64d552c31cdcd02f94c510ced92081e3",
+  "hostTests": {
+    "core-input": {
+      "tests": 396,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "earliestTimestamp": "2026-10-03T17:54:52.125Z"
+    },
+    "ime-service": {
+      "tests": 317,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "earliestTimestamp": "2026-10-03T17:55:00.908Z"
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "earliestTimestamp": "2026-10-03T17:55:30.682Z"
+    }
+  },
+  "pythonTests": {
+    "run": 448,
+    "passed": 447,
+    "skipped": 1
+  },
+  "firstVariant": {
+    "accepted": false,
+    "reason": "No-shared-alias control failed strict nonregression",
+    "results": {
+      "1000-shared-True": {
+        "stateEqual": true,
+        "stateSha256": [
+          "ad40960feddc02fae9fc953e5857911f225613cbe9760965911743c47fcc5f66"
+        ],
+        "timingUnit": "ms",
+        "timings": {
+          "baseline": {
+            "readWallNs": {
+              "count": 10,
+              "medianMs": 42.8546,
+              "observedP95Ms": 45.4261,
+              "maxMs": 45.4261
+            },
+            "readCpuNs": {
+              "count": 10,
+              "medianMs": 28.054246,
+              "observedP95Ms": 29.262479,
+              "maxMs": 29.262479
+            },
+            "restoreWallNs": {
+              "count": 10,
+              "medianMs": 116.3884,
+              "observedP95Ms": 130.642,
+              "maxMs": 130.642
+            },
+            "restoreCpuNs": {
+              "count": 10,
+              "medianMs": 95.7154185,
+              "observedP95Ms": 107.473509,
+              "maxMs": 107.473509
+            }
+          },
+          "candidate": {
+            "readWallNs": {
+              "count": 10,
+              "medianMs": 39.091499999999996,
+              "observedP95Ms": 47.9094,
+              "maxMs": 47.9094
+            },
+            "readCpuNs": {
+              "count": 10,
+              "medianMs": 26.441003000000002,
+              "observedP95Ms": 32.037335,
+              "maxMs": 32.037335
+            },
+            "restoreWallNs": {
+              "count": 10,
+              "medianMs": 51.15905,
+              "observedP95Ms": 63.195,
+              "maxMs": 63.195
+            },
+            "restoreCpuNs": {
+              "count": 10,
+              "medianMs": 44.1674425,
+              "observedP95Ms": 54.879762,
+              "maxMs": 54.879762
+            }
+          }
+        },
+        "nonregression": true,
+        "medianWallRatio": 0.4395545432362675,
+        "passed": true
+      },
+      "10000-shared-True": {
+        "stateEqual": true,
+        "stateSha256": [
+          "2ee913346e2ab72f21363adf154277ef72b5d07adbdf838b6affc063149d2f98"
+        ],
+        "timingUnit": "ms",
+        "timings": {
+          "baseline": {
+            "readWallNs": {
+              "count": 10,
+              "medianMs": 264.89734999999996,
+              "observedP95Ms": 293.7963,
+              "maxMs": 293.7963
+            },
+            "readCpuNs": {
+              "count": 10,
+              "medianMs": 223.66143499999998,
+              "observedP95Ms": 246.469093,
+              "maxMs": 246.469093
+            },
+            "restoreWallNs": {
+              "count": 10,
+              "medianMs": 1006.7004999999999,
+              "observedP95Ms": 1076.4559,
+              "maxMs": 1076.4559
+            },
+            "restoreCpuNs": {
+              "count": 10,
+              "medianMs": 945.7854064999999,
+              "observedP95Ms": 1010.851065,
+              "maxMs": 1010.851065
+            }
+          },
+          "candidate": {
+            "readWallNs": {
+              "count": 10,
+              "medianMs": 265.79605000000004,
+              "observedP95Ms": 291.3447,
+              "maxMs": 291.3447
+            },
+            "readCpuNs": {
+              "count": 10,
+              "medianMs": 228.36579949999998,
+              "observedP95Ms": 251.36967,
+              "maxMs": 251.36967
+            },
+            "restoreWallNs": {
+              "count": 10,
+              "medianMs": 481.62005,
+              "observedP95Ms": 528.4497,
+              "maxMs": 528.4497
+            },
+            "restoreCpuNs": {
+              "count": 10,
+              "medianMs": 454.71998099999996,
+              "observedP95Ms": 500.321976,
+              "maxMs": 500.321976
+            }
+          }
+        },
+        "nonregression": true,
+        "medianWallRatio": 0.4784144340844174,
+        "passed": true
+      },
+      "10000-shared-False": {
+        "stateEqual": true,
+        "stateSha256": [
+          "f3ac34c1afe8f7808a669d9d75578bbd7a732860de67f0285cc6a118d3b8b5e2"
+        ],
+        "timingUnit": "ms",
+        "timings": {
+          "baseline": {
+            "readWallNs": {
+              "count": 10,
+              "medianMs": 253.9673,
+              "observedP95Ms": 279.462,
+              "maxMs": 279.462
+            },
+            "readCpuNs": {
+              "count": 10,
+              "medianMs": 216.188464,
+              "observedP95Ms": 238.601594,
+              "maxMs": 238.601594
+            },
+            "restoreWallNs": {
+              "count": 10,
+              "medianMs": 100.93639999999999,
+              "observedP95Ms": 133.1237,
+              "maxMs": 133.1237
+            },
+            "restoreCpuNs": {
+              "count": 10,
+              "medianMs": 91.8528715,
+              "observedP95Ms": 123.30691,
+              "maxMs": 123.30691
+            }
+          },
+          "candidate": {
+            "readWallNs": {
+              "count": 10,
+              "medianMs": 251.608,
+              "observedP95Ms": 270.0508,
+              "maxMs": 270.0508
+            },
+            "readCpuNs": {
+              "count": 10,
+              "medianMs": 214.7789915,
+              "observedP95Ms": 235.25584,
+              "maxMs": 235.25584
+            },
+            "restoreWallNs": {
+              "count": 10,
+              "medianMs": 103.78415000000001,
+              "observedP95Ms": 136.7092,
+              "maxMs": 136.7092
+            },
+            "restoreCpuNs": {
+              "count": 10,
+              "medianMs": 94.061875,
+              "observedP95Ms": 124.197055,
+              "maxMs": 124.197055
+            }
+          }
+        },
+        "nonregression": false,
+        "medianWallRatio": 1.0282133105599172,
+        "passed": false
+      }
+    }
+  },
+  "finalVariant": {
+    "accepted": true,
+    "results": {
+      "1000-shared-True": {
+        "stateEqual": true,
+        "stateSha256": [
+          "cfb7bdcdfc5dc3dfa8e28da161152dfe6287028c6d6b1d6fffe8ec6b1e013416"
+        ],
+        "timingUnit": "ms",
+        "timings": {
+          "baseline": {
+            "readWallNs": {
+              "count": 10,
+              "medianMs": 43.0414,
+              "observedP95Ms": 45.9425,
+              "maxMs": 45.9425
+            },
+            "readCpuNs": {
+              "count": 10,
+              "medianMs": 28.882448,
+              "observedP95Ms": 31.994131,
+              "maxMs": 31.994131
+            },
+            "restoreWallNs": {
+              "count": 10,
+              "medianMs": 120.8959,
+              "observedP95Ms": 132.7466,
+              "maxMs": 132.7466
+            },
+            "restoreCpuNs": {
+              "count": 10,
+              "medianMs": 98.601606,
+              "observedP95Ms": 110.211076,
+              "maxMs": 110.211076
+            }
+          },
+          "candidate": {
+            "readWallNs": {
+              "count": 10,
+              "medianMs": 35.71885,
+              "observedP95Ms": 45.4207,
+              "maxMs": 45.4207
+            },
+            "readCpuNs": {
+              "count": 10,
+              "medianMs": 25.25742,
+              "observedP95Ms": 30.059083,
+              "maxMs": 30.059083
+            },
+            "restoreWallNs": {
+              "count": 10,
+              "medianMs": 47.70415,
+              "observedP95Ms": 60.5989,
+              "maxMs": 60.5989
+            },
+            "restoreCpuNs": {
+              "count": 10,
+              "medianMs": 44.269202,
+              "observedP95Ms": 50.914798,
+              "maxMs": 50.914798
+            }
+          }
+        },
+        "nonregression": true,
+        "medianWallRatio": 0.3945886502354505,
+        "passed": true
+      },
+      "10000-shared-True": {
+        "stateEqual": true,
+        "stateSha256": [
+          "8ccd86ff57700d2546cc655a32c6a53039cc2dd392327d634e7fc7270e4422b0"
+        ],
+        "timingUnit": "ms",
+        "timings": {
+          "baseline": {
+            "readWallNs": {
+              "count": 10,
+              "medianMs": 269.0981,
+              "observedP95Ms": 297.9382,
+              "maxMs": 297.9382
+            },
+            "readCpuNs": {
+              "count": 10,
+              "medianMs": 222.0480165,
+              "observedP95Ms": 256.538812,
+              "maxMs": 256.538812
+            },
+            "restoreWallNs": {
+              "count": 10,
+              "medianMs": 1010.0201999999999,
+              "observedP95Ms": 1086.2115,
+              "maxMs": 1086.2115
+            },
+            "restoreCpuNs": {
+              "count": 10,
+              "medianMs": 948.0842145,
+              "observedP95Ms": 1024.667161,
+              "maxMs": 1024.667161
+            }
+          },
+          "candidate": {
+            "readWallNs": {
+              "count": 10,
+              "medianMs": 258.3018,
+              "observedP95Ms": 286.8672,
+              "maxMs": 286.8672
+            },
+            "readCpuNs": {
+              "count": 10,
+              "medianMs": 219.19445000000002,
+              "observedP95Ms": 244.765672,
+              "maxMs": 244.765672
+            },
+            "restoreWallNs": {
+              "count": 10,
+              "medianMs": 482.53125,
+              "observedP95Ms": 535.2226,
+              "maxMs": 535.2226
+            },
+            "restoreCpuNs": {
+              "count": 10,
+              "medianMs": 462.95430450000003,
+              "observedP95Ms": 510.645697,
+              "maxMs": 510.645697
+            }
+          }
+        },
+        "nonregression": true,
+        "medianWallRatio": 0.4777441579881274,
+        "passed": true
+      },
+      "10000-shared-False": {
+        "stateEqual": true,
+        "stateSha256": [
+          "01806c5812e2b7a53a07ae12d0b154916f4c2eeae38314e9c4d6f719667fb362"
+        ],
+        "timingUnit": "ms",
+        "timings": {
+          "baseline": {
+            "readWallNs": {
+              "count": 10,
+              "medianMs": 255.63005,
+              "observedP95Ms": 278.4661,
+              "maxMs": 278.4661
+            },
+            "readCpuNs": {
+              "count": 10,
+              "medianMs": 213.1859495,
+              "observedP95Ms": 237.617244,
+              "maxMs": 237.617244
+            },
+            "restoreWallNs": {
+              "count": 10,
+              "medianMs": 97.64265,
+              "observedP95Ms": 132.9303,
+              "maxMs": 132.9303
+            },
+            "restoreCpuNs": {
+              "count": 10,
+              "medianMs": 89.5373685,
+              "observedP95Ms": 123.306834,
+              "maxMs": 123.306834
+            }
+          },
+          "candidate": {
+            "readWallNs": {
+              "count": 10,
+              "medianMs": 253.4006,
+              "observedP95Ms": 300.6216,
+              "maxMs": 300.6216
+            },
+            "readCpuNs": {
+              "count": 10,
+              "medianMs": 215.0976825,
+              "observedP95Ms": 251.1124,
+              "maxMs": 251.1124
+            },
+            "restoreWallNs": {
+              "count": 10,
+              "medianMs": 82.4462,
+              "observedP95Ms": 111.3975,
+              "maxMs": 111.3975
+            },
+            "restoreCpuNs": {
+              "count": 10,
+              "medianMs": 75.6556445,
+              "observedP95Ms": 102.377808,
+              "maxMs": 102.377808
+            }
+          }
+        },
+        "nonregression": true,
+        "medianWallRatio": 0.8443666778810285,
+        "passed": true
+      }
+    },
+    "policy": "Four fixed ABBA fresh-process blocks. Per block one warmup per dataset, then five fixed rounds. Full state equality; all three datasets median/P95 restore wall and CPU nonregression; 10k saturated-alias median wall at least 15 percent faster. No timing-based reruns.",
+    "measuredRestorations": 60,
+    "warmups": 12
+  },
+  "androidFunctional": {
+    "realCapacityConfirmations": 56,
+    "differentPidRestarts": 4,
+    "allDurableRowsAndContextsPreserved": true,
+    "externalEditorScenarios": {
+      "default": 10,
+      "learning": 6,
+      "context": 8
+    }
+  },
+  "capacityObservations": {
+    "1000": {
+      "confirmationMs": {
+        "count": 28,
+        "medianMs": 69.5,
+        "observedP95Ms": 138,
+        "maxMs": 153
+      },
+      "restarts": [
+        {
+          "type": "restart",
+          "oldPid": "16681",
+          "newPid": "17235",
+          "selectionToObservedReadyMs": 3409,
+          "runtime": "Sense candidate runtime: ready=true generation=2 characterModel=READY",
+          "scope": "Includes IME selection, shell, UI and polling; not isolated SQLite loading or rendered frame timing"
+        },
+        {
+          "type": "restart",
+          "oldPid": "20949",
+          "newPid": "21461",
+          "selectionToObservedReadyMs": 3301,
+          "runtime": "Sense candidate runtime: ready=true generation=2 characterModel=READY",
+          "scope": "Includes IME selection, shell, UI and polling; not isolated SQLite loading or rendered frame timing"
+        }
+      ]
+    },
+    "10000": {
+      "confirmationMs": {
+        "count": 28,
+        "medianMs": 72.0,
+        "observedP95Ms": 148,
+        "maxMs": 152
+      },
+      "restarts": [
+        {
+          "type": "restart",
+          "oldPid": "17837",
+          "newPid": "18570",
+          "selectionToObservedReadyMs": 4428,
+          "runtime": "Sense candidate runtime: ready=true generation=2 characterModel=READY",
+          "scope": "Includes IME selection, shell, UI and polling; not isolated SQLite loading or rendered frame timing"
+        },
+        {
+          "type": "restart",
+          "oldPid": "19367",
+          "newPid": "20114",
+          "selectionToObservedReadyMs": 4614,
+          "runtime": "Sense candidate runtime: ready=true generation=2 characterModel=READY",
+          "scope": "Includes IME selection, shell, UI and polling; not isolated SQLite loading or rendered frame timing"
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Fixture ART construction, not system first frame or normal typing latency",
+    "Capacity confirmation timings unpaired with E32; no per-key speedup claim",
+    "No physical phone, no natural quality gain, no UI capacity insertion/eviction coverage"
+  ],
+  "goalComplete": false,
+  "evidenceManifestSha256": "d5822944c47ac8231737cdccd51025ca19fd61bc40022dc30f065595b56c9f18",
+  "archivedFiles": 398
+}
