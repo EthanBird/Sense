@@ -1,0 +1,866 @@
+{
+  "schemaVersion": 1,
+  "stage": "E40",
+  "decision": "accept-measurement-and-functional-baseline; no-production-performance-change",
+  "report": {
+    "stage": "E40",
+    "scope": "Fixed two rounds: three 32ms-target typing sequences and one expanded scroll per round. HWUI frame completion is distinct from editor acknowledgement and physical presentation. Dedicated API37 emulator, no phone measurement, no CPU profiler or product instrumentation.",
+    "productApkSha256": "1dfa19d48e9fcfdb491f9bed56c24911192caebe3ce8e7f42c65d1b67895a9df",
+    "captureIntegrityPassed": true,
+    "functionalWindows": 8,
+    "samples": [
+      {
+        "label": "typing-0-0",
+        "kind": "typing",
+        "frameFileSha256": "72eff4e5c6045df1c959eb754d370af5733a16d0513c1eb7f91b66f297c2d1a9",
+        "process": "io.github.ethanbird.senseime.debug:ime",
+        "pid": "17897",
+        "window": "InputMethod",
+        "totalAfterReset": 9,
+        "records": 9,
+        "windowRecords": 9,
+        "outsideWindow": 0,
+        "ordinaryFrames": 9,
+        "flaggedFrames": 0,
+        "completeRing": true,
+        "components": {
+          "hwuiCompletion": {
+            "count": 9,
+            "medianMs": 28.010674,
+            "p95Ms": 35.238902,
+            "maxMs": 35.238902,
+            "totalMs": 253.64421
+          },
+          "scheduledVsyncDelay": {
+            "count": 9,
+            "medianMs": 0.0,
+            "p95Ms": 0.0,
+            "maxMs": 0.0,
+            "totalMs": 0.0
+          },
+          "uiStartDelay": {
+            "count": 9,
+            "medianMs": 3.873736,
+            "p95Ms": 5.6078,
+            "maxMs": 5.6078,
+            "totalMs": 31.36691
+          },
+          "mainThreadWork": {
+            "count": 9,
+            "medianMs": 1.4298,
+            "p95Ms": 6.8149,
+            "maxMs": 6.8149,
+            "totalMs": 18.849
+          },
+          "viewTraversal": {
+            "count": 9,
+            "medianMs": 0.1326,
+            "p95Ms": 0.2062,
+            "maxMs": 0.2062,
+            "totalMs": 1.2348
+          },
+          "recordDrawCommands": {
+            "count": 9,
+            "medianMs": 1.0825,
+            "p95Ms": 6.5638,
+            "maxMs": 6.5638,
+            "totalMs": 16.6155
+          },
+          "renderQueueWait": {
+            "count": 9,
+            "medianMs": 0.3974,
+            "p95Ms": 8.4558,
+            "maxMs": 8.4558,
+            "totalMs": 15.8695
+          },
+          "renderAndCompletionWait": {
+            "count": 9,
+            "medianMs": 18.1863,
+            "p95Ms": 29.0891,
+            "maxMs": 29.0891,
+            "totalMs": 185.4014
+          },
+          "reportedDeadline": {
+            "available": 9,
+            "missing": 0,
+            "completedAfter": 5,
+            "scope": "Per-row HWUI deadline, not a reimplementation of all Android JankTracker rules"
+          }
+        },
+        "confirmationMs": 125,
+        "rawPrefixReceipt": {
+          "count": 5,
+          "medianMs": 22.0,
+          "p95Ms": 30.0,
+          "maxMs": 30.0,
+          "totalMs": 108.0
+        }
+      },
+      {
+        "label": "typing-0-1",
+        "kind": "typing",
+        "frameFileSha256": "07a2ab4e5b8ed7dd8a7a0bfda94f76e8e39fee8a5ca595824f02be6b60d97906",
+        "process": "io.github.ethanbird.senseime.debug:ime",
+        "pid": "17897",
+        "window": "InputMethod",
+        "totalAfterReset": 29,
+        "records": 29,
+        "windowRecords": 29,
+        "outsideWindow": 0,
+        "ordinaryFrames": 29,
+        "flaggedFrames": 0,
+        "completeRing": true,
+        "components": {
+          "hwuiCompletion": {
+            "count": 29,
+            "medianMs": 34.391574,
+            "p95Ms": 36.450744,
+            "maxMs": 36.682382,
+            "totalMs": 914.324414
+          },
+          "scheduledVsyncDelay": {
+            "count": 29,
+            "medianMs": 0.0,
+            "p95Ms": 0.0,
+            "maxMs": 0.0,
+            "totalMs": 0.0
+          },
+          "uiStartDelay": {
+            "count": 29,
+            "medianMs": 2.042596,
+            "p95Ms": 9.696512,
+            "maxMs": 10.971644,
+            "totalMs": 81.303714
+          },
+          "mainThreadWork": {
+            "count": 29,
+            "medianMs": 1.5657,
+            "p95Ms": 8.6673,
+            "maxMs": 10.8828,
+            "totalMs": 65.367
+          },
+          "viewTraversal": {
+            "count": 29,
+            "medianMs": 0.1291,
+            "p95Ms": 0.2848,
+            "maxMs": 0.5714,
+            "totalMs": 4.5403
+          },
+          "recordDrawCommands": {
+            "count": 29,
+            "medianMs": 1.2036,
+            "p95Ms": 8.3616,
+            "maxMs": 10.0622,
+            "totalMs": 52.8131
+          },
+          "renderQueueWait": {
+            "count": 29,
+            "medianMs": 3.5002,
+            "p95Ms": 11.6566,
+            "maxMs": 12.2029,
+            "totalMs": 143.9007
+          },
+          "renderAndCompletionWait": {
+            "count": 29,
+            "medianMs": 20.4219,
+            "p95Ms": 30.9944,
+            "maxMs": 31.4833,
+            "totalMs": 620.1073
+          },
+          "reportedDeadline": {
+            "available": 29,
+            "missing": 0,
+            "completedAfter": 7,
+            "scope": "Per-row HWUI deadline, not a reimplementation of all Android JankTracker rules"
+          }
+        },
+        "confirmationMs": 346,
+        "rawPrefixReceipt": {
+          "count": 15,
+          "medianMs": 21.0,
+          "p95Ms": 29.0,
+          "maxMs": 29.0,
+          "totalMs": 330.0
+        }
+      },
+      {
+        "label": "typing-0-2",
+        "kind": "typing",
+        "frameFileSha256": "dd458199f89626554f04fb77fead18d09ac298324b95b28910c88d6727e9487a",
+        "process": "io.github.ethanbird.senseime.debug:ime",
+        "pid": "17897",
+        "window": "InputMethod",
+        "totalAfterReset": 61,
+        "records": 61,
+        "windowRecords": 61,
+        "outsideWindow": 0,
+        "ordinaryFrames": 61,
+        "flaggedFrames": 0,
+        "completeRing": true,
+        "components": {
+          "hwuiCompletion": {
+            "count": 61,
+            "medianMs": 34.307848,
+            "p95Ms": 50.865324,
+            "maxMs": 52.793058,
+            "totalMs": 2036.699808
+          },
+          "scheduledVsyncDelay": {
+            "count": 61,
+            "medianMs": 0.0,
+            "p95Ms": 0.0,
+            "maxMs": 0.0,
+            "totalMs": 0.0
+          },
+          "uiStartDelay": {
+            "count": 61,
+            "medianMs": 2.803228,
+            "p95Ms": 13.631858,
+            "maxMs": 18.241562,
+            "totalMs": 287.317208
+          },
+          "mainThreadWork": {
+            "count": 61,
+            "medianMs": 1.4885,
+            "p95Ms": 5.7638,
+            "maxMs": 11.6349,
+            "totalMs": 141.4791
+          },
+          "viewTraversal": {
+            "count": 61,
+            "medianMs": 0.1496,
+            "p95Ms": 0.3756,
+            "maxMs": 1.2285,
+            "totalMs": 10.9722
+          },
+          "recordDrawCommands": {
+            "count": 61,
+            "medianMs": 1.1081,
+            "p95Ms": 5.5662,
+            "maxMs": 11.1328,
+            "totalMs": 117.3568
+          },
+          "renderQueueWait": {
+            "count": 61,
+            "medianMs": 0.4108,
+            "p95Ms": 13.6509,
+            "maxMs": 22.3777,
+            "totalMs": 193.5914
+          },
+          "renderAndCompletionWait": {
+            "count": 61,
+            "medianMs": 22.543,
+            "p95Ms": 32.217,
+            "maxMs": 34.1185,
+            "totalMs": 1400.8099
+          },
+          "reportedDeadline": {
+            "available": 61,
+            "missing": 0,
+            "completedAfter": 23,
+            "scope": "Per-row HWUI deadline, not a reimplementation of all Android JankTracker rules"
+          }
+        },
+        "confirmationMs": 302,
+        "rawPrefixReceipt": {
+          "count": 39,
+          "medianMs": 22.0,
+          "p95Ms": 57.0,
+          "maxMs": 62.0,
+          "totalMs": 971.0
+        }
+      },
+      {
+        "label": "expanded-0",
+        "kind": "expanded",
+        "frameFileSha256": "28abb06f1f310f20c5e738a75277b7ba04985a7dd78186f0b42405e2151545b0",
+        "process": "io.github.ethanbird.senseime.debug:ime",
+        "pid": "17897",
+        "window": "InputMethod",
+        "totalAfterReset": 37,
+        "records": 37,
+        "windowRecords": 37,
+        "outsideWindow": 0,
+        "ordinaryFrames": 37,
+        "flaggedFrames": 0,
+        "completeRing": true,
+        "components": {
+          "hwuiCompletion": {
+            "count": 37,
+            "medianMs": 17.94279,
+            "p95Ms": 30.005,
+            "maxMs": 34.442034,
+            "totalMs": 647.4327
+          },
+          "scheduledVsyncDelay": {
+            "count": 37,
+            "medianMs": 0.0,
+            "p95Ms": 0.0,
+            "maxMs": 0.0,
+            "totalMs": 0.0
+          },
+          "uiStartDelay": {
+            "count": 37,
+            "medianMs": 1.43483,
+            "p95Ms": 2.551894,
+            "maxMs": 2.599886,
+            "totalMs": 58.5529
+          },
+          "mainThreadWork": {
+            "count": 37,
+            "medianMs": 1.4158,
+            "p95Ms": 2.4707,
+            "maxMs": 2.5045,
+            "totalMs": 53.6662
+          },
+          "viewTraversal": {
+            "count": 37,
+            "medianMs": 0.1275,
+            "p95Ms": 0.3855,
+            "maxMs": 0.4286,
+            "totalMs": 5.64
+          },
+          "recordDrawCommands": {
+            "count": 37,
+            "medianMs": 0.706,
+            "p95Ms": 1.4087,
+            "maxMs": 1.8958,
+            "totalMs": 29.5334
+          },
+          "renderQueueWait": {
+            "count": 37,
+            "medianMs": 0.2501,
+            "p95Ms": 1.1507,
+            "maxMs": 4.7432,
+            "totalMs": 14.1106
+          },
+          "renderAndCompletionWait": {
+            "count": 37,
+            "medianMs": 14.6058,
+            "p95Ms": 26.2158,
+            "maxMs": 30.088,
+            "totalMs": 518.0443
+          },
+          "reportedDeadline": {
+            "available": 37,
+            "missing": 0,
+            "completedAfter": 13,
+            "scope": "Per-row HWUI deadline, not a reimplementation of all Android JankTracker rules"
+          }
+        }
+      },
+      {
+        "label": "typing-1-0",
+        "kind": "typing",
+        "frameFileSha256": "ed49f6b2957bfa063d676542b4e61e03bdc2d76afca6fe96987162d2f31311f4",
+        "process": "io.github.ethanbird.senseime.debug:ime",
+        "pid": "17897",
+        "window": "InputMethod",
+        "totalAfterReset": 54,
+        "records": 54,
+        "windowRecords": 54,
+        "outsideWindow": 0,
+        "ordinaryFrames": 54,
+        "flaggedFrames": 0,
+        "completeRing": true,
+        "components": {
+          "hwuiCompletion": {
+            "count": 54,
+            "medianMs": 30.291609,
+            "p95Ms": 40.11845,
+            "maxMs": 52.227336,
+            "totalMs": 1549.709858
+          },
+          "scheduledVsyncDelay": {
+            "count": 54,
+            "medianMs": 0.0,
+            "p95Ms": 0.0,
+            "maxMs": 0.0,
+            "totalMs": 0.0
+          },
+          "uiStartDelay": {
+            "count": 54,
+            "medianMs": 2.089722,
+            "p95Ms": 10.04625,
+            "maxMs": 10.451478,
+            "totalMs": 154.669858
+          },
+          "mainThreadWork": {
+            "count": 54,
+            "medianMs": 1.26525,
+            "p95Ms": 7.7755,
+            "maxMs": 11.7392,
+            "totalMs": 107.4901
+          },
+          "viewTraversal": {
+            "count": 54,
+            "medianMs": 0.1356,
+            "p95Ms": 0.427,
+            "maxMs": 2.4308,
+            "totalMs": 11.486
+          },
+          "recordDrawCommands": {
+            "count": 54,
+            "medianMs": 1.00295,
+            "p95Ms": 7.5746,
+            "maxMs": 11.6034,
+            "totalMs": 87.9641
+          },
+          "renderQueueWait": {
+            "count": 54,
+            "medianMs": 0.37515,
+            "p95Ms": 12.2685,
+            "maxMs": 15.1487,
+            "totalMs": 150.5434
+          },
+          "renderAndCompletionWait": {
+            "count": 54,
+            "medianMs": 18.9026,
+            "p95Ms": 32.3808,
+            "maxMs": 34.2156,
+            "totalMs": 1130.7005
+          },
+          "reportedDeadline": {
+            "available": 54,
+            "missing": 0,
+            "completedAfter": 27,
+            "scope": "Per-row HWUI deadline, not a reimplementation of all Android JankTracker rules"
+          }
+        },
+        "confirmationMs": 232,
+        "rawPrefixReceipt": {
+          "count": 39,
+          "medianMs": 17.0,
+          "p95Ms": 36.0,
+          "maxMs": 51.0,
+          "totalMs": 769.0
+        }
+      },
+      {
+        "label": "typing-1-1",
+        "kind": "typing",
+        "frameFileSha256": "5854f739391b4b3ba22b30914a6549002d6b6b39816e455b1a5681be953cda93",
+        "process": "io.github.ethanbird.senseime.debug:ime",
+        "pid": "17897",
+        "window": "InputMethod",
+        "totalAfterReset": 26,
+        "records": 26,
+        "windowRecords": 26,
+        "outsideWindow": 0,
+        "ordinaryFrames": 26,
+        "flaggedFrames": 0,
+        "completeRing": true,
+        "components": {
+          "hwuiCompletion": {
+            "count": 26,
+            "medianMs": 34.839243,
+            "p95Ms": 51.297444,
+            "maxMs": 52.2502,
+            "totalMs": 930.270138
+          },
+          "scheduledVsyncDelay": {
+            "count": 26,
+            "medianMs": 0.0,
+            "p95Ms": 0.0,
+            "maxMs": 0.0,
+            "totalMs": 0.0
+          },
+          "uiStartDelay": {
+            "count": 26,
+            "medianMs": 2.548736,
+            "p95Ms": 15.647244,
+            "maxMs": 18.583646,
+            "totalMs": 119.452438
+          },
+          "mainThreadWork": {
+            "count": 26,
+            "medianMs": 1.68995,
+            "p95Ms": 8.7193,
+            "maxMs": 9.0383,
+            "totalMs": 63.9691
+          },
+          "viewTraversal": {
+            "count": 26,
+            "medianMs": 0.15735,
+            "p95Ms": 0.8987,
+            "maxMs": 1.0256,
+            "totalMs": 8.1315
+          },
+          "recordDrawCommands": {
+            "count": 26,
+            "medianMs": 1.23135,
+            "p95Ms": 7.7818,
+            "maxMs": 8.709,
+            "totalMs": 51.3259
+          },
+          "renderQueueWait": {
+            "count": 26,
+            "medianMs": 5.0609,
+            "p95Ms": 15.394,
+            "maxMs": 22.0475,
+            "totalMs": 156.0551
+          },
+          "renderAndCompletionWait": {
+            "count": 26,
+            "medianMs": 22.45665,
+            "p95Ms": 31.9229,
+            "maxMs": 32.9324,
+            "totalMs": 588.3866
+          },
+          "reportedDeadline": {
+            "available": 26,
+            "missing": 0,
+            "completedAfter": 10,
+            "scope": "Per-row HWUI deadline, not a reimplementation of all Android JankTracker rules"
+          }
+        },
+        "confirmationMs": 112,
+        "rawPrefixReceipt": {
+          "count": 15,
+          "medianMs": 23.0,
+          "p95Ms": 55.0,
+          "maxMs": 55.0,
+          "totalMs": 405.0
+        }
+      },
+      {
+        "label": "typing-1-2",
+        "kind": "typing",
+        "frameFileSha256": "2648dab00718fecce3855432a537d870c13f59c2fa998e44be816216deb4061a",
+        "process": "io.github.ethanbird.senseime.debug:ime",
+        "pid": "17897",
+        "window": "InputMethod",
+        "totalAfterReset": 11,
+        "records": 11,
+        "windowRecords": 11,
+        "outsideWindow": 0,
+        "ordinaryFrames": 11,
+        "flaggedFrames": 0,
+        "completeRing": true,
+        "components": {
+          "hwuiCompletion": {
+            "count": 11,
+            "medianMs": 29.508808,
+            "p95Ms": 34.898944,
+            "maxMs": 34.898944,
+            "totalMs": 292.081842
+          },
+          "scheduledVsyncDelay": {
+            "count": 11,
+            "medianMs": 0.0,
+            "p95Ms": 0.0,
+            "maxMs": 0.0,
+            "totalMs": 0.0
+          },
+          "uiStartDelay": {
+            "count": 11,
+            "medianMs": 1.67948,
+            "p95Ms": 11.980678,
+            "maxMs": 11.980678,
+            "totalMs": 30.088242
+          },
+          "mainThreadWork": {
+            "count": 11,
+            "medianMs": 1.2466,
+            "p95Ms": 4.2516,
+            "maxMs": 4.2516,
+            "totalMs": 17.7363
+          },
+          "viewTraversal": {
+            "count": 11,
+            "medianMs": 0.1072,
+            "p95Ms": 0.1524,
+            "maxMs": 0.1524,
+            "totalMs": 1.2697
+          },
+          "recordDrawCommands": {
+            "count": 11,
+            "medianMs": 1.0988,
+            "p95Ms": 4.0481,
+            "maxMs": 4.0481,
+            "totalMs": 15.4039
+          },
+          "renderQueueWait": {
+            "count": 11,
+            "medianMs": 0.1354,
+            "p95Ms": 14.7377,
+            "maxMs": 14.7377,
+            "totalMs": 25.2243
+          },
+          "renderAndCompletionWait": {
+            "count": 11,
+            "medianMs": 17.1102,
+            "p95Ms": 29.9195,
+            "maxMs": 29.9195,
+            "totalMs": 217.0716
+          },
+          "reportedDeadline": {
+            "available": 11,
+            "missing": 0,
+            "completedAfter": 4,
+            "scope": "Per-row HWUI deadline, not a reimplementation of all Android JankTracker rules"
+          }
+        },
+        "confirmationMs": 38,
+        "rawPrefixReceipt": {
+          "count": 5,
+          "medianMs": 19.0,
+          "p95Ms": 22.0,
+          "maxMs": 22.0,
+          "totalMs": 93.0
+        }
+      },
+      {
+        "label": "expanded-1",
+        "kind": "expanded",
+        "frameFileSha256": "23382156cf4f52ce656e7f5a2bc9055f8028af2e1b1b8071d37c7ab3fd7415e9",
+        "process": "io.github.ethanbird.senseime.debug:ime",
+        "pid": "17897",
+        "window": "InputMethod",
+        "totalAfterReset": 42,
+        "records": 42,
+        "windowRecords": 42,
+        "outsideWindow": 0,
+        "ordinaryFrames": 42,
+        "flaggedFrames": 0,
+        "completeRing": true,
+        "components": {
+          "hwuiCompletion": {
+            "count": 42,
+            "medianMs": 17.970833,
+            "p95Ms": 19.549764,
+            "maxMs": 19.700782,
+            "totalMs": 728.999724
+          },
+          "scheduledVsyncDelay": {
+            "count": 42,
+            "medianMs": 0.0,
+            "p95Ms": 0.0,
+            "maxMs": 0.0,
+            "totalMs": 0.0
+          },
+          "uiStartDelay": {
+            "count": 42,
+            "medianMs": 1.696784,
+            "p95Ms": 2.876498,
+            "maxMs": 3.068716,
+            "totalMs": 74.372824
+          },
+          "mainThreadWork": {
+            "count": 42,
+            "medianMs": 1.35135,
+            "p95Ms": 2.2386,
+            "maxMs": 2.4872,
+            "totalMs": 61.7236
+          },
+          "viewTraversal": {
+            "count": 42,
+            "medianMs": 0.1289,
+            "p95Ms": 0.3049,
+            "maxMs": 0.7486,
+            "totalMs": 6.9027
+          },
+          "recordDrawCommands": {
+            "count": 42,
+            "medianMs": 0.725,
+            "p95Ms": 1.1165,
+            "maxMs": 1.3429,
+            "totalMs": 33.5416
+          },
+          "renderQueueWait": {
+            "count": 42,
+            "medianMs": 0.1853,
+            "p95Ms": 2.4148,
+            "maxMs": 5.7331,
+            "totalMs": 22.0604
+          },
+          "renderAndCompletionWait": {
+            "count": 42,
+            "medianMs": 14.5813,
+            "p95Ms": 15.8764,
+            "maxMs": 16.9809,
+            "totalMs": 566.0317
+          },
+          "reportedDeadline": {
+            "available": 42,
+            "missing": 0,
+            "completedAfter": 5,
+            "scope": "Per-row HWUI deadline, not a reimplementation of all Android JankTracker rules"
+          }
+        }
+      }
+    ],
+    "typing": {
+      "hwuiCompletion": {
+        "count": 190,
+        "medianMs": 34.096987,
+        "p95Ms": 50.830134,
+        "maxMs": 52.793058,
+        "totalMs": 5976.73027
+      },
+      "scheduledVsyncDelay": {
+        "count": 190,
+        "medianMs": 0.0,
+        "p95Ms": 0.0,
+        "maxMs": 0.0,
+        "totalMs": 0.0
+      },
+      "uiStartDelay": {
+        "count": 190,
+        "medianMs": 2.344918,
+        "p95Ms": 12.555956,
+        "maxMs": 18.583646,
+        "totalMs": 704.19837
+      },
+      "mainThreadWork": {
+        "count": 190,
+        "medianMs": 1.4316,
+        "p95Ms": 6.9172,
+        "maxMs": 11.7392,
+        "totalMs": 414.8906
+      },
+      "viewTraversal": {
+        "count": 190,
+        "medianMs": 0.13905,
+        "p95Ms": 0.427,
+        "maxMs": 2.4308,
+        "totalMs": 37.6345
+      },
+      "recordDrawCommands": {
+        "count": 190,
+        "medianMs": 1.09655,
+        "p95Ms": 6.5638,
+        "maxMs": 11.6034,
+        "totalMs": 341.4793
+      },
+      "renderQueueWait": {
+        "count": 190,
+        "medianMs": 0.62445,
+        "p95Ms": 13.6509,
+        "maxMs": 22.3777,
+        "totalMs": 685.1844
+      },
+      "renderAndCompletionWait": {
+        "count": 190,
+        "medianMs": 20.90265,
+        "p95Ms": 31.6485,
+        "maxMs": 34.2156,
+        "totalMs": 4142.4773
+      },
+      "reportedDeadline": {
+        "available": 190,
+        "missing": 0,
+        "completedAfter": 76,
+        "scope": "Per-row HWUI deadline, not a reimplementation of all Android JankTracker rules"
+      }
+    },
+    "expanded": {
+      "hwuiCompletion": {
+        "count": 79,
+        "medianMs": 17.966454,
+        "p95Ms": 19.700782,
+        "maxMs": 34.442034,
+        "totalMs": 1376.432424
+      },
+      "scheduledVsyncDelay": {
+        "count": 79,
+        "medianMs": 0.0,
+        "p95Ms": 0.0,
+        "maxMs": 0.0,
+        "totalMs": 0.0
+      },
+      "uiStartDelay": {
+        "count": 79,
+        "medianMs": 1.63616,
+        "p95Ms": 2.599886,
+        "maxMs": 3.068716,
+        "totalMs": 132.925724
+      },
+      "mainThreadWork": {
+        "count": 79,
+        "medianMs": 1.3691,
+        "p95Ms": 2.4613,
+        "maxMs": 2.5045,
+        "totalMs": 115.3898
+      },
+      "viewTraversal": {
+        "count": 79,
+        "medianMs": 0.1288,
+        "p95Ms": 0.3387,
+        "maxMs": 0.7486,
+        "totalMs": 12.5427
+      },
+      "recordDrawCommands": {
+        "count": 79,
+        "medianMs": 0.7183,
+        "p95Ms": 1.2993,
+        "maxMs": 1.8958,
+        "totalMs": 63.075
+      },
+      "renderQueueWait": {
+        "count": 79,
+        "medianMs": 0.2259,
+        "p95Ms": 2.4148,
+        "maxMs": 5.7331,
+        "totalMs": 36.171
+      },
+      "renderAndCompletionWait": {
+        "count": 79,
+        "medianMs": 14.6058,
+        "p95Ms": 16.9267,
+        "maxMs": 30.088,
+        "totalMs": 1084.076
+      },
+      "reportedDeadline": {
+        "available": 79,
+        "missing": 0,
+        "completedAfter": 18,
+        "scope": "Per-row HWUI deadline, not a reimplementation of all Android JankTracker rules"
+      }
+    },
+    "confirmation": {
+      "count": 6,
+      "medianMs": 178.5,
+      "p95Ms": 346.0,
+      "maxMs": 346.0,
+      "totalMs": 1155.0
+    },
+    "rawPrefixReceipt": {
+      "count": 118,
+      "medianMs": 20.0,
+      "p95Ms": 45.0,
+      "maxMs": 62.0,
+      "totalMs": 2676.0
+    },
+    "senderIntervals": {
+      "count": 118,
+      "medianMs": 33.0,
+      "p95Ms": 37.0,
+      "maxMs": 40.0,
+      "totalMs": 3974.0
+    },
+    "productionChanged": false,
+    "productImprovementClaim": false,
+    "limitations": [
+      "One dedicated API37 emulator; graphics backend/host scheduling affect completion.",
+      "Warm ready runtime, no personal learning; not cold-start or other Android/OEM coverage.",
+      "Frames within a window are correlated; frame percentiles are not per-key latency percentiles.",
+      "HWUI FrameCompleted is not guaranteed physical display presentation or input-to-photon time."
+    ]
+  },
+  "tests": {
+    "tests": 28,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "productApkSha256": "1dfa19d48e9fcfdb491f9bed56c24911192caebe3ce8e7f42c65d1b67895a9df",
+  "releaseUnchanged": "v0.4.16-rc.4",
+  "releaseApkSha256": "f571badcd03361fe4b80a096553ca566ffecd117c4ad7694a22f4686ee2de528",
+  "productionChanged": false,
+  "androidFunctionalWindows": 8,
+  "phoneMeasured": false,
+  "goalComplete": false,
+  "archivedFiles": 40,
+  "evidenceManifestSha256": "4cba2ad43d82c52d5db179fff29b5c3a81b7e1e9b285517f6fb41945aa13a1ad"
+}
