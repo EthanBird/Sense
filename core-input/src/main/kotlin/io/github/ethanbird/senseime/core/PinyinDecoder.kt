@@ -597,6 +597,8 @@ class PinyinDecoder private constructor(
             val startSyllableIndex = syllableIndexByOffset?.get(start) ?: 0
             if (syllableIndexByOffset != null && startSyllableIndex < 0) return@forEach
             val maxEnd = minOf(query.length, maxOf(start + MAX_SEGMENT_CODE_LENGTH, userWords.maximumEnd(start)))
+            val exactRecords = sortedPinyinPrefixRecords(data, recordOffsets, query, start,
+                minOf(query.length, start + MAX_SEGMENT_CODE_LENGTH))
             for (end in (start + 1)..maxEnd) {
                 DecodeWorkScope.checkpoint()
                 val baseEdgeAllowed = end - start <= MAX_SEGMENT_CODE_LENGTH &&
@@ -612,7 +614,7 @@ class PinyinDecoder private constructor(
                     endSyllableIndex - startSyllableIndex
                 }
                 if (edgeSyllableCount != null && edgeSyllableCount < 1) continue
-                val record = if (baseEdgeAllowed) findExact(query, start, end) else -1
+                val record = if (baseEdgeAllowed) exactRecords[end - start] else -1
                 if (record < 0 && learned.isEmpty()) continue
                 val context = if (start == 0) previousCodePoint else NO_CODE_POINT
                 val options = if (language == null && learned.isEmpty() && !crossesJoint && edgeSyllableCount == null) {

@@ -1,0 +1,413 @@
+{
+  "schemaVersion": 1,
+  "stage": "E42",
+  "decision": "accept-progressively-narrowed-exact-prefix-lookup-for-word-lattice",
+  "productionChanged": true,
+  "hostTests": {
+    "core-input": {
+      "tests": 412,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 317,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "pythonTests": 69,
+  "fullResults": {
+    "rows": 3083,
+    "differences": [],
+    "allResultsEqual": true,
+    "groups": {
+      "replay": {
+        "rows": 945,
+        "beforeCalls": 12502411,
+        "afterCalls": 12502411,
+        "beforeMembership": 23362767,
+        "afterMembership": 23362767
+      },
+      "test": {
+        "rows": 1874,
+        "beforeCalls": 26620835,
+        "afterCalls": 26620835,
+        "beforeMembership": 49659431,
+        "afterMembership": 49659431
+      },
+      "aishell": {
+        "rows": 128,
+        "beforeCalls": 2453254,
+        "afterCalls": 2453254,
+        "beforeMembership": 4670035,
+        "afterMembership": 4670035
+      },
+      "tatoeba": {
+        "rows": 128,
+        "beforeCalls": 1974916,
+        "afterCalls": 1974916,
+        "beforeMembership": 3745511,
+        "afterMembership": 3745511
+      },
+      "android-workload": {
+        "rows": 8,
+        "beforeCalls": 162156,
+        "afterCalls": 162156,
+        "beforeMembership": 314862,
+        "afterMembership": 314862
+      }
+    },
+    "inputSha256": "066fcfa51e1347f1064f08c6d23f46221f56371d1ab2c7fd870a1fd231b1f7ed",
+    "beforeSha256": "1b81e48da88663ddb9d6b77c86650fea8cf36b9637eb7747807ad0d317eeb793",
+    "afterSha256": "1b81e48da88663ddb9d6b77c86650fea8cf36b9637eb7747807ad0d317eeb793",
+    "scope": "Deterministic model-call accounting on labeled host queries; no timing or natural accuracy inference"
+  },
+  "lookupAudit": [
+    {
+      "view": "base",
+      "records": "823782",
+      "queries": "57474",
+      "exactComparisons": "797844"
+    },
+    {
+      "view": "layered",
+      "records": "1106451",
+      "queries": "77196",
+      "exactComparisons": "1078127"
+    }
+  ],
+  "androidFunctional": {
+    "learning": 6,
+    "context": 8,
+    "correction": 10,
+    "default": 10,
+    "boundary": 6
+  },
+  "androidLatency": {
+    "confirmationMs": {
+      "baseline": {
+        "count": 32,
+        "medianMs": 136.0,
+        "observedP95Ms": 338,
+        "maxMs": 343
+      },
+      "optimized": {
+        "count": 32,
+        "medianMs": 131.5,
+        "observedP95Ms": 300,
+        "maxMs": 309
+      }
+    },
+    "gate": {
+      "scope": "Fixed ABBA workload only; not statistical significance or phone certification",
+      "rule": "paired median and observed P95 each no worse than reference",
+      "checks": {
+        "medianMs": true,
+        "observedP95Ms": true
+      },
+      "passed": true
+    },
+    "blocks": [
+      {
+        "block": 1,
+        "mode": "baseline",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 36,
+          "maxMs": 44
+        }
+      },
+      {
+        "block": 2,
+        "mode": "optimized",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 35,
+          "maxMs": 42
+        }
+      },
+      {
+        "block": 3,
+        "mode": "optimized",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 36,
+          "maxMs": 45
+        }
+      },
+      {
+        "block": 4,
+        "mode": "baseline",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 36,
+          "maxMs": 42
+        }
+      }
+    ],
+    "functionalConfirmations": 64,
+    "continuousFollowups": 8,
+    "perQuery": [
+      {
+        "query": "nihao",
+        "baseline": {
+          "samples": [
+            137,
+            25,
+            113,
+            66
+          ],
+          "count": 4,
+          "medianMs": 89.5,
+          "observedP95Ms": 137,
+          "maxMs": 137
+        },
+        "optimized": {
+          "samples": [
+            121,
+            24,
+            129,
+            26
+          ],
+          "count": 4,
+          "medianMs": 73.5,
+          "observedP95Ms": 129,
+          "maxMs": 129
+        }
+      },
+      {
+        "query": "woxihuanbeijing",
+        "baseline": {
+          "samples": [
+            343,
+            109,
+            338,
+            96
+          ],
+          "count": 4,
+          "medianMs": 223.5,
+          "observedP95Ms": 343,
+          "maxMs": 343
+        },
+        "optimized": {
+          "samples": [
+            309,
+            109,
+            300,
+            110
+          ],
+          "count": 4,
+          "medianMs": 205.0,
+          "observedP95Ms": 309,
+          "maxMs": 309
+        }
+      },
+      {
+        "query": "qingfageweizhigeiwo",
+        "baseline": {
+          "samples": [
+            168,
+            103,
+            145,
+            134
+          ],
+          "count": 4,
+          "medianMs": 139.5,
+          "observedP95Ms": 168,
+          "maxMs": 168
+        },
+        "optimized": {
+          "samples": [
+            127,
+            85,
+            153,
+            94
+          ],
+          "count": 4,
+          "medianMs": 110.5,
+          "observedP95Ms": 153,
+          "maxMs": 153
+        }
+      },
+      {
+        "query": "qingjianchayixiayoujian",
+        "baseline": {
+          "samples": [
+            180,
+            127,
+            162,
+            147
+          ],
+          "count": 4,
+          "medianMs": 154.5,
+          "observedP95Ms": 180,
+          "maxMs": 180
+        },
+        "optimized": {
+          "samples": [
+            182,
+            124,
+            159,
+            173
+          ],
+          "count": 4,
+          "medianMs": 166.0,
+          "observedP95Ms": 182,
+          "maxMs": 182
+        }
+      },
+      {
+        "query": "zhegeyingyonghenhaoyong",
+        "baseline": {
+          "samples": [
+            119,
+            106,
+            128,
+            97
+          ],
+          "count": 4,
+          "medianMs": 112.5,
+          "observedP95Ms": 128,
+          "maxMs": 128
+        },
+        "optimized": {
+          "samples": [
+            122,
+            102,
+            144,
+            108
+          ],
+          "count": 4,
+          "medianMs": 115.0,
+          "observedP95Ms": 144,
+          "maxMs": 144
+        }
+      },
+      {
+        "query": "jintianyouyidianlei",
+        "baseline": {
+          "samples": [
+            135,
+            115,
+            117,
+            118
+          ],
+          "count": 4,
+          "medianMs": 117.5,
+          "observedP95Ms": 135,
+          "maxMs": 135
+        },
+        "optimized": {
+          "samples": [
+            134,
+            122,
+            123,
+            111
+          ],
+          "count": 4,
+          "medianMs": 122.5,
+          "observedP95Ms": 134,
+          "maxMs": 134
+        }
+      },
+      {
+        "query": "tangmuhemalimeitianwanshangdoukandianshi",
+        "baseline": {
+          "samples": [
+            211,
+            187,
+            204,
+            198
+          ],
+          "count": 4,
+          "medianMs": 201.0,
+          "observedP95Ms": 211,
+          "maxMs": 211
+        },
+        "optimized": {
+          "samples": [
+            210,
+            188,
+            222,
+            182
+          ],
+          "count": 4,
+          "medianMs": 199.0,
+          "observedP95Ms": 222,
+          "maxMs": 222
+        }
+      },
+      {
+        "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+        "baseline": {
+          "samples": [
+            220,
+            236,
+            217,
+            205
+          ],
+          "count": 4,
+          "medianMs": 218.5,
+          "observedP95Ms": 236,
+          "maxMs": 236
+        },
+        "optimized": {
+          "samples": [
+            215,
+            201,
+            210,
+            228
+          ],
+          "count": 4,
+          "medianMs": 212.5,
+          "observedP95Ms": 228,
+          "maxMs": 228
+        }
+      }
+    ]
+  },
+  "all25AssetsIdentical": true,
+  "apks": {
+    "baseline": {
+      "path": "G:\\workspace\\sense-input-quality-reference\\e34\\sense-e34-candidate-v2-debug.apk",
+      "sha256": "1dfa19d48e9fcfdb491f9bed56c24911192caebe3ce8e7f42c65d1b67895a9df"
+    },
+    "optimized": {
+      "path": "E:\\CodexWorkspace\\sense-input-quality-build\\e42\\candidate-debug.apk",
+      "sha256": "0fda43d1b22e3297794063cf2a34566d71ecbcdb31a2bcfb55622be24da77baa"
+    }
+  },
+  "environment": {
+    "serial": "emulator-5580",
+    "avd": "sense-input-quality\n\nOK",
+    "ime": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+    "debugApp": "null",
+    "forwards": "",
+    "installedDebugApkSha256": "0fda43d1b22e3297794063cf2a34566d71ecbcdb31a2bcfb55622be24da77baa",
+    "releaseApkSha256": "f571badcd03361fe4b80a096553ca566ffecd117c4ad7694a22f4686ee2de528"
+  },
+  "releaseUnchangedAtStageCommit": "v0.4.16-rc.4",
+  "evidenceManifestSha256": "f6fc0c7c337f17bcfdb5c421a876b8de55ffe20ab8bc6f6596272a79db091db4",
+  "archivedFiles": 458,
+  "goalComplete": false
+}
