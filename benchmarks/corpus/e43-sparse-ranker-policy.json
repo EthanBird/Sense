@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "stage": "E43",
+  "sourceBaseCommit": "ff88b024aa97508769c7c4a0cc022c1fa8b4028e",
+  "purpose": "One fixed small discriminative residual instead of the E39 high-parameter neural student; no Android adoption by a host gate alone.",
+  "features": "Character 1/2/3-grams ending in the candidate (including up to two left characters or BOS), counts divided by sqrt(candidate length), no EOS; retain only features present in at least two distinct train source families. Plus the same 17 actual decoder features scaled /32 and clipped to [-4,4].",
+  "training": {
+    "source": "E39 isolated 512-source-sentence weak train input and its 751 qualified teacher groups; regenerate all current-production candidate features and require exact text, score and feature equality before teacher reuse",
+    "residual": "original total + 8*tanh(sparse linear output/8); zero weights exactly preserve original scores",
+    "loss": "0.75 gold CE + 0.25 T^2 KL(teacher PLL/T || student total/T), T=2; query groups equally weighted",
+    "optimizer": "Deterministic float64 full-batch L-BFGS-B, zero initialization, maxiter 200, ftol 1e-10, gtol 1e-7, ridge 0.01",
+    "selection": "One vocabulary threshold, regularizer and fit; final optimizer result only, no sweep or dev checkpoint selection",
+    "labels": "Existing automatic pypinyin weak labels, not new human annotation"
+  },
+  "inference": "E39 first-eight equal-length Han 2..24 slots and source protections; fall back whole row if a selected source is not BASE_EXACT/BASE_COMPOSED or feature validation fails. Features not seen in training contribute zero. Reference labels and teacher scores never enter scoring.",
+  "qualityGate": "Each known dev domain top1/top5 nondecreasing and character errors nonincreasing; all candidate sets unchanged and combined top1 strictly increases. Preserve every gain/loss, not a blind-test claim.",
+  "costGate": "Warm extra host P95 <= 100 ms, separately report model size; not an Android timing claim",
+  "stopRule": "If the fixed dev trial fails, preserve evidence and do not open old test/Android evaluation to seek a pass; keep rc.5 unchanged. If it passes, independent old regression and Android/lifecycle gates still required.",
+  "references": [
+    "https://aclanthology.org/P04-1007/",
+    "https://www.microsoft.com/en-us/research/publication/learning-to-rank-using-gradient-descent/"
+  ]
+}

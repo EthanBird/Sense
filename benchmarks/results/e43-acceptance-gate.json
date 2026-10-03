@@ -1,0 +1,114 @@
+{
+  "qualityGate": false,
+  "hostCostGate": true,
+  "eligibleForFurtherValidation": false,
+  "productionChanged": false,
+  "modelSha256": "6e59d0d23047807f24597b00ca8edaf76dbacedafbfbab71b265387c15d10dae",
+  "modelBytes": 101627,
+  "scope": "Known development sets; host-only offline fixed-pool reordering; no Android or release adoption",
+  "stage": "E43",
+  "modelParameters": 2459,
+  "reports": {
+    "aishell": {
+      "before": {
+        "states": 128,
+        "top1": 65,
+        "top5": 97,
+        "top10": 105,
+        "recall255": 118,
+        "characterErrors": 142,
+        "characters": 1087
+      },
+      "after": {
+        "states": 128,
+        "top1": 63,
+        "top5": 97,
+        "top10": 105,
+        "recall255": 118,
+        "characterErrors": 146,
+        "characters": 1087
+      },
+      "nonregression": false,
+      "reasons": {
+        "scored": 113,
+        "protected-source": 15
+      },
+      "timing": {
+        "count": 113,
+        "medianMs": 0.2435,
+        "p95Ms": 0.392,
+        "maxMs": 0.4768,
+        "totalMs": 28.2974
+      }
+    },
+    "tatoeba": {
+      "before": {
+        "states": 128,
+        "top1": 83,
+        "top5": 113,
+        "top10": 120,
+        "recall255": 121,
+        "characterErrors": 70,
+        "characters": 941
+      },
+      "after": {
+        "states": 128,
+        "top1": 84,
+        "top5": 113,
+        "top10": 120,
+        "recall255": 121,
+        "characterErrors": 69,
+        "characters": 941
+      },
+      "nonregression": true,
+      "reasons": {
+        "scored": 100,
+        "protected-source": 28
+      },
+      "timing": {
+        "count": 100,
+        "medianMs": 0.2209,
+        "p95Ms": 0.3365,
+        "maxMs": 1.3437,
+        "totalMs": 24.2638
+      }
+    },
+    "diagnostic": {
+      "before": {
+        "states": 6,
+        "top1": 4,
+        "top5": 6,
+        "top10": 6,
+        "recall255": 6,
+        "characterErrors": 2,
+        "characters": 21
+      },
+      "after": {
+        "states": 6,
+        "top1": 5,
+        "top5": 6,
+        "top10": 6,
+        "recall255": 6,
+        "characterErrors": 1,
+        "characters": 21
+      },
+      "nonregression": true,
+      "reasons": {
+        "scored": 4,
+        "protected-source": 2
+      },
+      "timing": {
+        "count": 4,
+        "medianMs": 0.15005,
+        "p95Ms": 0.2126,
+        "maxMs": 0.2126,
+        "totalMs": 0.5835
+      }
+    }
+  },
+  "finalTests": 61,
+  "evidenceManifestSha256": "1914b80968d9f0e415e406cc58fb3276ecf9ea4775de51247573e1680bb7c8f6",
+  "archives": 42,
+  "goalComplete": false,
+  "publishedApkUnchanged": true
+}
