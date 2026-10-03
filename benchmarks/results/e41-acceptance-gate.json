@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "stage": "E41",
+  "decision": "reject-query-emission-memo-on-fixed-Android-median-gate; restore-production",
+  "productionChanged": false,
+  "candidateHostTests": {
+    "core-input": {
+      "tests": 411,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 317,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "restoredCoreTests": {
+    "tests": 407,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "pythonTests": 69,
+  "fullResultComparison": {
+    "rows": 3083,
+    "differences": [],
+    "allResultsEqual": true,
+    "groups": {
+      "replay": {
+        "rows": 945,
+        "beforeCalls": 12502411,
+        "afterCalls": 9206343,
+        "beforeMembership": 23362767,
+        "afterMembership": 19844559
+      },
+      "test": {
+        "rows": 1874,
+        "beforeCalls": 26620835,
+        "afterCalls": 19577968,
+        "beforeMembership": 49659431,
+        "afterMembership": 42210794
+      },
+      "aishell": {
+        "rows": 128,
+        "beforeCalls": 2453254,
+        "afterCalls": 1852071,
+        "beforeMembership": 4670035,
+        "afterMembership": 4035967
+      },
+      "tatoeba": {
+        "rows": 128,
+        "beforeCalls": 1974916,
+        "afterCalls": 1488596,
+        "beforeMembership": 3745511,
+        "afterMembership": 3232792
+      },
+      "android-workload": {
+        "rows": 8,
+        "beforeCalls": 162156,
+        "afterCalls": 121247,
+        "beforeMembership": 314862,
+        "afterMembership": 271726
+      }
+    },
+    "inputSha256": "066fcfa51e1347f1064f08c6d23f46221f56371d1ab2c7fd870a1fd231b1f7ed",
+    "beforeSha256": "1b81e48da88663ddb9d6b77c86650fea8cf36b9637eb7747807ad0d317eeb793",
+    "afterSha256": "10fe5710d91e16b245a274ce10d053e3f1aba99ccdd57e7592f913dee5239518",
+    "scope": "Deterministic model-call accounting on labeled host queries; no timing or natural accuracy inference"
+  },
+  "android": {
+    "confirmationMs": {
+      "baseline": {
+        "count": 32,
+        "medianMs": 134.0,
+        "observedP95Ms": 314,
+        "maxMs": 348
+      },
+      "optimized": {
+        "count": 32,
+        "medianMs": 138.5,
+        "observedP95Ms": 296,
+        "maxMs": 343
+      }
+    },
+    "gate": {
+      "scope": "Fixed ABBA workload only; not statistical significance or phone certification",
+      "rule": "paired median and observed P95 each no worse than reference",
+      "checks": {
+        "medianMs": false,
+        "observedP95Ms": true
+      },
+      "passed": false
+    },
+    "functionalConfirmations": 64,
+    "continuousFollowups": 8,
+    "blocks": [
+      {
+        "block": 1,
+        "mode": "baseline",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 35,
+          "maxMs": 45
+        }
+      },
+      {
+        "block": 2,
+        "mode": "optimized",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 36,
+          "maxMs": 44
+        }
+      },
+      {
+        "block": 3,
+        "mode": "optimized",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 36,
+          "maxMs": 48
+        }
+      },
+      {
+        "block": 4,
+        "mode": "baseline",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 35,
+          "maxMs": 45
+        }
+      }
+    ]
+  },
+  "restoration": {
+    "productionPinsRestored": true,
+    "restoredJarEntries": 421,
+    "installedDebugApkSha256": "1dfa19d48e9fcfdb491f9bed56c24911192caebe3ce8e7f42c65d1b67895a9df",
+    "rebuiltRestoredDebugApkSha256": "a4dc3c659989f1d34381c6fbd0a7a6aad553ddadcb255421b51b0b1090cd91da",
+    "releaseApkSha256": "f571badcd03361fe4b80a096553ca566ffecd117c4ad7694a22f4686ee2de528",
+    "restoredCoreTests": {
+      "tests": 407,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+    "debugApp": "null",
+    "forwards": ""
+  },
+  "releaseUnchanged": "v0.4.16-rc.4",
+  "archivedFiles": 411,
+  "evidenceManifestSha256": "08edb3fec0b91ea8a7046292c87a4f2ee9d6eb758da4f40695a9325e5e67cd67",
+  "goalComplete": false
+}
