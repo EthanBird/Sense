@@ -5,6 +5,9 @@
 ### 当前交付：v0.4.16-rc.2
 
 已完成 versionCode 42 原正式证书构建；E27 查询内复用与 E29 上下文记忆进入此预览包，rc.1 保留。
+已发布：[v0.4.16-rc.2](https://github.com/EthanBird/Sense/releases/tag/v0.4.16-rc.2)，
+标签提交 `ceea16539fbf800da257e03e051de8e4bd3d7894`；4 个附件的 GitHub 摘要与本地一致。
+线上发布回执见 `benchmarks/results/release-v0.4.16-rc.2-publication.json`；v0.4.15 仍是最新稳定版。
 新增 1,000 / 10,000 条合成个人词容量回归，覆盖每词最多 8 个上下文的编码恢复、
 limit=1/12/255 的同音词选择、别名与简拼边界和 128 条饱和别名索引。
 固定 50 次预热 / 500 次查询的主机观测已留原始样本；这只是内存查询，不替代 SQLite、Android 或自然语料证据。

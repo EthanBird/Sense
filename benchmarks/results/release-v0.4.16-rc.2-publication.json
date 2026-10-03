@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "url": "https://github.com/EthanBird/Sense/releases/tag/v0.4.16-rc.2",
+  "tag": "v0.4.16-rc.2",
+  "releaseCommit": "ceea16539fbf800da257e03e051de8e4bd3d7894",
+  "publishedAt": "2026-10-03T15:53:53Z",
+  "draft": false,
+  "prerelease": true,
+  "assets": [
+    {
+      "name": "BUILD-INFO.json",
+      "size": 6601,
+      "digest": "sha256:0aea9fdbd61bc483ef4290786b290bcc19099a18348beedd9123d0756a2688c2",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/EthanBird/Sense/releases/download/v0.4.16-rc.2/BUILD-INFO.json"
+    },
+    {
+      "name": "RELEASE-NOTES.md",
+      "size": 3024,
+      "digest": "sha256:b8381160c177a99ebb4430c46d8c85499d0d40a23e593ddf3b2538bdd2c44918",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/EthanBird/Sense/releases/download/v0.4.16-rc.2/RELEASE-NOTES.md"
+    },
+    {
+      "name": "Sense-v0.4.16-rc.2.apk",
+      "size": 73102394,
+      "digest": "sha256:99208e28bf7b9b659cdd1f63b1bf8685d4a400380043abcb88743820494bc800",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/EthanBird/Sense/releases/download/v0.4.16-rc.2/Sense-v0.4.16-rc.2.apk"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "size": 89,
+      "digest": "sha256:7834031ce6d337d79a451dddea34e33d5ab061eb4af4ef4f664e994d155f75a2",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/EthanBird/Sense/releases/download/v0.4.16-rc.2/SHA256SUMS.txt"
+    }
+  ],
+  "allRemoteSizesAndDigestsMatch": true,
+  "previousPreviewApkUnchanged": true,
+  "latestStable": "v0.4.15",
+  "buildReport": "benchmarks/results/release-v0.4.16-rc.2.json"
+}
