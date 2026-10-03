@@ -1,0 +1,32 @@
+# id	query	expected	stratum	reviewedSyllables
+001d0e7492876733b4dd14c40493e3b0f007d8c58c320688aaa484c2f99cb3b4	wohuabuhaowujiaoxing	我画不好五角星	short	wo hua bu hao wu jiao xing
+00451bc6258534913ca17bdb4fc81fb30e17c5cfcc11f427e29c086ba606e321	ninshenmeshihouhuiyidali	您什么时候回意大利	short	nin shen me shi hou hui yi da li
+0047b8c5d0b366fd0dcd50828922d056823dce8af78fd1e9ed256c84af44fde8	womeigentashuozhenhua	我没跟他说真话	short	wo mei gen ta shuo zhen hua
+00496815e48878cceabf9044e51a00d2f7cd535ebe02de0141b664f23fe562d9	tamenguilexialaiqidao	他们跪了下来祈祷	short	ta men gui le xia lai qi dao
+005dc63f514f4e0ca4bc7c66815d3df3f2f202bc30a770b374df18a3929945ea	tamenzongshizaibaoyuan	他们总是在抱怨	short	ta men zong shi zai bao yuan
+00653b3d567843605703fa713bd797239f9a9126fd71f4429f6ba32b8d21101a	wohenbaoqianhuifuwanle	我很抱歉回复晚了	short	wo hen bao qian hui fu wan le
+006e18e641236a5187c695cd5159ac4bab527d13a0cebf40078054610118ca80	woxueliangzhongwaiyu	我学两种外语	short	wo xue liang zhong wai yu
+00a1e52fb99fd6a79e718c04bb779d43d7495e8e97aac20f6e410d42b040b4c6	tadengzhejiewaisheng	她等著接外甥	short	ta deng zhe jie wai sheng
+00ac117980f8f787dd4483ddb8aab99ce9736e3501e217bad4e883025b2c99d0	tatianheiqiannenghuijia	他天黑前能回家	short	ta tian hei qian neng hui jia
+00b5c087448bfcd1312bb89286d9d45b9bb3a64639d306c3911ddcd24d24af8f	suoyidianpumeikai	所以店铺没开	short	suo yi dian pu mei kai
+00c3670698b31f2bdbf9a6081b2957a047ab369abc949cf36a21d587196ec04a	nazhimaojiubujianlezongying	那只猫就不见了踪影	short	na zhi mao jiu bu jian le zong ying
+00da6e4d338f344b8bd997d93307ee4ca5592f78bc0816485b692f7ae0b46e34	gaosuwonatazuoshenme	告诉我拿它做什么	short	gao su wo na ta zuo shen me
+010a7b6264d8c14fbe512dc06e8a8f053ab951d8287dcb2eea7b5120e9a11272	nimenxihuanxuexiaoma	你们喜欢学校吗	short	ni men xi huan xue xiao ma
+01338c402eff7b04052890c9ccf5aa1cf242e2d83c71fddf5425d5c5de140f83	nijiuyijingdiexialoutile	你就已经跌下楼梯了	short	ni jiu yi jing die xia lou ti le
+013c1ad1f5fc7e308220f17de0285e6c2d2b2026b5e4bb08b392ce8ae8bfe07c	youshengmingjiuyouxiwang	有生命就有希望	short	you sheng ming jiu you xi wang
+000e072d930064514d60b5a86c89bedc6584f83ef5691e0112c9f7b541ae6da9	hunyinshenghuoguranyouxuduotongkudedifang	婚姻生活固然有许多痛苦的地方	long	hun yin sheng huo gu ran you xu duo tong ku de di fang
+0014aacbd1bf0559c0b9fb1f4a236c0ab60849b28b752932afe95acf42f86d60	niduiwowanquanmeiyouganjuema	你对我完全没有感觉吗	long	ni dui wo wan quan mei you gan jue ma
+00445592b66858e3bbb4546ad01900ec1619794ebc07713d14b404c2f8808ec4	nijuedingwomenqubuqunaer	你决定我们去不去那儿	long	ni jue ding wo men qu bu qu na er
+004f4281e79af3058cbce3a7071e9d029ea8e490c21a4253f3265cbffeba98d9	tadetongxuemenjiurenbuzhuxiaole	她的同学们就忍不住笑了	long	ta de tong xue men jiu ren bu zhu xiao le
+0074f780bffeab96d3f6c8cb78d303d587e480017dea726a4874f365888ddb1b	wozhidaozenmejiejuezhegewenti	我知道怎么解决这个问题	long	wo zhi dao zen me jie jue zhe ge wen ti
+009b53c870f0981eabe9a9ac006f9173005aec29fe8007cf20f54b92ead5a31a	zhecaishimeiguozhenzhengdejinghua	这才是美国真正的精华	long	zhe cai shi mei guo zhen zheng de jing hua
+00fda64a04a00f02b736d620258350bda4fbb82f7a5626457fb2d8390b3058f1	kenbatadejiaotacheqichengbaisede	肯把他的脚踏车漆成白色的	long	ken ba ta de jiao ta che qi cheng bai se de
+0178b806d25db457c9b0623c99a9e049ddf2e5c9613e03ba0840f0ebc842bed5	woshanggexingqitianzaijialifangqingsong	我上个星期天在家里放轻松	long	wo shang ge xing qi tian zai jia li fang qing song
+0192f7e0cedb4ca696f289a88ebfdad39f935b8501f549e7b2bd4cd020430056	qiangjishizaizhongwushiershizuoyoukaishide	枪击是在中午十二时左右开始的	long	qiang ji shi zai zhong wu shi er shi zuo you kai shi de
+0206907f8085d07973e097a5a13db36d0b333aef400a3503d50147710d1c3edb	nishunshouqianyangdeshihoujingweidoukanzaiyanlile	你顺手牵羊的时候警卫都看在眼里了	long	ni shun shou qian yang de shi hou jing wei dou kan zai yan li le
+02229313dea0ed37e35ecf3e8ff77dbe183f8714cf3688a7c96f7930dc15300f	tabuzhidaoruheyongyingyuxiexin	他不知道如何用英语写信	long	ta bu zhi dao ru he yong ying yu xie xin
+0225233e54008e9dc44d077803abc81c2c0be3231995508455c42133569fe128	queyijuyemeixiedaodianzishang	却一句也没写到点子上	long	que yi ju ye mei xie dao dian zi shang
+02b1b63174c051cb1a7ccf6a9eb1281fb03e311f0a71df220762cf38fd306f66	womenxiangxiugaixuexiaodeguizhangzhidu	我们想修改学校的规章制度	long	wo men xiang xiu gai xue xiao de gui zhang zhi du
+02b5b86e43c911c6dc0973287426d3e95bed838cf8d68c993a38eeccaa2b4396	muqiandeanquanshuizhunshichengsedengji	目前的安全水准是橙色等级	long	mu qian de an quan shui zhun shi cheng se deng ji
+0315937765d3ca0679571988f711b04d012fb85c036f29787b7ce7e070738b7c	tazhangfuxianzaizaidongjingshenghuo	她丈夫现在在东京生活	long	ta zhang fu xian zai zai dong jing sheng huo
+036737d021fafe5beb78e51f9eab4ba526a189639283739fc1a54eaa5f7c0631	meiyiciqichuangxinglaidoushiciweixiaodexinsheng	每一次起床醒来都是次微小的新生	long	mei yi ci qi chuang xing lai dou shi ci wei xiao de xin sheng

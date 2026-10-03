@@ -2,6 +2,7 @@ package io.github.ethanbird.senseime.ui
 
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Rect
 import android.graphics.RectF
 
 /**
@@ -335,6 +336,24 @@ internal class MutableAiSurfaceRenderGeometry : AiSurfaceRenderGeometry {
  */
 internal class KeyboardCanvasText {
     private val fontMetrics = Paint.FontMetrics()
+    private val glyphBounds = Rect()
+
+    /** Fits both fallback-font ink and advance; retains reusable scratch storage. */
+    fun fitToBox(paint: Paint, text: String, width: Float, height: Float) {
+        if (text.isEmpty()) return
+        paint.getFontMetrics(fontMetrics)
+        paint.getTextBounds(text, 0, text.length, glyphBounds)
+        val advance = paint.measureText(text)
+        val center = (fontMetrics.ascent + fontMetrics.descent) / 2f
+        val inkWidth = 2f * maxOf(kotlin.math.abs(glyphBounds.left - advance / 2f),
+            kotlin.math.abs(glyphBounds.right - advance / 2f))
+        val inkHeight = 2f * maxOf(kotlin.math.abs(glyphBounds.top - center),
+            kotlin.math.abs(glyphBounds.bottom - center))
+        val ratio = minOf(1f,
+            width.coerceAtLeast(1f) / maxOf(1f, advance, inkWidth),
+            height.coerceAtLeast(1f) / maxOf(1f, fontMetrics.descent - fontMetrics.ascent, inkHeight))
+        paint.textSize *= ratio
+    }
 
     fun drawCentered(
         canvas: Canvas,

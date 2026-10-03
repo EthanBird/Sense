@@ -10,6 +10,7 @@ import unittest
 from pathlib import Path
 
 import build_pinyin_lexicon
+from layered_lexicon import project_base
 from lexicon_sources import is_han_text, load_source_manifest
 
 
@@ -23,9 +24,9 @@ REPOSITORY_ENGLISH_LICENSE = ROOT / "licenses/popular-english-words-ISC.txt"
 MANIFEST = ROOT / "ime-service/src/main/lexicon/sources.json"
 BUILD_STATS = ROOT / "ime-service/src/main/lexicon/pinyin_lexicon.stats.json"
 
-LEXICON_RECORDS = 823_782
+LEXICON_RECORDS = 1_106_451
 ENGLISH_WORDS = 20_000
-LEXICON_SHA256 = "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800"
+LEXICON_SHA256 = "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232"
 BIGRAM_SHA256 = "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d"
 MANIFEST_SHA256 = "4275a03b9130bc06bcaa46dddac2db3ed2c75cc04a314dda4317bb6d06e62829"
 ENGLISH_SHA256 = "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624"
@@ -114,10 +115,15 @@ class M5MixedAssetsTest(unittest.TestCase):
     def test_committed_build_stats_match_packaged_asset(self) -> None:
         stats = json.loads(BUILD_STATS.read_text(encoding="utf-8"))
         self.assertEqual(LEXICON_SHA256, stats["asset"]["sha256"])
-        self.assertEqual(35_069_585, stats["asset"]["bytes"])
-        self.assertEqual(610_298, stats["counts"]["exact"]["candidates"])
-        self.assertEqual(608_314, stats["exact_unique_texts"])
-        self.assertEqual(MANIFEST_SHA256, stats["manifest"]["sha256"])
+        self.assertEqual(46_495_514, stats["asset"]["bytes"])
+        self.assertEqual("SPLX/4", stats["asset"]["format"])
+        self.assertEqual(917_261, stats["counts"]["exact"]["candidates"])
+        self.assertEqual(914_124, stats["exact_unique_texts"])
+        self.assertEqual(MANIFEST_SHA256, stats["base_manifest"]["sha256"])
+        self.assertEqual(306_963, stats["source_tiers"]["2"])
+        base = project_base(LEXICON.read_bytes())
+        self.assertEqual(35_069_585, len(base))
+        self.assertEqual("71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800", hashlib.sha256(base).hexdigest())
 
     @staticmethod
     def _sha256(path: Path) -> str:

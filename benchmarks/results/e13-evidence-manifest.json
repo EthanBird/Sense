@@ -1,0 +1,1509 @@
+{
+  "schemaVersion": 1,
+  "dependency": {
+    "stage": "E12",
+    "manifestSha256": "22b47295759c7da4c7f4c1a0ffbf578ca80a9eb4b98540ffc1609f9f0c96801e"
+  },
+  "files": {
+    ".artifacts/input-quality/e13/dev-export.log": {
+      "archive": "benchmarks/results/e13-evidence/cece699a4b003f89288d.gz",
+      "sha256": "6475fbac7490f57a2d27dddfddf39640b3e65234bff8cc2a25f37b400ecaa120",
+      "bytes": 211,
+      "archiveSha256": "9daa2c3d30ebffc808b4a8af5e74a818cc8cd3515d4514795a91748505fc2006"
+    },
+    ".artifacts/input-quality/e13/dev-features.jsonl.gz": {
+      "archive": "benchmarks/results/e13-evidence/cf9d4f9a164bbeaa2a98.gz",
+      "sha256": "1c964f9c22c5767b0f93ef172c299d228fe5fec06ebfbd150df903f378e1556a",
+      "bytes": 1090781,
+      "archiveSha256": "25c743345d5de6ed37715fe63ba6d46025473dc0b9a70b1554bf7893dd7cd949"
+    },
+    ".artifacts/input-quality/e13/fit/development.json": {
+      "archive": "benchmarks/results/e13-evidence/55a7a99aad8693a409b2.gz",
+      "sha256": "2b653351bc3199ca14650a1415b7bf6630ea524e7bd1d6af38ee38a1c5ca9b4f",
+      "bytes": 297826,
+      "archiveSha256": "cc6706310231151fd7853e21800bee9ae81297c5138e702499b90217b44ab9b3"
+    },
+    ".artifacts/input-quality/e13/fit/frozen-model.json": {
+      "archive": "benchmarks/results/e13-evidence/ee196b4ce311d884d8ae.gz",
+      "sha256": "f2236779e44dc0bd3d1b8f9df327ddaaa46220054052b0df44b278c4b9c70540",
+      "bytes": 13548,
+      "archiveSha256": "f30c6ba4367147e5dfdef081c9597284b9d62a1c53ff211f4c3eec3422036791"
+    },
+    ".artifacts/input-quality/e13/fit.log": {
+      "archive": "benchmarks/results/e13-evidence/73ef5d330333128503d8.gz",
+      "sha256": "9c84385853c243b29e942d9eff3cb100a09d84c23b2bec3f043911acbf08be00",
+      "bytes": 1322,
+      "archiveSha256": "a46cba192d2c44b57187dc372203f65a5eba2b5ae7385e179ccf5abdf53d1f61"
+    },
+    ".artifacts/input-quality/e13/host-compile.log": {
+      "archive": "benchmarks/results/e13-evidence/2c68dbac860875a56dd5.gz",
+      "sha256": "c3060319af54ee4bab7b3bbac376780b185206f212376df791ac336b1553a884",
+      "bytes": 162,
+      "archiveSha256": "732cade94cf8a6bafa2f79390b28216339a0c9e64669760b27a356d0200e5a18"
+    },
+    ".artifacts/input-quality/e13/host-tests.log": {
+      "archive": "benchmarks/results/e13-evidence/9935050a1a518056036f.gz",
+      "sha256": "1f6d7ce31b8732d6bd20833155310369e13b5aad04aefd93186ef9fed4627b94",
+      "bytes": 41851,
+      "archiveSha256": "5ecc8593c6b9aedc36b621cc65c08ae37a59223cf661a6a92a45e4510b4f5a9b"
+    },
+    ".artifacts/input-quality/e13/independent-test.json": {
+      "archive": "benchmarks/results/e13-evidence/68717739fff7254135c6.gz",
+      "sha256": "bfec9536fc1bc5122aa4862e07b3209c54fb4be3546c4bd76bafb861eadd48ea",
+      "bytes": 338789,
+      "archiveSha256": "f0e3dd88a0d716bff388712c0481b34a5598eddb38565eed9084ae25cf6dd5aa"
+    },
+    ".artifacts/input-quality/e13/independent-test.log": {
+      "archive": "benchmarks/results/e13-evidence/04a9b21d8dbd62a92016.gz",
+      "sha256": "eb99570ffaeafa90b8da8bbc5bd2e8abf7f7fb42a7ca44bfbfebc637bf03b60e",
+      "bytes": 331,
+      "archiveSha256": "d3eb6bb53f4f7e77c52b4a40f66c0dce4aca259e2a64295f52c86c87c8b730d9"
+    },
+    ".artifacts/input-quality/e13/loss-provenance.json": {
+      "archive": "benchmarks/results/e13-evidence/15186d23ee6810d38d36.gz",
+      "sha256": "a4d0965a898a12c9da337f3265fc39de7f4e946f17eea3e155a67c8e522e3f33",
+      "bytes": 9142,
+      "archiveSha256": "df306007ef387ec94e41a8d15c19889631acf5943e8e20245f80a57e6519b712"
+    },
+    ".artifacts/input-quality/e13/pre-test-freeze.json": {
+      "archive": "benchmarks/results/e13-evidence/3f88aa2ebe6c4aee66d8.gz",
+      "sha256": "bc5a2f75663e42c38cb6850ae0fdef4fa069e28120d17acbb7f3865165b2d8a2",
+      "bytes": 10954,
+      "archiveSha256": "a810b27390e8bfc8e21d830697d84f36a13977b659b1e8045367eea111177688"
+    },
+    ".artifacts/input-quality/e13/python-tests.log": {
+      "archive": "benchmarks/results/e13-evidence/79ad1d15e95f53070aad.gz",
+      "sha256": "ab04fa279da773c3eb9e5d2475ab17acd90cfebe3f251a69b207c46352b26ad2",
+      "bytes": 60550,
+      "archiveSha256": "7b5c1f94ad6dc3fa0149c0182d2abe95435ae1a626de9bbe0410660dfb42a108"
+    },
+    ".artifacts/input-quality/e13/test-export.log": {
+      "archive": "benchmarks/results/e13-evidence/518a13095cec244c0745.gz",
+      "sha256": "368d83a2091838f4305daa4e82692d28922d9ac87ea3689bba638b6b28df6b7b",
+      "bytes": 294,
+      "archiveSha256": "329398f1a598b7c442927ffbfb2660a39bdba3f5b1ee8737f94158490f6abb63"
+    },
+    ".artifacts/input-quality/e13/test-features.jsonl.gz": {
+      "archive": "benchmarks/results/e13-evidence/5c6aceb2bcdac8a20d0f.gz",
+      "sha256": "e47e4327de5dbc897cbfccad2d2b836844a4e8f2891f9818f57f410e029349e6",
+      "bytes": 2073627,
+      "archiveSha256": "de00dbbea8d637c69d6374e07ce28b02ad0222c883f8a375df4d0f09b840f8a6"
+    },
+    ".artifacts/input-quality/e13/train-export.log": {
+      "archive": "benchmarks/results/e13-evidence/89e8a2a6a1de108c6659.gz",
+      "sha256": "df9d5ec41b8733b61f328e3df5db62cda3989b256cda89baf1b09d7c7c5e9422",
+      "bytes": 944,
+      "archiveSha256": "3a368dbe296bfc1cb1bed35a8eba83d244009699690082725a0ef8647b377b4d"
+    },
+    ".artifacts/input-quality/e13/train-features.jsonl.gz": {
+      "archive": "benchmarks/results/e13-evidence/9b513c27a305eceb72bc.gz",
+      "sha256": "2ce88afb1a3ec9e290b4335154f71248dfa15bdbd73531cb69a10e1b073e5799",
+      "bytes": 8603647,
+      "archiveSha256": "7731eb347651293e8298f2a1138f2a59b952a287303c9570e4d53d41dedc98b0"
+    },
+    ".artifacts/input-quality/e13/uncertainty.json": {
+      "archive": "benchmarks/results/e13-evidence/7659b3c5ffb9778e40fb.gz",
+      "sha256": "33f91851804fdcb3a7f04b4e8df118c8d174973dce287043a77a907efb842b8f",
+      "bytes": 1195,
+      "archiveSha256": "23ea899523e87fcbea6dfacfcb502fa9ffbfdeec87222397ca38452d7252420b"
+    },
+    ".artifacts/input-quality/lm-corpus-v1/corpus.json": {
+      "archive": "benchmarks/results/e13-evidence/59ca040c108206a02ec3.gz",
+      "sha256": "a15434cad002c282b2cc12d3146abc3bbe0114e6e9c450fc504bdaffa7a4c988",
+      "bytes": 7328,
+      "archiveSha256": "8a326db1174f12f5a55a3a902203088162b67e5a1247c50d3253a47b62b6712f"
+    },
+    "app/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.AboutNoticeControllerTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/d64d4cc84f79f0b5e23e.gz",
+      "sha256": "db08dcef58b9aaaf5bbcb115926e0e360d71e5d14962c3a2d0f17d905d6b7e87",
+      "bytes": 811,
+      "archiveSha256": "d1f9bbd7a51dc8662735223a51d15a0f24dc631d5685dd60373c31f6be27f625"
+    },
+    "benchmarks/corpus/e13-fit-policy.json": {
+      "archive": "benchmarks/results/e13-evidence/088ba8bccf2c040ef3c2.gz",
+      "sha256": "2892a3357054c957dddaa0ca7c77849d599e0c8a101b15f4cc7964469feac152",
+      "bytes": 1413,
+      "archiveSha256": "6a98235d6e29adf29dea1f07503fab4fa0af22276ff2d516e67eaf1f21515e9f"
+    },
+    "benchmarks/corpus/e13-selection-policy.json": {
+      "archive": "benchmarks/results/e13-evidence/a667b3e53e92e0e64576.gz",
+      "sha256": "7b435126940827e654aff5eb007afce7351b28057e637b4595d9b25026318113",
+      "bytes": 55218,
+      "archiveSha256": "a04162622ab442fdc929072489b5bdb006087fbf86ca30135d05758da353ac94"
+    },
+    "benchmarks/corpus/p2c-supervised-v6/annotations.tsv": {
+      "archive": "benchmarks/results/e13-evidence/420fea872393595b90cd.gz",
+      "sha256": "3216bbfe702e09c868391ec045689ad75d4c9749e4bc0b73f3bff333aa8f10e6",
+      "bytes": 41520,
+      "archiveSha256": "5b3195e5624147a8aa9d5383eb1a90e915d69d2a7a6cf6cf23f4cb748978b356"
+    },
+    "benchmarks/corpus/p2c-supervised-v6/attribution.jsonl": {
+      "archive": "benchmarks/results/e13-evidence/f30d45a3415eed761a07.gz",
+      "sha256": "e9aba0099181a6bbb49d26e08560a7d2e0a9e70c59fc88c395598bd3cf326f07",
+      "bytes": 116317,
+      "archiveSha256": "fe0a427fcf407246a8ec4f458bf32bf3df0ed20117485e6622f952b45f22c978"
+    },
+    "benchmarks/corpus/p2c-supervised-v6/dev.tsv": {
+      "archive": "benchmarks/results/e13-evidence/564e1a8329e760356f61.gz",
+      "sha256": "224212d6909d79e8066433a825a8cf2e783dd0eae822c59ea1b051c6bc6b2947",
+      "bytes": 10771,
+      "archiveSha256": "de19af1d8a0fb44117ab11da6e6c36cb24f14decd841c749c3dc797597d954ba"
+    },
+    "benchmarks/corpus/p2c-supervised-v6/frozen.json": {
+      "archive": "benchmarks/results/e13-evidence/2af08232edd44b686216.gz",
+      "sha256": "7dc2ce3a4bf8d76c983c11b5820e7424ecb6a4ddb50faeb81e521973328ce77d",
+      "bytes": 1188,
+      "archiveSha256": "f4cc2a7b780677251bf5e880ca9ad3de1ee6062c24ccb5848db49d8f33954885"
+    },
+    "benchmarks/corpus/p2c-supervised-v6/proposals.jsonl": {
+      "archive": "benchmarks/results/e13-evidence/f677358a800a17f50fc5.gz",
+      "sha256": "756bf7921636c071e649290a28cc87d6fcb7b576a916be70d3ce117434303c4e",
+      "bytes": 80683,
+      "archiveSha256": "e60d4010261a2fbf5601fdcb25c4c1ba858fe06e7faec6398e52c2a7ee2bddce"
+    },
+    "benchmarks/corpus/p2c-supervised-v6/selection.json": {
+      "archive": "benchmarks/results/e13-evidence/d3bfb99936ee2762ad5c.gz",
+      "sha256": "915dabdd4a25fa1746927272bda550a38051d9a9629aab3418e0ea4f35a2666e",
+      "bytes": 59070,
+      "archiveSha256": "f52457364ff66982471e3803ac58073b4e79e88ca5d8227a9ccb22a6cd66f096"
+    },
+    "benchmarks/corpus/p2c-supervised-v6/test.tsv": {
+      "archive": "benchmarks/results/e13-evidence/2ea45f2561de358932a4.gz",
+      "sha256": "f8f8abd80ddd7e9046d19ac898c187f80f60b33cb20e5057f030058ade68762a",
+      "bytes": 20849,
+      "archiveSha256": "949f087f502d77ef86110345f350f7456c08c62c6647b8e9febc3f085586c9be"
+    },
+    "benchmarks/corpus/ranker-train-v1/attribution.jsonl": {
+      "archive": "benchmarks/results/e13-evidence/9b0b1c51621877c4e16e.gz",
+      "sha256": "da9cc57e1836b04b8f8bcd7cac891c5018ca964809e0e9b3344696b0fcc1bff6",
+      "bytes": 311259,
+      "archiveSha256": "f2a7c94012526a7e48df48b54f213294bd56b6618109c0eea9c88cd1ee36d805"
+    },
+    "benchmarks/corpus/ranker-train-v1/manifest.json": {
+      "archive": "benchmarks/results/e13-evidence/7a8ba0071437ff4edb0c.gz",
+      "sha256": "9857c1c2459ed84813f9a25c702b4e3bb068cba82a11ca55631168f0ce83fbb1",
+      "bytes": 1292,
+      "archiveSha256": "8a025421e68bab3bdc380d71a8b47cd5dd5fe8db77743a40e3764c5a379f6b0f"
+    },
+    "benchmarks/corpus/ranker-train-v1/selected.jsonl": {
+      "archive": "benchmarks/results/e13-evidence/69ee6413b0eb4c117f27.gz",
+      "sha256": "a07aa7eb8a2f897d99b010b7b5ebae9aad88ec3be4e15332c51e50ee66672db2",
+      "bytes": 258165,
+      "archiveSha256": "7f9d314944a42c9151e97fb41ce1c3060815a55965e068c7ddc7198edb9dca3d"
+    },
+    "benchmarks/corpus/ranker-train-v1/train.tsv": {
+      "archive": "benchmarks/results/e13-evidence/e1200d7502a6a7e74355.gz",
+      "sha256": "6fc477172aab6f70f4f73c2300b96b8cccf7d14467a9e3f093101ecc214b2226",
+      "bytes": 85596,
+      "archiveSha256": "847fe6a92891db3263d9dc4e1b4a60d4e62dd3d013a2674da7114f61e28fd3d9"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.AdaptivePinyinDecoderTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/9c088aeedfae709ebda8.gz",
+      "sha256": "1c544f2a950d436ec74efbdd211d24cdd626a825ebb580c6cfadfc5eaf7db49c",
+      "bytes": 5940,
+      "archiveSha256": "351910983547e796a12eb01e3fb75098fa9f500e45db85bc76e79df4bbffe84f"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.CandidateRankerTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/2b7a8cc8f95c522f11a3.gz",
+      "sha256": "c261a7c74c0b8996383f9b66373cfe44f1404bcf9d93e057f59d78592c1ddfe4",
+      "bytes": 1274,
+      "archiveSha256": "c3009a210500baec26da7eaa9c0d15914d371938ed41c6255dff06707f859dd9"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.CandidateRankingCalibrationTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/4b244bbbf294c76140ac.gz",
+      "sha256": "5e9adee33099b96d6e17264fe1b683863412a76780b4c1658d6b35db7272b3c1",
+      "bytes": 1072,
+      "archiveSha256": "5efbf9f21a6ddaed2696e8188da36c17ff428c6d7cf92eef719eda2342be6de4"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.CandidateSnapshotTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/a935e4fecfdee5b200ce.gz",
+      "sha256": "fd961e074e21d7fde1cb129bb8d58fa1361081c8082d0835e4c8b2a12848edaf",
+      "bytes": 640,
+      "archiveSha256": "66ac122f4c35444160c51cc6b4e1b0bb0409ef1c4712ea94e950dc3241408a6c"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.CharacterBigramModelTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/3ebfc7a66c060398c797.gz",
+      "sha256": "256ee48494ad36443f78f5ea136ef92982b62fd0f3a89b39b1da3070a8c7060a",
+      "bytes": 801,
+      "archiveSha256": "0dbb9605e644d488dbb93bc4447a89e1ac7167317f5a87cf1f33fda151d1fadb"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.CharacterLanguageModelTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/c653d52c3fcb5cf6eccc.gz",
+      "sha256": "515bb5a06b3aa87c862ec605461c7c7b2aed2547542946513af502354fd9b38f",
+      "bytes": 829,
+      "archiveSha256": "97915a27f412dc0e628294358f0f3eb217b8271b3b9dc9e73f9260680dd0fb21"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.CommitSequenceTrackerTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/b79ece4fec9cc0af6f5c.gz",
+      "sha256": "e224eafc9196338baffec1ca3d64d67b128eb8e1e86bdd1519bb66de5ef931d9",
+      "bytes": 993,
+      "archiveSha256": "9a3ee19d5a30dca0d6a8a2500f2d02ff8e9aa341cc00c3c82d87dbbac739122d"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.ContextAssociationModelTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/3242e838bc9d97dde291.gz",
+      "sha256": "5c24fdf429963d1ad3711ac7daa73a75e2c7b42aceb59daee9600a92d826790e",
+      "bytes": 1209,
+      "archiveSha256": "0af367e619207bb52ec2313aee5b96c792ac0a18321e9d3034a068878894ea05"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.CorrectionProbeLanguageTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/41544ae7469152fb76c6.gz",
+      "sha256": "65011c08a5335b731abbac004ab64e4c104c7f426f64c898dbac111d648a7792",
+      "bytes": 1219,
+      "archiveSha256": "c719838bf587f41eee38b46e07b0c28b81d34c5068ab0c7b8e63fb9d5f7c8e27"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.CorrectionSearchBudgetTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/2528961e1f4172979c5f.gz",
+      "sha256": "40e3707453ccbc062ebaac2e00148f66520ac5d320a31f6f366a8be0e27bb7b6",
+      "bytes": 511,
+      "archiveSha256": "db7c1edc7485d8bd3ac1a821c87f84d58d5477ba00a6df65fb68e8c26bcf69af"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.CuratedLexicalCandidateCatalogTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/ac496ef4d1dffa6590ed.gz",
+      "sha256": "e71b045ac2ff87e8e25fbe5f4c8fde651d54c5fa6dd701bfb2c3bbf7edac3e68",
+      "bytes": 1046,
+      "archiveSha256": "c127231ea6bfa0e103186aabab4d2ad3ac8015c4c49f634a9f081280b487143c"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.DecodeWorkScopeTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/5a378e0be252b0e47029.gz",
+      "sha256": "91b54462050c9f8154c34bbb66de07f2f2a88a8e670fedd3990280451785014f",
+      "bytes": 1158,
+      "archiveSha256": "3d0f59cfefdbcfe442454a9ad60021d3a02471a3ddf02ba475fe944b9c537024"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.EnglishInputSessionTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/66f26a278084a453de61.gz",
+      "sha256": "149200210a70729b50b0526cbdf4373149349b4cd1cdaab7af98fccb8cb6412c",
+      "bytes": 1274,
+      "archiveSha256": "7d8b6da11559869da9355fc54fdb7549266467f8efd843c14ba3504409eead63"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.EnglishLexiconTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/01785e0adf56298ecb18.gz",
+      "sha256": "9e10baceba534e91de5744b4ee6ee0f2eea1d202fa13d72ed63fa0ad835e5eb8",
+      "bytes": 2985,
+      "archiveSha256": "51470143469ca1af870f15a80c2c89ab1353b1dece88b6ec52549c205735ba15"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.FakeDecoderTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/fd7c3c7b6ead5791af2b.gz",
+      "sha256": "587fc6336ad50398c094091a8ed840a8ab8530aa9be94c0117237e569b592a26",
+      "bytes": 736,
+      "archiveSha256": "040495f315b591e3c3b740f15a45d55d1e07eabbd5d22f0f04e598cbee70ec57"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.FullSpellingBoundaryTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/3eac2ae4c4cc4eed1ac3.gz",
+      "sha256": "0d1edf479d3716f43fbbb9f3c3c48758abd148ecca4e3a7d07a85f5893fd31ba",
+      "bytes": 677,
+      "archiveSha256": "aa36942cf36c883dd6e8e37ea0ce55d18daa4c1abe66bb1e549ad4cfeae526f2"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.InputReducerTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/40d8a1b4a43dd804c197.gz",
+      "sha256": "036abd61e1d38d2a1f714c1cf37471ec063db625acf83ac8bed91e10d794a2ce",
+      "bytes": 1040,
+      "archiveSha256": "6a1bb7c0f17c9fa56ac7ae5f93b855a0d8db688fb680055616f17d3d89ab19df"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.LayeredMixedRecallTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/0373d2747033304ef3d2.gz",
+      "sha256": "7f6212f4857655ecfcff290509b6ec9e1c6788be9d185be17452d0f13780fd02",
+      "bytes": 674,
+      "archiveSha256": "fe428a4a3c7ba2775c5a4a9fc95553c2e7548b6c270f20983f565c98d7fa01db"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.LayeredPinyinLexiconTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/bf47a92571e59ee728c2.gz",
+      "sha256": "1ebb537c5541c3ff550c73f0a5aaec2643df8b0e06800c7f120907feec28c9ba",
+      "bytes": 1059,
+      "archiveSha256": "58cee2a3c4ba1ae65ab70d0354c3b66c15b164c045dd6cbf87d9e97d85960a5d"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.M12P2cBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/aafdb4a5025a88a716fa.gz",
+      "sha256": "86bd8bf038cdf869459fb89b0a3a6acb122ea4bfd3eeba05d97f7fee5c6ff095",
+      "bytes": 657,
+      "archiveSha256": "f57cf73837d2bb8e53a4906a415ae5ffb286a0480770426b9d1a66269bdfae87"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.M15TypoRecallBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/432bc7b23664f6d1c61e.gz",
+      "sha256": "107f4848e4fac1340f94a2694ae04c5072a333673c3ab560fb2904874153ef44",
+      "bytes": 691,
+      "archiveSha256": "8c29d7a80c3414d25be6abb3561b1fc5afb140d236c88bfeb90156dd1fbc3d23"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.M2AdaptiveBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/1978f6533f0e21887b51.gz",
+      "sha256": "714ebbdff745f0a5ce841b8c413b3b7e303e3a2ba631427088295a0f3f70b485",
+      "bytes": 506,
+      "archiveSha256": "67b22e76fa43586f81dd92e7071079e8601141fea676a1d0e292e39d73602f87"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.M3SentenceBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/1165cbf9d9c0700c0f36.gz",
+      "sha256": "1413b735c2b5ef6ba212c832c6b42cecf4007821f3a277116193bdb1a12cc611",
+      "bytes": 1255,
+      "archiveSha256": "a38775955506d5e347ff8a0a006abd5d10056abb0a89c369319a54cea102551e"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.M8DailyInputBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/7fc3a5b8a65a27c67390.gz",
+      "sha256": "0020e1000f6a1071eb51eddf063a80f81c290a229ae1d0b4cca3f73b43d64c7a",
+      "bytes": 878,
+      "archiveSha256": "ff485a750522e5da6fb2863f7e16bd0e4f507f9d2f35bc2cd5cbeaf529933332"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.M9PersonalSentenceBenchmarkTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/291e7ed2be86ddc7a88d.gz",
+      "sha256": "ec31c1518e89e363fd83b164b622ee84bc50b501e8806fb01642db5622372afe",
+      "bytes": 716,
+      "archiveSha256": "ce7012a494b87c31ddf5362de0dbfe430c2850a0597247a0590f57dac141b04e"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.OovLanguageModelAblationTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/18411ae6a0ca68ac2d84.gz",
+      "sha256": "6fe2776360452f7f5ec4eac05b8a7c6047fad9f6f246d97aed964238943ebcf2",
+      "bytes": 1041,
+      "archiveSha256": "eb03c7281fb624fab9453a498ca2b9494419d6c13ced423cd45a654f9bbf5a38"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.PersonalizationEvidenceRetentionTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/7ba7f6fb78d62c144b16.gz",
+      "sha256": "062e6078794ba881a0213b8a2f28d728de9c260cc59f7b844ebf978ede4d7d6e",
+      "bytes": 901,
+      "archiveSha256": "2e8c01dee8add23c35d71bd300b000236879eae3a08303b39a1b613422b2181d"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.PinyinDecoderResourceTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/60527eb50c8d343b250b.gz",
+      "sha256": "dc21a1c4c765ec6ace4f5f358f73bbbd318f811ff5062cad432875c613d78a35",
+      "bytes": 1292,
+      "archiveSha256": "e5c2fdc42791be20896b00b288207d682a1c4e6738e4c11e07df2ea6532ab575"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.PinyinDecoderTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/a275e921649bfeecc457.gz",
+      "sha256": "b476f4c957a768ba1d48fc244d8faed627f9f3da4857e967c93ce2b9d25232ec",
+      "bytes": 7695,
+      "archiveSha256": "d5ef0a7de4640860fdcc0f967a299f8ef36ee0bf7200d42349a84e51355ee990"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.PinyinExplicitBoundaryTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/495aaee02b4e66f776fb.gz",
+      "sha256": "f5eb41caeae088c445c24e8aa2a12dfdc01a1049c344555bd3501831fe838fe9",
+      "bytes": 1896,
+      "archiveSha256": "57159a58f4402195d8dcbca21e57cb1e984cc242c2584f57872b00f0278fd2f6"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.PinyinLanguageModelSearchTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/571944752932a352b686.gz",
+      "sha256": "b2b6483b4c4ea558feb3315fe96a7616738ce1701bb667ed8321cf9ef7424d0b",
+      "bytes": 1595,
+      "archiveSha256": "02b4b88c66d0c1a93a47bcb8fbbdaf87af86b2b648d331760abd3e660d55557d"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.PinyinLanguageScorerTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/dbb9eb0cb04a0f1a97c9.gz",
+      "sha256": "7b1dd6e23b0a0fe52e65a5fff4156db3435a605e650a38237caf46f953b2d07f",
+      "bytes": 695,
+      "archiveSha256": "2406a29bf4c81bb2f4f634f1044ace2dc93c9ed9df8bba00612458d2154490b9"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.PinyinScoreDiagnosticsTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/7d690806830d1176d143.gz",
+      "sha256": "040222cdb51f32b36316d87b869c1e7413e0006a292d39efb52dcf8736f9a4d3",
+      "bytes": 2598,
+      "archiveSha256": "f347b94091ce76c7b0ca9bb26e1bd0f4c80c262a83e9d7215841f1f09cff5cd6"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.PinyinSpellingGraphTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/2ad421b346c618170cd7.gz",
+      "sha256": "4953d20e51d9e62ff12cf39b5adeaa05b9c416c22097ca01e6f87c6ef9863098",
+      "bytes": 1635,
+      "archiveSha256": "28e364e607d2fcae16d225275cbe38ee5051e6afd945f8610142373c03d3166b"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.PrefixCandidateCacheTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/bec41e084ca78f0c283c.gz",
+      "sha256": "e6e75ffb92dd1147133eba4d1dfdb0ba06460865e00f296b9e445e56ccfa3860",
+      "bytes": 998,
+      "archiveSha256": "ffa89d0ecd602253e5209cc93259348441ec37bb495f2a9cd13edff7a786c854"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.ProductionLearningQualityTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/422c8388b8c351f54210.gz",
+      "sha256": "8d3df36e0eb9bf52caabbd34431d979cb54845a5960f292b10e0e2049ff9ef93",
+      "bytes": 1927,
+      "archiveSha256": "d4832c2b4b163a457d5ece6d2e71cbae70d3b770f039bcaf67acf650b972d539"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.ProgressivePinyinTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/3a83442306e83773b74e.gz",
+      "sha256": "0a131225905f0e0993435c63b02dd960c536b80056b7ef2b9a6d53e77532e1e6",
+      "bytes": 2676,
+      "archiveSha256": "598a15a147a73102a09f326924d1d3cf215507d5eb9f905e6ae976f41acedd16"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.QueryLexicalCacheTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/30f8f01a4db1cb296456.gz",
+      "sha256": "e82b9fdc6656bc1e307e88883521b49ec29b2f7ca5d91c727a7f7837084b5d85",
+      "bytes": 1164,
+      "archiveSha256": "13aee87189ee129f341418a71b52e1a18b0bfc0b0d6871705988f6e9a4cd96ff"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.SemanticCandidateCatalogTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/2abb04158c030c478d72.gz",
+      "sha256": "f54ed0ed94de8d04590e0b7f0e43131e6ff029faed95afb8d72125ce287be227",
+      "bytes": 1000,
+      "archiveSha256": "5a8748473352f66f23a115706945ec51ef1144b933cfa9aabbbf3c94c409a33f"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.SerialPersistenceQueueTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/f22fe72880e000e9ed65.gz",
+      "sha256": "ce1f863e51b17b2927225508c08dda71429860531dc3f71444d9241c017256c9",
+      "bytes": 517,
+      "archiveSha256": "657472433012161ab26f04ae30ca09cd12cba0809e036a749553d542efe19a3a"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.StableTopKTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/6441df7aa3e0ae7f36a0.gz",
+      "sha256": "a8ef4c82e4b79fc50cb7c7c892ebb66427be65a7e0823e144ead2a3d2b04661e",
+      "bytes": 661,
+      "archiveSha256": "6a21918bfb1cb715dd09631c8177deb1bbc5326a0173b030a38876e8f266e481"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.T9AlternativeInputDecoderTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/9ce809a7e36a8809aea8.gz",
+      "sha256": "6093beb20fcd9ece432f64d14adf72c2cdaad250ee9b63492354a2263a2840eb",
+      "bytes": 2721,
+      "archiveSha256": "653f49e5f52e0c5ca28665849f53ea25fdb45eb3c8c44b5896bd5bc866521c57"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.T9CompositionTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/352d12c59028b98cae9f.gz",
+      "sha256": "f4514cfa9a34e9e5b9d0cfff0a1fd2d406914c33caab793c320e8eda16739bcc",
+      "bytes": 1253,
+      "archiveSha256": "5a42a2d521cb302c02a6f7f9787fc4c0af89cf4f282839137445ce91b14f455a"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.T9PersonalizationContractTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/07119902f7712fdaa34f.gz",
+      "sha256": "796561b62a01b2d427ac6dc29529a2473044495411a923a4238fc2cf04cbe26b",
+      "bytes": 687,
+      "archiveSha256": "309f8bb256fea05a679a3f576eca177ec28723b39260467d5ebd4e618cb31f91"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.T9PinyinChoiceTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/8c51e0e159fe0e04c3ce.gz",
+      "sha256": "be22dbf5e5d9cdcbc39a01f6406cb2c07ed28f25a5b1d8c2a1f4d1b5f0c1ecc6",
+      "bytes": 1134,
+      "archiveSha256": "2419569983f2b11a3f2943cde49a54f4c515151cea4785ffbcec62fe6b63b9f1"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.T9SyllableIndexTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/1b38f9da3708101fb7a1.gz",
+      "sha256": "7f69c0e66620d8bfbb9a79df62336a729d6023babbe009a807c6df8dd956c282",
+      "bytes": 1449,
+      "archiveSha256": "61ee54af744674b5bb7a4acd59ad237f156a85044fdd202018e2584777ad815a"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.UserAssociationTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/3c813018508323a62803.gz",
+      "sha256": "e40865be5b1659d209666f1cdd6f19145b346016c9332c69d784e781124067e5",
+      "bytes": 813,
+      "archiveSha256": "1c14e68b1373a5f4d42bc0f524f0bd6c7eaf74ee890e619e05e9318eb7da5021"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.UserPinyinLatticeTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/fd3b1441f1ea8c429071.gz",
+      "sha256": "3d706564bd17070e1a7b563333b175093ab24c9e92dc726c0abeb22fc8b81fee",
+      "bytes": 1467,
+      "archiveSha256": "481f7cac16f352759b0e66c949650539eed104e641b83f4e4747e4ddd78e034a"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.Wubi86LexiconTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/ef2b6a28708b75a0e58f.gz",
+      "sha256": "01625e85cdd78951a475f60589281d82c33ce0cc652abf022917ffe6d8559393",
+      "bytes": 1385,
+      "archiveSha256": "72bdbf55bfa0e435c3b7a713b1f11cfe5a623ae58bdc21275a2e091c5abf46f9"
+    },
+    "core-input/build/test-results/test/TEST-io.github.ethanbird.senseime.core.Wubi86PersonalizationTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/07148268f5b8c89003d1.gz",
+      "sha256": "def1d74da4781fe054de243ef24e2f4792b8e06ab95b1065ac6fddd3f4ed3314",
+      "bytes": 1874,
+      "archiveSha256": "7643f09e1e18915da106830f91cfa672c0647a9f3e954e359b0d76b3e04b2bda"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptivePinyinDecoder.kt": {
+      "archive": "benchmarks/results/e13-evidence/28c09a6c1357063cc6ae.gz",
+      "sha256": "e15165a52f0a1acf1e5ffd50e8bc1c5724cf6851b272caa69cb9d8414e139970",
+      "bytes": 26191,
+      "archiveSha256": "383e200109b511b593eb8b460ac5a58209e14d25edc0d0d89ac10c2ed4335fd3"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptiveWubi86Decoder.kt": {
+      "archive": "benchmarks/results/e13-evidence/dba8d35737832ae3d1f2.gz",
+      "sha256": "a35838bab4a81024eb4de8a91e13cd9d6016e2d944bfc3a1f1a68b3fb7ec92b8",
+      "bytes": 7927,
+      "archiveSha256": "a6641cabfdb4c343a2bbda4986db7ddb4965fa6528bcd1b73027c25a4c315216"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRanker.kt": {
+      "archive": "benchmarks/results/e13-evidence/e19c16ba37be8cf4ce15.gz",
+      "sha256": "c2fdabe176aabf9157141663e8c30a6ce6e7ab6d75775c5b6a351bf51072a4b2",
+      "bytes": 6684,
+      "archiveSha256": "41a6b013e51c31c75a166fdc9db9b09275b5567f6a6e96a8c07b01e387adaf6e"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRankingDiagnostics.kt": {
+      "archive": "benchmarks/results/e13-evidence/03e765d2d9f58fa6b996.gz",
+      "sha256": "40fb7520701e8c8a5b68ad5054646d9210ffc6dd3386b81393bb64a7c0cfa90e",
+      "bytes": 860,
+      "archiveSha256": "3806b8bed0acf5ffea57cf3977c17e4a5022ab7bd5de47086989b53f62424c27"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateSnapshot.kt": {
+      "archive": "benchmarks/results/e13-evidence/5b205273202912d008c1.gz",
+      "sha256": "a9e67e6cad44e6444d6f973e4a166bf8740031ee499db7c8f450e84a2e8778c7",
+      "bytes": 796,
+      "archiveSha256": "68d53d8d6adc2f1dc9a16e37b3c9c8db4221e7e5dfb0729f7d04bcc910852d0f"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterBigramModel.kt": {
+      "archive": "benchmarks/results/e13-evidence/0a5efa2f625d41a8653b.gz",
+      "sha256": "31932aa41a2941ee4a25ee64ef20376e1c8c22cebf8e6c4e5761f65f2eb319a1",
+      "bytes": 5403,
+      "archiveSha256": "4c7436e6d9b20f409622e774f1fd49ae3701b5193918bf97bf618c0de625bc8e"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterLanguageModel.kt": {
+      "archive": "benchmarks/results/e13-evidence/075579b87aefa1490620.gz",
+      "sha256": "13edc15ff7b3e35a4aa6b1097e86a3798660a1d7cea1b9c60fc6688e51bda6f9",
+      "bytes": 8266,
+      "archiveSha256": "4dde365fe524e7e69c10c2838cda6b450cecc0bcc7f6b99815914a024a6c0d05"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CommitSequenceTracker.kt": {
+      "archive": "benchmarks/results/e13-evidence/af8761b6df2539647cb1.gz",
+      "sha256": "b5553d8064c4e5fea98957301751f4f8dc15047f04daecb357919d663bc2dfc4",
+      "bytes": 2777,
+      "archiveSha256": "bd47bd2fc20fb391619ac8ca2710eddd5dca7e22a5931fef8c9ee2fc1f32724a"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ContextAssociationModel.kt": {
+      "archive": "benchmarks/results/e13-evidence/415ad22f34fa96205b91.gz",
+      "sha256": "42d5303703626c49fde56b018baa78e1412c82ed7a7e9a9c6e7ab53aafc4c969",
+      "bytes": 6803,
+      "archiveSha256": "2d61adb8d9eea285b5a494146fc939b6d9d84a3affa4b296d81042907ea210db"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchBudget.kt": {
+      "archive": "benchmarks/results/e13-evidence/6ee4b31931ee72dcae20.gz",
+      "sha256": "b7a20c3cc3baadc70eafc9b82531b7109d196b8252d9c8e142495808d55586a9",
+      "bytes": 2676,
+      "archiveSha256": "3b9aa11a3680f42cc4d5f55a9ed40b7bb399d455d4233f12be9c380054ba55ae"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchDiagnostics.kt": {
+      "archive": "benchmarks/results/e13-evidence/927ab2a9e8b65352d588.gz",
+      "sha256": "f2c8a89a8056cb6ee494a574b952013c37da6de9d5d15c36d8ec988f71168f08",
+      "bytes": 926,
+      "archiveSha256": "1e78148f9c03125fa8154ffb5eaae8bdec947910bd934f93e83a99c24a97c703"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CuratedLexicalCandidateCatalog.kt": {
+      "archive": "benchmarks/results/e13-evidence/50fd394071ce7c290c7b.gz",
+      "sha256": "003535f8f5a2e42ffb622b728370166c8f83060fbe99c8feab40c6505cecd9ff",
+      "bytes": 2106,
+      "archiveSha256": "b56708a4d3645512c1c005307ca75929156629c41d0873161864308aa2075a9b"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/DecodeWorkScope.kt": {
+      "archive": "benchmarks/results/e13-evidence/c77775106463938a6855.gz",
+      "sha256": "d6bb4d8c36c245bd9d6309e7eda14524035b8c0d9402df5f3355fbec786a5741",
+      "bytes": 1389,
+      "archiveSha256": "5b617a3555f0158de5c8a67344d18770b31fc00f1c63008881ee5a1a01eb343d"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishInputSession.kt": {
+      "archive": "benchmarks/results/e13-evidence/7677034aa0c9e691ec11.gz",
+      "sha256": "b2f710e2eb0d1d6f0a3d8e61a00745e2442a822a57818f54ff15e94ba4077401",
+      "bytes": 2999,
+      "archiveSha256": "9a31d9de606d20101a3eb87d3528a5f73fafb15a14a485d1ef0b0180ef44ae5c"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishLexicon.kt": {
+      "archive": "benchmarks/results/e13-evidence/b18b72389d9266d24a35.gz",
+      "sha256": "d4023375ffcf9636f2f099001864b12d97de587d074964fb855fe33cf7b2f509",
+      "bytes": 8992,
+      "archiveSha256": "fec59764c6e34ec9d0f0bc12ac384e90956c73993b547df758ae4e5da226902e"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishWordUsage.kt": {
+      "archive": "benchmarks/results/e13-evidence/dc774d833e2dea9ba696.gz",
+      "sha256": "66f3433d8ec70682e9481916502998a9b0fd30a731c784ff890750fdcfa562d5",
+      "bytes": 3445,
+      "archiveSha256": "01b81ccdaa834a92e0fa1525a188dfe12a506ef9d18b4a93bcde467552dc2fef"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/FakeDecoder.kt": {
+      "archive": "benchmarks/results/e13-evidence/d55080274a514f1a5363.gz",
+      "sha256": "2ea5166529da40546f4f6f1cef86036ec5a1152a129fdebc7cdfa18e969ba591",
+      "bytes": 923,
+      "archiveSha256": "e92f812a722badc44d52047847ec869966a23858112fcde647174453978923a7"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputModel.kt": {
+      "archive": "benchmarks/results/e13-evidence/169b856ab7feb3681a83.gz",
+      "sha256": "5a5316e26a1a3da6f90cf0248208e0a39d7f7ee97ec4a65e2341bb7c1a7fde38",
+      "bytes": 5277,
+      "archiveSha256": "aafc9a698b304265f0e291cfaf956dbaaa0cb4451d2d2a28f9c4eebcdbd12d39"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputReducer.kt": {
+      "archive": "benchmarks/results/e13-evidence/822da813e84c35f6e2f1.gz",
+      "sha256": "b608ea6ca6a3e53067d215acc6949f1007b1cc519b3f2de42a28507c7daf936d",
+      "bytes": 907,
+      "archiveSha256": "4d6f525c65da54dd26a96a38c8a4e1a86916d357b065a898712a150c32c7195c"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M0HostBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/188ceae31193c1e41bae.gz",
+      "sha256": "e18a429e81795794463f53f304894b8938dd52a98ddddd24550bd4ca176f3adf",
+      "bytes": 2905,
+      "archiveSha256": "32981aaa83769ed74464d1e538253e867f196dc0be980141ce398222b4dfc37f"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M10CharacterLmBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/99d0fd7d8db0014095d1.gz",
+      "sha256": "c88f3f193ce2ebf37b14c5baad0e3dbc76c540cd55f5859105a4bc9d1570be45",
+      "bytes": 3305,
+      "archiveSha256": "3fc4c2d553bf377d33b8716e60b1551d03a7240e4ebc21e18e60a7c53fbfb077"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M11LatticeLanguageBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/b298b1956ee1d21a08fa.gz",
+      "sha256": "1c79b49983defc05c8889d8c266168df99801dcf20f8362bae073c306b6a58d2",
+      "bytes": 6090,
+      "archiveSha256": "10d4266275cf934e445ae4a09ce6f9d4ed79fec183d59ccabeddeeb96de07ce3"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M12P2cBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/df5f2d86c19ffbc84b8a.gz",
+      "sha256": "ff18694be688990b63de59e7c67555a69389bfa2533ab3db82ef11ca83db0d75",
+      "bytes": 6378,
+      "archiveSha256": "ab0e0cb10da744fec18646da3c74b5dff46e0ab1817105ec16400ec573e37bab"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M14ProgressiveEquivalenceBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/6ec87561872df94e6796.gz",
+      "sha256": "7bd20f4a75222d016b8e8a10452c7f0aa71d33c85c38e9e4fe3d752e756ea294",
+      "bytes": 4826,
+      "archiveSha256": "170106e0abb267a747ab2618fa819e8bebebcb2df6b94c524e834d16e165ed4c"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M15TypoRecallBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/bf58feb49997eacddb72.gz",
+      "sha256": "9c120a1e77361cf65a0d40f00c27af0a428fcc458213d8562281d906cbf168b2",
+      "bytes": 7212,
+      "archiveSha256": "4235b10174c5e0a77ac6b8353c99c03ad8ac01e7345a5d8b011d9af27dd2dfba"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M16SpellingGraphBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/9c838ddbd6f54bbd118a.gz",
+      "sha256": "f6e730fd5f77e54108ad61d2d28e43f77a69d5afd935f6cd20972842e04b8852",
+      "bytes": 3514,
+      "archiveSha256": "f46d1239340bd76205d610639fb3a58b38718d1f37c2c14fadca7d819e414d94"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M17CandidateScoreBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/2bd2ca9cc4916d08b941.gz",
+      "sha256": "9e15d6e51cfff4ec32002ca3f09f1ce1c75bef268bc64c124d6eba6234e9d8be",
+      "bytes": 4831,
+      "archiveSha256": "2495e169684d0a27fe691b7a67dc6a784deed0e52ecb9449b63d6aa94ba46747"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M18LexiconLearningBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/4c685d00a73e42e4f0f8.gz",
+      "sha256": "dde32fe267107971573ff16562c69a44d09fe85093761bdada92d36c67ccbd98",
+      "bytes": 4734,
+      "archiveSha256": "4667404c1193340dcd8731566f0f5974c696a2f8c236e72d2cd7af6ab5208c9e"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M19ScoreFeatureBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/44e28aa929779559a918.gz",
+      "sha256": "af21ccd30f4ab71c3b9f666b4b4c2424df83a83267fc23ebfd8d7d5ed52162dd",
+      "bytes": 8415,
+      "archiveSha256": "f838c72f6bc917093a2e9a45b8829af2bd0977314627fe52bf27a3d2b187118a"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M1PinyinBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/81ca163274afcecfd233.gz",
+      "sha256": "9e3ebc93691e8420c8edbb8eb4a55d801b19c5e7e631cab11063408f1576d212",
+      "bytes": 2957,
+      "archiveSha256": "770186efc8e88e8e934f633515aa16bf10322a9697be1f8769684187f57a4bbd"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M2AdaptiveBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/1027f33f3cd20c6a9a41.gz",
+      "sha256": "88ae82e685b28b79c68d6eb549867e70f2da66e75c2d014a2710cdf24be606f2",
+      "bytes": 7044,
+      "archiveSha256": "e5f880bed92f54bd94cfe78232f601d352c7d7f1c097388532eee7b47768fcec"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M3SentenceBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/0216ee2b372f3bcaa9ee.gz",
+      "sha256": "03c5de47af070a2cf89ac0700711bbd9488ccb49a6ddc9a6938b49da9c7f3cd7",
+      "bytes": 33116,
+      "archiveSha256": "cb3c086768d511814595d7471f0b5ead939e027e514731e83587dde3fc5cf680"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M4CoreBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/5be8b33be782350c00d9.gz",
+      "sha256": "3fa4158cf9cdf414b2e0e2f8a3eaac64d81e7e317f719dd6baf91ee020e97c18",
+      "bytes": 13807,
+      "archiveSha256": "b545588055e00461c72f695d152d230e19f675ca14b8338c4678d8a3094b7d44"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M5MixedInputBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/de4799fdae6bf1659fe7.gz",
+      "sha256": "47e1ff5639ea06dc8f1f28b2da3df4099b4cb8a3e088a78e238e98398732e114",
+      "bytes": 22806,
+      "archiveSha256": "41801169013fbcaa2ac7e8687868cfe9c2b255aacd98bc63b24abeffcc587b0a"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M6InputPolishBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/1175c8ea59ccf45e509c.gz",
+      "sha256": "14a226681511b1c2cb76323452424c7759d130bc1926b1ada25b464a12fb7a55",
+      "bytes": 7882,
+      "archiveSha256": "96a3978670e566854493bc967fbb80d50530b403f18bec9d2e0a7cef4af9fc8c"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M7ChineseSchemeBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/786366a684b13f9f46b0.gz",
+      "sha256": "583ad236955f77f87ddc120795b89f70ef88c19f477c7d42d2fb8ee59641b755",
+      "bytes": 14454,
+      "archiveSha256": "eb19c2986866e9148166763189708aae20257f87b333fa98948b1c9252542c89"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M8DailyInputBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/47eeb782f2470c2eb18c.gz",
+      "sha256": "77c83f59177ec5619dd759ccb87b3ad42e7ed246f3cc1b9d3792f8d3b20d0e30",
+      "bytes": 8524,
+      "archiveSha256": "fcdb048c937f633092a71364caae5fc572b0e6ac5ec6e6c869e5952d72eef3e5"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M9PersonalSentenceBenchmark.kt": {
+      "archive": "benchmarks/results/e13-evidence/9356f428612b2d3ed6d1.gz",
+      "sha256": "54bd54fac46b6ba4fce9c0e442c628ac6b3d6e512e8df4371dcffbc56e18fd0e",
+      "bytes": 9817,
+      "archiveSha256": "a5d13087e30ebb312a9e928e98e934296adaced90d95d43798d1e5b4062c58a1"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/MixedCandidateRanker.kt": {
+      "archive": "benchmarks/results/e13-evidence/cdf0e079ef3b51ba1b57.gz",
+      "sha256": "c0a24077e62e51e5edaddbbc5ff694d2a939a5bf075802ef5b9999cad5483769",
+      "bytes": 7985,
+      "archiveSha256": "bc2c5da8bcd9033ab05c84ab1af09edd0fa621de545d18599eeafc46244d4781"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/OovLanguageModelAblation.kt": {
+      "archive": "benchmarks/results/e13-evidence/a03bc32cb1cf0e92b0f7.gz",
+      "sha256": "08bcd990204c8dc6e0ecf3c85254f91384e6f40179633386a90167457aee8195",
+      "bytes": 1368,
+      "archiveSha256": "48ffe2c0a98a130f6083122665831f6e90e019949f6359b9da5da51b3d7ababb"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinDecoder.kt": {
+      "archive": "benchmarks/results/e13-evidence/b56be6bcf6f623818388.gz",
+      "sha256": "8cd066a55b2ae5ccbe484357148725dda01ea5ee81e716bc2f7db7e560ddb320",
+      "bytes": 85453,
+      "archiveSha256": "892cc90b19a35230a10a2cdbbc12ad4ab51db027baba3aa3140db42aaf6c0b17"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinInputLimits.kt": {
+      "archive": "benchmarks/results/e13-evidence/ef59b665289c536818bd.gz",
+      "sha256": "7759ce67e9dbaffffba153c3c3cf2fa71e919198de6bb9799840b4f0b8a47a6f",
+      "bytes": 180,
+      "archiveSha256": "3358941daa206501a0ff16ae75d7a5d2349d12a791165b6246430544df83e6ec"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinLanguageScorer.kt": {
+      "archive": "benchmarks/results/e13-evidence/2738c3b71862fd537d45.gz",
+      "sha256": "b282550d1ab0efdba50a84b7693d5da1461593ac820453d5b72aaf5ddc2d5cc5",
+      "bytes": 4540,
+      "archiveSha256": "af9b7adcf8832d97772e671e4aeb0601948972222a29cf4929a699a0dd3dba74"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinScoreDiagnostics.kt": {
+      "archive": "benchmarks/results/e13-evidence/ea56cfa794c80dff3f0c.gz",
+      "sha256": "1b3b66df0d87f3857825af5028b7c9423563ff7c1c68959a94d9a03fdf606c56",
+      "bytes": 6281,
+      "archiveSha256": "b6a012006a12fc164af848099221ab08cd5228d0557c21759de933d8e03ddcdf"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt": {
+      "archive": "benchmarks/results/e13-evidence/fb08687af874e0609db4.gz",
+      "sha256": "9ba8e935fcb197e0dc9bf79a2e057a44a9c74fa14c15412c68b38970900212ee",
+      "bytes": 21091,
+      "archiveSha256": "b5f751b119c9085c6dc6f4aa1de2f7235399ae3f02a1ed439b92ef507abcf77e"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSyllableSegmenter.kt": {
+      "archive": "benchmarks/results/e13-evidence/cb196ac9e5a6607a758e.gz",
+      "sha256": "5e277fbbd408c5d712be0b8b1c0d0f736e4a2b5b6c0d566720d54eac5d9d6d05",
+      "bytes": 18214,
+      "archiveSha256": "31dc3fc25a8b54633a30bd46897f5f88d1dbda6fd83fafb7d7dfc4bd521feb6a"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PrefixCandidateCache.kt": {
+      "archive": "benchmarks/results/e13-evidence/0669d230b866174b2a52.gz",
+      "sha256": "5dc949d24ac6df2050628c930323d0fc5370599844f53fe68eb91b5f572a7408",
+      "bytes": 1710,
+      "archiveSha256": "17885663e91125cbca16aae1a0cf3d3983ea07ade6a4cca0aa8a4e7c35bc410a"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ProgressivePinyin.kt": {
+      "archive": "benchmarks/results/e13-evidence/c91d00d90434c0bfc1e6.gz",
+      "sha256": "dbeb7d86ad3ee13c9635d38c208c87ce4fc1e45d2f45ef4767fbb9172ae6238a",
+      "bytes": 5116,
+      "archiveSha256": "e4a908b04e95f326f9a148efa4366da805c23f16adc282327a223e58aec99daa"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/QueryLexicalCache.kt": {
+      "archive": "benchmarks/results/e13-evidence/230d2343255dfb55b302.gz",
+      "sha256": "57706a81a9c49d6a6d9b3fef39de8eca2a548b0a1d332540f6603a46c1d46b2d",
+      "bytes": 1684,
+      "archiveSha256": "2b45e4115c4a4411ddf3b104f813861327036c83e8fd7848ead48eef3c204b92"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SemanticCandidateCatalog.kt": {
+      "archive": "benchmarks/results/e13-evidence/b1b69ab7ba7caee174f6.gz",
+      "sha256": "b7308ba865dace349456daa3bf666b97affa5bf77945474bde2352cdfd3e87a1",
+      "bytes": 8386,
+      "archiveSha256": "7fa970456c9b1835d1af860742ee955765c8d1d3703425ab973f7164213e6769"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SerialPersistenceQueue.kt": {
+      "archive": "benchmarks/results/e13-evidence/561682c6681d0011dc02.gz",
+      "sha256": "d7882ff60210696c825be60b5c9cfe10651f55f05fcb0209d27fff3994bcc8d9",
+      "bytes": 1487,
+      "archiveSha256": "dd98075ff6a6124da5823452da92870ef43fb8f982ef2dc130eccdc476e1151f"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/StableTopK.kt": {
+      "archive": "benchmarks/results/e13-evidence/327e549d4dae30dcb244.gz",
+      "sha256": "4047e249e45037b3808e99660205bcebfe905e072ab4a2f7cb377abc76917ce7",
+      "bytes": 1701,
+      "archiveSha256": "f3c7f9f539e7abaa5b02d93af5539c1ae7e9ca242bb4c97114f2a436918cebe8"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9AlternativeInputDecoder.kt": {
+      "archive": "benchmarks/results/e13-evidence/85d140c07201076f4ebc.gz",
+      "sha256": "cf2e3f1aa4e394074902fbed017eb0a7afdf6f3df09560fad6755ed5ec0bf62d",
+      "bytes": 21995,
+      "archiveSha256": "f153c106ac807a8ed3f2418c3989baeb6a85599cbf46a6e7a04cf705b60a4b7d"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9Composition.kt": {
+      "archive": "benchmarks/results/e13-evidence/c634da918011ff22d1ed.gz",
+      "sha256": "ff2663ef91b666386f41954ceebe945ab421cbcfdb5a944dca64aab0b0a16727",
+      "bytes": 7571,
+      "archiveSha256": "24673c8cef5d0444122d3257d971036e8a5d0a158b934cc531c45156fecfff38"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9PinyinChoice.kt": {
+      "archive": "benchmarks/results/e13-evidence/40347502fe355dcfa1cf.gz",
+      "sha256": "2c63475a857b941c78950bca98b9915676c59e3544fd2d6f75c077c11d590152",
+      "bytes": 5332,
+      "archiveSha256": "3a61be61aeb72ea0b1d1b7a1ab0bb83a90fb210d4c161f2e94bbd3bbaf8cd051"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9SyllableIndex.kt": {
+      "archive": "benchmarks/results/e13-evidence/fec1fb7ffdd281c1a908.gz",
+      "sha256": "5b9752addfe68ac197beff57b9869d161e8fb1543106667d4b2b1cd2a3fba223",
+      "bytes": 13506,
+      "archiveSha256": "bba1734a5625f92ce49c8fea9d68e1e3cf05024d167673d92457a31ebe2da53a"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserAssociation.kt": {
+      "archive": "benchmarks/results/e13-evidence/caa6669e09af146f4151.gz",
+      "sha256": "3439f4711ae5ab9719568eb4bcac0cce649d8ca328a9c0839a83d91566832d52",
+      "bytes": 10589,
+      "archiveSha256": "310771224323f5f8ea5a0a75209fe661a4ae10afc4dc33a878215e6bb17352e7"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPersonalization.kt": {
+      "archive": "benchmarks/results/e13-evidence/ef72775a5612aa383f37.gz",
+      "sha256": "663743456c32c102401f8401b119c18b0321015d6efc5e47bb43e0dce78c0507",
+      "bytes": 22652,
+      "archiveSha256": "e1f1eff7d2ff094ca334709af7cabbbe1bf5979492c5061dfda997cdfa346116"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPinyinLattice.kt": {
+      "archive": "benchmarks/results/e13-evidence/0ca05542eeec4203869e.gz",
+      "sha256": "8a71df09fcc5e5d14122ad767f03ed4150773833aad2ddc3bb17a9120588fb5f",
+      "bytes": 2404,
+      "archiveSha256": "09bfd76f7532a5865d01f800d50a0e3b0d6ce724178ec46c14f94051986ee761"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Lexicon.kt": {
+      "archive": "benchmarks/results/e13-evidence/f70094b579f8ea47be30.gz",
+      "sha256": "468f3b0aa998c34376c7486ec063eadc626b4de6d41cd89527fa9976bf7bf912",
+      "bytes": 14929,
+      "archiveSha256": "70bb95587a74e3ffe3bfa7fa226e647eedfcfbc157eff141ad073519a5ff2af0"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Personalization.kt": {
+      "archive": "benchmarks/results/e13-evidence/03d7e31156499d41980a.gz",
+      "sha256": "5777e86c2bffccf1f30557e5a648d0ec5cd0c430c077c9db56491dc4c033b44d",
+      "bytes": 19239,
+      "archiveSha256": "fc787533cdec50d5caa89fc468442a98eb5bb984935fccf531396789f921ccaa"
+    },
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/WubiComposition.kt": {
+      "archive": "benchmarks/results/e13-evidence/3970fa540a106868171a.gz",
+      "sha256": "e9c7567a5dbb6985d8098cdc8a6a8d02724e5ea5f809526fdd5c80e6db3f06ee",
+      "bytes": 2426,
+      "archiveSha256": "7563c4341924ffb333e1cfd2affdac33df90c2c8f73b574216488e13b9ab65f7"
+    },
+    "docs/development/input-quality-learned-ranker-v1.md": {
+      "archive": "benchmarks/results/e13-evidence/29260e8e77572c8dedec.gz",
+      "sha256": "22f0469558a7daa518f7a82d57e940bb973833403864795c469c699060c04272",
+      "bytes": 5566,
+      "archiveSha256": "caf156f737aedcdd6986b3305a45cd9b3ba78aee68563f6f2ab496c12ada8774"
+    },
+    "docs/development/input-quality-program-v2.md": {
+      "archive": "benchmarks/results/e13-evidence/de8546f0b6d172d6a066.gz",
+      "sha256": "5c4fce0be8f71aa0ba2b85d5ab67e3d7a40e6736d4f0662654b77e17f1735080",
+      "bytes": 28163,
+      "archiveSha256": "6b4f9c34dc7f68924776fc00464829aee0c79069b3fe8db0cc05d2a039d2ff78"
+    },
+    "docs/research/input-quality-stage-e13-2026-10-03.md": {
+      "archive": "benchmarks/results/e13-evidence/48de70842589944803aa.gz",
+      "sha256": "4b3664610bd85b556ffce94585809c3bf3e98d7bb4edda957b9e22840262f74c",
+      "bytes": 9621,
+      "archiveSha256": "7bbcfe086e354ae2569abf6207c881c35337e00fbcf21299a54b0c53b7fb4712"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.AdaptiveLearningContractTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/9f48451c533cd77d06ca.gz",
+      "sha256": "e56d555bb86f9bfb02112ca2ca934cdc998c02b669ee9ecd2012acedf6309c41",
+      "bytes": 844,
+      "archiveSha256": "ed42c8a6dbd4d7986ee106d72b054c61cfb6eab7419ec83cc709bce74aaa146c"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.AgentDraftBufferTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/92eebbb5d816b9795472.gz",
+      "sha256": "9c5525aab2a416267e80bdb50c01c09889763537aab2aa83695a9494249b2aca",
+      "bytes": 795,
+      "archiveSha256": "b5e9e099cf636dc7823891a7b90e98b50085ce5d244773a8efe47aef8ccdea12"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.AgentExternalEditorWriterTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/3dce3fed9a6bc2393969.gz",
+      "sha256": "da1c156b8e162e9be7d2b22745039477617c1e9ff47bd878454028d91551268e",
+      "bytes": 673,
+      "archiveSha256": "ddab775a5e1e9924d394dbd380442af9b7b8faa759a5009d5f9fb02df18b0d90"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.AgentSkillProjectionCoordinatorTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/de1442b770f812bda837.gz",
+      "sha256": "29846e5636ffdca8d9ece7b9b1ed2c16a2223909ef737aafb2424d74bf0ad4b1",
+      "bytes": 1961,
+      "archiveSha256": "c8487ce2469533242dd6fc24ac6d02c16a9139f992aafc3889acd6abd7599bd8"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ai.AgentSkillRunSnapshotTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/ffe4c45a2c8fc6bde390.gz",
+      "sha256": "401ea95100b3ed95fd41795e13fad21bc697103086e2611ce36c16334eb5b7f5",
+      "bytes": 865,
+      "archiveSha256": "7db508a505e13a86fbc5d8dfcdf869e698dfa8798cdffdf215c133a5316e8737"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ai.AgentStreamPresentationTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/77c34a4675a5929c049d.gz",
+      "sha256": "38fd622635671aa67c54ec2bf694cd3607bb1f4607cdef7747d761c2d853592f",
+      "bytes": 1532,
+      "archiveSha256": "5cec4dec4c3397425540135d14a17ba300c9f4c65c4df1c904625c8c1077fcae"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ai.editor.AndroidEditorSecurityClassifierTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/df37c824a8b04937b5bd.gz",
+      "sha256": "fcd01a6864a9fd330a395a3dc4d2ac62f94e12178518a863c24a953e07180289",
+      "bytes": 1281,
+      "archiveSha256": "5a0545f0a40e1ed5ab1edce4bc9f29ce21c6c97322aad40c1ff929fe7a51627c"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ai.editor.AssistantResultPatchFactoryTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/556d274d630fd741eb85.gz",
+      "sha256": "ab5f19250129b3070f3dfc962a8cb3b3a36c324979e9352ed6636d4285300019",
+      "bytes": 739,
+      "archiveSha256": "1df26da5e91294a34a9ca95c7b34590b1e86d12b178f06a8c817a59a4c4b6924"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorContextWindowPolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/5abd071262f68b9e7b6b.gz",
+      "sha256": "dd0a928f46bad5dd77c149adf0b2a20481ce9b361549a9e161e0ec7f5f5e1f45",
+      "bytes": 1089,
+      "archiveSha256": "f22ad311c2bae17f6f1e4a7d4f49497f40ee9338c79274c529ca6b00a4a8a5e9"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorPatchGuardTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/d406dccdef3540af0c89.gz",
+      "sha256": "2de5154de21f5da6de29f0bfc82d0b9f98da044377e0c13d2a9e52f3da7c5e6a",
+      "bytes": 3246,
+      "archiveSha256": "e35bdb81a8b84d2d71f3ae530d0a0579cedd4e2ce3b96a208cba95ee21017004"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorPatchPlannerTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/ab9e122ae557032c4b39.gz",
+      "sha256": "164bce3334ae100fe1170c2da3f194a7daf52d65b6e2372dca220f66d2c1f815",
+      "bytes": 1696,
+      "archiveSha256": "ec554bbd1358dfb071f9e1e40f8d9419813e1e5beb8a952ae7c2dee0701f4897"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorPostApplyVerifierTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/044cc6fccaca2fb28e33.gz",
+      "sha256": "f09a324f27a5bef5b30f5fd1e10655a8bac9d8528e234dc10f5b5b553dd08aea",
+      "bytes": 1059,
+      "archiveSha256": "34a41e79b594b91b603141f3d45e899a906cccb42890b4d10ca64648559a7dfb"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorSnapshotCapturePolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/bffb53e4060018fa8777.gz",
+      "sha256": "587f58f514a49bbeb77198604f8896190316c813c7402e9e79dd7567bf9f6233",
+      "bytes": 4049,
+      "archiveSha256": "ab2eba4c69a02ca009b161deed19ae9f8a90d514e41935ed268b185da88a4b33"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorTransactionStateMachineTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/b580ecb8f17339c594e4.gz",
+      "sha256": "cd3faac62a998b1187c07324288eac6669839d072bcd5ff163ff198807b1dca2",
+      "bytes": 2452,
+      "archiveSha256": "fa23c89ae98e86f558871fd51eea6b90fef49fffa2a157b0ed7ef0edc46af13f"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ai.SenseAiEditorCoordinatorPresentationTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/995031b7cc707e9453d9.gz",
+      "sha256": "9651268347418db63f55f07160a30201fb25b35e1bff494eb5579216cf283b04",
+      "bytes": 761,
+      "archiveSha256": "88d7e871e2d2151de86195d0ab8bc2e91d15312b4c8e5c2b2992bbb762afe2f1"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.AlternativeCommitSnapshotTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/4965025ed9d0d870eff4.gz",
+      "sha256": "577355247078fe7302675a7608d836fed1d8645af3a2ccce625776a8ff6d7fd1",
+      "bytes": 1313,
+      "archiveSha256": "9baf40d154a0bc7ca45c32e0b29b70c4e95d44065fd64efb29e390235e92b155"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.AlternativeDecoderReadinessTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/4d6a5911d311168efeaf.gz",
+      "sha256": "d0eeeb1ee4c0c0320bd0eac7778657a0634ba1fecf53889eeeba1fdf506635ce",
+      "bytes": 696,
+      "archiveSha256": "f2426b397f7e384742d85da9472445327b7203ab90ea73387d73a8b9e4f3d06e"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.AlternativeInputDecodingTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/316174b2c52c0f971fc2.gz",
+      "sha256": "252d77251a8e5012a989de4b97d59629d06066b4c042f315dbe91374515bec4d",
+      "bytes": 1821,
+      "archiveSha256": "20f30716c1c0c16d1101f97d1a0d0c614d974ec34229ba5777d6ca13f8577fbe"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.AssociationDisplayLifecycleTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/671edd34096da6568d1f.gz",
+      "sha256": "2ddf954c774ee9120a301b4106fc9d9f6a3ab7b5660829fbcbca1dfc4858e259",
+      "bytes": 1228,
+      "archiveSha256": "8a2d7149f9d6c9cdd4a2c20d03ee9ef44568e7a73b5a153b103f4c878e810dc8"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.AssociationQueryControllerTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/b5d282c9d5a5cd27cdd7.gz",
+      "sha256": "60f8166414a0056d0df56c88c0debef24af7b2076dbc9a97b3e2e864877145df",
+      "bytes": 1081,
+      "archiveSha256": "4e9061d75af1d1306f2a97ae4ddd0b6d577ef3d89537b2b9e500deb4173e15b3"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.AssociationSessionTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/611234d0624d5f059c6d.gz",
+      "sha256": "48d3340add1473d911d20141f30c52a4dcb084d4b377c2b532362f52152565a8",
+      "bytes": 680,
+      "archiveSha256": "7dc287cfc4efef5cf977a3c9c4a0fe84f148541a61273d6394699f5edb161f8c"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.AssociationTimeoutPolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/9fdf3f8059d01b361692.gz",
+      "sha256": "c1078488a0f3078693f47cb0f52aa972073f381ca140d9a075dfb4e99e8dba4a",
+      "bytes": 719,
+      "archiveSha256": "3041836c2b1b089a268caa58639d4404a098074dd08112cbd8274535686172f6"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.BackgroundRuntimePublisherTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/221a2cc1422309f2c2f5.gz",
+      "sha256": "38a61f5dcc9d5144e64a3127aa2ae67618a0ee660982cf004227a4e6d211149f",
+      "bytes": 546,
+      "archiveSha256": "92db45de15ac6562ae8d321c885c58b057f4f3680a08313020f7b42e37619cc4"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.BundledAssociationModelTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/21b58fcda91b05b71127.gz",
+      "sha256": "877e8880bf5302498bd15932bed2a47b7ec1bc40227cffaf05dec241c8f05e27",
+      "bytes": 820,
+      "archiveSha256": "8e7492e6f230671f229750980b85762998529dd2052b0508474b205b686c01d2"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.BundledPinyinLanguageModelTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/334eab451784225d96c9.gz",
+      "sha256": "fa5b717ba4a7481ef730587c505bc4161d712cc8ecb6de7b765eada7f3685c92",
+      "bytes": 916,
+      "archiveSha256": "47bdfdab8f42bb3f744c4f213ba2f3a587bcf818317b90eba556f74d992249bf"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.BundledPinyinLexiconTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/346cbd1ea89dca8f6857.gz",
+      "sha256": "4ae0d78d1f3d3fcab6500e64cd1f0aee89ff8a4ad7b93db3003df268991640ef",
+      "bytes": 889,
+      "archiveSha256": "590c6f8ed79e38504835552da59683a10e71e8f359e2cc8b6153097996464963"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.CandidateBarCompositionPresenterTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/45091cb8316a7098cf54.gz",
+      "sha256": "e497719cda54dc09433385c89739d6df8fe4ee5cd26818f0ac52d413f4a3a617",
+      "bytes": 1689,
+      "archiveSha256": "cbf5411aa0c8754b8ba076b969e4dca5346471fcb40d634b3ccba1220834c216"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.CandidateCommitTimeoutPolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/ece66c0967e724b05077.gz",
+      "sha256": "6228f585fc2630976ace26b26d959277ab23e2e23fac12af8ad7219ef75bb06e",
+      "bytes": 1030,
+      "archiveSha256": "fcba6c000e593e70b23a761b1ccdab344b157b1db7f592648d8212184b6ffeb3"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.CandidateDecodeSessionTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/6681195cfc3e04dd89da.gz",
+      "sha256": "e940b09188ea8f84b81e7edc79a90da16e931ec35d5afddedc99eaeec3b0db78",
+      "bytes": 2388,
+      "archiveSha256": "87ba8bf15409bcbea7e52b9605e1cd7cdf23c93bc636ea61f160c33f00364e85"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ChineseEnglishEnterPolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/859da2999fd45eb1f3ea.gz",
+      "sha256": "00ea4d405557e6cf17c9158d4e8046cf99f6dc004f674dc4c5c05fcc0eb21281",
+      "bytes": 835,
+      "archiveSha256": "08b57eb36f51b4d99285aa4dc28fda2385f748866d2a88c85166119b60d5ea2b"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ChineseInputSchemeCoordinatorTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/2ce53af9c1cb752b0dc1.gz",
+      "sha256": "2f3b3bf2affa297b805b3ee5e198c4ca30fc4af71090f4a0af16e92123ece19d",
+      "bytes": 2263,
+      "archiveSha256": "bcce55e911c29d839b85dafc23768ffc502dbf6d4932e2e1ceabc621669ed59b"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.EditorCompositionSelectionPolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/ce5ca338fe8220697579.gz",
+      "sha256": "2d89e2477c40615a0d1be39227c8feb3cfa182dce91e5908328c17d5bc830b5e",
+      "bytes": 1059,
+      "archiveSha256": "0fdc97585746d55767f0cbe20e64f09cd5261a0b260a93d2d2bb031bcd36c947"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.EditorDecodeContextTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/39af3082a3b34bc83d16.gz",
+      "sha256": "98ae110ebe8ab97316ca094622f671bf31813f774c2bc23c72de098a280fe079",
+      "bytes": 813,
+      "archiveSha256": "fe130f257ccf7654004e27eece0b061e68ae17b3ae0177774001c3ced280337f"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.EditorHistoryFeedbackPolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/b86b8ffce5854449a6c4.gz",
+      "sha256": "a8271d6a7c1432ef2f24c948c551f4c6a2d82c5040bd357468174833cb7647a4",
+      "bytes": 703,
+      "archiveSha256": "7d3ee282bb6145fd98ad4a14af5e45202366ae25d90730ec77744776d463579c"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.EditorPanelStateTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/19004d739409503cc7cf.gz",
+      "sha256": "acce94db481eeab140d5bee0d3013feda1cfc7792644335701004384401d970f",
+      "bytes": 961,
+      "archiveSha256": "503133f7363857fa0a3f9bf14bd10e77342d15633ef7f462d63e82bc22928737"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.EditorPrivacyPolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/d08916ee222032096917.gz",
+      "sha256": "dbe6c5ff683b3bd4c13edc2a1547173b99cb50870ab9b6f50fa820c36db015b2",
+      "bytes": 796,
+      "archiveSha256": "3d3540ff87564f728be39022acc35b41b140186edbbd340c614b54c8b0f8edd5"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.EnglishCompositionEditControllerTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/4a4694d9b0376d81b2fb.gz",
+      "sha256": "c61fe8ccfad10be15bd9fd2875a45d3bb70b66f6d193af404f41f3f806de1485",
+      "bytes": 1075,
+      "archiveSha256": "f8f1ca749ffc514c7657b659bf94e168bb138b886468716ce75fcd241970d5fb"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.EnglishShiftStateTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/3701812fba12fb36a6b4.gz",
+      "sha256": "1100781da0919324633a3b9972d15e4a9155adc193f7e571a2186cd50042d297",
+      "bytes": 839,
+      "archiveSha256": "9f41952bbf5bd9de471ccaeb699c5537597ad71c4868e9df59bddf812231d44a"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ImeWindowHeightPolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/ec166f6d46a2dc1dda49.gz",
+      "sha256": "5ff2deb6ac441d9f1c5c094b27279db0cb66b291b76b7832c477ca1938cbb20f",
+      "bytes": 826,
+      "archiveSha256": "5f9ce13f885fb6a3329de35503998601fee108806921872bc770b26f1ea1afc8"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.InputLearningReadinessTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/acfb2dbb6cf82e7b97cf.gz",
+      "sha256": "120bb45e8974da67dddaeead1b808bf84251b2dd6582ff37da7bd7191e1c57c3",
+      "bytes": 678,
+      "archiveSha256": "665593fb515fbeba67840d21074ec6d1f0662ad1759fe3fb558e28b0953a5f74"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.KeyboardInputSchemePreferencePlannerTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/612f1cdb366b513e419a.gz",
+      "sha256": "5f8b1fe7ac1f0c18b4c5d72b5d53fb1d7336f17fac3270fa2ec03247e6062131",
+      "bytes": 885,
+      "archiveSha256": "bbdbe789025f29309e8156bffd328e85bfdd91671ef8394f8824cf6872f5f170"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.KeyboardPreferenceProjectionTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/6752dbb424a4265f16e3.gz",
+      "sha256": "813dec54e7e76c15f1a96bc8e004031a2344fb3f3bb834b812ead35479bbe34b",
+      "bytes": 708,
+      "archiveSha256": "1a1eab2a4e109bc7c258bee1fbdd1e04ea24110af071196a4310c0b58884ec40"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.LatestOnlyTaskRunnerTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/0965ab2d7e4e375ff077.gz",
+      "sha256": "4464afa9fa7d9e3a3f3888af68bbe92efd583f90201ba0a78cfd976f5b58f47d",
+      "bytes": 1177,
+      "archiveSha256": "bd6d759b5d3471994a6c1d66bd4163888621a3d5b06ef2adf2a07510cb67fe4a"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.PendingDecodeCommitCoordinatorTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/727dc813e8ce73e92c2b.gz",
+      "sha256": "faba603baf59c3707907d27074a3e738d257f839f3d4a0d63d8113a8d34a780d",
+      "bytes": 1557,
+      "archiveSha256": "541aba4652bc5a3211e3f4f71e188cfbc5a4bf6a8c487b604cd1117aa07ec3a5"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.PendingPinyinLearningQueueTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/c78cc23a1c4085e859be.gz",
+      "sha256": "7e333256ef2843025c5fc9a3ab178d85defbc94adf901fca1bbb57bedde7f1e5",
+      "bytes": 528,
+      "archiveSha256": "7765ffbd254f66607a123b4e81db52638dcbfa26175a3bbd5e027369f54ab652"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.PendingPinyinWaitServiceTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/73e996d96d25a8902edd.gz",
+      "sha256": "f70e576f154c250862268bcd90c6c5f461e7e4c33924698ccd7c520338d1c3d0",
+      "bytes": 2103,
+      "archiveSha256": "1b51b7d3a95a74841faf35a2bdbd72474392058a6f30226613e6c4f5031c389b"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.PersistentEnglishWordUsageStoreTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/0c64a4402dd1cb7fc90a.gz",
+      "sha256": "000244d735b652fd77fa86e8283bcb73556e56e81e4ab85cf7d858c747e5cd31",
+      "bytes": 555,
+      "archiveSha256": "876d435f76ca6e1209c6a4ad10dea77711826df17c17d9d6538148c2019eb725"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.PersistentUserAssociationLexiconTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/bf88b1717db6299102a4.gz",
+      "sha256": "d6e8ea053689de66fb768a48667833563821a0683d4e42b4f5e3a267cbb46613",
+      "bytes": 523,
+      "archiveSha256": "97b4ad8fe82cc8c6e86d05b677d05b499ae1c090cea5ed10246f91f298129ae8"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.PersistentUserLexiconResourceInitializerTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/fe032a95315e5958bbf3.gz",
+      "sha256": "b250aba8c0cb73b5ce12bb114d9c90694fb95ba028b34049aa32d84bf742afca",
+      "bytes": 1271,
+      "archiveSha256": "33d525f9d8d3c10bc686036c3bd0f8f9c8e9d9b572bc365ebdd760b35c76448f"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.PersistentUserSentenceLearningTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/0fb1a7d53dd676e6fc67.gz",
+      "sha256": "5b12680eb51aa564ae253f9df16fe17903d3816249171efe4f2004dcf8becfe4",
+      "bytes": 541,
+      "archiveSha256": "68d49e86f239e6c7a170b9cf607d89439dd5c95d073a4a7ad00c51f619ede62f"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.PersistentWubi86UserLexiconTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/64ffa3f73ce71768522f.gz",
+      "sha256": "d3b52f9e806d06ce054e71582006f8c91c6e472b48247e46771d374620c96c0b",
+      "bytes": 1412,
+      "archiveSha256": "5c52fb3afaab6764f6b6ae07e41af8d1805f844be68c22aa2c2aea2173b859b4"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.PersonalizationFeedbackWindowTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/577dc71a8bddca0db4bc.gz",
+      "sha256": "483a7b4821669bcc01a1313ea95184f9b0b116cb215c304325b0e2a8ad4b5e9d",
+      "bytes": 2636,
+      "archiveSha256": "eee53c751a719f704147a74579b1487c6f3c33095d3fa9690c7d09195708d74c"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.PinyinCommitLearningPolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/1526cbfa5e90ab0f2d9a.gz",
+      "sha256": "b56075ad171f989ce8c68e7ceac9dfaa427815fb77de39694095f911b2aeab8a",
+      "bytes": 703,
+      "archiveSha256": "4b52a4a923fb7d189d6397e555de83590734174dc5f89d37552b7c67ea6575f6"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.PinyinContextServiceTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/61aa4c2f77a68fcefdff.gz",
+      "sha256": "a9fbde41968eb7f2fec5c5b27b1aed6bc2e10bc0180daf0de8b059b1297d76af",
+      "bytes": 1647,
+      "archiveSha256": "68c972e3705daa0d5033d6736b3b8f924e6ca1ecf828c5a980cb048f6d3c9cb3"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.PinyinSeparatorServiceTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/d2be4aac0156a07bcd62.gz",
+      "sha256": "8521a7ce05b4006262d80d07da654073280996253f03d131ef3e9d06166c3828",
+      "bytes": 533,
+      "archiveSha256": "85ef2941255fecadcafcf25cfe1f32df98055a044da4adfc71d98a7625913911"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ProductionPinyinDecodersTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/e8fd205817072af0d549.gz",
+      "sha256": "348da1673bcb13c0557e3354959c25cf9d136158731bc02155603d1b3270ce74",
+      "bytes": 2470,
+      "archiveSha256": "87e90162747cb29f5e6e0bb78bc718b2c3674ba269f9a277e4978e04f6f3fef4"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ProgressiveCandidateSnapshotTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/da5848464309db778c1d.gz",
+      "sha256": "6578c39b527a72abe5eb039da611d5fab8cdeccf4687f3565915968f392125be",
+      "bytes": 1896,
+      "archiveSha256": "7021b3e86955ef4067f5e714c5389dab5b90989d31c027eb63c149bab8d3f0f2"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ProgressiveLearningQueueTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/97df1e5d09c7b4cc0afb.gz",
+      "sha256": "81c37506b648f5fc74dc3fe0e9bbaac14c0f1e90725d4e64a234569256cc2380",
+      "bytes": 834,
+      "archiveSha256": "631d07cd668d5d39c4ead2c082301942340a24452a8f2624e65306f4c19f642b"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.ReliableCommitSelectionFenceTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/971f4ee91e93967b8412.gz",
+      "sha256": "a1870b85dd51853af5d32b63b538d94419c289a72a1a0ae9c7690ac8f3660e91",
+      "bytes": 712,
+      "archiveSha256": "ae5b032789ce96c36f43be0ae8873297cf67094b441a3ae05780a36e54387951"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.SenseImeRootLayoutRobolectricTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/f4dd579c8d73ff673bb6.gz",
+      "sha256": "783ae80884383eca43013a8f9b2c9b54a9da357ac77dbc7fcc61e7f7e29361ea",
+      "bytes": 537,
+      "archiveSha256": "e173bec613a1522f7212ebb26673b53ce16039376e1abc53407e09734f817ef6"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.SynchronousEditorMutationGuardTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/1fda9e098023def2562e.gz",
+      "sha256": "8e81ff05689f11a65cdf22ac7ef7f2a7e5e13b8c2e0ff4153eea7690f0cf1c8f",
+      "bytes": 686,
+      "archiveSha256": "2c46dca1cd25b0aa5abffa659255fc44d14221b45d1979f4a9f59b79be299300"
+    },
+    "ime-service/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.service.WubiOverflowCoordinatorTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/047ad018b0e8ba366a4c.gz",
+      "sha256": "d361967354643c61a5efd8ab5bd14dd55a42160b470b6259ae69096ec37a9f27",
+      "bytes": 1524,
+      "archiveSha256": "49281ec2f6c0b772953cd8b6f844ef4570ab6c1ce2527c63650af5a3b207aeac"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.ActiveSkillAuroraLoopPolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/b70fd47c6e129759a7e5.gz",
+      "sha256": "0700a796ba54681070bbb6554acdf114844c3d44f05ec76b26c4e581986a1702",
+      "bytes": 982,
+      "archiveSha256": "1fd1972e1d8143de0bb92478533ecef088ee7455f699aefc1bc97cf0de9ec194"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.AiHoldGestureSessionTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/3b903449e452e7ed9b39.gz",
+      "sha256": "95bfab6505ab32fe23c2c3c6763a82e7298bfa64de503c7c83aae2d8d5dad675",
+      "bytes": 3110,
+      "archiveSha256": "f5cd7388859e3b9e8a11ff77eee4ebc6c8935671e059c4c15f5d97753ad33da5"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.AiPreviewLineLayoutCacheTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/6292a390918b4d222670.gz",
+      "sha256": "686eac47fb0085e75fbb4448a42491ef69981c1d7fa2018125f2249e16738284",
+      "bytes": 678,
+      "archiveSha256": "6fc4d672dfe15d3796e306ac29663690a572b76a73849d8c4866302ba9aa29f3"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.CandidateAccessibilityProjectionTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/18481ac6d3bb9c884111.gz",
+      "sha256": "868eab1e3939b2784259102ea9e74731b820e5671aa2cb75997e3931bcb0e5c5",
+      "bytes": 1248,
+      "archiveSha256": "09138822cb192dce5279897671064e7207a2f9a5e34202fe5863e47554d0e895"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.CandidatePanelTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/975a579ae377d1445065.gz",
+      "sha256": "7309dd9736d9d9921a23e4c4696a8623a2393df63ca469e65b3ed0658baac886",
+      "bytes": 2804,
+      "archiveSha256": "455352aa78d843edbce1df9f461f9a705a0289090df9633a5812585e7b1ac919"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.CandidatePointerActivityTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/4649c8bb51d321f783fc.gz",
+      "sha256": "943f2daaceb0813409bd97a4be795088e8ddbe860732b28f3687c2d1cb9a23fb",
+      "bytes": 678,
+      "archiveSha256": "c53d6b0c8f12fc03c6c65fe7cf68cb3cf4ce2a4ae4139e94a5a9d18de3409511"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.CandidatePresentationPolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/eabe16164e2da4b33ed6.gz",
+      "sha256": "034f0b4a83080fe1b01fc72837a78f1af8e07f86bf1de3ed38e4ab051a7543c7",
+      "bytes": 1177,
+      "archiveSha256": "045f111d23cf4bb616ab231dda511fed87b1840f88d5b4570bf401b6a50a3202"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.CandidateStripScrollStateTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/72c54603c58d11d1085a.gz",
+      "sha256": "c8e3bc5d1a91c980547a77f2d80abb108f6e733bfa744f1bc85009c962ee29c5",
+      "bytes": 1465,
+      "archiveSha256": "379c61d6fcb8513b9448e06dd63c3e517fe5562cea661d34acf6653821ef9068"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.CanvasIconGeometryTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/96a5380918e2f2c3793e.gz",
+      "sha256": "ed2297ab6ecefedb0bd88fdfebc61cdb19c31399601c17987bdab2330c8b00d2",
+      "bytes": 1113,
+      "archiveSha256": "a7aba77838c37d1b1b259321d0b5a76c4c6cb6b9d53524cb991573663ec96428"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.EditorPanelInteractionTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/146cc6887c8af9953735.gz",
+      "sha256": "f402559b6625c74a5fea8733ddc16ae60a3149193ce286bb600c271de4e41c8c",
+      "bytes": 817,
+      "archiveSha256": "ddde907ed43488d9ed470fbd0f15814a8c29df33fda901fe729cc1684809014f"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.EmojiCatalogTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/63a5b2f8fe11114f0a00.gz",
+      "sha256": "d200d64fd0f8e0ea8696f13aac8a097b763af2a1a490c98416dd9a69bf78ec2d",
+      "bytes": 913,
+      "archiveSha256": "f295f24991289395f6801cb442c3a25e9b7d54255c9c6be83e5177999012bd48"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.KeyboardArchitectureTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/9898d03fbbc20289e60b.gz",
+      "sha256": "f7b79340c8552cbaa2758f87b8e1546ff5c9559370237de1163d284d56352741",
+      "bytes": 3713,
+      "archiveSha256": "b4227683feea5513410125e47ccacd642f2889c4a1c53f39395154558b602344"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.KeyboardBuiltInGesturePolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/afda7427d8e6166186d9.gz",
+      "sha256": "c6189c769e85b31710781908d2c01775584391d95d23f94420c2f559474ede58",
+      "bytes": 820,
+      "archiveSha256": "3b1232204f44b45bdee5652a90b66be212454139c58a781814f573d885fe1385"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.KeyboardGapHitResolverTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/9e1cc0d900b1dbb537dc.gz",
+      "sha256": "e20a0dcd278ea4a6a28f3043034c6887a7637ed7c356028cf7b981245acc3c1d",
+      "bytes": 1265,
+      "archiveSha256": "d1a457dd02305268a36f476dc5f10a3b0bea54ddfcf62677befbe5f7cb7fc4a8"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.KeyboardInputSchemePanelLayoutTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/2a70223658c380d15c7a.gz",
+      "sha256": "d62cb6c468e70538e4ca0962f0a83f121969cb83be3394619070595c784736fc",
+      "bytes": 546,
+      "archiveSha256": "15190a96aae641eb48515443c8565c06284011ecae0e4af795b8e7fbacc10f4e"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.KeyboardInteractionControllerTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/ac708a1dbce432068223.gz",
+      "sha256": "2e7f2deb2e8b34f9db7122f727c5eac9f988bf9231d340a33c7c68ce516534b0",
+      "bytes": 3274,
+      "archiveSha256": "f4db04aa4761aec01077c992b1c99d24ec9e04d8836d2be6f841b4e6aff83d01"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.KeyboardLayoutContractTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/61b740508e0c1dccef02.gz",
+      "sha256": "38fde938ed7a61998638f198cbc71e92115ddf6c00c6a46e5f9d606578014d20",
+      "bytes": 4211,
+      "archiveSha256": "fd7ef305fdfebc4b0b7d0cf3f3db87e5a1dd7e2e1bdc34a1542f29f5666e9c39"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.KeyboardMetricsTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/167ad93631b4b184e079.gz",
+      "sha256": "f4ae4bd4e63e068ff4e1f50ea5bf99a5012a202f410eb166e1878c9a684f9f4a",
+      "bytes": 912,
+      "archiveSha256": "b59b6b55b95b95a28570695875ab5223b8598b9d5dadc65698a85acee600c984"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.KeyboardPaletteTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/6b33ab37745611080298.gz",
+      "sha256": "6e9357cf2d606c990e4b22153a354db2a23962602fbee72b15748171ab4f8321",
+      "bytes": 486,
+      "archiveSha256": "54f6a3b47de69bc876e70eb7033312e18444de3628f61a1359197b7e6d71354d"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.KeyboardRendererGeometryTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/dcc381082582250e1455.gz",
+      "sha256": "d939ecfeab16744b797b8d828ae17fb3f92c230e696a7cf1b21be7765f96e625",
+      "bytes": 1522,
+      "archiveSha256": "27c970d2952236e7ebd7ab782d814d971e255198b49f5dde57597d03c4f63abd"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.KeyboardScrollProjectionTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/3820f76442fbec8d4211.gz",
+      "sha256": "80ca9e45d7bf49cc0ae483d5711bd20763515179cede5cc706695d0c755e585c",
+      "bytes": 649,
+      "archiveSha256": "2efa7e5a2882a224c5d5b822f4629d7a07e65dc9f9bddacf2aab66ab4c48c307"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.KeyboardSizePolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/434ed28696936af2446a.gz",
+      "sha256": "4bb0966b8e258685de75deacd28f9f6a6ba916656b7054278bf3b819bf83c66e",
+      "bytes": 774,
+      "archiveSha256": "cabcef17ff426deb21d9a1e1d1e6ea94b300c0a66ebb0bc78b3ba07e5a3cf7e9"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.KeyboardSkillsTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/db926656eb14bcaa061c.gz",
+      "sha256": "ffcd71f9f17e4f1f7c960812b6aecfe4c1b012b5b0d728907d6921e141d1e97b",
+      "bytes": 6373,
+      "archiveSha256": "a23062af4a4819feb0e555ed7f69838f5b767887e1c1767b2006c5afa7eb7206"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.KeyCodesTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/d3c44f7fac6ec0eb0c73.gz",
+      "sha256": "833afcc20c3944df41f5bdef005b22f383657f81c124771f68ae6a280b28e9aa",
+      "bytes": 630,
+      "archiveSha256": "74da5e7f39d01907d31c0fcbf015a03b5d9ed73506712bf2c32787a1a11b1616"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.KineticScrollPolicyTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/1d06d1f6097bb8ba9c66.gz",
+      "sha256": "fb1d145dd61a84a7f61e8129a47a6fcb23c8b2bd165468c1afb7884dfe8174c9",
+      "bytes": 776,
+      "archiveSha256": "9e78ab73be257dab593fbabd61701f6e587b27050ef5a037eec9d12d4ddc1ac5"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.SwipeCharacterMapTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/0d46b7befa71248bf951.gz",
+      "sha256": "46eeed848fe9a5ad917e28164d3b692358fa5a6e38e74ae5b2f60f9d59e86757",
+      "bytes": 753,
+      "archiveSha256": "0f58115f89aa07e97f4354d439af22b496c9793e4f759e287512de3d1e0c0eb7"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.SymbolCatalogTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/9813ff015ff2a54597da.gz",
+      "sha256": "7002c7c8d668504fe121bf07dc9477d97242659565808f6bd4749b7154f8c530",
+      "bytes": 773,
+      "archiveSha256": "a4c796577ee671bcd0ee6ef7ca93984f302c10f466f4587ce143bfd55335b853"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.TouchInputReducerTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/916e9537bbdc93cb0142.gz",
+      "sha256": "4b387da3059bdb4bf3db7e7aa01d4166f1c301e705dcebb5cd02e66408a096a3",
+      "bytes": 3846,
+      "archiveSha256": "20d8a213faa84d73a2cefcad7fbfd76d16b764ddadc116865876c0c6d261c049"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.VoiceSurfaceStateTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/871445541f91fa6a1754.gz",
+      "sha256": "6af48557bca8b7876f1df35d545717e68de562f425c18e19b7411951ac05365b",
+      "bytes": 944,
+      "archiveSha256": "0771c97eb58c512c730513537bf42e98371a23edf329021fca38d9d28e48269f"
+    },
+    "ime-ui/build/test-results/testDebugUnitTest/TEST-io.github.ethanbird.senseime.ui.Wubi86KeyLegendTest.xml": {
+      "archive": "benchmarks/results/e13-evidence/2410a7354d4eb1627463.gz",
+      "sha256": "fca38f47e71ce84e231c2f71c5d4af68407e62f066d0ba4c80a0d65e6e265979",
+      "bytes": 489,
+      "archiveSha256": "5635cdb571c864dd588255bfc9e65ea3f6c90de4c6aaf8974d201c27d93a3407"
+    },
+    "tools/audit_score_features.py": {
+      "archive": "benchmarks/results/e13-evidence/af977912826acaa6cc35.gz",
+      "sha256": "0fc5ffadf5bcaabf60818fbf9517266e5f6b48ae73cfc8bf9c0e2f0e445fae6f",
+      "bytes": 8952,
+      "archiveSha256": "1e13aef3cfe6614c72ad5b61c5595c6fec6d7dd3d96dc3da9b121771caae946c"
+    },
+    "tools/audit_sentence_corpus.py": {
+      "archive": "benchmarks/results/e13-evidence/390107a46b52804f8c79.gz",
+      "sha256": "25fa6c0a063b07bb4d1f59f02cdb341c992574f2b6e7d40ba2ea0e74a68a6e8e",
+      "bytes": 7860,
+      "archiveSha256": "7c849e9460d8bafa8094c77c92e7e1afb4bab0ac6721e62c399ef9338af05446"
+    },
+    "tools/collect_boundary_stage.py": {
+      "archive": "benchmarks/results/e13-evidence/ed11c0595fe8f2f70ff1.gz",
+      "sha256": "7c1b57e71dfd23ab56ca6ddbfa37a866daaa7a19538ee915d0df165012611842",
+      "bytes": 8660,
+      "archiveSha256": "e919d2c8d9d08fac996797987a28fd09172cef13966bf7dabfa83e8bcfd690ca"
+    },
+    "tools/collect_supervised_ranker_stage.py": {
+      "archive": "benchmarks/results/e13-evidence/017db0e6e37427e51678.gz",
+      "sha256": "bf2daaad0a699f05c8e96ad286218fd749074a541e12d725fe097713880069c1",
+      "bytes": 10804,
+      "archiveSha256": "f5e5118256e35521b48e094cb0f40ba2c27e084a9d7e14a198b74fb33e42bb57"
+    },
+    "tools/prepare_p2c.py": {
+      "archive": "benchmarks/results/e13-evidence/8f9b92458d66ce6a2430.gz",
+      "sha256": "8abd727e888beed9c3f6e22f23c6cd03eb3ce8ad577e2961135cdde001caad88",
+      "bytes": 10181,
+      "archiveSha256": "7e07c5d4d07c03ea69097792589e7987761e51c2ff9f4e1a0e135da41ea8db79"
+    },
+    "tools/prepare_weak_ranker_train.py": {
+      "archive": "benchmarks/results/e13-evidence/d34c5bd3f165198be622.gz",
+      "sha256": "31b2d9bcc4ef89b8ed06270f2b1311bbea24d12f639f8f6694f4b1522728e2d8",
+      "bytes": 3985,
+      "archiveSha256": "a024b3c494bd8459561a1361fdef956fea32f2a929cff1bc6ac98d94cf978b74"
+    },
+    "tools/summarize_ranker_uncertainty.py": {
+      "archive": "benchmarks/results/e13-evidence/bc22ab95f0afbccb99e5.gz",
+      "sha256": "1eb989f04e0a5193f9736c15cf3fde95983ae68512f8fbed856ddaee5b097d0f",
+      "bytes": 3285,
+      "archiveSha256": "3e10ce282b6c5b13a5290a2983ae65921f03d8563813d9345815e4cc9bb6e89d"
+    },
+    "tools/test_prepare_weak_ranker_train.py": {
+      "archive": "benchmarks/results/e13-evidence/32046ec54baff55a2995.gz",
+      "sha256": "6777a5c5ea733bfc27e9b9a011acccc9bdbc976927538d90147029edc8230681",
+      "bytes": 666,
+      "archiveSha256": "564ffa3524df49e8faac6c8b2c58f7618dc5948fcb13839fb5f134a8db2ab6a2"
+    },
+    "tools/test_summarize_ranker_uncertainty.py": {
+      "archive": "benchmarks/results/e13-evidence/213a96672327b616a57d.gz",
+      "sha256": "fb08e6211619033d525feb9f95ca84b7c2c1a14a55673e122387a801c2f7a036",
+      "bytes": 1587,
+      "archiveSha256": "1e9ead6ec184084e13ef064e782d91d04c7ada26429522638dfdae249969b5e7"
+    },
+    "tools/test_train_candidate_ranker.py": {
+      "archive": "benchmarks/results/e13-evidence/1c09a10ad5df3ce89c53.gz",
+      "sha256": "c3564692279448546fd62120ed8d2b419baadaf2bf9d0be861b8c5a9413e95e7",
+      "bytes": 6601,
+      "archiveSha256": "2cae7d5994a6e13dad0e3f3696a72b5fb2a6dccf1a4807c3352ac43d18140b98"
+    },
+    "tools/train_candidate_ranker.py": {
+      "archive": "benchmarks/results/e13-evidence/ad1647fdfa2db1a42d5b.gz",
+      "sha256": "ecda9b5707d3311e395c74eb801fd3f5b54094d96a5d1e234c1f18b125ebc8b5",
+      "bytes": 15740,
+      "archiveSha256": "34041d6122be01493a5bc6c82677d83b99c4edbbb3729b173a07d9b6b4e5b494"
+    }
+  }
+}

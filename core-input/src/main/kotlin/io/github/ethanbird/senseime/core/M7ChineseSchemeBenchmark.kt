@@ -101,7 +101,9 @@ object M7ChineseSchemeBenchmark {
             )
             check(!value.requiresCandidates || decoded.candidates.isNotEmpty())
             value.expectedFirstText?.let { expected ->
-                check(decoded.candidates.firstOrNull()?.text == expected)
+                check(decoded.candidates.firstOrNull()?.text == expected) {
+                    "${value.name}: expected $expected, actual ${decoded.candidates.take(3)}; label=${decoded.composingLabel}"
+                }
             }
         }
 

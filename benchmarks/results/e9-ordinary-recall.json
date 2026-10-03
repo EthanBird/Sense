@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "scope": "Fixed diagnostic retrieval, not natural typing accuracy or Android latency",
+  "before": {
+    "rows": 2819,
+    "targetFirst": 1316,
+    "targetTop10": 1889,
+    "targetRecall255": 2085
+  },
+  "after": {
+    "rows": 2819,
+    "targetFirst": 1316,
+    "targetTop10": 1889,
+    "targetRecall255": 2085
+  },
+  "byMode": {
+    "clean": {
+      "before": {
+        "rows": 188,
+        "targetFirst": 128,
+        "targetTop10": 174,
+        "targetRecall255": 180
+      },
+      "after": {
+        "rows": 188,
+        "targetFirst": 128,
+        "targetTop10": 174,
+        "targetRecall255": 180
+      }
+    },
+    "delete": {
+      "before": {
+        "rows": 564,
+        "targetFirst": 101,
+        "targetTop10": 178,
+        "targetRecall255": 250
+      },
+      "after": {
+        "rows": 564,
+        "targetFirst": 101,
+        "targetTop10": 178,
+        "targetRecall255": 250
+      }
+    },
+    "fuzzy": {
+      "before": {
+        "rows": 187,
+        "targetFirst": 50,
+        "targetTop10": 101,
+        "targetRecall255": 128
+      },
+      "after": {
+        "rows": 187,
+        "targetFirst": 50,
+        "targetTop10": 101,
+        "targetRecall255": 128
+      }
+    },
+    "joints": {
+      "before": {
+        "rows": 188,
+        "targetFirst": 128,
+        "targetTop10": 174,
+        "targetRecall255": 180
+      },
+      "after": {
+        "rows": 188,
+        "targetFirst": 128,
+        "targetTop10": 174,
+        "targetRecall255": 180
+      }
+    },
+    "neighbor": {
+      "before": {
+        "rows": 564,
+        "targetFirst": 294,
+        "targetTop10": 413,
+        "targetRecall255": 442
+      },
+      "after": {
+        "rows": 564,
+        "targetFirst": 294,
+        "targetTop10": 413,
+        "targetRecall255": 442
+      }
+    },
+    "repeat": {
+      "before": {
+        "rows": 564,
+        "targetFirst": 366,
+        "targetTop10": 503,
+        "targetRecall255": 530
+      },
+      "after": {
+        "rows": 564,
+        "targetFirst": 366,
+        "targetTop10": 503,
+        "targetRecall255": 530
+      }
+    },
+    "transpose": {
+      "before": {
+        "rows": 564,
+        "targetFirst": 249,
+        "targetTop10": 346,
+        "targetRecall255": 375
+      },
+      "after": {
+        "rows": 564,
+        "targetFirst": 249,
+        "targetTop10": 346,
+        "targetRecall255": 375
+      }
+    }
+  },
+  "changedCompleteResults": [
+    {
+      "id": "known-long-1e09e5b0c56d79c472805cc9d7700a067a32237c92d6107bab38abbf9bfd75ec",
+      "mode": "delete",
+      "query": "txiangzijidemuqin",
+      "expected": "他像自己的母亲",
+      "beforeRank": 8,
+      "afterRank": 8,
+      "beforeFirst": "向自己的母亲",
+      "afterFirst": "向自己的母亲"
+    },
+    {
+      "id": "known-long-825bce8283dd755c68b8f3d3143ed54f307f198603a481323a8321ba29ee7321",
+      "mode": "repeat",
+      "query": "zzhetaidayinjitaijiule",
+      "expected": "这台打印机太旧了",
+      "beforeRank": 2,
+      "afterRank": 2,
+      "beforeFirst": "这台打印机太久了",
+      "afterFirst": "这台打印机太久了"
+    },
+    {
+      "id": "known-long-978206cfe54ec955c69e4cf6d27ef95c277920848551d536d19d58cf683c76c3",
+      "mode": "repeat",
+      "query": "zzhejuhuaxuyaojiuzheng",
+      "expected": "这句话需要纠正",
+      "beforeRank": 1,
+      "afterRank": 1,
+      "beforeFirst": "这句话需要纠正",
+      "afterFirst": "这句话需要纠正"
+    },
+    {
+      "id": "known-long-0e530b15660aff52e4a0ae884f358c128f0aa4ee6c27041f1c1d73d3e02621a9",
+      "mode": "neighbor",
+      "query": "tzriyushuodehenhao",
+      "expected": "她日语说的很好",
+      "beforeRank": 6,
+      "afterRank": 6,
+      "beforeFirst": "他日语说得很好",
+      "afterFirst": "他日语说得很好"
+    },
+    {
+      "id": "known-long-fa2558ca2621eb780423863ebaa6f8a7b3bcda5aab87be5216ee89ae39a0fc4a",
+      "mode": "repeat",
+      "query": "llimeiyoujinshiyan",
+      "expected": "李梅有近视眼",
+      "beforeRank": 0,
+      "afterRank": 0,
+      "beforeFirst": "里没有近视眼",
+      "afterFirst": "里没有近视眼"
+    },
+    {
+      "id": "known-long-9786793481b5cf87c17602b009798d9e81e542ebe75475444fd4ac0925d79259",
+      "mode": "repeat",
+      "query": "zzhegejihuachedideshibaile",
+      "expected": "这个计划彻底的失败了",
+      "beforeRank": 1,
+      "afterRank": 1,
+      "beforeFirst": "这个计划彻底的失败了",
+      "afterFirst": "这个计划彻底的失败了"
+    },
+    {
+      "id": "known-long-c44120aad5787924a1f6c68e4d43fe632a55bb41b727c80debc943ecf4dae3f0",
+      "mode": "neighbor",
+      "query": "zgeshituanduigongtongnulidejieguo",
+      "expected": "这是团队共同努力的结果",
+      "beforeRank": 1,
+      "afterRank": 1,
+      "beforeFirst": "这是团队共同努力的结果",
+      "afterFirst": "这是团队共同努力的结果"
+    },
+    {
+      "id": "long-dev-8d0282a37565ce4d18e134921004997158f555dfa55cccaa15b9777d509ecf96",
+      "mode": "repeat",
+      "query": "buyyaorangnishiwangcaihao",
+      "expected": "不要让你失望才好",
+      "beforeRank": 1,
+      "afterRank": 1,
+      "beforeFirst": "不要让你失望才好",
+      "afterFirst": "不要让你失望才好"
+    },
+    {
+      "id": "long-dev-9583da2de05d7c998cf8baca0de9a7de386f173c4d40dee28232cdece845d40f",
+      "mode": "neighbor",
+      "query": "buyzorangnishiwangcaihao",
+      "expected": "不要让你失望才好",
+      "beforeRank": 1,
+      "afterRank": 1,
+      "beforeFirst": "不要让你失望才好",
+      "afterFirst": "不要让你失望才好"
+    }
+  ],
+  "rankLosses": [],
+  "targetFirstLosses": [],
+  "targetRecallLosses": [],
+  "passedNoFirstOrRecallLoss": true,
+  "inputSha256": {
+    "before": "b19daddf342f24d31cc6ca8b455a85e25b20f7048933f46f0c55187a262b1d7a",
+    "after": "343767d576c852a95ae89e0513d260817cf1c237076104e7043c412b9f65036b"
+  }
+}

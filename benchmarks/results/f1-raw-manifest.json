@@ -1,0 +1,14 @@
+{
+  "development.json.gz": {
+    "sha256": "03d2953542ff441047a4bcb95a47c24b1dbad6c9d19b9b2d2a24d9377df01ea3",
+    "bytes": 4402548,
+    "uncompressedSha256": "878412d328669cd74e605e49319cba3c96d220101c0d1faae4070e6444d7779d",
+    "uncompressedBytes": 38371238
+  },
+  "test.json.gz": {
+    "sha256": "43f84973915342dfb6ec9f74b705952ea8ccaeae4ce70b0e5d7dca9d0ad8dd88",
+    "bytes": 2534541,
+    "uncompressedSha256": "d5576b6c907467b8f7fd6cbddcab698b007afefe64263c1c14f926fea3e5a51d",
+    "uncompressedBytes": 18500145
+  }
+}

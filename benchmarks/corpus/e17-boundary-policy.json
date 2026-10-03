@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "sense-legacy-boundary-ablation-v1",
+  "hypothesis": "The legacy character bigram bonus is conditional on word segmentation although character LM already scores those transitions. It can favor wrong word splits. Test removing only INTERNAL_BIGRAM when an LM is active; preserve external context, spelling, lexical priors and no-LM/personal-new-word fallback.",
+  "developmentTrials": [
+    {"name": "daily-no-boundary", "alpha": 0.0, "internalBigramWeight": 0.0},
+    {"name": "mixture-no-boundary", "alpha": 0.1, "internalBigramWeight": 0.0}
+  ],
+  "controls": [{"name": "baseline", "alpha": 0.0, "internalBigramWeight": 1.0}],
+  "unchangedRuntime": {"lmWeight": 0.5, "oovFeature": -4, "correctionBoost": 12, "limit": 255},
+  "development": {
+    "domains": {"aishell": "p2c-aishell-v7/dev.tsv", "tatoeba": "p2c-supervised-v6/dev.tsv"},
+    "gate": "Each domain top1/top5/recall255 nondecreasing and total top1 character errors nonincreasing; summed top1 strictly improves. Retain all individual losses.",
+    "selection": "Eligible only: maximum combined top1, minimum combined errors, maximum combined top5, prefer daily-only if tied. Both development slices are known; no new coefficient sweep."
+  },
+  "test": {
+    "domains": {"aishell": "p2c-aishell-v7/test.tsv", "tatoeba": "p2c-daily-mixture-v8/test.tsv"},
+    "gate": "Same per-domain nonregression and combined strict top1 gain; one selected mode, no tuning after test. Require repeated output and later Android/short-input/personal-word acceptance before promotion."
+  },
+  "production": "Default internalBigramWeight remains 1 until measured acceptance; no-LM fallback remains unchanged even when the host calibration is zero."
+}

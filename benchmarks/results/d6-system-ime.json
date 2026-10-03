@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "scope": "Final D6 APK, true system IME to external editor; API 37 dedicated emulator, not physical phone",
+  "passedTestExecutions": 16,
+  "faultInjectionPassedTestExecutions": 4,
+  "runs": [
+    {
+      "name": "d6-warm",
+      "passedTests": 10,
+      "seconds": 55.126,
+      "environment": {
+        "imePidBefore": "18778",
+        "sdk": "37",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "debugProfileReset": false,
+        "installedDuringRun": false,
+        "imePidAfter": "18778",
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "b423eb9919d927acde43885ac8430b8ed07a3cae5c6557a7a3e6f02d5fab3545",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "84aab98d8ccb63e303707dc6a1990ed7e22e5e707a92955447d7806366d825e7",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f"
+        },
+        "serial": "emulator-5580"
+      },
+      "logSha256": "472db2e159bd0315a732d8d1c850f60b38d6ce599e5a6d7bf5040935d55d1122",
+      "evidence": {
+        "backspaceEditsThePendingSpellingBeforeSpaceConfirms.txt": "state=started\n",
+        "candidateWordsAreExposedAsActionsToAccessibilityServices.txt": "state=started\n",
+        "confirmationReplaysFollowingInputInOrder.txt": "state=started\n",
+        "enterCommitsRawEnglishInChineseModeWithoutANewline.txt": "state=started\n",
+        "hidingAndReopeningTheImeKeepsTheExternalCommittedText.txt": "state=started\n",
+        "movingCursorAfterCommitInsertsAtTheExternalSelection.txt": "state=started\n",
+        "passwordFieldUsesLiteralInputRatherThanChineseCandidates.txt": "state=started\n",
+        "rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.txt": "state=started\nspace_to_committed_editor_ms=166\nscope=single emulator sample; includes injection and polling; not decoder p95\n",
+        "switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.txt": "state=started\n",
+        "touchscreenPinyinCandidateCommitsThroughExternalInputConnection.txt": "state=started\n"
+      }
+    },
+    {
+      "name": "d6-cold",
+      "passedTests": 4,
+      "seconds": 27.194,
+      "environment": {
+        "imePidBefore": "18778",
+        "sdk": "37",
+        "scope": "Real system IME touch -> external EditText; force-stopped debug app, loading runtime asserted; not phone certification",
+        "debugProfileReset": false,
+        "installedDuringRun": false,
+        "imePidAfter": "22204",
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "b423eb9919d927acde43885ac8430b8ed07a3cae5c6557a7a3e6f02d5fab3545",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "84aab98d8ccb63e303707dc6a1990ed7e22e5e707a92955447d7806366d825e7",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f"
+        },
+        "serial": "emulator-5580"
+      },
+      "logSha256": "aee11348f4136b5fd63e82e4d1aab664add9297015bf74a157409e6176682105",
+      "evidence": {
+        "confirmationReplaysFollowingInputInOrder.txt": "state=started\nbefore_typing=Sense candidate runtime: ready=false generation=1 characterModel=null\nbefore_first_space=Sense candidate runtime: ready=false generation=1 characterModel=null\n",
+        "enterCommitsRawEnglishInChineseModeWithoutANewline.txt": "state=started\nbefore_typing=Sense candidate runtime: ready=false generation=1 characterModel=null\n",
+        "rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.txt": "state=started\nbefore_typing=Sense candidate runtime: ready=false generation=1 characterModel=null\nbefore_space=Sense candidate runtime: ready=false generation=1 characterModel=null\nspace_to_committed_editor_ms=946\nscope=single emulator sample; includes injection and polling; not decoder p95\n",
+        "switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.txt": "state=started\nbefore_typing=Sense candidate runtime: ready=false generation=1 characterModel=null\nbefore_space_and_editor_switch=Sense candidate runtime: ready=false generation=1 characterModel=null\n"
+      }
+    },
+    {
+      "name": "d6-learning",
+      "passedTests": 2,
+      "seconds": 56.529,
+      "environment": {
+        "imePidBefore": "",
+        "sdk": "37",
+        "scope": "Real candidate selection, reuse, privacy and process-restart persistence; clean disposable debug profile; not phone certification",
+        "debugProfileReset": true,
+        "installedDuringRun": false,
+        "imePidAfter": "23836",
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "b423eb9919d927acde43885ac8430b8ed07a3cae5c6557a7a3e6f02d5fab3545",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "84aab98d8ccb63e303707dc6a1990ed7e22e5e707a92955447d7806366d825e7",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f"
+        },
+        "serial": "emulator-5580"
+      },
+      "logSha256": "dc869c12a9dce30fe3ce9c74f8d83ea617781588bb05088ee55bd58e65ead236",
+      "evidence": {
+        "noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections.txt": "state=started\nordinary_before_private_first=乘车\nselected=候选词，16，程\nselected=候选词，10，澈\nprivate_commit=程澈\nprivate_after_selection_first=乘车\nprocess_restart=22479->22891\nordinary_after_restart_first=乘车\n",
+        "progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart.txt": "state=started\nbefore_learning_first=乘车\nselected=候选词，16，程\nselected=候选词，9，彻\nlearned_through=touchscreen progressive candidates\nimmediate_1_first=程彻\nimmediate_2_first=程彻\nprocess_restart=22891->23419\nafter_process_restart_first=程彻\nselected=候选词，2，智能体\nintelligent_agent_reuse_first=智能体\nprocess_restart=23419->23836\nintelligent_agent_restart_first=智能体\n"
+      }
+    }
+  ]
+}

@@ -529,6 +529,14 @@ internal class KeyboardKeyRenderer(
             color(0xFF111827.toInt(), 0xFFF6F7F9.toInt())
         }
         val icon = key.icon
+        // Compact landscape preserves the primary label; gesture bindings remain
+        // available even when the secondary legend has no readable space.
+        val visualLegend = key.visualLegend?.takeUnless {
+            fontScale > 1f && key.bounds.height() < dp(48f)
+        }
+        val legendBand = if (visualLegend != null && fontScale > 1f) {
+            minOf(dp(12f) * fontScale, key.bounds.height() * 0.28f)
+        } else 0f
         if (icon != null) {
             drawIcon(canvas, icon, key.bounds, paint.color)
             if (
@@ -548,26 +556,31 @@ internal class KeyboardKeyRenderer(
         } else {
             paint.textSize = sp(if (key.label.length > 2) 13f else 20f)
             paint.textAlign = Paint.Align.CENTER
+            val labelCenterY = if (fontScale > 1f) {
+                text.fitToBox(paint, key.label, key.bounds.width() - dp(4f),
+                    key.bounds.height() - legendBand - dp(4f))
+                key.bounds.centerY() + legendBand / 2f
+            } else key.bounds.centerY() + if (visualLegend == null) 0f else dp(3f)
             text.drawCentered(
                 canvas,
                 key.label,
                 paint,
                 key.bounds.centerX(),
-                key.bounds.centerY() + if (key.visualLegend == null) 0f else dp(3f),
+                labelCenterY,
             )
         }
 
-        val visualLegend = key.visualLegend
         if (visualLegend != null) {
             paint.color = color(0xFF7C8799.toInt(), 0xFF83868D.toInt())
             paint.textSize = sp(8.5f)
             paint.textAlign = Paint.Align.CENTER
-            canvas.drawText(
-                visualLegend,
-                key.bounds.centerX(),
-                key.bounds.top + dp(10f),
-                paint,
-            )
+            if (fontScale > 1f) {
+                text.fitToBox(paint, visualLegend, key.bounds.width() - dp(4f), legendBand - dp(2f))
+                text.drawCentered(canvas, visualLegend, paint, key.bounds.centerX(),
+                    key.bounds.top + dp(1f) + legendBand / 2f)
+            } else {
+                canvas.drawText(visualLegend, key.bounds.centerX(), key.bounds.top + dp(10f), paint)
+            }
         }
         if (isActiveSkillSource(state, key)) {
             drawActiveSkillMarker(canvas, key.bounds)

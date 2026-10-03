@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "scope": "JDWP single-worker suspension + true external editor; not performance evidence",
+  "serial": "emulator-5580",
+  "sdk": "37",
+  "apkSha256": {
+    "io.github.ethanbird.senseime.debug": "b423eb9919d927acde43885ac8430b8ed07a3cae5c6557a7a3e6f02d5fab3545",
+    "io.github.ethanbird.senseime.inputqualityfixture": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+    "io.github.ethanbird.senseime.inputqualityfixture.test": "84aab98d8ccb63e303707dc6a1990ed7e22e5e707a92955447d7806366d825e7"
+  },
+  "tests": [
+    {
+      "method": "delayedChineseConfirmationPreservesBothWordsAndOrder",
+      "passed": true,
+      "imePid": 18778,
+      "workerPausedMs": 3187
+    },
+    {
+      "method": "enterExplicitlyKeepsRawDuringSlowWait",
+      "passed": true,
+      "imePid": 18778,
+      "workerPausedMs": 2859
+    },
+    {
+      "method": "deleteCanCorrectTheCompositionBeforeWorkerResumes",
+      "passed": true,
+      "imePid": 18778,
+      "workerPausedMs": 2344
+    },
+    {
+      "method": "editorSwitchInvalidatesDelayedConfirmationAndQueuedInput",
+      "passed": true,
+      "imePid": 18778,
+      "workerPausedMs": 3218
+    }
+  ]
+}

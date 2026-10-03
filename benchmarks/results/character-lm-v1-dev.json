@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "modelSha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+  "modelBytes": 3090930,
+  "algorithm": "absolute-discount interpolated character 1/2/3-gram; additive unigram floor; not Kneser-Ney",
+  "scriptSha256": "e9d4b279b8a9153d35e08476566a7027a1485e83fca2c3925e32c97b14edcc17",
+  "config": {
+    "discount": 0.75,
+    "min_char_count": 2,
+    "min_bigram_count": 1,
+    "min_trigram_count": 2,
+    "alpha": 0.1
+  },
+  "corpusManifestSha256": "a15434cad002c282b2cc12d3146abc3bbe0114e6e9c450fc504bdaffa7a4c988",
+  "inputs": {
+    "train": {
+      "fileName": "train.jsonl",
+      "sha256": "e710abf1ccdfcffe416bed9e99304cb898d71ff4c1bc5f702ab11e54eff4b0de",
+      "records": 76736,
+      "segments": 94195,
+      "characters": 776701,
+      "domains": {
+        "conversational-heuristic": 29292,
+        "general-heuristic": 47185,
+        "technical-heuristic": 259
+      }
+    },
+    "dev": {
+      "fileName": "dev.jsonl",
+      "sha256": "8fa886ef9d6f87c6b8931627737b434e1a2020acaf5932ddf17f3d168021b54f",
+      "records": 4066,
+      "segments": 4792,
+      "characters": 40529,
+      "domains": {
+        "conversational-heuristic": 1516,
+        "general-heuristic": 2539,
+        "technical-heuristic": 11
+      }
+    },
+    "test": {
+      "fileName": "test.jsonl",
+      "sha256": "d2c2cd1fe598bc2efd37b6f06660c64fffca077ebc62ef5fcf63b46b59dea622",
+      "records": 4089,
+      "segments": 4876,
+      "characters": 41076,
+      "domains": {
+        "conversational-heuristic": 1665,
+        "general-heuristic": 2411,
+        "technical-heuristic": 13
+      }
+    }
+  },
+  "attribution": {
+    "fileName": "attribution.jsonl",
+    "sha256": "bdaedcfb006619e9f852f4a20cae9a50877be809d0431e795ba919718db03d93",
+    "rows": 85962
+  },
+  "source": {
+    "id": "tatoeba-cmn-detailed-20260926",
+    "fileName": "cmn_sentences_detailed.tsv.bz2",
+    "format": "tatoeba-detailed-bz2",
+    "url": "https://downloads.tatoeba.org/exports/per_language/cmn/cmn_sentences_detailed.tsv.bz2",
+    "sha256": "8b689948972ff7676dd3fb28bef092e893959e6c561dbf06c8434e3d668adfea",
+    "license": "CC-BY-2.0-FR",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/fr/",
+    "licenseEvidence": "https://tatoeba.org/ar/downloads",
+    "attributionPolicy": "Preserve sentence id, contributor, https://tatoeba.org/en/sentences/show/<id>, license and modification metadata per selected sentence; preserve the contributor index with any future model distribution"
+  },
+  "counts": {
+    "vocabularyIncludingEosUnk": 3352,
+    "bigrams": 127109,
+    "trigrams": 89418,
+    "bigramBackoffs": 3352,
+    "trigramBackoffs": 36579
+  },
+  "dev": {
+    "1": {
+      "all": {
+        "crossEntropyBitsPerToken": 8.50981120615332,
+        "perplexity": 364.50914658393026,
+        "tokensIncludingEos": 45321,
+        "characters": 40529,
+        "oovCharacters": 75,
+        "oovRate": 0.001850526783290977,
+        "segments": 4792
+      },
+      "conversational-heuristic": {
+        "crossEntropyBitsPerToken": 8.08444338130884,
+        "perplexity": 271.43131831359625,
+        "tokensIncludingEos": 15796,
+        "characters": 14116,
+        "oovCharacters": 12,
+        "oovRate": 0.000850099178237461,
+        "segments": 1680
+      },
+      "general-heuristic": {
+        "crossEntropyBitsPerToken": 8.73566926299298,
+        "perplexity": 426.28345825102605,
+        "tokensIncludingEos": 29354,
+        "characters": 26257,
+        "oovCharacters": 62,
+        "oovRate": 0.0023612750885478157,
+        "segments": 3097
+      },
+      "technical-heuristic": {
+        "crossEntropyBitsPerToken": 9.031874134644454,
+        "perplexity": 523.4377392882583,
+        "tokensIncludingEos": 171,
+        "characters": 156,
+        "oovCharacters": 1,
+        "oovRate": 0.00641025641025641,
+        "segments": 15
+      }
+    },
+    "2": {
+      "all": {
+        "crossEntropyBitsPerToken": 6.022078161394184,
+        "perplexity": 64.98695118107088,
+        "tokensIncludingEos": 45321,
+        "characters": 40529,
+        "oovCharacters": 75,
+        "oovRate": 0.001850526783290977,
+        "segments": 4792
+      },
+      "conversational-heuristic": {
+        "crossEntropyBitsPerToken": 5.436626783400693,
+        "perplexity": 43.309955453277254,
+        "tokensIncludingEos": 15796,
+        "characters": 14116,
+        "oovCharacters": 12,
+        "oovRate": 0.000850099178237461,
+        "segments": 1680
+      },
+      "general-heuristic": {
+        "crossEntropyBitsPerToken": 6.336158933994885,
+        "perplexity": 80.79303010085101,
+        "tokensIncludingEos": 29354,
+        "characters": 26257,
+        "oovCharacters": 62,
+        "oovRate": 0.0023612750885478157,
+        "segments": 3097
+      },
+      "technical-heuristic": {
+        "crossEntropyBitsPerToken": 6.187358675219832,
+        "perplexity": 72.87533348923108,
+        "tokensIncludingEos": 171,
+        "characters": 156,
+        "oovCharacters": 1,
+        "oovRate": 0.00641025641025641,
+        "segments": 15
+      }
+    },
+    "3": {
+      "all": {
+        "crossEntropyBitsPerToken": 5.715428271407601,
+        "perplexity": 52.5430583247915,
+        "tokensIncludingEos": 45321,
+        "characters": 40529,
+        "oovCharacters": 75,
+        "oovRate": 0.001850526783290977,
+        "segments": 4792
+      },
+      "conversational-heuristic": {
+        "crossEntropyBitsPerToken": 5.082235203977932,
+        "perplexity": 33.87702318991063,
+        "tokensIncludingEos": 15796,
+        "characters": 14116,
+        "oovCharacters": 12,
+        "oovRate": 0.000850099178237461,
+        "segments": 1680
+      },
+      "general-heuristic": {
+        "crossEntropyBitsPerToken": 6.054978652432178,
+        "perplexity": 66.4859988100188,
+        "tokensIncludingEos": 29354,
+        "characters": 26257,
+        "oovCharacters": 62,
+        "oovRate": 0.0023612750885478157,
+        "segments": 3097
+      },
+      "technical-heuristic": {
+        "crossEntropyBitsPerToken": 5.918678613652688,
+        "perplexity": 60.492258229122086,
+        "tokensIncludingEos": 171,
+        "characters": 156,
+        "oovCharacters": 1,
+        "oovRate": 0.00641025641025641,
+        "segments": 15
+      }
+    }
+  },
+  "testEvaluated": false,
+  "productionReady": false,
+  "metricsNote": "BOS context resets at punctuation; EOS counted once per Han segment; unseen characters map to UNK; perplexity is not P2C accuracy"
+}

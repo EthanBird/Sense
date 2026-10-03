@@ -1,0 +1,30 @@
+{
+  "core-input": {
+    "tests": 269,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ime-ui": {
+    "tests": 229,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ime-service": {
+    "tests": 271,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "app": {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "scope": "Full core/UI/service suites and App About tests only; JVM/Robolectric, not device",
+  "pythonTests": 32,
+  "knownP2cRows": 125,
+  "modelAndDictionaryAssetsUnchanged": true
+}

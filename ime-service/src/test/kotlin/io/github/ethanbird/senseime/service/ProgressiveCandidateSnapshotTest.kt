@@ -11,6 +11,39 @@ import org.junit.Test
 
 class ProgressiveCandidateSnapshotTest {
     @Test
+    fun fifthProgressiveCharacterRemainsReachableNearTheHeadOfALargeWholePool() {
+        val whole = (0 until 200).map { Candidate("whole-$it") }
+        val prefixes = (0 until 20).map {
+            PinyinPrefixCandidate(Candidate("prefix-$it"), "cheng", "che")
+        }
+        val snapshot = ProgressiveCandidateSnapshot.from(
+            ProgressivePinyinDecoding(51, "chengche", whole, prefixes), 510)
+        val position = snapshot.candidates.indexOfFirst { it.text == "prefix-4" }
+        assertTrue("A fifth prefix must not fall behind two hundred whole words: $position", position in 0..31)
+        assertTrue(snapshot.select(51,51,position) is ProgressiveCandidateChoice.Prefix)
+        assertNull(snapshot.select(52,51,position))
+    }
+
+    @Test
+    fun interleavingRetainsRelativeWholeOrderAndEverySelectionIdentityAtAllLimits() {
+        val whole = (0 until 80).map { Candidate("whole-$it") }
+        val prefixes = (0 until 80).map {
+            PinyinPrefixCandidate(Candidate("prefix-$it"), "cheng", "che")
+        }
+        for (limit in listOf(1,12,16,32,80,160,510)) {
+            val snapshot = ProgressiveCandidateSnapshot.from(
+                ProgressivePinyinDecoding(52,"chengche",whole,prefixes),limit)
+            assertEquals(minOf(limit,160),snapshot.candidates.size)
+            val choices=snapshot.candidates.indices.map { snapshot.select(52,52,it)!! }
+            val actualWhole=choices.filterIsInstance<ProgressiveCandidateChoice.Whole>().map { it.candidate }
+            val actualPrefix=choices.filterIsInstance<ProgressiveCandidateChoice.Prefix>().map { it.value }
+            assertEquals(whole.take(actualWhole.size),actualWhole)
+            assertEquals(prefixes.take(actualPrefix.size),actualPrefix)
+            if (limit >= 32) assertTrue(actualPrefix.size >= 8)
+        }
+    }
+
+    @Test
     fun keepsWholePhraseHeadThenExposesPrefixChoices() {
         val whole = Candidate("匹配")
         val secondWhole = Candidate("屁配")
@@ -66,9 +99,10 @@ class ProgressiveCandidateSnapshotTest {
 
         assertEquals((0 until 12).map { "whole-$it" }, snapshot.candidates.take(12).map { it.text })
         assertEquals((0 until 4).map { "prefix-$it" }, snapshot.candidates.drop(12).take(4).map { it.text })
-        assertEquals((12 until 40).map { "whole-$it" }, snapshot.candidates.drop(16).take(28).map { it.text })
-        assertEquals(43, snapshot.candidates.indexOfFirst { it.text == "whole-39" })
-        assertTrue(snapshot.select(17, 17, 43) is ProgressiveCandidateChoice.Whole)
+        assertEquals((12 until 24).map { "whole-$it" }, snapshot.candidates.drop(16).take(12).map { it.text })
+        assertEquals((4 until 8).map { "prefix-$it" }, snapshot.candidates.drop(28).take(4).map { it.text })
+        assertEquals(51, snapshot.candidates.indexOfFirst { it.text == "whole-39" })
+        assertTrue(snapshot.select(17, 17, 51) is ProgressiveCandidateChoice.Whole)
     }
 
     @Test
@@ -150,8 +184,8 @@ class ProgressiveCandidateSnapshotTest {
         )
 
         assertEquals(510, snapshot.candidates.size)
-        assertEquals("candidate-254", snapshot.candidates[258].text)
-        assertTrue(snapshot.select(19, 19, 258) is ProgressiveCandidateChoice.Whole)
+        assertEquals("candidate-254", snapshot.candidates[338].text)
+        assertTrue(snapshot.select(19, 19, 338) is ProgressiveCandidateChoice.Whole)
         assertEquals("prefix-254", snapshot.candidates.last().text)
         assertTrue(snapshot.select(19, 19, 509) is ProgressiveCandidateChoice.Prefix)
     }

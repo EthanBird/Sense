@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "scope": "System touch input to external UID EditText, API37 dedicated emulator; debug APK, not phone certification or statistical latency study.",
+  "warmAndColdMatrix": [
+    {
+      "run": "d3-shared-asset-warm-1",
+      "tests": 9,
+      "passed": true,
+      "environment": {
+        "serial": "emulator-5580",
+        "apks": {
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "app/build/outputs/apk/debug/app-debug.apk": "03fbbc943bcc914558687fdba23182c0d91fe2c856b98dda0ea14b23e1e01739",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "79d73348af5923672c8274beb82462ef9b3ee995e6a48b1d1f5a44bdcde25a99"
+        },
+        "sdk": "37",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification"
+      },
+      "logSha256": "1a6d68788c51b1c6a90492387ed624321f21cdf2787b49502e66721994b48acf"
+    },
+    {
+      "run": "d3-shared-asset-warm-2",
+      "tests": 9,
+      "passed": true,
+      "environment": {
+        "serial": "emulator-5580",
+        "apks": {
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "app/build/outputs/apk/debug/app-debug.apk": "03fbbc943bcc914558687fdba23182c0d91fe2c856b98dda0ea14b23e1e01739",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "79d73348af5923672c8274beb82462ef9b3ee995e6a48b1d1f5a44bdcde25a99"
+        },
+        "sdk": "37",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification"
+      },
+      "logSha256": "158e8a88264ccfd10d604b1075f818f805bec68937982bfbe40607becda0a3ec"
+    },
+    {
+      "run": "d3-shared-asset-cold-1",
+      "tests": 4,
+      "passed": true,
+      "environment": {
+        "serial": "emulator-5580",
+        "apks": {
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "app/build/outputs/apk/debug/app-debug.apk": "03fbbc943bcc914558687fdba23182c0d91fe2c856b98dda0ea14b23e1e01739",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "79d73348af5923672c8274beb82462ef9b3ee995e6a48b1d1f5a44bdcde25a99"
+        },
+        "sdk": "37",
+        "scope": "Real system IME touch -> external EditText; force-stopped debug app, loading runtime asserted; not phone certification"
+      },
+      "logSha256": "5c8d1691d7a272b93225939c46fd4e0c2cc5f92bfef2c07411d7f913ec8cc44a",
+      "spaceToEditorMs": 1688
+    },
+    {
+      "run": "d3-shared-lifecycle-1",
+      "tests": 9,
+      "passed": true,
+      "environment": {
+        "serial": "emulator-5580",
+        "apks": {
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "79d73348af5923672c8274beb82462ef9b3ee995e6a48b1d1f5a44bdcde25a99",
+          "app/build/outputs/apk/debug/app-debug.apk": "03fbbc943bcc914558687fdba23182c0d91fe2c856b98dda0ea14b23e1e01739",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f"
+        },
+        "sdk": "37",
+        "imePidBefore": "25887",
+        "imePidAfter": "25887",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "installedDuringRun": false
+      },
+      "logSha256": "7a5bf0f0a7b4be54e4ba1b06cc1506054284e5d8ff574edca6e0d9906dfe5407"
+    },
+    {
+      "run": "d3-shared-lifecycle-2",
+      "tests": 9,
+      "passed": true,
+      "environment": {
+        "serial": "emulator-5580",
+        "apks": {
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "79d73348af5923672c8274beb82462ef9b3ee995e6a48b1d1f5a44bdcde25a99",
+          "app/build/outputs/apk/debug/app-debug.apk": "03fbbc943bcc914558687fdba23182c0d91fe2c856b98dda0ea14b23e1e01739",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f"
+        },
+        "sdk": "37",
+        "imePidBefore": "25887",
+        "imePidAfter": "25887",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "installedDuringRun": false
+      },
+      "logSha256": "715593867a17b13b7afab2ee2d96cc79025de6e2dc2132212304448f122819b9"
+    }
+  ],
+  "loadingScreenshotTest": {
+    "passed": true,
+    "directory": ".artifacts/input-quality/d3-loading-ui-final",
+    "spaceToEditorMs": 1654,
+    "logSha256": "c7d632a36927f63538ed787fcc343a0103e6347d9d3ab2d1decd1a911484bfe2"
+  },
+  "retainedFailures": [
+    ".artifacts/input-quality/d3-cold-red-1.log",
+    ".artifacts/input-quality/external-editor-d3-cold-matrix-1/instrumentation.log",
+    ".artifacts/input-quality/external-editor-d3-warm-final/instrumentation.log",
+    ".artifacts/input-quality/external-editor-d3-exact-asset-warm-1/instrumentation.log"
+  ],
+  "memoryDiagnostic": {
+    "sameProcessPid": 25887,
+    "beforeDalvikHeapAllocKB": 45014,
+    "after18TestsDalvikHeapAllocKB": 55659,
+    "limitation": "Two point-in-time snapshots, not peak allocation tracking or a leak-free proof."
+  }
+}

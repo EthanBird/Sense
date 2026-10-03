@@ -1,0 +1,8 @@
+{
+  "startedAt": "2026-10-02T06:41:28.172077+00:00",
+  "developmentFreezeSha256": "5a3c321647687f5ed1d83c39934c6c7c15d8bacfea29cec36055ac8e66413e88",
+  "modes": [
+    "legacy",
+    "lm0.5"
+  ]
+}

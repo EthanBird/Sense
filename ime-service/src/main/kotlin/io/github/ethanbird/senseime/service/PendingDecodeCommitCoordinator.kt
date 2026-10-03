@@ -39,6 +39,10 @@ internal class PendingDecodeCommitCoordinator<Input : Any>(
     private var active: PendingDecodeCommit? = null
     private var trigger: Input? = null
     private val deferred = ArrayDeque<Input>(maximumDeferredInputs)
+    var needsAttention: Boolean = false
+        private set
+    var capacityRejected: Boolean = false
+        private set
 
     val intent: PendingDecodeCommit?
         get() = active
@@ -48,12 +52,43 @@ internal class PendingDecodeCommitCoordinator<Input : Any>(
         get() = active?.presentationRevision
     val deferredCount: Int
         get() = deferred.size
+    val isFull: Boolean
+        get() = deferred.size >= maximumDeferredInputs
+    val lastQueuedInput: Input?
+        get() = deferred.lastOrNull() ?: trigger
+
+    /** Edits the not-yet-dispatched tail, never an earlier input or an already executed action. */
+    fun replaceLastQueuedInput(input: Input?) {
+        check(active != null)
+        if (deferred.isNotEmpty()) {
+            deferred.removeLast()
+            input?.let(deferred::addLast)
+        } else {
+            trigger = input
+        }
+    }
 
     fun start(intent: PendingDecodeCommit, triggerInput: Input? = null) {
         check(active == null) { "A pending decode commit is already active" }
         check(deferred.isEmpty()) { "Deferred input exists without a pending decode commit" }
         active = intent
         trigger = triggerInput
+        needsAttention = false
+        capacityRejected = false
+    }
+
+    /** A soft deadline changes presentation, never the user's confirmation intent or FIFO. */
+    fun markDelayed(presentationRevision: Long): Boolean {
+        if (active?.presentationRevision != presentationRevision) return false
+        needsAttention = true
+        return true
+    }
+
+    fun markCapacityRejected(): Boolean {
+        check(isFull && active != null)
+        val first = !capacityRejected
+        capacityRejected = true
+        return first
     }
 
     fun defer(input: Input): DeferredInputOffer {
@@ -85,6 +120,8 @@ internal class PendingDecodeCommitCoordinator<Input : Any>(
         active = null
         trigger = null
         deferred.clear()
+        needsAttention = false
+        capacityRejected = false
         return completion
     }
 
@@ -92,5 +129,7 @@ internal class PendingDecodeCommitCoordinator<Input : Any>(
         active = null
         trigger = null
         deferred.clear()
+        needsAttention = false
+        capacityRejected = false
     }
 }

@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "scope": "API 37 x86_64 emulator; actual system IME touchscreen -> independent UID external editor; wait for current production runtime and character LM READY",
+  "apkAudit": "d1-apk-asset-audit.json",
+  "fullSuites": [
+    {
+      "name": "d1-final-3",
+      "tests": 8,
+      "failures": 0,
+      "logSha256": "ce2480a40c6753ca2ba8a7e0c00ea24c3efc85ff3315c4a40c16646b2e708506",
+      "environment": {
+        "serial": "emulator-5580",
+        "apks": {
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "4c7f76e204142096e698c04b12e81891d3206abf4d3c7525a7343efe63e7512a",
+          "app/build/outputs/apk/debug/app-debug.apk": "520e744b37e07da8293d6069bd5bf4472a927df4dff71c0c8b7aa59443efe08d",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "ba857c6b2a3e1f69d67a816cae61b86ef0b3e340e60501f1f13cc87a366de8b5"
+        },
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "sdk": "37"
+      },
+      "spaceToEditorMs": 249,
+      "actualKeyStartIntervalMs": {
+        "min": 60,
+        "median": 68.0,
+        "max": 84
+      }
+    },
+    {
+      "name": "d1-final-4",
+      "tests": 8,
+      "failures": 0,
+      "logSha256": "6a790c54ccf406a6f024a0d998152e06a90bc9613e880ad9b36d1c9f4631fa3d",
+      "environment": {
+        "serial": "emulator-5580",
+        "apks": {
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "4c7f76e204142096e698c04b12e81891d3206abf4d3c7525a7343efe63e7512a",
+          "app/build/outputs/apk/debug/app-debug.apk": "520e744b37e07da8293d6069bd5bf4472a927df4dff71c0c8b7aa59443efe08d",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "ba857c6b2a3e1f69d67a816cae61b86ef0b3e340e60501f1f13cc87a366de8b5"
+        },
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "sdk": "37"
+      },
+      "spaceToEditorMs": 159,
+      "actualKeyStartIntervalMs": {
+        "min": 57,
+        "median": 65.5,
+        "max": 76
+      }
+    }
+  ],
+  "restartedImeFocusedRuns": [
+    {
+      "name": "d1-restart-fast-1",
+      "tests": 1,
+      "failures": 0,
+      "logSha256": "bac3434a4aec8a1b5de7025877b27c5318c1340b2381da58ce835aa207e6467f",
+      "spaceToEditorMs": 303
+    },
+    {
+      "name": "d1-restart-fast-2",
+      "tests": 1,
+      "failures": 0,
+      "logSha256": "9274d894789d41decc3f1c1550cbf22174f201c5845bef4c9b652d41d1747603",
+      "spaceToEditorMs": 253
+    },
+    {
+      "name": "d1-restart-fast-3",
+      "tests": 1,
+      "failures": 0,
+      "logSha256": "8bf2b7f8d6168e737c76e49ff377ae84072d2ed0763f1a46c2dc15ad2dd58364",
+      "spaceToEditorMs": 279
+    }
+  ],
+  "restartScope": "force-stop IME between each run; wait for production readiness before typing; not input during cold loading",
+  "recoveryPolicy": {
+    "fullPinyinCandidateMaximumWaitMs": 1000,
+    "t9AndWubiMaximumWaitMs": 120,
+    "obsoleteSearchCooperativeCancellation": "pending"
+  },
+  "regressionsObservedBeforeFix": [
+    "password composing preview revealed fixture input",
+    "old model log falsely passed readiness while bootstrap decoder remained active",
+    "three current-ready rapid confirmation failures: old work drained beyond 120ms; latest output arrived too late"
+  ],
+  "openAcceptance": [
+    "bootstrap confirmation before dictionary ready",
+    "cooperative cancellation of obsolete whole/prefix/correction searches",
+    "Android per-keystroke latency distributions and memory/frame metrics",
+    "system personal-word learn/process-restart recall",
+    "landscape and large-font system UI; per-key accessibility nodes"
+  ],
+  "interpretation": "Small deterministic fixture coverage; not full professional-IME quality or phone performance certification. No release published."
+}

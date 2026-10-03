@@ -1,0 +1,15 @@
+{
+  "selectedMode": "lm0.5",
+  "testCases": 125,
+  "pairedTop1": {
+    "gains": 11,
+    "losses": 3,
+    "exactMcNemarTwoSidedP": 0.057373046875
+  },
+  "sourceReconstructionGatePassed": true,
+  "productionEnabled": false,
+  "androidLifecycleAcceptance": "pending",
+  "interpretation": "Source reconstruction only; agent-reviewed pinyin, not human gold. Test has now been inspected and is a regression set for subsequent changes.",
+  "reportSha256": "ed7f85c88e9df2d9177835ce46ca1f8f8befa10ba562b5e63c2f45fcc638c4e5",
+  "developmentFreezeSha256": "5a3c321647687f5ed1d83c39934c6c7c15d8bacfea29cec36055ac8e66413e88"
+}

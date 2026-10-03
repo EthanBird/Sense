@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "scope": "Full core/UI/service and App About targeted JVM/Robolectric tests; unchanged Gradle tasks may be reused",
+  "apkSha256": "f2696b5e961943956f1dacb6f9db3d787c01b1508bce0f94c0e1c18e957630e9",
+  "modules": {
+    "core-input": {
+      "tests": 279,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 229,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 282,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "pythonTests": 40
+}

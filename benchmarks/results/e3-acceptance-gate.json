@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "scope": "E3 bounded two-stage spelling-path selection acceptance on known fixtures; full input-quality goal remains active",
+  "finalCandidate": "e3-candidate3-freeze.json",
+  "checks": {
+    "frozenSourceHashesMatch": true,
+    "fullBenchmarkSourcesInputsAndAssetsMatch": true,
+    "originalPolicyUnchanged": true,
+    "developmentQualityGatePassed": true,
+    "knownRegressionQualityGatePassed": true,
+    "all376CleanAndJointRowsKeepRankAndTop5": true,
+    "all64SystemConfirmationsCorrect": true,
+    "systemMedianWithinDeclaredMargin": true,
+    "systemP95WithinDeclaredMargin": true,
+    "systemMaxBelow1000ms": true,
+    "host798Passing": true,
+    "python40Passing": true,
+    "ordinarySystemExecutions19Passing": true,
+    "faultInjection4Passing": true,
+    "finalApkMatchesAllEvidence": true,
+    "e2BaselineApkMatches": true,
+    "assetAuditPassed": true,
+    "privateLearningAbsent": true,
+    "learnedWordsRetainedAfterRealUiAndRestart": true
+  },
+  "passed": true,
+  "systemMedianRatio": 1.034965034965035,
+  "systemObservedP95Ratio": 1.0267175572519085,
+  "systemMedianDeltaMs": 5.0,
+  "apkSha256": "4854022ee70632fd4cc261676cf1c16ebb20f2c1bbb5ef54180ad48abcca537a",
+  "remainingKnownTop1Losses": 3
+}

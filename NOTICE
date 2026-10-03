@@ -209,3 +209,53 @@ License: MIT
 License copy: sense-mic-client/installer/ChineseSimplified.LICENSE
 
 Sense Mic Setup uses this translation for its Simplified Chinese installer UI.
+
+Tatoeba Mandarin research corpus
+-------------------------------
+
+The frozen detailed Mandarin export in benchmarks/corpus/sources/ is provided
+by Tatoeba contributors under CC BY 2.0 France:
+https://creativecommons.org/licenses/by/2.0/fr/
+Each row retains its original sentence ID and contributor. Source URLs,
+snapshot hash, attribution rules, and transformation details are documented
+in benchmarks/corpus/sources/README.md and the corpus preparation manifests.
+The raw archive is unchanged and is not an Android APK asset. This corpus
+retains its separate CC BY license; it is not relicensed under the project GPL.
+
+Sense bundled character language model / Tatoeba contributors
+-----------------------------------------------------------
+ime-service/src/main/assets/pinyin_character_lm.scng is a train-only smoothed
+character 1/2/3-gram model derived from the frozen Tatoeba Mandarin corpus.
+The model/data assets are distributed under CC BY 2.0 France, separately from
+the code license. Changes by Sense contributors include normalization,
+partitioning/filtering, and statistical training. The Android About notices
+include PINYIN-LM-NOTICE.txt with all 932 contributor names. The bundled
+pinyin_character_lm_attribution.tsv maps 77,733 source sentences to authors;
+each source is available at https://tatoeba.org/en/sentences/show/{sentenceId}.
+See pinyin_character_lm_notice.json for hashes and the reproducible build chain.
+License: https://creativecommons.org/licenses/by/2.0/fr/
+
+Rime Ice supplemental full-pinyin vocabulary (Sense E7)
+=====================================================
+Upstream: https://github.com/iDvel/rime-ice
+Revision: 3aea6d3694fb3d94ec663641f021f788822897ad
+Authors: iDvel and Rime Ice contributors; upstream source headers retained.
+License: GNU General Public License version 3.0 only.
+Complete license: RIME-ICE-GPL-3.0.txt
+
+Changes by Sense contributors: filter 2..8 Han with one known syllable per
+character, deduplicate against the pinned Frost base, add 306,963 missing
+text/pinyin pairs as independent SPLX/4 source tier 2. All additions use a
+uniform fallback prior of 1, not the upstream weights as usage frequencies.
+Base word scores, order and private abbreviation/prefix indexes are retained.
+The base alone defines the unigram scoring reference and personal-word LM
+backoff membership. This is a bounded scoring feature, not a normalized
+probability over the expanded vocabulary.
+
+Preferred-form sources, hashes and offline build recipe:
+ime-service/src/main/lexicon/vendor/rime-ice/
+ime-service/src/main/lexicon/layered-sources.json
+tools/rebuild_layered_pinyin.py
+The new vocabulary is not used to retrain the bundled association model.
+Its original SPLX/3 dependency can be recovered byte-for-byte by removing
+tier-2 entries; tools/project_pinyin_base.py verifies the training SHA-256.

@@ -1,0 +1,29 @@
+{
+  "core-input": {
+    "tests": 269,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ime-ui": {
+    "tests": 229,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ime-service": {
+    "tests": 282,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "app": {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "scope": "Full core/UI/service suites and App About targeted tests; successful Gradle run with unchanged-task reuse; JVM/Robolectric, not device",
+  "pythonTests": 35,
+  "modelAndDictionaryAssetsUnchanged": true
+}

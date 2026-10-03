@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "title": "Sense character language model v1 derived from Tatoeba Mandarin sentences",
+  "authors": "Tatoeba contributors; per-sentence names in pinyin_character_lm_attribution.tsv; model transformation by Sense contributors",
+  "license": "CC-BY-2.0-FR",
+  "licenseUrl": "https://creativecommons.org/licenses/by/2.0/fr/",
+  "sourceSentenceUrlTemplate": "https://tatoeba.org/en/sentences/show/{sentenceId}",
+  "source": {
+    "id": "tatoeba-cmn-detailed-20260926",
+    "fileName": "cmn_sentences_detailed.tsv.bz2",
+    "format": "tatoeba-detailed-bz2",
+    "url": "https://downloads.tatoeba.org/exports/per_language/cmn/cmn_sentences_detailed.tsv.bz2",
+    "sha256": "8b689948972ff7676dd3fb28bef092e893959e6c561dbf06c8434e3d668adfea",
+    "license": "CC-BY-2.0-FR",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/fr/",
+    "licenseEvidence": "https://tatoeba.org/ar/downloads",
+    "attributionPolicy": "Preserve sentence id, contributor, https://tatoeba.org/en/sentences/show/<id>, license and modification metadata per selected sentence; preserve the contributor index with any future model distribution"
+  },
+  "transformation": "NFKC; OpenCC 1.4.2 t2s; Han spans; family partition/dedup/exclusion; train-only absolute-discount interpolated character 1/2/3-gram",
+  "model": {
+    "file": "pinyin_character_lm.scng",
+    "sha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+    "bytes": 3090930,
+    "trainingConfig": {
+      "discount": 0.75,
+      "min_char_count": 2,
+      "min_bigram_count": 1,
+      "min_trigram_count": 2,
+      "alpha": 0.1
+    }
+  },
+  "trainingPartition": {
+    "fileName": "train.jsonl",
+    "sha256": "e710abf1ccdfcffe416bed9e99304cb898d71ff4c1bc5f702ab11e54eff4b0de",
+    "records": 76736,
+    "segments": 94195,
+    "characters": 776701,
+    "domains": {
+      "conversational-heuristic": 29292,
+      "general-heuristic": 47185,
+      "technical-heuristic": 259
+    }
+  },
+  "corpusManifestSha256": "a15434cad002c282b2cc12d3146abc3bbe0114e6e9c450fc504bdaffa7a4c988",
+  "attribution": {
+    "file": "pinyin_character_lm_attribution.tsv",
+    "sha256": "acfb932b806f02bd53b57f4a902628fea2c29f6efda7a785a11be432ac22173a",
+    "sentences": 77733,
+    "contributors": 932
+  },
+  "decoderMode": "lm0.5",
+  "p2cConclusionSha256": "1fbe2c0be63d6829ad33eb25466bcf5a41b567b4470cb0e420ad39a3a18ddf1c",
+  "rebuild": "tools/prepare_sentence_corpus.py; tools/train_character_lm.py; tools/package_character_lm.py; benchmarks/corpus/README-character-lm.md",
+  "packagerSha256": "544a51e42ede8f4e06122b2681b148dd026ea229364766477b04579fffe84d4f",
+  "androidAcceptance": "pending; this asset is not a release approval"
+}

@@ -7,6 +7,18 @@ import org.junit.Test
 
 class KeyboardLayoutContractTest {
     @Test
+    fun activeFullPinyinReusesShiftGeometryForExplicitSyllableBoundary() {
+        val idle = KeyboardLayoutContract.thirdLetterRow(false, chineseMode = true)
+        val composing = KeyboardLayoutContract.thirdLetterRow(false, chineseMode = true, pinyinCompositionActive = true)
+        assertEquals("分词", composing.first().label)
+        assertEquals('\''.code, composing.first().code)
+        assertTrue(composing.first().action)
+        assertEquals(idle.map { it.weight }, composing.map { it.weight })
+        assertEquals(idle.drop(1), composing.drop(1))
+        assertEquals(KeyCodes.SHIFT, KeyboardLayoutContract.thirdLetterRow(false, false, true).first().code)
+    }
+
+    @Test
     fun backspaceIsImmediatelyAfterM() {
         val row = KeyboardLayoutContract.thirdLetterRow(shifted = false)
 

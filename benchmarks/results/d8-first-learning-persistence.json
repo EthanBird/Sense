@@ -1,0 +1,23 @@
+{
+  "scope": "Disposable debug AVD SQLite read-only observation after UI learning/privacy; no DB seeding",
+  "databaseSha256": "95dd158a1a1104f45b5567366cbfa04e85cd72d748ecb298b924290c9c400fc8",
+  "forbiddenPrivatePhraseAbsent": true,
+  "records": [
+    {
+      "pinyin": "chengche",
+      "text": "程彻",
+      "useCount": 4,
+      "positiveEvidence": 3.1688735485076904,
+      "negativeEvidence": 0.0,
+      "recentPeakEvidence": 2.6288702487945557
+    },
+    {
+      "pinyin": "zhinengti",
+      "text": "智能体",
+      "useCount": 3,
+      "positiveEvidence": 2.3872501850128174,
+      "negativeEvidence": 0.0,
+      "recentPeakEvidence": 2.027247905731201
+    }
+  ]
+}

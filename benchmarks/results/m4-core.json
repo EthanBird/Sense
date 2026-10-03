@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "stage": "M4-core",
-  "generatedAt": "2026-08-19T08:20:49.577798900Z",
+  "generatedAt": "2026-10-02T06:24:08.447583600Z",
   "lexicon": {
     "keys": 823782,
     "bytes": 35069585,
@@ -27,7 +27,7 @@
     "huaCountAtLimit": 64,
     "huaTarget": "滑",
     "huaTargetRank": 5,
-    "shanghuaCount": 172,
+    "shanghuaCount": 168,
     "shanghuaTarget": "上滑",
     "shanghuaTargetRank": 2,
     "learnedShortCode": "d",
@@ -35,25 +35,25 @@
   },
   "initialsLookup": {
     "lookupsPerSample": 7000,
-    "p95Ns": 12400.63,
+    "p95Ns": 13466.69,
     "gateNs": 250000.00
   },
   "progressiveDecode": {
     "lookupsPerSample": 1750,
-    "p95Ns": 133515.60,
+    "p95Ns": 126142.46,
     "gateNs": 500000.00
   },
   "productionLimitProgressiveDecode": {
     "candidateLimit": 255,
     "prefixCandidateCount": 51,
     "lookupsPerSample": 35,
-    "p95Ns": 483531.43,
+    "p95Ns": 407000.00,
     "gateNs": 5000000.00
   },
   "segmentedComposition": {
     "candidateLimit": 255,
     "lookupsPerSample": 35,
-    "p95Ns": 1797280.00,
+    "p95Ns": 1237397.14,
     "gateNs": 5000000.00
   }
 }

@@ -12,17 +12,18 @@ if ($Publish -and ($SkipBuild -or $SkipTests)) {
     throw "-Publish requires a fresh local build and the complete local test gate."
 }
 
-$ReleaseTag = "v0.4.15"
-$ReleaseApkName = "Sense-v0.4.15.apk"
-$ReleaseTitle = "Sense v0.4.15 - Sense Mic modern Windows experience"
+$ReleaseTag = "v0.4.16-rc.1"
+$ReleaseApkName = "Sense-v0.4.16-rc.1.apk"
+$ReleaseTitle = "Sense v0.4.16-rc.1 - Full-pinyin input quality preview"
+$ReleaseIsPrerelease = $true
 $ReleaseCertificateSha256 = "76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984"
-$ExpectedVersionName = "0.4.15"
-$ExpectedVersionCode = 40
+$ExpectedVersionName = "0.4.16-rc.1"
+$ExpectedVersionCode = 41
 
 $RepoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
 $AppBuildFile = Join-Path $RepoRoot "app\build.gradle.kts"
 $GradleWrapper = Join-Path $RepoRoot "gradlew.bat"
-$ReleaseNotes = Join-Path $RepoRoot "docs\releases\v0.4.15.md"
+$ReleaseNotes = Join-Path $RepoRoot "docs\releases\v0.4.16-rc.1.md"
 $BuiltApk = Join-Path $RepoRoot "app/build/outputs/apk/release/app-release.apk"
 $ReleaseDirectory = Join-Path $RepoRoot "build\releases\$ReleaseTag"
 $ReleaseApk = Join-Path $ReleaseDirectory $ReleaseApkName
@@ -398,7 +399,9 @@ function Invoke-LocalTests {
         "--no-parallel",
         ":core-input:m5MixedInputBenchmark",
         ":core-input:m6InputPolishBenchmark",
-        ":core-input:m7ChineseSchemeBenchmark"
+        ":core-input:m7ChineseSchemeBenchmark",
+        ":core-input:m8DailyInputBenchmark",
+        ":core-input:m9PersonalSentenceBenchmark"
     ) | Out-Null
 }
 
@@ -613,7 +616,9 @@ function Restore-PublishBenchmarkResults {
         "benchmarks/results/m4-core.json",
         "benchmarks/results/m5-mixed-input.json",
         "benchmarks/results/m6-input-polish.json",
-        "benchmarks/results/m7-chinese-schemes.json"
+        "benchmarks/results/m7-chinese-schemes.json",
+        "benchmarks/results/m8-daily-input.json",
+        "benchmarks/results/m9-personal-sentence.json"
     ) | Out-Null
 }
 
@@ -748,6 +753,10 @@ function Publish-Release {
         $notesArguments = @("--notes", "Sense $ExpectedVersionName locally verified release.")
     }
 
+    # A preview must not silently become stable or replace GitHub's latest stable release.
+    $releaseKindArguments = @("--prerelease=$($ReleaseIsPrerelease.ToString().ToLowerInvariant())")
+    if ($ReleaseIsPrerelease) { $releaseKindArguments += "--latest=false" }
+
     $savedErrorActionPreference = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
     try {
@@ -764,9 +773,8 @@ function Publish-Release {
                 "--repo", $repo,
                 "--target", $head,
                 "--draft=false",
-                "--prerelease=false",
                 "--title", $ReleaseTitle
-            ) + $notesArguments
+            ) + $releaseKindArguments + $notesArguments
         ) | Out-Null
     }
     elseif ($remoteTarget -eq "MISSING") {
@@ -776,7 +784,7 @@ function Publish-Release {
                 "--repo", $repo,
                 "--target", $head,
                 "--title", $ReleaseTitle
-            ) + $notesArguments
+            ) + $releaseKindArguments + $notesArguments
         ) | Out-Null
     }
     else {
@@ -786,7 +794,7 @@ function Publish-Release {
                 "--repo", $repo,
                 "--verify-tag",
                 "--title", $ReleaseTitle
-            ) + $notesArguments
+            ) + $releaseKindArguments + $notesArguments
         ) | Out-Null
     }
 
@@ -812,10 +820,10 @@ function Publish-Release {
     $release = $releaseJson | ConvertFrom-Json
     if (
         $release.tagName -ne $ReleaseTag -or
-        [bool]$release.isPrerelease -or
+        [bool]$release.isPrerelease -ne $ReleaseIsPrerelease -or
         [bool]$release.isDraft
     ) {
-        throw "GitHub release metadata does not describe the expected stable release."
+        throw "GitHub release metadata does not match the expected release identity and channel."
     }
 
     Write-Step "Download the published assets and verify them again"

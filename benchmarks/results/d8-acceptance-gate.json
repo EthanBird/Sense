@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "apkSha256": "d420f01909f775a5fd96ba8e795b0dc989c5a275b99e83078667b7e1e86d3202",
+  "scope": "Local D8 presentation/accessibility phase, broader quality goal remains active",
+  "checks": {
+    "host819": true,
+    "python30": true,
+    "rendererAndView19": true,
+    "configuration12RepeatedTwice": true,
+    "timeoutRegression": true,
+    "systemIme28": true,
+    "learnedWordsAndPrivacy": true,
+    "coreAndModelsUnchanged": true,
+    "sameFinalApkAcrossSystemRuns": true
+  },
+  "limitations": [
+    "Only API 37 emulator and 100/200-percent system UI matrix",
+    "No physical-device certification or frame-latency distribution",
+    "No new corpus/LM-quality evaluation in D8",
+    "Compact large-font rows hide secondary legends, not their gestures"
+  ]
+}

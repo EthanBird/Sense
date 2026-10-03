@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "apkSha256": "d420f01909f775a5fd96ba8e795b0dc989c5a275b99e83078667b7e1e86d3202",
+  "changedSinceF1": {
+    "ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/SenseInputMethodService.kt": {
+      "before": "b819dc637406a5740adeb1fc99f41ccd013bfcfabbbd598ee6af60ea61250966",
+      "after": "8c2d5d6cfd7d02aae267aaec6328ca15dd8ca2040473cf0006ee3617fdeaa959"
+    },
+    "ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/CandidatePanel.kt": {
+      "before": "0811e4d8af946b7325e3ee5c4cb5b7ad0d72e1cc92db38de57e550a1fe55428e",
+      "after": "36e70c1f8f4359d967f013c54dc6abbd70c8d47a46c329c808d5c759d0f65b40"
+    },
+    "ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardChromeRenderer.kt": {
+      "before": "de2e910ac5c2a214d1ffc964932664d62c79e7fb359b4ddf0f629251c7aff907",
+      "after": "e61bfb8e60f20595c81f5fbc9c2637519a3a2e563e8951e6ec16556729a487da"
+    },
+    "ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardKeyRenderer.kt": {
+      "before": "16805a7f55880ca6054733657a617e96b81a26b5d57f55a33add582ae2d88ffe",
+      "after": "7bf057c2c2f947273b35b4dbb5910b0de0738a289109d2f834ef3c57b89bc5e8"
+    },
+    "ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardMetrics.kt": {
+      "before": "212ec0dab6bf1d71a2781826c537ee4ab214e7cd2bc59195a004e71b17ea9b7d",
+      "after": "664572cc169acca34790b642b8b2bc2694ac6a6f4a5c666ce1c35d5e380bc140"
+    },
+    "ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardRenderer.kt": {
+      "before": "d5206b97a8b540c7c1d1c38bf38033b3ee21fb5fbb019471611e3ad68e6f86fe",
+      "after": "b2988db75ea2a1b26d773d6ad5c012c76358b7b1a77a1ed866c026e1b6d7995b"
+    },
+    "ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardSizePolicy.kt": {
+      "before": "b53b7f7554ce40e735e4151e2297dc1982de1bb31cca2b5b9b4d3ed570448a41",
+      "after": "7c86a1426fdbebf97b97145cad529eb6b88cb85d807a988b7c1ccd6c8d4f9bfe"
+    },
+    "ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/SenseKeyboardSurface.kt": {
+      "before": "f42e19d510b6f3205362e53227881cdba79baa8af82d4766318cef9760c4d24b",
+      "after": "72551452df70774d2751eb2c4f7086f982be9ff0da27354e188b746bc4fd642a"
+    },
+    "ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/SenseKeyboardView.kt": {
+      "before": "ff2a4b2c6a4520c54543d8ee3ed1508ce0d849c3726bb69d6b2c9034d6bdf88d",
+      "after": "11787db72e970a288785965eccf72b6690a60bdaca02a386f3cdf2cea9d1faef"
+    }
+  },
+  "addedSinceF1": [
+    {
+      "path": "ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/AssociationTimeoutPolicy.kt",
+      "sha256": "b509a87eb6c9126057663a854538d18284b1a07f47db0a800b6e84aab4f03fc1"
+    }
+  ],
+  "coreUnchangedFromF1": {
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptivePinyinDecoder.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptiveWubi86Decoder.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRanker.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateSnapshot.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterBigramModel.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterLanguageModel.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CommitSequenceTracker.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ContextAssociationModel.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchBudget.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchDiagnostics.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CuratedLexicalCandidateCatalog.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/DecodeWorkScope.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishInputSession.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishLexicon.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishWordUsage.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/FakeDecoder.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputModel.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputReducer.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M0HostBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M10CharacterLmBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M11LatticeLanguageBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M12P2cBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M14ProgressiveEquivalenceBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M15TypoRecallBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M16SpellingGraphBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M1PinyinBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M2AdaptiveBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M3SentenceBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M4CoreBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M5MixedInputBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M6InputPolishBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M7ChineseSchemeBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M8DailyInputBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M9PersonalSentenceBenchmark.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/MixedCandidateRanker.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinDecoder.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinInputLimits.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinLanguageScorer.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSyllableSegmenter.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PrefixCandidateCache.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ProgressivePinyin.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/QueryLexicalCache.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SemanticCandidateCatalog.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SerialPersistenceQueue.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/StableTopK.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9AlternativeInputDecoder.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9Composition.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9PinyinChoice.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9SyllableIndex.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserAssociation.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPersonalization.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPinyinLattice.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Lexicon.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Personalization.kt": true,
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/WubiComposition.kt": true
+  },
+  "scope": "D8 changes presentation and timeout only; no new LM-quality claim",
+  "harnessSources": [
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorAccessibilityTimeoutTest.kt",
+      "sha256": "90eb296b8b640ee1bd1adee25228e5684eb70035e32b6b943c598fb3fdb74bf3"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorAssociationTest.kt",
+      "sha256": "45124802d77102488e0f3301b5551f64e87f78075a3ca14935b331646a0b2d1c"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorConfigurationTest.kt",
+      "sha256": "8156aee400f1f8a6af995c668614768553b6e303d853ad6b9e0aca53e6d87ff0"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorCorrectionTest.kt",
+      "sha256": "1381ed56e3002702cb4d9619bf6d890b6275979f9f59c21970f7b188f34c8a1a"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorInputTest.kt",
+      "sha256": "f1d2f21e0e82116bab7bf907aa34054e250e4df825150e05e062e204cd37a103"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorLatencyTest.kt",
+      "sha256": "d8c3a9c7a940a27e2989a667e1360413e9a868fa193258abcebb07122d3c3eb7"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorLearningTest.kt",
+      "sha256": "20a543306ff3a9f40cda2413eae41b626895ac3f069381e5a8c8d638dd0366e3"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorSlowCandidateTest.kt",
+      "sha256": "33d86bd93464a008bc171878510502ccffa110fb11cdd5d2cbae827fd1264040"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorTestFixture.kt",
+      "sha256": "85ff44b389d399b308b53310ca2e057931dff15a8d33d892983be6f1a32b53c9"
+    },
+    {
+      "path": "input-quality-device/src/main/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorActivity.kt",
+      "sha256": "05322ed0a58e834da19e01b2138660d94b1cd077c57c9021f7b61f2f195cbf2d"
+    },
+    {
+      "path": "tools/test_input_configuration.py",
+      "sha256": "3c2594ef070f1c28f9902c9b85a50f236f74b1574edb896e0c40bc37e8e3c9b5"
+    },
+    {
+      "path": "tools/test_external_editor.ps1",
+      "sha256": "1e24b6fbea78aab6a469a54c8bc79404ad69efeea91ad7d4dedc4fa19db840ff"
+    }
+  ]
+}

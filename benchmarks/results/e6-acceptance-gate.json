@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "stage": "E6",
+  "passed": true,
+  "goalComplete": false,
+  "releaseReady": false,
+  "scope": "Local debug stage: source reconstruction, unit suites and one dedicated API37 x86_64 AVD; no phone certification or release",
+  "qualityGate": {
+    "file": "benchmarks/results/e6-quality-gate.json",
+    "sha256": "4cc86b8b60e36ee77d818dc184362e957f64fdbdfb84a685868983bdaf6c13bf"
+  },
+  "frozenCandidateUnchanged": true,
+  "host": {
+    "core-input": {
+      "tests": 301,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 234,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 295,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "hostTests": 833,
+  "python": {
+    "run": 329,
+    "passed": 328,
+    "skipped": 1,
+    "skipReason": "Windows symbolic-link privilege"
+  },
+  "device": [
+    {
+      "group": "correction",
+      "tests": 7,
+      "passed": true
+    },
+    {
+      "group": "warm",
+      "tests": 10,
+      "passed": true
+    },
+    {
+      "group": "cold",
+      "tests": 4,
+      "passed": true
+    },
+    {
+      "group": "association",
+      "tests": 9,
+      "passed": true
+    },
+    {
+      "group": "learning",
+      "tests": 2,
+      "passed": true
+    }
+  ],
+  "deviceScenarioExecutions": 32,
+  "baselineFailedScenarios": 2,
+  "controlledTestApkIdentical": true,
+  "latencyConfirmations": 64,
+  "latencyReport": {
+    "file": "benchmarks/results/e6-latency.json",
+    "sha256": "6698366715d5058a2fe26de8fd486bb8084aeb7b59a01efcc3ff9006da919cd2"
+  },
+  "personalization": {
+    "scope": "Disposable debug AVD SQLite read-only observation after UI learning/privacy; no DB seeding",
+    "databaseSha256": "4bbf9b745982cf626db5edf2cdc48ab7f0ffc194f354dee3e2cc69c0e68aa776",
+    "forbiddenPrivatePhraseAbsent": true,
+    "records": [
+      {
+        "pinyin": "chengche",
+        "text": "程彻",
+        "useCount": 4,
+        "positiveEvidence": 3.1217596530914307,
+        "negativeEvidence": 0.0,
+        "recentPeakEvidence": 2.581756114959717
+      },
+      {
+        "pinyin": "zhinengti",
+        "text": "智能体",
+        "useCount": 3,
+        "positiveEvidence": 2.3872478008270264,
+        "negativeEvidence": 0.0,
+        "recentPeakEvidence": 2.027245044708252
+      }
+    ]
+  },
+  "apk": {
+    "path": "app/build/outputs/apk/debug/app-debug.apk",
+    "sha256": "dd8b1cef85d331f57d83fe257d4af0b42215feeb9a412c2a4445a1526fd7fb80",
+    "bytes": 97094639
+  },
+  "dictionarySupplementAdopted": false,
+  "productionOovFeature": -4,
+  "evidenceManifest": {
+    "file": "benchmarks/results/e6-evidence-manifest.json",
+    "sha256": "442b79d011afc0d2037a2bf03534504d1050bffa24ce9bd900b041e697c5ba29",
+    "files": 523
+  },
+  "openItems": [
+    "Unlearned 智能体 and 跨会话 still weak",
+    "Supplementary dictionary confidence and personal-only membership semantics",
+    "Natural typing and external-domain evaluation",
+    "Frontend explicit syllable boundaries",
+    "Association word-boundary accuracy",
+    "E5 generic lexicon InputStream load still reads fully before fromBytes byte limit; Android asset loader is separately pinned"
+  ]
+}

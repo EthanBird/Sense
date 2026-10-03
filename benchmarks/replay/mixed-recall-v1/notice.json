@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "scope": "Known dictionary reconstruction; synthetic abbreviation recall, not human intent, fresh accuracy, or LM evaluation",
+  "license": "GPL-3.0-only",
+  "upstream": {
+    "repository": "https://github.com/gaboolic/rime-frost",
+    "commit": "69cbcf8937ae03c03792fa285dca7f79f80715bc",
+    "relationship": "Rime Frost derives its maintained core dictionaries from Rime Ice"
+  },
+  "sources": {
+    "vendor/rime-frost/cn_dicts/base.dict.yaml": "449901a9c01f1bc9b0c5be1e98b764506da1e0930fe4f021cacbd4c08157bbea",
+    "vendor/rime-frost/cn_dicts/ext.dict.yaml": "44b78e4feb8a3b302298844061626aa4e2194901b8ed4ee6acec84261b6aa90d",
+    "vendor/rime-frost/cn_dicts/others.dict.yaml": "68e4cee36cdf77a05e2abd308cb88b84a4e40038de53d56ecccc1d357509013a"
+  },
+  "selection": "SHA256 ascending, 32 pronunciations per Han-length/raw-weight stratum; no decoder output used",
+  "eligible": {
+    "4han-low": 169895,
+    "3han-low": 137586,
+    "5han-low": 45281,
+    "5han-common": 4653,
+    "3han-common": 41334,
+    "4han-common": 34143
+  },
+  "families": 192,
+  "rows": 960,
+  "auditSha256": "265fc0f172a415a5687c64a3ffa7cf738594cd5a80ca49a2823ba92b96f2184d"
+}

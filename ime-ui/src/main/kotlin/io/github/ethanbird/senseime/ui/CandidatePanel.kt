@@ -14,6 +14,8 @@ internal interface CandidateScene {
     /** False means retained candidates are visual continuity only and are inert. */
     val candidatesReady: Boolean
     val candidates: List<String>
+    /** Exact cached measurement size, also consumed by the Canvas renderer. */
+    val textSizePx: Float
     /** True while a transient next-word strip owns the toolbar row. */
     val association: Boolean
     val visibleCandidates: List<VisibleCandidate>
@@ -98,6 +100,7 @@ internal class CandidatePanel(
     private var viewWidth = 0
     private var viewHeight = 0
     private var measuredTextSizePx = Float.NaN
+    override val textSizePx: Float get() = measuredTextSizePx
 
     override var composing: String = ""
         private set
@@ -518,6 +521,7 @@ internal class CandidatePanel(
         this.viewHeight = viewHeight
         this.editorPanelVisible = editorPanelVisible
         this.fontScale = fontScale
+        metrics.updateFontScale(fontScale)
 
         val nextTextSizePx = candidateTextSizePx()
         if (measuredTextSizePx.toBits() != nextTextSizePx.toBits()) {
@@ -557,7 +561,7 @@ internal class CandidatePanel(
         if (viewWidth <= 0) return
 
         val systemBarTop = viewHeight - metrics.systemBarHeight
-        val gridTop = metrics.candidateHeight + metrics.dp(5f)
+        val gridTop = metrics.expandedCandidateHeaderHeight + metrics.dp(5f)
         val statusTop = systemBarTop - metrics.expandedCandidateStatusHeight
         val gridBottom = statusTop - metrics.dp(4f)
         val hasExpandedGridRoom =
@@ -687,7 +691,7 @@ internal class CandidatePanel(
             toolbarHeight = metrics.toolbarHeight,
             takesToolbar = takesToolbar(editorPanelVisible),
         )
-        val top = if (composing.isBlank()) metrics.dp(3f) else metrics.dp(18f)
+        val top = (if (composing.isBlank()) metrics.dp(3f) else metrics.dp(18f)) * metrics.chromeScale
         collapsedViewportBounds = KeyboardRect(
             left = collapsed.viewportLeft,
             top = 0f,
@@ -701,7 +705,7 @@ internal class CandidatePanel(
                     left = slot.left,
                     top = top,
                     right = slot.right,
-                    bottom = collapsedBottom - metrics.dp(3f),
+                    bottom = collapsedBottom - metrics.dp(3f) * metrics.chromeScale,
                 ),
                 textAnchor = slot.textAnchor,
             )
@@ -759,7 +763,7 @@ internal class CandidatePanel(
                 left = viewWidth - metrics.candidateControlWidth,
                 top = 0f,
                 right = viewWidth.toFloat(),
-                bottom = metrics.candidateHeight,
+                bottom = metrics.expandedCandidateHeaderHeight,
             ),
         )
     }

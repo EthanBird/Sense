@@ -1,0 +1,77 @@
+{
+  "scope": "Nine user-topic words selected after long-sentence audit; descriptive diagnostic, not blind population accuracy or tuning data for this frozen candidate",
+  "rows": [
+    {
+      "query": "zhinengti",
+      "expected": "智能体",
+      "beforeRank": 15,
+      "afterRank": 20,
+      "beforeTop1": "只能提",
+      "afterTop1": "只能提"
+    },
+    {
+      "query": "shurufa",
+      "expected": "输入法",
+      "beforeRank": 1,
+      "afterRank": 1,
+      "beforeTop1": "输入法",
+      "afterTop1": "输入法"
+    },
+    {
+      "query": "shangxiawen",
+      "expected": "上下文",
+      "beforeRank": 1,
+      "afterRank": 1,
+      "beforeTop1": "上下文",
+      "afterTop1": "上下文"
+    },
+    {
+      "query": "jisuanji",
+      "expected": "计算机",
+      "beforeRank": 1,
+      "afterRank": 1,
+      "beforeTop1": "计算机",
+      "afterTop1": "计算机"
+    },
+    {
+      "query": "kuahuihua",
+      "expected": "跨会话",
+      "beforeRank": 7,
+      "afterRank": 7,
+      "beforeTop1": "胯绘画",
+      "afterTop1": "胯绘画"
+    },
+    {
+      "query": "houxuanci",
+      "expected": "候选词",
+      "beforeRank": 1,
+      "afterRank": 1,
+      "beforeTop1": "候选词",
+      "afterTop1": "候选词"
+    },
+    {
+      "query": "ciku",
+      "expected": "词库",
+      "beforeRank": 1,
+      "afterRank": 1,
+      "beforeTop1": "词库",
+      "afterTop1": "词库"
+    },
+    {
+      "query": "suanfa",
+      "expected": "算法",
+      "beforeRank": 1,
+      "afterRank": 1,
+      "beforeTop1": "算法",
+      "afterTop1": "算法"
+    },
+    {
+      "query": "yuyanmoxing",
+      "expected": "语言模型",
+      "beforeRank": 1,
+      "afterRank": 1,
+      "beforeTop1": "语言模型",
+      "afterTop1": "语言模型"
+    }
+  ]
+}

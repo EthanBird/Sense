@@ -58,7 +58,7 @@ data class LearnedPhrase(
     /** Weighted positive observations. Legacy rows default to their historical use count. */
     val positiveEvidence: Float = useCount.toFloat(),
     val negativeEvidence: Float = 0f,
-    /** Strength of the latest positive event, used by the bounded recency component. */
+    /** Decayed peak positive strength at [lastUsedAtMillis]; legacy storage name is retained. */
     val lastPositiveEvidence: Float = LEGACY_EVENT_EVIDENCE,
     val lastNegativeAtMillis: Long = 0L,
     /** Runtime-only bounded ranking adjustment populated by [UserLexicon.lookup]. */
@@ -67,6 +67,8 @@ data class LearnedPhrase(
 
 interface UserLexicon : AutoCloseable {
     fun lookup(code: String, limit: Int): List<LearnedPhrase>
+    /** Optional indexed, point-in-time canonical word matches for sentence composition. */
+    fun matchFullPinyin(query: String, limitPerStart: Int = 16): List<UserPinyinMatch> = emptyList()
     fun record(
         fullPinyin: String,
         initials: String,
@@ -97,6 +99,9 @@ class MemoryUserLexicon(
     private val fullIndex = HashMap<String, MutableSet<Pair<String, String>>>()
     private val initialsIndex = HashMap<String, MutableSet<Pair<String, String>>>()
     private val aliasIndex = HashMap<String, MutableSet<Pair<String, String>>>()
+    // Only lengths present under each first letter are probed. This ~10 KiB index avoids a
+    // full user-dictionary scan or a separate object-heavy trie on every key event.
+    private val fullCodeLengths = Array(26) { IntArray(PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH + 1) }
     private var latestAssignedUsedAtMillis = Long.MIN_VALUE
 
     init {
@@ -150,6 +155,34 @@ class MemoryUserLexicon(
     }
 
     @Synchronized
+    override fun matchFullPinyin(query: String, limitPerStart: Int): List<UserPinyinMatch> {
+        if (fullIndex.isEmpty() || limitPerStart <= 0 || query.isEmpty() ||
+            query.length > PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH || query.any { it !in 'a'..'z' }
+        ) return emptyList()
+        val now = clock()
+        val output = ArrayList<UserPinyinMatch>()
+        val rank = compareByDescending<LearnedPhrase> { it.rankingBoost }
+            .thenByDescending { it.fullPinyin.length }
+            .thenByDescending { it.lastUsedAtMillis }
+            .thenBy { it.text }
+        for (start in query.indices) {
+            val lengths = fullCodeLengths[query[start] - 'a']
+            val matches = ArrayList<LearnedPhrase>()
+            for (length in 1..query.length - start) {
+                if (lengths[length] == 0) continue
+                val keys = fullIndex[query.substring(start, start + length)] ?: continue
+                matches += keys.mapNotNull(records::get)
+                    .map { it.copy(rankingBoost = PersonalizationScoring.rankingBoost(it, now)) }
+                    .sortedWith(rank)
+                    .take(MAX_LATTICE_MATCHES_PER_CODE)
+            }
+            matches.sortedWith(rank).take(minOf(limitPerStart, MAX_LATTICE_MATCHES_PER_START))
+                .forEach { output += UserPinyinMatch(start, it) }
+        }
+        return output
+    }
+
+    @Synchronized
     override fun record(
         fullPinyin: String,
         initials: String,
@@ -186,7 +219,11 @@ class MemoryUserLexicon(
             negativeEvidence = previous
                 ?.let { PersonalizationScoring.retainedNegativeEvidence(it, now) }
                 .orZero(),
-            lastPositiveEvidence = evidenceStrength,
+            // Accepting our suggestion confirms, rather than retracts, the user's earlier
+            // explicit choice. Preserve its decayed peak; do not replace 1.75+ by the weak
+            // 0.18 Space signal. Actual rejections retain their separate negative evidence.
+            lastPositiveEvidence = maxOf(evidenceStrength,
+                previous?.let { PersonalizationScoring.retainedRecentEvidence(it, now) }.orZero()),
             lastNegativeAtMillis = previous
                 ?.takeIf { it.lastNegativeAtMillis > 0L && it.negativeEvidence > 0f }
                 ?.let { now }
@@ -194,7 +231,7 @@ class MemoryUserLexicon(
         )
         records[key] = value
         if (previous == null) {
-            fullIndex.getOrPut(full) { LinkedHashSet() } += key
+            addFullIndexEntry(full, key)
         } else if (previous.initials != short) {
             removeIndexEntry(initialsIndex, previous.initials, key)
         }
@@ -257,7 +294,7 @@ class MemoryUserLexicon(
         )
         val key = restored.fullPinyin to restored.text
         records[key] = restored
-        fullIndex.getOrPut(restored.fullPinyin) { LinkedHashSet() } += key
+        addFullIndexEntry(restored.fullPinyin, key)
         addBoundedIndexEntry(initialsIndex, restored.initials, key)
         restored.aliases.forEach { alias ->
             addBoundedIndexEntry(aliasIndex, alias, key)
@@ -282,7 +319,23 @@ class MemoryUserLexicon(
     ) {
         val entries = index[code] ?: return
         entries.remove(key)
-        if (entries.isEmpty()) index.remove(code)
+        if (entries.isEmpty()) {
+            index.remove(code)
+            if (index === fullIndex) adjustFullCodeLength(code, -1)
+        }
+    }
+
+    private fun addFullIndexEntry(code: String, key: Pair<String, String>) {
+        fullIndex.getOrPut(code) {
+            adjustFullCodeLength(code, 1)
+            LinkedHashSet()
+        } += key
+    }
+
+    private fun adjustFullCodeLength(code: String, delta: Int) {
+        if (code.length in 1..PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH && code.all { it in 'a'..'z' }) {
+            fullCodeLengths[code.first() - 'a'][code.length] += delta
+        }
     }
 
     private fun addBoundedIndexEntry(
@@ -386,6 +439,8 @@ class MemoryUserLexicon(
         const val DEFAULT_MAXIMUM_RECORDS_PER_FULL_PINYIN = 64
         const val DEFAULT_MAXIMUM_ALIASES_PER_RECORD = 16
         const val DEFAULT_MAXIMUM_RECORDS_PER_LOOKUP_CODE = 128
+        const val MAX_LATTICE_MATCHES_PER_CODE = 4
+        const val MAX_LATTICE_MATCHES_PER_START = 16
     }
 }
 
@@ -459,6 +514,12 @@ private object PersonalizationScoring {
             LONG_TERM_FREQUENCY_FLOOR + (1f - LONG_TERM_FREQUENCY_FLOOR) * recency
         )
     }
+
+    fun retainedRecentEvidence(phrase: LearnedPhrase, nowMillis: Long): Float =
+        phrase.lastPositiveEvidence.takeIf { it.isFinite() && it > 0f }
+            ?.coerceAtMost(MAX_ACCUMULATED_EVIDENCE)
+            ?.times(decay(nowMillis, phrase.lastUsedAtMillis, POSITIVE_HALF_LIFE_DAYS))
+            ?: LEGACY_EVENT_EVIDENCE
 
     fun retainedNegativeEvidence(phrase: LearnedPhrase, nowMillis: Long): Float {
         if (phrase.lastNegativeAtMillis <= 0L) return 0f

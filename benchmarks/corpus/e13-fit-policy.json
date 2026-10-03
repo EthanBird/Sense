@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "features": [
+    "LEXICAL",
+    "INTERNAL_BIGRAM",
+    "WORD_BOUNDARY",
+    "CHARACTER_LM",
+    "EXTERNAL_BIGRAM",
+    "SPELLING"
+  ],
+  "deltaBounds": [
+    -0.75,
+    1.0
+  ],
+  "regularization": [
+    0.001,
+    0.01,
+    0.1,
+    1.0
+  ],
+  "maxIterations": 300,
+  "negativeLimit": 8,
+  "initialStep": 0.5,
+  "tolerance": 1e-07,
+  "objective": "Mean per-query mean hard-negative pairwise logistic loss + lambda/2 * squared parameter norm. Six bounded additive deltas around exact baseline Float total.",
+  "candidatePolicy": "Freeze baseline winning path for each of up to 255 Chinese texts; use baseline top 8 other texts as negatives, no target-guided path changes.",
+  "selection": "Among models with strictly higher dev top1 and dev top5 >= baseline, maximize dev top1, then top5, then MRR, then stronger regularization. Otherwise retain baseline and do not claim a candidate promotion.",
+  "testGate": "Higher aggregate Chinese fixed-pool top1 and no aggregate top5 loss; no first-count loss in either full-sentence or midpoint-editor mode. List every first/rank loss regardless of aggregate.",
+  "boundaries": "Offline only. Positive source priors, correction calibration, personal features, spelling graph, dictionary and LM stay unchanged. Personal entries are excluded from this empty-store training. No APK promotion from this gate alone."
+}

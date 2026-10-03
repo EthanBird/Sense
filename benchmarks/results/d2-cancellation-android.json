@@ -1,0 +1,329 @@
+{
+  "schemaVersion": 1,
+  "scope": "emulator API 37, wait for production runtime; fresh debug data per APK; no-learning editor; not cold-loading input or phone certification",
+  "limitations": [
+    "Three fixed-order samples per APK, one sentence, one emulator; not p95 or statistical evidence of a speedup.",
+    "Waited for production assets; no personal learning; does not measure cold-loading confirmation.",
+    "Baseline APK has no custom decode slices. Canceled durations are aborted work, not completed decode latency."
+  ],
+  "confirmationMs": {
+    "baseline": {
+      "samples": [
+        414,
+        398,
+        379
+      ],
+      "median": 398
+    },
+    "cancellable": {
+      "samples": [
+        347,
+        401,
+        316
+      ],
+      "median": 347
+    }
+  },
+  "runs": [
+    {
+      "mode": "baseline",
+      "sample": 1,
+      "apkSha256": "520e744b37e07da8293d6069bd5bf4472a927df4dff71c0c8b7aa59443efe08d",
+      "passed": true,
+      "spaceToEditorMs": 414,
+      "artifactDirectory": "d2-cancel-compare-baseline-1",
+      "traceSha256": "4e3cb68418c5d89808e32a6641a81e2c9db28a62014daf89502d1912629cf46c",
+      "completeTraceBuffers": true,
+      "unfinishedDecodeSlices": 0,
+      "decodeSlices": []
+    },
+    {
+      "mode": "baseline",
+      "sample": 2,
+      "apkSha256": "520e744b37e07da8293d6069bd5bf4472a927df4dff71c0c8b7aa59443efe08d",
+      "passed": true,
+      "spaceToEditorMs": 398,
+      "artifactDirectory": "d2-cancel-compare-baseline-2",
+      "traceSha256": "5689c2d0d46390a69fd83ad489a77b5296f8a952eedc08132c54f09935ae2e97",
+      "completeTraceBuffers": true,
+      "unfinishedDecodeSlices": 0,
+      "decodeSlices": []
+    },
+    {
+      "mode": "baseline",
+      "sample": 3,
+      "apkSha256": "520e744b37e07da8293d6069bd5bf4472a927df4dff71c0c8b7aa59443efe08d",
+      "passed": true,
+      "spaceToEditorMs": 379,
+      "artifactDirectory": "d2-cancel-compare-baseline-3",
+      "traceSha256": "507a24635cbe08a5aceb3fc162d8017dba9083f0ddc3464ed8e2cf02cb5e517c",
+      "completeTraceBuffers": true,
+      "unfinishedDecodeSlices": 0,
+      "decodeSlices": []
+    },
+    {
+      "mode": "cancellable",
+      "sample": 1,
+      "apkSha256": "124026711e45c50d373081502a2cbc986829fbb9710577ce6f5f1be34e8d94e2",
+      "passed": true,
+      "spaceToEditorMs": 347,
+      "artifactDirectory": "d2-cancel-compare-cancellable-1",
+      "traceSha256": "8f122de18ea1d39892dc433bccbd436b8fbcbc158f4346ad9efdef08ef9a102c",
+      "completeTraceBuffers": true,
+      "unfinishedDecodeSlices": 0,
+      "decodeSlices": [
+        {
+          "threadId": 6998,
+          "canceled": true,
+          "durationMs": 95.504
+        },
+        {
+          "threadId": 6998,
+          "canceled": true,
+          "durationMs": 15.426
+        },
+        {
+          "threadId": 6998,
+          "canceled": true,
+          "durationMs": 70.016
+        },
+        {
+          "threadId": 6998,
+          "canceled": true,
+          "durationMs": 59.861
+        },
+        {
+          "threadId": 6998,
+          "canceled": true,
+          "durationMs": 85.18
+        },
+        {
+          "threadId": 6998,
+          "canceled": true,
+          "durationMs": 45.696
+        },
+        {
+          "threadId": 6998,
+          "canceled": true,
+          "durationMs": 67.708
+        },
+        {
+          "threadId": 6998,
+          "canceled": true,
+          "durationMs": 64.775
+        },
+        {
+          "threadId": 6998,
+          "canceled": true,
+          "durationMs": 61.918
+        },
+        {
+          "threadId": 6998,
+          "canceled": true,
+          "durationMs": 57.622
+        },
+        {
+          "threadId": 6998,
+          "canceled": true,
+          "durationMs": 56.471
+        },
+        {
+          "threadId": 6998,
+          "canceled": true,
+          "durationMs": 69.137
+        },
+        {
+          "threadId": 6998,
+          "canceled": true,
+          "durationMs": 70.068
+        },
+        {
+          "threadId": 6998,
+          "canceled": true,
+          "durationMs": 64.57
+        },
+        {
+          "threadId": 6998,
+          "canceled": false,
+          "durationMs": 362.92
+        }
+      ]
+    },
+    {
+      "mode": "cancellable",
+      "sample": 2,
+      "apkSha256": "124026711e45c50d373081502a2cbc986829fbb9710577ce6f5f1be34e8d94e2",
+      "passed": true,
+      "spaceToEditorMs": 401,
+      "artifactDirectory": "d2-cancel-compare-cancellable-2",
+      "traceSha256": "1b92910b0ebe2012cc3eb8c60b5099511f0795d48a33f18cf096ea6040e84966",
+      "completeTraceBuffers": true,
+      "unfinishedDecodeSlices": 0,
+      "decodeSlices": [
+        {
+          "threadId": 7425,
+          "canceled": true,
+          "durationMs": 75.065
+        },
+        {
+          "threadId": 7425,
+          "canceled": true,
+          "durationMs": 71.044
+        },
+        {
+          "threadId": 7425,
+          "canceled": true,
+          "durationMs": 83.348
+        },
+        {
+          "threadId": 7425,
+          "canceled": true,
+          "durationMs": 62.505
+        },
+        {
+          "threadId": 7425,
+          "canceled": true,
+          "durationMs": 66.034
+        },
+        {
+          "threadId": 7425,
+          "canceled": true,
+          "durationMs": 78.211
+        },
+        {
+          "threadId": 7425,
+          "canceled": true,
+          "durationMs": 69.7
+        },
+        {
+          "threadId": 7425,
+          "canceled": true,
+          "durationMs": 64.215
+        },
+        {
+          "threadId": 7425,
+          "canceled": true,
+          "durationMs": 70.086
+        },
+        {
+          "threadId": 7425,
+          "canceled": true,
+          "durationMs": 63.022
+        },
+        {
+          "threadId": 7425,
+          "canceled": true,
+          "durationMs": 67.178
+        },
+        {
+          "threadId": 7425,
+          "canceled": true,
+          "durationMs": 68.64
+        },
+        {
+          "threadId": 7425,
+          "canceled": true,
+          "durationMs": 66.225
+        },
+        {
+          "threadId": 7425,
+          "canceled": true,
+          "durationMs": 67.633
+        },
+        {
+          "threadId": 7425,
+          "canceled": false,
+          "durationMs": 402.412
+        }
+      ]
+    },
+    {
+      "mode": "cancellable",
+      "sample": 3,
+      "apkSha256": "124026711e45c50d373081502a2cbc986829fbb9710577ce6f5f1be34e8d94e2",
+      "passed": true,
+      "spaceToEditorMs": 316,
+      "artifactDirectory": "d2-cancel-compare-cancellable-3",
+      "traceSha256": "6c041e7f3fa562d084cfa426c5cf36485e4a24540e7ef1967290d395073bd4d8",
+      "completeTraceBuffers": true,
+      "unfinishedDecodeSlices": 0,
+      "decodeSlices": [
+        {
+          "threadId": 7936,
+          "canceled": true,
+          "durationMs": 49.157
+        },
+        {
+          "threadId": 7936,
+          "canceled": true,
+          "durationMs": 69.084
+        },
+        {
+          "threadId": 7936,
+          "canceled": true,
+          "durationMs": 64.849
+        },
+        {
+          "threadId": 7936,
+          "canceled": true,
+          "durationMs": 61.716
+        },
+        {
+          "threadId": 7936,
+          "canceled": true,
+          "durationMs": 70.913
+        },
+        {
+          "threadId": 7936,
+          "canceled": true,
+          "durationMs": 43.171
+        },
+        {
+          "threadId": 7936,
+          "canceled": true,
+          "durationMs": 75.551
+        },
+        {
+          "threadId": 7936,
+          "canceled": true,
+          "durationMs": 63.556
+        },
+        {
+          "threadId": 7936,
+          "canceled": true,
+          "durationMs": 71.161
+        },
+        {
+          "threadId": 7936,
+          "canceled": true,
+          "durationMs": 61.424
+        },
+        {
+          "threadId": 7936,
+          "canceled": true,
+          "durationMs": 68.731
+        },
+        {
+          "threadId": 7936,
+          "canceled": true,
+          "durationMs": 74.333
+        },
+        {
+          "threadId": 7936,
+          "canceled": true,
+          "durationMs": 89.567
+        },
+        {
+          "threadId": 7936,
+          "canceled": true,
+          "durationMs": 55.093
+        },
+        {
+          "threadId": 7936,
+          "canceled": false,
+          "durationMs": 324.43
+        }
+      ]
+    }
+  ]
+}

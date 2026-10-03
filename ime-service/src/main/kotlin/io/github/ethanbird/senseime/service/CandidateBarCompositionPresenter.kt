@@ -33,8 +33,9 @@ internal object CandidateBarCompositionPresenter {
                     canonicalInitials = candidate.canonicalInitials,
                 )
             }
-            ?.takeIf { path -> path.rawCode == remaining }
+            ?.takeIf { path -> path.rawCode == PinyinSyllableSegmenter.normalize(remaining) }
             ?.formatted
+            ?.let { if (remaining.endsWith('\'')) "$it'" else it }
             ?: remaining
         return composition.acceptedText + formattedRemaining
     }

@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "id": "tatoeba-cmn-detailed-20260926",
+    "fileName": "cmn_sentences_detailed.tsv.bz2",
+    "format": "tatoeba-detailed-bz2",
+    "url": "https://downloads.tatoeba.org/exports/per_language/cmn/cmn_sentences_detailed.tsv.bz2",
+    "sha256": "8b689948972ff7676dd3fb28bef092e893959e6c561dbf06c8434e3d668adfea",
+    "license": "CC-BY-2.0-FR",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/fr/",
+    "licenseEvidence": "https://tatoeba.org/ar/downloads",
+    "attributionPolicy": "Preserve sentence id, contributor, https://tatoeba.org/en/sentences/show/<id>, license and modification metadata per selected sentence; preserve the contributor index with any future model distribution"
+  },
+  "sourceManifestSha256": "8b2f55263c4c7233acdd7a9e9f527e6e917b96b6062f419478ebcac49582fb50",
+  "scriptSha256": "2559edfc629605d818686d14e403fc67eeb52b33fc7c38edcf66328b1d89ea87",
+  "python": "3.12.14",
+  "unicodeVersion": "15.0.0",
+  "normalization": {
+    "opencc": "1.4.2",
+    "config": "t2s.json",
+    "resourceHashes": {
+      "CJK_Compatibility_Ideographs.ocd2": "4b1faa6649012f524068ec18c0fb520ead343c11cbe0a8e4c8853ca61369d666",
+      "hk2s.json": "57eecf123fd3a08ca280832f4f123d89ae2aefa8bff4e57179c90033304b1aab",
+      "hk2sp.json": "84a11cef4e2fd8289374a23a71287066def80d65f05c3086133aa3d31824f3cf",
+      "hk2t.json": "a610a36127b29208d39a2db5fdaae6a67ec2aa0acb1278221a6414a58e35d27b",
+      "HKPhrases.ocd2": "2216e55024b7f2674245fe860452c7c378ecc0e145ca51dcd944de76a6c62687",
+      "HKPhrasesRev.ocd2": "f4642fa9e73454ab91e13197ebabcca8343fc042f1997796c5a2cce3ff2bbddd",
+      "HKVariants.ocd2": "b4be56685bddda964977bbd271f976df939d1f46a75332b8f9e793d0f06e6c7c",
+      "HKVariantsPhrases.ocd2": "80c215b6bef0f324a71340bc21164d063c5540af6f50c07fd1c703af9c1207da",
+      "HKVariantsRev.ocd2": "a7b4a063fb5246722762364b0e675247c91fb3a8f195aa741f1459a776d10118",
+      "HKVariantsRevPhrases.ocd2": "93a5a86d77bfa7bfa5fe8aae3ddc1e5d33d9ac5eac3866849c98974fca0938ee",
+      "jp2t.json": "c8f04fa65944a7ecf109f296780a860a6afd23a68bc4fb4d0781596120c38b3c",
+      "JPShinjitaiCharacters.ocd2": "2a5b7494d064967d482ac110772c03d2a5cdd53760eaeb07646d1f5a197cac15",
+      "JPShinjitaiCharactersRev.ocd2": "773f3817dcb9a520ac4437b9502585886497282a65d768183057f4d61de572dd",
+      "JPShinjitaiPhrases.ocd2": "66ddb233c180f5f622d16cf9d1b28448e8935ce8d8396b7716d79db0ffb5fcad",
+      "s2hk.json": "140cec58b00a2ff4bb43146820a0a6be46e94df8fb42cf295198f838962a7253",
+      "s2hkp.json": "50eac0dae13f8b7ed2d85a2ab84a1cccd13f050175de3b319891f4a148390e8c",
+      "s2t.json": "82946f797e90ecd9a9bc7ec5a30bb22bc6cc8270cb933f0419ccf7262f32fcf0",
+      "s2tw.json": "8307f38e2c9da284aa541f194980d2c1ea18abb7c2d61eaabac90b2f9301ed90",
+      "s2twp.json": "23825f9bdf7c1f3c602e8eb14778a4e36bcd3dcaed3bdf03fd22e2ce268cc2d9",
+      "STCharacters.ocd2": "94639fe1d2bbeb3dcb4f29a297cda70ecfd26425b8a935f4b6bac0746c3987f2",
+      "STPhrases.ocd2": "c472f936ab624e8887ed48c2572d0af68b904f0be72d98e237a6b8c1f5de024d",
+      "STPhrases_GeneratedFromRegionalPhrases.ocd2": "815bbb98c644095fb0bfd76dbf259b9da4350a19d4927b2342e7928fb26b20e2",
+      "t2hk.json": "153f44d61297a22ba15ad64be6940c58b00ce9e93775936376c2d7b17c08a90e",
+      "t2jp.json": "98d5368ecd4259a369033b0826d2256593a73b28421a1c94c160fdbc672a39cb",
+      "t2s.json": "e266a6d906439a794d118e79a23456a39019516dc6642723223fa09308167f6b",
+      "t2tw.json": "0af904dd35b0d5a8aee8ea81e294b2e34f1f930c578236bf1be515274eee50dd",
+      "TSCharacters.ocd2": "7a994de7900707925fac9c68728a6bb9cf3059870426f661cf31b601efbf5f2f",
+      "TSCharactersExt.ocd2": "e2b0286801dcd1d26119d19ba8b8a35cde021ec173468255d117c4c0951b2906",
+      "TSPhrases.ocd2": "2b722237cc00a4ac985790deb6a68c99f34de10e980a0029ac82c72b0f7ae22b",
+      "tw2s.json": "97f24cf46f7f880440706c421e56cf6433e808a638995550a742bafe2cf6898a",
+      "tw2sp.json": "20cb61f81b0a585625ab3dd633fc81147e151e6eacd9bd646de9338b9c4850d2",
+      "tw2t.json": "db48a6c2eed4bf493bcef1ec041b573edc0ddcc590d226b8aece2bf159f2a99b",
+      "TWPhrases.ocd2": "4298bc78f8ff472eed0afd31996cb35f6e56cd4ace5ef8a6d27a35a5374b9476",
+      "TWPhrasesRev.ocd2": "839f5a71c1f02f594f23a54815d9bca4656ca661a7e32805504c67420496da47",
+      "TWVariants.ocd2": "ed89fe928857500a77cbb601be4a1769da34ce863875eaae18d1d50bd036db5e",
+      "TWVariantsPhrases.ocd2": "a9c356943779f1d9af8b38751fe9222a02dc211a56c83f83871cfc8558afe178",
+      "TWVariantsRev.ocd2": "fc043bdf0224666921983f2badcac8faa5e59d8a681a5525c527c9926f66775d",
+      "TWVariantsRevPhrases.ocd2": "ae91cb45c12f737bde2b9e340c38efaa7e1868cf55e59a62cc8199de020113e2"
+    }
+  },
+  "grouping": {
+    "unit": "sentence Han skeleton",
+    "nearDuplicates": "edit distance <= 1 connected components; 6..64 scalars",
+    "seed": "sense-cmn-v1",
+    "buckets": [
+      9000,
+      500,
+      500
+    ]
+  },
+  "exclusion": {
+    "replaySha256": {
+      "m3-sentences.tsv": "c4c6717fc6e4ec2090d5960c6b86f3dd21afca06c3b6ce1d53e2f2f415767aac",
+      "m4-core.tsv": "91860a5c12bc1fcf4a96860e13f4d873442283fc25695d947a0cdcebf70cd2c6",
+      "m8-daily-full-pinyin.tsv": "528a298cc5bbe2771f4ecb5f8004ea404d6fcd549185b93ead2c27d62e71be59",
+      "m9-personal-word-sentences.tsv": "0a635c795420379b5ab6fa246e2b84590a8ef60bffd5e5dd9f93b1bd5d51ad34"
+    },
+    "protectedSkeletons": 169,
+    "rule": "exact and near families; substring if 6+ chars; exact matching Han segments"
+  },
+  "audit": {
+    "duplicateSkeletonRows": 1094,
+    "families": 82114,
+    "inputRows": 89102,
+    "largestFamily": 22,
+    "protectedNeighborRows": 12,
+    "protectedRows": 56,
+    "rejectedFormatRows": 2911,
+    "uniqueSentences": 85029
+  },
+  "segmentAudit": {
+    "emptyAfterSegmentExclusion": 138,
+    "heldoutDuplicateSegments": 557,
+    "protectedSegments": 130
+  },
+  "outputs": {
+    "train": {
+      "fileName": "train.jsonl",
+      "sha256": "e710abf1ccdfcffe416bed9e99304cb898d71ff4c1bc5f702ab11e54eff4b0de",
+      "records": 76736,
+      "segments": 94195,
+      "characters": 776701,
+      "domains": {
+        "conversational-heuristic": 29292,
+        "general-heuristic": 47185,
+        "technical-heuristic": 259
+      }
+    },
+    "dev": {
+      "fileName": "dev.jsonl",
+      "sha256": "8fa886ef9d6f87c6b8931627737b434e1a2020acaf5932ddf17f3d168021b54f",
+      "records": 4066,
+      "segments": 4792,
+      "characters": 40529,
+      "domains": {
+        "conversational-heuristic": 1516,
+        "general-heuristic": 2539,
+        "technical-heuristic": 11
+      }
+    },
+    "test": {
+      "fileName": "test.jsonl",
+      "sha256": "d2c2cd1fe598bc2efd37b6f06660c64fffca077ebc62ef5fcf63b46b59dea622",
+      "records": 4089,
+      "segments": 4876,
+      "characters": 41076,
+      "domains": {
+        "conversational-heuristic": 1665,
+        "general-heuristic": 2411,
+        "technical-heuristic": 13
+      }
+    }
+  },
+  "attribution": {
+    "fileName": "attribution.jsonl",
+    "sha256": "bdaedcfb006619e9f852f4a20cae9a50877be809d0431e795ba919718db03d93",
+    "rows": 85962
+  },
+  "testUse": "frozen; fitting must use train, tuning must use dev; test scoring is a separate explicit operation",
+  "productionReady": false
+}

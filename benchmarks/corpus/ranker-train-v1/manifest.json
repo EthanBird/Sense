@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "scope": "train partition only; not human or agent-reviewed gold",
+  "selected": 512,
+  "accepted": 512,
+  "exclusions": {},
+  "trainSha256": "6fc477172aab6f70f4f73c2300b96b8cccf7d14467a9e3f093101ecc214b2226",
+  "selectedSha256": "a07aa7eb8a2f897d99b010b7b5ebae9aad88ec3be4e15332c51e50ee66672db2",
+  "attributionSha256": "da9cc57e1836b04b8f8bcd7cac891c5018ca964809e0e9b3344696b0fcc1bff6",
+  "corpusManifestSha256": "a15434cad002c282b2cc12d3146abc3bbe0114e6e9c450fc504bdaffa7a4c988",
+  "corpusTrainSha256": "e710abf1ccdfcffe416bed9e99304cb898d71ff4c1bc5f702ab11e54eff4b0de",
+  "policySha256": "7b435126940827e654aff5eb007afce7351b28057e637b4595d9b25026318113",
+  "syllablesSha256": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+  "scriptSha256": "31b2d9bcc4ef89b8ed06270f2b1311bbea24d12f639f8f6694f4b1522728e2d8",
+  "selectionScriptSha256": "8abd727e888beed9c3f6e22f23c6cd03eb3ce8ad577e2961135cdde001caad88",
+  "annotationPackage": {
+    "package": "pypinyin",
+    "version": "0.55.0",
+    "style": "NORMAL",
+    "vToU": false,
+    "toneSandhi": false
+  },
+  "candidateOutputsUsed": false,
+  "lmTrainingOverlap": "Intentional: this partition also trained the current char LM; dev/test are separate corpus partitions."
+}

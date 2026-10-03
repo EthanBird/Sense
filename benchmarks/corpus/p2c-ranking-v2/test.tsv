@@ -1,0 +1,63 @@
+# id	query	expected	stratum	reviewedSyllables
+0016a6e275e87a78067c3eaa50aefa9efd8a350ac50a3b9b560e05634ebd2ffd	biezaiduiwozuozheshile	别再对我做这事了	short	bie zai dui wo zuo zhe shi le
+00406d2118902961939a9c1d0855e2bd84f806552961db7fdaec228c710eae45	womengangdasaolecesuo	我们刚打扫了厕所	short	wo men gang da sao le ce suo
+006b217d8bd26d3353f1758fe0da9d0424c3b8bb00b35ec1ea8cc17461c08cfa	huangdideshengrizaixingqiri	皇帝的生日在星期日	short	huang di de sheng ri zai xing qi ri
+009846d3fd19d8c7ecb23a59626cb53406622c9f1917fb6662b24f94302f45ce	wokeyijieyongnidechema	我可以借用你的车吗	short	wo ke yi jie yong ni de che ma
+00a88db9d96088e709f34d04bc54b50196f12f9c1986c77114c0ab02272626e3	doubuyaogaibianzhuyi	都不要改变主意	short	dou bu yao gai bian zhu yi
+00a8ad6b78cec330daf4337563b43ec934dd58e768ddf1d6422f499beb36b1b9	nichiguowanfanlema	你吃过晚饭了吗	short	ni chi guo wan fan le ma
+00bb65d0fcec6151404de7b42519ffd235e4a188c1f592d55cdebf49f03d2da3	nalianggerenyaochuquma	那两个人要出去吗	short	na liang ge ren yao chu qu ma
+00ce4dd625d20f2ad0f3aa545e22e4bf263dff9477583fb48dd32a414a3f8b3e	xuecongmingtiankaishixia	雪从明天开始下	short	xue cong ming tian kai shi xia
+012885eb4197bd5f838414c26eb2aa775b8f8f591a39bcb2d661a6706227a16c	wojuedingwomenbuqu	我决定我们不去	short	wo jue ding wo men bu qu
+0129a9d3746869a43aaa78a51ca1fcc6ed6dd5bb5e0d0072c32f020f624d6e3e	weilezhaodaodiushideyaoshi	为了找到丢失的钥匙	short	wei le zhao dao diu shi de yao shi
+0164d61a2c359b025879260b3a418236a522d7ccd6105cfd1295e700c971b359	wodasuanmaixinyusan	我打算买新雨伞	short	wo da suan mai xin yu san
+017679a08f184145e62ebc5e01b5bab2d98a24810e1ae4a3c84669a25c4659f3	woshibuhuichuoxuede	我是不会辍学的	short	wo shi bu hui chuo xue de
+017c09fbab47a99de8566839316263312624355e503065e4792678ecf9301f8e	caidanzaishuishoulia	菜单在谁手里啊	short	cai dan zai shui shou li a
+0184f17b84ff2402b7b1205b410a822dea5db20844e0df5dad5c0cc41c50fa4a	yinliangtiaojiezainali	音量调节在哪里	short	yin liang tiao jie zai na li
+018ae00c538469164fb70d7127593ba12b2c98c232485676ce4df9fe0b6cb27e	tangmuzuozaicaodishang	汤姆坐在草地上	short	tang mu zuo zai cao di shang
+01d36f1106d380aa02819efbcfb55c21ced5e8a6211a5999f0a934678582cf58	zheshiwubuweisheng	这食物不卫生	short	zhe shi wu bu wei sheng
+01d641c4130c217bd9c350bc57ff9896c959a0c1065ea6841dcf36fa62956271	tangmubunengyuanliangmali	汤姆不能原谅玛丽	short	tang mu bu neng yuan liang ma li
+020595e8b4d7c9fb6ecc9f34641546f44c1c68e2460805852d8a5e42af2dbd60	wodegongyuzaisilou	我的公寓在四楼	short	wo de gong yu zai si lou
+02151406096e5cc6af6eb94acf75fb96798d38b64ed9a6c23973aec44b091299	woxiwangwonengtingzhidage	我希望我能停止打嗝	short	wo xi wang wo neng ting zhi da ge
+0220fd9d183db7e7952caba652636bf2d3aa97d0d141f9a815e2162d42150eb3	tangmushanchangyouyong	汤姆擅长游泳	short	tang mu shan chang you yong
+0257798fb548cb9dfdc0feba614e57a6297dc4fd06f1a05a802b167082ebd228	xuewaiyuhenfeishijian	学外语很费时间	short	xue wai yu hen fei shi jian
+027d1c27e1de40c68c63f632b415dcbbc486337746d47d1b703f4110092f94ab	xiancongnengzuodeshizuoqiba	先从能做的事做起吧	short	xian cong neng zuo de shi zuo qi ba
+027f798671fd3041be412bb03d2ddccc60192befb54770ceda691f650e4ccb19	buxiangzaishiyicima	不想再试一次吗	short	bu xiang zai shi yi ci ma
+02ae6ef8fd57bb7ef9b986272dab5e3f5a27529fe9a9d50179ea17901cf966ed	zhexiecaomeibeiyalanle	这些草莓被压烂了	short	zhe xie cao mei bei ya lan le
+02bf93989e58864783eb26a723b4a7f42da8b6aeb5843c2f8832a187c3632b48	tayigexiaoshihouhuilai	她一个小时后回来	short	ta yi ge xiao shi hou hui lai
+02e5a1693b7545dd89900f72b0ab781bd99e1daa2d3a4dc3ce3c2faf392e52b5	tangmuduikafeiyinyouyilai	汤姆对咖啡因有依赖	short	tang mu dui ka fei yin you yi lai
+02ede73fa98dd4b96a2f825db7ef519ef163f1030d28a53b99b30162193056c7	gujihuishangshenglianggebaxian	估计会上升两个巴仙	short	gu ji hui shang sheng liang ge ba xian
+02f661bc5df74b6cc09faf84ab28b2295e40a41e698af08fffd746e1db5b421a	tadeshengyinhenhaoting	她的声音很好听	short	ta de sheng yin hen hao ting
+0307f9496d87b84b593298c255e3abac09d1812f681b97e66dac998407e2aab7	dangxingfulaiqiaomendeshihou	当幸福来敲门的时候	short	dang xing fu lai qiao men de shi hou
+033b04e01d69d8b402a51d7c55c0b95a03f3614c2680de0aa05b82532c03c09b	nikeyizuochuanquna	你可以坐船去那	short	ni ke yi zuo chuan qu na
+000f583c93deecac58479d22c05ffd021aa3ed256ab17916b7a45f76c03138c3	xindeshequzhongxinzaizuotianlongzhongluocheng	新的社区中心在昨天隆重落成	long	xin de she qu zhong xin zai zuo tian long zhong luo cheng
+001c7ef96c69a50aa16330334ea78e54580045593e0c7f048299c786541c60e0	wojuedezhejianyundongshanhenshiheni	我觉得这件运动衫很适合你	long	wo jue de zhe jian yun dong shan hen shi he ni
+001e056226e5b7cd3f4b7adacc6abcd08fce561bc224ff6ba252ca1414310800	youqishinaxietuniaozaishenshangdedongwu	尤其是那些涂尿在身上的动物	long	you qi shi na xie tu niao zai shen shang de dong wu
+0043d7e29b407a49f1371ef1023f2ce864b5efeda1a5cc27a1b7e4492b849123	zhinengbaxiwangjituozaisunzishenshang	只能把希望寄托在孙子身上	long	zhi neng ba xi wang ji tuo zai sun zi shen shang
+0048364386add36449bc5c47a615d406b8d3375b4cfcde82efd727c749d9b2c7	danzhezhongshangkoukeyiqingyixiufu	但这种伤口可以轻易修复	long	dan zhe zhong shang kou ke yi qing yi xiu fu
+00507158ab5d9e6c8d91ee5a6825e3146f80627da7bbabab741321036818f0f9	shengbaibunengdankaobingliduoshao	胜败不能单靠兵力多少	long	sheng bai bu neng dan kao bing li duo shao
+006063a75856ad712be78185b09cde6009f42df0588fa1ae736da40542d22c9f	qizhongyijianfangjianyounaozhongma	其中一间房间有闹钟吗	long	qi zhong yi jian fang jian you nao zhong ma
+006410234a6da77d9d83aab4adda5cedf5fb21061b7ce151528321d2fe51cf0f	jijinshichuandezhonghualiyiyongyu	几近失传的中华礼仪用语	long	ji jin shi chuan de zhong hua li yi yong yu
+00ffaf2305ef445a025693a125a72f0dd41eef006ed201383850efad4e857be3	woyaocanjiayigeshiweiyouxing	我要参加一个示威游行	long	wo yao can jia yi ge shi wei you xing
+0121e969d6702f7701b1c02a77702e24efc3fea7bc40233192bd51fa5027a7cd	nixiguanzaisusheshenghuolema	你习惯在宿舍生活了吗	long	ni xi guan zai su she sheng huo le ma
+013cd1edc666bbeb7360de9dbbfa5c0d565fc42d1857bdbfe5cd22cc45430e6a	wobuzhidaotashicongnalilaide	我不知道它是从哪里来的	long	wo bu zhi dao ta shi cong na li lai de
+0154942f774a9a6ed1fb6d94a0d3e0ea4028568692d9d29fbd9e6b141ef9f975	yichangyiwairangtamenglebantian	一场意外让他懵了半天	long	yi chang yi wai rang ta meng le ban tian
+0191b9e454514c4dc7580d622f0a1c850b3f77a3b643e41f26e63883829facc9	womenhaimeiyouzhunbeihaolikai	我们还没有准备好离开	long	wo men hai mei you zhun bei hao li kai
+019eae4f0232c8cb3b9faaac5b0777747cf89e633281d7787f73f509aa337c1c	woxiwangdangshinengpeinimenduguonanguan	我希望当时能陪你们度过难关	long	wo xi wang dang shi neng pei ni men du guo nan guan
+01b473ce9c836342efe99710a50f5b38d91bac0b8de90bf22217d6e0ff6ccf50	zhengfuyinggaijiadaduinongyedetouzi	政府应该加大对农业的投资	long	zheng fu ying gai jia da dui nong ye de tou zi
+01d68ef139d54a7fda2789a0014279959ad687548b6e5e7fd9d4ee4c694943bd	zhegemianjuwanquangaizhulenidelian	这个面具完全盖住了你的脸	long	zhe ge mian ju wan quan gai zhu le ni de lian
+01f1dbf25be76fc80bd40376c3efd81fd37d9226ee3fa50ab55c32deb2f01e8c	taweizijidexingweigandaofeichangxiuchi	他为自己的行为感到非常羞耻	long	ta wei zi ji de xing wei gan dao fei chang xiu chi
+01f34f3732d4f86e1f11f5632c5dc29d056b01433e68009ece72ea94086fe644	yiqunxiaopengyouzaishakengwandebuyilehu	一群小朋友在沙坑玩得不亦乐乎	long	yi qun xiao peng you zai sha keng wan de bu yi le hu
+01fe32a87272d6170cd995fd0d65a773588fa49a238551e47fe6ef035557cc21	danshiwoxihuanhenandeyiqiziwei	但是我喜欢和男的一起自慰	long	dan shi wo xi huan he nan de yi qi zi wei
+020d4dcd297739e33aaec3f693234dfce5f5ddb834da4965afd1f8d550378001	zijishuoguodehuadoubujidelema	自己说过的话都不记得了吗	long	zi ji shuo guo de hua dou bu ji de le ma
+020dd3ae049807f1a06d0d86d865f9207e0fde268aeaadaaa035853ec0465c30	lundundeqihouhedongjingbutong	伦敦的气候和东京不同	long	lun dun de qi hou he dong jing bu tong
+021ca571746d1c61ccdc63a0741d068025418a28ad44386e232cb0018e7f8c35	tamendeyouqingshenshendegandonglewomen	他们的友情深深地感动了我们	long	ta men de you qing shen shen de gan dong le wo men
+024a6f8c22f1d96b1c31f060814c3f5e8f9256017bc75db19e4b93f08522177d	fanyiqishishiyijianchilibutaohaodeshi	翻译其实是一件吃力不讨好的事	long	fan yi qi shi shi yi jian chi li bu tao hao de shi
+026d83514758fe392f85f602cb9faf19cdebe1426de877be4c0d30e480e195bf	nindezhezhangzhaopianshizaibeidatushuguanzhaodema	您的这张照片是在北大图书馆照的吗	long	nin de zhe zhang zhao pian shi zai bei da tu shu guan zhao de ma
+02d4de2c1e0a3a9eccd4af7a78cbda01b99143019d9821053cb6b5d1970ba867	laoshihenhendechizelexueshengmenyidun	老师狠狠地斥责了学生们一顿	long	lao shi hen hen de chi ze le xue sheng men yi dun
+0300b894cd59a5f5abfa1208670adbf4df8e995f0383549cbf6a0a9675f5f083	zhebenhanyushuduiwomenlaishuomeiyoutainan	这本汉语书对我们来说没有太难	long	zhe ben han yu shu dui wo men lai shuo mei you tai nan
+031ab2d8b12167b12d3221d785abcae787abbdf5406ad13f9f55b0acc4621bd9	jushuotashishijieshangzuifuyouderen	据说他是世界上最富有的人	long	ju shuo ta shi shi jie shang zui fu you de ren
+03bbd455aa73aa53ff83e013eb8d4d6f3b50f0514fd0a0b59438e1c193f6ea07	nimingbaiwoyouduomeainima	你明白我有多么爱你吗	long	ni ming bai wo you duo me ai ni ma
+03e39206748e5fc1557430405828d03fb56e8d5f93d828582f24c36a517b690c	ninyinggaiyizhirangshoubaochiganjing	您应该一直让手保持干净	long	nin ying gai yi zhi rang shou bao chi gan jing
+04097b0490c1ffd3966382b53167d8af577c06346a247ffed02b289a76fc4769	womenyouduodabawotameipianwomen	我们有多大把握他没骗我们	long	wo men you duo da ba wo ta mei pian wo men
+04d5e7883694ee96afd67ede679c24f524a762d25f26219f11d1f4dc511be9ee	nidenanpengyoukanqilaihenkeai	你的男朋友看起来很可爱	long	ni de nan peng you kan qi lai hen ke ai
+0518bfd4f664b644e816682d83f9056aad296c0207cb865290d97964a6a0e2e7	biewanglemingtianbazhefengxingeijile	别忘了明天把这封信给寄了	long	bie wang le ming tian ba zhe feng xin gei ji le

@@ -7,6 +7,28 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PendingDecodeCommitCoordinatorTest {
+    @Test fun slowWaitRetainsOrderAndCanUndoTheNewestQueuedEditIncludingItsTrigger() {
+        val coordinator = PendingDecodeCommitCoordinator<String>(2)
+        coordinator.start(PendingDecodeCommit.Candidate(10), "punctuation")
+        coordinator.defer("first")
+        coordinator.defer("last")
+        assertFalse(coordinator.markDelayed(9))
+        assertFalse(coordinator.needsAttention)
+        assertTrue(coordinator.markDelayed(10))
+        assertEquals("last", coordinator.lastQueuedInput)
+        coordinator.replaceLastQueuedInput(null)
+        assertEquals("first", coordinator.lastQueuedInput)
+        coordinator.replaceLastQueuedInput("edited")
+        assertEquals(listOf("edited"), coordinator.finish(10)?.followUpInputs)
+        assertFalse(coordinator.needsAttention)
+
+        coordinator.start(PendingDecodeCommit.Candidate(11), "punctuation")
+        assertEquals("punctuation", coordinator.lastQueuedInput)
+        coordinator.replaceLastQueuedInput(null)
+        assertNull(coordinator.lastQueuedInput)
+        assertNull(coordinator.finish()?.triggerInput)
+    }
+
     @Test
     fun wubiReplayKeyIsIsolatedFromLaterDeferredControls() {
         val coordinator = PendingDecodeCommitCoordinator<String>(maximumDeferredInputs = 3)

@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream
 import java.io.DataOutputStream
 import java.io.File
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -100,7 +101,23 @@ class PinyinDecoderTest {
 
         assertEquals("先", boundaryDecoder.decode("xian").first().text)
         assertEquals("西安", boundaryDecoder.decode("xi'an").first().text)
-        assertEquals(CandidateMatchKind.BASE_COMPOSED, boundaryDecoder.decode("xi'an").first().matchKind)
+        // The separator validates the dictionary word; it does not erase its lexical provenance.
+        assertEquals(CandidateMatchKind.BASE_EXACT, boundaryDecoder.decode("xi'an").first().matchKind)
+    }
+
+    @Test
+    fun forcedSyllableJointRetainsWholeWordsBeforeCandidatePruning() {
+        val decoder = PinyinDecoder.fromBytes(lexicon(
+            "an" to listOf(item("按", 1_000_000, "a"), item("安", 1, "a")),
+            "wo" to listOf(item("我", 10_000, "w")),
+            "xi" to listOf(item("系", 1_000_000, "x"), item("西", 1, "x")),
+            "xian" to listOf(item("先", 10_000_000, "x"), item("西安", 1_000_000, "xa")),
+        ))
+        for (limit in listOf(1, 6, 255)) {
+            assertEquals("西安", decoder.decode("xi'an", limit).first().text)
+            assertEquals("我西安", decoder.decode("wo'xi'an", limit).first().text)
+            assertFalse(decoder.decode("xi'an", limit).any { it.text == "先" })
+        }
     }
 
     @Test
@@ -111,6 +128,51 @@ class PinyinDecoderTest {
     @Test
     fun arbitraryPinyinCanComposeMultipleDictionaryWords() {
         assertEquals("我是一个人", decoder.decode("woshiyigeren").first().text)
+    }
+
+    @Test
+    fun sentenceSearchDoesNotRewardSplittingFrequentWordsIntoUnrelatedCharacters() {
+        val sentence = PinyinDecoder.fromBytes(
+            lexicon(
+                "ming" to listOf(item("名", 23_493, "m"), item("明", 3_079, "m")),
+                "tian" to listOf(item("天", 49_112, "t")),
+                "mingtian" to listOf(item("明天", 10_187, "mt")),
+                "kai" to listOf(item("开", 29_892, "k")),
+                "shi" to listOf(item("是", 1_799_848, "s")),
+                "kaishi" to listOf(item("开始", 191_457, "ks")),
+                "gongzuo" to listOf(item("工作", 160_060, "gz")),
+            ),
+        )
+        for (limit in listOf(1, 10, 64, 255)) {
+            assertEquals("limit=$limit", "明天开始工作", sentence.decode("mingtiankaishigongzuo", limit).first().text)
+        }
+    }
+
+    @Test
+    fun contextIsAppliedBeforeExactRecallIsLimited() {
+        val contextual = PinyinDecoder.fromBytes(
+            lexicon("shi" to listOf(item("时", 1_200, "s"), item("是", 1_000, "s"))),
+            CharacterBigramModel { previous, next ->
+                if (previous == '我'.code && next == '是'.code) 2f else 0f
+            },
+        )
+        assertEquals("是", contextual.decodeAfter('我'.code, "shi", 1).single().text)
+        assertEquals("是", contextual.probeCanonicalChineseOnlyAfter('我'.code, "shi", 1).single().text)
+    }
+
+    @Test
+    fun contextRescuesAnOpeningWordBeforeTheSentenceBeamDropsIt() {
+        val contextual = PinyinDecoder.fromBytes(
+            lexicon(
+                "shi" to listOf("时", "事", "市", "式", "师", "诗", "史", "士", "是")
+                    .mapIndexed { index, text -> item(text, 1_200 - index * 20, "s") },
+                "ren" to listOf(item("人", 1_000, "r")),
+            ),
+            CharacterBigramModel { previous, next ->
+                if (previous == '我'.code && next == '是'.code) 3f else 0f
+            },
+        )
+        assertEquals("是人", contextual.decodeAfter('我'.code, "shiren", 1).single().text)
     }
 
     @Test
@@ -667,6 +729,16 @@ class PinyinDecoderTest {
 
             assertEquals("\u6D51\u8EAB\u89E3\u6570", candidates.firstOrNull()?.text)
             assertEquals(CandidateMatchKind.BASE_HYBRID, candidates.firstOrNull()?.matchKind)
+        }
+    }
+
+    @Test
+    fun productionLongSentenceTranspositionSurvivesSmallAndExpandedBudgets() {
+        val production = repositoryFile("ime-service/src/main/assets/pinyin_lexicon.bin")
+            .inputStream().use(PinyinDecoder::load)
+        for (limit in listOf(6, 10, 64, 255)) {
+            val values = production.decode("woshiyigezhongguoern", limit)
+            assertEquals("limit=$limit values=${values.take(10)}", "我是一个中国人", values.firstOrNull()?.text)
         }
     }
 

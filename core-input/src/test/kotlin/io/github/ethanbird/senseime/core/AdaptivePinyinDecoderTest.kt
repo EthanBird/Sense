@@ -10,6 +10,33 @@ class AdaptivePinyinDecoderTest {
         setOf("an", "de", "di", "fan", "fang", "fu", "gan", "ge", "hao", "ni", "nv", "o", "ren", "shi", "wo", "xi", "xian", "yi"),
     )
 
+    @Test fun explicitlyLearnedAliasDoesNotInheritAnArbitrarilyDeepBaseRepairScore() {
+        val store = MemoryUserLexicon(clock = { 1000L })
+        store.record("nide", "nd", "你的", aliases = setOf("nime"), evidence = UserLearningEvidence.EXPLICIT_SELECTION)
+        val decoder = deepAliasDecoder(store)
+        assertEquals("你的", decoder.decode("nime", 255).first().text)
+        assertEquals("你的", deepAliasDecoder(MemoryUserLexicon(store.lookup("nime", 255), clock = { 1000L }))
+            .decode("nime", 255).first().text)
+        // Merely matching shared initials is not the same observation as an exact stored alias.
+        assertEquals("你们", decoder.decode("nd", 255).first().text)
+        store.demote("nide", "你的", UserNegativeFeedback.QUICK_DELETE)
+        assertEquals("你们", decoder.decode("nime", 255).first().text)
+    }
+
+    @Test fun weakDefaultAcceptanceDoesNotActivateTheAliasFloor() {
+        val store = MemoryUserLexicon(clock = { 1000L })
+        store.record("nide", "nd", "你的", aliases = setOf("nime"), evidence = UserLearningEvidence.DEFAULT_ACCEPT)
+        assertEquals("你们", deepAliasDecoder(store).decode("nime", 255).first().text)
+    }
+
+    private fun deepAliasDecoder(store: UserLexicon) = AdaptivePinyinDecoder(object : InputDecoder {
+        override fun decode(composing: String, limit: Int): List<Candidate> = listOf(
+            Candidate("你们", 30f, "nimen", CandidateMatchKind.BASE_PREFIX, "nm"),
+            Candidate("你么", 2f, "nime", CandidateMatchKind.BASE_COMPOSED, "nm"),
+            Candidate("你的", 1f, "nide", CandidateMatchKind.CORRECTED, "nd"),
+        ).take(limit)
+    }, store, segmenter)
+
     @Test
     fun characterCountDisambiguatesSyllables() {
         assertEquals("x", segmenter.initials("xian", expectedSyllables = 1))

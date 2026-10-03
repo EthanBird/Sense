@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "frozenAt": "2026-10-02T18:21:40.208746+00:00",
+  "scope": "Pre-output agent-authored modern vocabulary/short-phrase reconstruction, not natural typing or independent human gold; shared word components with old examples remain",
+  "proposed": 72,
+  "excludedExactOldTargets": [
+    "剪贴板",
+    "多模态",
+    "推理模型",
+    "向量检索",
+    "函数调用",
+    "上下文窗口",
+    "检索增强",
+    "知识图谱",
+    "思维链"
+  ],
+  "noReplacement": true,
+  "rows": 63,
+  "readingsReviewedBeforeOutputs": true,
+  "candidateOutputsUsed": false,
+  "noPostResultAliases": true,
+  "sha256": "692384d0b0f0fcf55d59e5a239d74e19860e47099a5317b35ba345e41df90d94",
+  "proposalsSha256": "f9c0e030e902efbbee4caf275f0a514f4b17060d8b3090c35cf9115d42a74b2e"
+}

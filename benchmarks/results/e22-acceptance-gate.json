@@ -1,0 +1,1648 @@
+{
+  "schemaVersion": 1,
+  "stage": "E22",
+  "decision": "runtime-measurements-isolated-production-promotion-still-held",
+  "productionChanged": false,
+  "sourcePins": {
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptivePinyinDecoder.kt": "48e2dcc1bcd5580912ce3904b60078585bfc58f85ab949b3b781131079ed18f8",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptiveWubi86Decoder.kt": "a35838bab4a81024eb4de8a91e13cd9d6016e2d944bfc3a1f1a68b3fb7ec92b8",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRanker.kt": "c2fdabe176aabf9157141663e8c30a6ce6e7ab6d75775c5b6a351bf51072a4b2",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRankingDiagnostics.kt": "40fb7520701e8c8a5b68ad5054646d9210ffc6dd3386b81393bb64a7c0cfa90e",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateSnapshot.kt": "a9e67e6cad44e6444d6f973e4a166bf8740031ee499db7c8f450e84a2e8778c7",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterBigramModel.kt": "31932aa41a2941ee4a25ee64ef20376e1c8c22cebf8e6c4e5761f65f2eb319a1",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterLanguageModel.kt": "13edc15ff7b3e35a4aa6b1097e86a3798660a1d7cea1b9c60fc6688e51bda6f9",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CommitSequenceTracker.kt": "b5553d8064c4e5fea98957301751f4f8dc15047f04daecb357919d663bc2dfc4",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ContextAssociationModel.kt": "42d5303703626c49fde56b018baa78e1412c82ed7a7e9a9c6e7ab53aafc4c969",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchBudget.kt": "b7a20c3cc3baadc70eafc9b82531b7109d196b8252d9c8e142495808d55586a9",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchDiagnostics.kt": "f2c8a89a8056cb6ee494a574b952013c37da6de9d5d15c36d8ec988f71168f08",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CuratedLexicalCandidateCatalog.kt": "003535f8f5a2e42ffb622b728370166c8f83060fbe99c8feab40c6505cecd9ff",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/DecodeWorkScope.kt": "d6bb4d8c36c245bd9d6309e7eda14524035b8c0d9402df5f3355fbec786a5741",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishInputSession.kt": "b2f710e2eb0d1d6f0a3d8e61a00745e2442a822a57818f54ff15e94ba4077401",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishLexicon.kt": "d4023375ffcf9636f2f099001864b12d97de587d074964fb855fe33cf7b2f509",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishWordUsage.kt": "66f3433d8ec70682e9481916502998a9b0fd30a731c784ff890750fdcfa562d5",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/FakeDecoder.kt": "2ea5166529da40546f4f6f1cef86036ec5a1152a129fdebc7cdfa18e969ba591",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/FourgramLanguageModel.kt": "6ecdfcef4786c342ce6504b8ff879a7ec5a03400f156b6e2c4fdf3c8b2af223d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputModel.kt": "5a5316e26a1a3da6f90cf0248208e0a39d7f7ee97ec4a65e2341bb7c1a7fde38",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputReducer.kt": "b608ea6ca6a3e53067d215acc6949f1007b1cc519b3f2de42a28507c7daf936d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/LinearMixtureCharacterModel.kt": "bace39c3341ef6513dca1d969ac6a077cd816932416539183f5bc8c967680546",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M0HostBenchmark.kt": "e18a429e81795794463f53f304894b8938dd52a98ddddd24550bd4ca176f3adf",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M10CharacterLmBenchmark.kt": "c88f3f193ce2ebf37b14c5baad0e3dbc76c540cd55f5859105a4bc9d1570be45",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M11LatticeLanguageBenchmark.kt": "1c79b49983defc05c8889d8c266168df99801dcf20f8362bae073c306b6a58d2",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M12P2cBenchmark.kt": "ff18694be688990b63de59e7c67555a69389bfa2533ab3db82ef11ca83db0d75",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M14ProgressiveEquivalenceBenchmark.kt": "7bd20f4a75222d016b8e8a10452c7f0aa71d33c85c38e9e4fe3d752e756ea294",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M15TypoRecallBenchmark.kt": "9c120a1e77361cf65a0d40f00c27af0a428fcc458213d8562281d906cbf168b2",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M16SpellingGraphBenchmark.kt": "f6e730fd5f77e54108ad61d2d28e43f77a69d5afd935f6cd20972842e04b8852",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M17CandidateScoreBenchmark.kt": "9e15d6e51cfff4ec32002ca3f09f1ce1c75bef268bc64c124d6eba6234e9d8be",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M18LexiconLearningBenchmark.kt": "dde32fe267107971573ff16562c69a44d09fe85093761bdada92d36c67ccbd98",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M19ScoreFeatureBenchmark.kt": "af21ccd30f4ab71c3b9f666b4b4c2424df83a83267fc23ebfd8d7d5ed52162dd",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M1PinyinBenchmark.kt": "9e3ebc93691e8420c8edbb8eb4a55d801b19c5e7e631cab11063408f1576d212",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M20CrossDomainBenchmark.kt": "31dbf40a0d6c4b87cd15a78ad352b552ed65ed5141ff27e9338fda89ad4c9ac8",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M21MixtureBenchmark.kt": "bcc88358ce50a678aaca846630d4b2e551fc07f6fd708605f70c4f0b068d9a46",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M23FourgramBenchmark.kt": "c2cb6111912ab4ffe16bf2333214222f1790db5737d6c2b80e355ba08e9c5a12",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M2AdaptiveBenchmark.kt": "88ae82e685b28b79c68d6eb549867e70f2da66e75c2d014a2710cdf24be606f2",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M3SentenceBenchmark.kt": "03c5de47af070a2cf89ac0700711bbd9488ccb49a6ddc9a6938b49da9c7f3cd7",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M4CoreBenchmark.kt": "3fa4158cf9cdf414b2e0e2f8a3eaac64d81e7e317f719dd6baf91ee020e97c18",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M5MixedInputBenchmark.kt": "47e1ff5639ea06dc8f1f28b2da3df4099b4cb8a3e088a78e238e98398732e114",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M6InputPolishBenchmark.kt": "14a226681511b1c2cb76323452424c7759d130bc1926b1ada25b464a12fb7a55",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M7ChineseSchemeBenchmark.kt": "583ad236955f77f87ddc120795b89f70ef88c19f477c7d42d2fb8ee59641b755",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M8DailyInputBenchmark.kt": "77c83f59177ec5619dd759ccb87b3ad42e7ed246f3cc1b9d3792f8d3b20d0e30",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M9PersonalSentenceBenchmark.kt": "54bd54fac46b6ba4fce9c0e442c628ac6b3d6e512e8df4371dcffbc56e18fd0e",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/MixedCandidateRanker.kt": "c0a24077e62e51e5edaddbbc5ff694d2a939a5bf075802ef5b9999cad5483769",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/OovLanguageModelAblation.kt": "08bcd990204c8dc6e0ecf3c85254f91384e6f40179633386a90167457aee8195",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinDecoder.kt": "c72d05c671a0a8cfc5fb76eeeb803c1d1ef3ba5741f1b03cc603b46282c50594",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinInputLimits.kt": "7759ce67e9dbaffffba153c3c3cf2fa71e919198de6bb9799840b4f0b8a47a6f",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinLanguageScorer.kt": "c4c569bcde6ff5a65e010ef159e557aad50f08ac9cf56c7af2907ddec73b3cbb",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinScoreDiagnostics.kt": "1b3b66df0d87f3857825af5028b7c9423563ff7c1c68959a94d9a03fdf606c56",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt": "9ba8e935fcb197e0dc9bf79a2e057a44a9c74fa14c15412c68b38970900212ee",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSyllableSegmenter.kt": "1515c63d8d74fdbb06789299fe80d908fb64fd4005f5b94b19e7f623ebaede52",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PrefixCandidateCache.kt": "5dc949d24ac6df2050628c930323d0fc5370599844f53fe68eb91b5f572a7408",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ProgressivePinyin.kt": "dbeb7d86ad3ee13c9635d38c208c87ce4fc1e45d2f45ef4767fbb9172ae6238a",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/QueryLexicalCache.kt": "57706a81a9c49d6a6d9b3fef39de8eca2a548b0a1d332540f6603a46c1d46b2d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SemanticCandidateCatalog.kt": "b7308ba865dace349456daa3bf666b97affa5bf77945474bde2352cdfd3e87a1",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SerialPersistenceQueue.kt": "d7882ff60210696c825be60b5c9cfe10651f55f05fcb0209d27fff3994bcc8d9",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/StableTopK.kt": "4047e249e45037b3808e99660205bcebfe905e072ab4a2f7cb377abc76917ce7",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9AlternativeInputDecoder.kt": "cf2e3f1aa4e394074902fbed017eb0a7afdf6f3df09560fad6755ed5ec0bf62d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9Composition.kt": "ff2663ef91b666386f41954ceebe945ab421cbcfdb5a944dca64aab0b0a16727",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9PinyinChoice.kt": "2c63475a857b941c78950bca98b9915676c59e3544fd2d6f75c077c11d590152",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9SyllableIndex.kt": "5b9752addfe68ac197beff57b9869d161e8fb1543106667d4b2b1cd2a3fba223",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserAssociation.kt": "3439f4711ae5ab9719568eb4bcac0cce649d8ca328a9c0839a83d91566832d52",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPersonalization.kt": "663743456c32c102401f8401b119c18b0321015d6efc5e47bb43e0dce78c0507",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPinyinLattice.kt": "8a71df09fcc5e5d14122ad767f03ed4150773833aad2ddc3bb17a9120588fb5f",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Lexicon.kt": "468f3b0aa998c34376c7486ec063eadc626b4de6d41cd89527fa9976bf7bf912",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Personalization.kt": "5777e86c2bffccf1f30557e5a648d0ec5cd0c430c077c9db56491dc4c033b44d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/WubiComposition.kt": "e9c7567a5dbb6985d8098cdc8a6a8d02724e5ea5f809526fdd5c80e6db3f06ee"
+  },
+  "presentationSourcePins": {
+    "ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ProgressiveCandidateSnapshot.kt": "88a31d3329123d2491a38bdfdb81a12b949b9d9c686fb2d6cda6110398994d93"
+  },
+  "assetPins": {
+    "pinyin_lexicon.bin": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232",
+    "pinyin_bigrams.bin": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
+    "pinyin_character_lm.scng": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+    "pinyin_syllables.txt": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+    "english_lexicon.txt": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624"
+  },
+  "apk": {
+    "sha256": "dd891a53089e81516c3a530d2fd7f9ef091188fdb4c796c219903c16636d775e",
+    "bytes": 87090808,
+    "delivery": "G:\\workspace\\sense-input-quality-reference\\e21\\sense-input-quality-e21-efficient-debug.apk",
+    "baselineSha256": "424d96c9ec01c44bda3db650cd0ab24543fbe9031a794698c2bdf14c8a5de21f",
+    "sourcePins": {
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptivePinyinDecoder.kt": "48e2dcc1bcd5580912ce3904b60078585bfc58f85ab949b3b781131079ed18f8",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptiveWubi86Decoder.kt": "a35838bab4a81024eb4de8a91e13cd9d6016e2d944bfc3a1f1a68b3fb7ec92b8",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRanker.kt": "c2fdabe176aabf9157141663e8c30a6ce6e7ab6d75775c5b6a351bf51072a4b2",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRankingDiagnostics.kt": "40fb7520701e8c8a5b68ad5054646d9210ffc6dd3386b81393bb64a7c0cfa90e",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateSnapshot.kt": "a9e67e6cad44e6444d6f973e4a166bf8740031ee499db7c8f450e84a2e8778c7",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterBigramModel.kt": "31932aa41a2941ee4a25ee64ef20376e1c8c22cebf8e6c4e5761f65f2eb319a1",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterLanguageModel.kt": "13edc15ff7b3e35a4aa6b1097e86a3798660a1d7cea1b9c60fc6688e51bda6f9",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CommitSequenceTracker.kt": "b5553d8064c4e5fea98957301751f4f8dc15047f04daecb357919d663bc2dfc4",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ContextAssociationModel.kt": "42d5303703626c49fde56b018baa78e1412c82ed7a7e9a9c6e7ab53aafc4c969",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchBudget.kt": "b7a20c3cc3baadc70eafc9b82531b7109d196b8252d9c8e142495808d55586a9",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchDiagnostics.kt": "f2c8a89a8056cb6ee494a574b952013c37da6de9d5d15c36d8ec988f71168f08",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CuratedLexicalCandidateCatalog.kt": "003535f8f5a2e42ffb622b728370166c8f83060fbe99c8feab40c6505cecd9ff",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/DecodeWorkScope.kt": "d6bb4d8c36c245bd9d6309e7eda14524035b8c0d9402df5f3355fbec786a5741",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishInputSession.kt": "b2f710e2eb0d1d6f0a3d8e61a00745e2442a822a57818f54ff15e94ba4077401",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishLexicon.kt": "d4023375ffcf9636f2f099001864b12d97de587d074964fb855fe33cf7b2f509",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishWordUsage.kt": "66f3433d8ec70682e9481916502998a9b0fd30a731c784ff890750fdcfa562d5",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/FakeDecoder.kt": "2ea5166529da40546f4f6f1cef86036ec5a1152a129fdebc7cdfa18e969ba591",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/FourgramLanguageModel.kt": "6ecdfcef4786c342ce6504b8ff879a7ec5a03400f156b6e2c4fdf3c8b2af223d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputModel.kt": "5a5316e26a1a3da6f90cf0248208e0a39d7f7ee97ec4a65e2341bb7c1a7fde38",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputReducer.kt": "b608ea6ca6a3e53067d215acc6949f1007b1cc519b3f2de42a28507c7daf936d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/LinearMixtureCharacterModel.kt": "bace39c3341ef6513dca1d969ac6a077cd816932416539183f5bc8c967680546",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M0HostBenchmark.kt": "e18a429e81795794463f53f304894b8938dd52a98ddddd24550bd4ca176f3adf",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M10CharacterLmBenchmark.kt": "c88f3f193ce2ebf37b14c5baad0e3dbc76c540cd55f5859105a4bc9d1570be45",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M11LatticeLanguageBenchmark.kt": "1c79b49983defc05c8889d8c266168df99801dcf20f8362bae073c306b6a58d2",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M12P2cBenchmark.kt": "ff18694be688990b63de59e7c67555a69389bfa2533ab3db82ef11ca83db0d75",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M14ProgressiveEquivalenceBenchmark.kt": "7bd20f4a75222d016b8e8a10452c7f0aa71d33c85c38e9e4fe3d752e756ea294",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M15TypoRecallBenchmark.kt": "9c120a1e77361cf65a0d40f00c27af0a428fcc458213d8562281d906cbf168b2",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M16SpellingGraphBenchmark.kt": "f6e730fd5f77e54108ad61d2d28e43f77a69d5afd935f6cd20972842e04b8852",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M17CandidateScoreBenchmark.kt": "9e15d6e51cfff4ec32002ca3f09f1ce1c75bef268bc64c124d6eba6234e9d8be",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M18LexiconLearningBenchmark.kt": "dde32fe267107971573ff16562c69a44d09fe85093761bdada92d36c67ccbd98",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M19ScoreFeatureBenchmark.kt": "af21ccd30f4ab71c3b9f666b4b4c2424df83a83267fc23ebfd8d7d5ed52162dd",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M1PinyinBenchmark.kt": "9e3ebc93691e8420c8edbb8eb4a55d801b19c5e7e631cab11063408f1576d212",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M20CrossDomainBenchmark.kt": "31dbf40a0d6c4b87cd15a78ad352b552ed65ed5141ff27e9338fda89ad4c9ac8",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M21MixtureBenchmark.kt": "bcc88358ce50a678aaca846630d4b2e551fc07f6fd708605f70c4f0b068d9a46",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M23FourgramBenchmark.kt": "c2cb6111912ab4ffe16bf2333214222f1790db5737d6c2b80e355ba08e9c5a12",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M2AdaptiveBenchmark.kt": "88ae82e685b28b79c68d6eb549867e70f2da66e75c2d014a2710cdf24be606f2",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M3SentenceBenchmark.kt": "03c5de47af070a2cf89ac0700711bbd9488ccb49a6ddc9a6938b49da9c7f3cd7",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M4CoreBenchmark.kt": "3fa4158cf9cdf414b2e0e2f8a3eaac64d81e7e317f719dd6baf91ee020e97c18",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M5MixedInputBenchmark.kt": "47e1ff5639ea06dc8f1f28b2da3df4099b4cb8a3e088a78e238e98398732e114",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M6InputPolishBenchmark.kt": "14a226681511b1c2cb76323452424c7759d130bc1926b1ada25b464a12fb7a55",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M7ChineseSchemeBenchmark.kt": "583ad236955f77f87ddc120795b89f70ef88c19f477c7d42d2fb8ee59641b755",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M8DailyInputBenchmark.kt": "77c83f59177ec5619dd759ccb87b3ad42e7ed246f3cc1b9d3792f8d3b20d0e30",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M9PersonalSentenceBenchmark.kt": "54bd54fac46b6ba4fce9c0e442c628ac6b3d6e512e8df4371dcffbc56e18fd0e",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/MixedCandidateRanker.kt": "c0a24077e62e51e5edaddbbc5ff694d2a939a5bf075802ef5b9999cad5483769",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/OovLanguageModelAblation.kt": "08bcd990204c8dc6e0ecf3c85254f91384e6f40179633386a90167457aee8195",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinDecoder.kt": "c72d05c671a0a8cfc5fb76eeeb803c1d1ef3ba5741f1b03cc603b46282c50594",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinInputLimits.kt": "7759ce67e9dbaffffba153c3c3cf2fa71e919198de6bb9799840b4f0b8a47a6f",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinLanguageScorer.kt": "c4c569bcde6ff5a65e010ef159e557aad50f08ac9cf56c7af2907ddec73b3cbb",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinScoreDiagnostics.kt": "1b3b66df0d87f3857825af5028b7c9423563ff7c1c68959a94d9a03fdf606c56",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt": "9ba8e935fcb197e0dc9bf79a2e057a44a9c74fa14c15412c68b38970900212ee",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSyllableSegmenter.kt": "1515c63d8d74fdbb06789299fe80d908fb64fd4005f5b94b19e7f623ebaede52",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PrefixCandidateCache.kt": "5dc949d24ac6df2050628c930323d0fc5370599844f53fe68eb91b5f572a7408",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ProgressivePinyin.kt": "dbeb7d86ad3ee13c9635d38c208c87ce4fc1e45d2f45ef4767fbb9172ae6238a",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/QueryLexicalCache.kt": "57706a81a9c49d6a6d9b3fef39de8eca2a548b0a1d332540f6603a46c1d46b2d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SemanticCandidateCatalog.kt": "b7308ba865dace349456daa3bf666b97affa5bf77945474bde2352cdfd3e87a1",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SerialPersistenceQueue.kt": "d7882ff60210696c825be60b5c9cfe10651f55f05fcb0209d27fff3994bcc8d9",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/StableTopK.kt": "4047e249e45037b3808e99660205bcebfe905e072ab4a2f7cb377abc76917ce7",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9AlternativeInputDecoder.kt": "cf2e3f1aa4e394074902fbed017eb0a7afdf6f3df09560fad6755ed5ec0bf62d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9Composition.kt": "ff2663ef91b666386f41954ceebe945ab421cbcfdb5a944dca64aab0b0a16727",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9PinyinChoice.kt": "2c63475a857b941c78950bca98b9915676c59e3544fd2d6f75c077c11d590152",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9SyllableIndex.kt": "5b9752addfe68ac197beff57b9869d161e8fb1543106667d4b2b1cd2a3fba223",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserAssociation.kt": "3439f4711ae5ab9719568eb4bcac0cce649d8ca328a9c0839a83d91566832d52",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPersonalization.kt": "663743456c32c102401f8401b119c18b0321015d6efc5e47bb43e0dce78c0507",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPinyinLattice.kt": "8a71df09fcc5e5d14122ad767f03ed4150773833aad2ddc3bb17a9120588fb5f",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Lexicon.kt": "468f3b0aa998c34376c7486ec063eadc626b4de6d41cd89527fa9976bf7bf912",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Personalization.kt": "5777e86c2bffccf1f30557e5a648d0ec5cd0c430c077c9db56491dc4c033b44d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/WubiComposition.kt": "e9c7567a5dbb6985d8098cdc8a6a8d02724e5ea5f809526fdd5c80e6db3f06ee"
+    },
+    "assetPins": {
+      "pinyin_lexicon.bin": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232",
+      "pinyin_bigrams.bin": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
+      "pinyin_character_lm.scng": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+      "pinyin_syllables.txt": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+      "english_lexicon.txt": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624"
+    },
+    "presentationSourcePins": {
+      "ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ProgressiveCandidateSnapshot.kt": "88a31d3329123d2491a38bdfdb81a12b949b9d9c686fb2d6cda6110398994d93"
+    },
+    "fixturePins": {
+      "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "8110ad1e6f37b9ca611631e2266859e8e81cfaff85b83b619046ab71add629a5",
+      "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "5ee2e3358c5bf0a5030bf60424e6c13574a4b6c2de7a353d44e219862c29e2f5"
+    },
+    "signing": "Android Debug; not release certificate",
+    "versionName": "0.4.15-debug",
+    "changedZipMembers": [
+      "classes7.dex"
+    ],
+    "hostTests": {
+      "core-input": {
+        "tests": 371,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ime-ui": {
+        "tests": 235,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ime-service": {
+        "tests": 312,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "app": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "inheritedPerformanceGate": {
+    "scope": "Fixed ABBA workload only; not statistical significance or phone certification",
+    "rule": "paired median and observed P95 each no worse than reference",
+    "checks": {
+      "medianMs": false,
+      "observedP95Ms": false
+    },
+    "passed": false
+  },
+  "frozenEngine": {
+    "scope": "Fixed uncancelled ART calls from actual APK bytecode, not UI/IME or phone latency; not fresh language accuracy.",
+    "calls": 240,
+    "firstPass": {
+      "candidate": {
+        "wallNs": {
+          "count": 20,
+          "medianMs": 264.2523,
+          "observedP95Ms": 610.4626,
+          "maxMs": 651.9982
+        },
+        "threadCpuNs": {
+          "count": 20,
+          "medianMs": 248.2288385,
+          "observedP95Ms": 505.088874,
+          "maxMs": 625.42538
+        }
+      },
+      "reference": {
+        "wallNs": {
+          "count": 20,
+          "medianMs": 226.81305,
+          "observedP95Ms": 530.4464,
+          "maxMs": 696.5781
+        },
+        "threadCpuNs": {
+          "count": 20,
+          "medianMs": 217.430231,
+          "observedP95Ms": 514.10976,
+          "maxMs": 668.205234
+        }
+      }
+    },
+    "repeated": {
+      "candidate": {
+        "wallNs": {
+          "count": 100,
+          "medianMs": 116.66465,
+          "observedP95Ms": 280.6024,
+          "maxMs": 400.4472
+        },
+        "threadCpuNs": {
+          "count": 100,
+          "medianMs": 106.840798,
+          "observedP95Ms": 255.421563,
+          "maxMs": 370.48685
+        }
+      },
+      "reference": {
+        "wallNs": {
+          "count": 100,
+          "medianMs": 145.8421,
+          "observedP95Ms": 369.6912,
+          "maxMs": 464.6999
+        },
+        "threadCpuNs": {
+          "count": 100,
+          "medianMs": 133.9746065,
+          "observedP95Ms": 339.0875,
+          "maxMs": 417.043385
+        }
+      }
+    },
+    "perQuery": [
+      {
+        "query": "nihao",
+        "fullCandidateEqual": true,
+        "firstPass": {
+          "candidate": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 165.6984,
+              "observedP95Ms": 175.8976,
+              "maxMs": 175.8976
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 161.0057995,
+              "observedP95Ms": 171.613547,
+              "maxMs": 171.613547
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 181.9408,
+              "observedP95Ms": 212.7909,
+              "maxMs": 212.7909
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 167.957449,
+              "observedP95Ms": 191.45229,
+              "maxMs": 191.45229
+            }
+          }
+        },
+        "repeated": {
+          "candidate": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 18.9765,
+              "observedP95Ms": 32.6449,
+              "maxMs": 32.6449
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 18.3902935,
+              "observedP95Ms": 30.78972,
+              "maxMs": 30.78972
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 23.2427,
+              "observedP95Ms": 43.2923,
+              "maxMs": 43.2923
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 19.3664905,
+              "observedP95Ms": 38.310922,
+              "maxMs": 38.310922
+            }
+          }
+        }
+      },
+      {
+        "query": "woxihuanbeijing",
+        "fullCandidateEqual": true,
+        "firstPass": {
+          "candidate": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 584.36445,
+              "observedP95Ms": 651.9982,
+              "maxMs": 651.9982
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 565.257127,
+              "observedP95Ms": 625.42538,
+              "maxMs": 625.42538
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 613.51225,
+              "observedP95Ms": 696.5781,
+              "maxMs": 696.5781
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 591.157497,
+              "observedP95Ms": 668.205234,
+              "maxMs": 668.205234
+            }
+          }
+        },
+        "repeated": {
+          "candidate": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 117.0376,
+              "observedP95Ms": 142.0239,
+              "maxMs": 142.0239
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 106.840798,
+              "observedP95Ms": 124.059658,
+              "maxMs": 124.059658
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 133.96035,
+              "observedP95Ms": 187.9391,
+              "maxMs": 187.9391
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 124.1918585,
+              "observedP95Ms": 170.453089,
+              "maxMs": 170.453089
+            }
+          }
+        }
+      },
+      {
+        "query": "qingfageweizhigeiwo",
+        "fullCandidateEqual": true,
+        "firstPass": {
+          "candidate": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 300.40295,
+              "observedP95Ms": 339.8282,
+              "maxMs": 339.8282
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 292.971642,
+              "observedP95Ms": 329.178187,
+              "maxMs": 329.178187
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 240.93205,
+              "observedP95Ms": 241.0289,
+              "maxMs": 241.0289
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 236.7956365,
+              "observedP95Ms": 236.932486,
+              "maxMs": 236.932486
+            }
+          }
+        },
+        "repeated": {
+          "candidate": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 99.0694,
+              "observedP95Ms": 161.187,
+              "maxMs": 161.187
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 90.9977905,
+              "observedP95Ms": 145.035186,
+              "maxMs": 145.035186
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 147.07325,
+              "observedP95Ms": 229.5344,
+              "maxMs": 229.5344
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 134.9000555,
+              "observedP95Ms": 187.401488,
+              "maxMs": 187.401488
+            }
+          }
+        }
+      },
+      {
+        "query": "qingjianchayixiayoujian",
+        "fullCandidateEqual": true,
+        "firstPass": {
+          "candidate": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 348.048,
+              "observedP95Ms": 412.0714,
+              "maxMs": 412.0714
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 326.6147025,
+              "observedP95Ms": 383.523116,
+              "maxMs": 383.523116
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 314.0077,
+              "observedP95Ms": 331.0645,
+              "maxMs": 331.0645
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 302.543999,
+              "observedP95Ms": 317.78019,
+              "maxMs": 317.78019
+            }
+          }
+        },
+        "repeated": {
+          "candidate": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 173.394,
+              "observedP95Ms": 192.4309,
+              "maxMs": 192.4309
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 153.295344,
+              "observedP95Ms": 177.845894,
+              "maxMs": 177.845894
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 217.91595,
+              "observedP95Ms": 267.3284,
+              "maxMs": 267.3284
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 192.9253565,
+              "observedP95Ms": 229.716897,
+              "maxMs": 229.716897
+            }
+          }
+        }
+      },
+      {
+        "query": "zhegeyingyonghenhaoyong",
+        "fullCandidateEqual": true,
+        "firstPass": {
+          "candidate": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 198.29785,
+              "observedP95Ms": 227.1345,
+              "maxMs": 227.1345
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 184.4673445,
+              "observedP95Ms": 208.15328,
+              "maxMs": 208.15328
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 194.3717,
+              "observedP95Ms": 207.8522,
+              "maxMs": 207.8522
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 183.5529775,
+              "observedP95Ms": 198.201675,
+              "maxMs": 198.201675
+            }
+          }
+        },
+        "repeated": {
+          "candidate": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 114.8318,
+              "observedP95Ms": 146.8989,
+              "maxMs": 146.8989
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 104.801853,
+              "observedP95Ms": 137.887576,
+              "maxMs": 137.887576
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 146.76695,
+              "observedP95Ms": 207.9651,
+              "maxMs": 207.9651
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 127.6758945,
+              "observedP95Ms": 194.926447,
+              "maxMs": 194.926447
+            }
+          }
+        }
+      },
+      {
+        "query": "jintianyouyidianlei",
+        "fullCandidateEqual": true,
+        "firstPass": {
+          "candidate": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 230.67905,
+              "observedP95Ms": 267.5269,
+              "maxMs": 267.5269
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 211.4156875,
+              "observedP95Ms": 239.69258,
+              "maxMs": 239.69258
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 174.3346,
+              "observedP95Ms": 181.7735,
+              "maxMs": 181.7735
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 164.746415,
+              "observedP95Ms": 173.125042,
+              "maxMs": 173.125042
+            }
+          }
+        },
+        "repeated": {
+          "candidate": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 135.9084,
+              "observedP95Ms": 196.5549,
+              "maxMs": 196.5549
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 123.4680885,
+              "observedP95Ms": 184.18511,
+              "maxMs": 184.18511
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 158.7273,
+              "observedP95Ms": 196.187,
+              "maxMs": 196.187
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 147.1156755,
+              "observedP95Ms": 188.526041,
+              "maxMs": 188.526041
+            }
+          }
+        }
+      },
+      {
+        "query": "tangmuhemalimeitianwanshangdoukandianshi",
+        "fullCandidateEqual": true,
+        "firstPass": {
+          "candidate": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 337.6397,
+              "observedP95Ms": 355.4007,
+              "maxMs": 355.4007
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 308.2923815,
+              "observedP95Ms": 317.011236,
+              "maxMs": 317.011236
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 331.92185,
+              "observedP95Ms": 384.5948,
+              "maxMs": 384.5948
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 298.2688835,
+              "observedP95Ms": 326.145364,
+              "maxMs": 326.145364
+            }
+          }
+        },
+        "repeated": {
+          "candidate": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 243.40445,
+              "observedP95Ms": 325.3119,
+              "maxMs": 325.3119
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 226.2535765,
+              "observedP95Ms": 283.19986,
+              "maxMs": 283.19986
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 275.6454,
+              "observedP95Ms": 417.7908,
+              "maxMs": 417.7908
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 257.9791135,
+              "observedP95Ms": 390.928575,
+              "maxMs": 390.928575
+            }
+          }
+        }
+      },
+      {
+        "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+        "fullCandidateEqual": true,
+        "firstPass": {
+          "candidate": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 478.6371,
+              "observedP95Ms": 610.4626,
+              "maxMs": 610.4626
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 376.616376,
+              "observedP95Ms": 429.63931,
+              "maxMs": 429.63931
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 350.42575,
+              "observedP95Ms": 372.9718,
+              "maxMs": 372.9718
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 331.323164,
+              "observedP95Ms": 355.072808,
+              "maxMs": 355.072808
+            }
+          }
+        },
+        "repeated": {
+          "candidate": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 279.90635,
+              "observedP95Ms": 400.4472,
+              "maxMs": 400.4472
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 252.4664615,
+              "observedP95Ms": 370.48685,
+              "maxMs": 370.48685
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 332.35865,
+              "observedP95Ms": 464.6999,
+              "maxMs": 464.6999
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 303.319306,
+              "observedP95Ms": 417.043385,
+              "maxMs": 417.043385
+            }
+          }
+        }
+      },
+      {
+        "query": "nime",
+        "fullCandidateEqual": false,
+        "firstPass": {
+          "candidate": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 35.01085,
+              "observedP95Ms": 41.1699,
+              "maxMs": 41.1699
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 34.7482015,
+              "observedP95Ms": 40.932183,
+              "maxMs": 40.932183
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 28.12135,
+              "observedP95Ms": 29.7934,
+              "maxMs": 29.7934
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 25.096092,
+              "observedP95Ms": 25.32,
+              "maxMs": 25.32
+            }
+          }
+        },
+        "repeated": {
+          "candidate": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 21.80705,
+              "observedP95Ms": 39.6765,
+              "maxMs": 39.6765
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 19.2876285,
+              "observedP95Ms": 36.065621,
+              "maxMs": 36.065621
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 21.49905,
+              "observedP95Ms": 50.3601,
+              "maxMs": 50.3601
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 19.9292845,
+              "observedP95Ms": 43.758557,
+              "maxMs": 43.758557
+            }
+          }
+        }
+      },
+      {
+        "query": "renme",
+        "fullCandidateEqual": false,
+        "firstPass": {
+          "candidate": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 30.8959,
+              "observedP95Ms": 33.2916,
+              "maxMs": 33.2916
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 28.271307,
+              "observedP95Ms": 33.098546,
+              "maxMs": 33.098546
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 2,
+              "medianMs": 21.7989,
+              "observedP95Ms": 26.6841,
+              "maxMs": 26.6841
+            },
+            "threadCpuNs": {
+              "count": 2,
+              "medianMs": 19.494273,
+              "observedP95Ms": 22.052146,
+              "maxMs": 22.052146
+            }
+          }
+        },
+        "repeated": {
+          "candidate": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 12.86095,
+              "observedP95Ms": 19.0733,
+              "maxMs": 19.0733
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 12.654184,
+              "observedP95Ms": 18.733916,
+              "maxMs": 18.733916
+            }
+          },
+          "reference": {
+            "wallNs": {
+              "count": 10,
+              "medianMs": 14.65265,
+              "observedP95Ms": 29.5224,
+              "maxMs": 29.5224
+            },
+            "threadCpuNs": {
+              "count": 10,
+              "medianMs": 14.4094445,
+              "observedP95Ms": 21.612275,
+              "maxMs": 21.612275
+            }
+          }
+        }
+      }
+    ],
+    "fingerprints": {
+      "reference": {
+        "nihao": "72ca0671c0ce1bf73d81cc06a7c194214d43e62d13eb81321a0fd2a340931dff",
+        "woxihuanbeijing": "1b58cd939265a6d966c4e8ffc344f7a27c6bb023e2f64d7ae0fc31cfeb318a45",
+        "qingfageweizhigeiwo": "35e0bee893c6f561e5d3b00b3c22ea8a8a4284fdcae61a64a7d577eacc4cee8a",
+        "qingjianchayixiayoujian": "5122de4e875b20fd06d27795172def28ff7843ca2890b454a67e3f47033ba784",
+        "zhegeyingyonghenhaoyong": "85367884239aa560e34321e21ea6385c863f30a3942ef11bfd3cd3c99c11c772",
+        "jintianyouyidianlei": "326b9b8ad2d7e86247c92c5a436dc69bb0baa4d1b92ba950d6562d2e01d0c706",
+        "tangmuhemalimeitianwanshangdoukandianshi": "59199e44e808f9e00c8722c4143e629e5be72132d20211353b235555a0613581",
+        "tangmumeiyouzhuyidaomalihuanlexinfaxing": "dfb41211b68703ed5ccf701fee3ba808d06012934c56556011bbfc3c4982137e",
+        "nime": "d82165061c815d9372646374ff10197cccc83da1d45d4695aa344a2cce6a3474",
+        "renme": "312cbe89a85f2ca159cf2d08c74a7849f71de15de8974f29eacf5548d0fcec87"
+      },
+      "candidate": {
+        "nihao": "72ca0671c0ce1bf73d81cc06a7c194214d43e62d13eb81321a0fd2a340931dff",
+        "woxihuanbeijing": "1b58cd939265a6d966c4e8ffc344f7a27c6bb023e2f64d7ae0fc31cfeb318a45",
+        "qingfageweizhigeiwo": "35e0bee893c6f561e5d3b00b3c22ea8a8a4284fdcae61a64a7d577eacc4cee8a",
+        "qingjianchayixiayoujian": "5122de4e875b20fd06d27795172def28ff7843ca2890b454a67e3f47033ba784",
+        "zhegeyingyonghenhaoyong": "85367884239aa560e34321e21ea6385c863f30a3942ef11bfd3cd3c99c11c772",
+        "jintianyouyidianlei": "326b9b8ad2d7e86247c92c5a436dc69bb0baa4d1b92ba950d6562d2e01d0c706",
+        "tangmuhemalimeitianwanshangdoukandianshi": "59199e44e808f9e00c8722c4143e629e5be72132d20211353b235555a0613581",
+        "tangmumeiyouzhuyidaomalihuanlexinfaxing": "dfb41211b68703ed5ccf701fee3ba808d06012934c56556011bbfc3c4982137e",
+        "nime": "6f4897d6bc30db63551ab0c73982520854dbb9b25c0ee3c1e5f2ed4276785929",
+        "renme": "34327486fe27c998d645426f4b8468a11cfc21a97435df5876841aeb1ae4691b"
+      }
+    },
+    "blocks": [
+      {
+        "block": 1,
+        "mode": "reference",
+        "pid": 8077,
+        "wall": {
+          "count": 60,
+          "medianMs": 163.78355,
+          "observedP95Ms": 384.2152,
+          "maxMs": 530.4464
+        },
+        "cpu": {
+          "count": 60,
+          "medianMs": 150.510177,
+          "observedP95Ms": 356.987926,
+          "maxMs": 514.10976
+        },
+        "gcCounts": [
+          "5",
+          "7",
+          "8",
+          "11",
+          "13",
+          "15",
+          "19",
+          "24",
+          "24",
+          "25",
+          "25",
+          "25",
+          "30",
+          "34",
+          "36",
+          "38",
+          "41",
+          "42",
+          "44",
+          "45",
+          "45",
+          "47",
+          "48",
+          "51",
+          "53",
+          "55",
+          "59",
+          "64",
+          "64",
+          "65",
+          "65",
+          "65",
+          "70",
+          "74",
+          "76",
+          "78",
+          "80",
+          "82",
+          "84",
+          "84",
+          "85",
+          "86",
+          "88",
+          "91",
+          "93",
+          "95",
+          "99",
+          "104",
+          "104",
+          "104",
+          "104",
+          "105",
+          "109",
+          "114",
+          "116",
+          "118",
+          "121",
+          "123",
+          "124",
+          "125"
+        ]
+      },
+      {
+        "block": 2,
+        "mode": "candidate",
+        "pid": 8155,
+        "wall": {
+          "count": 60,
+          "medianMs": 119.15715,
+          "observedP95Ms": 355.4007,
+          "maxMs": 610.4626
+        },
+        "cpu": {
+          "count": 60,
+          "medianMs": 108.884297,
+          "observedP95Ms": 317.011236,
+          "maxMs": 505.088874
+        },
+        "gcCounts": [
+          "5",
+          "7",
+          "8",
+          "11",
+          "13",
+          "15",
+          "19",
+          "23",
+          "24",
+          "24",
+          "24",
+          "24",
+          "29",
+          "33",
+          "35",
+          "37",
+          "40",
+          "41",
+          "43",
+          "44",
+          "44",
+          "46",
+          "48",
+          "50",
+          "52",
+          "54",
+          "58",
+          "63",
+          "64",
+          "64",
+          "64",
+          "64",
+          "69",
+          "73",
+          "75",
+          "77",
+          "80",
+          "82",
+          "84",
+          "84",
+          "84",
+          "86",
+          "88",
+          "91",
+          "93",
+          "95",
+          "99",
+          "103",
+          "104",
+          "104",
+          "104",
+          "105",
+          "109",
+          "113",
+          "116",
+          "118",
+          "121",
+          "122",
+          "124",
+          "124"
+        ]
+      },
+      {
+        "block": 3,
+        "mode": "candidate",
+        "pid": 8208,
+        "wall": {
+          "count": 60,
+          "medianMs": 126.15005,
+          "observedP95Ms": 339.8282,
+          "maxMs": 651.9982
+        },
+        "cpu": {
+          "count": 60,
+          "medianMs": 117.1808635,
+          "observedP95Ms": 323.593442,
+          "maxMs": 625.42538
+        },
+        "gcCounts": [
+          "3",
+          "5",
+          "6",
+          "9",
+          "11",
+          "13",
+          "17",
+          "22",
+          "22",
+          "23",
+          "23",
+          "23",
+          "28",
+          "32",
+          "34",
+          "36",
+          "39",
+          "40",
+          "42",
+          "43",
+          "43",
+          "45",
+          "46",
+          "49",
+          "51",
+          "54",
+          "58",
+          "63",
+          "63",
+          "63",
+          "63",
+          "64",
+          "68",
+          "72",
+          "75",
+          "77",
+          "79",
+          "81",
+          "83",
+          "83",
+          "84",
+          "85",
+          "87",
+          "90",
+          "92",
+          "94",
+          "98",
+          "103",
+          "103",
+          "104",
+          "104",
+          "104",
+          "109",
+          "113",
+          "116",
+          "118",
+          "120",
+          "122",
+          "124",
+          "125"
+        ]
+      },
+      {
+        "block": 4,
+        "mode": "reference",
+        "pid": 8252,
+        "wall": {
+          "count": 60,
+          "medianMs": 156.0282,
+          "observedP95Ms": 384.5948,
+          "maxMs": 696.5781
+        },
+        "cpu": {
+          "count": 60,
+          "medianMs": 142.4849175,
+          "observedP95Ms": 355.072808,
+          "maxMs": 668.205234
+        },
+        "gcCounts": [
+          "9",
+          "11",
+          "12",
+          "15",
+          "17",
+          "19",
+          "23",
+          "27",
+          "28",
+          "28",
+          "28",
+          "28",
+          "33",
+          "37",
+          "40",
+          "42",
+          "45",
+          "46",
+          "48",
+          "48",
+          "49",
+          "50",
+          "52",
+          "55",
+          "57",
+          "59",
+          "63",
+          "68",
+          "68",
+          "68",
+          "68",
+          "69",
+          "73",
+          "78",
+          "80",
+          "82",
+          "84",
+          "86",
+          "88",
+          "88",
+          "88",
+          "90",
+          "92",
+          "95",
+          "97",
+          "99",
+          "103",
+          "108",
+          "108",
+          "109",
+          "109",
+          "109",
+          "114",
+          "118",
+          "120",
+          "123",
+          "125",
+          "127",
+          "129",
+          "129"
+        ]
+      }
+    ]
+  },
+  "touchDiagnostic": {
+    "protocol": "async-touch-no-animation-wait-v1",
+    "apkSha256": {
+      "baseline": "424d96c9ec01c44bda3db650cd0ab24543fbe9031a794698c2bdf14c8a5de21f",
+      "optimized": "dd891a53089e81516c3a530d2fd7f9ef091188fdb4c796c219903c16636d775e"
+    },
+    "blocks": [
+      {
+        "block": 1,
+        "mode": "baseline",
+        "passed": true,
+        "artifactDirectory": "e22-no-animation-abba-1-baseline",
+        "recordedConfirmations": 16,
+        "actualKeyIntervalsMs": {
+          "count": 350,
+          "medianMs": 136.0,
+          "observedP95Ms": 279,
+          "maxMs": 450
+        }
+      },
+      {
+        "block": 2,
+        "mode": "optimized",
+        "passed": true,
+        "artifactDirectory": "e22-no-animation-abba-2-optimized",
+        "recordedConfirmations": 16,
+        "actualKeyIntervalsMs": {
+          "count": 350,
+          "medianMs": 131.0,
+          "observedP95Ms": 221,
+          "maxMs": 361
+        }
+      },
+      {
+        "block": 3,
+        "mode": "optimized",
+        "passed": true,
+        "artifactDirectory": "e22-no-animation-abba-3-optimized",
+        "recordedConfirmations": 16,
+        "actualKeyIntervalsMs": {
+          "count": 350,
+          "medianMs": 120.0,
+          "observedP95Ms": 225,
+          "maxMs": 468
+        }
+      },
+      {
+        "block": 4,
+        "mode": "baseline",
+        "passed": false,
+        "artifactDirectory": "e22-no-animation-abba-4-baseline",
+        "recordedConfirmations": 0,
+        "failure": "INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Production runtime ready; actual="
+      }
+    ],
+    "completePairedComparison": false,
+    "confirmationMs": null,
+    "decision": "Incomplete ABBA; no pooled success-only latency comparison or promotion decision",
+    "limitations": "Actual cadence from successful blocks is diagnostic, not evidence of 32ms touch delivery. Failures are retained."
+  },
+  "keyboardShowFailuresRetained": 1,
+  "runtimeReadyFailuresRetained": 3,
+  "startupSmokePassed": 3,
+  "knownPrefixGap": {
+    "scope": "Read-only lexical scan diagnostic for an already known recall gap; no new quality score or production change",
+    "assetSha256": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232",
+    "query": "beiji",
+    "scanLimit": 96,
+    "canonicalPrefixRecordCount": 838,
+    "targetCanonicalOrdinal1": 130,
+    "maximumStatisticalPrefixLength": 4,
+    "statisticalRecords": {
+      "{beij": 16
+    },
+    "first96Codes": [
+      "beiji",
+      "beijia",
+      "beijiabixiang",
+      "beijiaer",
+      "beijiaerhu",
+      "beijiaerhucudufuyu",
+      "beijiaerhudufuyu",
+      "beijiaerhuxunlu",
+      "beijiaeryaluoyu",
+      "beijiagong",
+      "beijiaiquxian",
+      "beijialai",
+      "beijiale",
+      "beijiamo",
+      "beijian",
+      "beijiancha",
+      "beijianderen",
+      "beijiang",
+      "beijiangdaqiao",
+      "beijiangdasha",
+      "beijiangdi",
+      "beijiangdiqu",
+      "beijiange",
+      "beijiangge",
+      "beijiangji",
+      "beijiangjichang",
+      "beijiangjie",
+      "beijianglu",
+      "beijiangqu",
+      "beijiangquan",
+      "beijiangsheng",
+      "beijianguanren",
+      "beijiangxiang",
+      "beijiangxin",
+      "beijiangzhi",
+      "beijiangzhongxue",
+      "beijianhuren",
+      "beijianjin",
+      "beijianshan",
+      "beijianshe",
+      "beijianshu",
+      "beijianta",
+      "beijianwu",
+      "beijianzhe",
+      "beijianzhirui",
+      "beijiao",
+      "beijiaobu",
+      "beijiaochang",
+      "beijiaochangtuqichezhan",
+      "beijiaochangxilu",
+      "beijiaoda",
+      "beijiaogang",
+      "beijiaogongshi",
+      "beijiaojiazhang",
+      "beijiaojing",
+      "beijiaokeyunzhan",
+      "beijiaolian",
+      "beijiaomianfenchang",
+      "beijiaonongchangqiaodong",
+      "beijiaonongchangqiaoxi",
+      "beijiaoqu",
+      "beijiaoshichang",
+      "beijiaosi",
+      "beijiaosuo",
+      "beijiaoting",
+      "beijiaoxing",
+      "beijiaoyiyuan",
+      "beijiaoyuzhe",
+      "beijiaozhen",
+      "beijiaozhongxue",
+      "beijiaozi",
+      "beijiapangke",
+      "beijiashi",
+      "beijiashu",
+      "beijiasi",
+      "beijiayu",
+      "beijiazai",
+      "beijiazaibing",
+      "beijiazaozhen",
+      "beijiazhou",
+      "beijibai",
+      "beijibei",
+      "beijibing",
+      "beijichaotingzhongbugai",
+      "beijichengren",
+      "beijichu",
+      "beijicun",
+      "beijidai",
+      "beijidian",
+      "beijidiqu",
+      "beijidongyuan",
+      "beijie",
+      "beijiechi",
+      "beijiechu",
+      "beijiecun",
+      "beijiecuncunweihui"
+    ],
+    "boundaryRecords": [
+      {
+        "code": "beijie",
+        "firstCandidates": [
+          {
+            "text": "北界",
+            "weight": 101,
+            "tier": 0
+          },
+          {
+            "text": "北街",
+            "weight": 75,
+            "tier": 0
+          },
+          {
+            "text": "被劫",
+            "weight": 62,
+            "tier": 0
+          },
+          {
+            "text": "被截",
+            "weight": 33,
+            "tier": 0
+          },
+          {
+            "text": "碑碣",
+            "weight": 6,
+            "tier": 0
+          }
+        ],
+        "targetEntries": []
+      },
+      {
+        "code": "beijiechi",
+        "firstCandidates": [
+          {
+            "text": "被劫持",
+            "weight": 99,
+            "tier": 0
+          }
+        ],
+        "targetEntries": []
+      },
+      {
+        "code": "beijiechu",
+        "firstCandidates": [
+          {
+            "text": "被解除",
+            "weight": 71,
+            "tier": 0
+          }
+        ],
+        "targetEntries": []
+      },
+      {
+        "code": "beijiecun",
+        "firstCandidates": [
+          {
+            "text": "北街村",
+            "weight": 1,
+            "tier": 2
+          }
+        ],
+        "targetEntries": []
+      },
+      {
+        "code": "beijiecuncunweihui",
+        "firstCandidates": [
+          {
+            "text": "北街村村委会",
+            "weight": 1,
+            "tier": 2
+          }
+        ],
+        "targetEntries": []
+      },
+      {
+        "code": "beijiecunweihui",
+        "firstCandidates": [
+          {
+            "text": "北街村委会",
+            "weight": 1,
+            "tier": 2
+          }
+        ],
+        "targetEntries": []
+      },
+      {
+        "code": "beijiediao",
+        "firstCandidates": [
+          {
+            "text": "被借调",
+            "weight": 34,
+            "tier": 0
+          }
+        ],
+        "targetEntries": []
+      },
+      {
+        "code": "beijiegu",
+        "firstCandidates": [
+          {
+            "text": "被解雇",
+            "weight": 216,
+            "tier": 0
+          }
+        ],
+        "targetEntries": []
+      },
+      {
+        "code": "beijiegule",
+        "firstCandidates": [
+          {
+            "text": "被解雇了",
+            "weight": 29,
+            "tier": 0
+          }
+        ],
+        "targetEntries": []
+      },
+      {
+        "code": "beijiehu",
+        "firstCandidates": [
+          {
+            "text": "被截和",
+            "weight": 2,
+            "tier": 0
+          }
+        ],
+        "targetEntries": []
+      }
+    ],
+    "targetRecord": {
+      "code": "beijing",
+      "firstCandidates": [
+        {
+          "text": "背景",
+          "weight": 31293,
+          "tier": 0
+        },
+        {
+          "text": "北京",
+          "weight": 22789,
+          "tier": 0
+        },
+        {
+          "text": "北境",
+          "weight": 526,
+          "tier": 0
+        },
+        {
+          "text": "倍镜",
+          "weight": 68,
+          "tier": 0
+        }
+      ],
+      "targetEntries": [
+        {
+          "text": "北京",
+          "weight": 22789,
+          "tier": 0
+        }
+      ]
+    }
+  },
+  "fixtureLifecycle": {
+    "warm": {
+      "tests": 10,
+      "environment": {
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "dd891a53089e81516c3a530d2fd7f9ef091188fdb4c796c219903c16636d775e",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "d6005d151d4c05448ea4a66ad20d7563b5c63066faf5c26a25e63dde2a88e29e"
+        },
+        "serial": "emulator-5580",
+        "sdk": "37",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "installedDuringRun": true,
+        "imePidAfter": "20553",
+        "imePidBefore": "",
+        "debugProfileReset": false
+      }
+    },
+    "cold": {
+      "tests": 4,
+      "environment": {
+        "scope": "Real system IME touch -> external EditText; force-stopped debug app, loading runtime asserted; not phone certification",
+        "imePidBefore": "20553",
+        "apks": {
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "d6005d151d4c05448ea4a66ad20d7563b5c63066faf5c26a25e63dde2a88e29e",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+          "app/build/outputs/apk/debug/app-debug.apk": "dd891a53089e81516c3a530d2fd7f9ef091188fdb4c796c219903c16636d775e"
+        },
+        "sdk": "37",
+        "imePidAfter": "23812",
+        "serial": "emulator-5580",
+        "installedDuringRun": false,
+        "debugProfileReset": false
+      }
+    }
+  },
+  "python": {
+    "run": 409,
+    "passed": 408,
+    "skipped": 1
+  },
+  "hostRegression": "E21 921 passing tests retained; production unchanged, not rerun in E22",
+  "fast32msTypingCoverage": false,
+  "releaseReady": false,
+  "goalComplete": false,
+  "evidenceManifestSha256": "622edb41463ad8d910816c15bca6be06107608e1517b22d13730970dc61935b7",
+  "archivedFiles": 208
+}

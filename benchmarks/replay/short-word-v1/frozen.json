@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "seed": "sense-short-word-v1-20261003",
+  "frozenAt": "2026-10-02T16:40:55.202962+00:00",
+  "scope": "Agent-authored isolated-word reconstruction diagnostics, not independently collected user accuracy; homophones may have other valid answers",
+  "annotation": "Readings reviewed before candidate outputs; no post-result aliases",
+  "split": "16 per category per partition by SHA256; nine existing user-topic examples excluded",
+  "outputs": {
+    "dev": {
+      "rows": 48,
+      "sha256": "e2794404ce1c4b37b1c24a07f1d3b3d4c2be5344f6bc6119f60a461d67d83710"
+    },
+    "test": {
+      "rows": 48,
+      "sha256": "de4a058bb8767b51a627955c8e8e0590d479765890b8a8ffdc684ad51bfb8e1e"
+    }
+  }
+}

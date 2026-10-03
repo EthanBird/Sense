@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "sense-balanced-tatoeba-aishell-v1",
+  "trials": 1,
+  "seed": "sense-balanced-tatoeba-aishell-v1",
+  "selection": "All Tatoeba train; AISHELL train whole families sorted by SHA256(seed + TAB + family), take through the first family reaching the old train Han-character count; no duplicates or replacement",
+  "training": {"discount": 0.75, "min_char_count": 2, "min_bigram_count": 1, "min_trigram_count": 2, "alpha": 0.1},
+  "runtime": {"lmWeight": 0.5, "oovFeature": -4, "correctionBoost": 12, "limit": 255},
+  "maxModelBytes": 16777216,
+  "workload": "Each sentence at cut 0 and floor(length / 2), empty personal lexicon, actual AdaptivePinyinDecoder whole candidates; midpoint uses previous two source characters, an oracle-context proxy",
+  "development": {
+    "newDomain": "p2c-aishell-v7/dev.tsv",
+    "oldDomain": "p2c-supervised-v6/dev.tsv (known regression)",
+    "gate": "Each domain: top1/top5/recall255 nondecreasing, total top1 Levenshtein errors nonincreasing; new domain top1 strictly increases. Record all individual first/rank losses."
+  },
+  "test": {
+    "opening": "Only after development gate passes and input/model/configuration hashes are frozen; one pass, no further tuning",
+    "newDomain": "p2c-aishell-v7/test.tsv",
+    "oldDomain": "p2c-supervised-v6/test.tsv (known regression, not independent)",
+    "gate": "Same per-domain nonregression and new-domain strict top1 gain as development; model size cap and repeated-output consistency. Passing offline gates still needs Android cost/lifecycle/privacy acceptance and data-notice packaging before deployment."
+  },
+  "scope": "Source reconstruction with agent-reviewed pinyin, not human typing accuracy; no HMM/CRF or neural-model claim. No new dictionary or score-weight trials in this experiment."
+}

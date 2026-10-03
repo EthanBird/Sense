@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "sense-probability-mixture-v1",
+  "baselineModelSha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+  "adaptationModelSha256": "5a23fe220c5b7d257d8038096ab76cce5f5ec3bde86a1624f5c33edae52c8995",
+  "training": "No retraining; retain both E15 model tables as independent components",
+  "trials": [0.1, 0.25, 0.5],
+  "algorithm": "Conditional arithmetic probability mixture (1-alpha)*P_daily + alpha*P_balanced; log-sum-exp before existing +6/clipping/OOV/weight/normalization. Shared union vocabulary: split each component UNK among missing union glyphs and residual UNK using the other component unigram proportions. Never assign the whole UNK mass to each new glyph.",
+  "runtime": {"lmWeight": 0.5, "oovFeature": -4, "correctionBoost": 12, "limit": 255},
+  "development": {
+    "newDomain": "p2c-aishell-v7/dev.tsv (known E15)",
+    "oldDomain": "p2c-supervised-v6/dev.tsv (known regression)",
+    "gate": "Each domain: top1/top5/recall255 nondecreasing and total top1 character errors nonincreasing; new domain top1 strictly increases",
+    "selection": "Eligible models only: highest sum of top1 over both equal-sized domains, then least combined errors, then highest combined top5, then smaller alpha. Retain all individual losses. If none pass, keep baseline and do not open test candidates."
+  },
+  "test": {
+    "newDomain": "p2c-aishell-v7/test.tsv (annotated, not decoded in E15)",
+    "oldDomain": "p2c-daily-mixture-v8/test.tsv (new Tatoeba families, excluding all previous proposals)",
+    "gate": "Each domain: top1/top5/recall255 nondecreasing and total top1 character errors nonincreasing; new domain top1 strictly increases. Repeated complete output must agree. No retuning after opening.",
+    "opening": "One selected alpha only after model/configuration/development report hashes are frozen. Include baseline."
+  },
+  "deployment": "Offline pass is necessary but insufficient; Android model memory/loading, repeated typing latency, personal words, privacy, editor lifecycle, short words and partial pinyin require acceptance before wiring production factory. No automatic APK asset replacement."
+}

@@ -27,8 +27,22 @@ class CandidateBarCompositionPresenterTest {
             "ta",
             "wo",
             "xie",
+            "xi",
+            "xian",
         ),
     )
+
+    @Test
+    fun `typed boundaries survive pending and ready display without duplicate trailing quote`() {
+        val primary = chineseCandidate("西安", "xian", "xa")
+        for (raw in listOf("xi'an", "xi'an'")) {
+            val state = PinyinComposition(remainingPinyin = raw)
+            assertEquals(raw, present(state, primary))
+            assertEquals(raw, present(state, primary, decodingPending = true))
+            assertEquals(raw, state.visibleText)
+        }
+        assertEquals("xi'", present(PinyinComposition(remainingPinyin = "xi'"), chineseCandidate("西", "xi", "x")))
+    }
 
     @Test
     fun `pending candidate bar keeps raw input until decode evidence is ready`() {

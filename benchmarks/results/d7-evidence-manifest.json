@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "scope": "D7 local source/build/tests and evidence paths; synthetic fixture text only; no natural input accuracy claim",
+  "reports": {
+    "d7-acceptance-gate.json": "0281ecfc70e3c74a7356c504cde92c0467321dc1ede75d27d3e795d05da779f1",
+    "d7-apk-asset-audit.json": "e3575c18429ef9f2ff9faad5cd8ed4e5af4f69e3a0e2cc0e5926d25f1c030741",
+    "d7-held-touch-reproduction.json": "a552a329768b53d07104503cf34d6a47105fb90ec641bb66836f522a6f4a810d",
+    "d7-host-validation.json": "5faf57b765b33c775cdd3af5866e0681ddbeb9cd2adf72f13aa98654db80698e",
+    "d7-implementation-snapshot.json": "00f51d10e15632c875377a055a0a2f2f8e2bbc45e3a479e32708c127405e8ad1",
+    "d7-learning-persistence.json": "202d30f06cf7264862b29309ff13b062f300430b985b26316a2db8c36d6ebbe8",
+    "d7-slow-system.json": "482870ffb769dd82d03d39d9d056b8b167320ca04b984d6922fec5e25a41aa3a",
+    "d7-system-ime.json": "fc3975e293a350923fe74ca976f5027c2e165a3def460af838fa4fbbeb5a1a47",
+    "d7-ui-layout.json": "95d304a2169dcba2a45c245c1e0fb763f9ea636c3463354094564fe80fb2f435"
+  },
+  "visuallyInspected": {
+    ".artifacts/input-quality/external-editor-d7-association-red/device/associationDoesNotExpireUnderAnActiveTouch-held.png": "4cb72447529dec8856ab49fb4ce9957f26666832d9c66905251fa0f5c3369f0f",
+    ".artifacts/input-quality/external-editor-d7-association-suite/device/associationDoesNotExpireUnderAnActiveTouch-held.png": "7576519f3fe92da5f1fd71fea342f4fec98531ea1967a139121b857f94480ce6",
+    ".artifacts/input-quality/external-editor-d7-association-suite/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable-visible.png": "26dd265e91b78849d41badd6452725c0bbbb4675ac22d606d8f8ce7ea54157a4"
+  },
+  "localEvidenceRoots": [
+    ".artifacts/input-quality/d7",
+    ".artifacts/input-quality/external-editor-d7-association-red",
+    ".artifacts/input-quality/external-editor-d7-association-hold-green",
+    ".artifacts/input-quality/external-editor-d7-associations-final",
+    ".artifacts/input-quality/d7-slow-system"
+  ]
+}

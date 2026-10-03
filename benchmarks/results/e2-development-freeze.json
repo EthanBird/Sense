@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Algorithm-preserving query-local prepared-edge reuse; no ranking or data tuning",
+  "policy": {
+    "completeProgressiveFingerprints": "7428/7428 identical on fixed known corpora",
+    "system": "All 64 ABBA confirmations correct; observed median lower and observed P95 no more than 1.1x baseline; candidate max below 1000 ms",
+    "regressions": "Full core/UI/service, App About targeted, Python, true system warm/cold/correction/learning",
+    "scope": "Fixed emulator diagnostics, not population claims"
+  },
+  "productionSources": {
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinDecoder.kt": "1cf581af82039ff0cb98b45f648695c37e3510f739fece9e948b3fdb26cc34bb",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/QueryLexicalCache.kt": "57706a81a9c49d6a6d9b3fef39de8eca2a548b0a1d332540f6603a46c1d46b2d"
+  },
+  "frozenAt": "2026-10-02T11:41:42.8507893Z"
+}

@@ -17,8 +17,12 @@ internal object EditorCompositionSelectionPolicy {
         newSelectionEnd: Int,
         candidatesStart: Int,
         candidatesEnd: Int,
+        acknowledgesOwnCommit: Boolean = false,
     ): Boolean {
-        if (!hasActiveComposition) return false
+        // The previous commit can be acknowledged after deferred keys already started the
+        // next composition. Its absent host span is historical, not an external cancellation.
+        // The caller's one-shot, editor-bound fence verifies that acknowledgment.
+        if (!hasActiveComposition || acknowledgesOwnCommit) return false
         if (candidatesStart < 0 || candidatesEnd < candidatesStart) return true
         return newSelectionStart != candidatesEnd || newSelectionEnd != candidatesEnd
     }

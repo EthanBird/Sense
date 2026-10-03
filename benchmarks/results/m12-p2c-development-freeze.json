@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "frozenAt": "2026-10-02T06:41:28.007482+00:00",
+  "selectedMode": "lm0.5",
+  "developmentReportSha256": "32f524b750c5c9cd4d8d27307965774c6d2eee83e96a33bef6ee2048a3ef8342",
+  "policy": {
+    "schemaVersion": 1,
+    "id": "sense-p2c-v1",
+    "seed": "sense-p2c-independent-v1",
+    "sourceCorpus": "sentence-corpus-prepared-v1.json",
+    "partitions": {
+      "dev": 64,
+      "test": 128
+    },
+    "strata": [
+      {
+        "name": "short",
+        "minCharacters": 6,
+        "maxCharacters": 9
+      },
+      {
+        "name": "long",
+        "minCharacters": 10,
+        "maxCharacters": 16
+      }
+    ],
+    "selection": "One Han segment per prepared near-duplicate family per partition; order by SHA256(seed + partition + recordId + segment); half of each partition per length stratum. No decoder/lexicon/model output is consulted.",
+    "leakageAudit": "After sampling, exclude exact/substring and edit-distance<=1 overlaps with earlier corpus partitions (dev vs train; test vs train and dev). Record every exclusion without replacement. Thus accepted counts may be below sampled counts.",
+    "proposal": {
+      "package": "pypinyin",
+      "version": "0.55.0",
+      "style": "NORMAL",
+      "vToU": false,
+      "toneSandhi": false
+    },
+    "annotation": "Agent review of every selected text and proposed syllable sequence, before any candidate output; explicit status/note per row. Preserve awkward but interpretable source text. Any exclusion must be recorded, not silently replaced. This is not a human-annotated gold claim.",
+    "measurement": "Unspaced full-pinyin, empty editor context, candidateLimit 255, exact source reconstruction and Unicode CER; no post-result homophone aliases.",
+    "developmentModes": [
+      "legacy",
+      "lm0.25",
+      "lm0.5",
+      "lm1.0",
+      "lm2.0"
+    ],
+    "selectionGate": {
+      "minimumTop1Gain": 3,
+      "maximumTop10Loss": 1,
+      "maximumCoverageLoss": 0,
+      "cerMustNotIncrease": true
+    },
+    "selectionTieBreak": "top1 descending, CER ascending, top3 descending, LM weight ascending; otherwise choose legacy",
+    "testUse": "Only legacy and the frozen development-selected mode. Freeze source/model/data hashes before test. Do not retune from this test or present later runs as first-use held-out results.",
+    "promotionGate": {
+      "testTop1MustNotDecrease": true,
+      "testCerMustNotIncrease": true,
+      "maximumTestCoverageLoss": 0,
+      "requiresAndroidLifecycleAcceptance": true
+    }
+  },
+  "pins": {
+    "frozenDatasetSha256": "7f8ff68e5337d3aeef62b3efb559e8c254cbf4e3c5b051d1b52430ce32839b4e",
+    "assets": {
+      "pinyin_lexicon.bin": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
+      "pinyin_bigrams.bin": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
+      "pinyin_syllables.txt": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+      "english_lexicon.txt": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624",
+      "character-v1.scng": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d"
+    },
+    "sources": {
+      "io/github/ethanbird/senseime/core/AdaptivePinyinDecoder.kt": "8363ce29f45f3af2a5b9f0b87101c0e51696be166321a49bbb73bd6e80a287a0",
+      "io/github/ethanbird/senseime/core/AdaptiveWubi86Decoder.kt": "a35838bab4a81024eb4de8a91e13cd9d6016e2d944bfc3a1f1a68b3fb7ec92b8",
+      "io/github/ethanbird/senseime/core/CandidateRanker.kt": "90c6608ac5db298f3d118c7b0a845aee72c77e934aac579482eb40c8798ed882",
+      "io/github/ethanbird/senseime/core/CandidateSnapshot.kt": "a9e67e6cad44e6444d6f973e4a166bf8740031ee499db7c8f450e84a2e8778c7",
+      "io/github/ethanbird/senseime/core/CharacterBigramModel.kt": "31932aa41a2941ee4a25ee64ef20376e1c8c22cebf8e6c4e5761f65f2eb319a1",
+      "io/github/ethanbird/senseime/core/CharacterLanguageModel.kt": "13edc15ff7b3e35a4aa6b1097e86a3798660a1d7cea1b9c60fc6688e51bda6f9",
+      "io/github/ethanbird/senseime/core/CommitSequenceTracker.kt": "b5553d8064c4e5fea98957301751f4f8dc15047f04daecb357919d663bc2dfc4",
+      "io/github/ethanbird/senseime/core/CorrectionSearchBudget.kt": "b7a20c3cc3baadc70eafc9b82531b7109d196b8252d9c8e142495808d55586a9",
+      "io/github/ethanbird/senseime/core/CuratedLexicalCandidateCatalog.kt": "003535f8f5a2e42ffb622b728370166c8f83060fbe99c8feab40c6505cecd9ff",
+      "io/github/ethanbird/senseime/core/EnglishInputSession.kt": "b2f710e2eb0d1d6f0a3d8e61a00745e2442a822a57818f54ff15e94ba4077401",
+      "io/github/ethanbird/senseime/core/EnglishLexicon.kt": "d4023375ffcf9636f2f099001864b12d97de587d074964fb855fe33cf7b2f509",
+      "io/github/ethanbird/senseime/core/EnglishWordUsage.kt": "66f3433d8ec70682e9481916502998a9b0fd30a731c784ff890750fdcfa562d5",
+      "io/github/ethanbird/senseime/core/FakeDecoder.kt": "2ea5166529da40546f4f6f1cef86036ec5a1152a129fdebc7cdfa18e969ba591",
+      "io/github/ethanbird/senseime/core/InputModel.kt": "5a5316e26a1a3da6f90cf0248208e0a39d7f7ee97ec4a65e2341bb7c1a7fde38",
+      "io/github/ethanbird/senseime/core/InputReducer.kt": "b608ea6ca6a3e53067d215acc6949f1007b1cc519b3f2de42a28507c7daf936d",
+      "io/github/ethanbird/senseime/core/M0HostBenchmark.kt": "e18a429e81795794463f53f304894b8938dd52a98ddddd24550bd4ca176f3adf",
+      "io/github/ethanbird/senseime/core/M10CharacterLmBenchmark.kt": "c88f3f193ce2ebf37b14c5baad0e3dbc76c540cd55f5859105a4bc9d1570be45",
+      "io/github/ethanbird/senseime/core/M11LatticeLanguageBenchmark.kt": "1c79b49983defc05c8889d8c266168df99801dcf20f8362bae073c306b6a58d2",
+      "io/github/ethanbird/senseime/core/M12P2cBenchmark.kt": "ff18694be688990b63de59e7c67555a69389bfa2533ab3db82ef11ca83db0d75",
+      "io/github/ethanbird/senseime/core/M1PinyinBenchmark.kt": "9e3ebc93691e8420c8edbb8eb4a55d801b19c5e7e631cab11063408f1576d212",
+      "io/github/ethanbird/senseime/core/M2AdaptiveBenchmark.kt": "88ae82e685b28b79c68d6eb549867e70f2da66e75c2d014a2710cdf24be606f2",
+      "io/github/ethanbird/senseime/core/M3SentenceBenchmark.kt": "03c5de47af070a2cf89ac0700711bbd9488ccb49a6ddc9a6938b49da9c7f3cd7",
+      "io/github/ethanbird/senseime/core/M4CoreBenchmark.kt": "3fa4158cf9cdf414b2e0e2f8a3eaac64d81e7e317f719dd6baf91ee020e97c18",
+      "io/github/ethanbird/senseime/core/M5MixedInputBenchmark.kt": "47e1ff5639ea06dc8f1f28b2da3df4099b4cb8a3e088a78e238e98398732e114",
+      "io/github/ethanbird/senseime/core/M6InputPolishBenchmark.kt": "14a226681511b1c2cb76323452424c7759d130bc1926b1ada25b464a12fb7a55",
+      "io/github/ethanbird/senseime/core/M7ChineseSchemeBenchmark.kt": "583ad236955f77f87ddc120795b89f70ef88c19f477c7d42d2fb8ee59641b755",
+      "io/github/ethanbird/senseime/core/M8DailyInputBenchmark.kt": "77c83f59177ec5619dd759ccb87b3ad42e7ed246f3cc1b9d3792f8d3b20d0e30",
+      "io/github/ethanbird/senseime/core/M9PersonalSentenceBenchmark.kt": "54bd54fac46b6ba4fce9c0e442c628ac6b3d6e512e8df4371dcffbc56e18fd0e",
+      "io/github/ethanbird/senseime/core/MixedCandidateRanker.kt": "c0a24077e62e51e5edaddbbc5ff694d2a939a5bf075802ef5b9999cad5483769",
+      "io/github/ethanbird/senseime/core/PinyinDecoder.kt": "6ba90b73b2724d64757806dd1f8436717e7a2858c7d6c1f5e032664d408001a6",
+      "io/github/ethanbird/senseime/core/PinyinInputLimits.kt": "7759ce67e9dbaffffba153c3c3cf2fa71e919198de6bb9799840b4f0b8a47a6f",
+      "io/github/ethanbird/senseime/core/PinyinLanguageScorer.kt": "5e8ef28da3e97f99287160a013c90476611b92f54ba1355fc0764956e1018a61",
+      "io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt": "c7840c020f72e921afced6b08f492787f4401c1982bc5003d761467aea6ad677",
+      "io/github/ethanbird/senseime/core/PinyinSyllableSegmenter.kt": "8533e1ffd03d9a99af3d2a81a16c4b9275c7181adddb7ab48751449175133ba7",
+      "io/github/ethanbird/senseime/core/PrefixCandidateCache.kt": "5dc949d24ac6df2050628c930323d0fc5370599844f53fe68eb91b5f572a7408",
+      "io/github/ethanbird/senseime/core/ProgressivePinyin.kt": "ab904d599c4e188a3eb5d630c5f8e488d2d98ce156bc1251910cfeccda6e7e4f",
+      "io/github/ethanbird/senseime/core/SemanticCandidateCatalog.kt": "b7308ba865dace349456daa3bf666b97affa5bf77945474bde2352cdfd3e87a1",
+      "io/github/ethanbird/senseime/core/SerialPersistenceQueue.kt": "d7882ff60210696c825be60b5c9cfe10651f55f05fcb0209d27fff3994bcc8d9",
+      "io/github/ethanbird/senseime/core/T9AlternativeInputDecoder.kt": "cf2e3f1aa4e394074902fbed017eb0a7afdf6f3df09560fad6755ed5ec0bf62d",
+      "io/github/ethanbird/senseime/core/T9Composition.kt": "ff2663ef91b666386f41954ceebe945ab421cbcfdb5a944dca64aab0b0a16727",
+      "io/github/ethanbird/senseime/core/T9PinyinChoice.kt": "2c63475a857b941c78950bca98b9915676c59e3544fd2d6f75c077c11d590152",
+      "io/github/ethanbird/senseime/core/T9SyllableIndex.kt": "5b9752addfe68ac197beff57b9869d161e8fb1543106667d4b2b1cd2a3fba223",
+      "io/github/ethanbird/senseime/core/UserAssociation.kt": "4f916a0601cc830c48fc5b485509bef80f903fc20269febee5eced1da02b7fe1",
+      "io/github/ethanbird/senseime/core/UserPersonalization.kt": "00adbd72f133ca817a02ae5c932104f4483d7b726066a61bc3dc0246bbca9a4b",
+      "io/github/ethanbird/senseime/core/UserPinyinLattice.kt": "8a71df09fcc5e5d14122ad767f03ed4150773833aad2ddc3bb17a9120588fb5f",
+      "io/github/ethanbird/senseime/core/Wubi86Lexicon.kt": "468f3b0aa998c34376c7486ec063eadc626b4de6d41cd89527fa9976bf7bf912",
+      "io/github/ethanbird/senseime/core/Wubi86Personalization.kt": "5777e86c2bffccf1f30557e5a648d0ec5cd0c430c077c9db56491dc4c033b44d",
+      "io/github/ethanbird/senseime/core/WubiComposition.kt": "e9c7567a5dbb6985d8098cdc8a6a8d02724e5ea5f809526fdd5c80e6db3f06ee"
+    },
+    "runnerSha256": "2a29cf4c55917c1ed3de2696d5020f11db54da74df90a8678ba2fa58a2285699"
+  },
+  "testViewedForSelection": false,
+  "selectionRule": "top1 descending, CER ascending, top3 descending, LM weight ascending; otherwise choose legacy"
+}

@@ -1,0 +1,6 @@
+{
+  "tool": "tools/compare_lexicon_replays.py",
+  "frozenSha256": "1fa85ae342e17152446c9f98418d18b73890e56ff12124e767a8b221316792e1",
+  "correctedSha256": "a780f90b6b52a9011d5a873fd8660358e0d09f5c8fa5afb8aeeb64de64c8f6cd",
+  "reason": "Comparison previously indexed an empty candidate list; preserve empty rows as failures/zero recall, never discard them. Decoder, data, prototype and selection thresholds unchanged."
+}

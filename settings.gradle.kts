@@ -88,4 +88,5 @@ include(
     ":event-journal",
     ":mic-runtime",
     ":benchmark",
+    ":input-quality-device",
 )

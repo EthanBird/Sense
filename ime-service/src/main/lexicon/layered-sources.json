@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "repository": "https://github.com/iDvel/rime-ice",
+  "revision": "3aea6d3694fb3d94ec663641f021f788822897ad",
+  "license": "GPL-3.0-only",
+  "licenseFile": "vendor/rime-ice/LICENSE",
+  "licenseSha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+  "baseSha256": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
+  "syllablesSha256": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+  "selection": "All missing text/pinyin pairs, 2..8 Han, one known syllable per Han; no evaluation labels or output-based word selection",
+  "weightInterpretation": "Separate uniform fallback prior, not transferred raw frequency; private prefix/initials/hybrid indexes unchanged",
+  "sources": [
+    {
+      "path": "vendor/rime-ice/cn_dicts/base.dict.yaml",
+      "sha256": "19f6f96f5dfe553545f36c979001a12e3f3c0316f4e23f4382960a13e93e7550"
+    },
+    {
+      "path": "vendor/rime-ice/cn_dicts/ext.dict.yaml",
+      "sha256": "f3843fecd2ec69ab823360383e8a07b4a69f4189133a87186f1702b350c1db2e"
+    },
+    {
+      "path": "vendor/rime-ice/cn_dicts/others.dict.yaml",
+      "sha256": "c7475d773e619f61b88d47fa8ec789aba02aa0d1c98edaed309e53487b048b32"
+    }
+  ]
+}

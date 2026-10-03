@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "scope": "Full core/UI/service JVM/Robolectric and App About targeted only; Gradle unchanged tasks may be reused",
+  "apkSha256": "64244812ea365af07db4c0f00adf8affaefa6bc08263751571d6566c292b2777",
+  "modules": {
+    "core-input": {
+      "tests": 284,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 231,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 284,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "pythonTests": 40,
+  "logs": {
+    "hold-build.log": "3590144040c8856bf1720f5a9a18dab5881c5c21709d03583fa3405f0c2fb485",
+    "final-host-build.log": "d0f133feb13a1465c2f11db0f162c25c4c1dbcb76bbbc601f7793a58b8ca0be1",
+    "final-tests-build.log": "6b0b2f87aa087fec49d917c60a5de218da9bec2110183201e429f0b6f76b6ae1",
+    "python-tests.log": "63a2fe5ce65c1346fec99f87b7f20a19844821dd631ab7a270d499c70ab36343"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "scope": "APK contents only, Android execution reported separately",
+  "apkSha256": "d420f01909f775a5fd96ba8e795b0dc989c5a275b99e83078667b7e1e86d3202",
+  "apkBytes": 97094639,
+  "model": {
+    "file": "association_words.snwp",
+    "bytes": 3756683,
+    "sha256": "d0b157b46ee6df5fe0466870f6a5bf2951b0498a081d4860b3791bb2f123bf39"
+  },
+  "modelCompressedBytes": 2521317,
+  "contexts": 73253,
+  "sharedAttribution": {
+    "file": "pinyin_character_lm_attribution.tsv",
+    "sha256": "acfb932b806f02bd53b57f4a902628fea2c29f6efda7a785a11be432ac22173a",
+    "sentences": 77733,
+    "contributors": 932
+  },
+  "dictionary": {
+    "file": "pinyin_lexicon.bin",
+    "sha256": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
+    "license": "GPL-3.0",
+    "notice": "RIME-FROST-NOTICE.txt"
+  },
+  "characterModelAudit": {
+    "schemaVersion": 1,
+    "scope": "APK zip content audit; not Android execution",
+    "apkSha256": "d420f01909f775a5fd96ba8e795b0dc989c5a275b99e83078667b7e1e86d3202",
+    "apkBytes": 97094639,
+    "model": {
+      "file": "pinyin_character_lm.scng",
+      "sha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+      "bytes": 3090930,
+      "trainingConfig": {
+        "discount": 0.75,
+        "min_char_count": 2,
+        "min_bigram_count": 1,
+        "min_trigram_count": 2,
+        "alpha": 0.1
+      }
+    },
+    "attribution": {
+      "file": "pinyin_character_lm_attribution.tsv",
+      "sha256": "acfb932b806f02bd53b57f4a902628fea2c29f6efda7a785a11be432ac22173a",
+      "sentences": 77733,
+      "contributors": 932
+    },
+    "attributionBytes": 1359869,
+    "attributionCompressedBytes": 286294,
+    "decoderMode": "lm0.5",
+    "passed": true
+  },
+  "passed": true
+}

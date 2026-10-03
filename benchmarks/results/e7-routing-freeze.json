@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "stage": "E7-routing",
+  "at": "2026-10-02T18:48:24.123043+00:00",
+  "scope": "Post-audit engineering compatibility fix, not a new blind quality selection",
+  "reason": "Full unit gates found T9 nihao displaced by nihan and legacy yisscp missing. Route tier-2 lookup/index to LM-bound decoder only; same full-pinyin scores and chosen weight. New alias assertion on LM was also probed on old base and fails there; retained as an existing gap.",
+  "initialUnitFailures": [
+    "PinyinDecoderTest.productionDecoderRecoversRareMixedInputAndARepeateFinalKey",
+    "ProductionLearningQualityTest.constrainedT9RetainsLexicalProvenanceAcrossNumericSpellings"
+  ],
+  "changedPins": {
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinDecoder.kt": {
+      "before": "da8c5a519cb52a2224492557871e9692f5f795cc9ec902502fac87c06b2768a5",
+      "after": "c013c6f3d5794c29e31b4a49600901c25f90c872a83896f67ff3e9ab0bb29387"
+    }
+  },
+  "candidateAsset": {
+    "file": "pinyin_lexicon.bin",
+    "bytes": 46495514,
+    "sha256": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232"
+  },
+  "expectedFullPinyinOutputEquality": true,
+  "replayTreatment": "All previously seen audit data reused only for deterministic routing-equivalence, no fresh accuracy claim",
+  "originalFreezeSha256": "db93e58342fff9c8b6893eff53bfa0edb78150cae69ea232cc4980600890e64b"
+}

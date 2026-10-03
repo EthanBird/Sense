@@ -1,0 +1,15 @@
+{
+  "scope": "Predeclared E1 acceptance gate, not overall input-quality goal completion",
+  "quality": {
+    "cleanCountsPreserved": true,
+    "typoTop10GainAtLeast20": true,
+    "typoCharacterErrorsNonIncreasing": true,
+    "everyMutationCoverageNonDecreasing": true
+  },
+  "hostDevelopmentMedianRatio": 1.2256441279181676,
+  "hostDevelopmentMedianPassed": true,
+  "androidObservedP95Ratio": 1.0785498489425982,
+  "androidP95Passed": true,
+  "androidMaxConfirmationMs": 394,
+  "androidMaxPassed": true
+}

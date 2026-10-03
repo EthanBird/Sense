@@ -2,9 +2,41 @@ package io.github.ethanbird.senseime.service
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 class AssociationDisplayLifecycleTest {
+    @Test
+    fun holdingVisibleCandidatesInvalidatesExpiryAndReleaseStartsANewIdleTicket() {
+        val lifecycle = AssociationDisplayLifecycle()
+        val first = lifecycle.arm()
+        assertTrue(lifecycle.reveal(first))
+        assertTrue(lifecycle.holdInteraction())
+        assertFalse(lifecycle.holdInteraction())
+        assertFalse(lifecycle.expire(first))
+        assertTrue(lifecycle.visible)
+        val released = requireNotNull(lifecycle.releaseInteraction())
+        assertFalse(lifecycle.expire(first))
+        assertNull(lifecycle.releaseInteraction())
+        assertTrue(lifecycle.expire(released))
+    }
+
+    @Test
+    fun cancelAndNewCommitDoNotInheritAnOldGestureHold() {
+        val lifecycle = AssociationDisplayLifecycle()
+        val first = lifecycle.arm()
+        assertFalse(lifecycle.holdInteraction())
+        assertTrue(lifecycle.reveal(first))
+        assertTrue(lifecycle.holdInteraction())
+        lifecycle.cancel()
+        assertNull(lifecycle.releaseInteraction())
+        assertFalse(lifecycle.visible)
+        val next = lifecycle.arm()
+        assertTrue(lifecycle.reveal(next))
+        assertNull(lifecycle.releaseInteraction())
+        assertTrue(lifecycle.expire(next))
+    }
+
     @Test
     fun continuousTypingCancelsPendingRevealAndRejectsItsStaleCallback() {
         val lifecycle = AssociationDisplayLifecycle()

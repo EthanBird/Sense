@@ -296,8 +296,16 @@ object KeyboardLayoutContract {
     fun letterLabel(character: Char, chineseMode: Boolean, shifted: Boolean): String =
         if (chineseMode || shifted) character.uppercase() else character.toString()
 
-    fun thirdLetterRow(shifted: Boolean, chineseMode: Boolean = false): List<WeightedKey> = buildList {
-        add(WeightedKey("⇧", KeyCodes.SHIFT, 1.25f, action = true))
+    fun thirdLetterRow(
+        shifted: Boolean,
+        chineseMode: Boolean = false,
+        pinyinCompositionActive: Boolean = false,
+    ): List<WeightedKey> = buildList {
+        add(if (chineseMode && pinyinCompositionActive) {
+            WeightedKey("分词", '\''.code, 1.25f, action = true)
+        } else {
+            WeightedKey("⇧", KeyCodes.SHIFT, 1.25f, action = true)
+        })
         "zxcvbnm".forEach { character ->
             add(WeightedKey(letterLabel(character, chineseMode, shifted), character.code, 1f))
         }

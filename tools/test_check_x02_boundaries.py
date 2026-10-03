@@ -165,6 +165,7 @@ def _write_good_tree(root: Path) -> None:
         "memory-protocol",
         "event-journal",
         "benchmark",
+        "input-quality-device",
     )
     include_lines = "\n".join(f'    ":{module}",' for module in modules)
     _write(
@@ -211,6 +212,7 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
         "agent-ui",
         "core-input",
         "benchmark",
+        "input-quality-device",
     ):
         _write(root, f"{module}/build.gradle.kts", "dependencies {}\n")
     _write(root, "gradle.properties", "fixture=true\n")
@@ -902,6 +904,20 @@ rootProject.name = "fixture"
             '\ndependencies { implementation(project(":event-journal")) }\n',
         )
         self.assert_source_rejected("references an X-02 module")
+
+    def test_external_editor_fixture_is_not_a_product_dependency(self) -> None:
+        self.append(
+            "app/build.gradle.kts",
+            '\ndependencies { implementation(project(":input-quality-device")) }\n',
+        )
+        self.assert_source_rejected("production graph reaches external-editor test fixture")
+
+    def test_external_editor_fixture_is_not_a_transitive_product_dependency(self) -> None:
+        self.append(
+            "ai-runtime/build.gradle.kts",
+            '\ndependencies { implementation(project(":input-quality-device")) }\n',
+        )
+        self.assert_source_rejected("production graph reaches external-editor test fixture")
 
     def test_missing_local_release_script_is_rejected(self) -> None:
         (self.root / "tools/local_release.ps1").unlink()

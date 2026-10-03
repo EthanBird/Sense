@@ -1,0 +1,28 @@
+{
+  "core-input": {
+    "tests": 273,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ime-ui": {
+    "tests": 229,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ime-service": {
+    "tests": 282,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "app": {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "scope": "Full core/UI/service plus App About targeted JVM/Robolectric validation; unchanged Gradle tasks reused",
+  "pythonTests": 39
+}

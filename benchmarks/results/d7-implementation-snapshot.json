@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "scope": "D7 touch-aware association expiry; no decoder or LM changes; known deterministic fixtures, not a new quality benchmark",
+  "productionSources": {
+    "ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/AssociationDisplayLifecycle.kt": "aceb0c95c667dfcd32a6ec043cc7f348f9c0abd6faabd65162778cbb42900b4e",
+    "ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/SenseInputMethodService.kt": "52a1fcc8d25237db37bb0a961fc94036ff360bf504d11cd36f249d384947786b",
+    "ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/CandidatePointerActivity.kt": "80da955b4eb650756e8171a3351d4be461a84e6e7ebaca75fbc5458f9dd8036c",
+    "ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/KeyboardInteractionController.kt": "13feff8d2880118d3ac2c6b9ab3a76e79868ffaaffc74605e54d6ac568ae1a1b",
+    "ime-ui/src/main/kotlin/io/github/ethanbird/senseime/ui/SenseKeyboardView.kt": "ff2a4b2c6a4520c54543d8ee3ed1508ce0d849c3726bb69d6b2c9034d6bdf88d"
+  },
+  "unchangedFromE3": {
+    "allCoreSourceHashesMatch": true,
+    "coreSourceFiles": 55,
+    "assets": {
+      "pinyin_lexicon.bin": true,
+      "pinyin_bigrams.bin": true,
+      "pinyin_character_lm.scng": true,
+      "pinyin_syllables.txt": true,
+      "english_lexicon.txt": true
+    },
+    "sourceEvidence": {
+      "report": "benchmarks/results/baselines/e3-test-anchored.json.gz",
+      "gzipSha256": "f8045c3018b0530ca7905acee9762c66cb2ef8e7ac3008aae1226649a695e7cc",
+      "sourceFileCount": 55,
+      "assetHashes": {
+        "pinyin_lexicon.bin": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
+        "pinyin_bigrams.bin": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
+        "pinyin_character_lm.scng": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+        "pinyin_syllables.txt": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+        "english_lexicon.txt": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624"
+      }
+    }
+  },
+  "apkSha256": "64244812ea365af07db4c0f00adf8affaefa6bc08263751571d6566c292b2777",
+  "baselineApkSha256": "4854022ee70632fd4cc261676cf1c16ebb20f2c1bbb5ef54180ad48abcca537a",
+  "finalExpectedChecks": [
+    "JVM/Robolectric core UI service and App About targeted",
+    "Python tool regression",
+    "8 system association tests",
+    "19 ordinary system regression executions",
+    "4 slow-worker fault tests",
+    "13 Android View layout/interaction tests including real scroll",
+    "Original held-touch failure retained",
+    "Same final APK hashes across system evidence",
+    "Unchanged decoder sources and model assets",
+    "Learned words retained; private fixture phrase absent"
+  ]
+}

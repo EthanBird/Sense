@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "scope": "dev only; Robolectric Android assets; diagnostic, not a new held-out selection",
+  "cases": 63,
+  "devSha256": "a97ba621d050f320b8c57533eac785ec3a0e1792f0e566f53cf3f6a1149b52db",
+  "modelSha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+  "modes": [
+    {
+      "mode": "wordFrequencyOnly",
+      "top1": 37,
+      "top3": 47,
+      "covered": 61,
+      "characterErrors": 45,
+      "characters": 600,
+      "cer": 0.075
+    },
+    {
+      "mode": "dictionaryBigram",
+      "top1": 37,
+      "top3": 49,
+      "covered": 60,
+      "characterErrors": 44,
+      "characters": 600,
+      "cer": 0.07333333333333333
+    },
+    {
+      "mode": "calibrationOnly",
+      "top1": 37,
+      "top3": 49,
+      "covered": 60,
+      "characterErrors": 44,
+      "characters": 600,
+      "cer": 0.07333333333333333
+    },
+    {
+      "mode": "corpusLm0.5",
+      "top1": 45,
+      "top3": 55,
+      "covered": 60,
+      "characterErrors": 29,
+      "characters": 600,
+      "cer": 0.04833333333333333
+    }
+  ]
+}

@@ -1,0 +1,961 @@
+# id	stratum	mode	query	expected	canonical	syllables	rawSourceWeight	source
+0000f68361f03a2b6334b1bd5c82c01c5e3ba473d3a0b0a3974d4f2698ca1a5b-full	3han-common	full	maochulai	冒出来	maochulai	mao chu lai	1417	rime-frost-base
+0000f68361f03a2b6334b1bd5c82c01c5e3ba473d3a0b0a3974d4f2698ca1a5b-first-full	3han-common	first-full	maocl	冒出来	maochulai	mao chu lai	1417	rime-frost-base
+0000f68361f03a2b6334b1bd5c82c01c5e3ba473d3a0b0a3974d4f2698ca1a5b-middle-full	3han-common	middle-full	mchul	冒出来	maochulai	mao chu lai	1417	rime-frost-base
+0000f68361f03a2b6334b1bd5c82c01c5e3ba473d3a0b0a3974d4f2698ca1a5b-last-full	3han-common	last-full	mclai	冒出来	maochulai	mao chu lai	1417	rime-frost-base
+0000f68361f03a2b6334b1bd5c82c01c5e3ba473d3a0b0a3974d4f2698ca1a5b-alternating	3han-common	alternating	maoclai	冒出来	maochulai	mao chu lai	1417	rime-frost-base
+000406a61436052222c7ac60ada99452e511b3d8cca8fd8fa923949721cf42bd-full	3han-common	full	zaitamen	在它们	zaitamen	zai ta men	248	rime-frost-base
+000406a61436052222c7ac60ada99452e511b3d8cca8fd8fa923949721cf42bd-first-full	3han-common	first-full	zaitm	在它们	zaitamen	zai ta men	248	rime-frost-base
+000406a61436052222c7ac60ada99452e511b3d8cca8fd8fa923949721cf42bd-middle-full	3han-common	middle-full	ztam	在它们	zaitamen	zai ta men	248	rime-frost-base
+000406a61436052222c7ac60ada99452e511b3d8cca8fd8fa923949721cf42bd-last-full	3han-common	last-full	ztmen	在它们	zaitamen	zai ta men	248	rime-frost-base
+000406a61436052222c7ac60ada99452e511b3d8cca8fd8fa923949721cf42bd-alternating	3han-common	alternating	zaitmen	在它们	zaitamen	zai ta men	248	rime-frost-base
+00056a1811796a0a53bde6cb4e1fa4584e8508e1afea6c5a1658352da9bef924-full	3han-common	full	bukuaile	不快乐	bukuaile	bu kuai le	668	rime-frost-base
+00056a1811796a0a53bde6cb4e1fa4584e8508e1afea6c5a1658352da9bef924-first-full	3han-common	first-full	bukl	不快乐	bukuaile	bu kuai le	668	rime-frost-base
+00056a1811796a0a53bde6cb4e1fa4584e8508e1afea6c5a1658352da9bef924-middle-full	3han-common	middle-full	bkuail	不快乐	bukuaile	bu kuai le	668	rime-frost-base
+00056a1811796a0a53bde6cb4e1fa4584e8508e1afea6c5a1658352da9bef924-last-full	3han-common	last-full	bkle	不快乐	bukuaile	bu kuai le	668	rime-frost-base
+00056a1811796a0a53bde6cb4e1fa4584e8508e1afea6c5a1658352da9bef924-alternating	3han-common	alternating	bukle	不快乐	bukuaile	bu kuai le	668	rime-frost-base
+0005dcbc97c59ff6aee26fa656e901b82349c3b5a70b3247756f040f959bf71c-full	3han-common	full	wanyide	万亿的	wanyide	wan yi de	458	rime-frost-base
+0005dcbc97c59ff6aee26fa656e901b82349c3b5a70b3247756f040f959bf71c-first-full	3han-common	first-full	wanyd	万亿的	wanyide	wan yi de	458	rime-frost-base
+0005dcbc97c59ff6aee26fa656e901b82349c3b5a70b3247756f040f959bf71c-middle-full	3han-common	middle-full	wyid	万亿的	wanyide	wan yi de	458	rime-frost-base
+0005dcbc97c59ff6aee26fa656e901b82349c3b5a70b3247756f040f959bf71c-last-full	3han-common	last-full	wyde	万亿的	wanyide	wan yi de	458	rime-frost-base
+0005dcbc97c59ff6aee26fa656e901b82349c3b5a70b3247756f040f959bf71c-alternating	3han-common	alternating	wanyde	万亿的	wanyide	wan yi de	458	rime-frost-base
+0007462ffdc641eb621fb2affdeb79bf16165685288279879f544bcf452bdd65-full	3han-common	full	zhongdiyin	中低音	zhongdiyin	zhong di yin	158	rime-frost-base
+0007462ffdc641eb621fb2affdeb79bf16165685288279879f544bcf452bdd65-first-full	3han-common	first-full	zhongdy	中低音	zhongdiyin	zhong di yin	158	rime-frost-base
+0007462ffdc641eb621fb2affdeb79bf16165685288279879f544bcf452bdd65-middle-full	3han-common	middle-full	zdiy	中低音	zhongdiyin	zhong di yin	158	rime-frost-base
+0007462ffdc641eb621fb2affdeb79bf16165685288279879f544bcf452bdd65-last-full	3han-common	last-full	zdyin	中低音	zhongdiyin	zhong di yin	158	rime-frost-base
+0007462ffdc641eb621fb2affdeb79bf16165685288279879f544bcf452bdd65-alternating	3han-common	alternating	zhongdyin	中低音	zhongdiyin	zhong di yin	158	rime-frost-base
+00082bcb3e80ba7066785c107f9dfe14d2c6b52821e09cf502e02b7f76f54192-full	3han-common	full	haiguiding	还规定	haiguiding	hai gui ding	141	rime-frost-ext
+00082bcb3e80ba7066785c107f9dfe14d2c6b52821e09cf502e02b7f76f54192-first-full	3han-common	first-full	haigd	还规定	haiguiding	hai gui ding	141	rime-frost-ext
+00082bcb3e80ba7066785c107f9dfe14d2c6b52821e09cf502e02b7f76f54192-middle-full	3han-common	middle-full	hguid	还规定	haiguiding	hai gui ding	141	rime-frost-ext
+00082bcb3e80ba7066785c107f9dfe14d2c6b52821e09cf502e02b7f76f54192-last-full	3han-common	last-full	hgding	还规定	haiguiding	hai gui ding	141	rime-frost-ext
+00082bcb3e80ba7066785c107f9dfe14d2c6b52821e09cf502e02b7f76f54192-alternating	3han-common	alternating	haigding	还规定	haiguiding	hai gui ding	141	rime-frost-ext
+000893685c7971aeb9c9320b1a8a235de3e81b285492c625b0c498ec9c757631-full	3han-common	full	zhuanlifa	专利法	zhuanlifa	zhuan li fa	609	rime-frost-base
+000893685c7971aeb9c9320b1a8a235de3e81b285492c625b0c498ec9c757631-first-full	3han-common	first-full	zhuanlf	专利法	zhuanlifa	zhuan li fa	609	rime-frost-base
+000893685c7971aeb9c9320b1a8a235de3e81b285492c625b0c498ec9c757631-middle-full	3han-common	middle-full	zlif	专利法	zhuanlifa	zhuan li fa	609	rime-frost-base
+000893685c7971aeb9c9320b1a8a235de3e81b285492c625b0c498ec9c757631-last-full	3han-common	last-full	zlfa	专利法	zhuanlifa	zhuan li fa	609	rime-frost-base
+000893685c7971aeb9c9320b1a8a235de3e81b285492c625b0c498ec9c757631-alternating	3han-common	alternating	zhuanlfa	专利法	zhuanlifa	zhuan li fa	609	rime-frost-base
+0008937571d7afbe71d2b179e6e510aade3831bf007712a7b3278a30948cab44-full	3han-common	full	guabuzhu	挂不住	guabuzhu	gua bu zhu	180	rime-frost-base
+0008937571d7afbe71d2b179e6e510aade3831bf007712a7b3278a30948cab44-first-full	3han-common	first-full	guabz	挂不住	guabuzhu	gua bu zhu	180	rime-frost-base
+0008937571d7afbe71d2b179e6e510aade3831bf007712a7b3278a30948cab44-middle-full	3han-common	middle-full	gbuz	挂不住	guabuzhu	gua bu zhu	180	rime-frost-base
+0008937571d7afbe71d2b179e6e510aade3831bf007712a7b3278a30948cab44-last-full	3han-common	last-full	gbzhu	挂不住	guabuzhu	gua bu zhu	180	rime-frost-base
+0008937571d7afbe71d2b179e6e510aade3831bf007712a7b3278a30948cab44-alternating	3han-common	alternating	guabzhu	挂不住	guabuzhu	gua bu zhu	180	rime-frost-base
+0008fb38ecf8d6ba6e83a6f4009e2e6786b814729388793b1e0de041a58d07e2-full	3han-common	full	zhushazhi	朱砂痣	zhushazhi	zhu sha zhi	111	rime-frost-base
+0008fb38ecf8d6ba6e83a6f4009e2e6786b814729388793b1e0de041a58d07e2-first-full	3han-common	first-full	zhusz	朱砂痣	zhushazhi	zhu sha zhi	111	rime-frost-base
+0008fb38ecf8d6ba6e83a6f4009e2e6786b814729388793b1e0de041a58d07e2-middle-full	3han-common	middle-full	zshaz	朱砂痣	zhushazhi	zhu sha zhi	111	rime-frost-base
+0008fb38ecf8d6ba6e83a6f4009e2e6786b814729388793b1e0de041a58d07e2-last-full	3han-common	last-full	zszhi	朱砂痣	zhushazhi	zhu sha zhi	111	rime-frost-base
+0008fb38ecf8d6ba6e83a6f4009e2e6786b814729388793b1e0de041a58d07e2-alternating	3han-common	alternating	zhuszhi	朱砂痣	zhushazhi	zhu sha zhi	111	rime-frost-base
+00093fbcc8348f38a6ebc52ac84174ef7379ed8c1c6f34edbb2ce65c5c4fb5f5-full	3han-common	full	xinhuanjing	新环境	xinhuanjing	xin huan jing	311	rime-frost-base
+00093fbcc8348f38a6ebc52ac84174ef7379ed8c1c6f34edbb2ce65c5c4fb5f5-first-full	3han-common	first-full	xinhj	新环境	xinhuanjing	xin huan jing	311	rime-frost-base
+00093fbcc8348f38a6ebc52ac84174ef7379ed8c1c6f34edbb2ce65c5c4fb5f5-middle-full	3han-common	middle-full	xhuanj	新环境	xinhuanjing	xin huan jing	311	rime-frost-base
+00093fbcc8348f38a6ebc52ac84174ef7379ed8c1c6f34edbb2ce65c5c4fb5f5-last-full	3han-common	last-full	xhjing	新环境	xinhuanjing	xin huan jing	311	rime-frost-base
+00093fbcc8348f38a6ebc52ac84174ef7379ed8c1c6f34edbb2ce65c5c4fb5f5-alternating	3han-common	alternating	xinhjing	新环境	xinhuanjing	xin huan jing	311	rime-frost-base
+000a38af509e9e3933e0b53be61f4557b280cbd9b63564257953890bd4db5494-full	3han-common	full	yichuanchuan	一串串	yichuanchuan	yi chuan chuan	114	rime-frost-base
+000a38af509e9e3933e0b53be61f4557b280cbd9b63564257953890bd4db5494-first-full	3han-common	first-full	yicc	一串串	yichuanchuan	yi chuan chuan	114	rime-frost-base
+000a38af509e9e3933e0b53be61f4557b280cbd9b63564257953890bd4db5494-middle-full	3han-common	middle-full	ychuanc	一串串	yichuanchuan	yi chuan chuan	114	rime-frost-base
+000a38af509e9e3933e0b53be61f4557b280cbd9b63564257953890bd4db5494-last-full	3han-common	last-full	ycchuan	一串串	yichuanchuan	yi chuan chuan	114	rime-frost-base
+000a38af509e9e3933e0b53be61f4557b280cbd9b63564257953890bd4db5494-alternating	3han-common	alternating	yicchuan	一串串	yichuanchuan	yi chuan chuan	114	rime-frost-base
+000a98db29f3b653a17aabdb1edfca38f66b3736c47fb6dfbb2097e1b0ac8f82-full	3han-common	full	yaojiaqiang	要加强	yaojiaqiang	yao jia qiang	378	rime-frost-base
+000a98db29f3b653a17aabdb1edfca38f66b3736c47fb6dfbb2097e1b0ac8f82-first-full	3han-common	first-full	yaojq	要加强	yaojiaqiang	yao jia qiang	378	rime-frost-base
+000a98db29f3b653a17aabdb1edfca38f66b3736c47fb6dfbb2097e1b0ac8f82-middle-full	3han-common	middle-full	yjiaq	要加强	yaojiaqiang	yao jia qiang	378	rime-frost-base
+000a98db29f3b653a17aabdb1edfca38f66b3736c47fb6dfbb2097e1b0ac8f82-last-full	3han-common	last-full	yjqiang	要加强	yaojiaqiang	yao jia qiang	378	rime-frost-base
+000a98db29f3b653a17aabdb1edfca38f66b3736c47fb6dfbb2097e1b0ac8f82-alternating	3han-common	alternating	yaojqiang	要加强	yaojiaqiang	yao jia qiang	378	rime-frost-base
+000c14215d654357cdddcb84273cf22423a9277c5efd11f0280e3963e8cb9e1c-full	3han-common	full	gaodeduo	高得多	gaodeduo	gao de duo	1022	rime-frost-ext
+000c14215d654357cdddcb84273cf22423a9277c5efd11f0280e3963e8cb9e1c-first-full	3han-common	first-full	gaodd	高得多	gaodeduo	gao de duo	1022	rime-frost-ext
+000c14215d654357cdddcb84273cf22423a9277c5efd11f0280e3963e8cb9e1c-middle-full	3han-common	middle-full	gded	高得多	gaodeduo	gao de duo	1022	rime-frost-ext
+000c14215d654357cdddcb84273cf22423a9277c5efd11f0280e3963e8cb9e1c-last-full	3han-common	last-full	gdduo	高得多	gaodeduo	gao de duo	1022	rime-frost-ext
+000c14215d654357cdddcb84273cf22423a9277c5efd11f0280e3963e8cb9e1c-alternating	3han-common	alternating	gaodduo	高得多	gaodeduo	gao de duo	1022	rime-frost-ext
+000cf626f88b9251724cb13304a5ff9f76e782a55d8cc7064bbb81283c1df052-full	3han-common	full	jiuyaoba	就要把	jiuyaoba	jiu yao ba	569	rime-frost-base
+000cf626f88b9251724cb13304a5ff9f76e782a55d8cc7064bbb81283c1df052-first-full	3han-common	first-full	jiuyb	就要把	jiuyaoba	jiu yao ba	569	rime-frost-base
+000cf626f88b9251724cb13304a5ff9f76e782a55d8cc7064bbb81283c1df052-middle-full	3han-common	middle-full	jyaob	就要把	jiuyaoba	jiu yao ba	569	rime-frost-base
+000cf626f88b9251724cb13304a5ff9f76e782a55d8cc7064bbb81283c1df052-last-full	3han-common	last-full	jyba	就要把	jiuyaoba	jiu yao ba	569	rime-frost-base
+000cf626f88b9251724cb13304a5ff9f76e782a55d8cc7064bbb81283c1df052-alternating	3han-common	alternating	jiuyba	就要把	jiuyaoba	jiu yao ba	569	rime-frost-base
+000d03532af28ca92da434b38b6e24aeecb9b3a3168dab97d5468ed890edec2e-full	3han-common	full	qukanba	去看吧	qukanba	qu kan ba	109	rime-frost-base
+000d03532af28ca92da434b38b6e24aeecb9b3a3168dab97d5468ed890edec2e-first-full	3han-common	first-full	qukb	去看吧	qukanba	qu kan ba	109	rime-frost-base
+000d03532af28ca92da434b38b6e24aeecb9b3a3168dab97d5468ed890edec2e-middle-full	3han-common	middle-full	qkanb	去看吧	qukanba	qu kan ba	109	rime-frost-base
+000d03532af28ca92da434b38b6e24aeecb9b3a3168dab97d5468ed890edec2e-last-full	3han-common	last-full	qkba	去看吧	qukanba	qu kan ba	109	rime-frost-base
+000d03532af28ca92da434b38b6e24aeecb9b3a3168dab97d5468ed890edec2e-alternating	3han-common	alternating	qukba	去看吧	qukanba	qu kan ba	109	rime-frost-base
+000ed73a354b406a48387f94dd916bc82ffd8c426f836d27f95e023fa88e9d71-full	3han-common	full	beitida	北体大	beitida	bei ti da	119	rime-frost-base
+000ed73a354b406a48387f94dd916bc82ffd8c426f836d27f95e023fa88e9d71-first-full	3han-common	first-full	beitd	北体大	beitida	bei ti da	119	rime-frost-base
+000ed73a354b406a48387f94dd916bc82ffd8c426f836d27f95e023fa88e9d71-middle-full	3han-common	middle-full	btid	北体大	beitida	bei ti da	119	rime-frost-base
+000ed73a354b406a48387f94dd916bc82ffd8c426f836d27f95e023fa88e9d71-last-full	3han-common	last-full	btda	北体大	beitida	bei ti da	119	rime-frost-base
+000ed73a354b406a48387f94dd916bc82ffd8c426f836d27f95e023fa88e9d71-alternating	3han-common	alternating	beitda	北体大	beitida	bei ti da	119	rime-frost-base
+0012913d74e16361c3285ecc54bf5143eb4a00b485059859fd2cfd6347bafb99-full	3han-common	full	jihangzi	几行字	jihangzi	ji hang zi	128	rime-frost-base
+0012913d74e16361c3285ecc54bf5143eb4a00b485059859fd2cfd6347bafb99-first-full	3han-common	first-full	jihz	几行字	jihangzi	ji hang zi	128	rime-frost-base
+0012913d74e16361c3285ecc54bf5143eb4a00b485059859fd2cfd6347bafb99-middle-full	3han-common	middle-full	jhangz	几行字	jihangzi	ji hang zi	128	rime-frost-base
+0012913d74e16361c3285ecc54bf5143eb4a00b485059859fd2cfd6347bafb99-last-full	3han-common	last-full	jhzi	几行字	jihangzi	ji hang zi	128	rime-frost-base
+0012913d74e16361c3285ecc54bf5143eb4a00b485059859fd2cfd6347bafb99-alternating	3han-common	alternating	jihzi	几行字	jihangzi	ji hang zi	128	rime-frost-base
+00130fe296aed2f6468f87d9f1d14ef8c55c0c124449b930f17302044327b0dc-full	3han-common	full	shichuanle	失传了	shichuanle	shi chuan le	228	rime-frost-ext
+00130fe296aed2f6468f87d9f1d14ef8c55c0c124449b930f17302044327b0dc-first-full	3han-common	first-full	shicl	失传了	shichuanle	shi chuan le	228	rime-frost-ext
+00130fe296aed2f6468f87d9f1d14ef8c55c0c124449b930f17302044327b0dc-middle-full	3han-common	middle-full	schuanl	失传了	shichuanle	shi chuan le	228	rime-frost-ext
+00130fe296aed2f6468f87d9f1d14ef8c55c0c124449b930f17302044327b0dc-last-full	3han-common	last-full	scle	失传了	shichuanle	shi chuan le	228	rime-frost-ext
+00130fe296aed2f6468f87d9f1d14ef8c55c0c124449b930f17302044327b0dc-alternating	3han-common	alternating	shicle	失传了	shichuanle	shi chuan le	228	rime-frost-ext
+0019a26d5dcc9ea97d597fe0ee94db02275dc0d0eb74ebcb637929d26d56b0cb-full	3han-common	full	xiaoxingxing	小行星	xiaoxingxing	xiao xing xing	1110	rime-frost-base
+0019a26d5dcc9ea97d597fe0ee94db02275dc0d0eb74ebcb637929d26d56b0cb-first-full	3han-common	first-full	xiaoxx	小行星	xiaoxingxing	xiao xing xing	1110	rime-frost-base
+0019a26d5dcc9ea97d597fe0ee94db02275dc0d0eb74ebcb637929d26d56b0cb-middle-full	3han-common	middle-full	xxingx	小行星	xiaoxingxing	xiao xing xing	1110	rime-frost-base
+0019a26d5dcc9ea97d597fe0ee94db02275dc0d0eb74ebcb637929d26d56b0cb-last-full	3han-common	last-full	xxxing	小行星	xiaoxingxing	xiao xing xing	1110	rime-frost-base
+0019a26d5dcc9ea97d597fe0ee94db02275dc0d0eb74ebcb637929d26d56b0cb-alternating	3han-common	alternating	xiaoxxing	小行星	xiaoxingxing	xiao xing xing	1110	rime-frost-base
+0019df3645a45672f58a1c7adfbef0566aa90a6aecb77435fe51e7a45bac5776-full	3han-common	full	wunaide	无奈地	wunaide	wu nai de	591	rime-frost-base
+0019df3645a45672f58a1c7adfbef0566aa90a6aecb77435fe51e7a45bac5776-first-full	3han-common	first-full	wund	无奈地	wunaide	wu nai de	591	rime-frost-base
+0019df3645a45672f58a1c7adfbef0566aa90a6aecb77435fe51e7a45bac5776-middle-full	3han-common	middle-full	wnaid	无奈地	wunaide	wu nai de	591	rime-frost-base
+0019df3645a45672f58a1c7adfbef0566aa90a6aecb77435fe51e7a45bac5776-last-full	3han-common	last-full	wnde	无奈地	wunaide	wu nai de	591	rime-frost-base
+0019df3645a45672f58a1c7adfbef0566aa90a6aecb77435fe51e7a45bac5776-alternating	3han-common	alternating	wunde	无奈地	wunaide	wu nai de	591	rime-frost-base
+001bf6d22d675544ecd8f70869a410a399242ebbb21f9396fbf3504221c13bf3-full	3han-common	full	deiziji	得自己	deiziji	dei zi ji	441	rime-frost-base
+001bf6d22d675544ecd8f70869a410a399242ebbb21f9396fbf3504221c13bf3-first-full	3han-common	first-full	deizj	得自己	deiziji	dei zi ji	441	rime-frost-base
+001bf6d22d675544ecd8f70869a410a399242ebbb21f9396fbf3504221c13bf3-middle-full	3han-common	middle-full	dzij	得自己	deiziji	dei zi ji	441	rime-frost-base
+001bf6d22d675544ecd8f70869a410a399242ebbb21f9396fbf3504221c13bf3-last-full	3han-common	last-full	dzji	得自己	deiziji	dei zi ji	441	rime-frost-base
+001bf6d22d675544ecd8f70869a410a399242ebbb21f9396fbf3504221c13bf3-alternating	3han-common	alternating	deizji	得自己	deiziji	dei zi ji	441	rime-frost-base
+001c2b9882527e294ef372754211f1897ac13467dbb4a719263930bdab3f4088-full	3han-common	full	yixueyuan	医学院	yixueyuan	yi xue yuan	2652	rime-frost-base
+001c2b9882527e294ef372754211f1897ac13467dbb4a719263930bdab3f4088-first-full	3han-common	first-full	yixy	医学院	yixueyuan	yi xue yuan	2652	rime-frost-base
+001c2b9882527e294ef372754211f1897ac13467dbb4a719263930bdab3f4088-middle-full	3han-common	middle-full	yxuey	医学院	yixueyuan	yi xue yuan	2652	rime-frost-base
+001c2b9882527e294ef372754211f1897ac13467dbb4a719263930bdab3f4088-last-full	3han-common	last-full	yxyuan	医学院	yixueyuan	yi xue yuan	2652	rime-frost-base
+001c2b9882527e294ef372754211f1897ac13467dbb4a719263930bdab3f4088-alternating	3han-common	alternating	yixyuan	医学院	yixueyuan	yi xue yuan	2652	rime-frost-base
+001ca26fc268a77a447a82bd578a56b07c67908065795b33e5a8d93757fd95f7-full	3han-common	full	chugaojia	出高价	chugaojia	chu gao jia	104	rime-frost-base
+001ca26fc268a77a447a82bd578a56b07c67908065795b33e5a8d93757fd95f7-first-full	3han-common	first-full	chugj	出高价	chugaojia	chu gao jia	104	rime-frost-base
+001ca26fc268a77a447a82bd578a56b07c67908065795b33e5a8d93757fd95f7-middle-full	3han-common	middle-full	cgaoj	出高价	chugaojia	chu gao jia	104	rime-frost-base
+001ca26fc268a77a447a82bd578a56b07c67908065795b33e5a8d93757fd95f7-last-full	3han-common	last-full	cgjia	出高价	chugaojia	chu gao jia	104	rime-frost-base
+001ca26fc268a77a447a82bd578a56b07c67908065795b33e5a8d93757fd95f7-alternating	3han-common	alternating	chugjia	出高价	chugaojia	chu gao jia	104	rime-frost-base
+001d1537f709329e46bb4b0f30519aea394b578411f42422a07f9aedd2f88e9e-full	3han-common	full	kezhendong	柯震东	kezhendong	ke zhen dong	133	rime-frost-ext
+001d1537f709329e46bb4b0f30519aea394b578411f42422a07f9aedd2f88e9e-first-full	3han-common	first-full	kezd	柯震东	kezhendong	ke zhen dong	133	rime-frost-ext
+001d1537f709329e46bb4b0f30519aea394b578411f42422a07f9aedd2f88e9e-middle-full	3han-common	middle-full	kzhend	柯震东	kezhendong	ke zhen dong	133	rime-frost-ext
+001d1537f709329e46bb4b0f30519aea394b578411f42422a07f9aedd2f88e9e-last-full	3han-common	last-full	kzdong	柯震东	kezhendong	ke zhen dong	133	rime-frost-ext
+001d1537f709329e46bb4b0f30519aea394b578411f42422a07f9aedd2f88e9e-alternating	3han-common	alternating	kezdong	柯震东	kezhendong	ke zhen dong	133	rime-frost-ext
+001dd1177d629dfe84d2166a89c79afaa5c583905135fea6da106eff276605a1-full	3han-common	full	jiejuele	解决了	jiejuele	jie jue le	9461	rime-frost-base
+001dd1177d629dfe84d2166a89c79afaa5c583905135fea6da106eff276605a1-first-full	3han-common	first-full	jiejl	解决了	jiejuele	jie jue le	9461	rime-frost-base
+001dd1177d629dfe84d2166a89c79afaa5c583905135fea6da106eff276605a1-middle-full	3han-common	middle-full	jjuel	解决了	jiejuele	jie jue le	9461	rime-frost-base
+001dd1177d629dfe84d2166a89c79afaa5c583905135fea6da106eff276605a1-last-full	3han-common	last-full	jjle	解决了	jiejuele	jie jue le	9461	rime-frost-base
+001dd1177d629dfe84d2166a89c79afaa5c583905135fea6da106eff276605a1-alternating	3han-common	alternating	jiejle	解决了	jiejuele	jie jue le	9461	rime-frost-base
+001e5122220dbefab16c250dc0e7577d3a2c87cb21308ab3aac8885fe97833bd-full	3han-common	full	zaishiwai	在室外	zaishiwai	zai shi wai	400	rime-frost-base
+001e5122220dbefab16c250dc0e7577d3a2c87cb21308ab3aac8885fe97833bd-first-full	3han-common	first-full	zaisw	在室外	zaishiwai	zai shi wai	400	rime-frost-base
+001e5122220dbefab16c250dc0e7577d3a2c87cb21308ab3aac8885fe97833bd-middle-full	3han-common	middle-full	zshiw	在室外	zaishiwai	zai shi wai	400	rime-frost-base
+001e5122220dbefab16c250dc0e7577d3a2c87cb21308ab3aac8885fe97833bd-last-full	3han-common	last-full	zswai	在室外	zaishiwai	zai shi wai	400	rime-frost-base
+001e5122220dbefab16c250dc0e7577d3a2c87cb21308ab3aac8885fe97833bd-alternating	3han-common	alternating	zaiswai	在室外	zaishiwai	zai shi wai	400	rime-frost-base
+001e8e766fbe796993d30a3a8d12b7e09654437eaca7e12dde12e78c4d117bc3-full	3han-common	full	biandizou	遍地走	biandizou	bian di zou	156	rime-frost-ext
+001e8e766fbe796993d30a3a8d12b7e09654437eaca7e12dde12e78c4d117bc3-first-full	3han-common	first-full	biandz	遍地走	biandizou	bian di zou	156	rime-frost-ext
+001e8e766fbe796993d30a3a8d12b7e09654437eaca7e12dde12e78c4d117bc3-middle-full	3han-common	middle-full	bdiz	遍地走	biandizou	bian di zou	156	rime-frost-ext
+001e8e766fbe796993d30a3a8d12b7e09654437eaca7e12dde12e78c4d117bc3-last-full	3han-common	last-full	bdzou	遍地走	biandizou	bian di zou	156	rime-frost-ext
+001e8e766fbe796993d30a3a8d12b7e09654437eaca7e12dde12e78c4d117bc3-alternating	3han-common	alternating	biandzou	遍地走	biandizou	bian di zou	156	rime-frost-ext
+0020b0b08b34f032317c20b7428de5d17e515c20d56613815fda878fadd6ba06-full	3han-common	full	gelante	格兰特	gelante	ge lan te	568	rime-frost-base
+0020b0b08b34f032317c20b7428de5d17e515c20d56613815fda878fadd6ba06-first-full	3han-common	first-full	gelt	格兰特	gelante	ge lan te	568	rime-frost-base
+0020b0b08b34f032317c20b7428de5d17e515c20d56613815fda878fadd6ba06-middle-full	3han-common	middle-full	glant	格兰特	gelante	ge lan te	568	rime-frost-base
+0020b0b08b34f032317c20b7428de5d17e515c20d56613815fda878fadd6ba06-last-full	3han-common	last-full	glte	格兰特	gelante	ge lan te	568	rime-frost-base
+0020b0b08b34f032317c20b7428de5d17e515c20d56613815fda878fadd6ba06-alternating	3han-common	alternating	gelte	格兰特	gelante	ge lan te	568	rime-frost-base
+0021549ac560d3ad19114083be7b0cc70da4c8d0a18955f3b4771dc14bae7f3a-full	3han-common	full	qingliuyan	请留言	qingliuyan	qing liu yan	187	rime-frost-base
+0021549ac560d3ad19114083be7b0cc70da4c8d0a18955f3b4771dc14bae7f3a-first-full	3han-common	first-full	qingly	请留言	qingliuyan	qing liu yan	187	rime-frost-base
+0021549ac560d3ad19114083be7b0cc70da4c8d0a18955f3b4771dc14bae7f3a-middle-full	3han-common	middle-full	qliuy	请留言	qingliuyan	qing liu yan	187	rime-frost-base
+0021549ac560d3ad19114083be7b0cc70da4c8d0a18955f3b4771dc14bae7f3a-last-full	3han-common	last-full	qlyan	请留言	qingliuyan	qing liu yan	187	rime-frost-base
+0021549ac560d3ad19114083be7b0cc70da4c8d0a18955f3b4771dc14bae7f3a-alternating	3han-common	alternating	qinglyan	请留言	qingliuyan	qing liu yan	187	rime-frost-base
+0022105a5c16438d5d060c69c4c791e1f94f9e5745ae4dd75e01924ee3428fb9-full	3han-common	full	yebuwan	也不晚	yebuwan	ye bu wan	187	rime-frost-base
+0022105a5c16438d5d060c69c4c791e1f94f9e5745ae4dd75e01924ee3428fb9-first-full	3han-common	first-full	yebw	也不晚	yebuwan	ye bu wan	187	rime-frost-base
+0022105a5c16438d5d060c69c4c791e1f94f9e5745ae4dd75e01924ee3428fb9-middle-full	3han-common	middle-full	ybuw	也不晚	yebuwan	ye bu wan	187	rime-frost-base
+0022105a5c16438d5d060c69c4c791e1f94f9e5745ae4dd75e01924ee3428fb9-last-full	3han-common	last-full	ybwan	也不晚	yebuwan	ye bu wan	187	rime-frost-base
+0022105a5c16438d5d060c69c4c791e1f94f9e5745ae4dd75e01924ee3428fb9-alternating	3han-common	alternating	yebwan	也不晚	yebuwan	ye bu wan	187	rime-frost-base
+0025de47d9cf959d7d46d65ad18aba8a3c345020124b4cff97799468497344d2-full	3han-common	full	zhenglide	整理的	zhenglide	zheng li de	3246	rime-frost-base
+0025de47d9cf959d7d46d65ad18aba8a3c345020124b4cff97799468497344d2-first-full	3han-common	first-full	zhengld	整理的	zhenglide	zheng li de	3246	rime-frost-base
+0025de47d9cf959d7d46d65ad18aba8a3c345020124b4cff97799468497344d2-middle-full	3han-common	middle-full	zlid	整理的	zhenglide	zheng li de	3246	rime-frost-base
+0025de47d9cf959d7d46d65ad18aba8a3c345020124b4cff97799468497344d2-last-full	3han-common	last-full	zlde	整理的	zhenglide	zheng li de	3246	rime-frost-base
+0025de47d9cf959d7d46d65ad18aba8a3c345020124b4cff97799468497344d2-alternating	3han-common	alternating	zhenglde	整理的	zhenglide	zheng li de	3246	rime-frost-base
+0026ebce68f877b31ef5a0cd83bb1eeee9c8edf2bf8fe20e25c4c3865b211484-full	3han-common	full	wuchengen	吴承恩	wuchengen	wu cheng en	145	rime-frost-base
+0026ebce68f877b31ef5a0cd83bb1eeee9c8edf2bf8fe20e25c4c3865b211484-first-full	3han-common	first-full	wuce	吴承恩	wuchengen	wu cheng en	145	rime-frost-base
+0026ebce68f877b31ef5a0cd83bb1eeee9c8edf2bf8fe20e25c4c3865b211484-middle-full	3han-common	middle-full	wchenge	吴承恩	wuchengen	wu cheng en	145	rime-frost-base
+0026ebce68f877b31ef5a0cd83bb1eeee9c8edf2bf8fe20e25c4c3865b211484-last-full	3han-common	last-full	wcen	吴承恩	wuchengen	wu cheng en	145	rime-frost-base
+0026ebce68f877b31ef5a0cd83bb1eeee9c8edf2bf8fe20e25c4c3865b211484-alternating	3han-common	alternating	wucen	吴承恩	wuchengen	wu cheng en	145	rime-frost-base
+000051298969c7fcd8e206a9527cffa9c656056d5ebdde8abeba61628640269c-full	3han-low	full	xiaojufei	小巨肺	xiaojufei	xiao ju fei	1	rime-frost-ext
+000051298969c7fcd8e206a9527cffa9c656056d5ebdde8abeba61628640269c-first-full	3han-low	first-full	xiaojf	小巨肺	xiaojufei	xiao ju fei	1	rime-frost-ext
+000051298969c7fcd8e206a9527cffa9c656056d5ebdde8abeba61628640269c-middle-full	3han-low	middle-full	xjuf	小巨肺	xiaojufei	xiao ju fei	1	rime-frost-ext
+000051298969c7fcd8e206a9527cffa9c656056d5ebdde8abeba61628640269c-last-full	3han-low	last-full	xjfei	小巨肺	xiaojufei	xiao ju fei	1	rime-frost-ext
+000051298969c7fcd8e206a9527cffa9c656056d5ebdde8abeba61628640269c-alternating	3han-low	alternating	xiaojfei	小巨肺	xiaojufei	xiao ju fei	1	rime-frost-ext
+0000e4da59f4e52a6685bf32ec4c9837e0c1758ec0d98ca9f1abde1af6e1e1d4-full	3han-low	full	baojinju	爆金句	baojinju	bao jin ju	2	rime-frost-ext
+0000e4da59f4e52a6685bf32ec4c9837e0c1758ec0d98ca9f1abde1af6e1e1d4-first-full	3han-low	first-full	baojj	爆金句	baojinju	bao jin ju	2	rime-frost-ext
+0000e4da59f4e52a6685bf32ec4c9837e0c1758ec0d98ca9f1abde1af6e1e1d4-middle-full	3han-low	middle-full	bjinj	爆金句	baojinju	bao jin ju	2	rime-frost-ext
+0000e4da59f4e52a6685bf32ec4c9837e0c1758ec0d98ca9f1abde1af6e1e1d4-last-full	3han-low	last-full	bjju	爆金句	baojinju	bao jin ju	2	rime-frost-ext
+0000e4da59f4e52a6685bf32ec4c9837e0c1758ec0d98ca9f1abde1af6e1e1d4-alternating	3han-low	alternating	baojju	爆金句	baojinju	bao jin ju	2	rime-frost-ext
+00011c0e67d158b6f8fa53a98a80ebb76f798edbc930d89051a068a38c25be2d-full	3han-low	full	fangninglu	防凝露	fangninglu	fang ning lu	4	rime-frost-ext
+00011c0e67d158b6f8fa53a98a80ebb76f798edbc930d89051a068a38c25be2d-first-full	3han-low	first-full	fangnl	防凝露	fangninglu	fang ning lu	4	rime-frost-ext
+00011c0e67d158b6f8fa53a98a80ebb76f798edbc930d89051a068a38c25be2d-middle-full	3han-low	middle-full	fningl	防凝露	fangninglu	fang ning lu	4	rime-frost-ext
+00011c0e67d158b6f8fa53a98a80ebb76f798edbc930d89051a068a38c25be2d-last-full	3han-low	last-full	fnlu	防凝露	fangninglu	fang ning lu	4	rime-frost-ext
+00011c0e67d158b6f8fa53a98a80ebb76f798edbc930d89051a068a38c25be2d-alternating	3han-low	alternating	fangnlu	防凝露	fangninglu	fang ning lu	4	rime-frost-ext
+000145b64da8939ed985f255e54d67bd32a8904374f168702b8a036012d22b68-full	3han-low	full	jiangganhuo	降肝火	jiangganhuo	jiang gan huo	5	rime-frost-ext
+000145b64da8939ed985f255e54d67bd32a8904374f168702b8a036012d22b68-first-full	3han-low	first-full	jianggh	降肝火	jiangganhuo	jiang gan huo	5	rime-frost-ext
+000145b64da8939ed985f255e54d67bd32a8904374f168702b8a036012d22b68-middle-full	3han-low	middle-full	jganh	降肝火	jiangganhuo	jiang gan huo	5	rime-frost-ext
+000145b64da8939ed985f255e54d67bd32a8904374f168702b8a036012d22b68-last-full	3han-low	last-full	jghuo	降肝火	jiangganhuo	jiang gan huo	5	rime-frost-ext
+000145b64da8939ed985f255e54d67bd32a8904374f168702b8a036012d22b68-alternating	3han-low	alternating	jiangghuo	降肝火	jiangganhuo	jiang gan huo	5	rime-frost-ext
+00014a64cbe70d629006c1c2459b37de65ca651aa0b5d99a527b12605a6c367c-full	3han-low	full	dabanjia	大搬家	dabanjia	da ban jia	10	rime-frost-base
+00014a64cbe70d629006c1c2459b37de65ca651aa0b5d99a527b12605a6c367c-first-full	3han-low	first-full	dabj	大搬家	dabanjia	da ban jia	10	rime-frost-base
+00014a64cbe70d629006c1c2459b37de65ca651aa0b5d99a527b12605a6c367c-middle-full	3han-low	middle-full	dbanj	大搬家	dabanjia	da ban jia	10	rime-frost-base
+00014a64cbe70d629006c1c2459b37de65ca651aa0b5d99a527b12605a6c367c-last-full	3han-low	last-full	dbjia	大搬家	dabanjia	da ban jia	10	rime-frost-base
+00014a64cbe70d629006c1c2459b37de65ca651aa0b5d99a527b12605a6c367c-alternating	3han-low	alternating	dabjia	大搬家	dabanjia	da ban jia	10	rime-frost-base
+000159fbbedf361510fb15369a0bd379e379ba59078a2f74ce5cd1a175434e67-full	3han-low	full	zhangjianwei	张建伟	zhangjianwei	zhang jian wei	20	rime-frost-ext
+000159fbbedf361510fb15369a0bd379e379ba59078a2f74ce5cd1a175434e67-first-full	3han-low	first-full	zhangjw	张建伟	zhangjianwei	zhang jian wei	20	rime-frost-ext
+000159fbbedf361510fb15369a0bd379e379ba59078a2f74ce5cd1a175434e67-middle-full	3han-low	middle-full	zjianw	张建伟	zhangjianwei	zhang jian wei	20	rime-frost-ext
+000159fbbedf361510fb15369a0bd379e379ba59078a2f74ce5cd1a175434e67-last-full	3han-low	last-full	zjwei	张建伟	zhangjianwei	zhang jian wei	20	rime-frost-ext
+000159fbbedf361510fb15369a0bd379e379ba59078a2f74ce5cd1a175434e67-alternating	3han-low	alternating	zhangjwei	张建伟	zhangjianwei	zhang jian wei	20	rime-frost-ext
+000166c99cdd1af0cd846e402e713a126dc988c2e75cb427520154108ef9d9fa-full	3han-low	full	jibaizhang	几百丈	jibaizhang	ji bai zhang	1	rime-frost-ext
+000166c99cdd1af0cd846e402e713a126dc988c2e75cb427520154108ef9d9fa-first-full	3han-low	first-full	jibz	几百丈	jibaizhang	ji bai zhang	1	rime-frost-ext
+000166c99cdd1af0cd846e402e713a126dc988c2e75cb427520154108ef9d9fa-middle-full	3han-low	middle-full	jbaiz	几百丈	jibaizhang	ji bai zhang	1	rime-frost-ext
+000166c99cdd1af0cd846e402e713a126dc988c2e75cb427520154108ef9d9fa-last-full	3han-low	last-full	jbzhang	几百丈	jibaizhang	ji bai zhang	1	rime-frost-ext
+000166c99cdd1af0cd846e402e713a126dc988c2e75cb427520154108ef9d9fa-alternating	3han-low	alternating	jibzhang	几百丈	jibaizhang	ji bai zhang	1	rime-frost-ext
+0001933078b6f115f0b9104b77ceab31bf2e3a07bd97e70d6c2329979e01ef13-full	3han-low	full	feibuliao	飞不了	feibuliao	fei bu liao	34	rime-frost-base
+0001933078b6f115f0b9104b77ceab31bf2e3a07bd97e70d6c2329979e01ef13-first-full	3han-low	first-full	feibl	飞不了	feibuliao	fei bu liao	34	rime-frost-base
+0001933078b6f115f0b9104b77ceab31bf2e3a07bd97e70d6c2329979e01ef13-middle-full	3han-low	middle-full	fbul	飞不了	feibuliao	fei bu liao	34	rime-frost-base
+0001933078b6f115f0b9104b77ceab31bf2e3a07bd97e70d6c2329979e01ef13-last-full	3han-low	last-full	fbliao	飞不了	feibuliao	fei bu liao	34	rime-frost-base
+0001933078b6f115f0b9104b77ceab31bf2e3a07bd97e70d6c2329979e01ef13-alternating	3han-low	alternating	feibliao	飞不了	feibuliao	fei bu liao	34	rime-frost-base
+0002d51d2564f2da4b4f5ce0d6531179090d87efd62581692347e894dfbd5711-full	3han-low	full	tongyice	同一侧	tongyice	tong yi ce	77	rime-frost-base
+0002d51d2564f2da4b4f5ce0d6531179090d87efd62581692347e894dfbd5711-first-full	3han-low	first-full	tongyc	同一侧	tongyice	tong yi ce	77	rime-frost-base
+0002d51d2564f2da4b4f5ce0d6531179090d87efd62581692347e894dfbd5711-middle-full	3han-low	middle-full	tyic	同一侧	tongyice	tong yi ce	77	rime-frost-base
+0002d51d2564f2da4b4f5ce0d6531179090d87efd62581692347e894dfbd5711-last-full	3han-low	last-full	tyce	同一侧	tongyice	tong yi ce	77	rime-frost-base
+0002d51d2564f2da4b4f5ce0d6531179090d87efd62581692347e894dfbd5711-alternating	3han-low	alternating	tongyce	同一侧	tongyice	tong yi ce	77	rime-frost-base
+00042147d236b360b930a1d6b5851d610e5f59f31ec32a91637b90a56365840b-full	3han-low	full	zhuanbuzhao	赚不着	zhuanbuzhao	zhuan bu zhao	30	rime-frost-ext
+00042147d236b360b930a1d6b5851d610e5f59f31ec32a91637b90a56365840b-first-full	3han-low	first-full	zhuanbz	赚不着	zhuanbuzhao	zhuan bu zhao	30	rime-frost-ext
+00042147d236b360b930a1d6b5851d610e5f59f31ec32a91637b90a56365840b-middle-full	3han-low	middle-full	zbuz	赚不着	zhuanbuzhao	zhuan bu zhao	30	rime-frost-ext
+00042147d236b360b930a1d6b5851d610e5f59f31ec32a91637b90a56365840b-last-full	3han-low	last-full	zbzhao	赚不着	zhuanbuzhao	zhuan bu zhao	30	rime-frost-ext
+00042147d236b360b930a1d6b5851d610e5f59f31ec32a91637b90a56365840b-alternating	3han-low	alternating	zhuanbzhao	赚不着	zhuanbuzhao	zhuan bu zhao	30	rime-frost-ext
+00043790ba287291674e6ea79f6a955b224b52b0d960db7bdf7ae135005b26c8-full	3han-low	full	erchongshen	二重身	erchongshen	er chong shen	17	rime-frost-ext
+00043790ba287291674e6ea79f6a955b224b52b0d960db7bdf7ae135005b26c8-first-full	3han-low	first-full	ercs	二重身	erchongshen	er chong shen	17	rime-frost-ext
+00043790ba287291674e6ea79f6a955b224b52b0d960db7bdf7ae135005b26c8-middle-full	3han-low	middle-full	echongs	二重身	erchongshen	er chong shen	17	rime-frost-ext
+00043790ba287291674e6ea79f6a955b224b52b0d960db7bdf7ae135005b26c8-last-full	3han-low	last-full	ecshen	二重身	erchongshen	er chong shen	17	rime-frost-ext
+00043790ba287291674e6ea79f6a955b224b52b0d960db7bdf7ae135005b26c8-alternating	3han-low	alternating	ercshen	二重身	erchongshen	er chong shen	17	rime-frost-ext
+00049eded18250544e5f3f69950f3a7f586a97c876e1a1733da528c6edc52437-full	3han-low	full	buzhangpiao	补张票	buzhangpiao	bu zhang piao	1	rime-frost-ext
+00049eded18250544e5f3f69950f3a7f586a97c876e1a1733da528c6edc52437-first-full	3han-low	first-full	buzp	补张票	buzhangpiao	bu zhang piao	1	rime-frost-ext
+00049eded18250544e5f3f69950f3a7f586a97c876e1a1733da528c6edc52437-middle-full	3han-low	middle-full	bzhangp	补张票	buzhangpiao	bu zhang piao	1	rime-frost-ext
+00049eded18250544e5f3f69950f3a7f586a97c876e1a1733da528c6edc52437-last-full	3han-low	last-full	bzpiao	补张票	buzhangpiao	bu zhang piao	1	rime-frost-ext
+00049eded18250544e5f3f69950f3a7f586a97c876e1a1733da528c6edc52437-alternating	3han-low	alternating	buzpiao	补张票	buzhangpiao	bu zhang piao	1	rime-frost-ext
+0005416004afd46761396446beacdc3bbaea9a97191c1912de9430b0e04a63fd-full	3han-low	full	pingguoban	苹果版	pingguoban	ping guo ban	37	rime-frost-ext
+0005416004afd46761396446beacdc3bbaea9a97191c1912de9430b0e04a63fd-first-full	3han-low	first-full	pinggb	苹果版	pingguoban	ping guo ban	37	rime-frost-ext
+0005416004afd46761396446beacdc3bbaea9a97191c1912de9430b0e04a63fd-middle-full	3han-low	middle-full	pguob	苹果版	pingguoban	ping guo ban	37	rime-frost-ext
+0005416004afd46761396446beacdc3bbaea9a97191c1912de9430b0e04a63fd-last-full	3han-low	last-full	pgban	苹果版	pingguoban	ping guo ban	37	rime-frost-ext
+0005416004afd46761396446beacdc3bbaea9a97191c1912de9430b0e04a63fd-alternating	3han-low	alternating	pinggban	苹果版	pingguoban	ping guo ban	37	rime-frost-ext
+00054deec3ddddc0a2ac3a18cf761979f98f674fcd246d5d4c4ed1ce8789054a-full	3han-low	full	qingbiyan	请闭眼	qingbiyan	qing bi yan	19	rime-frost-ext
+00054deec3ddddc0a2ac3a18cf761979f98f674fcd246d5d4c4ed1ce8789054a-first-full	3han-low	first-full	qingby	请闭眼	qingbiyan	qing bi yan	19	rime-frost-ext
+00054deec3ddddc0a2ac3a18cf761979f98f674fcd246d5d4c4ed1ce8789054a-middle-full	3han-low	middle-full	qbiy	请闭眼	qingbiyan	qing bi yan	19	rime-frost-ext
+00054deec3ddddc0a2ac3a18cf761979f98f674fcd246d5d4c4ed1ce8789054a-last-full	3han-low	last-full	qbyan	请闭眼	qingbiyan	qing bi yan	19	rime-frost-ext
+00054deec3ddddc0a2ac3a18cf761979f98f674fcd246d5d4c4ed1ce8789054a-alternating	3han-low	alternating	qingbyan	请闭眼	qingbiyan	qing bi yan	19	rime-frost-ext
+000667d7d3662d2834ae284dca582addbdc4ea13a45c1d0265e26b6d22e82121-full	3han-low	full	kuaiheman	快和慢	kuaiheman	kuai he man	16	rime-frost-ext
+000667d7d3662d2834ae284dca582addbdc4ea13a45c1d0265e26b6d22e82121-first-full	3han-low	first-full	kuaihm	快和慢	kuaiheman	kuai he man	16	rime-frost-ext
+000667d7d3662d2834ae284dca582addbdc4ea13a45c1d0265e26b6d22e82121-middle-full	3han-low	middle-full	khem	快和慢	kuaiheman	kuai he man	16	rime-frost-ext
+000667d7d3662d2834ae284dca582addbdc4ea13a45c1d0265e26b6d22e82121-last-full	3han-low	last-full	khman	快和慢	kuaiheman	kuai he man	16	rime-frost-ext
+000667d7d3662d2834ae284dca582addbdc4ea13a45c1d0265e26b6d22e82121-alternating	3han-low	alternating	kuaihman	快和慢	kuaiheman	kuai he man	16	rime-frost-ext
+0006c3d5a7e547e227fcfe52cc7b22dce10f5ea5468cbd16a632eb19106108d3-full	3han-low	full	zanzheba	攒着吧	zanzheba	zan zhe ba	4	rime-frost-ext
+0006c3d5a7e547e227fcfe52cc7b22dce10f5ea5468cbd16a632eb19106108d3-first-full	3han-low	first-full	zanzb	攒着吧	zanzheba	zan zhe ba	4	rime-frost-ext
+0006c3d5a7e547e227fcfe52cc7b22dce10f5ea5468cbd16a632eb19106108d3-middle-full	3han-low	middle-full	zzheb	攒着吧	zanzheba	zan zhe ba	4	rime-frost-ext
+0006c3d5a7e547e227fcfe52cc7b22dce10f5ea5468cbd16a632eb19106108d3-last-full	3han-low	last-full	zzba	攒着吧	zanzheba	zan zhe ba	4	rime-frost-ext
+0006c3d5a7e547e227fcfe52cc7b22dce10f5ea5468cbd16a632eb19106108d3-alternating	3han-low	alternating	zanzba	攒着吧	zanzheba	zan zhe ba	4	rime-frost-ext
+0006ea4d2cad61583becb80e6e8dd985de6e724e8143dcd65928d2333aa9820e-full	3han-low	full	xiangwenbo	向文波	xiangwenbo	xiang wen bo	2	rime-frost-base
+0006ea4d2cad61583becb80e6e8dd985de6e724e8143dcd65928d2333aa9820e-first-full	3han-low	first-full	xiangwb	向文波	xiangwenbo	xiang wen bo	2	rime-frost-base
+0006ea4d2cad61583becb80e6e8dd985de6e724e8143dcd65928d2333aa9820e-middle-full	3han-low	middle-full	xwenb	向文波	xiangwenbo	xiang wen bo	2	rime-frost-base
+0006ea4d2cad61583becb80e6e8dd985de6e724e8143dcd65928d2333aa9820e-last-full	3han-low	last-full	xwbo	向文波	xiangwenbo	xiang wen bo	2	rime-frost-base
+0006ea4d2cad61583becb80e6e8dd985de6e724e8143dcd65928d2333aa9820e-alternating	3han-low	alternating	xiangwbo	向文波	xiangwenbo	xiang wen bo	2	rime-frost-base
+00072a153248937bbf948a0197ac32df29838c6d2c526610043ce0fb3b65b4f4-full	3han-low	full	yongqiaoqu	埇桥区	yongqiaoqu	yong qiao qu	1	rime-frost-base
+00072a153248937bbf948a0197ac32df29838c6d2c526610043ce0fb3b65b4f4-first-full	3han-low	first-full	yongqq	埇桥区	yongqiaoqu	yong qiao qu	1	rime-frost-base
+00072a153248937bbf948a0197ac32df29838c6d2c526610043ce0fb3b65b4f4-middle-full	3han-low	middle-full	yqiaoq	埇桥区	yongqiaoqu	yong qiao qu	1	rime-frost-base
+00072a153248937bbf948a0197ac32df29838c6d2c526610043ce0fb3b65b4f4-last-full	3han-low	last-full	yqqu	埇桥区	yongqiaoqu	yong qiao qu	1	rime-frost-base
+00072a153248937bbf948a0197ac32df29838c6d2c526610043ce0fb3b65b4f4-alternating	3han-low	alternating	yongqqu	埇桥区	yongqiaoqu	yong qiao qu	1	rime-frost-base
+00072d44ccdae63d0f262c0283394c5a8678f253d1cebbe436e2364f65d2446f-full	3han-low	full	jibamao	鸡巴毛	jibamao	ji ba mao	4	rime-frost-ext
+00072d44ccdae63d0f262c0283394c5a8678f253d1cebbe436e2364f65d2446f-first-full	3han-low	first-full	jibm	鸡巴毛	jibamao	ji ba mao	4	rime-frost-ext
+00072d44ccdae63d0f262c0283394c5a8678f253d1cebbe436e2364f65d2446f-middle-full	3han-low	middle-full	jbam	鸡巴毛	jibamao	ji ba mao	4	rime-frost-ext
+00072d44ccdae63d0f262c0283394c5a8678f253d1cebbe436e2364f65d2446f-last-full	3han-low	last-full	jbmao	鸡巴毛	jibamao	ji ba mao	4	rime-frost-ext
+00072d44ccdae63d0f262c0283394c5a8678f253d1cebbe436e2364f65d2446f-alternating	3han-low	alternating	jibmao	鸡巴毛	jibamao	ji ba mao	4	rime-frost-ext
+0007a7a132f06a4ff8d084dd8a9c7b1315113fc739973bf1af7e196c72a1484f-full	3han-low	full	heluqi	合路器	heluqi	he lu qi	1	rime-frost-base
+0007a7a132f06a4ff8d084dd8a9c7b1315113fc739973bf1af7e196c72a1484f-first-full	3han-low	first-full	helq	合路器	heluqi	he lu qi	1	rime-frost-base
+0007a7a132f06a4ff8d084dd8a9c7b1315113fc739973bf1af7e196c72a1484f-middle-full	3han-low	middle-full	hluq	合路器	heluqi	he lu qi	1	rime-frost-base
+0007a7a132f06a4ff8d084dd8a9c7b1315113fc739973bf1af7e196c72a1484f-last-full	3han-low	last-full	hlqi	合路器	heluqi	he lu qi	1	rime-frost-base
+0007a7a132f06a4ff8d084dd8a9c7b1315113fc739973bf1af7e196c72a1484f-alternating	3han-low	alternating	helqi	合路器	heluqi	he lu qi	1	rime-frost-base
+00082f01bcb28bf035513addc632cdad0b4dac2bf56fffd28298f2f34beb4620-full	3han-low	full	nibudong	你不动	nibudong	ni bu dong	26	rime-frost-base
+00082f01bcb28bf035513addc632cdad0b4dac2bf56fffd28298f2f34beb4620-first-full	3han-low	first-full	nibd	你不动	nibudong	ni bu dong	26	rime-frost-base
+00082f01bcb28bf035513addc632cdad0b4dac2bf56fffd28298f2f34beb4620-middle-full	3han-low	middle-full	nbud	你不动	nibudong	ni bu dong	26	rime-frost-base
+00082f01bcb28bf035513addc632cdad0b4dac2bf56fffd28298f2f34beb4620-last-full	3han-low	last-full	nbdong	你不动	nibudong	ni bu dong	26	rime-frost-base
+00082f01bcb28bf035513addc632cdad0b4dac2bf56fffd28298f2f34beb4620-alternating	3han-low	alternating	nibdong	你不动	nibudong	ni bu dong	26	rime-frost-base
+000840c3e9ab969ac6f655ce1ec1a66c4bfe8e613570ab48679603ae806df043-full	3han-low	full	bolunshi	波轮式	bolunshi	bo lun shi	1	rime-frost-ext
+000840c3e9ab969ac6f655ce1ec1a66c4bfe8e613570ab48679603ae806df043-first-full	3han-low	first-full	bols	波轮式	bolunshi	bo lun shi	1	rime-frost-ext
+000840c3e9ab969ac6f655ce1ec1a66c4bfe8e613570ab48679603ae806df043-middle-full	3han-low	middle-full	bluns	波轮式	bolunshi	bo lun shi	1	rime-frost-ext
+000840c3e9ab969ac6f655ce1ec1a66c4bfe8e613570ab48679603ae806df043-last-full	3han-low	last-full	blshi	波轮式	bolunshi	bo lun shi	1	rime-frost-ext
+000840c3e9ab969ac6f655ce1ec1a66c4bfe8e613570ab48679603ae806df043-alternating	3han-low	alternating	bolshi	波轮式	bolunshi	bo lun shi	1	rime-frost-ext
+0008c93e5d31365a9b663263ca56303ea3cfee3c9d88cd6f936dcc0d7685fabb-full	3han-low	full	fachela	发车啦	fachela	fa che la	2	rime-frost-ext
+0008c93e5d31365a9b663263ca56303ea3cfee3c9d88cd6f936dcc0d7685fabb-first-full	3han-low	first-full	facl	发车啦	fachela	fa che la	2	rime-frost-ext
+0008c93e5d31365a9b663263ca56303ea3cfee3c9d88cd6f936dcc0d7685fabb-middle-full	3han-low	middle-full	fchel	发车啦	fachela	fa che la	2	rime-frost-ext
+0008c93e5d31365a9b663263ca56303ea3cfee3c9d88cd6f936dcc0d7685fabb-last-full	3han-low	last-full	fcla	发车啦	fachela	fa che la	2	rime-frost-ext
+0008c93e5d31365a9b663263ca56303ea3cfee3c9d88cd6f936dcc0d7685fabb-alternating	3han-low	alternating	facla	发车啦	fachela	fa che la	2	rime-frost-ext
+00097e7364f53e14bcc39831ff15f23a7d5ae88d591adda9c456e39a77965fc9-full	3han-low	full	taijiangle	太犟了	taijiangle	tai jiang le	1	rime-frost-ext
+00097e7364f53e14bcc39831ff15f23a7d5ae88d591adda9c456e39a77965fc9-first-full	3han-low	first-full	taijl	太犟了	taijiangle	tai jiang le	1	rime-frost-ext
+00097e7364f53e14bcc39831ff15f23a7d5ae88d591adda9c456e39a77965fc9-middle-full	3han-low	middle-full	tjiangl	太犟了	taijiangle	tai jiang le	1	rime-frost-ext
+00097e7364f53e14bcc39831ff15f23a7d5ae88d591adda9c456e39a77965fc9-last-full	3han-low	last-full	tjle	太犟了	taijiangle	tai jiang le	1	rime-frost-ext
+00097e7364f53e14bcc39831ff15f23a7d5ae88d591adda9c456e39a77965fc9-alternating	3han-low	alternating	taijle	太犟了	taijiangle	tai jiang le	1	rime-frost-ext
+0009e5a4d51efe91526f9767043dc6676d5edd2e45627c3512530ad1fb820fdf-full	3han-low	full	xingweiceng	行为层	xingweiceng	xing wei ceng	12	rime-frost-ext
+0009e5a4d51efe91526f9767043dc6676d5edd2e45627c3512530ad1fb820fdf-first-full	3han-low	first-full	xingwc	行为层	xingweiceng	xing wei ceng	12	rime-frost-ext
+0009e5a4d51efe91526f9767043dc6676d5edd2e45627c3512530ad1fb820fdf-middle-full	3han-low	middle-full	xweic	行为层	xingweiceng	xing wei ceng	12	rime-frost-ext
+0009e5a4d51efe91526f9767043dc6676d5edd2e45627c3512530ad1fb820fdf-last-full	3han-low	last-full	xwceng	行为层	xingweiceng	xing wei ceng	12	rime-frost-ext
+0009e5a4d51efe91526f9767043dc6676d5edd2e45627c3512530ad1fb820fdf-alternating	3han-low	alternating	xingwceng	行为层	xingweiceng	xing wei ceng	12	rime-frost-ext
+0009ed233813736fab591cb856ed62210929922b423da8b281f24ad86884dacb-full	3han-low	full	xiaochuju	小雏菊	xiaochuju	xiao chu ju	46	rime-frost-ext
+0009ed233813736fab591cb856ed62210929922b423da8b281f24ad86884dacb-first-full	3han-low	first-full	xiaocj	小雏菊	xiaochuju	xiao chu ju	46	rime-frost-ext
+0009ed233813736fab591cb856ed62210929922b423da8b281f24ad86884dacb-middle-full	3han-low	middle-full	xchuj	小雏菊	xiaochuju	xiao chu ju	46	rime-frost-ext
+0009ed233813736fab591cb856ed62210929922b423da8b281f24ad86884dacb-last-full	3han-low	last-full	xcju	小雏菊	xiaochuju	xiao chu ju	46	rime-frost-ext
+0009ed233813736fab591cb856ed62210929922b423da8b281f24ad86884dacb-alternating	3han-low	alternating	xiaocju	小雏菊	xiaochuju	xiao chu ju	46	rime-frost-ext
+000a10ede3fccf53c4d1519f19a18d10b202a09fcd423d27c00333ee760c3e36-full	3han-low	full	wusuoshi	无所事	wusuoshi	wu suo shi	12	rime-frost-ext
+000a10ede3fccf53c4d1519f19a18d10b202a09fcd423d27c00333ee760c3e36-first-full	3han-low	first-full	wuss	无所事	wusuoshi	wu suo shi	12	rime-frost-ext
+000a10ede3fccf53c4d1519f19a18d10b202a09fcd423d27c00333ee760c3e36-middle-full	3han-low	middle-full	wsuos	无所事	wusuoshi	wu suo shi	12	rime-frost-ext
+000a10ede3fccf53c4d1519f19a18d10b202a09fcd423d27c00333ee760c3e36-last-full	3han-low	last-full	wsshi	无所事	wusuoshi	wu suo shi	12	rime-frost-ext
+000a10ede3fccf53c4d1519f19a18d10b202a09fcd423d27c00333ee760c3e36-alternating	3han-low	alternating	wusshi	无所事	wusuoshi	wu suo shi	12	rime-frost-ext
+000acba714cdd1a346022cce345a34e597c4f409a331c2703f8cb8df16a29ddb-full	3han-low	full	youxinnian	有信念	youxinnian	you xin nian	59	rime-frost-ext
+000acba714cdd1a346022cce345a34e597c4f409a331c2703f8cb8df16a29ddb-first-full	3han-low	first-full	youxn	有信念	youxinnian	you xin nian	59	rime-frost-ext
+000acba714cdd1a346022cce345a34e597c4f409a331c2703f8cb8df16a29ddb-middle-full	3han-low	middle-full	yxinn	有信念	youxinnian	you xin nian	59	rime-frost-ext
+000acba714cdd1a346022cce345a34e597c4f409a331c2703f8cb8df16a29ddb-last-full	3han-low	last-full	yxnian	有信念	youxinnian	you xin nian	59	rime-frost-ext
+000acba714cdd1a346022cce345a34e597c4f409a331c2703f8cb8df16a29ddb-alternating	3han-low	alternating	youxnian	有信念	youxinnian	you xin nian	59	rime-frost-ext
+000b84a5ba61c433e41b99cebf6fd58371fb940c3f101288fb7c7cc67aae0294-full	3han-low	full	bianlese	变了色	bianlese	bian le se	16	rime-frost-ext
+000b84a5ba61c433e41b99cebf6fd58371fb940c3f101288fb7c7cc67aae0294-first-full	3han-low	first-full	bianls	变了色	bianlese	bian le se	16	rime-frost-ext
+000b84a5ba61c433e41b99cebf6fd58371fb940c3f101288fb7c7cc67aae0294-middle-full	3han-low	middle-full	bles	变了色	bianlese	bian le se	16	rime-frost-ext
+000b84a5ba61c433e41b99cebf6fd58371fb940c3f101288fb7c7cc67aae0294-last-full	3han-low	last-full	blse	变了色	bianlese	bian le se	16	rime-frost-ext
+000b84a5ba61c433e41b99cebf6fd58371fb940c3f101288fb7c7cc67aae0294-alternating	3han-low	alternating	bianlse	变了色	bianlese	bian le se	16	rime-frost-ext
+000c2f77aaa1549cd1a4bf573c94f2c1c3520594e0e53970e5c020a84f97f2fd-full	3han-low	full	guanjihou	关机后	guanjihou	guan ji hou	44	rime-frost-base
+000c2f77aaa1549cd1a4bf573c94f2c1c3520594e0e53970e5c020a84f97f2fd-first-full	3han-low	first-full	guanjh	关机后	guanjihou	guan ji hou	44	rime-frost-base
+000c2f77aaa1549cd1a4bf573c94f2c1c3520594e0e53970e5c020a84f97f2fd-middle-full	3han-low	middle-full	gjih	关机后	guanjihou	guan ji hou	44	rime-frost-base
+000c2f77aaa1549cd1a4bf573c94f2c1c3520594e0e53970e5c020a84f97f2fd-last-full	3han-low	last-full	gjhou	关机后	guanjihou	guan ji hou	44	rime-frost-base
+000c2f77aaa1549cd1a4bf573c94f2c1c3520594e0e53970e5c020a84f97f2fd-alternating	3han-low	alternating	guanjhou	关机后	guanjihou	guan ji hou	44	rime-frost-base
+000c8d0ceef0b98896eb3b17ccd2a4b31f1742702dea36c692b66d28ef19b3fc-full	3han-low	full	ruanxiaoer	阮小二	ruanxiaoer	ruan xiao er	16	rime-frost-ext
+000c8d0ceef0b98896eb3b17ccd2a4b31f1742702dea36c692b66d28ef19b3fc-first-full	3han-low	first-full	ruanxe	阮小二	ruanxiaoer	ruan xiao er	16	rime-frost-ext
+000c8d0ceef0b98896eb3b17ccd2a4b31f1742702dea36c692b66d28ef19b3fc-middle-full	3han-low	middle-full	rxiaoe	阮小二	ruanxiaoer	ruan xiao er	16	rime-frost-ext
+000c8d0ceef0b98896eb3b17ccd2a4b31f1742702dea36c692b66d28ef19b3fc-last-full	3han-low	last-full	rxer	阮小二	ruanxiaoer	ruan xiao er	16	rime-frost-ext
+000c8d0ceef0b98896eb3b17ccd2a4b31f1742702dea36c692b66d28ef19b3fc-alternating	3han-low	alternating	ruanxer	阮小二	ruanxiaoer	ruan xiao er	16	rime-frost-ext
+000cba2dc5ed0bd1889e9fbe6646b7e377ab0a106cb966d041d2b5aba3339d7f-full	3han-low	full	qingjiqiang	轻机枪	qingjiqiang	qing ji qiang	80	rime-frost-base
+000cba2dc5ed0bd1889e9fbe6646b7e377ab0a106cb966d041d2b5aba3339d7f-first-full	3han-low	first-full	qingjq	轻机枪	qingjiqiang	qing ji qiang	80	rime-frost-base
+000cba2dc5ed0bd1889e9fbe6646b7e377ab0a106cb966d041d2b5aba3339d7f-middle-full	3han-low	middle-full	qjiq	轻机枪	qingjiqiang	qing ji qiang	80	rime-frost-base
+000cba2dc5ed0bd1889e9fbe6646b7e377ab0a106cb966d041d2b5aba3339d7f-last-full	3han-low	last-full	qjqiang	轻机枪	qingjiqiang	qing ji qiang	80	rime-frost-base
+000cba2dc5ed0bd1889e9fbe6646b7e377ab0a106cb966d041d2b5aba3339d7f-alternating	3han-low	alternating	qingjqiang	轻机枪	qingjiqiang	qing ji qiang	80	rime-frost-base
+0004a87464a4619d64bd6c69caeb64589903ccd3eec5708bf1ef4d54c41ca532-full	4han-common	full	tuilinengli	推理能力	tuilinengli	tui li neng li	408	rime-frost-base
+0004a87464a4619d64bd6c69caeb64589903ccd3eec5708bf1ef4d54c41ca532-first-full	4han-common	first-full	tuilnl	推理能力	tuilinengli	tui li neng li	408	rime-frost-base
+0004a87464a4619d64bd6c69caeb64589903ccd3eec5708bf1ef4d54c41ca532-middle-full	4han-common	middle-full	tlnengl	推理能力	tuilinengli	tui li neng li	408	rime-frost-base
+0004a87464a4619d64bd6c69caeb64589903ccd3eec5708bf1ef4d54c41ca532-last-full	4han-common	last-full	tlnli	推理能力	tuilinengli	tui li neng li	408	rime-frost-base
+0004a87464a4619d64bd6c69caeb64589903ccd3eec5708bf1ef4d54c41ca532-alternating	4han-common	alternating	tuilnengl	推理能力	tuilinengli	tui li neng li	408	rime-frost-base
+000798cde5342555dada8492436408e623c2995fa160587b640122e79885fb48-full	4han-common	full	zhegeyangzi	这个样子	zhegeyangzi	zhe ge yang zi	3292	rime-frost-base
+000798cde5342555dada8492436408e623c2995fa160587b640122e79885fb48-first-full	4han-common	first-full	zhegyz	这个样子	zhegeyangzi	zhe ge yang zi	3292	rime-frost-base
+000798cde5342555dada8492436408e623c2995fa160587b640122e79885fb48-middle-full	4han-common	middle-full	zgyangz	这个样子	zhegeyangzi	zhe ge yang zi	3292	rime-frost-base
+000798cde5342555dada8492436408e623c2995fa160587b640122e79885fb48-last-full	4han-common	last-full	zgyzi	这个样子	zhegeyangzi	zhe ge yang zi	3292	rime-frost-base
+000798cde5342555dada8492436408e623c2995fa160587b640122e79885fb48-alternating	4han-common	alternating	zhegyangz	这个样子	zhegeyangzi	zhe ge yang zi	3292	rime-frost-base
+000900137de3488b2c2da14f4829b90afd4de43e5af0d4da262f73aec7d1900a-full	4han-common	full	wanquanzhangkong	完全掌控	wanquanzhangkong	wan quan zhang kong	150	rime-frost-ext
+000900137de3488b2c2da14f4829b90afd4de43e5af0d4da262f73aec7d1900a-first-full	4han-common	first-full	wanqzk	完全掌控	wanquanzhangkong	wan quan zhang kong	150	rime-frost-ext
+000900137de3488b2c2da14f4829b90afd4de43e5af0d4da262f73aec7d1900a-middle-full	4han-common	middle-full	wqzhangk	完全掌控	wanquanzhangkong	wan quan zhang kong	150	rime-frost-ext
+000900137de3488b2c2da14f4829b90afd4de43e5af0d4da262f73aec7d1900a-last-full	4han-common	last-full	wqzkong	完全掌控	wanquanzhangkong	wan quan zhang kong	150	rime-frost-ext
+000900137de3488b2c2da14f4829b90afd4de43e5af0d4da262f73aec7d1900a-alternating	4han-common	alternating	wanqzhangk	完全掌控	wanquanzhangkong	wan quan zhang kong	150	rime-frost-ext
+00091d81ab112c2aae4d8d4140bcea8ff129fec599a437fe51d6c7423c53575c-full	4han-common	full	daxueluqu	大学录取	daxueluqu	da xue lu qu	149	rime-frost-base
+00091d81ab112c2aae4d8d4140bcea8ff129fec599a437fe51d6c7423c53575c-first-full	4han-common	first-full	daxlq	大学录取	daxueluqu	da xue lu qu	149	rime-frost-base
+00091d81ab112c2aae4d8d4140bcea8ff129fec599a437fe51d6c7423c53575c-middle-full	4han-common	middle-full	dxluq	大学录取	daxueluqu	da xue lu qu	149	rime-frost-base
+00091d81ab112c2aae4d8d4140bcea8ff129fec599a437fe51d6c7423c53575c-last-full	4han-common	last-full	dxlqu	大学录取	daxueluqu	da xue lu qu	149	rime-frost-base
+00091d81ab112c2aae4d8d4140bcea8ff129fec599a437fe51d6c7423c53575c-alternating	4han-common	alternating	daxluq	大学录取	daxueluqu	da xue lu qu	149	rime-frost-base
+001109c608693283e90664a3744c61d1058c7c4e540647c6c2628cd16a4834e0-full	4han-common	full	zaixianxuexi	在线学习	zaixianxuexi	zai xian xue xi	268	rime-frost-base
+001109c608693283e90664a3744c61d1058c7c4e540647c6c2628cd16a4834e0-first-full	4han-common	first-full	zaixxx	在线学习	zaixianxuexi	zai xian xue xi	268	rime-frost-base
+001109c608693283e90664a3744c61d1058c7c4e540647c6c2628cd16a4834e0-middle-full	4han-common	middle-full	zxxuex	在线学习	zaixianxuexi	zai xian xue xi	268	rime-frost-base
+001109c608693283e90664a3744c61d1058c7c4e540647c6c2628cd16a4834e0-last-full	4han-common	last-full	zxxxi	在线学习	zaixianxuexi	zai xian xue xi	268	rime-frost-base
+001109c608693283e90664a3744c61d1058c7c4e540647c6c2628cd16a4834e0-alternating	4han-common	alternating	zaixxuex	在线学习	zaixianxuexi	zai xian xue xi	268	rime-frost-base
+0011beea7a03443c34a37d161a876da42475e480f29e56a909184d71071a155f-full	4han-common	full	nagexiaohai	那个小孩	nagexiaohai	na ge xiao hai	131	rime-frost-base
+0011beea7a03443c34a37d161a876da42475e480f29e56a909184d71071a155f-first-full	4han-common	first-full	nagxh	那个小孩	nagexiaohai	na ge xiao hai	131	rime-frost-base
+0011beea7a03443c34a37d161a876da42475e480f29e56a909184d71071a155f-middle-full	4han-common	middle-full	ngxiaoh	那个小孩	nagexiaohai	na ge xiao hai	131	rime-frost-base
+0011beea7a03443c34a37d161a876da42475e480f29e56a909184d71071a155f-last-full	4han-common	last-full	ngxhai	那个小孩	nagexiaohai	na ge xiao hai	131	rime-frost-base
+0011beea7a03443c34a37d161a876da42475e480f29e56a909184d71071a155f-alternating	4han-common	alternating	nagxiaoh	那个小孩	nagexiaohai	na ge xiao hai	131	rime-frost-base
+0016535e821bcc72ce50a699c2340446477d99c867aa89c65e956822b5d738cd-full	4han-common	full	dahanlinli	大汗淋漓	dahanlinli	da han lin li	374	rime-frost-base
+0016535e821bcc72ce50a699c2340446477d99c867aa89c65e956822b5d738cd-first-full	4han-common	first-full	dahll	大汗淋漓	dahanlinli	da han lin li	374	rime-frost-base
+0016535e821bcc72ce50a699c2340446477d99c867aa89c65e956822b5d738cd-middle-full	4han-common	middle-full	dhlinl	大汗淋漓	dahanlinli	da han lin li	374	rime-frost-base
+0016535e821bcc72ce50a699c2340446477d99c867aa89c65e956822b5d738cd-last-full	4han-common	last-full	dhlli	大汗淋漓	dahanlinli	da han lin li	374	rime-frost-base
+0016535e821bcc72ce50a699c2340446477d99c867aa89c65e956822b5d738cd-alternating	4han-common	alternating	dahlinl	大汗淋漓	dahanlinli	da han lin li	374	rime-frost-base
+00172de366b545c657fd3a80a05ea0f8cc8ba42e30387c7ccfa0b69fc7ee57fb-full	4han-common	full	gengbietile	更别提了	gengbietile	geng bie ti le	237	rime-frost-ext
+00172de366b545c657fd3a80a05ea0f8cc8ba42e30387c7ccfa0b69fc7ee57fb-first-full	4han-common	first-full	gengbtl	更别提了	gengbietile	geng bie ti le	237	rime-frost-ext
+00172de366b545c657fd3a80a05ea0f8cc8ba42e30387c7ccfa0b69fc7ee57fb-middle-full	4han-common	middle-full	gbtil	更别提了	gengbietile	geng bie ti le	237	rime-frost-ext
+00172de366b545c657fd3a80a05ea0f8cc8ba42e30387c7ccfa0b69fc7ee57fb-last-full	4han-common	last-full	gbtle	更别提了	gengbietile	geng bie ti le	237	rime-frost-ext
+00172de366b545c657fd3a80a05ea0f8cc8ba42e30387c7ccfa0b69fc7ee57fb-alternating	4han-common	alternating	gengbtil	更别提了	gengbietile	geng bie ti le	237	rime-frost-ext
+0017e5ec82aae57e452181f9e03d81383cc35186c6c68329739c6d9da170de07-full	4han-common	full	tayekeyi	他也可以	tayekeyi	ta ye ke yi	247	rime-frost-base
+0017e5ec82aae57e452181f9e03d81383cc35186c6c68329739c6d9da170de07-first-full	4han-common	first-full	tayky	他也可以	tayekeyi	ta ye ke yi	247	rime-frost-base
+0017e5ec82aae57e452181f9e03d81383cc35186c6c68329739c6d9da170de07-middle-full	4han-common	middle-full	tykey	他也可以	tayekeyi	ta ye ke yi	247	rime-frost-base
+0017e5ec82aae57e452181f9e03d81383cc35186c6c68329739c6d9da170de07-last-full	4han-common	last-full	tykyi	他也可以	tayekeyi	ta ye ke yi	247	rime-frost-base
+0017e5ec82aae57e452181f9e03d81383cc35186c6c68329739c6d9da170de07-alternating	4han-common	alternating	taykey	他也可以	tayekeyi	ta ye ke yi	247	rime-frost-base
+001871640dd5f479e4c2013ef57b52d2d49d69f27d21c53683212f5ddb5d1418-full	4han-common	full	tingxiajiaobu	停下脚步	tingxiajiaobu	ting xia jiao bu	373	rime-frost-ext
+001871640dd5f479e4c2013ef57b52d2d49d69f27d21c53683212f5ddb5d1418-first-full	4han-common	first-full	tingxjb	停下脚步	tingxiajiaobu	ting xia jiao bu	373	rime-frost-ext
+001871640dd5f479e4c2013ef57b52d2d49d69f27d21c53683212f5ddb5d1418-middle-full	4han-common	middle-full	txjiaob	停下脚步	tingxiajiaobu	ting xia jiao bu	373	rime-frost-ext
+001871640dd5f479e4c2013ef57b52d2d49d69f27d21c53683212f5ddb5d1418-last-full	4han-common	last-full	txjbu	停下脚步	tingxiajiaobu	ting xia jiao bu	373	rime-frost-ext
+001871640dd5f479e4c2013ef57b52d2d49d69f27d21c53683212f5ddb5d1418-alternating	4han-common	alternating	tingxjiaob	停下脚步	tingxiajiaobu	ting xia jiao bu	373	rime-frost-ext
+001900038c89f19335295aa42ae3267754f4353a33be8da3a32a50822faa2319-full	4han-common	full	xuexiaoguiding	学校规定	xuexiaoguiding	xue xiao gui ding	182	rime-frost-ext
+001900038c89f19335295aa42ae3267754f4353a33be8da3a32a50822faa2319-first-full	4han-common	first-full	xuexgd	学校规定	xuexiaoguiding	xue xiao gui ding	182	rime-frost-ext
+001900038c89f19335295aa42ae3267754f4353a33be8da3a32a50822faa2319-middle-full	4han-common	middle-full	xxguid	学校规定	xuexiaoguiding	xue xiao gui ding	182	rime-frost-ext
+001900038c89f19335295aa42ae3267754f4353a33be8da3a32a50822faa2319-last-full	4han-common	last-full	xxgding	学校规定	xuexiaoguiding	xue xiao gui ding	182	rime-frost-ext
+001900038c89f19335295aa42ae3267754f4353a33be8da3a32a50822faa2319-alternating	4han-common	alternating	xuexguid	学校规定	xuexiaoguiding	xue xiao gui ding	182	rime-frost-ext
+00195b820bb0f7a0e75a8f63a5c3ba5c8fbcddee0cbc5ca62308db53cff36b67-full	4han-common	full	dedaoshenme	得到什么	dedaoshenme	de dao shen me	387	rime-frost-base
+00195b820bb0f7a0e75a8f63a5c3ba5c8fbcddee0cbc5ca62308db53cff36b67-first-full	4han-common	first-full	dedsm	得到什么	dedaoshenme	de dao shen me	387	rime-frost-base
+00195b820bb0f7a0e75a8f63a5c3ba5c8fbcddee0cbc5ca62308db53cff36b67-middle-full	4han-common	middle-full	ddshenm	得到什么	dedaoshenme	de dao shen me	387	rime-frost-base
+00195b820bb0f7a0e75a8f63a5c3ba5c8fbcddee0cbc5ca62308db53cff36b67-last-full	4han-common	last-full	ddsme	得到什么	dedaoshenme	de dao shen me	387	rime-frost-base
+00195b820bb0f7a0e75a8f63a5c3ba5c8fbcddee0cbc5ca62308db53cff36b67-alternating	4han-common	alternating	dedshenm	得到什么	dedaoshenme	de dao shen me	387	rime-frost-base
+001cc1754c817a994d0b1607004600ff9da8764d7f6fce50ec962e09f2ec22c0-full	4han-common	full	jinrongguanli	金融管理	jinrongguanli	jin rong guan li	145	rime-frost-base
+001cc1754c817a994d0b1607004600ff9da8764d7f6fce50ec962e09f2ec22c0-first-full	4han-common	first-full	jinrgl	金融管理	jinrongguanli	jin rong guan li	145	rime-frost-base
+001cc1754c817a994d0b1607004600ff9da8764d7f6fce50ec962e09f2ec22c0-middle-full	4han-common	middle-full	jrguanl	金融管理	jinrongguanli	jin rong guan li	145	rime-frost-base
+001cc1754c817a994d0b1607004600ff9da8764d7f6fce50ec962e09f2ec22c0-last-full	4han-common	last-full	jrgli	金融管理	jinrongguanli	jin rong guan li	145	rime-frost-base
+001cc1754c817a994d0b1607004600ff9da8764d7f6fce50ec962e09f2ec22c0-alternating	4han-common	alternating	jinrguanl	金融管理	jinrongguanli	jin rong guan li	145	rime-frost-base
+001decf59e554f10a6aec8cee4241deba7d0e944c380c9e668d6e0f967dc11c4-full	4han-common	full	xinqingdiluo	心情低落	xinqingdiluo	xin qing di luo	143	rime-frost-ext
+001decf59e554f10a6aec8cee4241deba7d0e944c380c9e668d6e0f967dc11c4-first-full	4han-common	first-full	xinqdl	心情低落	xinqingdiluo	xin qing di luo	143	rime-frost-ext
+001decf59e554f10a6aec8cee4241deba7d0e944c380c9e668d6e0f967dc11c4-middle-full	4han-common	middle-full	xqdil	心情低落	xinqingdiluo	xin qing di luo	143	rime-frost-ext
+001decf59e554f10a6aec8cee4241deba7d0e944c380c9e668d6e0f967dc11c4-last-full	4han-common	last-full	xqdluo	心情低落	xinqingdiluo	xin qing di luo	143	rime-frost-ext
+001decf59e554f10a6aec8cee4241deba7d0e944c380c9e668d6e0f967dc11c4-alternating	4han-common	alternating	xinqdil	心情低落	xinqingdiluo	xin qing di luo	143	rime-frost-ext
+0021acc7863b75b3d491a4f7b52d8469c4abdf19b6f43a07763520d4e4a4aa00-full	4han-common	full	wuxianxinhao	无线信号	wuxianxinhao	wu xian xin hao	129	rime-frost-base
+0021acc7863b75b3d491a4f7b52d8469c4abdf19b6f43a07763520d4e4a4aa00-first-full	4han-common	first-full	wuxxh	无线信号	wuxianxinhao	wu xian xin hao	129	rime-frost-base
+0021acc7863b75b3d491a4f7b52d8469c4abdf19b6f43a07763520d4e4a4aa00-middle-full	4han-common	middle-full	wxxinh	无线信号	wuxianxinhao	wu xian xin hao	129	rime-frost-base
+0021acc7863b75b3d491a4f7b52d8469c4abdf19b6f43a07763520d4e4a4aa00-last-full	4han-common	last-full	wxxhao	无线信号	wuxianxinhao	wu xian xin hao	129	rime-frost-base
+0021acc7863b75b3d491a4f7b52d8469c4abdf19b6f43a07763520d4e4a4aa00-alternating	4han-common	alternating	wuxxinh	无线信号	wuxianxinhao	wu xian xin hao	129	rime-frost-base
+0022a1d61a27497fed8dcf52bc0c65116dec8a681dd2b1f4ec07755ad9cde589-full	4han-common	full	shishixize	实施细则	shishixize	shi shi xi ze	235	rime-frost-base
+0022a1d61a27497fed8dcf52bc0c65116dec8a681dd2b1f4ec07755ad9cde589-first-full	4han-common	first-full	shisxz	实施细则	shishixize	shi shi xi ze	235	rime-frost-base
+0022a1d61a27497fed8dcf52bc0c65116dec8a681dd2b1f4ec07755ad9cde589-middle-full	4han-common	middle-full	ssxiz	实施细则	shishixize	shi shi xi ze	235	rime-frost-base
+0022a1d61a27497fed8dcf52bc0c65116dec8a681dd2b1f4ec07755ad9cde589-last-full	4han-common	last-full	ssxze	实施细则	shishixize	shi shi xi ze	235	rime-frost-base
+0022a1d61a27497fed8dcf52bc0c65116dec8a681dd2b1f4ec07755ad9cde589-alternating	4han-common	alternating	shisxiz	实施细则	shishixize	shi shi xi ze	235	rime-frost-base
+0022a8cd71ded98f40e3c67249237e1c90de2c3c0c8322e11dd372a8c8fc09d1-full	4han-common	full	yelangzida	夜郎自大	yelangzida	ye lang zi da	100	rime-frost-base
+0022a8cd71ded98f40e3c67249237e1c90de2c3c0c8322e11dd372a8c8fc09d1-first-full	4han-common	first-full	yelzd	夜郎自大	yelangzida	ye lang zi da	100	rime-frost-base
+0022a8cd71ded98f40e3c67249237e1c90de2c3c0c8322e11dd372a8c8fc09d1-middle-full	4han-common	middle-full	ylzid	夜郎自大	yelangzida	ye lang zi da	100	rime-frost-base
+0022a8cd71ded98f40e3c67249237e1c90de2c3c0c8322e11dd372a8c8fc09d1-last-full	4han-common	last-full	ylzda	夜郎自大	yelangzida	ye lang zi da	100	rime-frost-base
+0022a8cd71ded98f40e3c67249237e1c90de2c3c0c8322e11dd372a8c8fc09d1-alternating	4han-common	alternating	yelzid	夜郎自大	yelangzida	ye lang zi da	100	rime-frost-base
+0023fcc15e49ff34fdcf2a7e34b2085954f9d4f1115bd45a3196885248cbbbfc-full	4han-common	full	yaoqiupeichang	要求赔偿	yaoqiupeichang	yao qiu pei chang	254	rime-frost-base
+0023fcc15e49ff34fdcf2a7e34b2085954f9d4f1115bd45a3196885248cbbbfc-first-full	4han-common	first-full	yaoqpc	要求赔偿	yaoqiupeichang	yao qiu pei chang	254	rime-frost-base
+0023fcc15e49ff34fdcf2a7e34b2085954f9d4f1115bd45a3196885248cbbbfc-middle-full	4han-common	middle-full	yqpeic	要求赔偿	yaoqiupeichang	yao qiu pei chang	254	rime-frost-base
+0023fcc15e49ff34fdcf2a7e34b2085954f9d4f1115bd45a3196885248cbbbfc-last-full	4han-common	last-full	yqpchang	要求赔偿	yaoqiupeichang	yao qiu pei chang	254	rime-frost-base
+0023fcc15e49ff34fdcf2a7e34b2085954f9d4f1115bd45a3196885248cbbbfc-alternating	4han-common	alternating	yaoqpeic	要求赔偿	yaoqiupeichang	yao qiu pei chang	254	rime-frost-base
+0026ad5d6f4fd07d5c7ee26f9121f049c8756ea9bd606a5144d56ae1b2757bc1-full	4han-common	full	jiroujiyi	肌肉记忆	jiroujiyi	ji rou ji yi	947	rime-frost-ext
+0026ad5d6f4fd07d5c7ee26f9121f049c8756ea9bd606a5144d56ae1b2757bc1-first-full	4han-common	first-full	jirjy	肌肉记忆	jiroujiyi	ji rou ji yi	947	rime-frost-ext
+0026ad5d6f4fd07d5c7ee26f9121f049c8756ea9bd606a5144d56ae1b2757bc1-middle-full	4han-common	middle-full	jrjiy	肌肉记忆	jiroujiyi	ji rou ji yi	947	rime-frost-ext
+0026ad5d6f4fd07d5c7ee26f9121f049c8756ea9bd606a5144d56ae1b2757bc1-last-full	4han-common	last-full	jrjyi	肌肉记忆	jiroujiyi	ji rou ji yi	947	rime-frost-ext
+0026ad5d6f4fd07d5c7ee26f9121f049c8756ea9bd606a5144d56ae1b2757bc1-alternating	4han-common	alternating	jirjiy	肌肉记忆	jiroujiyi	ji rou ji yi	947	rime-frost-ext
+0028c8638f75de4b948cfc315cd6fc9261181ff78f27a3d014cb9fdd9b5d225c-full	4han-common	full	changyongfangfa	常用方法	changyongfangfa	chang yong fang fa	155	rime-frost-base
+0028c8638f75de4b948cfc315cd6fc9261181ff78f27a3d014cb9fdd9b5d225c-first-full	4han-common	first-full	changyff	常用方法	changyongfangfa	chang yong fang fa	155	rime-frost-base
+0028c8638f75de4b948cfc315cd6fc9261181ff78f27a3d014cb9fdd9b5d225c-middle-full	4han-common	middle-full	cyfangf	常用方法	changyongfangfa	chang yong fang fa	155	rime-frost-base
+0028c8638f75de4b948cfc315cd6fc9261181ff78f27a3d014cb9fdd9b5d225c-last-full	4han-common	last-full	cyffa	常用方法	changyongfangfa	chang yong fang fa	155	rime-frost-base
+0028c8638f75de4b948cfc315cd6fc9261181ff78f27a3d014cb9fdd9b5d225c-alternating	4han-common	alternating	changyfangf	常用方法	changyongfangfa	chang yong fang fa	155	rime-frost-base
+002991ab57350a060752a6ab08230fa11453204bf142dc632aeca2ee81db8829-full	4han-common	full	shichangbumen	市场部门	shichangbumen	shi chang bu men	167	rime-frost-base
+002991ab57350a060752a6ab08230fa11453204bf142dc632aeca2ee81db8829-first-full	4han-common	first-full	shicbm	市场部门	shichangbumen	shi chang bu men	167	rime-frost-base
+002991ab57350a060752a6ab08230fa11453204bf142dc632aeca2ee81db8829-middle-full	4han-common	middle-full	scbum	市场部门	shichangbumen	shi chang bu men	167	rime-frost-base
+002991ab57350a060752a6ab08230fa11453204bf142dc632aeca2ee81db8829-last-full	4han-common	last-full	scbmen	市场部门	shichangbumen	shi chang bu men	167	rime-frost-base
+002991ab57350a060752a6ab08230fa11453204bf142dc632aeca2ee81db8829-alternating	4han-common	alternating	shicbum	市场部门	shichangbumen	shi chang bu men	167	rime-frost-base
+0029cfc725febfac9d2fffa8caed1644970f5b428f63db7856a26abc51c1c8e9-full	4han-common	full	chishenluoti	赤身裸体	chishenluoti	chi shen luo ti	166	rime-frost-base
+0029cfc725febfac9d2fffa8caed1644970f5b428f63db7856a26abc51c1c8e9-first-full	4han-common	first-full	chislt	赤身裸体	chishenluoti	chi shen luo ti	166	rime-frost-base
+0029cfc725febfac9d2fffa8caed1644970f5b428f63db7856a26abc51c1c8e9-middle-full	4han-common	middle-full	csluot	赤身裸体	chishenluoti	chi shen luo ti	166	rime-frost-base
+0029cfc725febfac9d2fffa8caed1644970f5b428f63db7856a26abc51c1c8e9-last-full	4han-common	last-full	cslti	赤身裸体	chishenluoti	chi shen luo ti	166	rime-frost-base
+0029cfc725febfac9d2fffa8caed1644970f5b428f63db7856a26abc51c1c8e9-alternating	4han-common	alternating	chisluot	赤身裸体	chishenluoti	chi shen luo ti	166	rime-frost-base
+003bf86f01cd6d332e83530779eb5f0632fbad8752dfcbac90c396732e639eb9-full	4han-common	full	picaorouhou	皮糙肉厚	picaorouhou	pi cao rou hou	140	rime-frost-base
+003bf86f01cd6d332e83530779eb5f0632fbad8752dfcbac90c396732e639eb9-first-full	4han-common	first-full	picrh	皮糙肉厚	picaorouhou	pi cao rou hou	140	rime-frost-base
+003bf86f01cd6d332e83530779eb5f0632fbad8752dfcbac90c396732e639eb9-middle-full	4han-common	middle-full	pcrouh	皮糙肉厚	picaorouhou	pi cao rou hou	140	rime-frost-base
+003bf86f01cd6d332e83530779eb5f0632fbad8752dfcbac90c396732e639eb9-last-full	4han-common	last-full	pcrhou	皮糙肉厚	picaorouhou	pi cao rou hou	140	rime-frost-base
+003bf86f01cd6d332e83530779eb5f0632fbad8752dfcbac90c396732e639eb9-alternating	4han-common	alternating	picrouh	皮糙肉厚	picaorouhou	pi cao rou hou	140	rime-frost-base
+003e7bd2ea5b1bf7f92d8a2d83936ae2482a7aaf2564ce8d6fa6c02524241b9e-full	4han-common	full	bunengchangjiu	不能长久	bunengchangjiu	bu neng chang jiu	131	rime-frost-ext
+003e7bd2ea5b1bf7f92d8a2d83936ae2482a7aaf2564ce8d6fa6c02524241b9e-first-full	4han-common	first-full	buncj	不能长久	bunengchangjiu	bu neng chang jiu	131	rime-frost-ext
+003e7bd2ea5b1bf7f92d8a2d83936ae2482a7aaf2564ce8d6fa6c02524241b9e-middle-full	4han-common	middle-full	bnchangj	不能长久	bunengchangjiu	bu neng chang jiu	131	rime-frost-ext
+003e7bd2ea5b1bf7f92d8a2d83936ae2482a7aaf2564ce8d6fa6c02524241b9e-last-full	4han-common	last-full	bncjiu	不能长久	bunengchangjiu	bu neng chang jiu	131	rime-frost-ext
+003e7bd2ea5b1bf7f92d8a2d83936ae2482a7aaf2564ce8d6fa6c02524241b9e-alternating	4han-common	alternating	bunchangj	不能长久	bunengchangjiu	bu neng chang jiu	131	rime-frost-ext
+004121fba495c9a59e9b518e84ef5f58e3158c4d9cc994d6c4b1b4579fa9da8b-full	4han-common	full	xueshuzhuzuo	学术著作	xueshuzhuzuo	xue shu zhu zuo	164	rime-frost-base
+004121fba495c9a59e9b518e84ef5f58e3158c4d9cc994d6c4b1b4579fa9da8b-first-full	4han-common	first-full	xueszz	学术著作	xueshuzhuzuo	xue shu zhu zuo	164	rime-frost-base
+004121fba495c9a59e9b518e84ef5f58e3158c4d9cc994d6c4b1b4579fa9da8b-middle-full	4han-common	middle-full	xszhuz	学术著作	xueshuzhuzuo	xue shu zhu zuo	164	rime-frost-base
+004121fba495c9a59e9b518e84ef5f58e3158c4d9cc994d6c4b1b4579fa9da8b-last-full	4han-common	last-full	xszzuo	学术著作	xueshuzhuzuo	xue shu zhu zuo	164	rime-frost-base
+004121fba495c9a59e9b518e84ef5f58e3158c4d9cc994d6c4b1b4579fa9da8b-alternating	4han-common	alternating	xueszhuz	学术著作	xueshuzhuzuo	xue shu zhu zuo	164	rime-frost-base
+0042b84746a8f8d5637a6a7365c09560f18a3dc3704cb282d1054920392c0a63-full	4han-common	full	shoujidazi	手机打字	shoujidazi	shou ji da zi	363	rime-frost-ext
+0042b84746a8f8d5637a6a7365c09560f18a3dc3704cb282d1054920392c0a63-first-full	4han-common	first-full	shoujdz	手机打字	shoujidazi	shou ji da zi	363	rime-frost-ext
+0042b84746a8f8d5637a6a7365c09560f18a3dc3704cb282d1054920392c0a63-middle-full	4han-common	middle-full	sjdaz	手机打字	shoujidazi	shou ji da zi	363	rime-frost-ext
+0042b84746a8f8d5637a6a7365c09560f18a3dc3704cb282d1054920392c0a63-last-full	4han-common	last-full	sjdzi	手机打字	shoujidazi	shou ji da zi	363	rime-frost-ext
+0042b84746a8f8d5637a6a7365c09560f18a3dc3704cb282d1054920392c0a63-alternating	4han-common	alternating	shoujdaz	手机打字	shoujidazi	shou ji da zi	363	rime-frost-ext
+0042eae7a71e50e1ac512574f95bf0ae4f3a11298cbbac129f39d2adec153b2a-full	4han-common	full	bukenizhuan	不可逆转	bukenizhuan	bu ke ni zhuan	550	rime-frost-base
+0042eae7a71e50e1ac512574f95bf0ae4f3a11298cbbac129f39d2adec153b2a-first-full	4han-common	first-full	buknz	不可逆转	bukenizhuan	bu ke ni zhuan	550	rime-frost-base
+0042eae7a71e50e1ac512574f95bf0ae4f3a11298cbbac129f39d2adec153b2a-middle-full	4han-common	middle-full	bkniz	不可逆转	bukenizhuan	bu ke ni zhuan	550	rime-frost-base
+0042eae7a71e50e1ac512574f95bf0ae4f3a11298cbbac129f39d2adec153b2a-last-full	4han-common	last-full	bknzhuan	不可逆转	bukenizhuan	bu ke ni zhuan	550	rime-frost-base
+0042eae7a71e50e1ac512574f95bf0ae4f3a11298cbbac129f39d2adec153b2a-alternating	4han-common	alternating	bukniz	不可逆转	bukenizhuan	bu ke ni zhuan	550	rime-frost-base
+0042fe3530dd19c46fd0498f0dd3baab83fd9f17b3ec036276fd5c8cb18a1255-full	4han-common	full	zhetaofangzi	这套房子	zhetaofangzi	zhe tao fang zi	279	rime-frost-base
+0042fe3530dd19c46fd0498f0dd3baab83fd9f17b3ec036276fd5c8cb18a1255-first-full	4han-common	first-full	zhetfz	这套房子	zhetaofangzi	zhe tao fang zi	279	rime-frost-base
+0042fe3530dd19c46fd0498f0dd3baab83fd9f17b3ec036276fd5c8cb18a1255-middle-full	4han-common	middle-full	ztfangz	这套房子	zhetaofangzi	zhe tao fang zi	279	rime-frost-base
+0042fe3530dd19c46fd0498f0dd3baab83fd9f17b3ec036276fd5c8cb18a1255-last-full	4han-common	last-full	ztfzi	这套房子	zhetaofangzi	zhe tao fang zi	279	rime-frost-base
+0042fe3530dd19c46fd0498f0dd3baab83fd9f17b3ec036276fd5c8cb18a1255-alternating	4han-common	alternating	zhetfangz	这套房子	zhetaofangzi	zhe tao fang zi	279	rime-frost-base
+00435d8f99b1b272940aa6a08d824a2f8805020b44495516831b5843498ba348-full	4han-common	full	neibuguanli	内部管理	neibuguanli	nei bu guan li	251	rime-frost-base
+00435d8f99b1b272940aa6a08d824a2f8805020b44495516831b5843498ba348-first-full	4han-common	first-full	neibgl	内部管理	neibuguanli	nei bu guan li	251	rime-frost-base
+00435d8f99b1b272940aa6a08d824a2f8805020b44495516831b5843498ba348-middle-full	4han-common	middle-full	nbguanl	内部管理	neibuguanli	nei bu guan li	251	rime-frost-base
+00435d8f99b1b272940aa6a08d824a2f8805020b44495516831b5843498ba348-last-full	4han-common	last-full	nbgli	内部管理	neibuguanli	nei bu guan li	251	rime-frost-base
+00435d8f99b1b272940aa6a08d824a2f8805020b44495516831b5843498ba348-alternating	4han-common	alternating	neibguanl	内部管理	neibuguanli	nei bu guan li	251	rime-frost-base
+0046063a3d0cd6d3f298ee0e80e454ba0b803a7b492086e3f9e7d0d1872b6960-full	4han-common	full	bijiaowenxue	比较文学	bijiaowenxue	bi jiao wen xue	225	rime-frost-ext
+0046063a3d0cd6d3f298ee0e80e454ba0b803a7b492086e3f9e7d0d1872b6960-first-full	4han-common	first-full	bijwx	比较文学	bijiaowenxue	bi jiao wen xue	225	rime-frost-ext
+0046063a3d0cd6d3f298ee0e80e454ba0b803a7b492086e3f9e7d0d1872b6960-middle-full	4han-common	middle-full	bjwenx	比较文学	bijiaowenxue	bi jiao wen xue	225	rime-frost-ext
+0046063a3d0cd6d3f298ee0e80e454ba0b803a7b492086e3f9e7d0d1872b6960-last-full	4han-common	last-full	bjwxue	比较文学	bijiaowenxue	bi jiao wen xue	225	rime-frost-ext
+0046063a3d0cd6d3f298ee0e80e454ba0b803a7b492086e3f9e7d0d1872b6960-alternating	4han-common	alternating	bijwenx	比较文学	bijiaowenxue	bi jiao wen xue	225	rime-frost-ext
+004af876110a4c62657729c6a3441558309015eb51dd3fd9f0371523ef53243a-full	4han-common	full	tianrangzhibie	天壤之别	tianrangzhibie	tian rang zhi bie	926	rime-frost-base
+004af876110a4c62657729c6a3441558309015eb51dd3fd9f0371523ef53243a-first-full	4han-common	first-full	tianrzb	天壤之别	tianrangzhibie	tian rang zhi bie	926	rime-frost-base
+004af876110a4c62657729c6a3441558309015eb51dd3fd9f0371523ef53243a-middle-full	4han-common	middle-full	trzhib	天壤之别	tianrangzhibie	tian rang zhi bie	926	rime-frost-base
+004af876110a4c62657729c6a3441558309015eb51dd3fd9f0371523ef53243a-last-full	4han-common	last-full	trzbie	天壤之别	tianrangzhibie	tian rang zhi bie	926	rime-frost-base
+004af876110a4c62657729c6a3441558309015eb51dd3fd9f0371523ef53243a-alternating	4han-common	alternating	tianrzhib	天壤之别	tianrangzhibie	tian rang zhi bie	926	rime-frost-base
+004f6a314a2daf0d6bea77fed88ba6e4aaee2450bde3b696e06342d2d72f544e-full	4han-common	full	shichangbiaoxian	市场表现	shichangbiaoxian	shi chang biao xian	346	rime-frost-base
+004f6a314a2daf0d6bea77fed88ba6e4aaee2450bde3b696e06342d2d72f544e-first-full	4han-common	first-full	shicbx	市场表现	shichangbiaoxian	shi chang biao xian	346	rime-frost-base
+004f6a314a2daf0d6bea77fed88ba6e4aaee2450bde3b696e06342d2d72f544e-middle-full	4han-common	middle-full	scbiaox	市场表现	shichangbiaoxian	shi chang biao xian	346	rime-frost-base
+004f6a314a2daf0d6bea77fed88ba6e4aaee2450bde3b696e06342d2d72f544e-last-full	4han-common	last-full	scbxian	市场表现	shichangbiaoxian	shi chang biao xian	346	rime-frost-base
+004f6a314a2daf0d6bea77fed88ba6e4aaee2450bde3b696e06342d2d72f544e-alternating	4han-common	alternating	shicbiaox	市场表现	shichangbiaoxian	shi chang biao xian	346	rime-frost-base
+00007e9bdeda780b58033343120091b8ba1741511e0c46fbe0552c8b493d0ff9-full	4han-low	full	tingcheshoufei	停车收费	tingcheshoufei	ting che shou fei	8	rime-frost-base
+00007e9bdeda780b58033343120091b8ba1741511e0c46fbe0552c8b493d0ff9-first-full	4han-low	first-full	tingcsf	停车收费	tingcheshoufei	ting che shou fei	8	rime-frost-base
+00007e9bdeda780b58033343120091b8ba1741511e0c46fbe0552c8b493d0ff9-middle-full	4han-low	middle-full	tcshouf	停车收费	tingcheshoufei	ting che shou fei	8	rime-frost-base
+00007e9bdeda780b58033343120091b8ba1741511e0c46fbe0552c8b493d0ff9-last-full	4han-low	last-full	tcsfei	停车收费	tingcheshoufei	ting che shou fei	8	rime-frost-base
+00007e9bdeda780b58033343120091b8ba1741511e0c46fbe0552c8b493d0ff9-alternating	4han-low	alternating	tingcshouf	停车收费	tingcheshoufei	ting che shou fei	8	rime-frost-base
+0000a6f8361fe8c8c32f4460ff6d3a75f56f361513e90e91320f1fe887605f98-full	4han-low	full	duzhuyoubing	督主有病	duzhuyoubing	du zhu you bing	1	rime-frost-ext
+0000a6f8361fe8c8c32f4460ff6d3a75f56f361513e90e91320f1fe887605f98-first-full	4han-low	first-full	duzyb	督主有病	duzhuyoubing	du zhu you bing	1	rime-frost-ext
+0000a6f8361fe8c8c32f4460ff6d3a75f56f361513e90e91320f1fe887605f98-middle-full	4han-low	middle-full	dzyoub	督主有病	duzhuyoubing	du zhu you bing	1	rime-frost-ext
+0000a6f8361fe8c8c32f4460ff6d3a75f56f361513e90e91320f1fe887605f98-last-full	4han-low	last-full	dzybing	督主有病	duzhuyoubing	du zhu you bing	1	rime-frost-ext
+0000a6f8361fe8c8c32f4460ff6d3a75f56f361513e90e91320f1fe887605f98-alternating	4han-low	alternating	duzyoub	督主有病	duzhuyoubing	du zhu you bing	1	rime-frost-ext
+0000db3a8bab01c9e88dca8c137893ba593216c0871e21cf7ebc3b7f6895cec1-full	4han-low	full	wenmingzhidu	文明制度	wenmingzhidu	wen ming zhi du	4	rime-frost-ext
+0000db3a8bab01c9e88dca8c137893ba593216c0871e21cf7ebc3b7f6895cec1-first-full	4han-low	first-full	wenmzd	文明制度	wenmingzhidu	wen ming zhi du	4	rime-frost-ext
+0000db3a8bab01c9e88dca8c137893ba593216c0871e21cf7ebc3b7f6895cec1-middle-full	4han-low	middle-full	wmzhid	文明制度	wenmingzhidu	wen ming zhi du	4	rime-frost-ext
+0000db3a8bab01c9e88dca8c137893ba593216c0871e21cf7ebc3b7f6895cec1-last-full	4han-low	last-full	wmzdu	文明制度	wenmingzhidu	wen ming zhi du	4	rime-frost-ext
+0000db3a8bab01c9e88dca8c137893ba593216c0871e21cf7ebc3b7f6895cec1-alternating	4han-low	alternating	wenmzhid	文明制度	wenmingzhidu	wen ming zhi du	4	rime-frost-ext
+0000ff605bdad1ceb14c952372b61e0b1d18f209149146a213016a0a0df7d903-full	4han-low	full	chandilaiyuan	产地来源	chandilaiyuan	chan di lai yuan	2	rime-frost-ext
+0000ff605bdad1ceb14c952372b61e0b1d18f209149146a213016a0a0df7d903-first-full	4han-low	first-full	chandly	产地来源	chandilaiyuan	chan di lai yuan	2	rime-frost-ext
+0000ff605bdad1ceb14c952372b61e0b1d18f209149146a213016a0a0df7d903-middle-full	4han-low	middle-full	cdlaiy	产地来源	chandilaiyuan	chan di lai yuan	2	rime-frost-ext
+0000ff605bdad1ceb14c952372b61e0b1d18f209149146a213016a0a0df7d903-last-full	4han-low	last-full	cdlyuan	产地来源	chandilaiyuan	chan di lai yuan	2	rime-frost-ext
+0000ff605bdad1ceb14c952372b61e0b1d18f209149146a213016a0a0df7d903-alternating	4han-low	alternating	chandlaiy	产地来源	chandilaiyuan	chan di lai yuan	2	rime-frost-ext
+0001345d653836d61cd595176024da3d9c6c04e52f01c8774bd5e1d710c65fa0-full	4han-low	full	basailongna	巴塞隆纳	basailongna	ba sai long na	2	rime-frost-ext
+0001345d653836d61cd595176024da3d9c6c04e52f01c8774bd5e1d710c65fa0-first-full	4han-low	first-full	basln	巴塞隆纳	basailongna	ba sai long na	2	rime-frost-ext
+0001345d653836d61cd595176024da3d9c6c04e52f01c8774bd5e1d710c65fa0-middle-full	4han-low	middle-full	bslongn	巴塞隆纳	basailongna	ba sai long na	2	rime-frost-ext
+0001345d653836d61cd595176024da3d9c6c04e52f01c8774bd5e1d710c65fa0-last-full	4han-low	last-full	bslna	巴塞隆纳	basailongna	ba sai long na	2	rime-frost-ext
+0001345d653836d61cd595176024da3d9c6c04e52f01c8774bd5e1d710c65fa0-alternating	4han-low	alternating	baslongn	巴塞隆纳	basailongna	ba sai long na	2	rime-frost-ext
+00018469a37b2665823504ebe3852e9c0bd6e41c3ac6c13a613d4600505b3dc9-full	4han-low	full	aideqiji	爱的奇迹	aideqiji	ai de qi ji	6	rime-frost-ext
+00018469a37b2665823504ebe3852e9c0bd6e41c3ac6c13a613d4600505b3dc9-first-full	4han-low	first-full	aidqj	爱的奇迹	aideqiji	ai de qi ji	6	rime-frost-ext
+00018469a37b2665823504ebe3852e9c0bd6e41c3ac6c13a613d4600505b3dc9-middle-full	4han-low	middle-full	adqij	爱的奇迹	aideqiji	ai de qi ji	6	rime-frost-ext
+00018469a37b2665823504ebe3852e9c0bd6e41c3ac6c13a613d4600505b3dc9-last-full	4han-low	last-full	adqji	爱的奇迹	aideqiji	ai de qi ji	6	rime-frost-ext
+00018469a37b2665823504ebe3852e9c0bd6e41c3ac6c13a613d4600505b3dc9-alternating	4han-low	alternating	aidqij	爱的奇迹	aideqiji	ai de qi ji	6	rime-frost-ext
+0001ff0b00fc40987358c689faa0ee87a004bbdd7c4fc4d7e45c86a258b353e2-full	4han-low	full	laodeyitian	老的一天	laodeyitian	lao de yi tian	19	rime-frost-ext
+0001ff0b00fc40987358c689faa0ee87a004bbdd7c4fc4d7e45c86a258b353e2-first-full	4han-low	first-full	laodyt	老的一天	laodeyitian	lao de yi tian	19	rime-frost-ext
+0001ff0b00fc40987358c689faa0ee87a004bbdd7c4fc4d7e45c86a258b353e2-middle-full	4han-low	middle-full	ldyit	老的一天	laodeyitian	lao de yi tian	19	rime-frost-ext
+0001ff0b00fc40987358c689faa0ee87a004bbdd7c4fc4d7e45c86a258b353e2-last-full	4han-low	last-full	ldytian	老的一天	laodeyitian	lao de yi tian	19	rime-frost-ext
+0001ff0b00fc40987358c689faa0ee87a004bbdd7c4fc4d7e45c86a258b353e2-alternating	4han-low	alternating	laodyit	老的一天	laodeyitian	lao de yi tian	19	rime-frost-ext
+00020f2da29391489c1f1dcabad3d905398ebc5794e1cb32a66d72ce38a9246e-full	4han-low	full	jiaqiangdiaoyan	加强调研	jiaqiangdiaoyan	jia qiang diao yan	2	rime-frost-ext
+00020f2da29391489c1f1dcabad3d905398ebc5794e1cb32a66d72ce38a9246e-first-full	4han-low	first-full	jiaqdy	加强调研	jiaqiangdiaoyan	jia qiang diao yan	2	rime-frost-ext
+00020f2da29391489c1f1dcabad3d905398ebc5794e1cb32a66d72ce38a9246e-middle-full	4han-low	middle-full	jqdiaoy	加强调研	jiaqiangdiaoyan	jia qiang diao yan	2	rime-frost-ext
+00020f2da29391489c1f1dcabad3d905398ebc5794e1cb32a66d72ce38a9246e-last-full	4han-low	last-full	jqdyan	加强调研	jiaqiangdiaoyan	jia qiang diao yan	2	rime-frost-ext
+00020f2da29391489c1f1dcabad3d905398ebc5794e1cb32a66d72ce38a9246e-alternating	4han-low	alternating	jiaqdiaoy	加强调研	jiaqiangdiaoyan	jia qiang diao yan	2	rime-frost-ext
+00029ec624d986ff0a46b0df6ff8b4d8269bb5f3559c2f0fbc6fa6282be4b0e9-full	4han-low	full	gouxiangfenxi	构象分析	gouxiangfenxi	gou xiang fen xi	7	rime-frost-base
+00029ec624d986ff0a46b0df6ff8b4d8269bb5f3559c2f0fbc6fa6282be4b0e9-first-full	4han-low	first-full	gouxfx	构象分析	gouxiangfenxi	gou xiang fen xi	7	rime-frost-base
+00029ec624d986ff0a46b0df6ff8b4d8269bb5f3559c2f0fbc6fa6282be4b0e9-middle-full	4han-low	middle-full	gxfenx	构象分析	gouxiangfenxi	gou xiang fen xi	7	rime-frost-base
+00029ec624d986ff0a46b0df6ff8b4d8269bb5f3559c2f0fbc6fa6282be4b0e9-last-full	4han-low	last-full	gxfxi	构象分析	gouxiangfenxi	gou xiang fen xi	7	rime-frost-base
+00029ec624d986ff0a46b0df6ff8b4d8269bb5f3559c2f0fbc6fa6282be4b0e9-alternating	4han-low	alternating	gouxfenx	构象分析	gouxiangfenxi	gou xiang fen xi	7	rime-frost-base
+0003a8bd9ccc2dd4dfd85fdf12a29eafcd374c081f4e90385428e7a76b913928-full	4han-low	full	yeyaobani	也要把你	yeyaobani	ye yao ba ni	25	rime-frost-ext
+0003a8bd9ccc2dd4dfd85fdf12a29eafcd374c081f4e90385428e7a76b913928-first-full	4han-low	first-full	yeybn	也要把你	yeyaobani	ye yao ba ni	25	rime-frost-ext
+0003a8bd9ccc2dd4dfd85fdf12a29eafcd374c081f4e90385428e7a76b913928-middle-full	4han-low	middle-full	yyban	也要把你	yeyaobani	ye yao ba ni	25	rime-frost-ext
+0003a8bd9ccc2dd4dfd85fdf12a29eafcd374c081f4e90385428e7a76b913928-last-full	4han-low	last-full	yybni	也要把你	yeyaobani	ye yao ba ni	25	rime-frost-ext
+0003a8bd9ccc2dd4dfd85fdf12a29eafcd374c081f4e90385428e7a76b913928-alternating	4han-low	alternating	yeyban	也要把你	yeyaobani	ye yao ba ni	25	rime-frost-ext
+00048a826db9bcef6bb1f6206dfc1600c68a8f07cf22a31b10ca00b152399ebf-full	4han-low	full	lingrendanxin	令人担心	lingrendanxin	ling ren dan xin	52	rime-frost-ext
+00048a826db9bcef6bb1f6206dfc1600c68a8f07cf22a31b10ca00b152399ebf-first-full	4han-low	first-full	lingrdx	令人担心	lingrendanxin	ling ren dan xin	52	rime-frost-ext
+00048a826db9bcef6bb1f6206dfc1600c68a8f07cf22a31b10ca00b152399ebf-middle-full	4han-low	middle-full	lrdanx	令人担心	lingrendanxin	ling ren dan xin	52	rime-frost-ext
+00048a826db9bcef6bb1f6206dfc1600c68a8f07cf22a31b10ca00b152399ebf-last-full	4han-low	last-full	lrdxin	令人担心	lingrendanxin	ling ren dan xin	52	rime-frost-ext
+00048a826db9bcef6bb1f6206dfc1600c68a8f07cf22a31b10ca00b152399ebf-alternating	4han-low	alternating	lingrdanx	令人担心	lingrendanxin	ling ren dan xin	52	rime-frost-ext
+0004a43866508ec3ff3b2eeaef57bde9b60fa885c9788d1b7dfe5ec471613026-full	4han-low	full	deyugongzuo	德育工作	deyugongzuo	de yu gong zuo	8	rime-frost-base
+0004a43866508ec3ff3b2eeaef57bde9b60fa885c9788d1b7dfe5ec471613026-first-full	4han-low	first-full	deygz	德育工作	deyugongzuo	de yu gong zuo	8	rime-frost-base
+0004a43866508ec3ff3b2eeaef57bde9b60fa885c9788d1b7dfe5ec471613026-middle-full	4han-low	middle-full	dygongz	德育工作	deyugongzuo	de yu gong zuo	8	rime-frost-base
+0004a43866508ec3ff3b2eeaef57bde9b60fa885c9788d1b7dfe5ec471613026-last-full	4han-low	last-full	dygzuo	德育工作	deyugongzuo	de yu gong zuo	8	rime-frost-base
+0004a43866508ec3ff3b2eeaef57bde9b60fa885c9788d1b7dfe5ec471613026-alternating	4han-low	alternating	deygongz	德育工作	deyugongzuo	de yu gong zuo	8	rime-frost-base
+0004cb6df44b7b143dc6cbd315cedd2814cac8ca1bd86ea6fbf7cb64faac30b3-full	4han-low	full	zhongyuzhishou	忠于职守	zhongyuzhishou	zhong yu zhi shou	34	rime-frost-base
+0004cb6df44b7b143dc6cbd315cedd2814cac8ca1bd86ea6fbf7cb64faac30b3-first-full	4han-low	first-full	zhongyzs	忠于职守	zhongyuzhishou	zhong yu zhi shou	34	rime-frost-base
+0004cb6df44b7b143dc6cbd315cedd2814cac8ca1bd86ea6fbf7cb64faac30b3-middle-full	4han-low	middle-full	zyzhis	忠于职守	zhongyuzhishou	zhong yu zhi shou	34	rime-frost-base
+0004cb6df44b7b143dc6cbd315cedd2814cac8ca1bd86ea6fbf7cb64faac30b3-last-full	4han-low	last-full	zyzshou	忠于职守	zhongyuzhishou	zhong yu zhi shou	34	rime-frost-base
+0004cb6df44b7b143dc6cbd315cedd2814cac8ca1bd86ea6fbf7cb64faac30b3-alternating	4han-low	alternating	zhongyzhis	忠于职守	zhongyuzhishou	zhong yu zhi shou	34	rime-frost-base
+00053937d0f62aaa7ddd26ee4e7b67adf2a39026b3417ca5385ac3488c666acc-full	4han-low	full	shipinduanpian	视频短片	shipinduanpian	shi pin duan pian	25	rime-frost-base
+00053937d0f62aaa7ddd26ee4e7b67adf2a39026b3417ca5385ac3488c666acc-first-full	4han-low	first-full	shipdp	视频短片	shipinduanpian	shi pin duan pian	25	rime-frost-base
+00053937d0f62aaa7ddd26ee4e7b67adf2a39026b3417ca5385ac3488c666acc-middle-full	4han-low	middle-full	spduanp	视频短片	shipinduanpian	shi pin duan pian	25	rime-frost-base
+00053937d0f62aaa7ddd26ee4e7b67adf2a39026b3417ca5385ac3488c666acc-last-full	4han-low	last-full	spdpian	视频短片	shipinduanpian	shi pin duan pian	25	rime-frost-base
+00053937d0f62aaa7ddd26ee4e7b67adf2a39026b3417ca5385ac3488c666acc-alternating	4han-low	alternating	shipduanp	视频短片	shipinduanpian	shi pin duan pian	25	rime-frost-base
+00059f2ca977ab771c257265a5abe438bb4d601aaccb75efa0f651589c6c9667-full	4han-low	full	gengjiafuyou	更加富有	gengjiafuyou	geng jia fu you	38	rime-frost-base
+00059f2ca977ab771c257265a5abe438bb4d601aaccb75efa0f651589c6c9667-first-full	4han-low	first-full	gengjfy	更加富有	gengjiafuyou	geng jia fu you	38	rime-frost-base
+00059f2ca977ab771c257265a5abe438bb4d601aaccb75efa0f651589c6c9667-middle-full	4han-low	middle-full	gjfuy	更加富有	gengjiafuyou	geng jia fu you	38	rime-frost-base
+00059f2ca977ab771c257265a5abe438bb4d601aaccb75efa0f651589c6c9667-last-full	4han-low	last-full	gjfyou	更加富有	gengjiafuyou	geng jia fu you	38	rime-frost-base
+00059f2ca977ab771c257265a5abe438bb4d601aaccb75efa0f651589c6c9667-alternating	4han-low	alternating	gengjfuy	更加富有	gengjiafuyou	geng jia fu you	38	rime-frost-base
+0005d6bb9a78392252e6fce9adeacba06649d5f67b071f210ff606ba93f6bce8-full	4han-low	full	tongyongwuling	通用五菱	tongyongwuling	tong yong wu ling	2	rime-frost-base
+0005d6bb9a78392252e6fce9adeacba06649d5f67b071f210ff606ba93f6bce8-first-full	4han-low	first-full	tongywl	通用五菱	tongyongwuling	tong yong wu ling	2	rime-frost-base
+0005d6bb9a78392252e6fce9adeacba06649d5f67b071f210ff606ba93f6bce8-middle-full	4han-low	middle-full	tywul	通用五菱	tongyongwuling	tong yong wu ling	2	rime-frost-base
+0005d6bb9a78392252e6fce9adeacba06649d5f67b071f210ff606ba93f6bce8-last-full	4han-low	last-full	tywling	通用五菱	tongyongwuling	tong yong wu ling	2	rime-frost-base
+0005d6bb9a78392252e6fce9adeacba06649d5f67b071f210ff606ba93f6bce8-alternating	4han-low	alternating	tongywul	通用五菱	tongyongwuling	tong yong wu ling	2	rime-frost-base
+0007a187181b49568abadb9a2a2e680a4fc93917341902690d5225afc08eefac-full	4han-low	full	feinibujia	非你不嫁	feinibujia	fei ni bu jia	5	rime-frost-ext
+0007a187181b49568abadb9a2a2e680a4fc93917341902690d5225afc08eefac-first-full	4han-low	first-full	feinbj	非你不嫁	feinibujia	fei ni bu jia	5	rime-frost-ext
+0007a187181b49568abadb9a2a2e680a4fc93917341902690d5225afc08eefac-middle-full	4han-low	middle-full	fnbuj	非你不嫁	feinibujia	fei ni bu jia	5	rime-frost-ext
+0007a187181b49568abadb9a2a2e680a4fc93917341902690d5225afc08eefac-last-full	4han-low	last-full	fnbjia	非你不嫁	feinibujia	fei ni bu jia	5	rime-frost-ext
+0007a187181b49568abadb9a2a2e680a4fc93917341902690d5225afc08eefac-alternating	4han-low	alternating	feinbuj	非你不嫁	feinibujia	fei ni bu jia	5	rime-frost-ext
+0007e0026326f53f8981f89925f23a2b5a2726c96be189b2f1c17ed5c7fa7fc3-full	4han-low	full	fudangengzhong	负担更重	fudangengzhong	fu dan geng zhong	18	rime-frost-ext
+0007e0026326f53f8981f89925f23a2b5a2726c96be189b2f1c17ed5c7fa7fc3-first-full	4han-low	first-full	fudgz	负担更重	fudangengzhong	fu dan geng zhong	18	rime-frost-ext
+0007e0026326f53f8981f89925f23a2b5a2726c96be189b2f1c17ed5c7fa7fc3-middle-full	4han-low	middle-full	fdgengz	负担更重	fudangengzhong	fu dan geng zhong	18	rime-frost-ext
+0007e0026326f53f8981f89925f23a2b5a2726c96be189b2f1c17ed5c7fa7fc3-last-full	4han-low	last-full	fdgzhong	负担更重	fudangengzhong	fu dan geng zhong	18	rime-frost-ext
+0007e0026326f53f8981f89925f23a2b5a2726c96be189b2f1c17ed5c7fa7fc3-alternating	4han-low	alternating	fudgengz	负担更重	fudangengzhong	fu dan geng zhong	18	rime-frost-ext
+000855c165d88e66659a5b811eadfd8b4a77d45a8edc0dfae6dea44b77291de9-full	4han-low	full	wencaiwulve	文才武略	wencaiwulve	wen cai wu lve	5	rime-frost-base
+000855c165d88e66659a5b811eadfd8b4a77d45a8edc0dfae6dea44b77291de9-first-full	4han-low	first-full	wencwl	文才武略	wencaiwulve	wen cai wu lve	5	rime-frost-base
+000855c165d88e66659a5b811eadfd8b4a77d45a8edc0dfae6dea44b77291de9-middle-full	4han-low	middle-full	wcwul	文才武略	wencaiwulve	wen cai wu lve	5	rime-frost-base
+000855c165d88e66659a5b811eadfd8b4a77d45a8edc0dfae6dea44b77291de9-last-full	4han-low	last-full	wcwlve	文才武略	wencaiwulve	wen cai wu lve	5	rime-frost-base
+000855c165d88e66659a5b811eadfd8b4a77d45a8edc0dfae6dea44b77291de9-alternating	4han-low	alternating	wencwul	文才武略	wencaiwulve	wen cai wu lve	5	rime-frost-base
+00095563c443a129bee35aee9995c362a3bc47525eb994d0c0f9f9743c885e29-full	4han-low	full	zuzhitizhi	组织体制	zuzhitizhi	zu zhi ti zhi	3	rime-frost-base
+00095563c443a129bee35aee9995c362a3bc47525eb994d0c0f9f9743c885e29-first-full	4han-low	first-full	zuztz	组织体制	zuzhitizhi	zu zhi ti zhi	3	rime-frost-base
+00095563c443a129bee35aee9995c362a3bc47525eb994d0c0f9f9743c885e29-middle-full	4han-low	middle-full	zztiz	组织体制	zuzhitizhi	zu zhi ti zhi	3	rime-frost-base
+00095563c443a129bee35aee9995c362a3bc47525eb994d0c0f9f9743c885e29-last-full	4han-low	last-full	zztzhi	组织体制	zuzhitizhi	zu zhi ti zhi	3	rime-frost-base
+00095563c443a129bee35aee9995c362a3bc47525eb994d0c0f9f9743c885e29-alternating	4han-low	alternating	zuztiz	组织体制	zuzhitizhi	zu zhi ti zhi	3	rime-frost-base
+00096c829bd8712e040ba04b412ae98a2789b5b369818445a40f8342e7bde4a1-full	4han-low	full	nagenvde	哪个女的	nagenvde	na ge nv de	12	rime-frost-ext
+00096c829bd8712e040ba04b412ae98a2789b5b369818445a40f8342e7bde4a1-first-full	4han-low	first-full	nagnd	哪个女的	nagenvde	na ge nv de	12	rime-frost-ext
+00096c829bd8712e040ba04b412ae98a2789b5b369818445a40f8342e7bde4a1-middle-full	4han-low	middle-full	ngnvd	哪个女的	nagenvde	na ge nv de	12	rime-frost-ext
+00096c829bd8712e040ba04b412ae98a2789b5b369818445a40f8342e7bde4a1-last-full	4han-low	last-full	ngnde	哪个女的	nagenvde	na ge nv de	12	rime-frost-ext
+00096c829bd8712e040ba04b412ae98a2789b5b369818445a40f8342e7bde4a1-alternating	4han-low	alternating	nagnvd	哪个女的	nagenvde	na ge nv de	12	rime-frost-ext
+000a55fb9efe1c9ee0be348f40a1ca6c4e91eae2044944bd3dc2b866728937d1-full	4han-low	full	guowangjiqiu	过网击球	guowangjiqiu	guo wang ji qiu	2	rime-frost-ext
+000a55fb9efe1c9ee0be348f40a1ca6c4e91eae2044944bd3dc2b866728937d1-first-full	4han-low	first-full	guowjq	过网击球	guowangjiqiu	guo wang ji qiu	2	rime-frost-ext
+000a55fb9efe1c9ee0be348f40a1ca6c4e91eae2044944bd3dc2b866728937d1-middle-full	4han-low	middle-full	gwjiq	过网击球	guowangjiqiu	guo wang ji qiu	2	rime-frost-ext
+000a55fb9efe1c9ee0be348f40a1ca6c4e91eae2044944bd3dc2b866728937d1-last-full	4han-low	last-full	gwjqiu	过网击球	guowangjiqiu	guo wang ji qiu	2	rime-frost-ext
+000a55fb9efe1c9ee0be348f40a1ca6c4e91eae2044944bd3dc2b866728937d1-alternating	4han-low	alternating	guowjiq	过网击球	guowangjiqiu	guo wang ji qiu	2	rime-frost-ext
+000a666a8184640045199696c4978c711ca01f22f00c0d297474f2c120653145-full	4han-low	full	reshuijizu	热水机组	reshuijizu	re shui ji zu	2	rime-frost-base
+000a666a8184640045199696c4978c711ca01f22f00c0d297474f2c120653145-first-full	4han-low	first-full	resjz	热水机组	reshuijizu	re shui ji zu	2	rime-frost-base
+000a666a8184640045199696c4978c711ca01f22f00c0d297474f2c120653145-middle-full	4han-low	middle-full	rsjiz	热水机组	reshuijizu	re shui ji zu	2	rime-frost-base
+000a666a8184640045199696c4978c711ca01f22f00c0d297474f2c120653145-last-full	4han-low	last-full	rsjzu	热水机组	reshuijizu	re shui ji zu	2	rime-frost-base
+000a666a8184640045199696c4978c711ca01f22f00c0d297474f2c120653145-alternating	4han-low	alternating	resjiz	热水机组	reshuijizu	re shui ji zu	2	rime-frost-base
+000a6b15cd7d852020e115081a94278d223d2a13ad045c35778d1bf140caac67-full	4han-low	full	pajinsenzheng	帕金森症	pajinsenzheng	pa jin sen zheng	26	rime-frost-base
+000a6b15cd7d852020e115081a94278d223d2a13ad045c35778d1bf140caac67-first-full	4han-low	first-full	pajsz	帕金森症	pajinsenzheng	pa jin sen zheng	26	rime-frost-base
+000a6b15cd7d852020e115081a94278d223d2a13ad045c35778d1bf140caac67-middle-full	4han-low	middle-full	pjsenz	帕金森症	pajinsenzheng	pa jin sen zheng	26	rime-frost-base
+000a6b15cd7d852020e115081a94278d223d2a13ad045c35778d1bf140caac67-last-full	4han-low	last-full	pjszheng	帕金森症	pajinsenzheng	pa jin sen zheng	26	rime-frost-base
+000a6b15cd7d852020e115081a94278d223d2a13ad045c35778d1bf140caac67-alternating	4han-low	alternating	pajsenz	帕金森症	pajinsenzheng	pa jin sen zheng	26	rime-frost-base
+000b7225424992c53013fb2be9e3efe9205700164c614a6a63e820f92c281a03-full	4han-low	full	xianshifanchang	限时返场	xianshifanchang	xian shi fan chang	4	rime-frost-base
+000b7225424992c53013fb2be9e3efe9205700164c614a6a63e820f92c281a03-first-full	4han-low	first-full	xiansfc	限时返场	xianshifanchang	xian shi fan chang	4	rime-frost-base
+000b7225424992c53013fb2be9e3efe9205700164c614a6a63e820f92c281a03-middle-full	4han-low	middle-full	xsfanc	限时返场	xianshifanchang	xian shi fan chang	4	rime-frost-base
+000b7225424992c53013fb2be9e3efe9205700164c614a6a63e820f92c281a03-last-full	4han-low	last-full	xsfchang	限时返场	xianshifanchang	xian shi fan chang	4	rime-frost-base
+000b7225424992c53013fb2be9e3efe9205700164c614a6a63e820f92c281a03-alternating	4han-low	alternating	xiansfanc	限时返场	xianshifanchang	xian shi fan chang	4	rime-frost-base
+000b7b79e858a5b1c05ceccd830c1daba944a7f152506734f2a1976d42b0bc5c-full	4han-low	full	bayiwangchao	八一王朝	bayiwangchao	ba yi wang chao	8	rime-frost-ext
+000b7b79e858a5b1c05ceccd830c1daba944a7f152506734f2a1976d42b0bc5c-first-full	4han-low	first-full	baywc	八一王朝	bayiwangchao	ba yi wang chao	8	rime-frost-ext
+000b7b79e858a5b1c05ceccd830c1daba944a7f152506734f2a1976d42b0bc5c-middle-full	4han-low	middle-full	bywangc	八一王朝	bayiwangchao	ba yi wang chao	8	rime-frost-ext
+000b7b79e858a5b1c05ceccd830c1daba944a7f152506734f2a1976d42b0bc5c-last-full	4han-low	last-full	bywchao	八一王朝	bayiwangchao	ba yi wang chao	8	rime-frost-ext
+000b7b79e858a5b1c05ceccd830c1daba944a7f152506734f2a1976d42b0bc5c-alternating	4han-low	alternating	baywangc	八一王朝	bayiwangchao	ba yi wang chao	8	rime-frost-ext
+000ba0f437eb134ff8acef8498939f00d8944e3c2f2577f315e5c7babb7775fc-full	4han-low	full	bapichoujin	扒皮抽筋	bapichoujin	ba pi chou jin	10	rime-frost-ext
+000ba0f437eb134ff8acef8498939f00d8944e3c2f2577f315e5c7babb7775fc-first-full	4han-low	first-full	bapcj	扒皮抽筋	bapichoujin	ba pi chou jin	10	rime-frost-ext
+000ba0f437eb134ff8acef8498939f00d8944e3c2f2577f315e5c7babb7775fc-middle-full	4han-low	middle-full	bpchouj	扒皮抽筋	bapichoujin	ba pi chou jin	10	rime-frost-ext
+000ba0f437eb134ff8acef8498939f00d8944e3c2f2577f315e5c7babb7775fc-last-full	4han-low	last-full	bpcjin	扒皮抽筋	bapichoujin	ba pi chou jin	10	rime-frost-ext
+000ba0f437eb134ff8acef8498939f00d8944e3c2f2577f315e5c7babb7775fc-alternating	4han-low	alternating	bapchouj	扒皮抽筋	bapichoujin	ba pi chou jin	10	rime-frost-ext
+000bf13d5fca6b673a5f35489206e71217e9b9f5ada9ecc7c6945b3557076af3-full	4han-low	full	nongfushipin	农副食品	nongfushipin	nong fu shi pin	9	rime-frost-base
+000bf13d5fca6b673a5f35489206e71217e9b9f5ada9ecc7c6945b3557076af3-first-full	4han-low	first-full	nongfsp	农副食品	nongfushipin	nong fu shi pin	9	rime-frost-base
+000bf13d5fca6b673a5f35489206e71217e9b9f5ada9ecc7c6945b3557076af3-middle-full	4han-low	middle-full	nfship	农副食品	nongfushipin	nong fu shi pin	9	rime-frost-base
+000bf13d5fca6b673a5f35489206e71217e9b9f5ada9ecc7c6945b3557076af3-last-full	4han-low	last-full	nfspin	农副食品	nongfushipin	nong fu shi pin	9	rime-frost-base
+000bf13d5fca6b673a5f35489206e71217e9b9f5ada9ecc7c6945b3557076af3-alternating	4han-low	alternating	nongfship	农副食品	nongfushipin	nong fu shi pin	9	rime-frost-base
+000c698873038cf9b9042d184590e619248ae285557a2b8fa2c6a63fa1cd7bb8-full	4han-low	full	tairuanleba	太软了吧	tairuanleba	tai ruan le ba	1	rime-frost-base
+000c698873038cf9b9042d184590e619248ae285557a2b8fa2c6a63fa1cd7bb8-first-full	4han-low	first-full	tairlb	太软了吧	tairuanleba	tai ruan le ba	1	rime-frost-base
+000c698873038cf9b9042d184590e619248ae285557a2b8fa2c6a63fa1cd7bb8-middle-full	4han-low	middle-full	trleb	太软了吧	tairuanleba	tai ruan le ba	1	rime-frost-base
+000c698873038cf9b9042d184590e619248ae285557a2b8fa2c6a63fa1cd7bb8-last-full	4han-low	last-full	trlba	太软了吧	tairuanleba	tai ruan le ba	1	rime-frost-base
+000c698873038cf9b9042d184590e619248ae285557a2b8fa2c6a63fa1cd7bb8-alternating	4han-low	alternating	tairleb	太软了吧	tairuanleba	tai ruan le ba	1	rime-frost-base
+000df8dca6a9c1b48db7ddd1c78fd2c573e715aa16cc2b5a5422ef3b78d265ec-full	4han-low	full	zhuwaishiguan	驻外使馆	zhuwaishiguan	zhu wai shi guan	12	rime-frost-base
+000df8dca6a9c1b48db7ddd1c78fd2c573e715aa16cc2b5a5422ef3b78d265ec-first-full	4han-low	first-full	zhuwsg	驻外使馆	zhuwaishiguan	zhu wai shi guan	12	rime-frost-base
+000df8dca6a9c1b48db7ddd1c78fd2c573e715aa16cc2b5a5422ef3b78d265ec-middle-full	4han-low	middle-full	zwshig	驻外使馆	zhuwaishiguan	zhu wai shi guan	12	rime-frost-base
+000df8dca6a9c1b48db7ddd1c78fd2c573e715aa16cc2b5a5422ef3b78d265ec-last-full	4han-low	last-full	zwsguan	驻外使馆	zhuwaishiguan	zhu wai shi guan	12	rime-frost-base
+000df8dca6a9c1b48db7ddd1c78fd2c573e715aa16cc2b5a5422ef3b78d265ec-alternating	4han-low	alternating	zhuwshig	驻外使馆	zhuwaishiguan	zhu wai shi guan	12	rime-frost-base
+000dfa43a1e8013096ca1e7ee7ae6d771f67b18abc67ee84cab8a489c18a30f7-full	4han-low	full	diandongchache	电动叉车	diandongchache	dian dong cha che	5	rime-frost-ext
+000dfa43a1e8013096ca1e7ee7ae6d771f67b18abc67ee84cab8a489c18a30f7-first-full	4han-low	first-full	diandcc	电动叉车	diandongchache	dian dong cha che	5	rime-frost-ext
+000dfa43a1e8013096ca1e7ee7ae6d771f67b18abc67ee84cab8a489c18a30f7-middle-full	4han-low	middle-full	ddchac	电动叉车	diandongchache	dian dong cha che	5	rime-frost-ext
+000dfa43a1e8013096ca1e7ee7ae6d771f67b18abc67ee84cab8a489c18a30f7-last-full	4han-low	last-full	ddcche	电动叉车	diandongchache	dian dong cha che	5	rime-frost-ext
+000dfa43a1e8013096ca1e7ee7ae6d771f67b18abc67ee84cab8a489c18a30f7-alternating	4han-low	alternating	diandchac	电动叉车	diandongchache	dian dong cha che	5	rime-frost-ext
+000e6ba73149bdf55afeaeb5cdf5ce83c803433b77810e51f8c6d025fabb65a9-full	4han-low	full	shandingcanting	山顶餐厅	shandingcanting	shan ding can ting	5	rime-frost-base
+000e6ba73149bdf55afeaeb5cdf5ce83c803433b77810e51f8c6d025fabb65a9-first-full	4han-low	first-full	shandct	山顶餐厅	shandingcanting	shan ding can ting	5	rime-frost-base
+000e6ba73149bdf55afeaeb5cdf5ce83c803433b77810e51f8c6d025fabb65a9-middle-full	4han-low	middle-full	sdcant	山顶餐厅	shandingcanting	shan ding can ting	5	rime-frost-base
+000e6ba73149bdf55afeaeb5cdf5ce83c803433b77810e51f8c6d025fabb65a9-last-full	4han-low	last-full	sdcting	山顶餐厅	shandingcanting	shan ding can ting	5	rime-frost-base
+000e6ba73149bdf55afeaeb5cdf5ce83c803433b77810e51f8c6d025fabb65a9-alternating	4han-low	alternating	shandcant	山顶餐厅	shandingcanting	shan ding can ting	5	rime-frost-base
+00005fdc3e8afb2998cf993658c58b582857fbe135576adc0ab044d55626d7ac-full	5han-common	full	fuzadexitong	复杂的系统	fuzadexitong	fu za de xi tong	239	rime-frost-ext
+00005fdc3e8afb2998cf993658c58b582857fbe135576adc0ab044d55626d7ac-first-full	5han-common	first-full	fuzdxt	复杂的系统	fuzadexitong	fu za de xi tong	239	rime-frost-ext
+00005fdc3e8afb2998cf993658c58b582857fbe135576adc0ab044d55626d7ac-middle-full	5han-common	middle-full	fzdext	复杂的系统	fuzadexitong	fu za de xi tong	239	rime-frost-ext
+00005fdc3e8afb2998cf993658c58b582857fbe135576adc0ab044d55626d7ac-last-full	5han-common	last-full	fzdxtong	复杂的系统	fuzadexitong	fu za de xi tong	239	rime-frost-ext
+00005fdc3e8afb2998cf993658c58b582857fbe135576adc0ab044d55626d7ac-alternating	5han-common	alternating	fuzdextong	复杂的系统	fuzadexitong	fu za de xi tong	239	rime-frost-ext
+00015f0be051abb4272ac33f88e9510f6e0a1c73cf0e80d7a0576802044e436d-full	5han-common	full	dongnanyadiqu	东南亚地区	dongnanyadiqu	dong nan ya di qu	217	rime-frost-ext
+00015f0be051abb4272ac33f88e9510f6e0a1c73cf0e80d7a0576802044e436d-first-full	5han-common	first-full	dongnydq	东南亚地区	dongnanyadiqu	dong nan ya di qu	217	rime-frost-ext
+00015f0be051abb4272ac33f88e9510f6e0a1c73cf0e80d7a0576802044e436d-middle-full	5han-common	middle-full	dnyadq	东南亚地区	dongnanyadiqu	dong nan ya di qu	217	rime-frost-ext
+00015f0be051abb4272ac33f88e9510f6e0a1c73cf0e80d7a0576802044e436d-last-full	5han-common	last-full	dnydqu	东南亚地区	dongnanyadiqu	dong nan ya di qu	217	rime-frost-ext
+00015f0be051abb4272ac33f88e9510f6e0a1c73cf0e80d7a0576802044e436d-alternating	5han-common	alternating	dongnyadqu	东南亚地区	dongnanyadiqu	dong nan ya di qu	217	rime-frost-ext
+000a0903aa2041f879a87fb4a62c15fd461eddc6b330024d953717736e3846e9-full	5han-common	full	wuyixiweigui	物以稀为贵	wuyixiweigui	wu yi xi wei gui	271	rime-frost-base
+000a0903aa2041f879a87fb4a62c15fd461eddc6b330024d953717736e3846e9-first-full	5han-common	first-full	wuyxwg	物以稀为贵	wuyixiweigui	wu yi xi wei gui	271	rime-frost-base
+000a0903aa2041f879a87fb4a62c15fd461eddc6b330024d953717736e3846e9-middle-full	5han-common	middle-full	wyxiwg	物以稀为贵	wuyixiweigui	wu yi xi wei gui	271	rime-frost-base
+000a0903aa2041f879a87fb4a62c15fd461eddc6b330024d953717736e3846e9-last-full	5han-common	last-full	wyxwgui	物以稀为贵	wuyixiweigui	wu yi xi wei gui	271	rime-frost-base
+000a0903aa2041f879a87fb4a62c15fd461eddc6b330024d953717736e3846e9-alternating	5han-common	alternating	wuyxiwgui	物以稀为贵	wuyixiweigui	wu yi xi wei gui	271	rime-frost-base
+0041e3bba803ac974101ccb6cd59efe60d58906d182494240c922a98efd4fe86-full	5han-common	full	dailaidelequ	带来的乐趣	dailaidelequ	dai lai de le qu	166	rime-frost-ext
+0041e3bba803ac974101ccb6cd59efe60d58906d182494240c922a98efd4fe86-first-full	5han-common	first-full	daildlq	带来的乐趣	dailaidelequ	dai lai de le qu	166	rime-frost-ext
+0041e3bba803ac974101ccb6cd59efe60d58906d182494240c922a98efd4fe86-middle-full	5han-common	middle-full	dldelq	带来的乐趣	dailaidelequ	dai lai de le qu	166	rime-frost-ext
+0041e3bba803ac974101ccb6cd59efe60d58906d182494240c922a98efd4fe86-last-full	5han-common	last-full	dldlqu	带来的乐趣	dailaidelequ	dai lai de le qu	166	rime-frost-ext
+0041e3bba803ac974101ccb6cd59efe60d58906d182494240c922a98efd4fe86-alternating	5han-common	alternating	daildelqu	带来的乐趣	dailaidelequ	dai lai de le qu	166	rime-frost-ext
+004bd294a0463d44681d3d2b9247031f7b34fe0d4c307e16cda4b63d8f173339-full	5han-common	full	fashengxingxingwei	发生性行为	fashengxingxingwei	fa sheng xing xing wei	130	rime-frost-base
+004bd294a0463d44681d3d2b9247031f7b34fe0d4c307e16cda4b63d8f173339-first-full	5han-common	first-full	fasxxw	发生性行为	fashengxingxingwei	fa sheng xing xing wei	130	rime-frost-base
+004bd294a0463d44681d3d2b9247031f7b34fe0d4c307e16cda4b63d8f173339-middle-full	5han-common	middle-full	fsxingxw	发生性行为	fashengxingxingwei	fa sheng xing xing wei	130	rime-frost-base
+004bd294a0463d44681d3d2b9247031f7b34fe0d4c307e16cda4b63d8f173339-last-full	5han-common	last-full	fsxxwei	发生性行为	fashengxingxingwei	fa sheng xing xing wei	130	rime-frost-base
+004bd294a0463d44681d3d2b9247031f7b34fe0d4c307e16cda4b63d8f173339-alternating	5han-common	alternating	fasxingxwei	发生性行为	fashengxingxingwei	fa sheng xing xing wei	130	rime-frost-base
+00559d5bc178ea9d244573f7d2bc47365ed5046ff1231c2388a37bdc704363bc-full	5han-common	full	qishiyehaihao	其实也还好	qishiyehaihao	qi shi ye hai hao	110	rime-frost-ext
+00559d5bc178ea9d244573f7d2bc47365ed5046ff1231c2388a37bdc704363bc-first-full	5han-common	first-full	qisyhh	其实也还好	qishiyehaihao	qi shi ye hai hao	110	rime-frost-ext
+00559d5bc178ea9d244573f7d2bc47365ed5046ff1231c2388a37bdc704363bc-middle-full	5han-common	middle-full	qsyehh	其实也还好	qishiyehaihao	qi shi ye hai hao	110	rime-frost-ext
+00559d5bc178ea9d244573f7d2bc47365ed5046ff1231c2388a37bdc704363bc-last-full	5han-common	last-full	qsyhhao	其实也还好	qishiyehaihao	qi shi ye hai hao	110	rime-frost-ext
+00559d5bc178ea9d244573f7d2bc47365ed5046ff1231c2388a37bdc704363bc-alternating	5han-common	alternating	qisyehhao	其实也还好	qishiyehaihao	qi shi ye hai hao	110	rime-frost-ext
+00838253ed6eb27c9f1c0b1f7335e5eec9f436e08f7aa9dff03dd0f01303105c-full	5han-common	full	qiangxianghuzuoyong	强相互作用	qiangxianghuzuoyong	qiang xiang hu zuo yong	182	rime-frost-ext
+00838253ed6eb27c9f1c0b1f7335e5eec9f436e08f7aa9dff03dd0f01303105c-first-full	5han-common	first-full	qiangxhzy	强相互作用	qiangxianghuzuoyong	qiang xiang hu zuo yong	182	rime-frost-ext
+00838253ed6eb27c9f1c0b1f7335e5eec9f436e08f7aa9dff03dd0f01303105c-middle-full	5han-common	middle-full	qxhuzy	强相互作用	qiangxianghuzuoyong	qiang xiang hu zuo yong	182	rime-frost-ext
+00838253ed6eb27c9f1c0b1f7335e5eec9f436e08f7aa9dff03dd0f01303105c-last-full	5han-common	last-full	qxhzyong	强相互作用	qiangxianghuzuoyong	qiang xiang hu zuo yong	182	rime-frost-ext
+00838253ed6eb27c9f1c0b1f7335e5eec9f436e08f7aa9dff03dd0f01303105c-alternating	5han-common	alternating	qiangxhuzyong	强相互作用	qiangxianghuzuoyong	qiang xiang hu zuo yong	182	rime-frost-ext
+008c5d017c7388bf2ebb0f5a7a59bf87b4fa69fa1e17220d0d5ea6fe878c9895-full	5han-common	full	anquandedifang	安全的地方	anquandedifang	an quan de di fang	264	rime-frost-ext
+008c5d017c7388bf2ebb0f5a7a59bf87b4fa69fa1e17220d0d5ea6fe878c9895-first-full	5han-common	first-full	anqddf	安全的地方	anquandedifang	an quan de di fang	264	rime-frost-ext
+008c5d017c7388bf2ebb0f5a7a59bf87b4fa69fa1e17220d0d5ea6fe878c9895-middle-full	5han-common	middle-full	aqdedf	安全的地方	anquandedifang	an quan de di fang	264	rime-frost-ext
+008c5d017c7388bf2ebb0f5a7a59bf87b4fa69fa1e17220d0d5ea6fe878c9895-last-full	5han-common	last-full	aqddfang	安全的地方	anquandedifang	an quan de di fang	264	rime-frost-ext
+008c5d017c7388bf2ebb0f5a7a59bf87b4fa69fa1e17220d0d5ea6fe878c9895-alternating	5han-common	alternating	anqdedfang	安全的地方	anquandedifang	an quan de di fang	264	rime-frost-ext
+0098f4db39e423aedad88de81461d59d42d013dfd3479417c1444bb0d09d4562-full	5han-common	full	zoudaolejintou	走到了尽头	zoudaolejintou	zou dao le jin tou	170	rime-frost-ext
+0098f4db39e423aedad88de81461d59d42d013dfd3479417c1444bb0d09d4562-first-full	5han-common	first-full	zoudljt	走到了尽头	zoudaolejintou	zou dao le jin tou	170	rime-frost-ext
+0098f4db39e423aedad88de81461d59d42d013dfd3479417c1444bb0d09d4562-middle-full	5han-common	middle-full	zdlejt	走到了尽头	zoudaolejintou	zou dao le jin tou	170	rime-frost-ext
+0098f4db39e423aedad88de81461d59d42d013dfd3479417c1444bb0d09d4562-last-full	5han-common	last-full	zdljtou	走到了尽头	zoudaolejintou	zou dao le jin tou	170	rime-frost-ext
+0098f4db39e423aedad88de81461d59d42d013dfd3479417c1444bb0d09d4562-alternating	5han-common	alternating	zoudlejtou	走到了尽头	zoudaolejintou	zou dao le jin tou	170	rime-frost-ext
+00a7b5e1629471feff39a417de16a7e2b31fe28fac6c8fbb981c82255b0e5ebb-full	5han-common	full	youmeiyoufaxian	有没有发现	youmeiyoufaxian	you mei you fa xian	668	rime-frost-ext
+00a7b5e1629471feff39a417de16a7e2b31fe28fac6c8fbb981c82255b0e5ebb-first-full	5han-common	first-full	youmyfx	有没有发现	youmeiyoufaxian	you mei you fa xian	668	rime-frost-ext
+00a7b5e1629471feff39a417de16a7e2b31fe28fac6c8fbb981c82255b0e5ebb-middle-full	5han-common	middle-full	ymyoufx	有没有发现	youmeiyoufaxian	you mei you fa xian	668	rime-frost-ext
+00a7b5e1629471feff39a417de16a7e2b31fe28fac6c8fbb981c82255b0e5ebb-last-full	5han-common	last-full	ymyfxian	有没有发现	youmeiyoufaxian	you mei you fa xian	668	rime-frost-ext
+00a7b5e1629471feff39a417de16a7e2b31fe28fac6c8fbb981c82255b0e5ebb-alternating	5han-common	alternating	youmyoufxian	有没有发现	youmeiyoufaxian	you mei you fa xian	668	rime-frost-ext
+00baaee10a43949000e8f4a582860b8eea118e9a734ce4f4a41c8de812724b09-full	5han-common	full	dianzichubanwu	电子出版物	dianzichubanwu	dian zi chu ban wu	111	rime-frost-base
+00baaee10a43949000e8f4a582860b8eea118e9a734ce4f4a41c8de812724b09-first-full	5han-common	first-full	dianzcbw	电子出版物	dianzichubanwu	dian zi chu ban wu	111	rime-frost-base
+00baaee10a43949000e8f4a582860b8eea118e9a734ce4f4a41c8de812724b09-middle-full	5han-common	middle-full	dzchubw	电子出版物	dianzichubanwu	dian zi chu ban wu	111	rime-frost-base
+00baaee10a43949000e8f4a582860b8eea118e9a734ce4f4a41c8de812724b09-last-full	5han-common	last-full	dzcbwu	电子出版物	dianzichubanwu	dian zi chu ban wu	111	rime-frost-base
+00baaee10a43949000e8f4a582860b8eea118e9a734ce4f4a41c8de812724b09-alternating	5han-common	alternating	dianzchubwu	电子出版物	dianzichubanwu	dian zi chu ban wu	111	rime-frost-base
+00c23b9d36f9868f6c2b846120ad70a7a14fe1475c546330d5f2b173590df63f-full	5han-common	full	wulianwanghangye	物联网行业	wulianwanghangye	wu lian wang hang ye	119	rime-frost-ext
+00c23b9d36f9868f6c2b846120ad70a7a14fe1475c546330d5f2b173590df63f-first-full	5han-common	first-full	wulwhy	物联网行业	wulianwanghangye	wu lian wang hang ye	119	rime-frost-ext
+00c23b9d36f9868f6c2b846120ad70a7a14fe1475c546330d5f2b173590df63f-middle-full	5han-common	middle-full	wlwanghy	物联网行业	wulianwanghangye	wu lian wang hang ye	119	rime-frost-ext
+00c23b9d36f9868f6c2b846120ad70a7a14fe1475c546330d5f2b173590df63f-last-full	5han-common	last-full	wlwhye	物联网行业	wulianwanghangye	wu lian wang hang ye	119	rime-frost-ext
+00c23b9d36f9868f6c2b846120ad70a7a14fe1475c546330d5f2b173590df63f-alternating	5han-common	alternating	wulwanghye	物联网行业	wulianwanghangye	wu lian wang hang ye	119	rime-frost-ext
+00e01b02e79fb2fac8ca6c64e892984e389535c1b8a903a941c37776144be4ac-full	5han-common	full	zhaobudaogongzuo	找不到工作	zhaobudaogongzuo	zhao bu dao gong zuo	1678	rime-frost-base
+00e01b02e79fb2fac8ca6c64e892984e389535c1b8a903a941c37776144be4ac-first-full	5han-common	first-full	zhaobdgz	找不到工作	zhaobudaogongzuo	zhao bu dao gong zuo	1678	rime-frost-base
+00e01b02e79fb2fac8ca6c64e892984e389535c1b8a903a941c37776144be4ac-middle-full	5han-common	middle-full	zbdaogz	找不到工作	zhaobudaogongzuo	zhao bu dao gong zuo	1678	rime-frost-base
+00e01b02e79fb2fac8ca6c64e892984e389535c1b8a903a941c37776144be4ac-last-full	5han-common	last-full	zbdgzuo	找不到工作	zhaobudaogongzuo	zhao bu dao gong zuo	1678	rime-frost-base
+00e01b02e79fb2fac8ca6c64e892984e389535c1b8a903a941c37776144be4ac-alternating	5han-common	alternating	zhaobdaogzuo	找不到工作	zhaobudaogongzuo	zhao bu dao gong zuo	1678	rime-frost-base
+00e3ee04a08b6889c4816c14b3de463aa68e5292aa0ca099da0a0bb0f8b9fb23-full	5han-common	full	douhenyouyisi	都很有意思	douhenyouyisi	dou hen you yi si	152	rime-frost-ext
+00e3ee04a08b6889c4816c14b3de463aa68e5292aa0ca099da0a0bb0f8b9fb23-first-full	5han-common	first-full	douhyys	都很有意思	douhenyouyisi	dou hen you yi si	152	rime-frost-ext
+00e3ee04a08b6889c4816c14b3de463aa68e5292aa0ca099da0a0bb0f8b9fb23-middle-full	5han-common	middle-full	dhyouys	都很有意思	douhenyouyisi	dou hen you yi si	152	rime-frost-ext
+00e3ee04a08b6889c4816c14b3de463aa68e5292aa0ca099da0a0bb0f8b9fb23-last-full	5han-common	last-full	dhyysi	都很有意思	douhenyouyisi	dou hen you yi si	152	rime-frost-ext
+00e3ee04a08b6889c4816c14b3de463aa68e5292aa0ca099da0a0bb0f8b9fb23-alternating	5han-common	alternating	douhyouysi	都很有意思	douhenyouyisi	dou hen you yi si	152	rime-frost-ext
+00ebfd19fdc1f3aafa1b9264b2a9d7b78f962c66451434745e5d8905bfc468e3-full	5han-common	full	yinyuezhizuoren	音乐制作人	yinyuezhizuoren	yin yue zhi zuo ren	413	rime-frost-base
+00ebfd19fdc1f3aafa1b9264b2a9d7b78f962c66451434745e5d8905bfc468e3-first-full	5han-common	first-full	yinyzzr	音乐制作人	yinyuezhizuoren	yin yue zhi zuo ren	413	rime-frost-base
+00ebfd19fdc1f3aafa1b9264b2a9d7b78f962c66451434745e5d8905bfc468e3-middle-full	5han-common	middle-full	yyzhizr	音乐制作人	yinyuezhizuoren	yin yue zhi zuo ren	413	rime-frost-base
+00ebfd19fdc1f3aafa1b9264b2a9d7b78f962c66451434745e5d8905bfc468e3-last-full	5han-common	last-full	yyzzren	音乐制作人	yinyuezhizuoren	yin yue zhi zuo ren	413	rime-frost-base
+00ebfd19fdc1f3aafa1b9264b2a9d7b78f962c66451434745e5d8905bfc468e3-alternating	5han-common	alternating	yinyzhizren	音乐制作人	yinyuezhizuoren	yin yue zhi zuo ren	413	rime-frost-base
+00f02ff46dfde6440510aa61a9390f49d8f15e3dc1ab695a628cc0a2a4452cb8-full	5han-common	full	bijiaojiediqi	比较接地气	bijiaojiediqi	bi jiao jie di qi	100	rime-frost-ext
+00f02ff46dfde6440510aa61a9390f49d8f15e3dc1ab695a628cc0a2a4452cb8-first-full	5han-common	first-full	bijjdq	比较接地气	bijiaojiediqi	bi jiao jie di qi	100	rime-frost-ext
+00f02ff46dfde6440510aa61a9390f49d8f15e3dc1ab695a628cc0a2a4452cb8-middle-full	5han-common	middle-full	bjjiedq	比较接地气	bijiaojiediqi	bi jiao jie di qi	100	rime-frost-ext
+00f02ff46dfde6440510aa61a9390f49d8f15e3dc1ab695a628cc0a2a4452cb8-last-full	5han-common	last-full	bjjdqi	比较接地气	bijiaojiediqi	bi jiao jie di qi	100	rime-frost-ext
+00f02ff46dfde6440510aa61a9390f49d8f15e3dc1ab695a628cc0a2a4452cb8-alternating	5han-common	alternating	bijjiedqi	比较接地气	bijiaojiediqi	bi jiao jie di qi	100	rime-frost-ext
+00f0c2f19f2c8229f543292ae7e3b40d222ca0facc341b9d986eeb915113bc48-full	5han-common	full	zhilianghaibucuo	质量还不错	zhilianghaibucuo	zhi liang hai bu cuo	139	rime-frost-ext
+00f0c2f19f2c8229f543292ae7e3b40d222ca0facc341b9d986eeb915113bc48-first-full	5han-common	first-full	zhilhbc	质量还不错	zhilianghaibucuo	zhi liang hai bu cuo	139	rime-frost-ext
+00f0c2f19f2c8229f543292ae7e3b40d222ca0facc341b9d986eeb915113bc48-middle-full	5han-common	middle-full	zlhaibc	质量还不错	zhilianghaibucuo	zhi liang hai bu cuo	139	rime-frost-ext
+00f0c2f19f2c8229f543292ae7e3b40d222ca0facc341b9d986eeb915113bc48-last-full	5han-common	last-full	zlhbcuo	质量还不错	zhilianghaibucuo	zhi liang hai bu cuo	139	rime-frost-ext
+00f0c2f19f2c8229f543292ae7e3b40d222ca0facc341b9d986eeb915113bc48-alternating	5han-common	alternating	zhilhaibcuo	质量还不错	zhilianghaibucuo	zhi liang hai bu cuo	139	rime-frost-ext
+010bd2d4b95db3b4af0b836e51d8e2e89a738dc0f9ababb4019eeb9662141b02-full	5han-common	full	shuijiaodedifang	睡觉的地方	shuijiaodedifang	shui jiao de di fang	119	rime-frost-ext
+010bd2d4b95db3b4af0b836e51d8e2e89a738dc0f9ababb4019eeb9662141b02-first-full	5han-common	first-full	shuijddf	睡觉的地方	shuijiaodedifang	shui jiao de di fang	119	rime-frost-ext
+010bd2d4b95db3b4af0b836e51d8e2e89a738dc0f9ababb4019eeb9662141b02-middle-full	5han-common	middle-full	sjdedf	睡觉的地方	shuijiaodedifang	shui jiao de di fang	119	rime-frost-ext
+010bd2d4b95db3b4af0b836e51d8e2e89a738dc0f9ababb4019eeb9662141b02-last-full	5han-common	last-full	sjddfang	睡觉的地方	shuijiaodedifang	shui jiao de di fang	119	rime-frost-ext
+010bd2d4b95db3b4af0b836e51d8e2e89a738dc0f9ababb4019eeb9662141b02-alternating	5han-common	alternating	shuijdedfang	睡觉的地方	shuijiaodedifang	shui jiao de di fang	119	rime-frost-ext
+010ef9660d4086132e838e2673610e9a8381256613174ba9851c93243b6e3694-full	5han-common	full	zheyangdeganjue	这样的感觉	zheyangdeganjue	zhe yang de gan jue	490	rime-frost-ext
+010ef9660d4086132e838e2673610e9a8381256613174ba9851c93243b6e3694-first-full	5han-common	first-full	zheydgj	这样的感觉	zheyangdeganjue	zhe yang de gan jue	490	rime-frost-ext
+010ef9660d4086132e838e2673610e9a8381256613174ba9851c93243b6e3694-middle-full	5han-common	middle-full	zydegj	这样的感觉	zheyangdeganjue	zhe yang de gan jue	490	rime-frost-ext
+010ef9660d4086132e838e2673610e9a8381256613174ba9851c93243b6e3694-last-full	5han-common	last-full	zydgjue	这样的感觉	zheyangdeganjue	zhe yang de gan jue	490	rime-frost-ext
+010ef9660d4086132e838e2673610e9a8381256613174ba9851c93243b6e3694-alternating	5han-common	alternating	zheydegjue	这样的感觉	zheyangdeganjue	zhe yang de gan jue	490	rime-frost-ext
+011de9ddd489f4831447fc41e6ff22b5e1b2315eb6c915e8bd248300ccc5750c-full	5han-common	full	ruguonijuede	如果你觉得	ruguonijuede	ru guo ni jue de	4086	rime-frost-base
+011de9ddd489f4831447fc41e6ff22b5e1b2315eb6c915e8bd248300ccc5750c-first-full	5han-common	first-full	rugnjd	如果你觉得	ruguonijuede	ru guo ni jue de	4086	rime-frost-base
+011de9ddd489f4831447fc41e6ff22b5e1b2315eb6c915e8bd248300ccc5750c-middle-full	5han-common	middle-full	rgnijd	如果你觉得	ruguonijuede	ru guo ni jue de	4086	rime-frost-base
+011de9ddd489f4831447fc41e6ff22b5e1b2315eb6c915e8bd248300ccc5750c-last-full	5han-common	last-full	rgnjde	如果你觉得	ruguonijuede	ru guo ni jue de	4086	rime-frost-base
+011de9ddd489f4831447fc41e6ff22b5e1b2315eb6c915e8bd248300ccc5750c-alternating	5han-common	alternating	rugnijde	如果你觉得	ruguonijuede	ru guo ni jue de	4086	rime-frost-base
+0120f6858b9a28668b34d511bc4fd82fc15bff594dff52a3ed0eff713ff58eed-full	5han-common	full	lingyigejiaodu	另一个角度	lingyigejiaodu	ling yi ge jiao du	931	rime-frost-ext
+0120f6858b9a28668b34d511bc4fd82fc15bff594dff52a3ed0eff713ff58eed-first-full	5han-common	first-full	lingygjd	另一个角度	lingyigejiaodu	ling yi ge jiao du	931	rime-frost-ext
+0120f6858b9a28668b34d511bc4fd82fc15bff594dff52a3ed0eff713ff58eed-middle-full	5han-common	middle-full	lygejd	另一个角度	lingyigejiaodu	ling yi ge jiao du	931	rime-frost-ext
+0120f6858b9a28668b34d511bc4fd82fc15bff594dff52a3ed0eff713ff58eed-last-full	5han-common	last-full	lygjdu	另一个角度	lingyigejiaodu	ling yi ge jiao du	931	rime-frost-ext
+0120f6858b9a28668b34d511bc4fd82fc15bff594dff52a3ed0eff713ff58eed-alternating	5han-common	alternating	lingygejdu	另一个角度	lingyigejiaodu	ling yi ge jiao du	931	rime-frost-ext
+013486b8bc2f220c92155a9bb6cf789af3879cfd36199718b55b9fa8a9f8ea0f-full	5han-common	full	yisitanbuer	伊斯坦布尔	yisitanbuer	yi si tan bu er	317	rime-frost-base
+013486b8bc2f220c92155a9bb6cf789af3879cfd36199718b55b9fa8a9f8ea0f-first-full	5han-common	first-full	yistbe	伊斯坦布尔	yisitanbuer	yi si tan bu er	317	rime-frost-base
+013486b8bc2f220c92155a9bb6cf789af3879cfd36199718b55b9fa8a9f8ea0f-middle-full	5han-common	middle-full	ystanbe	伊斯坦布尔	yisitanbuer	yi si tan bu er	317	rime-frost-base
+013486b8bc2f220c92155a9bb6cf789af3879cfd36199718b55b9fa8a9f8ea0f-last-full	5han-common	last-full	ystber	伊斯坦布尔	yisitanbuer	yi si tan bu er	317	rime-frost-base
+013486b8bc2f220c92155a9bb6cf789af3879cfd36199718b55b9fa8a9f8ea0f-alternating	5han-common	alternating	yistanber	伊斯坦布尔	yisitanbuer	yi si tan bu er	317	rime-frost-base
+014663ce1bb6127dfa8c01410068b95dbdffe0c9006766cdfcde59fb39e01b17-full	5han-common	full	zuihaodeguisu	最好的归宿	zuihaodeguisu	zui hao de gui su	140	rime-frost-ext
+014663ce1bb6127dfa8c01410068b95dbdffe0c9006766cdfcde59fb39e01b17-first-full	5han-common	first-full	zuihdgs	最好的归宿	zuihaodeguisu	zui hao de gui su	140	rime-frost-ext
+014663ce1bb6127dfa8c01410068b95dbdffe0c9006766cdfcde59fb39e01b17-middle-full	5han-common	middle-full	zhdegs	最好的归宿	zuihaodeguisu	zui hao de gui su	140	rime-frost-ext
+014663ce1bb6127dfa8c01410068b95dbdffe0c9006766cdfcde59fb39e01b17-last-full	5han-common	last-full	zhdgsu	最好的归宿	zuihaodeguisu	zui hao de gui su	140	rime-frost-ext
+014663ce1bb6127dfa8c01410068b95dbdffe0c9006766cdfcde59fb39e01b17-alternating	5han-common	alternating	zuihdegsu	最好的归宿	zuihaodeguisu	zui hao de gui su	140	rime-frost-ext
+015787e7874ad000a812a6d44c59c054dc8ea1390824f1a976c0ab3f55e30f40-full	5han-common	full	zhiyaoniyuanyi	只要你愿意	zhiyaoniyuanyi	zhi yao ni yuan yi	560	rime-frost-ext
+015787e7874ad000a812a6d44c59c054dc8ea1390824f1a976c0ab3f55e30f40-first-full	5han-common	first-full	zhiynyy	只要你愿意	zhiyaoniyuanyi	zhi yao ni yuan yi	560	rime-frost-ext
+015787e7874ad000a812a6d44c59c054dc8ea1390824f1a976c0ab3f55e30f40-middle-full	5han-common	middle-full	zyniyy	只要你愿意	zhiyaoniyuanyi	zhi yao ni yuan yi	560	rime-frost-ext
+015787e7874ad000a812a6d44c59c054dc8ea1390824f1a976c0ab3f55e30f40-last-full	5han-common	last-full	zynyyi	只要你愿意	zhiyaoniyuanyi	zhi yao ni yuan yi	560	rime-frost-ext
+015787e7874ad000a812a6d44c59c054dc8ea1390824f1a976c0ab3f55e30f40-alternating	5han-common	alternating	zhiyniyyi	只要你愿意	zhiyaoniyuanyi	zhi yao ni yuan yi	560	rime-frost-ext
+0160022b8eb73354c3a56987a2acbf4e90a58a0865e6a6bf95f3d2615947d3b1-full	5han-common	full	zhongyaodedongxi	重要的东西	zhongyaodedongxi	zhong yao de dong xi	475	rime-frost-ext
+0160022b8eb73354c3a56987a2acbf4e90a58a0865e6a6bf95f3d2615947d3b1-first-full	5han-common	first-full	zhongyddx	重要的东西	zhongyaodedongxi	zhong yao de dong xi	475	rime-frost-ext
+0160022b8eb73354c3a56987a2acbf4e90a58a0865e6a6bf95f3d2615947d3b1-middle-full	5han-common	middle-full	zydedx	重要的东西	zhongyaodedongxi	zhong yao de dong xi	475	rime-frost-ext
+0160022b8eb73354c3a56987a2acbf4e90a58a0865e6a6bf95f3d2615947d3b1-last-full	5han-common	last-full	zyddxi	重要的东西	zhongyaodedongxi	zhong yao de dong xi	475	rime-frost-ext
+0160022b8eb73354c3a56987a2acbf4e90a58a0865e6a6bf95f3d2615947d3b1-alternating	5han-common	alternating	zhongydedxi	重要的东西	zhongyaodedongxi	zhong yao de dong xi	475	rime-frost-ext
+016376c622e600bd58c3158b5d38086283f16a65d6a3258b223a0c4de4c3041f-full	5han-common	full	meiguoluoshanji	美国洛杉矶	meiguoluoshanji	mei guo luo shan ji	114	rime-frost-base
+016376c622e600bd58c3158b5d38086283f16a65d6a3258b223a0c4de4c3041f-first-full	5han-common	first-full	meiglsj	美国洛杉矶	meiguoluoshanji	mei guo luo shan ji	114	rime-frost-base
+016376c622e600bd58c3158b5d38086283f16a65d6a3258b223a0c4de4c3041f-middle-full	5han-common	middle-full	mgluosj	美国洛杉矶	meiguoluoshanji	mei guo luo shan ji	114	rime-frost-base
+016376c622e600bd58c3158b5d38086283f16a65d6a3258b223a0c4de4c3041f-last-full	5han-common	last-full	mglsji	美国洛杉矶	meiguoluoshanji	mei guo luo shan ji	114	rime-frost-base
+016376c622e600bd58c3158b5d38086283f16a65d6a3258b223a0c4de4c3041f-alternating	5han-common	alternating	meigluosji	美国洛杉矶	meiguoluoshanji	mei guo luo shan ji	114	rime-frost-base
+0165ff3650234bcead9ef10682e490dc19a361db8c7ef7249eaea336de8c98e2-full	5han-common	full	mikailangjiluo	米开朗基罗	mikailangjiluo	mi kai lang ji luo	192	rime-frost-base
+0165ff3650234bcead9ef10682e490dc19a361db8c7ef7249eaea336de8c98e2-first-full	5han-common	first-full	mikljl	米开朗基罗	mikailangjiluo	mi kai lang ji luo	192	rime-frost-base
+0165ff3650234bcead9ef10682e490dc19a361db8c7ef7249eaea336de8c98e2-middle-full	5han-common	middle-full	mklangjl	米开朗基罗	mikailangjiluo	mi kai lang ji luo	192	rime-frost-base
+0165ff3650234bcead9ef10682e490dc19a361db8c7ef7249eaea336de8c98e2-last-full	5han-common	last-full	mkljluo	米开朗基罗	mikailangjiluo	mi kai lang ji luo	192	rime-frost-base
+0165ff3650234bcead9ef10682e490dc19a361db8c7ef7249eaea336de8c98e2-alternating	5han-common	alternating	miklangjluo	米开朗基罗	mikailangjiluo	mi kai lang ji luo	192	rime-frost-base
+017f9625080639686cd8bce9294c4417ad150d50cc63871367983578029f6aa2-full	5han-common	full	jiandandebanfa	简单的办法	jiandandebanfa	jian dan de ban fa	163	rime-frost-ext
+017f9625080639686cd8bce9294c4417ad150d50cc63871367983578029f6aa2-first-full	5han-common	first-full	jianddbf	简单的办法	jiandandebanfa	jian dan de ban fa	163	rime-frost-ext
+017f9625080639686cd8bce9294c4417ad150d50cc63871367983578029f6aa2-middle-full	5han-common	middle-full	jddebf	简单的办法	jiandandebanfa	jian dan de ban fa	163	rime-frost-ext
+017f9625080639686cd8bce9294c4417ad150d50cc63871367983578029f6aa2-last-full	5han-common	last-full	jddbfa	简单的办法	jiandandebanfa	jian dan de ban fa	163	rime-frost-ext
+017f9625080639686cd8bce9294c4417ad150d50cc63871367983578029f6aa2-alternating	5han-common	alternating	jianddebfa	简单的办法	jiandandebanfa	jian dan de ban fa	163	rime-frost-ext
+018347caa515f990032066fc4c88f78c4cdb2cf291eb082d0ef3a32b455638e8-full	5han-common	full	kaodeshishenme	靠的是什么	kaodeshishenme	kao de shi shen me	116	rime-frost-ext
+018347caa515f990032066fc4c88f78c4cdb2cf291eb082d0ef3a32b455638e8-first-full	5han-common	first-full	kaodssm	靠的是什么	kaodeshishenme	kao de shi shen me	116	rime-frost-ext
+018347caa515f990032066fc4c88f78c4cdb2cf291eb082d0ef3a32b455638e8-middle-full	5han-common	middle-full	kdshism	靠的是什么	kaodeshishenme	kao de shi shen me	116	rime-frost-ext
+018347caa515f990032066fc4c88f78c4cdb2cf291eb082d0ef3a32b455638e8-last-full	5han-common	last-full	kdssme	靠的是什么	kaodeshishenme	kao de shi shen me	116	rime-frost-ext
+018347caa515f990032066fc4c88f78c4cdb2cf291eb082d0ef3a32b455638e8-alternating	5han-common	alternating	kaodshisme	靠的是什么	kaodeshishenme	kao de shi shen me	116	rime-frost-ext
+01dadac8b47ecf4c478a4a59f95a295a1c0b73dae8a61c8a5ed71333ff1cf022-full	5han-common	full	wojiubushuole	我就不说了	wojiubushuole	wo jiu bu shuo le	1344	rime-frost-ext
+01dadac8b47ecf4c478a4a59f95a295a1c0b73dae8a61c8a5ed71333ff1cf022-first-full	5han-common	first-full	wojbsl	我就不说了	wojiubushuole	wo jiu bu shuo le	1344	rime-frost-ext
+01dadac8b47ecf4c478a4a59f95a295a1c0b73dae8a61c8a5ed71333ff1cf022-middle-full	5han-common	middle-full	wjbusl	我就不说了	wojiubushuole	wo jiu bu shuo le	1344	rime-frost-ext
+01dadac8b47ecf4c478a4a59f95a295a1c0b73dae8a61c8a5ed71333ff1cf022-last-full	5han-common	last-full	wjbsle	我就不说了	wojiubushuole	wo jiu bu shuo le	1344	rime-frost-ext
+01dadac8b47ecf4c478a4a59f95a295a1c0b73dae8a61c8a5ed71333ff1cf022-alternating	5han-common	alternating	wojbusle	我就不说了	wojiubushuole	wo jiu bu shuo le	1344	rime-frost-ext
+01dc164ada7b4a3b73f428be876b23b9bbcebf9c80601d230574fbb1756ea401-full	5han-common	full	fanzhengwojuede	反正我觉得	fanzhengwojuede	fan zheng wo jue de	471	rime-frost-ext
+01dc164ada7b4a3b73f428be876b23b9bbcebf9c80601d230574fbb1756ea401-first-full	5han-common	first-full	fanzwjd	反正我觉得	fanzhengwojuede	fan zheng wo jue de	471	rime-frost-ext
+01dc164ada7b4a3b73f428be876b23b9bbcebf9c80601d230574fbb1756ea401-middle-full	5han-common	middle-full	fzwojd	反正我觉得	fanzhengwojuede	fan zheng wo jue de	471	rime-frost-ext
+01dc164ada7b4a3b73f428be876b23b9bbcebf9c80601d230574fbb1756ea401-last-full	5han-common	last-full	fzwjde	反正我觉得	fanzhengwojuede	fan zheng wo jue de	471	rime-frost-ext
+01dc164ada7b4a3b73f428be876b23b9bbcebf9c80601d230574fbb1756ea401-alternating	5han-common	alternating	fanzwojde	反正我觉得	fanzhengwojuede	fan zheng wo jue de	471	rime-frost-ext
+01ded1f690e16fc38a212598238483a4c2e74889169a2a96952f0f3ee7b01f1c-full	5han-common	full	feitianxiaonvjing	飞天小女警	feitianxiaonvjing	fei tian xiao nv jing	143	rime-frost-ext
+01ded1f690e16fc38a212598238483a4c2e74889169a2a96952f0f3ee7b01f1c-first-full	5han-common	first-full	feitxnj	飞天小女警	feitianxiaonvjing	fei tian xiao nv jing	143	rime-frost-ext
+01ded1f690e16fc38a212598238483a4c2e74889169a2a96952f0f3ee7b01f1c-middle-full	5han-common	middle-full	ftxiaonj	飞天小女警	feitianxiaonvjing	fei tian xiao nv jing	143	rime-frost-ext
+01ded1f690e16fc38a212598238483a4c2e74889169a2a96952f0f3ee7b01f1c-last-full	5han-common	last-full	ftxnjing	飞天小女警	feitianxiaonvjing	fei tian xiao nv jing	143	rime-frost-ext
+01ded1f690e16fc38a212598238483a4c2e74889169a2a96952f0f3ee7b01f1c-alternating	5han-common	alternating	feitxiaonjing	飞天小女警	feitianxiaonvjing	fei tian xiao nv jing	143	rime-frost-ext
+0002434127dc1f4078ab1923113e14e95c3a68248dbd362ae8b8ad4e52cecbae-full	5han-low	full	wobuxiangkanni	我不想看你	wobuxiangkanni	wo bu xiang kan ni	3	rime-frost-ext
+0002434127dc1f4078ab1923113e14e95c3a68248dbd362ae8b8ad4e52cecbae-first-full	5han-low	first-full	wobxkn	我不想看你	wobuxiangkanni	wo bu xiang kan ni	3	rime-frost-ext
+0002434127dc1f4078ab1923113e14e95c3a68248dbd362ae8b8ad4e52cecbae-middle-full	5han-low	middle-full	wbxiangkn	我不想看你	wobuxiangkanni	wo bu xiang kan ni	3	rime-frost-ext
+0002434127dc1f4078ab1923113e14e95c3a68248dbd362ae8b8ad4e52cecbae-last-full	5han-low	last-full	wbxkni	我不想看你	wobuxiangkanni	wo bu xiang kan ni	3	rime-frost-ext
+0002434127dc1f4078ab1923113e14e95c3a68248dbd362ae8b8ad4e52cecbae-alternating	5han-low	alternating	wobxiangkni	我不想看你	wobuxiangkanni	wo bu xiang kan ni	3	rime-frost-ext
+000447be0af10f75fbf717ab4af19e55a1e32336ebdfc26252115c5aa257d6cc-full	5han-low	full	nanshengdouxihuan	男生都喜欢	nanshengdouxihuan	nan sheng dou xi huan	40	rime-frost-ext
+000447be0af10f75fbf717ab4af19e55a1e32336ebdfc26252115c5aa257d6cc-first-full	5han-low	first-full	nansdxh	男生都喜欢	nanshengdouxihuan	nan sheng dou xi huan	40	rime-frost-ext
+000447be0af10f75fbf717ab4af19e55a1e32336ebdfc26252115c5aa257d6cc-middle-full	5han-low	middle-full	nsdouxh	男生都喜欢	nanshengdouxihuan	nan sheng dou xi huan	40	rime-frost-ext
+000447be0af10f75fbf717ab4af19e55a1e32336ebdfc26252115c5aa257d6cc-last-full	5han-low	last-full	nsdxhuan	男生都喜欢	nanshengdouxihuan	nan sheng dou xi huan	40	rime-frost-ext
+000447be0af10f75fbf717ab4af19e55a1e32336ebdfc26252115c5aa257d6cc-alternating	5han-low	alternating	nansdouxhuan	男生都喜欢	nanshengdouxihuan	nan sheng dou xi huan	40	rime-frost-ext
+00045975687612b508098225976693b9a335a93ab0f9ac16417202d33266184e-full	5han-low	full	meiwentijiuxing	没问题就行	meiwentijiuxing	mei wen ti jiu xing	6	rime-frost-ext
+00045975687612b508098225976693b9a335a93ab0f9ac16417202d33266184e-first-full	5han-low	first-full	meiwtjx	没问题就行	meiwentijiuxing	mei wen ti jiu xing	6	rime-frost-ext
+00045975687612b508098225976693b9a335a93ab0f9ac16417202d33266184e-middle-full	5han-low	middle-full	mwtijx	没问题就行	meiwentijiuxing	mei wen ti jiu xing	6	rime-frost-ext
+00045975687612b508098225976693b9a335a93ab0f9ac16417202d33266184e-last-full	5han-low	last-full	mwtjxing	没问题就行	meiwentijiuxing	mei wen ti jiu xing	6	rime-frost-ext
+00045975687612b508098225976693b9a335a93ab0f9ac16417202d33266184e-alternating	5han-low	alternating	meiwtijxing	没问题就行	meiwentijiuxing	mei wen ti jiu xing	6	rime-frost-ext
+0004a783ba0ed703fc484b36657bb93e5af43933345457f6c2a117d8b77e95d5-full	5han-low	full	zerenlianmoshi	责任链模式	zerenlianmoshi	ze ren lian mo shi	14	rime-frost-base
+0004a783ba0ed703fc484b36657bb93e5af43933345457f6c2a117d8b77e95d5-first-full	5han-low	first-full	zerlms	责任链模式	zerenlianmoshi	ze ren lian mo shi	14	rime-frost-base
+0004a783ba0ed703fc484b36657bb93e5af43933345457f6c2a117d8b77e95d5-middle-full	5han-low	middle-full	zrlianms	责任链模式	zerenlianmoshi	ze ren lian mo shi	14	rime-frost-base
+0004a783ba0ed703fc484b36657bb93e5af43933345457f6c2a117d8b77e95d5-last-full	5han-low	last-full	zrlmshi	责任链模式	zerenlianmoshi	ze ren lian mo shi	14	rime-frost-base
+0004a783ba0ed703fc484b36657bb93e5af43933345457f6c2a117d8b77e95d5-alternating	5han-low	alternating	zerlianmshi	责任链模式	zerenlianmoshi	ze ren lian mo shi	14	rime-frost-base
+0004c6b650ad682e495eba6a972d5bcae7909e1dd21ce3c82cf96495bf285f46-full	5han-low	full	duodeshubuqing	多得数不清	duodeshubuqing	duo de shu bu qing	24	rime-frost-ext
+0004c6b650ad682e495eba6a972d5bcae7909e1dd21ce3c82cf96495bf285f46-first-full	5han-low	first-full	duodsbq	多得数不清	duodeshubuqing	duo de shu bu qing	24	rime-frost-ext
+0004c6b650ad682e495eba6a972d5bcae7909e1dd21ce3c82cf96495bf285f46-middle-full	5han-low	middle-full	ddshubq	多得数不清	duodeshubuqing	duo de shu bu qing	24	rime-frost-ext
+0004c6b650ad682e495eba6a972d5bcae7909e1dd21ce3c82cf96495bf285f46-last-full	5han-low	last-full	ddsbqing	多得数不清	duodeshubuqing	duo de shu bu qing	24	rime-frost-ext
+0004c6b650ad682e495eba6a972d5bcae7909e1dd21ce3c82cf96495bf285f46-alternating	5han-low	alternating	duodshubqing	多得数不清	duodeshubuqing	duo de shu bu qing	24	rime-frost-ext
+000586e02eeefd47ac1a8e4d2f932a8504dd16097cf2cbb04983c4e08eb04fc2-full	5han-low	full	xiaoshangpinshichang	小商品市场	xiaoshangpinshichang	xiao shang pin shi chang	31	rime-frost-base
+000586e02eeefd47ac1a8e4d2f932a8504dd16097cf2cbb04983c4e08eb04fc2-first-full	5han-low	first-full	xiaospsc	小商品市场	xiaoshangpinshichang	xiao shang pin shi chang	31	rime-frost-base
+000586e02eeefd47ac1a8e4d2f932a8504dd16097cf2cbb04983c4e08eb04fc2-middle-full	5han-low	middle-full	xspinsc	小商品市场	xiaoshangpinshichang	xiao shang pin shi chang	31	rime-frost-base
+000586e02eeefd47ac1a8e4d2f932a8504dd16097cf2cbb04983c4e08eb04fc2-last-full	5han-low	last-full	xspschang	小商品市场	xiaoshangpinshichang	xiao shang pin shi chang	31	rime-frost-base
+000586e02eeefd47ac1a8e4d2f932a8504dd16097cf2cbb04983c4e08eb04fc2-alternating	5han-low	alternating	xiaospinschang	小商品市场	xiaoshangpinshichang	xiao shang pin shi chang	31	rime-frost-base
+00065293f074488d689c270ec176a8e8fa37b03ce371f2949d0e22f00e905bdd-full	5han-low	full	shirenminyiyuan	市人民医院	shirenminyiyuan	shi ren min yi yuan	85	rime-frost-base
+00065293f074488d689c270ec176a8e8fa37b03ce371f2949d0e22f00e905bdd-first-full	5han-low	first-full	shirmyy	市人民医院	shirenminyiyuan	shi ren min yi yuan	85	rime-frost-base
+00065293f074488d689c270ec176a8e8fa37b03ce371f2949d0e22f00e905bdd-middle-full	5han-low	middle-full	srminyy	市人民医院	shirenminyiyuan	shi ren min yi yuan	85	rime-frost-base
+00065293f074488d689c270ec176a8e8fa37b03ce371f2949d0e22f00e905bdd-last-full	5han-low	last-full	srmyyuan	市人民医院	shirenminyiyuan	shi ren min yi yuan	85	rime-frost-base
+00065293f074488d689c270ec176a8e8fa37b03ce371f2949d0e22f00e905bdd-alternating	5han-low	alternating	shirminyyuan	市人民医院	shirenminyiyuan	shi ren min yi yuan	85	rime-frost-base
+0006a41d0fb2f8779dacc407aa8d6988820ca28350384bd3c1cd938eb5785a40-full	5han-low	full	beizhixingxinxi	被执行信息	beizhixingxinxi	bei zhi xing xin xi	19	rime-frost-ext
+0006a41d0fb2f8779dacc407aa8d6988820ca28350384bd3c1cd938eb5785a40-first-full	5han-low	first-full	beizxxx	被执行信息	beizhixingxinxi	bei zhi xing xin xi	19	rime-frost-ext
+0006a41d0fb2f8779dacc407aa8d6988820ca28350384bd3c1cd938eb5785a40-middle-full	5han-low	middle-full	bzxingxx	被执行信息	beizhixingxinxi	bei zhi xing xin xi	19	rime-frost-ext
+0006a41d0fb2f8779dacc407aa8d6988820ca28350384bd3c1cd938eb5785a40-last-full	5han-low	last-full	bzxxxi	被执行信息	beizhixingxinxi	bei zhi xing xin xi	19	rime-frost-ext
+0006a41d0fb2f8779dacc407aa8d6988820ca28350384bd3c1cd938eb5785a40-alternating	5han-low	alternating	beizxingxxi	被执行信息	beizhixingxinxi	bei zhi xing xin xi	19	rime-frost-ext
+00086d6aad7bca305044bc0dbdf4e6ea909c72348ff0eea36630a1333ab1f785-full	5han-low	full	qiezhuzaihengtang	妾住在横塘	qiezhuzaihengtang	qie zhu zai heng tang	2	rime-frost-base
+00086d6aad7bca305044bc0dbdf4e6ea909c72348ff0eea36630a1333ab1f785-first-full	5han-low	first-full	qiezzht	妾住在横塘	qiezhuzaihengtang	qie zhu zai heng tang	2	rime-frost-base
+00086d6aad7bca305044bc0dbdf4e6ea909c72348ff0eea36630a1333ab1f785-middle-full	5han-low	middle-full	qzzaiht	妾住在横塘	qiezhuzaihengtang	qie zhu zai heng tang	2	rime-frost-base
+00086d6aad7bca305044bc0dbdf4e6ea909c72348ff0eea36630a1333ab1f785-last-full	5han-low	last-full	qzzhtang	妾住在横塘	qiezhuzaihengtang	qie zhu zai heng tang	2	rime-frost-base
+00086d6aad7bca305044bc0dbdf4e6ea909c72348ff0eea36630a1333ab1f785-alternating	5han-low	alternating	qiezzaihtang	妾住在横塘	qiezhuzaihengtang	qie zhu zai heng tang	2	rime-frost-base
+000895445737b8c91280fc7d33d411d7443bd2867e788acf607f7c21bd6ee048-full	5han-low	full	xiaochulezhusheng	笑出了猪声	xiaochulezhusheng	xiao chu le zhu sheng	2	rime-frost-ext
+000895445737b8c91280fc7d33d411d7443bd2867e788acf607f7c21bd6ee048-first-full	5han-low	first-full	xiaoclzs	笑出了猪声	xiaochulezhusheng	xiao chu le zhu sheng	2	rime-frost-ext
+000895445737b8c91280fc7d33d411d7443bd2867e788acf607f7c21bd6ee048-middle-full	5han-low	middle-full	xclezs	笑出了猪声	xiaochulezhusheng	xiao chu le zhu sheng	2	rime-frost-ext
+000895445737b8c91280fc7d33d411d7443bd2867e788acf607f7c21bd6ee048-last-full	5han-low	last-full	xclzsheng	笑出了猪声	xiaochulezhusheng	xiao chu le zhu sheng	2	rime-frost-ext
+000895445737b8c91280fc7d33d411d7443bd2867e788acf607f7c21bd6ee048-alternating	5han-low	alternating	xiaoclezsheng	笑出了猪声	xiaochulezhusheng	xiao chu le zhu sheng	2	rime-frost-ext
+0009e58c0095aae56a3a6253e698ba2a8175e5bc1730e8b755a4042953743b8b-full	5han-low	full	rangtamenjinqu	让他们进去	rangtamenjinqu	rang ta men jin qu	6	rime-frost-ext
+0009e58c0095aae56a3a6253e698ba2a8175e5bc1730e8b755a4042953743b8b-first-full	5han-low	first-full	rangtmjq	让他们进去	rangtamenjinqu	rang ta men jin qu	6	rime-frost-ext
+0009e58c0095aae56a3a6253e698ba2a8175e5bc1730e8b755a4042953743b8b-middle-full	5han-low	middle-full	rtmenjq	让他们进去	rangtamenjinqu	rang ta men jin qu	6	rime-frost-ext
+0009e58c0095aae56a3a6253e698ba2a8175e5bc1730e8b755a4042953743b8b-last-full	5han-low	last-full	rtmjqu	让他们进去	rangtamenjinqu	rang ta men jin qu	6	rime-frost-ext
+0009e58c0095aae56a3a6253e698ba2a8175e5bc1730e8b755a4042953743b8b-alternating	5han-low	alternating	rangtmenjqu	让他们进去	rangtamenjinqu	rang ta men jin qu	6	rime-frost-ext
+000b4435437774e9a936d3b914df399fd3b44bba9aa8f50cfc08f6d0d3917d84-full	5han-low	full	cengjingdeouxiang	曾经的偶像	cengjingdeouxiang	ceng jing de ou xiang	14	rime-frost-ext
+000b4435437774e9a936d3b914df399fd3b44bba9aa8f50cfc08f6d0d3917d84-first-full	5han-low	first-full	cengjdox	曾经的偶像	cengjingdeouxiang	ceng jing de ou xiang	14	rime-frost-ext
+000b4435437774e9a936d3b914df399fd3b44bba9aa8f50cfc08f6d0d3917d84-middle-full	5han-low	middle-full	cjdeox	曾经的偶像	cengjingdeouxiang	ceng jing de ou xiang	14	rime-frost-ext
+000b4435437774e9a936d3b914df399fd3b44bba9aa8f50cfc08f6d0d3917d84-last-full	5han-low	last-full	cjdoxiang	曾经的偶像	cengjingdeouxiang	ceng jing de ou xiang	14	rime-frost-ext
+000b4435437774e9a936d3b914df399fd3b44bba9aa8f50cfc08f6d0d3917d84-alternating	5han-low	alternating	cengjdeoxiang	曾经的偶像	cengjingdeouxiang	ceng jing de ou xiang	14	rime-frost-ext
+000f4a4ffbe22951aaca93b3af9e2071d7b19fd8309f202fb999d58f8f9f6459-full	5han-low	full	shashihouhuilai	啥时候回来	shashihouhuilai	sha shi hou hui lai	17	rime-frost-ext
+000f4a4ffbe22951aaca93b3af9e2071d7b19fd8309f202fb999d58f8f9f6459-first-full	5han-low	first-full	shashhl	啥时候回来	shashihouhuilai	sha shi hou hui lai	17	rime-frost-ext
+000f4a4ffbe22951aaca93b3af9e2071d7b19fd8309f202fb999d58f8f9f6459-middle-full	5han-low	middle-full	sshouhl	啥时候回来	shashihouhuilai	sha shi hou hui lai	17	rime-frost-ext
+000f4a4ffbe22951aaca93b3af9e2071d7b19fd8309f202fb999d58f8f9f6459-last-full	5han-low	last-full	sshhlai	啥时候回来	shashihouhuilai	sha shi hou hui lai	17	rime-frost-ext
+000f4a4ffbe22951aaca93b3af9e2071d7b19fd8309f202fb999d58f8f9f6459-alternating	5han-low	alternating	shashouhlai	啥时候回来	shashihouhuilai	sha shi hou hui lai	17	rime-frost-ext
+0011b043dd5227477bd27c1381fcc2f07a5efeb80c2d5037a09012187b1be836-full	5han-low	full	raocewanquji	桡侧腕屈肌	raocewanquji	rao ce wan qu ji	5	rime-frost-base
+0011b043dd5227477bd27c1381fcc2f07a5efeb80c2d5037a09012187b1be836-first-full	5han-low	first-full	raocwqj	桡侧腕屈肌	raocewanquji	rao ce wan qu ji	5	rime-frost-base
+0011b043dd5227477bd27c1381fcc2f07a5efeb80c2d5037a09012187b1be836-middle-full	5han-low	middle-full	rcwanqj	桡侧腕屈肌	raocewanquji	rao ce wan qu ji	5	rime-frost-base
+0011b043dd5227477bd27c1381fcc2f07a5efeb80c2d5037a09012187b1be836-last-full	5han-low	last-full	rcwqji	桡侧腕屈肌	raocewanquji	rao ce wan qu ji	5	rime-frost-base
+0011b043dd5227477bd27c1381fcc2f07a5efeb80c2d5037a09012187b1be836-alternating	5han-low	alternating	raocwanqji	桡侧腕屈肌	raocewanquji	rao ce wan qu ji	5	rime-frost-base
+00157adf03e956c422961119a4f1142fadef67cc460ae4e3131f858d00ecbd39-full	5han-low	full	nizheyangbuxing	你这样不行	nizheyangbuxing	ni zhe yang bu xing	20	rime-frost-ext
+00157adf03e956c422961119a4f1142fadef67cc460ae4e3131f858d00ecbd39-first-full	5han-low	first-full	nizybx	你这样不行	nizheyangbuxing	ni zhe yang bu xing	20	rime-frost-ext
+00157adf03e956c422961119a4f1142fadef67cc460ae4e3131f858d00ecbd39-middle-full	5han-low	middle-full	nzyangbx	你这样不行	nizheyangbuxing	ni zhe yang bu xing	20	rime-frost-ext
+00157adf03e956c422961119a4f1142fadef67cc460ae4e3131f858d00ecbd39-last-full	5han-low	last-full	nzybxing	你这样不行	nizheyangbuxing	ni zhe yang bu xing	20	rime-frost-ext
+00157adf03e956c422961119a4f1142fadef67cc460ae4e3131f858d00ecbd39-alternating	5han-low	alternating	nizyangbxing	你这样不行	nizheyangbuxing	ni zhe yang bu xing	20	rime-frost-ext
+00191cdea69ad5ee919fc26cc041e53bc465e81982a28699430c5aec257ba443-full	5han-low	full	lihaiguanxifang	利害关系方	lihaiguanxifang	li hai guan xi fang	1	rime-frost-ext
+00191cdea69ad5ee919fc26cc041e53bc465e81982a28699430c5aec257ba443-first-full	5han-low	first-full	lihgxf	利害关系方	lihaiguanxifang	li hai guan xi fang	1	rime-frost-ext
+00191cdea69ad5ee919fc26cc041e53bc465e81982a28699430c5aec257ba443-middle-full	5han-low	middle-full	lhguanxf	利害关系方	lihaiguanxifang	li hai guan xi fang	1	rime-frost-ext
+00191cdea69ad5ee919fc26cc041e53bc465e81982a28699430c5aec257ba443-last-full	5han-low	last-full	lhgxfang	利害关系方	lihaiguanxifang	li hai guan xi fang	1	rime-frost-ext
+00191cdea69ad5ee919fc26cc041e53bc465e81982a28699430c5aec257ba443-alternating	5han-low	alternating	lihguanxfang	利害关系方	lihaiguanxifang	li hai guan xi fang	1	rime-frost-ext
+001a1b6ff8c595aa2449dcdbb28e29ba94700d182ce4e47831cb8df5f54c13c2-full	5han-low	full	chuantonglingbujian	传统零部件	chuantonglingbujian	chuan tong ling bu jian	0	rime-frost-ext
+001a1b6ff8c595aa2449dcdbb28e29ba94700d182ce4e47831cb8df5f54c13c2-first-full	5han-low	first-full	chuantlbj	传统零部件	chuantonglingbujian	chuan tong ling bu jian	0	rime-frost-ext
+001a1b6ff8c595aa2449dcdbb28e29ba94700d182ce4e47831cb8df5f54c13c2-middle-full	5han-low	middle-full	ctlingbj	传统零部件	chuantonglingbujian	chuan tong ling bu jian	0	rime-frost-ext
+001a1b6ff8c595aa2449dcdbb28e29ba94700d182ce4e47831cb8df5f54c13c2-last-full	5han-low	last-full	ctlbjian	传统零部件	chuantonglingbujian	chuan tong ling bu jian	0	rime-frost-ext
+001a1b6ff8c595aa2449dcdbb28e29ba94700d182ce4e47831cb8df5f54c13c2-alternating	5han-low	alternating	chuantlingbjian	传统零部件	chuantonglingbujian	chuan tong ling bu jian	0	rime-frost-ext
+001b2a46aa47e28a4184578c9c5114cc36b8e855d0935a905d9f2c08577cd70d-full	5han-low	full	qiaogeerlangtui	跷个二郎腿	qiaogeerlangtui	qiao ge er lang tui	1	rime-frost-base
+001b2a46aa47e28a4184578c9c5114cc36b8e855d0935a905d9f2c08577cd70d-first-full	5han-low	first-full	qiaogelt	跷个二郎腿	qiaogeerlangtui	qiao ge er lang tui	1	rime-frost-base
+001b2a46aa47e28a4184578c9c5114cc36b8e855d0935a905d9f2c08577cd70d-middle-full	5han-low	middle-full	qgerlt	跷个二郎腿	qiaogeerlangtui	qiao ge er lang tui	1	rime-frost-base
+001b2a46aa47e28a4184578c9c5114cc36b8e855d0935a905d9f2c08577cd70d-last-full	5han-low	last-full	qgeltui	跷个二郎腿	qiaogeerlangtui	qiao ge er lang tui	1	rime-frost-base
+001b2a46aa47e28a4184578c9c5114cc36b8e855d0935a905d9f2c08577cd70d-alternating	5han-low	alternating	qiaogerltui	跷个二郎腿	qiaogeerlangtui	qiao ge er lang tui	1	rime-frost-base
+001c6d5e4425778e9cac4c395db0549ab144fcf7aa4ef99d00e60ad814df8e47-full	5han-low	full	yuebanyuexingwang	越办越兴旺	yuebanyuexingwang	yue ban yue xing wang	1	rime-frost-base
+001c6d5e4425778e9cac4c395db0549ab144fcf7aa4ef99d00e60ad814df8e47-first-full	5han-low	first-full	yuebyxw	越办越兴旺	yuebanyuexingwang	yue ban yue xing wang	1	rime-frost-base
+001c6d5e4425778e9cac4c395db0549ab144fcf7aa4ef99d00e60ad814df8e47-middle-full	5han-low	middle-full	ybyuexw	越办越兴旺	yuebanyuexingwang	yue ban yue xing wang	1	rime-frost-base
+001c6d5e4425778e9cac4c395db0549ab144fcf7aa4ef99d00e60ad814df8e47-last-full	5han-low	last-full	ybyxwang	越办越兴旺	yuebanyuexingwang	yue ban yue xing wang	1	rime-frost-base
+001c6d5e4425778e9cac4c395db0549ab144fcf7aa4ef99d00e60ad814df8e47-alternating	5han-low	alternating	yuebyuexwang	越办越兴旺	yuebanyuexingwang	yue ban yue xing wang	1	rime-frost-base
+001ea23817d6ebc5a9fa427a97a2dd98cc670ad2519e8d428e780c04c6ad7e0d-full	5han-low	full	zhongchangqiqushi	中长期趋势	zhongchangqiqushi	zhong chang qi qu shi	13	rime-frost-ext
+001ea23817d6ebc5a9fa427a97a2dd98cc670ad2519e8d428e780c04c6ad7e0d-first-full	5han-low	first-full	zhongcqqs	中长期趋势	zhongchangqiqushi	zhong chang qi qu shi	13	rime-frost-ext
+001ea23817d6ebc5a9fa427a97a2dd98cc670ad2519e8d428e780c04c6ad7e0d-middle-full	5han-low	middle-full	zcqiqs	中长期趋势	zhongchangqiqushi	zhong chang qi qu shi	13	rime-frost-ext
+001ea23817d6ebc5a9fa427a97a2dd98cc670ad2519e8d428e780c04c6ad7e0d-last-full	5han-low	last-full	zcqqshi	中长期趋势	zhongchangqiqushi	zhong chang qi qu shi	13	rime-frost-ext
+001ea23817d6ebc5a9fa427a97a2dd98cc670ad2519e8d428e780c04c6ad7e0d-alternating	5han-low	alternating	zhongcqiqshi	中长期趋势	zhongchangqiqushi	zhong chang qi qu shi	13	rime-frost-ext
+0020159a62593d0bac5786036ea2e60d3493207958b192c0852f19a97608005c-full	5han-low	full	zhuyoumenglexin	猪油蒙了心	zhuyoumenglexin	zhu you meng le xin	24	rime-frost-ext
+0020159a62593d0bac5786036ea2e60d3493207958b192c0852f19a97608005c-first-full	5han-low	first-full	zhuymlx	猪油蒙了心	zhuyoumenglexin	zhu you meng le xin	24	rime-frost-ext
+0020159a62593d0bac5786036ea2e60d3493207958b192c0852f19a97608005c-middle-full	5han-low	middle-full	zymenglx	猪油蒙了心	zhuyoumenglexin	zhu you meng le xin	24	rime-frost-ext
+0020159a62593d0bac5786036ea2e60d3493207958b192c0852f19a97608005c-last-full	5han-low	last-full	zymlxin	猪油蒙了心	zhuyoumenglexin	zhu you meng le xin	24	rime-frost-ext
+0020159a62593d0bac5786036ea2e60d3493207958b192c0852f19a97608005c-alternating	5han-low	alternating	zhuymenglxin	猪油蒙了心	zhuyoumenglexin	zhu you meng le xin	24	rime-frost-ext
+0020386da33e47c7d5fb0648b79e26fcd00c218385dcd1b3a1a88fd658cea913-full	5han-low	full	doumeiyougaibian	都没有改变	doumeiyougaibian	dou mei you gai bian	72	rime-frost-ext
+0020386da33e47c7d5fb0648b79e26fcd00c218385dcd1b3a1a88fd658cea913-first-full	5han-low	first-full	doumygb	都没有改变	doumeiyougaibian	dou mei you gai bian	72	rime-frost-ext
+0020386da33e47c7d5fb0648b79e26fcd00c218385dcd1b3a1a88fd658cea913-middle-full	5han-low	middle-full	dmyougb	都没有改变	doumeiyougaibian	dou mei you gai bian	72	rime-frost-ext
+0020386da33e47c7d5fb0648b79e26fcd00c218385dcd1b3a1a88fd658cea913-last-full	5han-low	last-full	dmygbian	都没有改变	doumeiyougaibian	dou mei you gai bian	72	rime-frost-ext
+0020386da33e47c7d5fb0648b79e26fcd00c218385dcd1b3a1a88fd658cea913-alternating	5han-low	alternating	doumyougbian	都没有改变	doumeiyougaibian	dou mei you gai bian	72	rime-frost-ext
+002326c8fc799e94c5d6d3ffd6cdcd80f12a88f3ea092f277ef6dd07e7299b68-full	5han-low	full	kanlegejimo	看了个寂寞	kanlegejimo	kan le ge ji mo	35	rime-frost-ext
+002326c8fc799e94c5d6d3ffd6cdcd80f12a88f3ea092f277ef6dd07e7299b68-first-full	5han-low	first-full	kanlgjm	看了个寂寞	kanlegejimo	kan le ge ji mo	35	rime-frost-ext
+002326c8fc799e94c5d6d3ffd6cdcd80f12a88f3ea092f277ef6dd07e7299b68-middle-full	5han-low	middle-full	klgejm	看了个寂寞	kanlegejimo	kan le ge ji mo	35	rime-frost-ext
+002326c8fc799e94c5d6d3ffd6cdcd80f12a88f3ea092f277ef6dd07e7299b68-last-full	5han-low	last-full	klgjmo	看了个寂寞	kanlegejimo	kan le ge ji mo	35	rime-frost-ext
+002326c8fc799e94c5d6d3ffd6cdcd80f12a88f3ea092f277ef6dd07e7299b68-alternating	5han-low	alternating	kanlgejmo	看了个寂寞	kanlegejimo	kan le ge ji mo	35	rime-frost-ext
+00234ae91a351aa1b7c609dc6d334e098b62aac27d0124136eb1658100ea821c-full	5han-low	full	tangnailiangyichang	糖耐量异常	tangnailiangyichang	tang nai liang yi chang	27	rime-frost-base
+00234ae91a351aa1b7c609dc6d334e098b62aac27d0124136eb1658100ea821c-first-full	5han-low	first-full	tangnlyc	糖耐量异常	tangnailiangyichang	tang nai liang yi chang	27	rime-frost-base
+00234ae91a351aa1b7c609dc6d334e098b62aac27d0124136eb1658100ea821c-middle-full	5han-low	middle-full	tnliangyc	糖耐量异常	tangnailiangyichang	tang nai liang yi chang	27	rime-frost-base
+00234ae91a351aa1b7c609dc6d334e098b62aac27d0124136eb1658100ea821c-last-full	5han-low	last-full	tnlychang	糖耐量异常	tangnailiangyichang	tang nai liang yi chang	27	rime-frost-base
+00234ae91a351aa1b7c609dc6d334e098b62aac27d0124136eb1658100ea821c-alternating	5han-low	alternating	tangnliangychang	糖耐量异常	tangnailiangyichang	tang nai liang yi chang	27	rime-frost-base
+0023b2b6de426d89718d0020401e281148bb0c2af83ffaeadd95d53a5798b78c-full	5han-low	full	dengwogengxinwan	等我更新完	dengwogengxinwan	deng wo geng xin wan	4	rime-frost-ext
+0023b2b6de426d89718d0020401e281148bb0c2af83ffaeadd95d53a5798b78c-first-full	5han-low	first-full	dengwgxw	等我更新完	dengwogengxinwan	deng wo geng xin wan	4	rime-frost-ext
+0023b2b6de426d89718d0020401e281148bb0c2af83ffaeadd95d53a5798b78c-middle-full	5han-low	middle-full	dwgengxw	等我更新完	dengwogengxinwan	deng wo geng xin wan	4	rime-frost-ext
+0023b2b6de426d89718d0020401e281148bb0c2af83ffaeadd95d53a5798b78c-last-full	5han-low	last-full	dwgxwan	等我更新完	dengwogengxinwan	deng wo geng xin wan	4	rime-frost-ext
+0023b2b6de426d89718d0020401e281148bb0c2af83ffaeadd95d53a5798b78c-alternating	5han-low	alternating	dengwgengxwan	等我更新完	dengwogengxinwan	deng wo geng xin wan	4	rime-frost-ext
+0026754dcf6089c20aceb6acb900d063d969e007d417063be7b71a8ff18ac266-full	5han-low	full	cijisuxiajiang	雌激素下降	cijisuxiajiang	ci ji su xia jiang	4	rime-frost-ext
+0026754dcf6089c20aceb6acb900d063d969e007d417063be7b71a8ff18ac266-first-full	5han-low	first-full	cijsxj	雌激素下降	cijisuxiajiang	ci ji su xia jiang	4	rime-frost-ext
+0026754dcf6089c20aceb6acb900d063d969e007d417063be7b71a8ff18ac266-middle-full	5han-low	middle-full	cjsuxj	雌激素下降	cijisuxiajiang	ci ji su xia jiang	4	rime-frost-ext
+0026754dcf6089c20aceb6acb900d063d969e007d417063be7b71a8ff18ac266-last-full	5han-low	last-full	cjsxjiang	雌激素下降	cijisuxiajiang	ci ji su xia jiang	4	rime-frost-ext
+0026754dcf6089c20aceb6acb900d063d969e007d417063be7b71a8ff18ac266-alternating	5han-low	alternating	cijsuxjiang	雌激素下降	cijisuxiajiang	ci ji su xia jiang	4	rime-frost-ext
+00268eb581b58cf1c664c804538678fe10d563a7df39509248e4e7f20c296e9b-full	5han-low	full	zaizheerdengdeng	在这儿等等	zaizheerdengdeng	zai zhe er deng deng	1	rime-frost-ext
+00268eb581b58cf1c664c804538678fe10d563a7df39509248e4e7f20c296e9b-first-full	5han-low	first-full	zaizedd	在这儿等等	zaizheerdengdeng	zai zhe er deng deng	1	rime-frost-ext
+00268eb581b58cf1c664c804538678fe10d563a7df39509248e4e7f20c296e9b-middle-full	5han-low	middle-full	zzerdd	在这儿等等	zaizheerdengdeng	zai zhe er deng deng	1	rime-frost-ext
+00268eb581b58cf1c664c804538678fe10d563a7df39509248e4e7f20c296e9b-last-full	5han-low	last-full	zzeddeng	在这儿等等	zaizheerdengdeng	zai zhe er deng deng	1	rime-frost-ext
+00268eb581b58cf1c664c804538678fe10d563a7df39509248e4e7f20c296e9b-alternating	5han-low	alternating	zaizerddeng	在这儿等等	zaizheerdengdeng	zai zhe er deng deng	1	rime-frost-ext
+002777774e25d16386c822340ca9b7322fb1d05792adda82d606c0127b443877-full	5han-low	full	xiaoqihezuoban	校企合作班	xiaoqihezuoban	xiao qi he zuo ban	6	rime-frost-ext
+002777774e25d16386c822340ca9b7322fb1d05792adda82d606c0127b443877-first-full	5han-low	first-full	xiaoqhzb	校企合作班	xiaoqihezuoban	xiao qi he zuo ban	6	rime-frost-ext
+002777774e25d16386c822340ca9b7322fb1d05792adda82d606c0127b443877-middle-full	5han-low	middle-full	xqhezb	校企合作班	xiaoqihezuoban	xiao qi he zuo ban	6	rime-frost-ext
+002777774e25d16386c822340ca9b7322fb1d05792adda82d606c0127b443877-last-full	5han-low	last-full	xqhzban	校企合作班	xiaoqihezuoban	xiao qi he zuo ban	6	rime-frost-ext
+002777774e25d16386c822340ca9b7322fb1d05792adda82d606c0127b443877-alternating	5han-low	alternating	xiaoqhezban	校企合作班	xiaoqihezuoban	xiao qi he zuo ban	6	rime-frost-ext
+002794f467d6bb99c8772121bb3a6120056939f4ae710ff89edc96750d45fc3c-full	5han-low	full	womenfenshoule	我们分手了	womenfenshoule	wo men fen shou le	28	rime-frost-ext
+002794f467d6bb99c8772121bb3a6120056939f4ae710ff89edc96750d45fc3c-first-full	5han-low	first-full	womfsl	我们分手了	womenfenshoule	wo men fen shou le	28	rime-frost-ext
+002794f467d6bb99c8772121bb3a6120056939f4ae710ff89edc96750d45fc3c-middle-full	5han-low	middle-full	wmfensl	我们分手了	womenfenshoule	wo men fen shou le	28	rime-frost-ext
+002794f467d6bb99c8772121bb3a6120056939f4ae710ff89edc96750d45fc3c-last-full	5han-low	last-full	wmfsle	我们分手了	womenfenshoule	wo men fen shou le	28	rime-frost-ext
+002794f467d6bb99c8772121bb3a6120056939f4ae710ff89edc96750d45fc3c-alternating	5han-low	alternating	womfensle	我们分手了	womenfenshoule	wo men fen shou le	28	rime-frost-ext
+00288f434995d9e764133f88d221595b7cef5768b868a433b91747b30fffdaa7-full	5han-low	full	xiazichihuntun	瞎子吃馄饨	xiazichihuntun	xia zi chi hun tun	1	rime-frost-base
+00288f434995d9e764133f88d221595b7cef5768b868a433b91747b30fffdaa7-first-full	5han-low	first-full	xiazcht	瞎子吃馄饨	xiazichihuntun	xia zi chi hun tun	1	rime-frost-base
+00288f434995d9e764133f88d221595b7cef5768b868a433b91747b30fffdaa7-middle-full	5han-low	middle-full	xzchiht	瞎子吃馄饨	xiazichihuntun	xia zi chi hun tun	1	rime-frost-base
+00288f434995d9e764133f88d221595b7cef5768b868a433b91747b30fffdaa7-last-full	5han-low	last-full	xzchtun	瞎子吃馄饨	xiazichihuntun	xia zi chi hun tun	1	rime-frost-base
+00288f434995d9e764133f88d221595b7cef5768b868a433b91747b30fffdaa7-alternating	5han-low	alternating	xiazchihtun	瞎子吃馄饨	xiazichihuntun	xia zi chi hun tun	1	rime-frost-base
+0029140f4482610f083b402ae3b84b79fc11f7b4f3945d3eb2a36aaf3edb83b2-full	5han-low	full	zenmeyoushige	怎么又是个	zenmeyoushige	zen me you shi ge	2	rime-frost-ext
+0029140f4482610f083b402ae3b84b79fc11f7b4f3945d3eb2a36aaf3edb83b2-first-full	5han-low	first-full	zenmysg	怎么又是个	zenmeyoushige	zen me you shi ge	2	rime-frost-ext
+0029140f4482610f083b402ae3b84b79fc11f7b4f3945d3eb2a36aaf3edb83b2-middle-full	5han-low	middle-full	zmyousg	怎么又是个	zenmeyoushige	zen me you shi ge	2	rime-frost-ext
+0029140f4482610f083b402ae3b84b79fc11f7b4f3945d3eb2a36aaf3edb83b2-last-full	5han-low	last-full	zmysge	怎么又是个	zenmeyoushige	zen me you shi ge	2	rime-frost-ext
+0029140f4482610f083b402ae3b84b79fc11f7b4f3945d3eb2a36aaf3edb83b2-alternating	5han-low	alternating	zenmyousge	怎么又是个	zenmeyoushige	zen me you shi ge	2	rime-frost-ext
+002931b8525519a74509c96f00ea57b4ef6a2bbb9cc9871e47df624157388d83-full	5han-low	full	jianzhudenghangye	建筑等行业	jianzhudenghangye	jian zhu deng hang ye	12	rime-frost-ext
+002931b8525519a74509c96f00ea57b4ef6a2bbb9cc9871e47df624157388d83-first-full	5han-low	first-full	jianzdhy	建筑等行业	jianzhudenghangye	jian zhu deng hang ye	12	rime-frost-ext
+002931b8525519a74509c96f00ea57b4ef6a2bbb9cc9871e47df624157388d83-middle-full	5han-low	middle-full	jzdenghy	建筑等行业	jianzhudenghangye	jian zhu deng hang ye	12	rime-frost-ext
+002931b8525519a74509c96f00ea57b4ef6a2bbb9cc9871e47df624157388d83-last-full	5han-low	last-full	jzdhye	建筑等行业	jianzhudenghangye	jian zhu deng hang ye	12	rime-frost-ext
+002931b8525519a74509c96f00ea57b4ef6a2bbb9cc9871e47df624157388d83-alternating	5han-low	alternating	jianzdenghye	建筑等行业	jianzhudenghangye	jian zhu deng hang ye	12	rime-frost-ext

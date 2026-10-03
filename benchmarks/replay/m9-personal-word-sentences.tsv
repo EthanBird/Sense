@@ -1,0 +1,17 @@
+# seed_pinyin	seed_text	seed_initials	query	expected	category	required_top1
+chengche	程彻	cc	chengchexihuanzhinengti	程彻喜欢智能体	name-start	true
+chengche	程彻	cc	woxihuanchengche	我喜欢程彻	name-end	true
+chengche	程彻	cc	qingwenchengchezainali	请问程彻在哪里	name-middle	false
+chengche	程彻	cc	chengchemingtianhuilai	程彻明天回来	name-context	false
+zhinengti	智能体	znt	zhinengtikeyibangmang	智能体可以帮忙	technical-start	true
+zhinengti	智能体	znt	wodezhinengti	我的智能体	technical-end	true
+zhinengti	智能体	znt	zhegezhinengtihenhaoyong	这个智能体很好用	technical-middle	false
+zhinengti	智能体	znt	zhinengtizhengzaiyunxing	智能体正在运行	technical-context	false
+linmu	林沐	lm	linmumingtianlai	林沐明天来	name-start	false
+linmu	林沐	lm	wozhaolinmu	我找林沐	name-end	false
+suran	苏苒	sr	qingjiaosuranguolai	请叫苏苒过来	name-middle	false
+suran	苏苒	sr	suranzaigongsi	苏苒在公司	name-start	false
+xiangliangsuoyin	向量索引	xlsy	xiangliangsuoyinyijinggengxin	向量索引已经更新	technical-start	false
+xiangliangsuoyin	向量索引	xlsy	qinggengxinxiangliangsuoyin	请更新向量索引	technical-end	false
+duancetuili	端侧推理	dctl	wozaiceshiduancetuili	我在测试端侧推理	technical-end	false
+duancetuili	端侧推理	dctl	duancetuilihenkuai	端侧推理很快	technical-start	false

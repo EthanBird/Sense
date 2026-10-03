@@ -78,6 +78,11 @@ interface ContextualInputDecoder : InputDecoder {
     fun decodeAfter(previousCodePoint: Int, composing: String, limit: Int = 5): List<Candidate>
 }
 
+/** Optional bounded text context. Prefix probes omit correction search, as in the legacy seam. */
+interface TextContextualInputDecoder : ContextualInputDecoder {
+    fun decodeWithContext(leftContext: CharSequence, composing: String, limit: Int = 5, prefixProbe: Boolean = false): List<Candidate>
+}
+
 /** Chinese-only recall seam for schemes whose key stream must never summon the English lexicon. */
 interface ChineseOnlyInputDecoder : InputDecoder {
     fun decodeChineseOnly(composing: String, limit: Int = 5): List<Candidate>

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "scope": "LM 0.5 full progressive result equality on known corpora; host-JVM timing is diagnostic, not Android latency",
+  "observations": 1790,
+  "identical": 1790,
+  "mismatches": [],
+  "passed": true,
+  "hostDecodeMs": {
+    "before": {
+      "pass0-daily": {
+        "count": 770,
+        "medianMs": 6.24925,
+        "observedP95Ms": 20.5785,
+        "maxMs": 37.7902
+      },
+      "pass0-known-p2c": {
+        "count": 125,
+        "medianMs": 26.1093,
+        "observedP95Ms": 44.7106,
+        "maxMs": 55.0586
+      },
+      "pass1-daily": {
+        "count": 770,
+        "medianMs": 5.40365,
+        "observedP95Ms": 19.1844,
+        "maxMs": 32.1691
+      },
+      "pass1-known-p2c": {
+        "count": 125,
+        "medianMs": 25.563,
+        "observedP95Ms": 42.6518,
+        "maxMs": 55.5303
+      }
+    },
+    "after": {
+      "pass0-daily": {
+        "count": 770,
+        "medianMs": 5.334149999999999,
+        "observedP95Ms": 18.5459,
+        "maxMs": 38.2833
+      },
+      "pass0-known-p2c": {
+        "count": 125,
+        "medianMs": 22.6325,
+        "observedP95Ms": 37.5662,
+        "maxMs": 47.6616
+      },
+      "pass1-daily": {
+        "count": 770,
+        "medianMs": 4.47475,
+        "observedP95Ms": 15.8799,
+        "maxMs": 26.2031
+      },
+      "pass1-known-p2c": {
+        "count": 125,
+        "medianMs": 22.4306,
+        "observedP95Ms": 39.019,
+        "maxMs": 54.1876
+      }
+    }
+  },
+  "changedSourceFiles": [
+    "io/github/ethanbird/senseime/core/PinyinDecoder.kt",
+    "io/github/ethanbird/senseime/core/StableTopK.kt"
+  ],
+  "inputSha256": {
+    "before": "aca88ddc99faeeec9ab50fb94c63ade5ac4c4b8a5c67ccfad174d47e8c58ae5f",
+    "after": "56f5d6fb8ef0d05125278a7ac876d24603a7bcd2edd0a0b1f5e62f5d7258378d"
+  }
+}

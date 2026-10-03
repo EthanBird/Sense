@@ -33,6 +33,7 @@ internal interface KeyboardFrameScheduler {
 
 internal class ViewKeyboardFrameScheduler(
     private val view: View,
+    private val onStateInvalidated: () -> Unit = {},
 ) : KeyboardFrameScheduler {
     override fun post(task: Runnable) {
         view.post(task)
@@ -55,14 +56,17 @@ internal class ViewKeyboardFrameScheduler(
     }
 
     override fun invalidate() {
+        onStateInvalidated()
         view.postInvalidate()
     }
 
     override fun postInvalidateDelayed(delayMillis: Long) {
+        onStateInvalidated()
         view.postInvalidateDelayed(delayMillis)
     }
 
     override fun postInvalidateOnAnimation() {
+        onStateInvalidated()
         view.postInvalidateOnAnimation()
     }
 
@@ -72,6 +76,7 @@ internal class ViewKeyboardFrameScheduler(
         right: Int,
         bottom: Int,
     ) {
+        onStateInvalidated()
         view.postInvalidateOnAnimation(left, top, right, bottom)
     }
 }

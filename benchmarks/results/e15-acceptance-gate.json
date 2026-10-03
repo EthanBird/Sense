@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "stage": "E15",
+  "decision": "hold-balanced-model-development-gate-failed",
+  "developmentGatePassed": false,
+  "modelPromoted": false,
+  "productionChanged": false,
+  "releaseReady": false,
+  "goalComplete": false,
+  "newDomain": {
+    "before": {
+      "states": 128,
+      "top1": 65,
+      "top5": 97,
+      "top10": 105,
+      "recall255": 118,
+      "characterErrors": 142,
+      "characters": 1087
+    },
+    "after": {
+      "states": 128,
+      "top1": 84,
+      "top5": 103,
+      "top10": 109,
+      "recall255": 121,
+      "characterErrors": 86,
+      "characters": 1087
+    },
+    "nonregressionPassed": true,
+    "strictImprovementPassed": true,
+    "firstGains": 20,
+    "firstLosses": 1,
+    "rankLosses": 11
+  },
+  "oldDomain": {
+    "before": {
+      "states": 128,
+      "top1": 83,
+      "top5": 113,
+      "top10": 120,
+      "recall255": 121,
+      "characterErrors": 70,
+      "characters": 941
+    },
+    "after": {
+      "states": 128,
+      "top1": 83,
+      "top5": 112,
+      "top10": 119,
+      "recall255": 121,
+      "characterErrors": 74,
+      "characters": 941
+    },
+    "nonregressionPassed": false,
+    "strictImprovementPassed": false,
+    "firstGains": 3,
+    "firstLosses": 3,
+    "rankLosses": 13
+  },
+  "primaryStates": 512,
+  "repeatedStates": 256,
+  "completeRepeatEqual": true,
+  "baselineHistoricalEquivalentStates": 128,
+  "newCorpusPartitions": {
+    "train": {
+      "fileName": "train.jsonl",
+      "sha256": "3ef268ed475c2d33b2bfc9a951ec15a855bcdf24fbf02f87baa57a0e1e63e5d3",
+      "records": 112862,
+      "segments": 112862,
+      "characters": 1636310
+    },
+    "dev": {
+      "fileName": "dev.jsonl",
+      "sha256": "903431127a9892b6ebf8e690b990ece95a0db0dcb5f7280b39c1058ed43e058c",
+      "records": 13811,
+      "segments": 13811,
+      "characters": 198307
+    },
+    "test": {
+      "fileName": "test.jsonl",
+      "sha256": "16f0ce60b0054832e3aa3d5907db184a152791efcfa1b70a330a1c49a1290072",
+      "records": 7161,
+      "segments": 7161,
+      "characters": 103508
+    }
+  },
+  "selectedNewTrain": {
+    "records": 53577,
+    "segments": 53577,
+    "characters": 776711,
+    "families": 53089
+  },
+  "oldTrain": {
+    "records": 76736,
+    "segments": 94195,
+    "characters": 776701,
+    "families": 74104
+  },
+  "proposedModelSha256": "5a23fe220c5b7d257d8038096ab76cce5f5ec3bde86a1624f5c33edae52c8995",
+  "proposedModelBytes": 6243366,
+  "newTestSentencesReserved": 124,
+  "testCandidatesEvaluated": false,
+  "core": {
+    "tests": 331,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python": {
+    "run": 385,
+    "passed": 384,
+    "skipped": 1
+  },
+  "androidExecutionsThisStage": 0,
+  "apkRebuiltThisStage": false,
+  "unchangedExistingApk": {
+    "sha256": "af42f66a54b7a7c297071792984a809479bd0551f084d2d0af67025d94135a1f",
+    "bytes": 85875348,
+    "signing": "Android Debug v2; not a release artifact"
+  },
+  "evidenceManifestSha256": "b726a45e7c468968c5e374d90a747e1b3cef3c99915ecb386a64e7d9b2c92e87",
+  "archivedFiles": 110
+}

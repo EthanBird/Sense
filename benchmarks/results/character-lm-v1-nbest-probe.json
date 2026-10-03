@@ -1,0 +1,390 @@
+{
+  "schemaVersion": 1,
+  "modelSha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+  "m8ReportSha256": "e2c8ba49be970f2d5f934e8ae98eb28bc080189277c06d2519044a41553193a3",
+  "scriptSha256": "0daea69c56d53cca08e0c5871367a15d3da80f3c22c421465c4e39086e7f0b96",
+  "cases": 40,
+  "scope": "recorded top3, rank prior -ln(rank), mean-character LM feature; developmental probe only",
+  "top3Oracle": 34,
+  "sweep": [
+    {
+      "mode": "logp",
+      "weight": 0.0,
+      "top1": 28,
+      "improvements": 0,
+      "regressions": 0,
+      "changes": []
+    },
+    {
+      "mode": "logp",
+      "weight": 0.25,
+      "top1": 28,
+      "improvements": 0,
+      "regressions": 0,
+      "changes": []
+    },
+    {
+      "mode": "logp",
+      "weight": 0.5,
+      "top1": 31,
+      "improvements": 3,
+      "regressions": 0,
+      "changes": [
+        {
+          "query": "qingjianchayixiayoujian",
+          "expected": "请检查一下邮件",
+          "before": "氢键查一下邮件",
+          "after": "请检查一下邮件",
+          "afterCorrect": true
+        },
+        {
+          "query": "qingchongxindenglu",
+          "expected": "请重新登录",
+          "before": "轻重新登录",
+          "after": "请重新登录",
+          "afterCorrect": true
+        },
+        {
+          "query": "yiqiqugongyuan",
+          "expected": "一起去公园",
+          "before": "一起去公元",
+          "after": "一起去公园",
+          "afterCorrect": true
+        }
+      ]
+    },
+    {
+      "mode": "logp",
+      "weight": 1.0,
+      "top1": 31,
+      "improvements": 3,
+      "regressions": 0,
+      "changes": [
+        {
+          "query": "huiyigaiwanshangle",
+          "expected": "会议改晚上了",
+          "before": "回忆该晚上了",
+          "after": "会议该晚上了",
+          "afterCorrect": false
+        },
+        {
+          "query": "qingjianchayixiayoujian",
+          "expected": "请检查一下邮件",
+          "before": "氢键查一下邮件",
+          "after": "请检查一下邮件",
+          "afterCorrect": true
+        },
+        {
+          "query": "qingchongxindenglu",
+          "expected": "请重新登录",
+          "before": "轻重新登录",
+          "after": "请重新登录",
+          "afterCorrect": true
+        },
+        {
+          "query": "yiqiqugongyuan",
+          "expected": "一起去公园",
+          "before": "一起去公元",
+          "after": "一起去公园",
+          "afterCorrect": true
+        }
+      ]
+    },
+    {
+      "mode": "logp",
+      "weight": 2.0,
+      "top1": 32,
+      "improvements": 4,
+      "regressions": 0,
+      "changes": [
+        {
+          "query": "jintianyouyidianlei",
+          "expected": "今天有一点累",
+          "before": "今天有一点类",
+          "after": "今天有一点累",
+          "afterCorrect": true
+        },
+        {
+          "query": "huiyigaiwanshangle",
+          "expected": "会议改晚上了",
+          "before": "回忆该晚上了",
+          "after": "会议该晚上了",
+          "afterCorrect": false
+        },
+        {
+          "query": "qingjianchayixiayoujian",
+          "expected": "请检查一下邮件",
+          "before": "氢键查一下邮件",
+          "after": "请检查一下邮件",
+          "afterCorrect": true
+        },
+        {
+          "query": "qingchongxindenglu",
+          "expected": "请重新登录",
+          "before": "轻重新登录",
+          "after": "请重新登录",
+          "afterCorrect": true
+        },
+        {
+          "query": "zhinengtikeyibangmang",
+          "expected": "智能体可以帮忙",
+          "before": "只能题可以帮忙",
+          "after": "只能提可以帮忙",
+          "afterCorrect": false
+        },
+        {
+          "query": "yiqiqugongyuan",
+          "expected": "一起去公园",
+          "before": "一起去公元",
+          "after": "一起去公园",
+          "afterCorrect": true
+        }
+      ]
+    },
+    {
+      "mode": "logp",
+      "weight": 4.0,
+      "top1": 31,
+      "improvements": 4,
+      "regressions": 1,
+      "changes": [
+        {
+          "query": "jintianyouyidianlei",
+          "expected": "今天有一点累",
+          "before": "今天有一点类",
+          "after": "今天有一点累",
+          "afterCorrect": true
+        },
+        {
+          "query": "huiyigaiwanshangle",
+          "expected": "会议改晚上了",
+          "before": "回忆该晚上了",
+          "after": "会议该晚上了",
+          "afterCorrect": false
+        },
+        {
+          "query": "qingjianchayixiayoujian",
+          "expected": "请检查一下邮件",
+          "before": "氢键查一下邮件",
+          "after": "请检查一下邮件",
+          "afterCorrect": true
+        },
+        {
+          "query": "qingchongxindenglu",
+          "expected": "请重新登录",
+          "before": "轻重新登录",
+          "after": "请重新登录",
+          "afterCorrect": true
+        },
+        {
+          "query": "shurufahaixuyaoyouhua",
+          "expected": "输入法还需要优化",
+          "before": "输入法还需要优化",
+          "after": "输入法还需要有话",
+          "afterCorrect": false
+        },
+        {
+          "query": "zhinengtikeyibangmang",
+          "expected": "智能体可以帮忙",
+          "before": "只能题可以帮忙",
+          "after": "只能提可以帮忙",
+          "afterCorrect": false
+        },
+        {
+          "query": "yiqiqugongyuan",
+          "expected": "一起去公园",
+          "before": "一起去公元",
+          "after": "一起去公园",
+          "afterCorrect": true
+        }
+      ]
+    },
+    {
+      "mode": "pmi",
+      "weight": 0.0,
+      "top1": 28,
+      "improvements": 0,
+      "regressions": 0,
+      "changes": []
+    },
+    {
+      "mode": "pmi",
+      "weight": 0.25,
+      "top1": 28,
+      "improvements": 0,
+      "regressions": 0,
+      "changes": []
+    },
+    {
+      "mode": "pmi",
+      "weight": 0.5,
+      "top1": 30,
+      "improvements": 2,
+      "regressions": 0,
+      "changes": [
+        {
+          "query": "qingjianchayixiayoujian",
+          "expected": "请检查一下邮件",
+          "before": "氢键查一下邮件",
+          "after": "请检查一下邮件",
+          "afterCorrect": true
+        },
+        {
+          "query": "yiqiqugongyuan",
+          "expected": "一起去公园",
+          "before": "一起去公元",
+          "after": "一起去公园",
+          "afterCorrect": true
+        }
+      ]
+    },
+    {
+      "mode": "pmi",
+      "weight": 1.0,
+      "top1": 31,
+      "improvements": 3,
+      "regressions": 0,
+      "changes": [
+        {
+          "query": "qingjianchayixiayoujian",
+          "expected": "请检查一下邮件",
+          "before": "氢键查一下邮件",
+          "after": "请检查一下邮件",
+          "afterCorrect": true
+        },
+        {
+          "query": "qingchongxindenglu",
+          "expected": "请重新登录",
+          "before": "轻重新登录",
+          "after": "请重新登录",
+          "afterCorrect": true
+        },
+        {
+          "query": "yiqiqugongyuan",
+          "expected": "一起去公园",
+          "before": "一起去公元",
+          "after": "一起去公园",
+          "afterCorrect": true
+        }
+      ]
+    },
+    {
+      "mode": "pmi",
+      "weight": 2.0,
+      "top1": 31,
+      "improvements": 4,
+      "regressions": 1,
+      "changes": [
+        {
+          "query": "wodenghuierhuifu",
+          "expected": "我等会儿回复",
+          "before": "我等会儿回复",
+          "after": "我等会儿恢复",
+          "afterCorrect": false
+        },
+        {
+          "query": "jintianyouyidianlei",
+          "expected": "今天有一点累",
+          "before": "今天有一点类",
+          "after": "今天有一点累",
+          "afterCorrect": true
+        },
+        {
+          "query": "huiyigaiwanshangle",
+          "expected": "会议改晚上了",
+          "before": "回忆该晚上了",
+          "after": "会议该晚上了",
+          "afterCorrect": false
+        },
+        {
+          "query": "qingjianchayixiayoujian",
+          "expected": "请检查一下邮件",
+          "before": "氢键查一下邮件",
+          "after": "请检查一下邮件",
+          "afterCorrect": true
+        },
+        {
+          "query": "qingchongxindenglu",
+          "expected": "请重新登录",
+          "before": "轻重新登录",
+          "after": "请重新登录",
+          "afterCorrect": true
+        },
+        {
+          "query": "zhinengtikeyibangmang",
+          "expected": "智能体可以帮忙",
+          "before": "只能题可以帮忙",
+          "after": "只能提可以帮忙",
+          "afterCorrect": false
+        },
+        {
+          "query": "yiqiqugongyuan",
+          "expected": "一起去公园",
+          "before": "一起去公元",
+          "after": "一起去公园",
+          "afterCorrect": true
+        }
+      ]
+    },
+    {
+      "mode": "pmi",
+      "weight": 4.0,
+      "top1": 31,
+      "improvements": 4,
+      "regressions": 1,
+      "changes": [
+        {
+          "query": "wodenghuierhuifu",
+          "expected": "我等会儿回复",
+          "before": "我等会儿回复",
+          "after": "我等会儿恢复",
+          "afterCorrect": false
+        },
+        {
+          "query": "jintianyouyidianlei",
+          "expected": "今天有一点累",
+          "before": "今天有一点类",
+          "after": "今天有一点累",
+          "afterCorrect": true
+        },
+        {
+          "query": "huiyigaiwanshangle",
+          "expected": "会议改晚上了",
+          "before": "回忆该晚上了",
+          "after": "会议该晚上了",
+          "afterCorrect": false
+        },
+        {
+          "query": "qingjianchayixiayoujian",
+          "expected": "请检查一下邮件",
+          "before": "氢键查一下邮件",
+          "after": "请检查一下邮件",
+          "afterCorrect": true
+        },
+        {
+          "query": "qingchongxindenglu",
+          "expected": "请重新登录",
+          "before": "轻重新登录",
+          "after": "请重新登录",
+          "afterCorrect": true
+        },
+        {
+          "query": "zhinengtikeyibangmang",
+          "expected": "智能体可以帮忙",
+          "before": "只能题可以帮忙",
+          "after": "只能提可以帮忙",
+          "afterCorrect": false
+        },
+        {
+          "query": "yiqiqugongyuan",
+          "expected": "一起去公园",
+          "before": "一起去公元",
+          "after": "一起去公园",
+          "afterCorrect": true
+        }
+      ]
+    }
+  ],
+  "productionEnabled": false,
+  "next": "integrate state into candidate/word search, evaluate a new frozen P2C set, and retain individual losses"
+}

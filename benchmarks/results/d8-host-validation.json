@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "modules": {
+    "core-input": {
+      "tests": 289,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 234,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 293,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 3,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    }
+  },
+  "pythonTests": 30,
+  "pythonLog": {
+    "path": ".artifacts/input-quality/d8-python-tests.log",
+    "sha256": "88ddb491a9434f5e73205db98f4c3f6b7e364138304bc05b01f09d230e59fd56"
+  },
+  "scope": "Full core/UI/service suite; targeted About tests; cached unchanged tasks permitted",
+  "buildLogs": [
+    {
+      "path": ".artifacts/input-quality/d8-accepted-build.log",
+      "sha256": "9713ed080ef806e81c339a506c73b4fb246b03873f8be111f52fa309b13cc928"
+    },
+    {
+      "path": ".artifacts/input-quality/d8-final-build.log",
+      "sha256": "a61c1a9dd6ca9a342b9e86b33a2c46626441b0ea5dc5f80e8bda6db04caf9b37"
+    },
+    {
+      "path": ".artifacts/input-quality/d8-first-build.log",
+      "sha256": "07d4ff99e35f0df5bf6cc93c43dd350ee14c5e1761c8853c120054aff8880fe6"
+    },
+    {
+      "path": ".artifacts/input-quality/d8-foreground-fixture-build.log",
+      "sha256": "6cead3cc999cf41ff293f86b63d217e8946e86710d39ae7bc3abeeecb26e19c3"
+    },
+    {
+      "path": ".artifacts/input-quality/d8-render-red-build.log",
+      "sha256": "25c1f821a5d5639c0fbaa6213d7aabf5d0470ed93762c3063b478b042c95b7cc"
+    },
+    {
+      "path": ".artifacts/input-quality/d8-ui-final-build.log",
+      "sha256": "15db30c5ca93b318961dbdf4d6658f6bbc00a4aef25555e3df9ca614409ae1e5"
+    }
+  ],
+  "apkSha256": "d420f01909f775a5fd96ba8e795b0dc989c5a275b99e83078667b7e1e86d3202"
+}

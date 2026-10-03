@@ -1,0 +1,301 @@
+{
+  "schemaVersion": 1,
+  "scope": "True external-editor touch input; ready runtime, clean profile per block, no learning; fixed ABBA diagnostic, not phone certification",
+  "apkSha256": {
+    "baseline": "b423eb9919d927acde43885ac8430b8ed07a3cae5c6557a7a3e6f02d5fab3545",
+    "optimized": "d42994ace9e62d290b91390d90a3e01c7e5e203ddfc07d098b1077dfcf980a56"
+  },
+  "limitations": [
+    "Eight fixed known queries, four observations per query/mode, one API 37 x86_64 emulator and debug builds.",
+    "Observed percentiles describe this workload, not a population or real-phone tail-latency guarantee.",
+    "Includes input injection, system scheduling and polling; excludes initial asset loading. App atrace is enabled, not ART method profiling.",
+    "A known 类/累 semantic error is deliberately retained as baseline output; this is not an accuracy score.",
+    "Complete decode trace slices also include short prefixes completed while typing, not only final confirmations."
+  ],
+  "confirmationMs": {
+    "baseline": {
+      "count": 32,
+      "medianMs": 135.0,
+      "observedP95Ms": 331,
+      "maxMs": 357
+    },
+    "optimized": {
+      "count": 32,
+      "medianMs": 161.0,
+      "observedP95Ms": 357,
+      "maxMs": 394
+    }
+  },
+  "perQuery": [
+    {
+      "query": "nihao",
+      "baseline": {
+        "samples": [
+          140,
+          55,
+          98,
+          45
+        ],
+        "count": 4,
+        "medianMs": 76.5,
+        "observedP95Ms": 140,
+        "maxMs": 140
+      },
+      "optimized": {
+        "samples": [
+          90,
+          48,
+          129,
+          52
+        ],
+        "count": 4,
+        "medianMs": 71.0,
+        "observedP95Ms": 129,
+        "maxMs": 129
+      }
+    },
+    {
+      "query": "woxihuanbeijing",
+      "baseline": {
+        "samples": [
+          357,
+          107,
+          331,
+          130
+        ],
+        "count": 4,
+        "medianMs": 230.5,
+        "observedP95Ms": 357,
+        "maxMs": 357
+      },
+      "optimized": {
+        "samples": [
+          357,
+          132,
+          394,
+          126
+        ],
+        "count": 4,
+        "medianMs": 244.5,
+        "observedP95Ms": 394,
+        "maxMs": 394
+      }
+    },
+    {
+      "query": "qingfageweizhigeiwo",
+      "baseline": {
+        "samples": [
+          115,
+          104,
+          140,
+          116
+        ],
+        "count": 4,
+        "medianMs": 115.5,
+        "observedP95Ms": 140,
+        "maxMs": 140
+      },
+      "optimized": {
+        "samples": [
+          159,
+          131,
+          187,
+          133
+        ],
+        "count": 4,
+        "medianMs": 146.0,
+        "observedP95Ms": 187,
+        "maxMs": 187
+      }
+    },
+    {
+      "query": "qingjianchayixiayoujian",
+      "baseline": {
+        "samples": [
+          166,
+          138,
+          181,
+          179
+        ],
+        "count": 4,
+        "medianMs": 172.5,
+        "observedP95Ms": 181,
+        "maxMs": 181
+      },
+      "optimized": {
+        "samples": [
+          211,
+          192,
+          216,
+          153
+        ],
+        "count": 4,
+        "medianMs": 201.5,
+        "observedP95Ms": 216,
+        "maxMs": 216
+      }
+    },
+    {
+      "query": "zhegeyingyonghenhaoyong",
+      "baseline": {
+        "samples": [
+          117,
+          128,
+          110,
+          115
+        ],
+        "count": 4,
+        "medianMs": 116.0,
+        "observedP95Ms": 128,
+        "maxMs": 128
+      },
+      "optimized": {
+        "samples": [
+          144,
+          137,
+          135,
+          135
+        ],
+        "count": 4,
+        "medianMs": 136.0,
+        "observedP95Ms": 144,
+        "maxMs": 144
+      }
+    },
+    {
+      "query": "jintianyouyidianlei",
+      "baseline": {
+        "samples": [
+          128,
+          112,
+          132,
+          120
+        ],
+        "count": 4,
+        "medianMs": 124.0,
+        "observedP95Ms": 132,
+        "maxMs": 132
+      },
+      "optimized": {
+        "samples": [
+          201,
+          142,
+          156,
+          163
+        ],
+        "count": 4,
+        "medianMs": 159.5,
+        "observedP95Ms": 201,
+        "maxMs": 201
+      }
+    },
+    {
+      "query": "tangmuhemalimeitianwanshangdoukandianshi",
+      "baseline": {
+        "samples": [
+          210,
+          219,
+          235,
+          172
+        ],
+        "count": 4,
+        "medianMs": 214.5,
+        "observedP95Ms": 235,
+        "maxMs": 235
+      },
+      "optimized": {
+        "samples": [
+          246,
+          231,
+          245,
+          256
+        ],
+        "count": 4,
+        "medianMs": 245.5,
+        "observedP95Ms": 256,
+        "maxMs": 256
+      }
+    },
+    {
+      "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+      "baseline": {
+        "samples": [
+          214,
+          247,
+          216,
+          224
+        ],
+        "count": 4,
+        "medianMs": 220.0,
+        "observedP95Ms": 247,
+        "maxMs": 247
+      },
+      "optimized": {
+        "samples": [
+          267,
+          247,
+          265,
+          311
+        ],
+        "count": 4,
+        "medianMs": 266.0,
+        "observedP95Ms": 311,
+        "maxMs": 311
+      }
+    }
+  ],
+  "traces": [
+    {
+      "block": 1,
+      "mode": "baseline",
+      "sha256": "9b43041d8b27ff5cc60f862d61c37e6f64998ce36135dc704b3ec32ffba44547",
+      "canceledDecodes": 227,
+      "completedDecodes": 139,
+      "completedDecodeMs": {
+        "count": 139,
+        "medianMs": 34.395,
+        "observedP95Ms": 159.83,
+        "maxMs": 352.92
+      }
+    },
+    {
+      "block": 2,
+      "mode": "optimized",
+      "sha256": "446dcbd4601bf77b78bd95a933eb3cc93ad0c9706fec4a3e58c90e880b75984d",
+      "canceledDecodes": 247,
+      "completedDecodes": 119,
+      "completedDecodeMs": {
+        "count": 119,
+        "medianMs": 36.112,
+        "observedP95Ms": 220.077,
+        "maxMs": 366.472
+      }
+    },
+    {
+      "block": 3,
+      "mode": "optimized",
+      "sha256": "12cc3323e6e922b232231d59ffb48638fd798bcb0a1e4e64e4b422c89ffa2edf",
+      "canceledDecodes": 252,
+      "completedDecodes": 113,
+      "completedDecodeMs": {
+        "count": 113,
+        "medianMs": 38.179,
+        "observedP95Ms": 220.907,
+        "maxMs": 411.117
+      }
+    },
+    {
+      "block": 4,
+      "mode": "baseline",
+      "sha256": "268800be9d5ca729f2a6ce3d4a1c30bc11936c2ed6f5b70267a49a7a88ba2a6f",
+      "canceledDecodes": 232,
+      "completedDecodes": 134,
+      "completedDecodeMs": {
+        "count": 134,
+        "medianMs": 34.42,
+        "observedP95Ms": 188.425,
+        "maxMs": 339.172
+      }
+    }
+  ]
+}

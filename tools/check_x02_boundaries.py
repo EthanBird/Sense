@@ -427,7 +427,7 @@ EXPECTED_OFFLINE_VERIFY_SHA256 = (
 )
 EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("settings.gradle.kts"):
-        "934ecf34be64c36c02dd8b1566923014a852ed4014c93cdbef20e289c05da2ca",
+        "925d3d26684067f995f8510c1cec739c191dc95b25816ad4002e6624f5f97ade",
     Path("gradle/libs.versions.toml"):
         "314f9eabd2d0ce5b786ad4eb484e75bb75c39c2731ddfb7a12243078ae252495",
     Path("gradle.properties"):
@@ -449,13 +449,13 @@ EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("agent-ui/build.gradle.kts"):
         "b06fa926610cb3ed5b297faf9958d7d3db521586e2148247c8a8839170d37ede",
     Path("app/build.gradle.kts"):
-        "07c8fec46807ea901eb624d8e50b2d2819113ed2951d8fec0350d26e5814ce03",
+        "52deec5473cfb1c2434d5259e256cca058f8fc6e8cc20625a1b69202ab426c89",
     Path("benchmark/build.gradle.kts"):
         "999d9aba8d2813df7e108a9dece00c7f6406b3c5273e59f323d0565e650abf8b",
     Path("brain-api/build.gradle.kts"):
         "c70c74e1a71c3f64a329722b9fa2337ad582df9dbef98c53fa4e781d8f29ee5a",
     Path("core-input/build.gradle.kts"):
-        "a6c83531a328ad895672ac22c7e588e169f2c89cecc699ce9cb3af6cb8143706",
+        "439627a7c5748bedddad76acdb5749a9c6f5a9d0bf8aa107f9cc9182097da6e5",
     Path("event-journal/build.gradle.kts"):
         "696b4999da20f0b2def5b6adf5f341f702c46a14d31ee80a0f790561f6bd4930",
     Path("ime-config/build.gradle.kts"):
@@ -463,7 +463,11 @@ EXPECTED_BUILD_AUTHORITY_SHA256: Mapping[Path, str] = {
     Path("ime-service/build.gradle.kts"):
         "ca2ad3d8187ebde0cf6e9a2badf2a27649347e159533de4b10a92d20fd41e261",
     Path("ime-ui/build.gradle.kts"):
-        "c733d477f1e5da2a43b6fafaf3fa213b47fe55bb5ed14f99916defd0f96e7c3a",
+        "37e4fbfcd9b5faaee37527ee6e0605078def27c160ec46d8205a1e508ff346bf",
+    # Independent external editor used by the input-quality instrumented tests.
+    # It is a reviewed Gradle module, never a production APK dependency.
+    Path("input-quality-device/build.gradle.kts"):
+        "949181e8c667dbc0866cf8eb2e964c21e714b0ce32465ac99dbf0fa94480cdfe",
     Path("memory-protocol/build.gradle.kts"):
         "b1d9c1acc7f6d19450691e461fa4da6643297fff752d3f9159e7445bc91ad9ab",
     Path("mic-runtime/build.gradle.kts"):
@@ -1115,6 +1119,10 @@ def _check_dependency_graph(root: Path) -> None:
 
     for root_module in FORBIDDEN_RUNTIME_ROOTS:
         reached = closure(root_module)
+        if "input-quality-device" in reached:
+            raise BoundaryError(
+                f":{root_module} production graph reaches external-editor test fixture"
+            )
         leaked = reached & {MEMORY_PROTOCOL, EVENT_JOURNAL}
         if leaked:
             raise BoundaryError(

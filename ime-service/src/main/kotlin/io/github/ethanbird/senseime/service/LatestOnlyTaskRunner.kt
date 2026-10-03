@@ -48,6 +48,12 @@ internal class LatestOnlyTaskRunner<Input : Any, Output : Any>(
         request.sequence
     }
 
+    /** Supersede in-flight work and discard pending work, while keeping this worker reusable. */
+    fun invalidate() = synchronized(lock) {
+        newestSequence += 1
+        pending = null
+    }
+
     private fun drain() {
         while (true) {
             val request = synchronized(lock) {

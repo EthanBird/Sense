@@ -1,0 +1,63 @@
+# id	query	expected	stratum	reviewedSyllables
+000abae248b9ad768e21e65af8d7b2a19c4221895c92d3a3582d8426972349e6	tazouzaiwodemianqian	他走在我的面前	short	ta zou zai wo de mian qian
+000ea59e68480986c9d2fb8fd5f155e6a8dfd0d195e749b02be9f14fe092846f	tabiaoshitafeichanggaoxing	他表示他非常高兴	short	ta biao shi ta fei chang gao xing
+0042255e76f08e556ee426305f20294acba48bd1a98806416be04e2967e6041e	woduitiyubuganxingqu	我对体育不感兴趣	short	wo dui ti yu bu gan xing qu
+005bf7d8277810ef436c9381954390d5a602f77a208848de0a3d0b0075dc7591	buyaozuozaishangmian	不要坐在上面	short	bu yao zuo zai shang mian
+0061e4d4b77237508e37dab681dc676e2a8495d6b8c59f5d5bf8e72d9de9e019	tadeshengyinhenyueer	他的声音很悦耳	short	ta de sheng yin hen yue er
+0063f05172174e245e811261bd58c27f0e65b439cf774d5038910d8a4ec15c2d	wanfanqianninxiangheyibeima	晚饭前您想喝一杯吗	short	wan fan qian nin xiang he yi bei ma
+006d67e37d244f9eb336817ef5c03cc8e005652b9705aca777a53e117978e939	zhemenzenyangdoudabukai	这门怎样都打不开	short	zhe men zen yang dou da bu kai
+00a6ca68a5f364fd3e88148a179cc69cdf95e3f179832293ed8ab1eb9c714d5d	nagebowuguanzhidecanguan	那个博物馆值得参观	short	na ge bo wu guan zhi de can guan
+00d61d73c088ae36467dcc69afaa3fcb2bf2028f4b26fb3eddf72896843ccf3f	wochangduizijizhemeshuo	我常对自己这么说	short	wo chang dui zi ji zhe me shuo
+00dd85ee13455bfbb5e3fe60260c2a4a14ef77b4dd8e13a6a2079c9e81610159	nibugaidashengshuohua	你不该大声说话	short	ni bu gai da sheng shuo hua
+01066d7f36a015e270cb9fe83cb38e465a6d95817da07701cd96244606e65071	gengyishizainali	更衣室在哪里	short	geng yi shi zai na li
+0117b14c10ac348c21e7b6e7747bb7e9d8c92c7a625981d228c4ddf55191ce8b	niyijingyouhuzila	你已经有胡子啦	short	ni yi jing you hu zi la
+011a5ad7c377c711e9b1a9212509d912acd1477d8b1fbc0ef4df6e6829e6dc8d	zaiershishijimoqi	在二十世纪末期	short	zai er shi shi ji mo qi
+015e4e96daa7832d1e90d08903c6e8d041c76bb5ff5cfdf8a4f48977e115db93	womaileyitaoxinqinju	我买了一套新寝具	short	wo mai le yi tao xin qin ju
+0198a50be790abfad383ab79523389fa90e6c9eba4bbbe828f8d874b065c6757	tongguoyichuanxiushi	通过遗传修饰	short	tong guo yi chuan xiu shi
+01badda0e88314485caff9c003df58b7f2acda221b04c990ce541577ba5bd755	wozongshixinshouwodechengnuo	我总是信守我的承诺	short	wo zong shi xin shou wo de cheng nuo
+01d5c7008b32384f8c66050e3be8550038a33f91048c2ab8eb8d3e924e651967	shenzhihaiyoushuweibi	甚至还有数位笔	short	shen zhi hai you shu wei bi
+01e9f7b5b6de3e91e7cfc12e8ef2e82028bab328652e1dffa84f4dffbe2839b5	ruherangtoufapengsong	如何让头发蓬松	short	ru he rang tou fa peng song
+0206a7b79de63ad94ac2db609be07ccd35e5e7c276fe3b62e186e3c9000b4216	shitiandehaishikude	是甜的还是苦的	short	shi tian de hai shi ku de
+021148fdf62a065873169187e271820ad445c7c7fcb28802d13f53d87e0f948d	zheshiyishouhenbangdeshi	这是一首很棒的诗	short	zhe shi yi shou hen bang de shi
+021b90e14ad0ea5e6c674534505bcb5e1d0d0b2e4cd6ca03ce917a7eacbe455a	wohenxihuanquguowailvyou	我很喜欢去国外旅游	short	wo hen xi huan qu guo wai lv you
+0221aad7124625a673d4522e5d790466cbedc25e8099bf69098bf727db7308fa	redexiangchibingqilin	热得想吃冰淇淋	short	re de xiang chi bing qi lin
+026a24d64f9641ef6742e0dbdcbba364f1611cc0f9d1c6519819b017720fe01e	ruguotabugaoxing	如果她不高兴	short	ru guo ta bu gao xing
+026a7d0837ba5b6affd8ee056d13cafaec27162665e28d7d8c9bb382e42c7f6f	keyidaiwokankanxiaoyuanma	可以带我看看校园吗	short	ke yi dai wo kan kan xiao yuan ma
+0284e357857953d7de039920310f934834f62fd928594a303a12b7a9fe8144a3	shenmeshihoukaishidengji	什么时候开始登机	short	shen me shi hou kai shi deng ji
+02ad6d850e64f51a20ec31bb47c9660b5e7af8760e69d827e4436df826d7971e	wochiwanwanfanhoukandianshi	我吃完晚饭后看电视	short	wo chi wan wan fan hou kan dian shi
+02b7c95ed4dca4088e7b3b7e4d9daad988d8f121a0629dba663968a79892c55c	suiranwochangchangaoye	虽然我常常熬夜	short	sui ran wo chang chang ao ye
+02b97880d4bfb7909e120bd2da2429215f2d810a561fcfa1edb12d4789b91d46	wojintianxiangwaichu	我今天想外出	short	wo jin tian xiang wai chu
+02cdb726fd1aba31e6d6f02d35f6186147b8defe065dab5604072002f75d33f5	tadeyifuzongshihenchou	他的衣服总是很臭	short	ta de yi fu zong shi hen chou
+02d48733a8c8d9f6eed66aff451d195cc2bb69924104a9d115f1b91d8218fbb4	wobangmamaxiwanle	我帮妈妈洗碗了	short	wo bang ma ma xi wan le
+009addf67bb83e5247c0c27f6002832458175cc3f8fa84a7d846f5adbb0be71d	qumadelidecheshixiawuwudian	去马德里的车是下午五点	long	qu ma de li de che shi xia wu wu dian
+00aa321728f00f8efae4fe5e20fe79afc676f38acb0e1ddf9b12beca0de021d8	tangmubuyuanyimaitadefangzi	汤姆不愿意卖他的房子	long	tang mu bu yuan yi mai ta de fang zi
+00e4fcf7fff04eaa505427c27d1f9c85ce09e282efbb7b0c00b4152f6b82ca3b	lundunguoquyinweijingjihewenhuadeyuangu	伦敦过去因为经济和文化的缘故	long	lun dun guo qu yin wei jing ji he wen hua de yuan gu
+011dcf193f73990e42a6c9679cfcde1a00b4fd792fe36476c712716b0f935415	nizhidaofashengleshenmeshiqingma	你知道发生了什么事情吗	long	ni zhi dao fa sheng le shen me shi qing ma
+0178c7b11794fc698aa5397da4d6ef5bc6d985fef6db2a5907e413e77bf139f0	wohenyihanniyaolikaizheli	我很遗憾你要离开这里	long	wo hen yi han ni yao li kai zhe li
+01f8485d1f1ed643fee404537fdbaa7af721a280eb7240f7988529611b93fc45	woduizijidelvlibunamezaiyi	我对自己的履历不那么在意	long	wo dui zi ji de lv li bu na me zai yi
+0204be6a86da195297bc6751a13eb01f61c12340682a9f614c4445b8872e0757	tangmubuxiangrangmaliheqiongshuohua	汤姆不想让玛丽和琼说话	long	tang mu bu xiang rang ma li he qiong shuo hua
+0233e8c748aace7b99c7146d84d35359a395c5f8477d74f995eb57158554623d	wokeyizaizhelichidianerdongxima	我可以在这里吃点儿东西吗	long	wo ke yi zai zhe li chi dian er dong xi ma
+02388f4c35c533bd2bc8ed3ac29992a3568b66b64a71ee347889c3e119069811	tadesuoyoujiatingchengyuandouhengao	他的所有家庭成员都很高	long	ta de suo you jia ting cheng yuan dou hen gao
+0247a659309e6a81850ba72500219840165b3e68ab38d566a7ec34948702cd79	woxiangwentangmutazaiyindushenghuoleduojiu	我想问汤姆他在印度生活了多久	long	wo xiang wen tang mu ta zai yin du sheng huo le duo jiu
+026c16da0dbb52d7c0ba8e4046f11c718486926adf662bb119ff43c72139fab2	nikanguozhemehaokandedianyingma	你看过这么好看的电影吗	long	ni kan guo zhe me hao kan de dian ying ma
+026ea7ad58d5e51ae68cd4e86eb3211406111c08fe4a0414149bbdd3410c2d37	yaoshishijienengbuxuyaorenleigongzuojiuhaole	要是世界能不需要人类工作就好了	long	yao shi shi jie neng bu xu yao ren lei gong zuo jiu hao le
+03d8db1a1ee4bffb2da66b4f387bda810e44b7044e1ed7ef64c4f78770d4b9db	jiangjunzhongyuyoujihuicuanduowangwei	将军终于有机会篡夺王位	long	jiang jun zhong yu you ji hui cuan duo wang wei
+040ef9d790bf59c62235a6d5c59f7388c3125a825855ba597e2cfaef10c67f6e	kexitashiyigewanquanmeiyouyoumoganderen	可惜他是一个完全没有幽默感的人	long	ke xi ta shi yi ge wan quan mei you you mo gan de ren
+04330c1a8c723af520a91bbbc53cc7c9ff73fb87a0165b7545c7b58cd1cfc9cc	womendeyanjingkanbujianhongwaixian	我们的眼睛看不见红外线	long	wo men de yan jing kan bu jian hong wai xian
+0447519e570817c409d222641ea0dd68c7b1937043974649dc239255139f1a9a	niweishenmeshuolezheyangdeshi	你为什么说了这样的事	long	ni wei shen me shuo le zhe yang de shi
+0471bf648a3c6bd6522725d1e515b726cb6ece3ef41df956f948514daf6c4e91	nadapoletasuoyoudemengxiang	那打破了他所有的梦想	long	na da po le ta suo you de meng xiang
+04c803184da5fd800f3a071301347f741cee260900f3a4c054b9964843226c95	tangmugeizijimaileyiliangche	汤姆给自己买了一辆车	long	tang mu gei zi ji mai le yi liang che
+04cc41950edace080bed2b3a88336444a7f54f80e84b24e9621d0c0ebbf6442a	zhejianshiduisheidoumeiyouhaochu	这件事对谁都没有好处	long	zhe jian shi dui shei dou mei you hao chu
+051138f26f9ab4aafe169893744f9e521d400d9cafd4d18939e646eaade03d8b	tajinggaotawanshangbuyaoyigerenchuqu	她警告他晚上不要一个人出去	long	ta jing gao ta wan shang bu yao yi ge ren chu qu
+054050132383098517f18b750992ac2a92c8bec6cb66acc661e54e82adb6c989	tayinweishengbingermeiqushangxue	他因为生病而没去上学	long	ta yin wei sheng bing er mei qu shang xue
+054da74eefa7e321ee6ed5243c0b1fce3b3d9513110e14edac5b417efe0d6da1	benglebengletiaoletiaolezhenlekeleai	蹦了蹦了跳了跳了真了可了爱	long	beng le beng le tiao le tiao le zhen le ke le ai
+05558396597ef6f5ce92c40a3570271f9f7a82ac871180801b7197c5a831d846	huadaijiasuohuanlaideyidiancaizhi	花代价所换来的一点才智	long	hua dai jia suo huan lai de yi dian cai zhi
+055e5216e5703de34607d7afec152944d7cb1d841a2b2ed23c291caa10054492	meiyourenzhidaotadezhenmingzi	没有人知道他的真名字	long	mei you ren zhi dao ta de zhen ming zi
+059ec823ac6b583a9acd782ce69239a3117652f8bb1940f46229ab6c73f62caf	chanhouyidingyaoyongshufudaima	产后一定要用束腹带吗	long	chan hou yi ding yao yong shu fu dai ma
+05b51d59478687d016c9ffd5b8f77e0fae4bab6bc9ea8239ae19b02736cfabca	tajujuezuotamenxiangyaodeshi	她拒绝做他们想要的事	long	ta ju jue zuo ta men xiang yao de shi
+05d6c4c2b5212671299a00466cd3f1ec34fbca43022d24842e3802ca8c1f84e9	nizuixihuandejianadageshoushishui	你最喜欢的加拿大歌手是谁	long	ni zui xi huan de jia na da ge shou shi shui
+05f20494e279153336c2ce23aecf5f1b07a5c7ed470f01ea8a3a7908167239cf	tongzhuodexiaoshenghenyouganranli	同桌的笑声很有感染力	long	tong zhuo de xiao sheng hen you gan ran li
+06b362f90cc829c1fb4b02786ed90e82e48dd804d37294f1efb314797718f517	shuimianshijiandechangduankeyinreneryi	睡眠时间的长短可因人而异	long	shui mian shi jian de chang duan ke yin ren er yi
+06b57e5730b655ea11cb24125faa392b781ac969354b1a470d252dcfaf4a3ba2	woyijingdulelianggexiaoshideshule	我已经读了两个小时的书了	long	wo yi jing du le liang ge xiao shi de shu le
+06d842d5da1ab317bfcca5d9c62c7484ebf0e5a73614fc4333609fea83edf9fe	ninengjinyibushuomingyixiama	你能进一步说明一下吗	long	ni neng jin yi bu shuo ming yi xia ma
+071934193bc41ad37506f1ad907ad2dfea9804b91744ff8b034b9fc58d65af8e	wogenliuxianshengshixiangshiduoniandelaopengyoule	我跟刘先生是相识多年的老朋友了	long	wo gen liu xian sheng shi xiang shi duo nian de lao peng you le

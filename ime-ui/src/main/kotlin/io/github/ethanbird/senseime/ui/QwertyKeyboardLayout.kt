@@ -41,6 +41,8 @@ internal object QwertyKeyboardLayout : KeyboardLetterLayout {
             items = KeyboardLayoutContract.thirdLetterRow(
                 shifted = request.shifted,
                 chineseMode = request.chineseMode,
+                pinyinCompositionActive = request.pinyinCompositionActive &&
+                    request.legendMode == PrimaryKeyboardLegendMode.SWIPE_HINTS,
             ),
             viewWidth = request.viewWidth,
             y = top + 2f * (rowHeight + metrics.keyGap),

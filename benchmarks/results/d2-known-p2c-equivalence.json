@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Known regression replay after cooperative cancellation, not a new held-out evaluation. Frozen B3 evidence unchanged; cancellation changes core source pins.",
+  "frozenReportSha256": "ed7f85c88e9df2d9177835ce46ca1f8f8befa10ba562b5e63c2f45fcc638c4e5",
+  "replayReportSha256": "e960ea7c8a77efdadb188f89e7a3683d3be676442ee95a9187c134a629c814b1",
+  "assetsUnchanged": true,
+  "changedCoreSources": [
+    "io/github/ethanbird/senseime/core/AdaptivePinyinDecoder.kt",
+    "io/github/ethanbird/senseime/core/DecodeWorkScope.kt",
+    "io/github/ethanbird/senseime/core/PinyinDecoder.kt",
+    "io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt",
+    "io/github/ethanbird/senseime/core/PinyinSyllableSegmenter.kt"
+  ],
+  "modes": [
+    {
+      "mode": "legacy",
+      "cases": 125,
+      "allRecordedObservationsIdentical": true,
+      "top1": 73,
+      "top3": 96,
+      "top10": 115,
+      "covered": 118,
+      "characterErrors": 87
+    },
+    {
+      "mode": "lm0.5",
+      "cases": 125,
+      "allRecordedObservationsIdentical": true,
+      "top1": 81,
+      "top3": 102,
+      "top10": 116,
+      "covered": 120,
+      "characterErrors": 70
+    }
+  ]
+}

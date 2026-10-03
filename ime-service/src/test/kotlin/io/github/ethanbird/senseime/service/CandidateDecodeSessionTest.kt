@@ -11,6 +11,38 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CandidateDecodeSessionTest {
+    @Test fun coldRuntimeRetainsCompositionWithoutPublishingOrSelectingBootstrapOutput() {
+        val session = CandidateDecodeSession()
+        val composition = PinyinComposition(remainingPinyin = "woxihuanbeijing", revision = 14)
+        val cold = session.begin(composition, decoderGeneration = 1, decoderReady = false)
+        assertTrue(cold.presentation.pending)
+        assertFalse(cold.shouldDecode)
+        assertEquals(composition, cold.presentation.composition)
+        assertTrue(cold.presentation.snapshot.candidates.isEmpty())
+        assertNull(session.complete(composition, decoding(composition, "woxihuanbeijing"), 255, 1))
+        assertNull(session.currentDecoding(composition, 1))
+        assertNull(session.select(composition, composition.revision, 0))
+        assertFalse(session.begin(composition, 1, decoderReady = false).stateChanged)
+
+        val loaded = session.begin(composition, 2, decoderReady = true)
+        assertTrue(loaded.shouldDecode)
+        assertNull(session.complete(composition, decoding(composition, "woxihuanbeijing"), 255, 1))
+        assertEquals("我喜欢北京", session.complete(composition, decoding(composition, "我喜欢北京"), 255, 2)
+            ?.snapshot?.candidates?.single()?.text)
+    }
+
+    @Test fun clearingColdCompositionBeforePublicationNeverResurrectsItsCandidate() {
+        val session = CandidateDecodeSession()
+        val typed = PinyinComposition(remainingPinyin = "nihao", revision = 5)
+        session.begin(typed, 1, decoderReady = false)
+        val reset = typed.reset()
+        session.begin(reset, 1, decoderReady = false)
+        assertFalse(session.begin(reset, 2, decoderReady = true).shouldDecode)
+        assertNull(session.complete(typed, decoding(typed, "你好"), 255, 1))
+        assertNull(session.complete(typed, decoding(typed, "你好"), 255, 2))
+        assertTrue(session.current.snapshot.candidates.isEmpty())
+    }
+
     @Test
     fun repeatedRenderWhilePendingDoesNotLaunchOrCancelTheInFlightRevision() {
         val session = CandidateDecodeSession()

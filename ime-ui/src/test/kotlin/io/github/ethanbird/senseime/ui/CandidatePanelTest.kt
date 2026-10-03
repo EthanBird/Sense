@@ -9,6 +9,34 @@ import org.junit.Test
 
 class CandidatePanelTest {
     @Test
+    fun fontChangeRemeasuresOnceAndExpansionKeepsTheSameTypefaceSizeAndSourceIndices() {
+        val measurer = RecordingMeasurer()
+        val metrics = KeyboardMetrics.fromDensity(1f)
+        val panel = CandidatePanel(metrics, 8f, measurer)
+        panel.publishAt(1L, "ni", candidates(40))
+        assertEquals(19f, panel.textSizePx, 0f)
+        assertEquals(40, measurer.callCount)
+        panel.relayoutAt(fontScale = 2f)
+        assertEquals(38f, panel.textSizePx, 0f)
+        assertEquals(80, measurer.callCount)
+        assertEquals(90f, metrics.candidateHeight, 0f)
+        val builds = panel.sceneBuildCount
+        repeat(20) { panel.relayoutAt(fontScale = 2f) }
+        assertEquals(builds, panel.sceneBuildCount)
+        assertEquals(80, measurer.callCount)
+        panel.activate(CandidateControl.EXPAND, VIEW_WIDTH, VIEW_HEIGHT, false, 2f)
+        assertTrue(panel.expanded)
+        assertEquals(38f, panel.textSizePx, 0f)
+        assertEquals(80, measurer.callCount)
+        assertEquals((0 until 40).toList(), panel.visibleCandidates.map { it.sourceIndex })
+        assertEquals(61f, panel.visibleCandidates.first().bounds.height, 0f)
+        assertEquals(57f, panel.expandedGridBounds!!.top, 0f)
+        panel.relayoutAt(fontScale = 1f)
+        assertEquals(120, measurer.callCount)
+        assertEquals(19f, panel.textSizePx, 0f)
+    }
+
+    @Test
     fun `pending publication keeps prior candidates stale until same revision becomes ready`() {
         val panel = panel()
         val oldValues = candidates(12, prefix = "old")

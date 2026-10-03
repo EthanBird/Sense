@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "selectionSha256": "d85b88b006bcb43f1822d981fe17f329d15e8f8558da8317d27fc9e27f873a93",
+  "annotationsSha256": "8ae5974fb15c6ae77d94fff946b19f710c23e180393ef1c337b5f080ace28403",
+  "attributionSha256": "a0c786c5de32c82f6274440df39e085a13ecaee01fd5467ebb34e2a25e0de185",
+  "scriptSha256": "0e611f83b3edb6e6cae407b9d1b6ea83d9ed4632497134d650a378c8eb57e797",
+  "syllablesSha256": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+  "outputs": {
+    "dev": {
+      "sha256": "a97ba621d050f320b8c57533eac785ec3a0e1792f0e566f53cf3f6a1149b52db",
+      "rows": 63,
+      "strata": {
+        "short": 31,
+        "long": 32
+      }
+    },
+    "test": {
+      "sha256": "162222abdac5037633b7974ae26fa8b6b262cfcbcf8b2043524c4430fb98267b",
+      "rows": 125,
+      "strata": {
+        "short": 61,
+        "long": 64
+      }
+    }
+  },
+  "modelFrozenBeforeCandidateEvaluation": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+  "reviewer": "Codex agent, pre-candidate linguistic review; not independent human annotation",
+  "testUse": "test only after development mode/hash freeze; no post-result aliases"
+}

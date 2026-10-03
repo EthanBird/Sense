@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "scope": "Diagnostic external-engine comparison, not new held-out validation or production promotion",
+  "reference": "Ubuntu jammy libime 1.0.11-1build1; not current upstream 1.1.17",
+  "referenceAssets": "Unmodified packaged sc.dict and zh_CN.lm, with package metadata/hash/copyright records",
+  "configuration": "NBest=10; Inner; packaged beam/frame defaults; fresh PinyinContext per query; no learn/save. Package 1.0.11 predates CommonTypo/AdvancedTypo.",
+  "workload": "Existing E13 dev 64 and opened test 124 whole-sentence rows only; type each ASCII letter incrementally; no external editor context",
+  "senseComparator": "E13 before weights, same query/label identities, Chinese whole-sentence pool; no E13 learned weights",
+  "metrics": ["top1", "top5", "top10", "mrrAt10", "cer", "every-first-gain", "every-first-loss", "display-versus-full-coverage"],
+  "candidatePolicy": "Retain engine candidate order; full coverage only for paired rank metrics; deduplicate text and take first 10; separately retain displayed first prefix",
+  "modelDataBoundary": "Upstream training intersection with Tatoeba is unknown; no fresh-data claim",
+  "runtimeBoundary": "Host C++ under WSL only, no installation/activation of system IME or Android backend; no latency comparison with JVM or Android",
+  "decision": "Use evidence to choose a next engineering prototype, not automatically replace the working engine"
+}

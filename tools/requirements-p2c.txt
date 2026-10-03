@@ -1,0 +1,3 @@
+# Offline label proposals only. Never an Android runtime dependency.
+# Official PyPI 0.55.0 wheel, https://pypi.org/pypi/pypinyin/0.55.0/json
+pypinyin==0.55.0 --hash=sha256:d53b1e8ad2cdb815fb2cb604ed3123372f5a28c6f447571244aca36fc62a286f

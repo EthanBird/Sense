@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "scope": "Complete known-corpus progressive results, no learning; deterministic gzip; no fresh held-out claim",
+  "reports": {
+    "before": {
+      "file": "benchmarks/results/baselines/e2-before.json.gz",
+      "rawSha256": "a5b02c32eab39a55ce9155b306dbd526a8ad64ef5c09aedf928d5a08cdec571d",
+      "gzipSha256": "a2fae13f890213647b709c41ec3981dda68df16ca5361fc8602c6b25d9fef8d7",
+      "compressedBytes": 400973,
+      "observations": 7428
+    },
+    "raw-cache": {
+      "file": "benchmarks/results/baselines/e2-raw-cache.json.gz",
+      "rawSha256": "791631e9571f7ce3c0fb4c74ec1cae70f7e400d4da21e4ffd19ed0c760a4098a",
+      "gzipSha256": "305d0f09ca2680bca8923641551e0b0f335f9e1ac4ec5861d23c6e0021f84b83",
+      "compressedBytes": 400968,
+      "observations": 7428
+    },
+    "after": {
+      "file": "benchmarks/results/baselines/e2-after.json.gz",
+      "rawSha256": "d54efe40d233e609eb8f0202ecf844e7b281e96b7949316720d1b7908578304b",
+      "gzipSha256": "208878e3b0a16d4774a1a732d556cedda9e539fb62298fb46a9b81d3f0deb8cb",
+      "compressedBytes": 400766,
+      "observations": 7428
+    }
+  }
+}

@@ -1,0 +1,21 @@
+Sense offline context-to-word continuation model
+Source sentences: Tatoeba contributors, frozen Mandarin export 2026-09-26.
+https://tatoeba.org/en/downloads
+Source attribution: Creative Commons Attribution 2.0 France
+https://creativecommons.org/licenses/by/2.0/fr/
+Per-sentence author mapping: pinyin_character_lm_attribution.tsv (same train partition).
+All contributor names and source URL template: PINYIN-LM-NOTICE.txt.
+Segmentation dependency: Rime Frost-derived pinyin_lexicon.bin, GPL-3.0.
+See RIME-FROST-NOTICE.txt and RIME-FROST-GPL-3.0.txt.
+Sense changes: normalize/filter/group; dictionary Viterbi segmentation; train-only
+discounted context/continuation counts; STOP suppression; compact lookup export.
+This model combines the attributed corpus with GPL-3.0 dictionary-derived segmentation;
+retain both sets of notices when redistributing it with Sense.
+No raw training sentences or test labels are bundled; no editor text leaves the device.
+Hashes, parameters, provenance and rebuild recipe: association_words_notice.json.
+
+Runtime dictionary extension (E7): the packaged SPLX/4 asset also contains
+Rime Ice tier-2 coverage; see RIME-ICE-NOTICE.txt. Model training still uses
+the original Frost SPLX/3 base, recovered by dropping tier-2 entries. The
+original training hash is retained in association_words_notice.json; both
+the runtime hash and byte-exact projection are verified by the APK auditor.

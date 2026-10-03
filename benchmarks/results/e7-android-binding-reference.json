@@ -1,0 +1,1643 @@
+{
+  "schemaVersion": 1,
+  "scope": "E7 versioned host reference; known 125 families, no relabeling",
+  "lmWeight": 0.5,
+  "oovFeature": -4.0,
+  "correctionCompositionBoost": 12.0,
+  "inputSha256": "d409309f6497fc5d83629037a79622d6727d657ff0d1c3280c620e0177a87e26",
+  "assets": {
+    "pinyin_lexicon.bin": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232",
+    "pinyin_bigrams.bin": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
+    "pinyin_character_lm.scng": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+    "pinyin_syllables.txt": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+    "english_lexicon.txt": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624"
+  },
+  "hostSourceReportSha256": "9e52c88233e4b149e63fd21b96d4d8749e612b6d2a4d3496cbe931b6e2f172e3",
+  "observations": [
+    {
+      "id": "0001a6cda806996603e8a23f37350a4abc9b5135f917f16fd17330456621a720",
+      "query": "womaileliangpingniunai",
+      "expected": "我买了两瓶牛奶",
+      "rank": 1,
+      "top5": [
+        "我买了两瓶牛奶",
+        "我卖了两瓶牛奶",
+        "窝买了两瓶牛奶",
+        "喔买了两瓶牛奶",
+        "握买了两瓶牛奶"
+      ]
+    },
+    {
+      "id": "00188957d76426ff56bd4db9aea2a03a3276669365a746e8a074ebc0eb32fd3f",
+      "query": "taxiangzijidemuqin",
+      "expected": "他像自己的母亲",
+      "rank": 4,
+      "top5": [
+        "他想自己的母亲",
+        "她想自己的母亲",
+        "他向自己的母亲",
+        "他像自己的母亲",
+        "她向自己的母亲"
+      ]
+    },
+    {
+      "id": "002bd7696517d82db13584e02e5361ec98c9791f24f7f25f89b71cddafed3f98",
+      "query": "dantabingbuxingfu",
+      "expected": "但她并不幸福",
+      "rank": 2,
+      "top5": [
+        "但他并不幸福",
+        "但她并不幸福",
+        "但它并不幸福",
+        "蛋挞并不幸福",
+        "但他兵不幸福"
+      ]
+    },
+    {
+      "id": "00a4ea56380385e338409af257358c2674950b28523a8a06194418898d9b5730",
+      "query": "wodefangjianfeichangxiao",
+      "expected": "我的房间非常小",
+      "rank": 1,
+      "top5": [
+        "我的房间非常小",
+        "我的房间非常笑",
+        "我的房间非常校",
+        "我的房间非常肖",
+        "我的房间非常消"
+      ]
+    },
+    {
+      "id": "00ed0f7ae1ebff950bd797e77dbd011deb6ac3228287fa56aa3e11f1e08e5675",
+      "query": "shiwobujinliuxialeyanlei",
+      "expected": "使我不禁流下了眼泪",
+      "rank": 4,
+      "top5": [
+        "是我不禁流下了眼泪",
+        "是我不仅流下了眼泪",
+        "时我不禁流下了眼泪",
+        "使我不禁流下了眼泪",
+        "是我不进流下了眼泪"
+      ]
+    },
+    {
+      "id": "012fb4dff706e3c26b30571681663279c08f9031c01559bc5ac1499d77a149da",
+      "query": "zhebushiyijuhua",
+      "expected": "这不是一句话",
+      "rank": 1,
+      "top5": [
+        "这不是一句话",
+        "这部是一句话",
+        "者不是一句话",
+        "着不是一句话",
+        "这不是一菊花"
+      ]
+    },
+    {
+      "id": "015901bd591802e595340269cbefaeff954781db0ed7f3af8b991732d14b06c7",
+      "query": "wozhidaonideganshou",
+      "expected": "我知道你的感受",
+      "rank": 1,
+      "top5": [
+        "我知道你的感受",
+        "我直到你的感受",
+        "我指导你的感受",
+        "我只到你的感受",
+        "我知道你的干瘦"
+      ]
+    },
+    {
+      "id": "015a1296a63869b7b9bd7f988c214a9211008e3411903ac5661af9d55bf8438f",
+      "query": "weishenmetangmuzaikanzhewo",
+      "expected": "为什么汤姆在看著我",
+      "rank": 0,
+      "top5": [
+        "为什么汤姆在看着我",
+        "为什么汤姆再看着我",
+        "为什么汤姆在看这我",
+        "为什么汤姆再看这我",
+        "为什么汤姆载看着我"
+      ]
+    },
+    {
+      "id": "0188ba680ec10f7da19b6783f0277091018f39f4ad6ff87e4435a0fc241b7344",
+      "query": "zhetaidayinjitaijiule",
+      "expected": "这台打印机太旧了",
+      "rank": 2,
+      "top5": [
+        "这台打印机太久了",
+        "这台打印机太旧了",
+        "这太打印机太久了",
+        "这太打印机太旧了",
+        "这钛打印机太久了"
+      ]
+    },
+    {
+      "id": "01a3b5a57f0f9d84590fd51689db73884c026bae4b8415e9f67bc4f3ca67dcc7",
+      "query": "nicongfangjianlizoulechulai",
+      "expected": "你从房间里走了出来",
+      "rank": 1,
+      "top5": [
+        "你从房间里走了出来",
+        "你葱房间里走了出来",
+        "尼从房间里走了出来",
+        "逆从房间里走了出来",
+        "拟从房间里走了出来"
+      ]
+    },
+    {
+      "id": "01a94b9270bccabacd3d96ea942b9d2f9f8858214168c69f7100e7e5794bf232",
+      "query": "bixucaiquyixiexingdongle",
+      "expected": "必须采取一些行动了",
+      "rank": 1,
+      "top5": [
+        "必须采取一些行动了",
+        "必须才去一些行动了",
+        "必需采取一些行动了",
+        "必须采取一些性动了",
+        "必须采取一写行动了"
+      ]
+    },
+    {
+      "id": "01b9a5ad2057c1abf3c10bfefcb5db0f950822aef45ac9371f213d608b78950a",
+      "query": "zhejuhuaxuyaojiuzheng",
+      "expected": "这句话需要纠正",
+      "rank": 1,
+      "top5": [
+        "这句话需要纠正",
+        "这句话需要就正",
+        "这句话须要纠正",
+        "这句话需要就整",
+        "这句话需要就证"
+      ]
+    },
+    {
+      "id": "01cdd99c148a6214a7aaa475c3534721a5c3faa438e42a7d2923da5dc10c096c",
+      "query": "juedetamenzhendewuliao",
+      "expected": "觉得它们真的无聊",
+      "rank": 3,
+      "top5": [
+        "觉得他们真的无聊",
+        "觉得他们真的物料",
+        "觉得它们真的无聊",
+        "觉得她们真的无聊",
+        "觉得他们帧的无聊"
+      ]
+    },
+    {
+      "id": "01f6c67416a2cd8773eb61efe1fe321c557103870af4fabe7e754f5828635a2a",
+      "query": "kalunshengwodeqi",
+      "expected": "卡伦生我的气",
+      "rank": 2,
+      "top5": [
+        "卡伦生我的其",
+        "卡伦生我的气",
+        "卡伦生我的起",
+        "卡伦生我的期",
+        "卡伦声我的其"
+      ]
+    },
+    {
+      "id": "02149100c645dc289cf459fba8f381144163248df4164cb32ea1d6be115bfcd3",
+      "query": "tameitianyanduyingyuma",
+      "expected": "他每天研读英语吗",
+      "rank": 1,
+      "top5": [
+        "他每天研读英语吗",
+        "她每天研读英语吗",
+        "他每天研读英语嘛",
+        "他每天研读英语骂",
+        "它每天研读英语吗"
+      ]
+    },
+    {
+      "id": "0283056507126edc6930475ef364d438cba2590760d923128b88381c40343e20",
+      "query": "woxiangnianribendeshiwu",
+      "expected": "我想念日本的食物",
+      "rank": 2,
+      "top5": [
+        "我想念日本的事物",
+        "我想念日本的食物",
+        "我想念日本的事务",
+        "我想年日本的事物",
+        "我想年日本的食物"
+      ]
+    },
+    {
+      "id": "02a25d6aef16211af596da0ad327c7fc3a832ea2639f707a27851890fbae4574",
+      "query": "meigeliankandoubukanwo",
+      "expected": "梅格连看都不看我",
+      "rank": 4,
+      "top5": [
+        "每个连看都不看我",
+        "每隔连看都不看我",
+        "没个连看都不看我",
+        "梅格连看都不看我",
+        "每个脸看都不看我"
+      ]
+    },
+    {
+      "id": "02b0b272320169236de841827ded07b54a1eca9e89fc3945c52cacfe0f19ebc8",
+      "query": "womenxuyaozhidao",
+      "expected": "我们需要指导",
+      "rank": 3,
+      "top5": [
+        "我们需要知道",
+        "我们需要直到",
+        "我们需要指导",
+        "我们需要之道",
+        "我们须要知道"
+      ]
+    },
+    {
+      "id": "02c1602e377ee14ea5660aa6025d66bcd0ced4ca221a14f7d3aa236ce39b6723",
+      "query": "tayiqianshigehaonanhai",
+      "expected": "他以前是个好男孩",
+      "rank": 1,
+      "top5": [
+        "他以前是个好男孩",
+        "她以前是个好男孩",
+        "它以前是个好男孩",
+        "他一千是个好男孩",
+        "他以前是个号男孩"
+      ]
+    },
+    {
+      "id": "02c43bc46408f487a12ca42284933a0676005a7c06391c4db8c218a00eb76c73",
+      "query": "wozhenxiangquyidali",
+      "expected": "我真想去意大利",
+      "rank": 1,
+      "top5": [
+        "我真想去意大利",
+        "我真相去意大利",
+        "我真想娶意大利",
+        "我真想区意大利",
+        "我真想取意大利"
+      ]
+    },
+    {
+      "id": "02cf54ea4f29678e613f37e92ea170cff7169f5e4a27822e196c3a0cc3e68390",
+      "query": "kenengwushiduoxiazuoyouba",
+      "expected": "可能五十多下左右吧",
+      "rank": 1,
+      "top5": [
+        "可能五十多下左右吧",
+        "可能五十多下左右把",
+        "可能五十多瞎左右吧",
+        "可能五十多瞎左右把",
+        "可能五十多下作有把"
+      ]
+    },
+    {
+      "id": "03160ccc6b41575a5ddbb0ae4d5a6697261d1dcf0002c8205461ef81076a5d83",
+      "query": "nazhangzhaopianhenjiule",
+      "expected": "那张照片很久了",
+      "rank": 1,
+      "top5": [
+        "那张照片很久了",
+        "哪张照片很久了",
+        "那张照片很旧了",
+        "拿张照片很久了",
+        "哪张照片很旧了"
+      ]
+    },
+    {
+      "id": "032435746c034ab6e730efc5f8e6a053240dcc7a8386790955493eafcec24e3f",
+      "query": "wokannihaishibumingbai",
+      "expected": "我看你还是不明白",
+      "rank": 1,
+      "top5": [
+        "我看你还是不明白",
+        "我砍你还是不明白",
+        "我看腻还是不明白",
+        "我坎你还是不明白",
+        "我看拟还是不明白"
+      ]
+    },
+    {
+      "id": "033a656937483c1fc31c6a023ef22d2b23263b8222552341c22e57db3c7b7d63",
+      "query": "wozhihuishuoyidiandianfayu",
+      "expected": "我只会说一点点法语",
+      "rank": 1,
+      "top5": [
+        "我只会说一点点法语",
+        "我只会说一点点发育",
+        "我只会说一点点发于",
+        "我只会说一点点法与",
+        "我指挥说一点点法语"
+      ]
+    },
+    {
+      "id": "0356f94e57c64e9516595ddbeefdae7aa95a047a10f9ddc30c3eee2730aaa4ca",
+      "query": "zhejuhuayouyubingde",
+      "expected": "这句话有语病的",
+      "rank": 4,
+      "top5": [
+        "这句话由于并的",
+        "这句话由于病的",
+        "这句话由于冰的",
+        "这句话有语病的",
+        "这句话犹豫并的"
+      ]
+    },
+    {
+      "id": "037331a37cced2879b7c1510b6e3c5b8da52788d4a9e105ca2e8740978b259ca",
+      "query": "zhezhimaomiqichangquankai",
+      "expected": "这只猫咪气场全开",
+      "rank": 1,
+      "top5": [
+        "这只猫咪气场全开",
+        "这支猫咪气场全开",
+        "这只猫米气场全开",
+        "这只茂密气场全开",
+        "这只猫迷气场全开"
+      ]
+    },
+    {
+      "id": "03b9d1ae2bc8eb5005e510008840de8f9f1f57bbb032017a0e3610efe1175a8c",
+      "query": "woxiangxinnihuichenggongde",
+      "expected": "我相信你会成功的",
+      "rank": 1,
+      "top5": [
+        "我相信你会成功的",
+        "我相信你会成功地",
+        "我相信你回成功的",
+        "我相信你会成功得",
+        "我相信你回成功地"
+      ]
+    },
+    {
+      "id": "03bef17c67d8013e8118745f9a5b421b24e7a47c4e5533b5fa673416462669eb",
+      "query": "geimianbaoderenbuhuie",
+      "expected": "给面包的人不会饿",
+      "rank": 1,
+      "top5": [
+        "给面包的人不会饿",
+        "给面包的人不会恶",
+        "给面包的人不会呃",
+        "给面包的人不会额",
+        "给面包的人不会俄"
+      ]
+    },
+    {
+      "id": "03cc89026d67f0275dc736991f9fdc5e1fb550abe7b83c33e90788455983448a",
+      "query": "huohuasaibushiwentisuozai",
+      "expected": "火花塞不是问题所在",
+      "rank": 1,
+      "top5": [
+        "火花塞不是问题所在",
+        "火花塞不适问题所在",
+        "火花塞不时问题所在",
+        "火花塞不失问题所在",
+        "火花塞不是问题锁在"
+      ]
+    },
+    {
+      "id": "03d30d6393e38ab6fccc2c43a4de3a4ba4d83204c62f710e2c0bd648b655ce81",
+      "query": "danshiwoyoumengxiang",
+      "expected": "但是我有梦想",
+      "rank": 1,
+      "top5": [
+        "但是我有梦想",
+        "但是我又梦想",
+        "但是我由梦想",
+        "但是我油梦想",
+        "但是握有梦想"
+      ]
+    },
+    {
+      "id": "0403c0405921d18db09d5f2b4992d28d73a789c74d6c0e4577eb9e8f779bffba",
+      "query": "gongkekebukeyijiewochao",
+      "expected": "功课可不可以藉我抄",
+      "rank": 0,
+      "top5": [
+        "功课可不可以借我超",
+        "功课可不可以借我朝",
+        "工科可不可以借我超",
+        "工科可不可以借我朝",
+        "功课可不可以借我抄"
+      ]
+    },
+    {
+      "id": "04286d3e47d6077664ed7f20d45d471a5ad5d164c8e49237cdfc3800813d209d",
+      "query": "tariyushuodehenhao",
+      "expected": "她日语说的很好",
+      "rank": 6,
+      "top5": [
+        "他日语说得很好",
+        "她日语说得很好",
+        "它日语说得很好",
+        "他日语说的很好",
+        "塔日语说得很好"
+      ]
+    },
+    {
+      "id": "047319c1e7782e524e954b76ca4776284f7868a2be5ef6c41e1f24c23e6deb7c",
+      "query": "shangzhounikandianshilema",
+      "expected": "上周你看电视了吗",
+      "rank": 1,
+      "top5": [
+        "上周你看电视了吗",
+        "上周你看电视了马",
+        "上周你看电视了嘛",
+        "商周你看电视了吗",
+        "上周你看电视了骂"
+      ]
+    },
+    {
+      "id": "04c1af14f2d43ec073575a990e88058da4f30f09343212255b467aa72aa4aad1",
+      "query": "qingnidengyixiahaoma",
+      "expected": "请你等一下好吗",
+      "rank": 1,
+      "top5": [
+        "请你等一下好吗",
+        "请你等一下号码",
+        "请你等一下好嘛",
+        "轻你等一下好吗",
+        "清你等一下好吗"
+      ]
+    },
+    {
+      "id": "04d3e382a6557835578acb158d80ffee05672dbc7113383940a7f8145f296c01",
+      "query": "taiwanshiwozuiaideguojia",
+      "expected": "台湾是我最爱的国家",
+      "rank": 1,
+      "top5": [
+        "台湾是我最爱的国家",
+        "太晚是我最爱的国家",
+        "台湾时我最爱的国家",
+        "台湾使我最爱的国家",
+        "台湾是我最爱德国家"
+      ]
+    },
+    {
+      "id": "04df814bb757dfb1a9028fafa979061be91835b0cd79d7d20ded7273ed3a0b10",
+      "query": "maoxihuanzhuizhemaoxianqiupao",
+      "expected": "猫喜欢追着毛线球跑",
+      "rank": 1,
+      "top5": [
+        "猫喜欢追着毛线球跑",
+        "毛喜欢追着毛线球跑",
+        "猫喜欢追着冒险球跑",
+        "猫喜欢追着毛线球泡",
+        "猫喜欢追着毛线球刨"
+      ]
+    },
+    {
+      "id": "04eb37d13e82130740da341b4c1afe32ca53337332311c712f8c873f6113c685",
+      "query": "zuijiaobujinfuxianweixiao",
+      "expected": "嘴角不禁浮现微笑",
+      "rank": 4,
+      "top5": [
+        "嘴角不仅浮现微笑",
+        "嘴角不仅复现微笑",
+        "嘴角不仅浮现微小",
+        "嘴角不禁浮现微笑",
+        "嘴角不仅副线微笑"
+      ]
+    },
+    {
+      "id": "04f792098e7abc5449c8f5c3d1226cd95dfd84871544ed7cf828476dcefd6114",
+      "query": "tameiqianqulvxing",
+      "expected": "他没钱去旅行",
+      "rank": 1,
+      "top5": [
+        "他没钱去旅行",
+        "她没钱去旅行",
+        "它没钱去旅行",
+        "他没前去旅行",
+        "他没钱去履行"
+      ]
+    },
+    {
+      "id": "04ff10cb1ace9adb7da86ce6f9bdc7a8d1b084331e85281d1330a13429a11f3b",
+      "query": "woyinggaigaosuwolaogong",
+      "expected": "我应该告诉我老公",
+      "rank": 1,
+      "top5": [
+        "我应该告诉我老公",
+        "我应该告诉我劳工",
+        "我应该高速我老公",
+        "我应该告诉我老工",
+        "我应该告诉我劳宫"
+      ]
+    },
+    {
+      "id": "0508d143b8bfbf9c7e57341e89203b534af6c2520d8c4f76885d269ee5e8a2ae",
+      "query": "qilichiletaozi",
+      "expected": "齐里吃了桃子",
+      "rank": 3,
+      "top5": [
+        "七里吃了桃子",
+        "其里吃了桃子",
+        "齐里吃了桃子",
+        "气力吃了桃子",
+        "起立吃了桃子"
+      ]
+    },
+    {
+      "id": "054c732d7bf2468ad845263385e1c3782918a0ba5c8227056685a0906c1dff2e",
+      "query": "tingzhifalaosaoba",
+      "expected": "停止发牢骚吧",
+      "rank": 2,
+      "top5": [
+        "停止发牢骚把",
+        "停止发牢骚吧",
+        "停滞发牢骚把",
+        "停滞发牢骚吧",
+        "停止发牢骚八"
+      ]
+    },
+    {
+      "id": "05525aae4e57f74da5dd61fdad3c8d45056b3d080eade4f44d005401a78b15aa",
+      "query": "suoyiwobunengqizixingche",
+      "expected": "所以我不能骑自行车",
+      "rank": 1,
+      "top5": [
+        "所以我不能骑自行车",
+        "所以我不能其自行车",
+        "所以我不能起自行车",
+        "所以握不能骑自行车",
+        "所以我不能期自行车"
+      ]
+    },
+    {
+      "id": "0559281f86194ae80e3fb1c422b4e989ee292ca05a6cefac23ed42bae83ceacf",
+      "query": "tajuedezijibingle",
+      "expected": "他觉得自己病了",
+      "rank": 1,
+      "top5": [
+        "他觉得自己病了",
+        "她觉得自己病了",
+        "他觉得自己并了",
+        "她觉得自己并了",
+        "它觉得自己病了"
+      ]
+    },
+    {
+      "id": "05629252c7bdea69827b150d9536b710a38ad19f461e9ecac9af4f58cc2f74ea",
+      "query": "womenqugongyuanpaizhaole",
+      "expected": "我们去公园拍照了",
+      "rank": 1,
+      "top5": [
+        "我们去公园拍照了",
+        "我们去公园牌照了",
+        "我们去公元拍照了",
+        "我们去公元牌照了",
+        "我们去公园拍找了"
+      ]
+    },
+    {
+      "id": "057570e4591753ed64758360ab9a20df870222b33a4025f7c4c91fc4f179fcfb",
+      "query": "wozhidaotajiaoshenmemingzi",
+      "expected": "我知道他叫什么名字",
+      "rank": 1,
+      "top5": [
+        "我知道他叫什么名字",
+        "我知道她叫什么名字",
+        "我知道它叫什么名字",
+        "我直到他叫什么名字",
+        "我直到她叫什么名字"
+      ]
+    },
+    {
+      "id": "058a46997aca6b02d68b01cf37132170ba769dcf4e5a2a85f2f0fb1e23c3d147",
+      "query": "womenjinwanchuquchifan",
+      "expected": "我们今晚出去吃饭",
+      "rank": 1,
+      "top5": [
+        "我们今晚出去吃饭",
+        "我们近万出去吃饭",
+        "我们进晚出去吃饭",
+        "我们进玩出去吃饭",
+        "我们进万出去吃饭"
+      ]
+    },
+    {
+      "id": "05b8e7b8835f02030641eba92915873ed6eb8d9e2e1495d61b018f126760ba06",
+      "query": "wohedidiguanxihenhao",
+      "expected": "我和弟弟关系很好",
+      "rank": 1,
+      "top5": [
+        "我和弟弟关系很好",
+        "我和滴滴关系很好",
+        "我喝弟弟关系很好",
+        "我和地底关系很好",
+        "我和低地关系很好"
+      ]
+    },
+    {
+      "id": "05c650ed9440c9c52c8b535406c64e02581b329729de96ddf7c52ea7570de617",
+      "query": "tayebuxiangxiwan",
+      "expected": "她也不想洗碗",
+      "rank": 3,
+      "top5": [
+        "他也不想洗碗",
+        "他也不想洗完",
+        "她也不想洗碗",
+        "他也不像洗碗",
+        "她也不想洗完"
+      ]
+    },
+    {
+      "id": "05c75d0ad26566817c4e712d71866131a0fe696e71f219b0383434a1383e48a9",
+      "query": "tangmutaoyantaziji",
+      "expected": "汤姆讨厌他自己",
+      "rank": 1,
+      "top5": [
+        "汤姆讨厌他自己",
+        "汤姆讨厌她自己",
+        "汤姆讨厌它自己",
+        "汤姆讨厌他字迹",
+        "汤姆讨厌他自给"
+      ]
+    },
+    {
+      "id": "05d146db5e27e54e1b487138e614ecbe6871c450328abfc9f3472e3623e85b15",
+      "query": "chezhanjiuzaizhelifujin",
+      "expected": "车站就在这里附近",
+      "rank": 1,
+      "top5": [
+        "车站就在这里附近",
+        "车展就在这里附近",
+        "车战就在这里附近",
+        "撤展就在这里附近",
+        "车站旧在这里附近"
+      ]
+    },
+    {
+      "id": "05e600b9abd085054b10957ecc064c790075151b8148bf8464a98ff6d4fec044",
+      "query": "nimenjuedeshuihuiyingjinpai",
+      "expected": "你们觉得谁会赢金牌",
+      "rank": 2,
+      "top5": [
+        "你们觉得水回应金牌",
+        "你们觉得谁会赢金牌",
+        "你们觉得税回应金牌",
+        "你们觉得谁会应金牌",
+        "你们觉得谁回应金牌"
+      ]
+    },
+    {
+      "id": "05f0d048e90966e86ee253f883e2df5dc6c538f21278fa17060b729928a6ff35",
+      "query": "womenyougehaoxiaoxi",
+      "expected": "我们有个好消息",
+      "rank": 1,
+      "top5": [
+        "我们有个好消息",
+        "我们又个好消息",
+        "我们有各好消息",
+        "我们由个好消息",
+        "我们有个号消息"
+      ]
+    },
+    {
+      "id": "05fff6a4cdb66c6bf3ec9e44684b3492972701701ce8b481ee78ddbd7236f5cc",
+      "query": "woxianggeitadadianhua",
+      "expected": "我想给他打电话",
+      "rank": 1,
+      "top5": [
+        "我想给他打电话",
+        "我想给她打电话",
+        "我向给他打电话",
+        "我像给他打电话",
+        "我想给它打电话"
+      ]
+    },
+    {
+      "id": "06010a60f4676db0d5a8df489219967671be55b5d3d856816edcc1a45f210e63",
+      "query": "womeitianshangjiaotang",
+      "expected": "我每天上教堂",
+      "rank": 1,
+      "top5": [
+        "我每天上教堂",
+        "我没天上教堂",
+        "我没填上教堂",
+        "我每天上焦糖",
+        "我每天熵教堂"
+      ]
+    },
+    {
+      "id": "0619843f4db697b55ae5c7a12327d980c775ff827e1a39af016ba314f3555970",
+      "query": "dangtianjiuduwanleyiban",
+      "expected": "当天就读完了一半",
+      "rank": 2,
+      "top5": [
+        "当天就读完了一般",
+        "当天就读完了一半",
+        "当天就读完了一班",
+        "当天就读玩了一般",
+        "当天就读完了一版"
+      ]
+    },
+    {
+      "id": "061b1987ef016bf10684f4377b5069cca5aaad875283369670bcb4ecedfb4d18",
+      "query": "xiyijiyouxiebuduijin",
+      "expected": "洗衣机有些不对劲",
+      "rank": 1,
+      "top5": [
+        "洗衣机有些不对劲",
+        "洗衣机有写不对劲",
+        "洗衣机有些不对金",
+        "洗衣机有些不对进",
+        "洗衣机有些不对近"
+      ]
+    },
+    {
+      "id": "061ec95ce04295858e4ca506e3ca0a1eeaa6579d50f06c2c73fa303aad93902c",
+      "query": "tabaqiantouziyugupiao",
+      "expected": "他把钱投资于股票",
+      "rank": 1,
+      "top5": [
+        "他把钱投资于股票",
+        "她把钱投资于股票",
+        "他把前投资于股票",
+        "他八千投资于股票",
+        "他把钱投资与股票"
+      ]
+    },
+    {
+      "id": "06547e9317afb31b99fa5f0396bc85a69a6210a16c187e1e8e0d7443498d0a19",
+      "query": "kongpawobunengbangni",
+      "expected": "恐怕我不能帮你",
+      "rank": 1,
+      "top5": [
+        "恐怕我不能帮你",
+        "恐怕我不能磅你",
+        "恐怕握不能帮你",
+        "恐怕我不能榜你",
+        "恐怕窝不能帮你"
+      ]
+    },
+    {
+      "id": "065c287c4b0d43b8a3766a5b183fd37bbd381d8123fe618b31f5a003671b5dba",
+      "query": "qiuyewenyouguoyoujiazhe",
+      "expected": "丘也闻有国有家者",
+      "rank": 13,
+      "top5": [
+        "秋叶闻有国有家者",
+        "秋夜闻有国有家者",
+        "球也闻有国有家者",
+        "秋野闻有国有家者",
+        "求也闻有国有家者"
+      ]
+    },
+    {
+      "id": "066a8b3f222fbbc279673985fb1f72fd315e5343e4289cf05518fb784a0b1c69",
+      "query": "tangmuxihuangenmalijianghua",
+      "expected": "汤姆喜欢跟玛丽讲话",
+      "rank": 1,
+      "top5": [
+        "汤姆喜欢跟玛丽讲话",
+        "汤姆喜欢跟马力讲话",
+        "汤姆喜欢跟玛丽僵化",
+        "汤姆喜欢跟马里讲话",
+        "汤姆喜欢跟玛丽将花"
+      ]
+    },
+    {
+      "id": "0677a73c658f55292014ae0def9511676d59d070eb3ab0a5539dca3a318a7ebb",
+      "query": "limeiyoujinshiyan",
+      "expected": "李梅有近视眼",
+      "rank": 0,
+      "top5": [
+        "里没有近视眼",
+        "里没有进实验",
+        "里没有金实验",
+        "你没有近视眼",
+        "里没有尽实验"
+      ]
+    },
+    {
+      "id": "006b9ab65f65e7b07696b33c3e71a6f4c62ece4e67ae3dad30b657a9d1f1be7e",
+      "query": "zheshiyigelishixingdejueding",
+      "expected": "这是一个历史性的决定",
+      "rank": 1,
+      "top5": [
+        "这是一个历史性的决定",
+        "这是一个历史性地决定",
+        "这是一个历史性的绝顶",
+        "这是一个历史型的决定",
+        "这是一个里实行的决定"
+      ]
+    },
+    {
+      "id": "00b815623b096d7b3ca92452697b2ca01f9a53c8a5ac161151ad992a38d9b40d",
+      "query": "wojuedetangmukenengshiduide",
+      "expected": "我觉得汤姆可能是对的",
+      "rank": 1,
+      "top5": [
+        "我觉得汤姆可能是对的",
+        "我觉得汤姆可能是队的",
+        "我觉得汤姆可能是对得",
+        "我觉得汤姆可能是怼的",
+        "我觉的汤姆可能是对的"
+      ]
+    },
+    {
+      "id": "00c610fef49abee53d860356010b501a7e9cbfad275995a9d82fa4d45c4e9c65",
+      "query": "wendidiqueshizaihaibianzhangdade",
+      "expected": "温迪的确是在海边长大的",
+      "rank": 3,
+      "top5": [
+        "文帝的确是在海边长大的",
+        "问地的确是在海边长大的",
+        "温迪的确是在海边长大的",
+        "温蒂的确是在海边长大的",
+        "文地的确是在海边长大的"
+      ]
+    },
+    {
+      "id": "00dbbfc7bf1325e3c0bfa0fad048edf808270b96754b82eeab74e6e4776a47f3",
+      "query": "duiwubixuyingdemingtiandeqiusai",
+      "expected": "队伍必须赢得明天的球赛",
+      "rank": 1,
+      "top5": [
+        "队伍必须赢得明天的球赛",
+        "队伍必须赢的明天的球赛",
+        "队伍必须应的明天的球赛",
+        "队伍必须赢得明天地球赛",
+        "队伍必须赢的明天地球赛"
+      ]
+    },
+    {
+      "id": "01338d54cc9918b3d44a1b7d6ce0a87c465ebcf152f0b753a91b999712e64ed7",
+      "query": "xihuanzuobierenlaoshiyebushishenmedawenti",
+      "expected": "喜欢作别人老师也不是什么大问题",
+      "rank": 2,
+      "top5": [
+        "喜欢做别人老师也不是什么大问题",
+        "喜欢作别人老师也不是什么大问题",
+        "喜欢坐别人老师也不是什么大问题",
+        "喜欢做别人老实也不是什么大问题",
+        "喜欢做别人老是也不是什么大问题"
+      ]
+    },
+    {
+      "id": "014882a61fc9194565a62f24fdb2075321ce19583dcf6fd2a7896773d1063284",
+      "query": "rentongchanghuiduizijideshurenkouchueyan",
+      "expected": "人通常会对自己的熟人口出恶言",
+      "rank": 1,
+      "top5": [
+        "人通常会对自己的熟人口出恶言",
+        "人通常会对自己的书人口出恶言",
+        "人通常会对自己的数人口出恶言",
+        "人通常会对自己的树人口出恶言",
+        "人通常会对自己的庶人口出恶言"
+      ]
+    },
+    {
+      "id": "01491ab39ca32b4c7b9afff6724b3df7c8d2194e874839a946ef8fb1845cc472",
+      "query": "zhejiushiwomenpengtiaomidefangfa",
+      "expected": "这就是我们烹调米的方法",
+      "rank": 1,
+      "top5": [
+        "这就是我们烹调米的方法",
+        "这就是我们烹调迷的方法",
+        "这就是我们烹调密的方法",
+        "这就是我们烹调秘的方法",
+        "这就是我们烹调蘼的方法"
+      ]
+    },
+    {
+      "id": "01569101477fb2eea4c3e184480ef245a94c3d29bfdaf3c4d154ee27bd4e1dc9",
+      "query": "youxiechengkebaoyuanfuwutaidubuhao",
+      "expected": "有些乘客抱怨服务态度不好",
+      "rank": 1,
+      "top5": [
+        "有些乘客抱怨服务态度不好",
+        "有些成可抱怨服务态度不好",
+        "有些乘客包圆服务态度不好",
+        "有写成可抱怨服务态度不好",
+        "有写乘客抱怨服务态度不好"
+      ]
+    },
+    {
+      "id": "015b701a9c3984955089c5938ecdb517576eddbb09d252bcb2015262b5a58a6a",
+      "query": "guizushoudaoshuishoudeyingxiangweihuqiwei",
+      "expected": "贵族受到税收的影响微乎其微",
+      "rank": 1,
+      "top5": [
+        "贵族受到税收的影响微乎其微",
+        "贵族收到税收的影响微乎其微",
+        "贵族受到水手的影响微乎其微",
+        "贵族收到水手的影响微乎其微",
+        "贵族受到税收的影像微乎其微"
+      ]
+    },
+    {
+      "id": "0172e9ca877cd02e24d60651879b5fb2afd74a164c9f466730c1172ddfbcedb0",
+      "query": "niyejuedechuizishoujihenkua",
+      "expected": "你也觉得锤子手机很酷啊",
+      "rank": 4,
+      "top5": [
+        "你也觉得锤子手机很苦啊",
+        "你也觉得锤子手机很夸",
+        "你也觉得锤子手机很跨",
+        "你也觉得锤子手机很酷啊",
+        "你也觉得锤子手机很胯"
+      ]
+    },
+    {
+      "id": "01a7d7976f9320e3cd9fcbe21b2ff452f6a1489816c55ca92b1ba7f27a244f24",
+      "query": "womenyaozaizhelidaiyizhengtian",
+      "expected": "我们要在这里待一整天",
+      "rank": 1,
+      "top5": [
+        "我们要在这里待一整天",
+        "我们要在这里呆一整天",
+        "我们要在这里带一整天",
+        "我们要在这里代一整天",
+        "我们要在这里戴一整天"
+      ]
+    },
+    {
+      "id": "01f920d5cd8aca0eaf2b4e32d1cb045827b411d2ead3eb598cbb08da803cfc05",
+      "query": "ruguoyouxikadaidejinshuduanzizangle",
+      "expected": "如果游戏卡带的金属端子脏了",
+      "rank": 7,
+      "top5": [
+        "如果游戏卡带的金属段子脏了",
+        "如果游戏卡带的金属段子葬了",
+        "如果游戏卡带的金属缎子脏了",
+        "如果有西卡带的金属段子脏了",
+        "如果游戏卡代的金属段子脏了"
+      ]
+    },
+    {
+      "id": "02073d07dedf3da603cc8fd95493472140236233b284392e3c54bda7d9b92d13",
+      "query": "wodasuanmingtianzaijialidaiyitian",
+      "expected": "我打算明天在家里待一天",
+      "rank": 1,
+      "top5": [
+        "我打算明天在家里待一天",
+        "我打算明天再家里待一天",
+        "我打算明天在家里带一天",
+        "我打算明天在家里戴一天",
+        "我打算明天在家里呆一天"
+      ]
+    },
+    {
+      "id": "023674922230ae8407770bdd80b0208c770d4b7a6e267058acb9de7d944e8887",
+      "query": "tangmuhemalimeitianwanshangdoukandianshi",
+      "expected": "汤姆和玛丽每天晚上都看电视",
+      "rank": 1,
+      "top5": [
+        "汤姆和玛丽每天晚上都看电视",
+        "汤姆和马力每天晚上都看电视",
+        "汤姆和马里每天晚上都看电视",
+        "汤姆和马莉每天晚上都看电视",
+        "汤姆和玛丽每天晚上都看点是"
+      ]
+    },
+    {
+      "id": "02acb20cdcad70d897b8b022db1438fd02278381280b7c08c314868f0f557902",
+      "query": "womenzhelidetianqizenmeyang",
+      "expected": "我们这里的天气怎么样",
+      "rank": 1,
+      "top5": [
+        "我们这里的天气怎么样",
+        "我们这里得天气怎么样",
+        "我们这里的天启怎么样",
+        "我们着里的天气怎么样",
+        "我们者里的天气怎么样"
+      ]
+    },
+    {
+      "id": "02e081dda7f107a238ed6930f6dcd305429de5d7665b84c735da66151b6df4f6",
+      "query": "wozaiyewufaxiangxinrenherenle",
+      "expected": "我再也无法相信任何人了",
+      "rank": 1,
+      "top5": [
+        "我再也无法相信任何人了",
+        "我在也无法相信任何人了",
+        "我再也无法相信人和人了",
+        "我再也无法相信任何认了",
+        "我再也无法相信任何人乐"
+      ]
+    },
+    {
+      "id": "031946613d8c38c291b7f30652acd8739c395e738ceade33514cd31bd05d1a6a",
+      "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+      "expected": "汤姆没有注意到玛丽换了新发型",
+      "rank": 1,
+      "top5": [
+        "汤姆没有注意到玛丽换了新发型",
+        "汤姆没有注意到马力换了新发型",
+        "汤姆没有注意到马里换了新发型",
+        "汤姆没有注意到吗里换了新发型",
+        "汤姆没有注意到马莉换了新发型"
+      ]
+    },
+    {
+      "id": "0335a26489183959c2bcfd785e8918d1a86da709b7a32f77e400f3b56aa9c6ee",
+      "query": "biqiyangrouwogengxihuanniurou",
+      "expected": "比起羊肉我更喜欢牛肉",
+      "rank": 1,
+      "top5": [
+        "比起羊肉我更喜欢牛肉",
+        "比其羊肉我更喜欢牛肉",
+        "闭气羊肉我更喜欢牛肉",
+        "荸荠羊肉我更喜欢牛肉",
+        "闭起羊肉我更喜欢牛肉"
+      ]
+    },
+    {
+      "id": "03732e3a64d53fda5004e3e04095afb7147d6cc186d4725fc6dbea5520233212",
+      "query": "riyuhehanyudehanzifayinjieranbutong",
+      "expected": "日语和汉语的汉字发音截然不同",
+      "rank": 1,
+      "top5": [
+        "日语和汉语的汉字发音截然不同",
+        "日语和韩语的汉字发音截然不同",
+        "日语和汉语的汉子发音截然不同",
+        "日语和韩愈的汉字发音截然不同",
+        "日语和韩语的汉子发音截然不同"
+      ]
+    },
+    {
+      "id": "03aeff7dcb6b5ae3492fd88057c31af0da60b44e1e4fa7c112f120e36d67a0a7",
+      "query": "womenmianqianchuxianleyizuochengbao",
+      "expected": "我们面前出现了一座城堡",
+      "rank": 1,
+      "top5": [
+        "我们面前出现了一座城堡",
+        "我们面前出现了一座城包",
+        "我们面前出现了一座城报",
+        "我们面前出现了一座承包",
+        "我们面前出现了一座城保"
+      ]
+    },
+    {
+      "id": "03b5dce4765df11a545dc1ae9165aa3df2a57047ef4160c469760191f132ead8",
+      "query": "nihenkuaijiuhuikaishixihuantale",
+      "expected": "你很快就会开始喜欢她了",
+      "rank": 2,
+      "top5": [
+        "你很快就会开始喜欢他了",
+        "你很快就会开始喜欢她了",
+        "你很快就会开始喜欢它了",
+        "你很快就会开始喜欢塌了",
+        "你很快就会开始喜欢他乐"
+      ]
+    },
+    {
+      "id": "03b8ead6940718c5b2c5734cad3da5092c9062fc14b6025f5e35b21603b6d6a6",
+      "query": "jingchahuirangniquzhaozidande",
+      "expected": "警察会让你去找子弹的",
+      "rank": 1,
+      "top5": [
+        "警察会让你去找子弹的",
+        "警察会让你去找子弹得",
+        "警察会让你去赵子弹的",
+        "警察会让你去找自但的",
+        "警察会让你去找子弹地"
+      ]
+    },
+    {
+      "id": "03cadba39a8496ed9603d0ba2d14797b6b3dfb4a554bf63164bcaf6ecf87203b",
+      "query": "zhegejihuachedideshibaile",
+      "expected": "这个计划彻底的失败了",
+      "rank": 1,
+      "top5": [
+        "这个计划彻底的失败了",
+        "这个计划彻底地失败了",
+        "这个计划车底的失败了",
+        "这个计划彻底的是白了",
+        "这个计划彻底的是败了"
+      ]
+    },
+    {
+      "id": "03cc79a4928b39f8116ad166534a2645a87ad68f21c94d1537309b01eccaa1db",
+      "query": "liyuereneiludeyitiaozixingchedaodaotale",
+      "expected": "里约热内卢的一条自行车道倒塌了",
+      "rank": 1,
+      "top5": [
+        "里约热内卢的一条自行车道倒塌了",
+        "里约热内卢的一条自行车道到他了",
+        "里约热内卢的一条自行车道到她了",
+        "里约热内卢的一条自行车道到它了",
+        "里约热内卢的一条自行车到倒塌了"
+      ]
+    },
+    {
+      "id": "03e8701522193c3abff6914f5436414f283319ac8653244d945ab97c13f39e33",
+      "query": "nibawocongchuangshangjiaoqilaijiushiweilezhege",
+      "expected": "你把我从床上叫起来就是为了这个",
+      "rank": 1,
+      "top5": [
+        "你把我从床上叫起来就是为了这个",
+        "你把我从床上教起来就是为了这个",
+        "你把握从床上叫起来就是为了这个",
+        "你爸我从床上叫起来就是为了这个",
+        "你把我从床上交起来就是为了这个"
+      ]
+    },
+    {
+      "id": "04013e5acfe690ceec90022ea61fb403f2dbf95b1cb56ee032a3a64725bd6900",
+      "query": "tashuodaiweisibixubeizhuazhu",
+      "expected": "他说戴维斯必须被抓住",
+      "rank": 1,
+      "top5": [
+        "他说戴维斯必须被抓住",
+        "她说戴维斯必须被抓住",
+        "他说戴维斯必需被抓住",
+        "它说戴维斯必须被抓住",
+        "她说戴维斯必需被抓住"
+      ]
+    },
+    {
+      "id": "040f7655511003488c35a91fc47e53cf2ea20cc71a3da83e073aa111e542500c",
+      "query": "nizhidaolebuyaozhiyilaoshizhegeguiju",
+      "expected": "你知道了不要质疑老师这个规矩",
+      "rank": 2,
+      "top5": [
+        "你知道了不要之一老师这个规矩",
+        "你知道了不要质疑老师这个规矩",
+        "你知道了不要之一老是这个规矩",
+        "你知道了不要直译老师这个规矩",
+        "你知道了不要质疑老是这个规矩"
+      ]
+    },
+    {
+      "id": "042a0a8253f5a59ed6de5ba81a94f10859fba2b173d8c7fe717dc77d3a106abc",
+      "query": "dabufenderenshizhemexiangde",
+      "expected": "大部分的人是这么想的",
+      "rank": 1,
+      "top5": [
+        "大部分的人是这么想的",
+        "大部分的认识这么想的",
+        "大部分的人士这么想的",
+        "大部分的人事这么想的",
+        "大部分的人世这么想的"
+      ]
+    },
+    {
+      "id": "043359b1bd9fc4c520e452e7d66672821db8b17f8e802119c993852d05e7e6b5",
+      "query": "jinwanwoduguoleyiduanfeichangmeihaodeshiguang",
+      "expected": "今晚我度过了一段非常美好的时光",
+      "rank": 1,
+      "top5": [
+        "今晚我度过了一段非常美好的时光",
+        "今晚我读过了一段非常美好的时光",
+        "今晚我渡过了一段非常美好的时光",
+        "今晚我度过了一端非常美好的时光",
+        "今晚我度过了一段非常美好的是光"
+      ]
+    },
+    {
+      "id": "045ccfc8b1f6f6f988a3908e55265d6733169bc3c287be3a82bd708b70c2d369",
+      "query": "bujinshiduinaxiecanjiaduoyikaoshideren",
+      "expected": "不仅是对那些参加多益考试的人",
+      "rank": 0,
+      "top5": [
+        "不仅是对那些参加多以考试的人",
+        "不仅是对那些参加多疑考试的人",
+        "不仅是对那些参加多一考试的人",
+        "不仅是对那些参加多亿考试的人",
+        "不仅是对那些参加多义考试的人"
+      ]
+    },
+    {
+      "id": "0489d349b275f58b6f2a1537a49c64c2827a0be3596f4c7f6956f8add9df30ac",
+      "query": "bijiasuoshigeyoumingdeyishujia",
+      "expected": "毕加索是个有名的艺术家",
+      "rank": 1,
+      "top5": [
+        "毕加索是个有名的艺术家",
+        "毕加索十个有名的艺术家",
+        "毕加索是个又名的艺术家",
+        "毕加索诗歌有名的艺术家",
+        "毕加索是各有名的艺术家"
+      ]
+    },
+    {
+      "id": "04bccec7f28429f0cca58f22f2b32345b118bfc9cf10a546d477b197c7c9ec80",
+      "query": "tahenkuaidepiaoleyiyanbaozhi",
+      "expected": "她很快地瞟了一眼报纸",
+      "rank": 4,
+      "top5": [
+        "他很快的瞟了一眼报纸",
+        "他很快地瞟了一眼报纸",
+        "她很快的瞟了一眼报纸",
+        "她很快地瞟了一眼报纸",
+        "它很快的瞟了一眼报纸"
+      ]
+    },
+    {
+      "id": "04dc9720ea0305a7c35f7434994e040868525dad2768269ce572d094366a6925",
+      "query": "dengnidaodeshihouyinggaiyijingsanhuile",
+      "expected": "等你到的时候应该已经散会了",
+      "rank": 4,
+      "top5": [
+        "等你到的时候应该已经三回了",
+        "等你到的时候应该已经三会了",
+        "等你到的时候应该已经三毁了",
+        "等你到的时候应该已经散会了",
+        "等你倒的时候应该已经三回了"
+      ]
+    },
+    {
+      "id": "05435c9b04e25b66388acfb72534c4811050b03b5e63dfb047d033aeca9297b1",
+      "query": "zhechangzhanyirangnapolunchengbalezhenggeouzhou",
+      "expected": "这场战役让拿破仑称霸了整个欧洲",
+      "rank": 1,
+      "top5": [
+        "这场战役让拿破仑称霸了整个欧洲",
+        "这场战役让拿破仑成罢了整个欧洲",
+        "这场战役让拿破仑成把了整个欧洲",
+        "这场战役让拿破仑称罢了整个欧洲",
+        "这场战意让拿破仑称霸了整个欧洲"
+      ]
+    },
+    {
+      "id": "056b2b919bca26682acd431481d289720727323574430fff75eaae97f24d1fd9",
+      "query": "eryigeyongyouaiderenxinzhongcunzaizhetiantang",
+      "expected": "而一个拥有爱的人心中存在着天堂",
+      "rank": 1,
+      "top5": [
+        "而一个拥有爱的人心中存在着天堂",
+        "而一个拥有爱的人心中存在这天堂",
+        "二一个拥有爱的人心中存在着天堂",
+        "而一个用有爱的人心中存在着天堂",
+        "而一个拥有爱的人信中存在着天堂"
+      ]
+    },
+    {
+      "id": "056df147549139e480a609d71c9d63e18bbdfece9514d67ba1733e7d2e96b0b0",
+      "query": "niyiweiwaiguorenbuhuibaojingma",
+      "expected": "你以为外国人不会报警嘛",
+      "rank": 2,
+      "top5": [
+        "你以为外国人不会报警吗",
+        "你以为外国人不会报警嘛",
+        "你一位外国人不会报警吗",
+        "你以为外国人不会报警马",
+        "你以为外国人不回报警吗"
+      ]
+    },
+    {
+      "id": "05af2e04f827414bccf920f6e0307c903330f2b9e1ea81e27cd2a9ee1936e5d8",
+      "query": "tangmuxiangzhidaonalinengmaidaojianghuang",
+      "expected": "汤姆想知道哪里能买到姜黄",
+      "rank": 1,
+      "top5": [
+        "汤姆想知道哪里能买到姜黄",
+        "汤姆想知道那里能买到姜黄",
+        "汤姆像知道哪里能买到姜黄",
+        "汤姆向知道哪里能买到姜黄",
+        "汤姆想知道哪里能买到将黄"
+      ]
+    },
+    {
+      "id": "063303fa5276e0d894d45f1de60962b72990715f0acbb65f9281ed73ed5c7052",
+      "query": "wohetangmushuoguonayangzuohenweixian",
+      "expected": "我和汤姆说过那样做很危险",
+      "rank": 1,
+      "top5": [
+        "我和汤姆说过那样做很危险",
+        "我喝汤姆说过那样做很危险",
+        "我和汤姆说过那样作很危险",
+        "我和汤姆说过那样坐很危险",
+        "我和汤姆说过那样座很危险"
+      ]
+    },
+    {
+      "id": "0689baf03a4240b657bfb719b59a0a3c55b0a9192bd42e20cf87e2dd35d57f19",
+      "query": "daduoshuyiselierenbushibolanyoutairen",
+      "expected": "大多数以色列人不是波兰犹太人",
+      "rank": 1,
+      "top5": [
+        "大多数以色列人不是波兰犹太人",
+        "大多数以色列人不是波澜犹太人",
+        "大多数以色列人不是博览犹太人",
+        "大多数以色列人不适波兰犹太人",
+        "大多数以色列人不时波兰犹太人"
+      ]
+    },
+    {
+      "id": "069402bf45c0b788d14840387c3842d82c69c494c5798da823865dcb34a04f87",
+      "query": "wodepengyouzongshisanfenzhongredu",
+      "expected": "我的朋友总是三分钟热度",
+      "rank": 1,
+      "top5": [
+        "我的朋友总是三分钟热度",
+        "我的朋友纵使三分钟热度",
+        "我的朋友纵是三分钟热度",
+        "我的朋友宗师三分钟热度",
+        "我的朋友宗室三分钟热度"
+      ]
+    },
+    {
+      "id": "06f39406b46b13b97198628135455ac3bc8a83b6dc8482704cba337030e382cf",
+      "query": "tamenrangwomengongzuoleyizhengtian",
+      "expected": "他们让我们工作了一整天",
+      "rank": 1,
+      "top5": [
+        "他们让我们工作了一整天",
+        "它们让我们工作了一整天",
+        "她们让我们工作了一整天",
+        "他们让我们共做了一整天",
+        "他们让我们公做了一整天"
+      ]
+    },
+    {
+      "id": "071dfae3e655aad8d4d203493eb843ef067292120c53c7fb897fb3f79e06d0ac",
+      "query": "zhejiakejijiangluozaidongjingle",
+      "expected": "这架客机降落在东京了",
+      "rank": 2,
+      "top5": [
+        "这家客机降落在东京了",
+        "这架客机降落在东京了",
+        "这家科技降落在东京了",
+        "这家客机降落在动静了",
+        "这家客机降落在东京乐"
+      ]
+    },
+    {
+      "id": "072bf8e5e972ad7f3b357ebcfe33a7e90be1caf39826d3447dc888d54539c3a9",
+      "query": "woyeyezaidiercishijiedazhanshiqushile",
+      "expected": "我爷爷在第二次世界大战时去世了",
+      "rank": 2,
+      "top5": [
+        "我爷爷在第二次世界大战是去世了",
+        "我爷爷在第二次世界大战时去世了",
+        "我爷爷在第二次世界大战士去世了",
+        "我爷爷在第二次世界大战事去世了",
+        "我也也在第二次世界大战是去世了"
+      ]
+    },
+    {
+      "id": "0743b8ff893b7683ff98456aeb5c2b3eb74106f89b93d177fdf682da51701f06",
+      "query": "burushuotashiyigexuexiaodelaoshi",
+      "expected": "不如说他是一个学校的老师",
+      "rank": 1,
+      "top5": [
+        "不如说他是一个学校的老师",
+        "不如说她是一个学校的老师",
+        "不如说它是一个学校的老师",
+        "不如说他是一个学校的老是",
+        "不如说他是一个学校的老实"
+      ]
+    },
+    {
+      "id": "076aa30fec7278d5349964f17550c7e17031c1adf5df5ae499975459c2534b0c",
+      "query": "wozhidaonimaoleduodadefengxian",
+      "expected": "我知道你冒了多大的风险",
+      "rank": 1,
+      "top5": [
+        "我知道你冒了多大的风险",
+        "我知道你毛了多大的风险",
+        "我知道你猫了多大的风险",
+        "我知道你锚了多大的风险",
+        "我知道你卯了多大的风险"
+      ]
+    },
+    {
+      "id": "077be054651dd14a846cbe56fc0303304865c15ee56040774fa648dfe2edf7ac",
+      "query": "jiushinizhidaonashishenmeshi",
+      "expected": "就是你知道那是什么事",
+      "rank": 3,
+      "top5": [
+        "就是你知道那是什么是",
+        "就是你知道那是什么时",
+        "就是你知道那是什么事",
+        "就是你知道那是什么使",
+        "就是你直到那是什么是"
+      ]
+    },
+    {
+      "id": "0780945eb016ea2f5269805812ae8d88218b43192d486b0f795a10c5cf1f8a16",
+      "query": "nianjidadefuqiwangwangxihuanlijinshengyuliwu",
+      "expected": "年纪大的夫妻往往喜欢礼金胜于礼物",
+      "rank": 32,
+      "top5": [
+        "年纪大的夫妻往往喜欢里晋升与礼物",
+        "年纪大的夫妻往往喜欢里晋升于礼物",
+        "年纪大的夫妻往往喜欢历尽剩余礼物",
+        "年纪大的夫妻往往喜欢历尽生于礼物",
+        "年纪大的夫妻往往喜欢历尽声誉礼物"
+      ]
+    },
+    {
+      "id": "07f22a35ec24347849b2435fdbb9e05a9be7f9f2543d445c9989f18e3a5487fd",
+      "query": "yingguorenhenzunzhongfaxuhezhixu",
+      "expected": "英国人很尊重法序和秩序",
+      "rank": 11,
+      "top5": [
+        "英国人很尊重发虚和只需",
+        "英国人很尊重发虚和秩序",
+        "英国人很尊重法须和只需",
+        "英国人很尊重法须和秩序",
+        "英国人很尊重法需和只需"
+      ]
+    },
+    {
+      "id": "084a0a5b3e2f48151072f5c11311ae3f3b07ec45cde608967ba29dea5141b7a1",
+      "query": "shangdihuibawomenshenbianzuihaodedongxinazou",
+      "expected": "上帝会把我们身边最好的东西拿走",
+      "rank": 1,
+      "top5": [
+        "上帝会把我们身边最好的东西拿走",
+        "上帝会把我们身边最好的东西那走",
+        "上地会把我们身边最好的东西拿走",
+        "上帝会吧我们身边最好的东西拿走",
+        "上帝回把我们身边最好的东西拿走"
+      ]
+    },
+    {
+      "id": "08707a3bbefbcc6cdb2b4c39a55479a1857f9c6b973d225e9cbd9c832214357a",
+      "query": "malijuedetangmuyudaolemafan",
+      "expected": "玛丽觉得汤姆遇到了麻烦",
+      "rank": 1,
+      "top5": [
+        "玛丽觉得汤姆遇到了麻烦",
+        "马力觉得汤姆遇到了麻烦",
+        "马里觉得汤姆遇到了麻烦",
+        "马丽觉得汤姆遇到了麻烦",
+        "马莉觉得汤姆遇到了麻烦"
+      ]
+    },
+    {
+      "id": "0874b94420b72b3bd565739108806c434b3a948d856f3b92fb595be3999c031a",
+      "query": "tapobujidaidexiangshiyixiatadexinchonglangban",
+      "expected": "他迫不及待地想试一下他的新冲浪板",
+      "rank": 7,
+      "top5": [
+        "他迫不及待地想试一下他的心冲浪板",
+        "她迫不及待地想试一下他的心冲浪板",
+        "他迫不及待地想是一下他的心冲浪板",
+        "他迫不及待地像是一下他的心冲浪板",
+        "她迫不及待地想是一下他的心冲浪板"
+      ]
+    },
+    {
+      "id": "08ac578210c01a8c22343615044f913bb12e195f6070a758934df5a1e392613d",
+      "query": "wodeguangdonghuabiwodeputonghuahao",
+      "expected": "我的广东话比我的普通话好",
+      "rank": 2,
+      "top5": [
+        "我的广东话比我的普通话号",
+        "我的广东话比我的普通话好",
+        "我的广东话逼我的普通话号",
+        "我的广东话逼我的普通话好",
+        "我的广东话比我的普通话薅"
+      ]
+    },
+    {
+      "id": "08d8063c2490840ee73bd3ab35445be12c0b22990c3b63bb5ee3fdaa3ed3a5ff",
+      "query": "tapoqiedexuyaozhaodaogongzuo",
+      "expected": "他迫切的需要找到工作",
+      "rank": 1,
+      "top5": [
+        "他迫切的需要找到工作",
+        "他迫切地需要找到工作",
+        "她迫切的需要找到工作",
+        "她迫切地需要找到工作",
+        "它迫切的需要找到工作"
+      ]
+    },
+    {
+      "id": "08e77e6a89baa9a4e89f8cb24808bd551a5c7e9d115c79d91000b45f5ba5354c",
+      "query": "zheshituanduigongtongnulidejieguo",
+      "expected": "这是团队共同努力的结果",
+      "rank": 1,
+      "top5": [
+        "这是团队共同努力的结果",
+        "这时团队共同努力的结果",
+        "这事团队共同努力的结果",
+        "这使团队共同努力的结果",
+        "这是团队共同努力地结果"
+      ]
+    },
+    {
+      "id": "08eae40fbbc1248a29698eebe7317de2dd52b0e8e7e2e2da1a9836f1bfbe8802",
+      "query": "wozaiyalizhixiagongzuobiaoxianzuihao",
+      "expected": "我在压力之下工作表现最好",
+      "rank": 1,
+      "top5": [
+        "我在压力之下工作表现最好",
+        "我再压力之下工作表现最好",
+        "我在压力治下工作表现最好",
+        "我在压力直下工作表现最好",
+        "我在压力只下工作表现最好"
+      ]
+    },
+    {
+      "id": "09339c85318d495f22be434f3d6f7722a3cbcb1b3e0383c1a461f59b7606f9c2",
+      "query": "yinweimeiyourenhuishuowodeyuyan",
+      "expected": "因为没有人会说我的语言",
+      "rank": 1,
+      "top5": [
+        "因为没有人会说我的语言",
+        "因为没有人会说我的预言",
+        "因为没有人会说我的寓言",
+        "因为没有人会说我的预演",
+        "因为没有人会说我的雨燕"
+      ]
+    },
+    {
+      "id": "0943eaa1fdcb22701746fda8d5a0474e7fd6b3a26b9fdc037b0f42625b2fff82",
+      "query": "woyigerenzhuzaizhezhuangfangzili",
+      "expected": "我一个人住在这幢房子里",
+      "rank": 1,
+      "top5": [
+        "我一个人住在这幢房子里",
+        "我一个人住在这桩房子里",
+        "我一个人住在这装房子里",
+        "我一个人住在这撞房子里",
+        "我一个人住在这状房子里"
+      ]
+    },
+    {
+      "id": "09817d630a1f31221152b916bc234ab72b9b76950bb3012ac4a432b6d421a0b2",
+      "query": "keyongyixiasanzhongfangshilaixianggongsitichushenqing",
+      "expected": "可用以下三种方式来向公司提出申请",
+      "rank": 8,
+      "top5": [
+        "可用一下三种方式来想公司提出申请",
+        "可用一下三种方式来像公司提出申请",
+        "可用一下三种方式来向公司提出申请",
+        "可用一下三种方式来香公司提出申请",
+        "可用一下三种方式来相公司提出申请"
+      ]
+    },
+    {
+      "id": "098a42a0e39cdc75b122c94d9016428dc5a9823278dae50d7681fcf34d1956d8",
+      "query": "wobuxiwangnigaosutazhejianshi",
+      "expected": "我不希望你告诉她这件事",
+      "rank": 2,
+      "top5": [
+        "我不希望你告诉他这件事",
+        "我不希望你告诉她这件事",
+        "我不希望你告诉他这件是",
+        "我不希望你告诉它这件事",
+        "我不希望你告诉他这间是"
+      ]
+    },
+    {
+      "id": "09bebe92d3ebf1a490b9748b5576aa22eb211b692d83874dde50656d48a54b29",
+      "query": "zhegeshujuyidianyebuzhunque",
+      "expected": "这个数据一点也不准确",
+      "rank": 1,
+      "top5": [
+        "这个数据一点也不准确",
+        "这个书局一点也不准确",
+        "这个数据疑点也不准确",
+        "这个数据以点也不准确",
+        "这个数据一点也不准却"
+      ]
+    },
+    {
+      "id": "09c06405e0fde7d3352e988f49030dfb3062d04b649b23d0f3af99d894aef991",
+      "query": "kekebushiyizhiputongdexingxing",
+      "expected": "可可不是一只普通的猩猩",
+      "rank": 44,
+      "top5": [
+        "可可不是一直普通的行星",
+        "苛刻不是一直普通的行星",
+        "可可不是一只普通的行星",
+        "可可不是一直普通的星星",
+        "苛刻不是一只普通的行星"
+      ]
+    },
+    {
+      "id": "09f3d802f6e493d563daa05f6ee25c379cddf0a34c45b45caf5351ada2b9f233",
+      "query": "putaoyacengjingshiyigenongyeguo",
+      "expected": "葡萄牙曾经是一个农业国",
+      "rank": 1,
+      "top5": [
+        "葡萄牙曾经是一个农业国",
+        "葡萄牙曾经是一个农业过",
+        "葡萄牙曾经十一个农业国",
+        "葡萄牙曾经是一个农业果",
+        "葡萄牙曾经是一个农业锅"
+      ]
+    },
+    {
+      "id": "0a13aba5e5235cfb493c1c9ae695ed2cf1c44b52f122be15a48ecfd86f2f88ea",
+      "query": "wonengcongshijieyuzhesuoqushenme",
+      "expected": "我能从世界语这索取什么",
+      "rank": 7,
+      "top5": [
+        "我能从世界语者索取什么",
+        "我能从世界语者所取什么",
+        "我能从世界语者所去什么",
+        "我能从世界语这所取什么",
+        "我能从世界语这所去什么"
+      ]
+    },
+    {
+      "id": "0a748f11e9e193ac05a0dc4239bb8b490b7ac0f7671e0813fee2fbba83eaa25d",
+      "query": "nishouguodezuiyanzhongdeshangshishenme",
+      "expected": "你受过的最严重的伤是甚么",
+      "rank": 0,
+      "top5": [
+        "你受过的最严重的上是什么",
+        "你收过的最严重的上是什么",
+        "你受过的最严重的伤是什么",
+        "你受过的最严重得上是什么",
+        "你受过的最严重的熵是什么"
+      ]
+    }
+  ]
+}

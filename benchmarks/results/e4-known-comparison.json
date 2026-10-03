@@ -1,0 +1,2823 @@
+{
+  "schemaVersion": 1,
+  "scope": "Paired synthetic errors on known reviewed source text; not fresh natural-error or phone latency evidence",
+  "before": {
+    "rows": 1874,
+    "families": 125,
+    "top1": 744,
+    "top3": 942,
+    "top10": 1078,
+    "covered": 1368,
+    "mrr": 0.46430478501188954,
+    "graphAligned": 1495,
+    "graphCanonical": 1498,
+    "selectedCanonical": 1226,
+    "characterErrors": 2321,
+    "characters": 18517,
+    "cer": 0.12534427823081493,
+    "hostMedianMs": 17.83145,
+    "hostObservedP95Ms": 38.01
+  },
+  "after": {
+    "rows": 1874,
+    "families": 125,
+    "top1": 837,
+    "top3": 1082,
+    "top10": 1258,
+    "covered": 1368,
+    "mrr": 0.5283887439750352,
+    "graphAligned": 1495,
+    "graphCanonical": 1498,
+    "selectedCanonical": 1226,
+    "characterErrors": 2045,
+    "characters": 18517,
+    "cer": 0.11043905600259221,
+    "hostMedianMs": 17.787399999999998,
+    "hostObservedP95Ms": 38.2781
+  },
+  "byOperation": {
+    "clean": {
+      "before": {
+        "rows": 125,
+        "families": 125,
+        "top1": 81,
+        "top3": 102,
+        "top10": 116,
+        "covered": 120,
+        "mrr": 0.7506294283828119,
+        "graphAligned": 125,
+        "graphCanonical": 125,
+        "selectedCanonical": 0,
+        "characterErrors": 70,
+        "characters": 1235,
+        "cer": 0.05668016194331984,
+        "hostMedianMs": 26.7498,
+        "hostObservedP95Ms": 45.9626
+      },
+      "after": {
+        "rows": 125,
+        "families": 125,
+        "top1": 81,
+        "top3": 102,
+        "top10": 116,
+        "covered": 120,
+        "mrr": 0.7506294283828119,
+        "graphAligned": 125,
+        "graphCanonical": 125,
+        "selectedCanonical": 0,
+        "characterErrors": 70,
+        "characters": 1235,
+        "cer": 0.05668016194331984,
+        "hostMedianMs": 26.7679,
+        "hostObservedP95Ms": 44.6782
+      }
+    },
+    "delete": {
+      "before": {
+        "rows": 375,
+        "families": 125,
+        "top1": 63,
+        "top3": 90,
+        "top10": 110,
+        "covered": 167,
+        "mrr": 0.2156684685042865,
+        "graphAligned": 189,
+        "graphCanonical": 190,
+        "selectedCanonical": 182,
+        "characterErrors": 666,
+        "characters": 3705,
+        "cer": 0.1797570850202429,
+        "hostMedianMs": 19.388,
+        "hostObservedP95Ms": 37.2459
+      },
+      "after": {
+        "rows": 375,
+        "families": 125,
+        "top1": 67,
+        "top3": 97,
+        "top10": 120,
+        "covered": 167,
+        "mrr": 0.23224460960894328,
+        "graphAligned": 189,
+        "graphCanonical": 190,
+        "selectedCanonical": 182,
+        "characterErrors": 655,
+        "characters": 3705,
+        "cer": 0.1767881241565452,
+        "hostMedianMs": 19.3485,
+        "hostObservedP95Ms": 37.4619
+      }
+    },
+    "fuzzy": {
+      "before": {
+        "rows": 124,
+        "families": 124,
+        "top1": 8,
+        "top3": 11,
+        "top10": 11,
+        "covered": 79,
+        "mrr": 0.0842015986486506,
+        "graphAligned": 91,
+        "graphCanonical": 92,
+        "selectedCanonical": 84,
+        "characterErrors": 235,
+        "characters": 1227,
+        "cer": 0.1915240423797881,
+        "hostMedianMs": 24.247500000000002,
+        "hostObservedP95Ms": 43.8829
+      },
+      "after": {
+        "rows": 124,
+        "families": 124,
+        "top1": 32,
+        "top3": 51,
+        "top10": 64,
+        "covered": 79,
+        "mrr": 0.35025537810346996,
+        "graphAligned": 91,
+        "graphCanonical": 92,
+        "selectedCanonical": 84,
+        "characterErrors": 170,
+        "characters": 1227,
+        "cer": 0.13854930725346373,
+        "hostMedianMs": 24.934649999999998,
+        "hostObservedP95Ms": 41.6323
+      }
+    },
+    "joints": {
+      "before": {
+        "rows": 125,
+        "families": 125,
+        "top1": 81,
+        "top3": 102,
+        "top10": 116,
+        "covered": 120,
+        "mrr": 0.7506294283828119,
+        "graphAligned": 125,
+        "graphCanonical": 125,
+        "selectedCanonical": 0,
+        "characterErrors": 70,
+        "characters": 1235,
+        "cer": 0.05668016194331984,
+        "hostMedianMs": 22.5716,
+        "hostObservedP95Ms": 38.7268
+      },
+      "after": {
+        "rows": 125,
+        "families": 125,
+        "top1": 81,
+        "top3": 102,
+        "top10": 116,
+        "covered": 120,
+        "mrr": 0.7506294283828119,
+        "graphAligned": 125,
+        "graphCanonical": 125,
+        "selectedCanonical": 0,
+        "characterErrors": 70,
+        "characters": 1235,
+        "cer": 0.05668016194331984,
+        "hostMedianMs": 23.1659,
+        "hostObservedP95Ms": 37.6126
+      }
+    },
+    "neighbor": {
+      "before": {
+        "rows": 375,
+        "families": 125,
+        "top1": 174,
+        "top3": 215,
+        "top10": 247,
+        "covered": 291,
+        "mrr": 0.5338844521231026,
+        "graphAligned": 319,
+        "graphCanonical": 319,
+        "selectedCanonical": 317,
+        "characterErrors": 404,
+        "characters": 3705,
+        "cer": 0.10904183535762484,
+        "hostMedianMs": 15.1759,
+        "hostObservedP95Ms": 37.4171
+      },
+      "after": {
+        "rows": 375,
+        "families": 125,
+        "top1": 192,
+        "top3": 241,
+        "top10": 279,
+        "covered": 291,
+        "mrr": 0.5927125030031196,
+        "graphAligned": 319,
+        "graphCanonical": 319,
+        "selectedCanonical": 317,
+        "characterErrors": 352,
+        "characters": 3705,
+        "cer": 0.09500674763832659,
+        "hostMedianMs": 15.2359,
+        "hostObservedP95Ms": 37.406
+      }
+    },
+    "repeat": {
+      "before": {
+        "rows": 375,
+        "families": 125,
+        "top1": 189,
+        "top3": 236,
+        "top10": 268,
+        "covered": 344,
+        "mrr": 0.5848161415577631,
+        "graphAligned": 375,
+        "graphCanonical": 375,
+        "selectedCanonical": 374,
+        "characterErrors": 359,
+        "characters": 3705,
+        "cer": 0.09689608636977058,
+        "hostMedianMs": 16.2861,
+        "hostObservedP95Ms": 34.5379
+      },
+      "after": {
+        "rows": 375,
+        "families": 125,
+        "top1": 223,
+        "top3": 285,
+        "top10": 329,
+        "covered": 344,
+        "mrr": 0.698006550382568,
+        "graphAligned": 375,
+        "graphCanonical": 375,
+        "selectedCanonical": 374,
+        "characterErrors": 260,
+        "characters": 3705,
+        "cer": 0.07017543859649122,
+        "hostMedianMs": 15.9815,
+        "hostObservedP95Ms": 33.6375
+      }
+    },
+    "transpose": {
+      "before": {
+        "rows": 375,
+        "families": 125,
+        "top1": 148,
+        "top3": 186,
+        "top10": 210,
+        "covered": 247,
+        "mrr": 0.4576544359059021,
+        "graphAligned": 271,
+        "graphCanonical": 272,
+        "selectedCanonical": 269,
+        "characterErrors": 517,
+        "characters": 3705,
+        "cer": 0.13954116059379218,
+        "hostMedianMs": 13.555,
+        "hostObservedP95Ms": 29.1756
+      },
+      "after": {
+        "rows": 375,
+        "families": 125,
+        "top1": 161,
+        "top3": 204,
+        "top10": 234,
+        "covered": 247,
+        "mrr": 0.5013336229485231,
+        "graphAligned": 271,
+        "graphCanonical": 272,
+        "selectedCanonical": 269,
+        "characterErrors": 468,
+        "characters": 3705,
+        "cer": 0.12631578947368421,
+        "hostMedianMs": 13.4201,
+        "hostObservedP95Ms": 29.6727
+      }
+    }
+  },
+  "byZone": {
+    "head": {
+      "before": {
+        "rows": 500,
+        "families": 125,
+        "top1": 192,
+        "top3": 242,
+        "top10": 276,
+        "covered": 353,
+        "mrr": 0.44705675377789705,
+        "graphAligned": 389,
+        "graphCanonical": 390,
+        "selectedCanonical": 383,
+        "characterErrors": 624,
+        "characters": 4940,
+        "cer": 0.12631578947368421,
+        "hostMedianMs": 16.00645,
+        "hostObservedP95Ms": 32.5549
+      },
+      "after": {
+        "rows": 500,
+        "families": 125,
+        "top1": 218,
+        "top3": 281,
+        "top10": 321,
+        "covered": 353,
+        "mrr": 0.511590239892845,
+        "graphAligned": 389,
+        "graphCanonical": 390,
+        "selectedCanonical": 383,
+        "characterErrors": 556,
+        "characters": 4940,
+        "cer": 0.1125506072874494,
+        "hostMedianMs": 15.7866,
+        "hostObservedP95Ms": 32.7385
+      }
+    },
+    "middle": {
+      "before": {
+        "rows": 500,
+        "families": 125,
+        "top1": 192,
+        "top3": 241,
+        "top10": 281,
+        "covered": 345,
+        "mrr": 0.4495108480692606,
+        "graphAligned": 378,
+        "graphCanonical": 378,
+        "selectedCanonical": 376,
+        "characterErrors": 658,
+        "characters": 4940,
+        "cer": 0.1331983805668016,
+        "hostMedianMs": 16.2556,
+        "hostObservedP95Ms": 34.9512
+      },
+      "after": {
+        "rows": 500,
+        "families": 125,
+        "top1": 211,
+        "top3": 268,
+        "top10": 317,
+        "covered": 345,
+        "mrr": 0.49852620755723254,
+        "graphAligned": 378,
+        "graphCanonical": 378,
+        "selectedCanonical": 376,
+        "characterErrors": 598,
+        "characters": 4940,
+        "cer": 0.12105263157894737,
+        "hostMedianMs": 16.377299999999998,
+        "hostObservedP95Ms": 34.7664
+      }
+    },
+    "none": {
+      "before": {
+        "rows": 250,
+        "families": 125,
+        "top1": 162,
+        "top3": 204,
+        "top10": 232,
+        "covered": 240,
+        "mrr": 0.7506294283828119,
+        "graphAligned": 250,
+        "graphCanonical": 250,
+        "selectedCanonical": 0,
+        "characterErrors": 140,
+        "characters": 2470,
+        "cer": 0.05668016194331984,
+        "hostMedianMs": 24.762,
+        "hostObservedP95Ms": 43.709
+      },
+      "after": {
+        "rows": 250,
+        "families": 125,
+        "top1": 162,
+        "top3": 204,
+        "top10": 232,
+        "covered": 240,
+        "mrr": 0.7506294283828119,
+        "graphAligned": 250,
+        "graphCanonical": 250,
+        "selectedCanonical": 0,
+        "characterErrors": 140,
+        "characters": 2470,
+        "cer": 0.05668016194331984,
+        "hostMedianMs": 24.8762,
+        "hostObservedP95Ms": 42.9292
+      }
+    },
+    "phonetic": {
+      "before": {
+        "rows": 124,
+        "families": 124,
+        "top1": 8,
+        "top3": 11,
+        "top10": 11,
+        "covered": 79,
+        "mrr": 0.0842015986486506,
+        "graphAligned": 91,
+        "graphCanonical": 92,
+        "selectedCanonical": 84,
+        "characterErrors": 235,
+        "characters": 1227,
+        "cer": 0.1915240423797881,
+        "hostMedianMs": 24.247500000000002,
+        "hostObservedP95Ms": 43.8829
+      },
+      "after": {
+        "rows": 124,
+        "families": 124,
+        "top1": 32,
+        "top3": 51,
+        "top10": 64,
+        "covered": 79,
+        "mrr": 0.35025537810346996,
+        "graphAligned": 91,
+        "graphCanonical": 92,
+        "selectedCanonical": 84,
+        "characterErrors": 170,
+        "characters": 1227,
+        "cer": 0.13854930725346373,
+        "hostMedianMs": 24.934649999999998,
+        "hostObservedP95Ms": 41.6323
+      }
+    },
+    "tail": {
+      "before": {
+        "rows": 500,
+        "families": 125,
+        "top1": 190,
+        "top3": 244,
+        "top10": 278,
+        "covered": 351,
+        "mrr": 0.44745002172113313,
+        "graphAligned": 387,
+        "graphCanonical": 388,
+        "selectedCanonical": 383,
+        "characterErrors": 664,
+        "characters": 4940,
+        "cer": 0.13441295546558704,
+        "hostMedianMs": 16.03605,
+        "hostObservedP95Ms": 37.6923
+      },
+      "after": {
+        "rows": 500,
+        "families": 125,
+        "top1": 214,
+        "top3": 278,
+        "top10": 324,
+        "covered": 351,
+        "mrr": 0.5081065170072878,
+        "graphAligned": 387,
+        "graphCanonical": 388,
+        "selectedCanonical": 383,
+        "characterErrors": 581,
+        "characters": 4940,
+        "cer": 0.11761133603238866,
+        "hostMedianMs": 16.11275,
+        "hostObservedP95Ms": 38.8081
+      }
+    }
+  },
+  "top1Gains": [
+    {
+      "id": "b3630d1dadedc6139223bc136402f65c69df71371745ebe3df855467c69792db",
+      "typed": "woomaileliangpingniunai",
+      "expected": "我买了两瓶牛奶",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 62,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我哦买了两瓶牛奶",
+          "canonical": "woomaileliangpingniunai",
+          "kind": "BASE_COMPOSED",
+          "score": 10.200394
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我买了两瓶牛奶",
+          "canonical": "womaileliangpingniunai",
+          "kind": "CORRECTED",
+          "score": 24.66498
+        }
+      ]
+    },
+    {
+      "id": "2e94202da4bbbc7975fd2f4ace08de2ff47d2c28539f0f9907682a24ca771d00",
+      "typed": "womaileliangpingniuani",
+      "expected": "我买了两瓶牛奶",
+      "operation": "transpose",
+      "zone": "tail",
+      "beforeRank": 64,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我买了两瓶牛啊你",
+          "canonical": "womaileliangpingniuani",
+          "kind": "BASE_COMPOSED",
+          "score": 9.277644
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我买了两瓶牛奶",
+          "canonical": "womaileliangpingniunai",
+          "kind": "CORRECTED",
+          "score": 23.81809
+        }
+      ]
+    },
+    {
+      "id": "1d6770796b54305709a54c667e9a7a5a78bd642db9ee9532d888eb04519395a7",
+      "typed": "wodefangjianheichangxiao",
+      "expected": "我的房间非常小",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 55,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我的房间嘿畅销",
+          "canonical": "wodefangjianheichangxiao",
+          "kind": "BASE_COMPOSED",
+          "score": 10.920216
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我的房间非常小",
+          "canonical": "wodefangjianfeichangxiao",
+          "kind": "CORRECTED",
+          "score": 26.079973
+        }
+      ]
+    },
+    {
+      "id": "973b793dc9e094d2854bb149640a5fb480ac32cff866501ba1eb7a368164499a",
+      "typed": "wozhidaaonideganshou",
+      "expected": "我知道你的感受",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 52,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我只大凹你的感受",
+          "canonical": "wozhidaaonideganshou",
+          "kind": "BASE_COMPOSED",
+          "score": 8.619035
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我知道你的感受",
+          "canonical": "wozhidaonideganshou",
+          "kind": "CORRECTED",
+          "score": 27.704576
+        }
+      ]
+    },
+    {
+      "id": "c11927bd68172f9217851d18388df71a61c6532a38dc2bb3123ab948401f9690",
+      "typed": "wozhidaonidegansou",
+      "expected": "我知道你的感受",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 60,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我知道你的感搜",
+          "canonical": "wozhidaonidegansou",
+          "kind": "BASE_COMPOSED",
+          "score": 11.105892
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我知道你的感受",
+          "canonical": "wozhidaonideganshou",
+          "kind": "CORRECTED",
+          "score": 27.6388
+        }
+      ]
+    },
+    {
+      "id": "bfc8033c017f028edf915a500ae65c57dec0a5a399eeb5a9ec4d0c6faa927996",
+      "typed": "bixucaaiquyixiexingdongle",
+      "expected": "必须采取一些行动了",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 86,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "必须擦爱去一些行动了",
+          "canonical": "bixucaaiquyixiexingdongle",
+          "kind": "BASE_COMPOSED",
+          "score": 5.63737
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "必须采取一些行动了",
+          "canonical": "bixucaiquyixiexingdongle",
+          "kind": "CORRECTED",
+          "score": 21.84893
+        }
+      ]
+    },
+    {
+      "id": "27f957a61b15d49900c169b513539d5a30dd4d12678dd64dd56f6dea438503bf",
+      "typed": "zhenuhuaxuyaojiuzheng",
+      "expected": "这句话需要纠正",
+      "operation": "neighbor",
+      "zone": "head",
+      "beforeRank": 95,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "这奴化需要纠正",
+          "canonical": "zhenuhuaxuyaojiuzheng",
+          "kind": "BASE_COMPOSED",
+          "score": 6.928132
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这句话需要纠正",
+          "canonical": "zhejuhuaxuyaojiuzheng",
+          "kind": "CORRECTED",
+          "score": 23.31556
+        }
+      ]
+    },
+    {
+      "id": "f8563cdd9d6dca654f3a5080bba72f88b9497c3779ef4f6ea019f31471f7e466",
+      "typed": "zhejuhuaxuyaojiuzeng",
+      "expected": "这句话需要纠正",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 94,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "这句话需要就甑",
+          "canonical": "zhejuhuaxuyaojiuzeng",
+          "kind": "BASE_COMPOSED",
+          "score": 8.864333
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这句话需要纠正",
+          "canonical": "zhejuhuaxuyaojiuzheng",
+          "kind": "CORRECTED",
+          "score": 23.386509
+        }
+      ]
+    },
+    {
+      "id": "c8031d724775f63aef0468fcb3facfbc79b08fbd186ee826c5441dcdf06b3223",
+      "typed": "tameitianyanduyinyuma",
+      "expected": "他每天研读英语吗",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 75,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "他每天研读音域吗",
+          "canonical": "tameitianyanduyinyuma",
+          "kind": "BASE_COMPOSED",
+          "score": 6.3590784
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "他每天研读英语吗",
+          "canonical": "tameitianyanduyingyuma",
+          "kind": "CORRECTED",
+          "score": 21.027725
+        }
+      ]
+    },
+    {
+      "id": "905e87ae8f8f8786b70131bf07852e8e0e52d04270226babd7593bb51bd88efb",
+      "typed": "tayiqianshigehaonaanhai",
+      "expected": "他以前是个好男孩",
+      "operation": "repeat",
+      "zone": "tail",
+      "beforeRank": 69,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "他以前是个好拿俺还",
+          "canonical": "tayiqianshigehaonaanhai",
+          "kind": "BASE_COMPOSED",
+          "score": 6.232587
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "他以前是个好男孩",
+          "canonical": "tayiqianshigehaonanhai",
+          "kind": "CORRECTED",
+          "score": 22.790497
+        }
+      ]
+    },
+    {
+      "id": "812d899279365d708fbaeaff5113c35dd445fb85a94899471112ffad16a6b6f2",
+      "typed": "wozhendiangquyidali",
+      "expected": "我真想去意大利",
+      "operation": "neighbor",
+      "zone": "head",
+      "beforeRank": 90,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我真地卬去意大利",
+          "canonical": "wozhendiangquyidali",
+          "kind": "BASE_COMPOSED",
+          "score": 5.3430443
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我真想去意大利",
+          "canonical": "wozhenxiangquyidali",
+          "kind": "CORRECTED",
+          "score": 23.648531
+        }
+      ]
+    },
+    {
+      "id": "65b1370ba18d03bd69ae99003ce015b2e25f56467104163b9133845abdf538c1",
+      "typed": "wozhenxiangquyodali",
+      "expected": "我真想去意大利",
+      "operation": "neighbor",
+      "zone": "tail",
+      "beforeRank": 66,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我真想去哟大力",
+          "canonical": "wozhenxiangquyodali",
+          "kind": "BASE_COMPOSED",
+          "score": 5.769248
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我真想去意大利",
+          "canonical": "wozhenxiangquyidali",
+          "kind": "CORRECTED",
+          "score": 23.648531
+        }
+      ]
+    },
+    {
+      "id": "dace81374b69b859b7908c16ac73088027524e2e3e552c32e0a9e6359322ffe5",
+      "typed": "wozhenxiangquyidani",
+      "expected": "我真想去意大利",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 71,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我真想去一大你",
+          "canonical": "wozhenxiangquyidani",
+          "kind": "BASE_COMPOSED",
+          "score": 8.979734
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我真想去意大利",
+          "canonical": "wozhenxiangquyidali",
+          "kind": "CORRECTED",
+          "score": 24.04853
+        }
+      ]
+    },
+    {
+      "id": "9402d1d33f84c399e9518155b7112bdaad991e970963a2f4fea0eace224e878c",
+      "typed": "keneengwushiduoxiazuoyouba",
+      "expected": "可能五十多下左右吧",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 90,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "可呢嗯五十多下左右吧",
+          "canonical": "keneengwushiduoxiazuoyouba",
+          "kind": "BASE_COMPOSED",
+          "score": 3.6429524
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "可能五十多下左右吧",
+          "canonical": "kenengwushiduoxiazuoyouba",
+          "kind": "CORRECTED",
+          "score": 19.566511
+        }
+      ]
+    },
+    {
+      "id": "f8ad20d8d115abf4c52da9a6b3e29e5d49dff459bd912a2bd4ebdd47e8b0e280",
+      "typed": "wozhihuishuoyidiandianfaayu",
+      "expected": "我只会说一点点法语",
+      "operation": "repeat",
+      "zone": "tail",
+      "beforeRank": 66,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我只会说一点点发阿语",
+          "canonical": "wozhihuishuoyidiandianfaayu",
+          "kind": "BASE_COMPOSED",
+          "score": 9.346453
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我只会说一点点法语",
+          "canonical": "wozhihuishuoyidiandianfayu",
+          "kind": "CORRECTED",
+          "score": 24.219961
+        }
+      ]
+    },
+    {
+      "id": "43c26fdcb78854dac78fd46a2dc6ac0aad8379486d61b6bfdbe1bb7343d20f30",
+      "typed": "wozhihuishuoyiriandianfayu",
+      "expected": "我只会说一点点法语",
+      "operation": "neighbor",
+      "zone": "middle",
+      "beforeRank": 64,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我只会说一日暗点法语",
+          "canonical": "wozhihuishuoyiriandianfayu",
+          "kind": "BASE_COMPOSED",
+          "score": 7.309555
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我只会说一点点法语",
+          "canonical": "wozhihuishuoyidiandianfayu",
+          "kind": "CORRECTED",
+          "score": 23.793938
+        }
+      ]
+    },
+    {
+      "id": "956c5bdee2fb94fc0d2b0e9b13afa754152736a4cd6bf6518c47385fd1adb35c",
+      "typed": "wozhihuishuoyidiandinafayu",
+      "expected": "我只会说一点点法语",
+      "operation": "transpose",
+      "zone": "tail",
+      "beforeRank": 41,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我只会说一点地那法语",
+          "canonical": "wozhihuishuoyidiandinafayu",
+          "kind": "BASE_COMPOSED",
+          "score": 9.359552
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我只会说一点点法语",
+          "canonical": "wozhihuishuoyidiandianfayu",
+          "kind": "CORRECTED",
+          "score": 23.393938
+        }
+      ]
+    },
+    {
+      "id": "93d16f7a06dca9a66ce1cd237641ca59fad2deac4bcaab86ee16805cce9bcf7b",
+      "typed": "zhezhimaomiqicangquankai",
+      "expected": "这只猫咪气场全开",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 86,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "这只猫咪其藏全开",
+          "canonical": "zhezhimaomiqicangquankai",
+          "kind": "BASE_COMPOSED",
+          "score": 5.143573
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这只猫咪气场全开",
+          "canonical": "zhezhimaomiqichangquankai",
+          "kind": "CORRECTED",
+          "score": 20.920116
+        }
+      ]
+    },
+    {
+      "id": "d6bc9ab268ed9506f8e45fa954798adf0acfc877778fe30afbffcfcc428b46bf",
+      "typed": "woxiaangxinnihuichenggongde",
+      "expected": "我相信你会成功的",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 41,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我下卬信你会成功的",
+          "canonical": "woxiaangxinnihuichenggongde",
+          "kind": "BASE_COMPOSED",
+          "score": 8.225601
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我相信你会成功的",
+          "canonical": "woxiangxinnihuichenggongde",
+          "kind": "CORRECTED",
+          "score": 26.920437
+        }
+      ]
+    },
+    {
+      "id": "fc51987ad4ae3380876eae7ae6035d6a2cc3d9a3dd677d607c7bf320eefcc2e7",
+      "typed": "wosiangxinnihuichenggongde",
+      "expected": "我相信你会成功的",
+      "operation": "neighbor",
+      "zone": "head",
+      "beforeRank": 53,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我司卬信你会成功的",
+          "canonical": "wosiangxinnihuichenggongde",
+          "kind": "BASE_COMPOSED",
+          "score": 7.430254
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我相信你会成功的",
+          "canonical": "woxiangxinnihuichenggongde",
+          "kind": "CORRECTED",
+          "score": 26.598278
+        }
+      ]
+    },
+    {
+      "id": "44131734773dffa4c458737673e927ac677847cf863bbfb39dcf9a8e14366dab",
+      "typed": "huoohuasaibushiwentisuozai",
+      "expected": "火花塞不是问题所在",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 79,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "或哦花塞不是问题所在",
+          "canonical": "huoohuasaibushiwentisuozai",
+          "kind": "BASE_COMPOSED",
+          "score": 6.5538254
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "火花塞不是问题所在",
+          "canonical": "huohuasaibushiwentisuozai",
+          "kind": "CORRECTED",
+          "score": 23.87757
+        }
+      ]
+    },
+    {
+      "id": "dedce8526db1813c8b8c1e1be212b915dd8381dfcfc04734e9ace841f62613e6",
+      "typed": "qingnidengyixiahaooma",
+      "expected": "请你等一下好吗",
+      "operation": "repeat",
+      "zone": "tail",
+      "beforeRank": 52,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "请你等一下好哦吗",
+          "canonical": "qingnidengyixiahaooma",
+          "kind": "BASE_COMPOSED",
+          "score": 6.8778625
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "请你等一下好吗",
+          "canonical": "qingnidengyixiahaoma",
+          "kind": "CORRECTED",
+          "score": 22.926907
+        }
+      ]
+    },
+    {
+      "id": "ba67b96cc367d2c4b5263c35f5c938d7c95b8c964e99a2112f1251d110d0544c",
+      "typed": "qingnidenyixiahaoma",
+      "expected": "请你等一下好吗",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 59,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "请你扽一下好吗",
+          "canonical": "qingnidenyixiahaoma",
+          "kind": "BASE_COMPOSED",
+          "score": 7.0407705
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "请你等一下好吗",
+          "canonical": "qingnidengyixiahaoma",
+          "kind": "CORRECTED",
+          "score": 22.372204
+        }
+      ]
+    },
+    {
+      "id": "c96040b6ef831885bddedd64e5ceb70926ba1a9b2941a9c91e6068a9a524df57",
+      "typed": "taiwanshiwozuiaideguojua",
+      "expected": "台湾是我最爱的国家",
+      "operation": "neighbor",
+      "zone": "tail",
+      "beforeRank": 88,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "台湾是我最爱的锅具啊",
+          "canonical": "taiwanshiwozuiaideguojua",
+          "kind": "BASE_COMPOSED",
+          "score": 9.203606
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "台湾是我最爱的国家",
+          "canonical": "taiwanshiwozuiaideguojia",
+          "kind": "CORRECTED",
+          "score": 24.502737
+        }
+      ]
+    },
+    {
+      "id": "52ef95e906d8fbacb25b3e8f62c987153b98bbb74728b10e54b323bde5cf5d24",
+      "typed": "taiwanshiwozhuiaideguojia",
+      "expected": "台湾是我最爱的国家",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 46,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "台湾是我追爱的国家",
+          "canonical": "taiwanshiwozhuiaideguojia",
+          "kind": "BASE_COMPOSED",
+          "score": 9.9443445
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "台湾是我最爱的国家",
+          "canonical": "taiwanshiwozuiaideguojia",
+          "kind": "CORRECTED",
+          "score": 25.11849
+        }
+      ]
+    },
+    {
+      "id": "7e336cd607beb3956cf2145dca45ab94d879251e5ec4f7d86dd49295d55e011a",
+      "typed": "tameiqianqulvxin",
+      "expected": "他没钱去旅行",
+      "operation": "delete",
+      "zone": "tail",
+      "beforeRank": 89,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "他没钱去滤芯",
+          "canonical": "tameiqianqulvxin",
+          "kind": "BASE_COMPOSED",
+          "score": 3.7159
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "他没钱去旅行",
+          "canonical": "tameiqianqulvxing",
+          "kind": "CORRECTED",
+          "score": 21.033438
+        }
+      ]
+    },
+    {
+      "id": "eef513391f4faf35b2c4c83e27b44781a5c54773630778bed3b201fdea0bd226",
+      "typed": "tameiqinaqulvxing",
+      "expected": "他没钱去旅行",
+      "operation": "transpose",
+      "zone": "middle",
+      "beforeRank": 77,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "他煤气那去旅行",
+          "canonical": "tameiqinaqulvxing",
+          "kind": "BASE_COMPOSED",
+          "score": 5.542309
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "他没钱去旅行",
+          "canonical": "tameiqianqulvxing",
+          "kind": "CORRECTED",
+          "score": 20.778328
+        }
+      ]
+    },
+    {
+      "id": "05d83fd8dcd6476a35466be085a90c68ea98a13f3bb25ef2cfdb685fa9a210c1",
+      "typed": "woyinggaaigaosuwolaogong",
+      "expected": "我应该告诉我老公",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 64,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我应噶爱告诉我老公",
+          "canonical": "woyinggaaigaosuwolaogong",
+          "kind": "BASE_COMPOSED",
+          "score": 5.647543
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我应该告诉我老公",
+          "canonical": "woyinggaigaosuwolaogong",
+          "kind": "CORRECTED",
+          "score": 24.875677
+        }
+      ]
+    },
+    {
+      "id": "a9e9553e89467e737adeec4d664f5db85713edabff66a7a417e46802984ee2ac",
+      "typed": "woyinggaigaosuwoolaogong",
+      "expected": "我应该告诉我老公",
+      "operation": "repeat",
+      "zone": "middle",
+      "beforeRank": 64,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我应该告诉我哦老公",
+          "canonical": "woyinggaigaosuwoolaogong",
+          "kind": "BASE_COMPOSED",
+          "score": 10.766163
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我应该告诉我老公",
+          "canonical": "woyinggaigaosuwolaogong",
+          "kind": "CORRECTED",
+          "score": 24.875677
+        }
+      ]
+    },
+    {
+      "id": "27489d9300a4f92f1c42fd7e2c524cf694452a6335e1784883da8e110c4b99ac",
+      "typed": "woyinggaigaosuwolaoogong",
+      "expected": "我应该告诉我老公",
+      "operation": "repeat",
+      "zone": "tail",
+      "beforeRank": 76,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我应该告诉我老哦共",
+          "canonical": "woyinggaigaosuwolaoogong",
+          "kind": "BASE_COMPOSED",
+          "score": 7.8059406
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我应该告诉我老公",
+          "canonical": "woyinggaigaosuwolaogong",
+          "kind": "CORRECTED",
+          "score": 24.875677
+        }
+      ]
+    },
+    {
+      "id": "689e02c6290da3ac70da6e2afa44c0ed8b3870d9be5c65ccff27a643209cce05",
+      "typed": "wuoyiwobunengqizixingche",
+      "expected": "所以我不能骑自行车",
+      "operation": "neighbor",
+      "zone": "head",
+      "beforeRank": 54,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "无哦以我不能骑自行车",
+          "canonical": "wuoyiwobunengqizixingche",
+          "kind": "BASE_COMPOSED",
+          "score": 8.575188
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "所以我不能骑自行车",
+          "canonical": "suoyiwobunengqizixingche",
+          "kind": "CORRECTED",
+          "score": 26.153915
+        }
+      ]
+    },
+    {
+      "id": "04724a040608a1c4ec3bf45fec5b97d6f1df04627576fe8704a1a78963b6d53d",
+      "typed": "suoyiwobunengqizhixingche",
+      "expected": "所以我不能骑自行车",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 45,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "所以我不能气质行车",
+          "canonical": "suoyiwobunengqizhixingche",
+          "kind": "BASE_COMPOSED",
+          "score": 11.101258
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "所以我不能骑自行车",
+          "canonical": "suoyiwobunengqizixingche",
+          "kind": "CORRECTED",
+          "score": 26.70362
+        }
+      ]
+    },
+    {
+      "id": "58025a91819499e85b3cfbf0cacc9852e537877ff6b6855ddf707209fec920f5",
+      "typed": "wozhidaotajiaaoshenmemingzi",
+      "expected": "我知道他叫什么名字",
+      "operation": "repeat",
+      "zone": "middle",
+      "beforeRank": 67,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我知道他家凹什么名字",
+          "canonical": "wozhidaotajiaaoshenmemingzi",
+          "kind": "BASE_COMPOSED",
+          "score": 11.209708
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我知道他叫什么名字",
+          "canonical": "wozhidaotajiaoshenmemingzi",
+          "kind": "CORRECTED",
+          "score": 27.608055
+        }
+      ]
+    },
+    {
+      "id": "c26a70b512efa7e3f4dcae2fea6da789f1837619517083b70cdbc8b6b8b60ae9",
+      "typed": "wozuidaotajiaoshenmemingzi",
+      "expected": "我知道他叫什么名字",
+      "operation": "neighbor",
+      "zone": "head",
+      "beforeRank": 59,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我最到他叫什么名字",
+          "canonical": "wozuidaotajiaoshenmemingzi",
+          "kind": "BASE_COMPOSED",
+          "score": 12.662098
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我知道他叫什么名字",
+          "canonical": "wozhidaotajiaoshenmemingzi",
+          "kind": "CORRECTED",
+          "score": 27.312344
+        }
+      ]
+    },
+    {
+      "id": "32a103d4a540bf3e4b56b6387f4d747f48ee4df6e68c9504d2fcf5a23e142b7f",
+      "typed": "wozhidaotajiaoshenmemingzhi",
+      "expected": "我知道他叫什么名字",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 61,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我知道他叫什么明知",
+          "canonical": "wozhidaotajiaoshenmemingzhi",
+          "kind": "BASE_COMPOSED",
+          "score": 12.953175
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我知道他叫什么名字",
+          "canonical": "wozhidaotajiaoshenmemingzi",
+          "kind": "CORRECTED",
+          "score": 27.808056
+        }
+      ]
+    },
+    {
+      "id": "c6fb448ca4dc2032546cc043aa2c9fecad0a3fe8a0cc2d47390d6a12acc9e71b",
+      "typed": "womenjinwanchuquchihan",
+      "expected": "我们今晚出去吃饭",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 63,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我们今晚出去吃邯",
+          "canonical": "womenjinwanchuquchihan",
+          "kind": "BASE_COMPOSED",
+          "score": 10.3178005
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我们今晚出去吃饭",
+          "canonical": "womenjinwanchuquchifan",
+          "kind": "CORRECTED",
+          "score": 25.782309
+        }
+      ]
+    },
+    {
+      "id": "726963707be5c2c23ace40fc621f301fc77b71145846b4281996b373e32c0213",
+      "typed": "tangmutaaoyantaziji",
+      "expected": "汤姆讨厌他自己",
+      "operation": "repeat",
+      "zone": "middle",
+      "beforeRank": 95,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "汤姆他凹眼他自己",
+          "canonical": "tangmutaaoyantaziji",
+          "kind": "BASE_COMPOSED",
+          "score": 4.0844426
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "汤姆讨厌他自己",
+          "canonical": "tangmutaoyantaziji",
+          "kind": "CORRECTED",
+          "score": 23.131462
+        }
+      ]
+    },
+    {
+      "id": "7c6bcd7b0b0b6bdd0f7116ac7990305e089be19ea2c7c3c974d2e665d0ab707c",
+      "typed": "tangmutaoyantazini",
+      "expected": "汤姆讨厌他自己",
+      "operation": "neighbor",
+      "zone": "tail",
+      "beforeRank": 78,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "汤姆讨厌他自你",
+          "canonical": "tangmutaoyantazini",
+          "kind": "BASE_COMPOSED",
+          "score": 7.4456835
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "汤姆讨厌他自己",
+          "canonical": "tangmutaoyantaziji",
+          "kind": "CORRECTED",
+          "score": 22.54451
+        }
+      ]
+    },
+    {
+      "id": "ee4ab01d32014d9ef2f97c77d07c07d13edbd83b8d7b801f329b02fae23e3853",
+      "typed": "cheezhanjiuzaizhelifujin",
+      "expected": "车站就在这里附近",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 70,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "车恶战就在这里附近",
+          "canonical": "cheezhanjiuzaizhelifujin",
+          "kind": "BASE_COMPOSED",
+          "score": 8.458928
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "车站就在这里附近",
+          "canonical": "chezhanjiuzaizhelifujin",
+          "kind": "CORRECTED",
+          "score": 23.871822
+        }
+      ]
+    },
+    {
+      "id": "b7b49b9c6cc4e9b9045d6a9f8d32f0c157656f7b1e9885d3bc935ad70ddf7615",
+      "typed": "chezhanjiuzaizhelofujin",
+      "expected": "车站就在这里附近",
+      "operation": "neighbor",
+      "zone": "tail",
+      "beforeRank": 49,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "车站就在这咯附近",
+          "canonical": "chezhanjiuzaizhelofujin",
+          "kind": "BASE_COMPOSED",
+          "score": 7.1355
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "车站就在这里附近",
+          "canonical": "chezhanjiuzaizhelifujin",
+          "kind": "CORRECTED",
+          "score": 23.401182
+        }
+      ]
+    },
+    {
+      "id": "4434c144076b933834d726e9e2d318d698e9475b8b53fa57234d364476662985",
+      "typed": "chezhanijuzaizhelifujin",
+      "expected": "车站就在这里附近",
+      "operation": "transpose",
+      "zone": "head",
+      "beforeRank": 62,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "车闸你狙在这里附近",
+          "canonical": "chezhanijuzaizhelifujin",
+          "kind": "BASE_COMPOSED",
+          "score": 6.8534155
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "车站就在这里附近",
+          "canonical": "chezhanjiuzaizhelifujin",
+          "kind": "CORRECTED",
+          "score": 23.001183
+        }
+      ]
+    },
+    {
+      "id": "3ad565c72cd0e6a8893adeb399dec301ac38844cc1b53f4f207c4a9c3f91c80d",
+      "typed": "chezhanjiuazizhelifujin",
+      "expected": "车站就在这里附近",
+      "operation": "transpose",
+      "zone": "middle",
+      "beforeRank": 86,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "车站就阿紫这里附近",
+          "canonical": "chezhanjiuazizhelifujin",
+          "kind": "BASE_COMPOSED",
+          "score": 6.0245457
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "车站就在这里附近",
+          "canonical": "chezhanjiuzaizhelifujin",
+          "kind": "CORRECTED",
+          "score": 23.001183
+        }
+      ]
+    },
+    {
+      "id": "5a45fcf52f840094c3e769008f50771e416b224288f5506fe71df1a07ee74cff",
+      "typed": "womenyougehaooxiaoxi",
+      "expected": "我们有个好消息",
+      "operation": "repeat",
+      "zone": "middle",
+      "beforeRank": 58,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我们有个好哦消息",
+          "canonical": "womenyougehaooxiaoxi",
+          "kind": "BASE_COMPOSED",
+          "score": 8.645182
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我们有个好消息",
+          "canonical": "womenyougehaoxiaoxi",
+          "kind": "CORRECTED",
+          "score": 25.207294
+        }
+      ]
+    },
+    {
+      "id": "ee540f0eeb0058d29a37a533480f7ae9856e2d3508f66806e236deb2ba1a6f80",
+      "typed": "womenyougehaociaoxi",
+      "expected": "我们有个好消息",
+      "operation": "neighbor",
+      "zone": "tail",
+      "beforeRank": 76,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我们有个好词奥西",
+          "canonical": "womenyougehaociaoxi",
+          "kind": "BASE_COMPOSED",
+          "score": 5.1669617
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我们有个好消息",
+          "canonical": "womenyougehaoxiaoxi",
+          "kind": "CORRECTED",
+          "score": 24.749966
+        }
+      ]
+    },
+    {
+      "id": "f5155676cb372279c4cbb5d442f626ca802696b82018cff7c3dcc9ef26d95fcf",
+      "typed": "womenyuogehaoxiaoxi",
+      "expected": "我们有个好消息",
+      "operation": "transpose",
+      "zone": "head",
+      "beforeRank": 75,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我们与哦个好消息",
+          "canonical": "womenyuogehaoxiaoxi",
+          "kind": "BASE_COMPOSED",
+          "score": 7.313712
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我们有个好消息",
+          "canonical": "womenyougehaoxiaoxi",
+          "kind": "CORRECTED",
+          "score": 24.349964
+        }
+      ]
+    },
+    {
+      "id": "b8f74ebc98bee8897b4d52933151b71f732317eb6d1ee611470444ec7d22541b",
+      "typed": "womenyougefaoxiaoxi",
+      "expected": "我们有个好消息",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 56,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我们有个发哦消息",
+          "canonical": "womenyougefaoxiaoxi",
+          "kind": "BASE_COMPOSED",
+          "score": 6.211128
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我们有个好消息",
+          "canonical": "womenyougehaoxiaoxi",
+          "kind": "CORRECTED",
+          "score": 25.149963
+        }
+      ]
+    },
+    {
+      "id": "a556dd1f36f004fe840c787b589c76aef2a27d75f73edc6c1467a8b945d28a66",
+      "typed": "woxianggeitadaadianhua",
+      "expected": "我想给他打电话",
+      "operation": "repeat",
+      "zone": "middle",
+      "beforeRank": 62,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我想给他打啊电话",
+          "canonical": "woxianggeitadaadianhua",
+          "kind": "BASE_COMPOSED",
+          "score": 8.785576
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我想给他打电话",
+          "canonical": "woxianggeitadadianhua",
+          "kind": "CORRECTED",
+          "score": 27.221539
+        }
+      ]
+    },
+    {
+      "id": "75cee3fd514b6e96c327ef11f3648274e803d126d289de73376a76ab835df32d",
+      "typed": "woxianggeitadadianjua",
+      "expected": "我想给他打电话",
+      "operation": "neighbor",
+      "zone": "tail",
+      "beforeRank": 81,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我想给他打电锯啊",
+          "canonical": "woxianggeitadadianjua",
+          "kind": "BASE_COMPOSED",
+          "score": 7.449958
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我想给他打电话",
+          "canonical": "woxianggeitadadianhua",
+          "kind": "CORRECTED",
+          "score": 26.88463
+        }
+      ]
+    },
+    {
+      "id": "0d44468bc11ca5ea768fd369d0ee588602a2e1a7bc499fd3fcd695fa1481e4f3",
+      "typed": "woxianggeitadadianfua",
+      "expected": "我想给他打电话",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 83,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我想给他打碘伏啊",
+          "canonical": "woxianggeitadadianfua",
+          "kind": "BASE_COMPOSED",
+          "score": 6.2761793
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我想给他打电话",
+          "canonical": "woxianggeitadadianhua",
+          "kind": "CORRECTED",
+          "score": 27.28463
+        }
+      ]
+    },
+    {
+      "id": "6dc89cb6c3f581dafbe833a28ef686e02321220f6b8f79e33fc2b1d5391e2703",
+      "typed": "womeitianshangjiotang",
+      "expected": "我每天上教堂",
+      "operation": "delete",
+      "zone": "tail",
+      "beforeRank": 75,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我每天上级哦汤",
+          "canonical": "womeitianshangjiotang",
+          "kind": "BASE_COMPOSED",
+          "score": 7.262766
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我每天上教堂",
+          "canonical": "womeitianshangjiaotang",
+          "kind": "CORRECTED",
+          "score": 21.965265
+        }
+      ]
+    },
+    {
+      "id": "cb20aa026e9cd0d1161e0d707f13d5a5885b107a42308148065f59c63c1b4a50",
+      "typed": "xiyijiyoouxiebuduijin",
+      "expected": "洗衣机有些不对劲",
+      "operation": "repeat",
+      "zone": "middle",
+      "beforeRank": 94,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "洗衣机哟呕血不对劲",
+          "canonical": "xiyijiyoouxiebuduijin",
+          "kind": "BASE_COMPOSED",
+          "score": 4.2573395
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "洗衣机有些不对劲",
+          "canonical": "xiyijiyouxiebuduijin",
+          "kind": "CORRECTED",
+          "score": 23.083704
+        }
+      ]
+    },
+    {
+      "id": "c4744404c4497d70d24ecbd4360f51396c6a618a6a3edda6730429fe8b908e68",
+      "typed": "taabaqiantouziyugupiao",
+      "expected": "他把钱投资于股票",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 78,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "他啊把钱投资于股票",
+          "canonical": "taabaqiantouziyugupiao",
+          "kind": "BASE_COMPOSED",
+          "score": 5.077593
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "他把钱投资于股票",
+          "canonical": "tabaqiantouziyugupiao",
+          "kind": "CORRECTED",
+          "score": 19.620714
+        }
+      ]
+    },
+    {
+      "id": "9a93eabd7d0951174032297889fe41da9c510de74e5869e9a25a01da4894f71a",
+      "typed": "kongpawobuneengbangni",
+      "expected": "恐怕我不能帮你",
+      "operation": "repeat",
+      "zone": "middle",
+      "beforeRank": 61,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "恐怕我不呢嗯帮你",
+          "canonical": "kongpawobuneengbangni",
+          "kind": "BASE_COMPOSED",
+          "score": 6.13373
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "恐怕我不能帮你",
+          "canonical": "kongpawobunengbangni",
+          "kind": "CORRECTED",
+          "score": 23.890572
+        }
+      ]
+    },
+    {
+      "id": "c464ab84cd7dd82206ca0a44a05dc604b3db6b7b16c9bbf0aa6ae7d0bc04985e",
+      "typed": "kongpawobunengbangji",
+      "expected": "恐怕我不能帮你",
+      "operation": "neighbor",
+      "zone": "tail",
+      "beforeRank": 50,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "恐怕我不能帮及",
+          "canonical": "kongpawobunengbangji",
+          "kind": "BASE_COMPOSED",
+          "score": 8.696549
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "恐怕我不能帮你",
+          "canonical": "kongpawobunengbangni",
+          "kind": "CORRECTED",
+          "score": 23.380272
+        }
+      ]
+    },
+    {
+      "id": "0fb469a0446529fb1ee16af831c39756da445961ffc6f23484aa43ea917421b0",
+      "typed": "tangmuxihuangenmalijiangfua",
+      "expected": "汤姆喜欢跟玛丽讲话",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 97,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "汤姆喜欢跟玛丽降幅啊",
+          "canonical": "tangmuxihuangenmalijiangfua",
+          "kind": "BASE_COMPOSED",
+          "score": 6.5636005
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "汤姆喜欢跟玛丽讲话",
+          "canonical": "tangmuxihuangenmalijianghua",
+          "kind": "CORRECTED",
+          "score": 21.355225
+        }
+      ]
+    },
+    {
+      "id": "23f024dbf6892b159e722e4a187c589a712e93f8e4e79490f2665a038d91557b",
+      "typed": "zheshiyigelishixingdejuedong",
+      "expected": "这是一个历史性的决定",
+      "operation": "neighbor",
+      "zone": "tail",
+      "beforeRank": 61,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "这是一个历史性的撅动",
+          "canonical": "zheshiyigelishixingdejuedong",
+          "kind": "BASE_COMPOSED",
+          "score": 11.303202
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这是一个历史性的决定",
+          "canonical": "zheshiyigelishixingdejueding",
+          "kind": "CORRECTED",
+          "score": 25.923195
+        }
+      ]
+    },
+    {
+      "id": "60e3307ec010495a7b6f92bc28b04b1189589c789bb562c117acf4de5e00b691",
+      "typed": "wojuedetaangmukenengshiduide",
+      "expected": "我觉得汤姆可能是对的",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 82,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我觉得他卬姆可能是对的",
+          "canonical": "wojuedetaangmukenengshiduide",
+          "kind": "BASE_COMPOSED",
+          "score": 10.01557
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我觉得汤姆可能是对的",
+          "canonical": "wojuedetangmukenengshiduide",
+          "kind": "CORRECTED",
+          "score": 26.261435
+        }
+      ]
+    },
+    {
+      "id": "f286e3cfc4ab2464958790000ef67d81e1159bc095e6341634dc3c871ec37352",
+      "typed": "wojuedetangmukelengshiduide",
+      "expected": "我觉得汤姆可能是对的",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 72,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我觉得汤姆可愣是对的",
+          "canonical": "wojuedetangmukelengshiduide",
+          "kind": "BASE_COMPOSED",
+          "score": 10.799091
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我觉得汤姆可能是对的",
+          "canonical": "wojuedetangmukenengshiduide",
+          "kind": "CORRECTED",
+          "score": 26.319393
+        }
+      ]
+    },
+    {
+      "id": "f2bdd8ba93145ca4c826dfd952e5a1e9b0dbe785da6dd2f6fb8147531b780b68",
+      "typed": "zheejiushiwomenpengtiaomidefangfa",
+      "expected": "这就是我们烹调米的方法",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 51,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "这呃就是我们烹调米的方法",
+          "canonical": "zheejiushiwomenpengtiaomidefangfa",
+          "kind": "BASE_COMPOSED",
+          "score": 9.263271
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这就是我们烹调米的方法",
+          "canonical": "zhejiushiwomenpengtiaomidefangfa",
+          "kind": "CORRECTED",
+          "score": 23.44887
+        }
+      ]
+    },
+    {
+      "id": "4756f7f48c83e443a496a04ab5d033408b5d43940461aa6466af90ee38067e0f",
+      "typed": "zhejiushiwomenpengtiaomidefaangfa",
+      "expected": "这就是我们烹调米的方法",
+      "operation": "repeat",
+      "zone": "tail",
+      "beforeRank": 63,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "这就是我们烹调米的发卬发",
+          "canonical": "zhejiushiwomenpengtiaomidefaangfa",
+          "kind": "BASE_COMPOSED",
+          "score": 7.065119
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这就是我们烹调米的方法",
+          "canonical": "zhejiushiwomenpengtiaomidefangfa",
+          "kind": "CORRECTED",
+          "score": 23.44887
+        }
+      ]
+    },
+    {
+      "id": "069d146e6a9fa033170fa34805ba1bcec4cb2fe12bdc17ef0db51f176778be8b",
+      "typed": "zhejiushiwomenpengtaiomidefangfa",
+      "expected": "这就是我们烹调米的方法",
+      "operation": "transpose",
+      "zone": "middle",
+      "beforeRank": 74,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "这就是我们彭太哦米的方法",
+          "canonical": "zhejiushiwomenpengtaiomidefangfa",
+          "kind": "BASE_COMPOSED",
+          "score": 8.428645
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这就是我们烹调米的方法",
+          "canonical": "zhejiushiwomenpengtiaomidefangfa",
+          "kind": "CORRECTED",
+          "score": 22.641129
+        }
+      ]
+    },
+    {
+      "id": "c2980c41de79eb830c7e78a6505e8bf4ad978706c32295541c10b9a249f51272",
+      "typed": "youxiechengkebaoyuanfuwutaidubufao",
+      "expected": "有些乘客抱怨服务态度不好",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 75,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "有些乘客抱怨服务态度步伐哦",
+          "canonical": "youxiechengkebaoyuanfuwutaidubufao",
+          "kind": "BASE_COMPOSED",
+          "score": 7.8984227
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "有些乘客抱怨服务态度不好",
+          "canonical": "youxiechengkebaoyuanfuwutaidubuhao",
+          "kind": "CORRECTED",
+          "score": 23.046432
+        }
+      ]
+    },
+    {
+      "id": "b4eab335aa40687a5568a9e992ac37b50cf587f249964569929e4a26e523c37a",
+      "typed": "womenyaozaizhelidaiyizheengtian",
+      "expected": "我们要在这里待一整天",
+      "operation": "repeat",
+      "zone": "tail",
+      "beforeRank": 62,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我们要在这里待以这嗯天",
+          "canonical": "womenyaozaizhelidaiyizheengtian",
+          "kind": "BASE_COMPOSED",
+          "score": 9.140793
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我们要在这里待一整天",
+          "canonical": "womenyaozaizhelidaiyizhengtian",
+          "kind": "CORRECTED",
+          "score": 25.061487
+        }
+      ]
+    },
+    {
+      "id": "f9c26903090c09ecbb07891199c759564a74087fa8462ced3836e9c17768d785",
+      "typed": "womenyaozaizuelidaiyizhengtian",
+      "expected": "我们要在这里待一整天",
+      "operation": "neighbor",
+      "zone": "middle",
+      "beforeRank": 73,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我们要在足额历代一整天",
+          "canonical": "womenyaozaizuelidaiyizhengtian",
+          "kind": "BASE_COMPOSED",
+          "score": 8.976822
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我们要在这里待一整天",
+          "canonical": "womenyaozaizhelidaiyizhengtian",
+          "kind": "CORRECTED",
+          "score": 24.69365
+        }
+      ]
+    },
+    {
+      "id": "d4e6c72b2e9ac997c1526cad05418df92bc4627c0ac726ed4780087e87ae521d",
+      "typed": "womenyaoazizhelidaiyizhengtian",
+      "expected": "我们要在这里待一整天",
+      "operation": "transpose",
+      "zone": "head",
+      "beforeRank": 80,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我们要阿紫这里待一整天",
+          "canonical": "womenyaoazizhelidaiyizhengtian",
+          "kind": "BASE_COMPOSED",
+          "score": 9.318779
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我们要在这里待一整天",
+          "canonical": "womenyaozaizhelidaiyizhengtian",
+          "kind": "CORRECTED",
+          "score": 24.29365
+        }
+      ]
+    },
+    {
+      "id": "7e00a9ba6610673162e843efda80e82ca36a672014a17532afcffba929e9b8fe",
+      "typed": "womenzhelidetianqizenmeeyang",
+      "expected": "我们这里的天气怎么样",
+      "operation": "repeat",
+      "zone": "tail",
+      "beforeRank": 95,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我们这里的天气怎么呃样",
+          "canonical": "womenzhelidetianqizenmeeyang",
+          "kind": "BASE_COMPOSED",
+          "score": 10.153638
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我们这里的天气怎么样",
+          "canonical": "womenzhelidetianqizenmeyang",
+          "kind": "CORRECTED",
+          "score": 27.376873
+        }
+      ]
+    },
+    {
+      "id": "f674ffeb21ae11b210259b241a49be15cba3019549b7c5bc143d407cce421057",
+      "typed": "womenzhelidetianqizhenmeyang",
+      "expected": "我们这里的天气怎么样",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 65,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我们这里的天气真么样",
+          "canonical": "womenzhelidetianqizhenmeyang",
+          "kind": "BASE_COMPOSED",
+          "score": 10.698607
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我们这里的天气怎么样",
+          "canonical": "womenzhelidetianqizenmeyang",
+          "kind": "CORRECTED",
+          "score": 27.576872
+        }
+      ]
+    },
+    {
+      "id": "8998c9e0ea161663e720841ecfac67a1c37301ac3dc853911fc9107e303db9fb",
+      "typed": "wozaiyeewufaxiangxinrenherenle",
+      "expected": "我再也无法相信任何人了",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 49,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我再也呃无法相信任何人了",
+          "canonical": "wozaiyeewufaxiangxinrenherenle",
+          "kind": "BASE_COMPOSED",
+          "score": 10.829365
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我再也无法相信任何人了",
+          "canonical": "wozaiyewufaxiangxinrenherenle",
+          "kind": "CORRECTED",
+          "score": 25.175587
+        }
+      ]
+    },
+    {
+      "id": "6bdb4e2b19a0d397afa135e67e1072129be003f5b6a255a3e84adfbfc5470d9b",
+      "typed": "biqiyangrouwogengxifuanniurou",
+      "expected": "比起羊肉我更喜欢牛肉",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 70,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "比起羊肉我更媳妇按牛肉",
+          "canonical": "biqiyangrouwogengxifuanniurou",
+          "kind": "BASE_COMPOSED",
+          "score": 5.1524014
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "比起羊肉我更喜欢牛肉",
+          "canonical": "biqiyangrouwogengxihuanniurou",
+          "kind": "CORRECTED",
+          "score": 22.160725
+        }
+      ]
+    },
+    {
+      "id": "421a46fe86da141a09bafffbdd798a5f2d06dde7398d3f353519f9f58e27dfa0",
+      "typed": "zhegejihuachedideshibiale",
+      "expected": "这个计划彻底的失败了",
+      "operation": "transpose",
+      "zone": "tail",
+      "beforeRank": 46,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "这个计划彻底的是比啊了",
+          "canonical": "zhegejihuachedideshibiale",
+          "kind": "BASE_COMPOSED",
+          "score": 9.252117
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这个计划彻底的失败了",
+          "canonical": "zhegejihuachedideshibaile",
+          "kind": "CORRECTED",
+          "score": 24.214201
+        }
+      ]
+    },
+    {
+      "id": "64a703ac1ce06d6b73696047d374fe22ab4eaded8e696c3b62ba845cc8ed789c",
+      "typed": "zegejihuachedideshibaile",
+      "expected": "这个计划彻底的失败了",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 31,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "则个计划彻底的失败了",
+          "canonical": "zegejihuachedideshibaile",
+          "kind": "BASE_COMPOSED",
+          "score": 9.272676
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这个计划彻底的失败了",
+          "canonical": "zhegejihuachedideshibaile",
+          "kind": "CORRECTED",
+          "score": 24.794104
+        }
+      ]
+    },
+    {
+      "id": "789f1b80a0c4e127d650bb15153452ed3d9e621ab33967ea423174429944f604",
+      "typed": "liyuereneiludeyitioazixingchedaodaotale",
+      "expected": "里约热内卢的一条自行车道倒塌了",
+      "operation": "transpose",
+      "zone": "middle",
+      "beforeRank": 59,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "里约热内卢的一体哦啊自行车道倒塌了",
+          "canonical": "liyuereneiludeyitioazixingchedaodaotale",
+          "kind": "BASE_COMPOSED",
+          "score": 9.337455
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "里约热内卢的一条自行车道倒塌了",
+          "canonical": "liyuereneiludeyitiaozixingchedaodaotale",
+          "kind": "CORRECTED",
+          "score": 23.716347
+        }
+      ]
+    },
+    {
+      "id": "891a7d1b16135ea73f7309933fca83b37b93e46281d3bceecc70497dca20d5df",
+      "typed": "liyuereneinudeyitiaozixingchedaodaotale",
+      "expected": "里约热内卢的一条自行车道倒塌了",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 53,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "里约热内弩的一条自行车道倒塌了",
+          "canonical": "liyuereneinudeyitiaozixingchedaodaotale",
+          "kind": "BASE_COMPOSED",
+          "score": 8.1279
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "里约热内卢的一条自行车道倒塌了",
+          "canonical": "liyuereneiludeyitiaozixingchedaodaotale",
+          "kind": "CORRECTED",
+          "score": 24.516348
+        }
+      ]
+    },
+    {
+      "id": "d1d5a049da14346fc6ea88c480c39adfc51434d9ec26b9cccf3c1c677017e7f3",
+      "typed": "tashuodaiweisibixubeizuazhu",
+      "expected": "他说戴维斯必须被抓住",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 89,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "他说戴维斯必须被卒阿朱",
+          "canonical": "tashuodaiweisibixubeizuazhu",
+          "kind": "BASE_COMPOSED",
+          "score": 4.860156
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "他说戴维斯必须被抓住",
+          "canonical": "tashuodaiweisibixubeizhuazhu",
+          "kind": "CORRECTED",
+          "score": 21.817574
+        }
+      ]
+    },
+    {
+      "id": "30ccb3a3b52e4d4856128dcb25be77a1ec04fb925da4b299ca982f306e606243",
+      "typed": "dabufenderenshizemexiangde",
+      "expected": "大部分的人是这么想的",
+      "operation": "delete",
+      "zone": "middle",
+      "beforeRank": 54,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "大部分的人是则么想的",
+          "canonical": "dabufenderenshizemexiangde",
+          "kind": "BASE_COMPOSED",
+          "score": 10.623728
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "大部分的人是这么想的",
+          "canonical": "dabufenderenshizhemexiangde",
+          "kind": "CORRECTED",
+          "score": 26.4341
+        }
+      ]
+    },
+    {
+      "id": "10e23caf2733eaa29edca8c2c4c21a17d88923b754ad6da58a873186be257eb7",
+      "typed": "dabufendereenshizhemexiangde",
+      "expected": "大部分的人是这么想的",
+      "operation": "repeat",
+      "zone": "middle",
+      "beforeRank": 26,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "大部分的热嗯是这么想的",
+          "canonical": "dabufendereenshizhemexiangde",
+          "kind": "BASE_COMPOSED",
+          "score": 11.530514
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "大部分的人是这么想的",
+          "canonical": "dabufenderenshizhemexiangde",
+          "kind": "CORRECTED",
+          "score": 26.50999
+        }
+      ]
+    },
+    {
+      "id": "d975719eb9442eeca99ba9286f1c63e753b5b43216cbed7224fa79dd67a6af5c",
+      "typed": "daburenderenshizhemexiangde",
+      "expected": "大部分的人是这么想的",
+      "operation": "neighbor",
+      "zone": "head",
+      "beforeRank": 29,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "大部人的人是这么想的",
+          "canonical": "daburenderenshizhemexiangde",
+          "kind": "BASE_COMPOSED",
+          "score": 11.930082
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "大部分的人是这么想的",
+          "canonical": "dabufenderenshizhemexiangde",
+          "kind": "CORRECTED",
+          "score": 26.177155
+        }
+      ]
+    },
+    {
+      "id": "ee3bbf2861fb692fe62f084343132cb01502ebafa0d3bf9805894c386b1520c5",
+      "typed": "dabuhenderenshizhemexiangde",
+      "expected": "大部分的人是这么想的",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 32,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "打不恨的人是这么想的",
+          "canonical": "dabuhenderenshizhemexiangde",
+          "kind": "BASE_COMPOSED",
+          "score": 11.301111
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "大部分的人是这么想的",
+          "canonical": "dabufenderenshizhemexiangde",
+          "kind": "CORRECTED",
+          "score": 26.577154
+        }
+      ]
+    },
+    {
+      "id": "e0cb93f084d00e970464ff0225693bfb7754af6adccff53174efcb8df1766b1f",
+      "typed": "wohetangmushuooguonayangzuohenweixian",
+      "expected": "我和汤姆说过那样做很危险",
+      "operation": "repeat",
+      "zone": "middle",
+      "beforeRank": 35,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我和汤姆说哦过那样做很危险",
+          "canonical": "wohetangmushuooguonayangzuohenweixian",
+          "kind": "BASE_COMPOSED",
+          "score": 9.7579775
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我和汤姆说过那样做很危险",
+          "canonical": "wohetangmushuoguonayangzuohenweixian",
+          "kind": "CORRECTED",
+          "score": 23.758469
+        }
+      ]
+    },
+    {
+      "id": "75b351c2a42dd948f314f1825a115fd0aa1d0f8e7dbfdc7998db4a89b3ee40ff",
+      "typed": "daaduoshuyiselierenbushibolanyoutairen",
+      "expected": "大多数以色列人不是波兰犹太人",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 56,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "大啊多数以色列人不是波兰犹太人",
+          "canonical": "daaduoshuyiselierenbushibolanyoutairen",
+          "kind": "BASE_COMPOSED",
+          "score": 8.897969
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "大多数以色列人不是波兰犹太人",
+          "canonical": "daduoshuyiselierenbushibolanyoutairen",
+          "kind": "CORRECTED",
+          "score": 23.548891
+        }
+      ]
+    },
+    {
+      "id": "5b70a5350537119dd2a9149e51e79dfe0c9f09790e344f641039cb5c3cc01a59",
+      "typed": "wodepengyuozongshisanfenzhongredu",
+      "expected": "我的朋友总是三分钟热度",
+      "operation": "transpose",
+      "zone": "head",
+      "beforeRank": 50,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我的彭玉哦总是三分钟热度",
+          "canonical": "wodepengyuozongshisanfenzhongredu",
+          "kind": "BASE_COMPOSED",
+          "score": 8.903424
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我的朋友总是三分钟热度",
+          "canonical": "wodepengyouzongshisanfenzhongredu",
+          "kind": "CORRECTED",
+          "score": 24.344725
+        }
+      ]
+    },
+    {
+      "id": "7989cbf9d364beeb29b663519df1151b1ba01dc5a533816bf544ae667260f525",
+      "typed": "burushuotashiyigexuexiaaodelaoshi",
+      "expected": "不如说他是一个学校的老师",
+      "operation": "repeat",
+      "zone": "tail",
+      "beforeRank": 53,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "不如说他是一个雪下凹的老师",
+          "canonical": "burushuotashiyigexuexiaaodelaoshi",
+          "kind": "BASE_COMPOSED",
+          "score": 10.582076
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "不如说他是一个学校的老师",
+          "canonical": "burushuotashiyigexuexiaodelaoshi",
+          "kind": "CORRECTED",
+          "score": 26.763836
+        }
+      ]
+    },
+    {
+      "id": "8760e5ad97b04b4ea85264ed543b8a90d013e3e24ab86439ec1e5ee5d806227c",
+      "typed": "burushuotashiyigexuexiaoeelaoshi",
+      "expected": "不如说他是一个学校的老师",
+      "operation": "neighbor",
+      "zone": "tail",
+      "beforeRank": 54,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "不如说他是一个学校呃呃老师",
+          "canonical": "burushuotashiyigexuexiaoeelaoshi",
+          "kind": "BASE_COMPOSED",
+          "score": 11.607175
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "不如说他是一个学校的老师",
+          "canonical": "burushuotashiyigexuexiaodelaoshi",
+          "kind": "CORRECTED",
+          "score": 26.459686
+        }
+      ]
+    },
+    {
+      "id": "1e1b62708a1e2b518371eb64c9762c78a3141438242176b661e5c6ca9bd9a5e5",
+      "typed": "woozhidaonimaoleduodadefengxian",
+      "expected": "我知道你冒了多大的风险",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 52,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我哦知道你冒了多大的风险",
+          "canonical": "woozhidaonimaoleduodadefengxian",
+          "kind": "BASE_COMPOSED",
+          "score": 7.832634
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我知道你冒了多大的风险",
+          "canonical": "wozhidaonimaoleduodadefengxian",
+          "kind": "CORRECTED",
+          "score": 22.312256
+        }
+      ]
+    },
+    {
+      "id": "d7f726edfc06fc77480386cd9a64aa47cd7053bc90cbb11303df3375f76c06ae",
+      "typed": "wozhidaonimaoleduodadefengxiaan",
+      "expected": "我知道你冒了多大的风险",
+      "operation": "repeat",
+      "zone": "tail",
+      "beforeRank": 84,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我知道你冒了多大的风下按",
+          "canonical": "wozhidaonimaoleduodadefengxiaan",
+          "kind": "BASE_COMPOSED",
+          "score": 7.368237
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我知道你冒了多大的风险",
+          "canonical": "wozhidaonimaoleduodadefengxian",
+          "kind": "CORRECTED",
+          "score": 22.312256
+        }
+      ]
+    },
+    {
+      "id": "bbe57c11735a769b5c66a968b0e2d4fed2d1126b064c8e7a86e23087622c5adc",
+      "typed": "shangdihuibawomenshenbianzuifaodedongxinazou",
+      "expected": "上帝会把我们身边最好的东西拿走",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 42,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "上帝会把我们身边最发哦的东西拿走",
+          "canonical": "shangdihuibawomenshenbianzuifaodedongxinazou",
+          "kind": "BASE_COMPOSED",
+          "score": 7.9700255
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "上帝会把我们身边最好的东西拿走",
+          "canonical": "shangdihuibawomenshenbianzuihaodedongxinazou",
+          "kind": "CORRECTED",
+          "score": 23.055439
+        }
+      ]
+    },
+    {
+      "id": "4295f95d1cec20fb75e9ca6b109ae3df2311779b916e877cc3f015619de8cf27",
+      "typed": "malijuedetangmuyudaolemaafan",
+      "expected": "玛丽觉得汤姆遇到了麻烦",
+      "operation": "repeat",
+      "zone": "tail",
+      "beforeRank": 62,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "玛丽觉得汤姆遇到了吗啊饭",
+          "canonical": "malijuedetangmuyudaolemaafan",
+          "kind": "BASE_COMPOSED",
+          "score": 6.905076
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "玛丽觉得汤姆遇到了麻烦",
+          "canonical": "malijuedetangmuyudaolemafan",
+          "kind": "CORRECTED",
+          "score": 23.565048
+        }
+      ]
+    },
+    {
+      "id": "992d05f1586d2d8c4e6a80c87df69784bb9c29882fe102408d65e608bd8e307d",
+      "typed": "malijuedetangmuyufaolemafan",
+      "expected": "玛丽觉得汤姆遇到了麻烦",
+      "operation": "neighbor",
+      "zone": "middle",
+      "beforeRank": 75,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "玛丽觉得汤姆语法哦了麻烦",
+          "canonical": "malijuedetangmuyufaolemafan",
+          "kind": "BASE_COMPOSED",
+          "score": 6.0327377
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "玛丽觉得汤姆遇到了麻烦",
+          "canonical": "malijuedetangmuyudaolemafan",
+          "kind": "CORRECTED",
+          "score": 23.123138
+        }
+      ]
+    },
+    {
+      "id": "e9a76f716e6801faec5f142950c49f68dff975fc60edf4e9e16a7cc3e6e31b0f",
+      "typed": "tapoqiedexuayozhaodaogongzuo",
+      "expected": "他迫切的需要找到工作",
+      "operation": "transpose",
+      "zone": "middle",
+      "beforeRank": 71,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "他迫切的需啊哟找到工作",
+          "canonical": "tapoqiedexuayozhaodaogongzuo",
+          "kind": "BASE_COMPOSED",
+          "score": 5.3851633
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "他迫切的需要找到工作",
+          "canonical": "tapoqiedexuyaozhaodaogongzuo",
+          "kind": "CORRECTED",
+          "score": 22.221775
+        }
+      ]
+    },
+    {
+      "id": "197c4fb7b91f1e3d951297379b80bfad96e03494c5aa8e07911c3d9fbe1110e0",
+      "typed": "woyigereenzhuzaizhezhuangfangzili",
+      "expected": "我一个人住在这幢房子里",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 25,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我一个热摁住在这幢房子里",
+          "canonical": "woyigereenzhuzaizhezhuangfangzili",
+          "kind": "BASE_COMPOSED",
+          "score": 9.486524
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我一个人住在这幢房子里",
+          "canonical": "woyigerenzhuzaizhezhuangfangzili",
+          "kind": "CORRECTED",
+          "score": 24.290833
+        }
+      ]
+    },
+    {
+      "id": "0c5bbe42941dc5c118cb9a24fb7a57fe4dbe97c1334e7a7d35f6efb25be929f9",
+      "typed": "zhegesujuyidianyebuzhunque",
+      "expected": "这个数据一点也不准确",
+      "operation": "delete",
+      "zone": "head",
+      "beforeRank": 62,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "这个苏剧一点也不准确",
+          "canonical": "zhegesujuyidianyebuzhunque",
+          "kind": "BASE_COMPOSED",
+          "score": 9.989964
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这个数据一点也不准确",
+          "canonical": "zhegeshujuyidianyebuzhunque",
+          "kind": "CORRECTED",
+          "score": 24.841503
+        }
+      ]
+    },
+    {
+      "id": "3b49401885c95f88564fd14c84a833797bae56c7eb2a5777a0ef7818e4ef9519",
+      "typed": "zhegeshujuyidinayebuzhunque",
+      "expected": "这个数据一点也不准确",
+      "operation": "transpose",
+      "zone": "middle",
+      "beforeRank": 55,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "这个数据一地那也不准确",
+          "canonical": "zhegeshujuyidinayebuzhunque",
+          "kind": "BASE_COMPOSED",
+          "score": 9.762966
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这个数据一点也不准确",
+          "canonical": "zhegeshujuyidianyebuzhunque",
+          "kind": "CORRECTED",
+          "score": 24.243542
+        }
+      ]
+    },
+    {
+      "id": "cd6926b66f143194edcb396942b3b897890cfe084d9ca8f7ff32bda872040b99",
+      "typed": "zegeshujuyidianyebuzhunque",
+      "expected": "这个数据一点也不准确",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 50,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "则个数据一点也不准确",
+          "canonical": "zegeshujuyidianyebuzhunque",
+          "kind": "BASE_COMPOSED",
+          "score": 10.1558075
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这个数据一点也不准确",
+          "canonical": "zhegeshujuyidianyebuzhunque",
+          "kind": "CORRECTED",
+          "score": 24.841503
+        }
+      ]
+    }
+  ],
+  "top1Losses": [],
+  "syntheticFamilyWeightedTop1Delta": {
+    "estimate": 0.057282051282051286,
+    "percentile95": [
+      0.042512820512820515,
+      0.07200000000000001
+    ],
+    "families": 125,
+    "resamples": 2000,
+    "seed": 271828,
+    "interpretation": "Cluster resampling source families, not evidence of real-user error prevalence or independent validation of source labels"
+  },
+  "qualityGate": {
+    "cleanCountsPreserved": true,
+    "typoTop10GainAtLeast20": true,
+    "typoCharacterErrorsNonIncreasing": true,
+    "everyMutationCoverageNonDecreasing": true
+  },
+  "inputReports": {
+    "before": "1cb090d981a1eb4f17db26504c9e7a90e26c9dbcc6306ac3c0578eaa7237ea55",
+    "after": "acd0510d12133abe95682357f0e739b482ea9b484ec5b98b7b2671fc6e8fa60f"
+  }
+}

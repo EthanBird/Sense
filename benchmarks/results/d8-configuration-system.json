@@ -1,0 +1,465 @@
+{
+  "schemaVersion": 1,
+  "baseline": {
+    "schemaVersion": 1,
+    "serial": "emulator-5580",
+    "sdk": "37",
+    "scope": "True system IME in explicit font/orientation configurations; emulator only",
+    "apks": {
+      "io.github.ethanbird.senseime.debug": "5c82a4e9c986d870ddfa6dca0c2e47a6e30bd48f6af2341956c7b4a9cb2a79f0",
+      "io.github.ethanbird.senseime.inputqualityfixture": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+      "io.github.ethanbird.senseime.inputqualityfixture.test": "73dcd60bc72e4805e21daf459142af6a7e7e9bcbe1dee62db950078414435fc1"
+    },
+    "runs": [
+      {
+        "name": "portrait",
+        "fontScale": 1.0,
+        "rotation": 0,
+        "expectedTests": 3,
+        "passed": true,
+        "expectedFailure": false,
+        "logSha256": "9b97581118a55f4eba32ef94a2bd7e21ad0f5dc96a32cac119e14bf6f85d1093",
+        "observations": {
+          "associationCloseRestoresToolbarWithoutMovingLetterRows.txt": "state=started\nfontScale=1.0\norientation=1\nkeyboard=Rect(0, 981 - 1080, 1920)\ndisplay=1080x1920\n",
+          "composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": "state=started\nfontScale=1.0\norientation=1\nkeyboard=Rect(0, 981 - 1080, 1920)\ndisplay=1080x1920\n",
+          "expandedCandidateScrollSelectsItsActualVisibleWord.txt": "state=started\nfontScale=1.0\norientation=1\nkeyboard=Rect(0, 981 - 1080, 1920)\ndisplay=1080x1920\n"
+        }
+      },
+      {
+        "name": "portrait-large",
+        "fontScale": 2.0,
+        "rotation": 0,
+        "expectedTests": 3,
+        "passed": true,
+        "expectedFailure": false,
+        "logSha256": "c72e3e0d4b059b41e336e7c1ea3a1e43a276f16ac926a2aeb5ad92fa16f00610",
+        "observations": {
+          "associationCloseRestoresToolbarWithoutMovingLetterRows.txt": "state=started\nfontScale=2.0\norientation=1\nkeyboard=Rect(0, 981 - 1080, 1920)\ndisplay=1080x1920\n",
+          "composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": "state=started\nfontScale=2.0\norientation=1\nkeyboard=Rect(0, 981 - 1080, 1920)\ndisplay=1080x1920\n",
+          "expandedCandidateScrollSelectsItsActualVisibleWord.txt": "state=started\nfontScale=2.0\norientation=1\nkeyboard=Rect(0, 981 - 1080, 1920)\ndisplay=1080x1920\n"
+        }
+      },
+      {
+        "name": "landscape",
+        "fontScale": 1.0,
+        "rotation": 1,
+        "expectedTests": 3,
+        "passed": true,
+        "expectedFailure": false,
+        "logSha256": "d13b213984b5de0800fd64e2427678211d03dd6d67d5001de703d8e20eef7e97",
+        "observations": {
+          "associationCloseRestoresToolbarWithoutMovingLetterRows.txt": "state=started\nfontScale=1.0\norientation=2\nkeyboard=Rect(0, 403 - 1920, 1080)\ndisplay=1920x1080\n",
+          "composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": "state=started\nfontScale=1.0\norientation=2\nkeyboard=Rect(0, 403 - 1920, 1080)\ndisplay=1920x1080\n",
+          "expandedCandidateScrollSelectsItsActualVisibleWord.txt": "state=started\nfontScale=1.0\norientation=2\nkeyboard=Rect(0, 403 - 1920, 1080)\ndisplay=1920x1080\n"
+        }
+      },
+      {
+        "name": "landscape-large",
+        "fontScale": 2.0,
+        "rotation": 1,
+        "expectedTests": 3,
+        "passed": true,
+        "expectedFailure": false,
+        "logSha256": "0265e7dfb9cb71f97349a5fe517b06fbb12149da397e0dd3c2ee161ea663358a",
+        "observations": {
+          "associationCloseRestoresToolbarWithoutMovingLetterRows.txt": "state=started\nfontScale=2.0\norientation=2\nkeyboard=Rect(0, 403 - 1920, 1080)\ndisplay=1920x1080\n",
+          "composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": "state=started\nfontScale=2.0\norientation=2\nkeyboard=Rect(0, 403 - 1920, 1080)\ndisplay=1920x1080\n",
+          "expandedCandidateScrollSelectsItsActualVisibleWord.txt": "state=started\nfontScale=2.0\norientation=2\nkeyboard=Rect(0, 403 - 1920, 1080)\ndisplay=1920x1080\n"
+        }
+      }
+    ],
+    "settingsBefore": {
+      "system/font_scale": "1.0",
+      "system/accelerometer_rotation": "1",
+      "system/user_rotation": "0",
+      "secure/accessibility_interactive_ui_timeout_ms": "null",
+      "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+      "secure/show_ime_with_hard_keyboard": "1"
+    },
+    "settingsRestored": {
+      "system/font_scale": "1.0",
+      "system/accelerometer_rotation": "1",
+      "system/user_rotation": "0",
+      "secure/accessibility_interactive_ui_timeout_ms": "null",
+      "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+      "secure/show_ime_with_hard_keyboard": "1"
+    }
+  },
+  "final": {
+    "schemaVersion": 1,
+    "serial": "emulator-5580",
+    "sdk": "37",
+    "scope": "True system IME in explicit font/orientation configurations; emulator only",
+    "apks": {
+      "io.github.ethanbird.senseime.debug": "d420f01909f775a5fd96ba8e795b0dc989c5a275b99e83078667b7e1e86d3202",
+      "io.github.ethanbird.senseime.inputqualityfixture": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+      "io.github.ethanbird.senseime.inputqualityfixture.test": "40700dcab7ed45917982bc3c3f37082e9cd99d259feebeb3127decf9f5f9d073"
+    },
+    "runs": [
+      {
+        "name": "portrait",
+        "fontScale": 1.0,
+        "rotation": 0,
+        "expectedTests": 3,
+        "passed": true,
+        "expectedFailure": false,
+        "logSha256": "6fac60eb06ceded1e383a8fa7424d11c89a60aaa14291cdeab3774fe73e69c35",
+        "observations": {
+          "associationCloseRestoresToolbarWithoutMovingLetterRows.txt": "state=started\nrequestedOrientation=1; actualOrientation=1; displayRotation=0\nfontScale=1.0\norientation=1\nkeyboard=Rect(0, 981 - 1080, 1920)\ndisplay=1080x1920\n",
+          "composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": "state=started\nrequestedOrientation=1; actualOrientation=1; displayRotation=0\nfontScale=1.0\norientation=1\nkeyboard=Rect(0, 981 - 1080, 1920)\ndisplay=1080x1920\n",
+          "expandedCandidateScrollSelectsItsActualVisibleWord.txt": "state=started\nrequestedOrientation=1; actualOrientation=1; displayRotation=0\nfontScale=1.0\norientation=1\nkeyboard=Rect(0, 981 - 1080, 1920)\ndisplay=1080x1920\n"
+        }
+      },
+      {
+        "name": "portrait-large",
+        "fontScale": 2.0,
+        "rotation": 0,
+        "expectedTests": 3,
+        "passed": true,
+        "expectedFailure": false,
+        "logSha256": "e00b6c4188c34b655d61cbbcb096bbbd5c1a4f511f6ce79b805160ec352386e2",
+        "observations": {
+          "associationCloseRestoresToolbarWithoutMovingLetterRows.txt": "state=started\nrequestedOrientation=1; actualOrientation=1; displayRotation=0\nfontScale=2.0\norientation=1\nkeyboard=Rect(0, 863 - 1080, 1920)\ndisplay=1080x1920\n",
+          "composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": "state=started\nrequestedOrientation=1; actualOrientation=1; displayRotation=0\nfontScale=2.0\norientation=1\nkeyboard=Rect(0, 863 - 1080, 1920)\ndisplay=1080x1920\n",
+          "expandedCandidateScrollSelectsItsActualVisibleWord.txt": "state=started\nrequestedOrientation=1; actualOrientation=1; displayRotation=0\nfontScale=2.0\norientation=1\nkeyboard=Rect(0, 863 - 1080, 1920)\ndisplay=1080x1920\n"
+        }
+      },
+      {
+        "name": "landscape",
+        "fontScale": 1.0,
+        "rotation": 1,
+        "expectedTests": 3,
+        "passed": true,
+        "expectedFailure": false,
+        "logSha256": "2ae39be56e9525116121b401d4067a80a3704f9faac1f725f1c795a12f018884",
+        "observations": {
+          "associationCloseRestoresToolbarWithoutMovingLetterRows.txt": "state=started\nrequestedOrientation=2; actualOrientation=2; displayRotation=1\nfontScale=1.0\norientation=2\nkeyboard=Rect(0, 403 - 1920, 1080)\ndisplay=1920x1080\n",
+          "composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": "state=started\nrequestedOrientation=2; actualOrientation=2; displayRotation=1\nfontScale=1.0\norientation=2\nkeyboard=Rect(0, 403 - 1920, 1080)\ndisplay=1920x1080\n",
+          "expandedCandidateScrollSelectsItsActualVisibleWord.txt": "state=started\nrequestedOrientation=2; actualOrientation=2; displayRotation=1\nfontScale=1.0\norientation=2\nkeyboard=Rect(0, 403 - 1920, 1080)\ndisplay=1920x1080\n"
+        }
+      },
+      {
+        "name": "landscape-large",
+        "fontScale": 2.0,
+        "rotation": 1,
+        "expectedTests": 3,
+        "passed": true,
+        "expectedFailure": false,
+        "logSha256": "f496ac103efecdb6da1894a651409ff3198a703f704cedaa3768f346e7f5187d",
+        "observations": {
+          "associationCloseRestoresToolbarWithoutMovingLetterRows.txt": "state=started\nrequestedOrientation=2; actualOrientation=2; displayRotation=1\nfontScale=2.0\norientation=2\nkeyboard=Rect(0, 285 - 1920, 1080)\ndisplay=1920x1080\n",
+          "composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": "state=started\nrequestedOrientation=2; actualOrientation=2; displayRotation=1\nfontScale=2.0\norientation=2\nkeyboard=Rect(0, 285 - 1920, 1080)\ndisplay=1920x1080\n",
+          "expandedCandidateScrollSelectsItsActualVisibleWord.txt": "state=started\nrequestedOrientation=2; actualOrientation=2; displayRotation=1\nfontScale=2.0\norientation=2\nkeyboard=Rect(0, 285 - 1920, 1080)\ndisplay=1920x1080\n"
+        }
+      }
+    ],
+    "settingsBefore": {
+      "system/font_scale": "1.0",
+      "system/accelerometer_rotation": "1",
+      "system/user_rotation": "0",
+      "secure/accessibility_interactive_ui_timeout_ms": "null",
+      "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+      "secure/show_ime_with_hard_keyboard": "1"
+    },
+    "settingsRestored": {
+      "system/font_scale": "1.0",
+      "system/accelerometer_rotation": "1",
+      "system/user_rotation": "0",
+      "secure/accessibility_interactive_ui_timeout_ms": "null",
+      "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+      "secure/show_ime_with_hard_keyboard": "1"
+    }
+  },
+  "repeat": {
+    "schemaVersion": 1,
+    "serial": "emulator-5580",
+    "sdk": "37",
+    "scope": "True system IME in explicit font/orientation configurations; emulator only",
+    "apks": {
+      "io.github.ethanbird.senseime.debug": "d420f01909f775a5fd96ba8e795b0dc989c5a275b99e83078667b7e1e86d3202",
+      "io.github.ethanbird.senseime.inputqualityfixture": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+      "io.github.ethanbird.senseime.inputqualityfixture.test": "40700dcab7ed45917982bc3c3f37082e9cd99d259feebeb3127decf9f5f9d073"
+    },
+    "runs": [
+      {
+        "name": "portrait",
+        "fontScale": 1.0,
+        "rotation": 0,
+        "expectedTests": 3,
+        "passed": true,
+        "expectedFailure": false,
+        "logSha256": "895893c482ebc2d8fee08363fdd812862d2dc0fa3e0097f19a50f359045b1b16",
+        "observations": {
+          "associationCloseRestoresToolbarWithoutMovingLetterRows.txt": "state=started\nrequestedOrientation=1; actualOrientation=1; displayRotation=0\nfontScale=1.0\norientation=1\nkeyboard=Rect(0, 981 - 1080, 1920)\ndisplay=1080x1920\n",
+          "composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": "state=started\nrequestedOrientation=1; actualOrientation=1; displayRotation=0\nfontScale=1.0\norientation=1\nkeyboard=Rect(0, 981 - 1080, 1920)\ndisplay=1080x1920\n",
+          "expandedCandidateScrollSelectsItsActualVisibleWord.txt": "state=started\nrequestedOrientation=1; actualOrientation=1; displayRotation=0\nfontScale=1.0\norientation=1\nkeyboard=Rect(0, 981 - 1080, 1920)\ndisplay=1080x1920\n"
+        }
+      },
+      {
+        "name": "portrait-large",
+        "fontScale": 2.0,
+        "rotation": 0,
+        "expectedTests": 3,
+        "passed": true,
+        "expectedFailure": false,
+        "logSha256": "7aa092764bc08102b81412c10ac33d644629b3ef03d689a1bff4e514b257e482",
+        "observations": {
+          "associationCloseRestoresToolbarWithoutMovingLetterRows.txt": "state=started\nrequestedOrientation=1; actualOrientation=1; displayRotation=0\nfontScale=2.0\norientation=1\nkeyboard=Rect(0, 863 - 1080, 1920)\ndisplay=1080x1920\n",
+          "composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": "state=started\nrequestedOrientation=1; actualOrientation=1; displayRotation=0\nfontScale=2.0\norientation=1\nkeyboard=Rect(0, 863 - 1080, 1920)\ndisplay=1080x1920\n",
+          "expandedCandidateScrollSelectsItsActualVisibleWord.txt": "state=started\nrequestedOrientation=1; actualOrientation=1; displayRotation=0\nfontScale=2.0\norientation=1\nkeyboard=Rect(0, 863 - 1080, 1920)\ndisplay=1080x1920\n"
+        }
+      },
+      {
+        "name": "landscape",
+        "fontScale": 1.0,
+        "rotation": 1,
+        "expectedTests": 3,
+        "passed": true,
+        "expectedFailure": false,
+        "logSha256": "2d248539b00373d9100bd9b662c2b634b991d9457909a7a233e672c7b516d6ab",
+        "observations": {
+          "associationCloseRestoresToolbarWithoutMovingLetterRows.txt": "state=started\nrequestedOrientation=2; actualOrientation=2; displayRotation=1\nfontScale=1.0\norientation=2\nkeyboard=Rect(0, 403 - 1920, 1080)\ndisplay=1920x1080\n",
+          "composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": "state=started\nrequestedOrientation=2; actualOrientation=2; displayRotation=1\nfontScale=1.0\norientation=2\nkeyboard=Rect(0, 403 - 1920, 1080)\ndisplay=1920x1080\n",
+          "expandedCandidateScrollSelectsItsActualVisibleWord.txt": "state=started\nrequestedOrientation=2; actualOrientation=2; displayRotation=1\nfontScale=1.0\norientation=2\nkeyboard=Rect(0, 403 - 1920, 1080)\ndisplay=1920x1080\n"
+        }
+      },
+      {
+        "name": "landscape-large",
+        "fontScale": 2.0,
+        "rotation": 1,
+        "expectedTests": 3,
+        "passed": true,
+        "expectedFailure": false,
+        "logSha256": "3f9721501a26ab40038710a668cbb2eec96cc0edd0e350cbd44a45eeb11275cd",
+        "observations": {
+          "associationCloseRestoresToolbarWithoutMovingLetterRows.txt": "state=started\nrequestedOrientation=2; actualOrientation=2; displayRotation=1\nfontScale=2.0\norientation=2\nkeyboard=Rect(0, 285 - 1920, 1080)\ndisplay=1920x1080\n",
+          "composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": "state=started\nrequestedOrientation=2; actualOrientation=2; displayRotation=1\nfontScale=2.0\norientation=2\nkeyboard=Rect(0, 285 - 1920, 1080)\ndisplay=1920x1080\n",
+          "expandedCandidateScrollSelectsItsActualVisibleWord.txt": "state=started\nrequestedOrientation=2; actualOrientation=2; displayRotation=1\nfontScale=2.0\norientation=2\nkeyboard=Rect(0, 285 - 1920, 1080)\ndisplay=1920x1080\n"
+        }
+      }
+    ],
+    "settingsBefore": {
+      "system/font_scale": "1.0",
+      "system/accelerometer_rotation": "1",
+      "system/user_rotation": "0",
+      "secure/accessibility_interactive_ui_timeout_ms": "null",
+      "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+      "secure/show_ime_with_hard_keyboard": "1"
+    },
+    "settingsRestored": {
+      "system/font_scale": "1.0",
+      "system/accelerometer_rotation": "1",
+      "system/user_rotation": "0",
+      "secure/accessibility_interactive_ui_timeout_ms": "null",
+      "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+      "secure/show_ime_with_hard_keyboard": "1"
+    }
+  },
+  "rejectedHarnessRuns": [
+    {
+      "result": {
+        "schemaVersion": 1,
+        "serial": "emulator-5580",
+        "sdk": "37",
+        "scope": "True system IME in explicit font/orientation configurations; emulator only",
+        "apks": {
+          "io.github.ethanbird.senseime.debug": "5c82a4e9c986d870ddfa6dca0c2e47a6e30bd48f6af2341956c7b4a9cb2a79f0",
+          "io.github.ethanbird.senseime.inputqualityfixture": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "io.github.ethanbird.senseime.inputqualityfixture.test": "6ed666aeec0e48df4ffbc7eeee1ee4459ca105ce20c6a52457913fb59123cb46"
+        },
+        "runs": [
+          {
+            "name": "portrait",
+            "fontScale": 1.0,
+            "rotation": 0,
+            "expectedTests": 3,
+            "passed": true,
+            "expectedFailure": false,
+            "logSha256": "af5ce4414b865fb167d0174c2a9781e3d71c20cdda1ca0da95fc7806784660f7"
+          },
+          {
+            "name": "portrait-large",
+            "fontScale": 2.0,
+            "rotation": 0,
+            "expectedTests": 3,
+            "passed": true,
+            "expectedFailure": false,
+            "logSha256": "0f3a67280db577bc3ceefab274c726d6241a1320ae445469476b218873982601"
+          },
+          {
+            "name": "landscape",
+            "fontScale": 1.0,
+            "rotation": 1,
+            "expectedTests": 3,
+            "passed": false,
+            "expectedFailure": false,
+            "logSha256": "b25af41fb5bc1e65488b6f2cc7d03deebde725df3e19eb34c69b0a54b1a3d933"
+          },
+          {
+            "name": "landscape-large",
+            "fontScale": 2.0,
+            "rotation": 1,
+            "expectedTests": 3,
+            "passed": false,
+            "expectedFailure": false,
+            "logSha256": "5fba13c3cffa3c9be3e955521dbfd86c4f6ada3c5b99ebfa211f994a0926941c"
+          }
+        ],
+        "settingsBefore": {
+          "system/font_scale": "1.0",
+          "system/accelerometer_rotation": "1",
+          "system/user_rotation": "0",
+          "secure/accessibility_interactive_ui_timeout_ms": "null",
+          "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+          "secure/show_ime_with_hard_keyboard": "1"
+        },
+        "settingsRestored": {
+          "system/font_scale": "1.0",
+          "system/accelerometer_rotation": "1",
+          "system/user_rotation": "0",
+          "secure/accessibility_interactive_ui_timeout_ms": "null",
+          "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+          "secure/show_ime_with_hard_keyboard": "1"
+        }
+      },
+      "reason": "Rotation setup, before input assertions; not accepted as product results"
+    },
+    {
+      "result": {
+        "schemaVersion": 1,
+        "serial": "emulator-5580",
+        "sdk": "37",
+        "scope": "True system IME in explicit font/orientation configurations; emulator only",
+        "apks": {
+          "io.github.ethanbird.senseime.debug": "50904a1e990c11564f595a0c350c465ff5094035753c3887a5e56c491f98bc8c",
+          "io.github.ethanbird.senseime.inputqualityfixture": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "io.github.ethanbird.senseime.inputqualityfixture.test": "12c75fdbe1c235c8fdb3ade3f13e937f07f7d63d90b1bed43c4e56ddd19f4c04"
+        },
+        "runs": [
+          {
+            "name": "portrait",
+            "fontScale": 1.0,
+            "rotation": 0,
+            "expectedTests": 3,
+            "passed": true,
+            "expectedFailure": false,
+            "logSha256": "70e1092840c245fa32e76ec01df0b50871e2388af3b6c1ea437f798e477b9bd3"
+          },
+          {
+            "name": "portrait-large",
+            "fontScale": 2.0,
+            "rotation": 0,
+            "expectedTests": 3,
+            "passed": true,
+            "expectedFailure": false,
+            "logSha256": "57e2a50e2af8f8ce42488f0c02f786f21ce9da0ec197bc94dc6e203a83b13e3c"
+          },
+          {
+            "name": "landscape",
+            "fontScale": 1.0,
+            "rotation": 1,
+            "expectedTests": 3,
+            "passed": false,
+            "expectedFailure": false,
+            "logSha256": "61cb3e31dc35bfcf698f2eb8223fccef60660cc836cc23e782f9c7654815a2fa"
+          },
+          {
+            "name": "landscape-large",
+            "fontScale": 2.0,
+            "rotation": 1,
+            "expectedTests": 3,
+            "passed": true,
+            "expectedFailure": false,
+            "logSha256": "9f1a4823ec48babedb86e946ec8cf318eaacb933190d0d4d0675d1aa6fa82b44"
+          }
+        ],
+        "settingsBefore": {
+          "system/font_scale": "1.0",
+          "system/accelerometer_rotation": "1",
+          "system/user_rotation": "0",
+          "secure/accessibility_interactive_ui_timeout_ms": "null",
+          "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+          "secure/show_ime_with_hard_keyboard": "1"
+        },
+        "settingsRestored": {
+          "system/font_scale": "1.0",
+          "system/accelerometer_rotation": "1",
+          "system/user_rotation": "0",
+          "secure/accessibility_interactive_ui_timeout_ms": "null",
+          "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+          "secure/show_ime_with_hard_keyboard": "1"
+        }
+      },
+      "reason": "Rotation setup, before input assertions; not accepted as product results"
+    },
+    {
+      "result": {
+        "schemaVersion": 1,
+        "serial": "emulator-5580",
+        "sdk": "37",
+        "scope": "True system IME in explicit font/orientation configurations; emulator only",
+        "apks": {
+          "io.github.ethanbird.senseime.debug": "50904a1e990c11564f595a0c350c465ff5094035753c3887a5e56c491f98bc8c",
+          "io.github.ethanbird.senseime.inputqualityfixture": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "io.github.ethanbird.senseime.inputqualityfixture.test": "40b4b9beaedacb4f7c26277feaa0dbcd62edcb1150ccd0073b951f98bef83ab4"
+        },
+        "runs": [
+          {
+            "name": "portrait",
+            "fontScale": 1.0,
+            "rotation": 0,
+            "expectedTests": 3,
+            "passed": true,
+            "expectedFailure": false,
+            "logSha256": "7cc9ba28d7d4dcbeed26f35ef85a121c0074173678ae9b7d4490c8b575ece0b7"
+          },
+          {
+            "name": "portrait-large",
+            "fontScale": 2.0,
+            "rotation": 0,
+            "expectedTests": 3,
+            "passed": true,
+            "expectedFailure": false,
+            "logSha256": "c6d9368fdae66852f4417adc14c700b4844b037e0040843cf15508e54acf43cc"
+          },
+          {
+            "name": "landscape",
+            "fontScale": 1.0,
+            "rotation": 1,
+            "expectedTests": 3,
+            "passed": true,
+            "expectedFailure": false,
+            "logSha256": "ffa56aaeb3d2e4f774d57340ee6d581b4a41a3767f7c66b50cae089e2bbca90b"
+          },
+          {
+            "name": "landscape-large",
+            "fontScale": 2.0,
+            "rotation": 1,
+            "expectedTests": 3,
+            "passed": false,
+            "expectedFailure": false,
+            "logSha256": "2903cd5b38c2b1a37c2f3a02e6052cd1e2ad824bc4169683713b85297c0f6783"
+          }
+        ],
+        "settingsBefore": {
+          "system/font_scale": "1.0",
+          "system/accelerometer_rotation": "1",
+          "system/user_rotation": "0",
+          "secure/accessibility_interactive_ui_timeout_ms": "null",
+          "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+          "secure/show_ime_with_hard_keyboard": "1"
+        },
+        "settingsRestored": {
+          "system/font_scale": "1.0",
+          "system/accelerometer_rotation": "1",
+          "system/user_rotation": "0",
+          "secure/accessibility_interactive_ui_timeout_ms": "null",
+          "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+          "secure/show_ime_with_hard_keyboard": "1"
+        }
+      },
+      "reason": "Rotation setup, before input assertions; not accepted as product results"
+    }
+  ],
+  "scope": "Real system IME, API 37 dedicated AVD, portrait/landscape x fontScale 1/2; no physical-phone claim"
+}

@@ -25,7 +25,7 @@ SCRIPT = ROOT / "tools" / "release_plan.py"
 LOCAL_RELEASE = ROOT / "tools" / "local_release.ps1"
 RELEASE_WORKFLOW = ROOT / ".github" / "workflows" / "release-v0.4.15.yml"
 APP_BUILD = ROOT / "app" / "build.gradle.kts"
-RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.15.md"
+RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.16-rc.1.md"
 RELEASE_CERT = (
     ROOT
     / "docs"
@@ -307,25 +307,28 @@ class LocalReleaseContractTest(unittest.TestCase):
             APP_BUILD.read_text(encoding="utf-8"),
             str(APP_BUILD),
         )
-        self.assertEqual(AndroidVersion(name="0.4.15", code=40), current)
+        self.assertEqual(AndroidVersion(name="0.4.16-rc.1", code=41), current)
         self.assertIn(current.tag, self.script)
         self.assertIn(current.apk_name, self.script)
         self.assertIn(
-            'Sense v0.4.15 - Sense Mic modern Windows experience',
+            'Sense v0.4.16-rc.1 - Full-pinyin input quality preview',
             self.script,
         )
         self.assertRegex(
             self.script,
-            re.compile(r"versionCode\s*(?:=|:)?\s*40", re.IGNORECASE),
+            re.compile(r"versionCode\s*(?:=|:)?\s*41", re.IGNORECASE),
         )
 
-    def test_release_notes_are_pinned_and_used_for_stable_release(self) -> None:
+    def test_release_notes_are_pinned_and_used_for_preview_release(self) -> None:
         self.assertTrue(RELEASE_NOTES.is_file())
-        self.assertIn("# Sense v0.4.15", RELEASE_NOTES.read_text("utf-8"))
-        self.assertIn("v0.4.15.md", self.script)
+        self.assertIn("# Sense v0.4.16-rc.1", RELEASE_NOTES.read_text("utf-8"))
+        self.assertIn("v0.4.16-rc.1.md", self.script)
         self.assertIn("--notes-file", self.script)
-        self.assertIn("--prerelease=false", self.script)
-        self.assertIn("[bool]$release.isPrerelease", self.script)
+        self.assertIn("$ReleaseIsPrerelease = $true", self.script)
+        self.assertIn("--prerelease=$($ReleaseIsPrerelease.ToString().ToLowerInvariant())", self.script)
+        self.assertIn('--latest=false', self.script)
+        self.assertEqual(3, self.script.count(') + $releaseKindArguments + $notesArguments'))
+        self.assertIn("[bool]$release.isPrerelease -ne $ReleaseIsPrerelease", self.script)
 
     def test_latency_sensitive_gates_run_before_sustained_host_benchmarks(self) -> None:
         m3 = self.script.index(":core-input:m3SentenceBenchmark")

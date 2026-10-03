@@ -1,29 +1,41 @@
 {
+  "schema_version": 2,
   "asset": {
-    "bytes": 35069585,
-    "format": "SPLX/3",
-    "sha256": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800"
+    "file": "pinyin_lexicon.bin",
+    "bytes": 46495514,
+    "sha256": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232",
+    "format": "SPLX/4"
   },
   "counts": {
     "exact": {
-      "candidates": 610298,
-      "keys": 524851
-    },
-    "hybrid": {
-      "candidates": 236549,
-      "keys": 213604
-    },
-    "initials": {
-      "candidates": 188151,
-      "keys": 76017
+      "keys": 807520,
+      "candidates": 917261
     },
     "prefix": {
-      "candidates": 71510,
-      "keys": 9310
+      "keys": 9310,
+      "candidates": 71510
+    },
+    "initials": {
+      "keys": 76017,
+      "candidates": 188151
+    },
+    "hybrid": {
+      "keys": 213604,
+      "candidates": 236549
     }
   },
-  "exact_unique_texts": 608314,
-  "manifest": {
+  "exact_unique_texts": 914124,
+  "source_tiers": {
+    "0": 1106508,
+    "2": 306963
+  },
+  "base_projection": {
+    "format": "SPLX/3",
+    "operation": "remove-tier-2",
+    "sha256": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
+    "bytes": 35069585
+  },
+  "base_manifest": {
     "path": "sources.json",
     "sha256": "4275a03b9130bc06bcaa46dddac2db3ed2c75cc04a314dda4317bb6d06e62829",
     "sources": [
@@ -74,5 +86,10 @@
       }
     ]
   },
-  "schema_version": 1
+  "supplement_manifest": {
+    "path": "layered-sources.json",
+    "sha256": "02e88fb4d9b0a86995646326de52a5aea311ce94f5912c69f57a627cda6e00c4"
+  },
+  "rebuild": "python tools/rebuild_layered_pinyin.py NEW_OUTPUT_DIRECTORY",
+  "supplemental_prior": 1
 }

@@ -158,6 +158,7 @@ class MemoryUserAssociationLexicon(
 enum class AssociationSuggestionSource {
     USER_HISTORY,
     STATIC_CHARACTER_BIGRAM,
+    CONTEXT_LANGUAGE_MODEL,
 }
 
 data class AssociationSuggestion(
@@ -170,6 +171,7 @@ data class AssociationSuggestion(
 class LocalAssociationEngine(
     private val userLexicon: UserAssociationLexicon,
     private val characterBigrams: CharacterBigramModel,
+    private val contextModel: ContextAssociationModel? = null,
 ) {
     fun suggest(
         leftContext: String,
@@ -194,20 +196,28 @@ class LocalAssociationEngine(
             }
         }
 
-        val lastCodePoint = leftContext.codePointBefore(leftContext.length)
-        characterBigrams.successors(lastCodePoint, limit * 3).forEach { successor ->
-            if (Character.UnicodeScript.of(successor.codePoint) != Character.UnicodeScript.HAN) {
-                return@forEach
+        if (contextModel != null) {
+            // A valid model's empty row is a decision, not a request for noisy character fallback.
+            contextModel.suggest(leftContext, limit).forEach { suggestion ->
+                val previous = values[suggestion.text]
+                if (previous == null || suggestion.score > previous.score) values[suggestion.text] = suggestion
             }
-            val text = String(Character.toChars(successor.codePoint))
-            values.putIfAbsent(
-                text,
-                AssociationSuggestion(
-                    text = text,
-                    score = successor.score,
-                    source = AssociationSuggestionSource.STATIC_CHARACTER_BIGRAM,
-                ),
-            )
+        } else {
+            val lastCodePoint = leftContext.codePointBefore(leftContext.length)
+            characterBigrams.successors(lastCodePoint, limit * 3).forEach { successor ->
+                if (Character.UnicodeScript.of(successor.codePoint) != Character.UnicodeScript.HAN) {
+                    return@forEach
+                }
+                val text = String(Character.toChars(successor.codePoint))
+                values.putIfAbsent(
+                    text,
+                    AssociationSuggestion(
+                        text = text,
+                        score = successor.score,
+                        source = AssociationSuggestionSource.STATIC_CHARACTER_BIGRAM,
+                    ),
+                )
+            }
         }
         return values.values.sortedWith(
             compareByDescending<AssociationSuggestion> { it.score }

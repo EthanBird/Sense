@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "stage": "E7",
+  "passed": true,
+  "goalComplete": false,
+  "releaseReady": false,
+  "scope": "Local debug stage; synthetic/known host replays and one API37 x86_64 dedicated AVD",
+  "qualityGateSha256": "7f97a908a70e2ad8a448b62b8abd1e159aceb506a1f6adcf23388654491d43c2",
+  "routingEquivalenceSha256": "3f925d0ae80a6c1626d13074734b5c57dfbba05c6029c4ccbc4b3fe1cf85e28a",
+  "host": {
+    "core-input": {
+      "tests": 307,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 234,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 297,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "hostTests": 841,
+  "python": {
+    "run": 339,
+    "passed": 338,
+    "skipped": 1,
+    "skipReason": "Windows symbolic-link privilege"
+  },
+  "device": [
+    {
+      "package": "final",
+      "group": "correction",
+      "tests": 8,
+      "passed": true
+    },
+    {
+      "package": "final",
+      "group": "warm",
+      "tests": 10,
+      "passed": true
+    },
+    {
+      "package": "final",
+      "group": "cold",
+      "tests": 4,
+      "passed": true
+    },
+    {
+      "package": "final",
+      "group": "association",
+      "tests": 9,
+      "passed": true
+    },
+    {
+      "package": "final",
+      "group": "learning",
+      "tests": 2,
+      "passed": true
+    },
+    {
+      "package": "compact",
+      "group": "correction",
+      "tests": 8,
+      "passed": true
+    },
+    {
+      "package": "compact",
+      "group": "warm",
+      "tests": 10,
+      "passed": true
+    },
+    {
+      "package": "compact",
+      "group": "cold",
+      "tests": 4,
+      "passed": true
+    },
+    {
+      "package": "compact",
+      "group": "association",
+      "tests": 9,
+      "passed": true
+    },
+    {
+      "package": "compact",
+      "group": "learning",
+      "tests": 2,
+      "passed": true
+    }
+  ],
+  "finalApkScenarioExecutions": 33,
+  "preCompactScenarioExecutions": 33,
+  "baselineScenarioExecutions": 12,
+  "baselineExpectedFailures": 1,
+  "latencyConfirmations": 64,
+  "latencyPackage": "Precompact candidate with all 299 ZIP-entry bytes identical to final APK; timings not remeasured after layout-only repackaging",
+  "personalization": {
+    "scope": "Disposable debug AVD SQLite read-only observation after UI learning/privacy; no DB seeding",
+    "databaseSha256": "861c1ba66761a61c16fb07e9fac7728f20f9fdb01717dca7397473954a45fd78",
+    "forbiddenPrivatePhraseAbsent": true,
+    "records": [
+      {
+        "pinyin": "chengche",
+        "text": "程彻",
+        "useCount": 4,
+        "positiveEvidence": 3.121758460998535,
+        "negativeEvidence": 0.0,
+        "recentPeakEvidence": 2.5817549228668213
+      },
+      {
+        "pinyin": "zhinengti",
+        "text": "智能体",
+        "useCount": 3,
+        "positiveEvidence": 2.109990358352661,
+        "negativeEvidence": 0.0,
+        "recentPeakEvidence": 1.7499881982803345
+      }
+    ]
+  },
+  "dictionarySupplementAdopted": true,
+  "supplementalRuntimeScope": "LM-bound full pinyin only",
+  "apk": {
+    "path": "app/build/outputs/apk/debug/app-debug.apk",
+    "bytes": 85809812,
+    "sha256": "47bb32a6654a55a1aa4259f517e21de76740dc51119b854fbf0603481b02e084",
+    "signing": "local debug, not release certificate"
+  },
+  "evidenceManifest": {
+    "file": "benchmarks/results/e7-evidence-manifest.json",
+    "sha256": "c1610f00548ba58c54421648e75a0b4b1311c0c8995e440712e0a2161f2e8dd5",
+    "files": 1039
+  },
+  "openItems": [
+    "No aggregate Top1 improvement in fresh audits",
+    "Known-long character errors +1",
+    "Fixed-workload confirmation median +8 ms; post-cold PSS about +16 MiB",
+    "Unlearned 跨会话 and LM-path yisscp remain weak",
+    "Frontend explicit syllable-boundary lifecycle",
+    "Natural input and external-domain evidence"
+  ]
+}

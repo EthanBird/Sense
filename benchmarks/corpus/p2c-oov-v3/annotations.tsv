@@ -1,0 +1,65 @@
+id	status	syllables	note
+000abae248b9ad768e21e65af8d7b2a19c4221895c92d3a3582d8426972349e6	accept	ta zou zai wo de mian qian	Pre-output agent review: reading and per-character alignment checked; source wording retained
+000ea59e68480986c9d2fb8fd5f155e6a8dfd0d195e749b02be9f14fe092846f	accept	ta biao shi ta fei chang gao xing	Pre-output agent review: reading and per-character alignment checked; source wording retained
+0014a4b4b041a621d8788287aa66450de8ec4d221fddd68d50505d0198f44557	exclude	wo men xiu xi yi hui er ba	automatic corpus overlap: substring
+0042255e76f08e556ee426305f20294acba48bd1a98806416be04e2967e6041e	accept	wo dui ti yu bu gan xing qu	Pre-output agent review: reading and per-character alignment checked; source wording retained
+005bf7d8277810ef436c9381954390d5a602f77a208848de0a3d0b0075dc7591	accept	bu yao zuo zai shang mian	Pre-output agent review: reading and per-character alignment checked; source wording retained
+0061e4d4b77237508e37dab681dc676e2a8495d6b8c59f5d5bf8e72d9de9e019	accept	ta de sheng yin hen yue er	Pre-output agent review: reading and per-character alignment checked; source wording retained
+0063f05172174e245e811261bd58c27f0e65b439cf774d5038910d8a4ec15c2d	accept	wan fan qian nin xiang he yi bei ma	Pre-output agent review: reading and per-character alignment checked; source wording retained
+006d67e37d244f9eb336817ef5c03cc8e005652b9705aca777a53e117978e939	accept	zhe men zen yang dou da bu kai	Pre-output agent review: reading and per-character alignment checked; source wording retained
+00a6ca68a5f364fd3e88148a179cc69cdf95e3f179832293ed8ab1eb9c714d5d	accept	na ge bo wu guan zhi de can guan	Pre-output agent review: reading and per-character alignment checked; source wording retained
+00d61d73c088ae36467dcc69afaa3fcb2bf2028f4b26fb3eddf72896843ccf3f	accept	wo chang dui zi ji zhe me shuo	Pre-output agent review: reading and per-character alignment checked; source wording retained
+00dd85ee13455bfbb5e3fe60260c2a4a14ef77b4dd8e13a6a2079c9e81610159	accept	ni bu gai da sheng shuo hua	Pre-output agent review: reading and per-character alignment checked; source wording retained
+01066d7f36a015e270cb9fe83cb38e465a6d95817da07701cd96244606e65071	accept	geng yi shi zai na li	Pre-output agent review: reading and per-character alignment checked; source wording retained
+0117b14c10ac348c21e7b6e7747bb7e9d8c92c7a625981d228c4ddf55191ce8b	accept	ni yi jing you hu zi la	Pre-output agent review: reading and per-character alignment checked; source wording retained
+011a5ad7c377c711e9b1a9212509d912acd1477d8b1fbc0ef4df6e6829e6dc8d	accept	zai er shi shi ji mo qi	Pre-output agent review: reading and per-character alignment checked; source wording retained
+015e4e96daa7832d1e90d08903c6e8d041c76bb5ff5cfdf8a4f48977e115db93	accept	wo mai le yi tao xin qin ju	Pre-output agent review: reading and per-character alignment checked; source wording retained
+0198a50be790abfad383ab79523389fa90e6c9eba4bbbe828f8d874b065c6757	accept	tong guo yi chuan xiu shi	Pre-output agent review: reading and per-character alignment checked; source wording retained
+01aa97ab709d6770e31cbac03b21607c236c0e0181efe094df0bb95e8d806f5d	exclude	wo men you san zhi gou	automatic corpus overlap: near
+01badda0e88314485caff9c003df58b7f2acda221b04c990ce541577ba5bd755	accept	wo zong shi xin shou wo de cheng nuo	Pre-output agent review: reading and per-character alignment checked; source wording retained
+01d5c7008b32384f8c66050e3be8550038a33f91048c2ab8eb8d3e924e651967	accept	shen zhi hai you shu wei bi	Pre-output agent review: reading and per-character alignment checked; source wording retained
+01e9f7b5b6de3e91e7cfc12e8ef2e82028bab328652e1dffa84f4dffbe2839b5	accept	ru he rang tou fa peng song	Pre-output agent review: reading and per-character alignment checked; source wording retained
+0206a7b79de63ad94ac2db609be07ccd35e5e7c276fe3b62e186e3c9000b4216	accept	shi tian de hai shi ku de	Pre-output agent review: reading and per-character alignment checked; source wording retained
+021148fdf62a065873169187e271820ad445c7c7fcb28802d13f53d87e0f948d	accept	zhe shi yi shou hen bang de shi	Pre-output agent review: reading and per-character alignment checked; source wording retained
+021b90e14ad0ea5e6c674534505bcb5e1d0d0b2e4cd6ca03ce917a7eacbe455a	accept	wo hen xi huan qu guo wai lv you	Pre-output agent review: reading and per-character alignment checked; source wording retained
+0221aad7124625a673d4522e5d790466cbedc25e8099bf69098bf727db7308fa	accept	re de xiang chi bing qi lin	Pre-output agent review: reading and per-character alignment checked; source wording retained
+026a24d64f9641ef6742e0dbdcbba364f1611cc0f9d1c6519819b017720fe01e	accept	ru guo ta bu gao xing	Pre-output agent review: reading and per-character alignment checked; source wording retained
+026a7d0837ba5b6affd8ee056d13cafaec27162665e28d7d8c9bb382e42c7f6f	accept	ke yi dai wo kan kan xiao yuan ma	Pre-output agent review: reading and per-character alignment checked; source wording retained
+0284e357857953d7de039920310f934834f62fd928594a303a12b7a9fe8144a3	accept	shen me shi hou kai shi deng ji	Pre-output agent review: reading and per-character alignment checked; source wording retained
+02ad6d850e64f51a20ec31bb47c9660b5e7af8760e69d827e4436df826d7971e	accept	wo chi wan wan fan hou kan dian shi	Pre-output agent review: reading and per-character alignment checked; source wording retained
+02b7c95ed4dca4088e7b3b7e4d9daad988d8f121a0629dba663968a79892c55c	accept	sui ran wo chang chang ao ye	Pre-output agent review: reading and per-character alignment checked; source wording retained
+02b97880d4bfb7909e120bd2da2429215f2d810a561fcfa1edb12d4789b91d46	accept	wo jin tian xiang wai chu	Pre-output agent review: reading and per-character alignment checked; source wording retained
+02cdb726fd1aba31e6d6f02d35f6186147b8defe065dab5604072002f75d33f5	accept	ta de yi fu zong shi hen chou	Pre-output agent review: reading and per-character alignment checked; source wording retained
+02d48733a8c8d9f6eed66aff451d195cc2bb69924104a9d115f1b91d8218fbb4	accept	wo bang ma ma xi wan le	Pre-output agent review: reading and per-character alignment checked; source wording retained
+009addf67bb83e5247c0c27f6002832458175cc3f8fa84a7d846f5adbb0be71d	accept	qu ma de li de che shi xia wu wu dian	Pre-output agent review: reading and per-character alignment checked; source wording retained
+00aa321728f00f8efae4fe5e20fe79afc676f38acb0e1ddf9b12beca0de021d8	accept	tang mu bu yuan yi mai ta de fang zi	Pre-output agent review: reading and per-character alignment checked; source wording retained
+00e4fcf7fff04eaa505427c27d1f9c85ce09e282efbb7b0c00b4152f6b82ca3b	accept	lun dun guo qu yin wei jing ji he wen hua de yuan gu	Pre-output agent review: reading and per-character alignment checked; source wording retained
+011dcf193f73990e42a6c9679cfcde1a00b4fd792fe36476c712716b0f935415	accept	ni zhi dao fa sheng le shen me shi qing ma	Pre-output agent review: reading and per-character alignment checked; source wording retained
+0178c7b11794fc698aa5397da4d6ef5bc6d985fef6db2a5907e413e77bf139f0	accept	wo hen yi han ni yao li kai zhe li	Pre-output agent review: reading and per-character alignment checked; source wording retained
+01f8485d1f1ed643fee404537fdbaa7af721a280eb7240f7988529611b93fc45	accept	wo dui zi ji de lv li bu na me zai yi	Pre-output agent review: reading and per-character alignment checked; source wording retained
+0204be6a86da195297bc6751a13eb01f61c12340682a9f614c4445b8872e0757	accept	tang mu bu xiang rang ma li he qiong shuo hua	Pre-output agent review: reading and per-character alignment checked; source wording retained
+0233e8c748aace7b99c7146d84d35359a395c5f8477d74f995eb57158554623d	accept	wo ke yi zai zhe li chi dian er dong xi ma	Pre-output agent review: reading and per-character alignment checked; source wording retained
+02388f4c35c533bd2bc8ed3ac29992a3568b66b64a71ee347889c3e119069811	accept	ta de suo you jia ting cheng yuan dou hen gao	Pre-output agent review: reading and per-character alignment checked; source wording retained
+0247a659309e6a81850ba72500219840165b3e68ab38d566a7ec34948702cd79	accept	wo xiang wen tang mu ta zai yin du sheng huo le duo jiu	Pre-output agent review: reading and per-character alignment checked; source wording retained
+026c16da0dbb52d7c0ba8e4046f11c718486926adf662bb119ff43c72139fab2	accept	ni kan guo zhe me hao kan de dian ying ma	Pre-output agent review: reading and per-character alignment checked; source wording retained
+026ea7ad58d5e51ae68cd4e86eb3211406111c08fe4a0414149bbdd3410c2d37	accept	yao shi shi jie neng bu xu yao ren lei gong zuo jiu hao le	Pre-output agent review: reading and per-character alignment checked; source wording retained
+03d8db1a1ee4bffb2da66b4f387bda810e44b7044e1ed7ef64c4f78770d4b9db	accept	jiang jun zhong yu you ji hui cuan duo wang wei	Pre-output agent review: reading and per-character alignment checked; source wording retained
+040ef9d790bf59c62235a6d5c59f7388c3125a825855ba597e2cfaef10c67f6e	accept	ke xi ta shi yi ge wan quan mei you you mo gan de ren	Pre-output agent review: reading and per-character alignment checked; source wording retained
+04330c1a8c723af520a91bbbc53cc7c9ff73fb87a0165b7545c7b58cd1cfc9cc	accept	wo men de yan jing kan bu jian hong wai xian	Pre-output agent review: reading and per-character alignment checked; source wording retained
+0447519e570817c409d222641ea0dd68c7b1937043974649dc239255139f1a9a	accept	ni wei shen me shuo le zhe yang de shi	Pre-output agent review: reading and per-character alignment checked; source wording retained
+0471bf648a3c6bd6522725d1e515b726cb6ece3ef41df956f948514daf6c4e91	accept	na da po le ta suo you de meng xiang	Pre-output agent review: reading and per-character alignment checked; source wording retained
+04c803184da5fd800f3a071301347f741cee260900f3a4c054b9964843226c95	accept	tang mu gei zi ji mai le yi liang che	Pre-output agent review: reading and per-character alignment checked; source wording retained
+04cc41950edace080bed2b3a88336444a7f54f80e84b24e9621d0c0ebbf6442a	accept	zhe jian shi dui shei dou mei you hao chu	Pre-output agent review: reading and per-character alignment checked; source wording retained
+051138f26f9ab4aafe169893744f9e521d400d9cafd4d18939e646eaade03d8b	accept	ta jing gao ta wan shang bu yao yi ge ren chu qu	Pre-output agent review: reading and per-character alignment checked; source wording retained
+054050132383098517f18b750992ac2a92c8bec6cb66acc661e54e82adb6c989	accept	ta yin wei sheng bing er mei qu shang xue	Pre-output agent review: reading and per-character alignment checked; source wording retained
+054da74eefa7e321ee6ed5243c0b1fce3b3d9513110e14edac5b417efe0d6da1	accept	beng le beng le tiao le tiao le zhen le ke le ai	Pre-output agent review: reading and per-character alignment checked; source wording retained; awkward repeated particles retained as source reconstruction, not a natural-language gold claim
+05558396597ef6f5ce92c40a3570271f9f7a82ac871180801b7197c5a831d846	accept	hua dai jia suo huan lai de yi dian cai zhi	Pre-output agent review: reading and per-character alignment checked; source wording retained
+055e5216e5703de34607d7afec152944d7cb1d841a2b2ed23c291caa10054492	accept	mei you ren zhi dao ta de zhen ming zi	Pre-output agent review: reading and per-character alignment checked; source wording retained
+059ec823ac6b583a9acd782ce69239a3117652f8bb1940f46229ab6c73f62caf	accept	chan hou yi ding yao yong shu fu dai ma	Pre-output agent review: reading and per-character alignment checked; source wording retained
+05b51d59478687d016c9ffd5b8f77e0fae4bab6bc9ea8239ae19b02736cfabca	accept	ta ju jue zuo ta men xiang yao de shi	Pre-output agent review: reading and per-character alignment checked; source wording retained
+05d6c4c2b5212671299a00466cd3f1ec34fbca43022d24842e3802ca8c1f84e9	accept	ni zui xi huan de jia na da ge shou shi shui	Pre-output agent review: reading and per-character alignment checked; source wording retained
+05f20494e279153336c2ce23aecf5f1b07a5c7ed470f01ea8a3a7908167239cf	accept	tong zhuo de xiao sheng hen you gan ran li	Pre-output agent review: reading and per-character alignment checked; source wording retained
+06b362f90cc829c1fb4b02786ed90e82e48dd804d37294f1efb314797718f517	accept	shui mian shi jian de chang duan ke yin ren er yi	Pre-output agent review: reading and per-character alignment checked; source wording retained
+06b57e5730b655ea11cb24125faa392b781ac969354b1a470d252dcfaf4a3ba2	accept	wo yi jing du le liang ge xiao shi de shu le	Pre-output agent review: reading and per-character alignment checked; source wording retained
+06d842d5da1ab317bfcca5d9c62c7484ebf0e5a73614fc4333609fea83edf9fe	accept	ni neng jin yi bu shuo ming yi xia ma	Pre-output agent review: reading and per-character alignment checked; source wording retained
+071934193bc41ad37506f1ad907ad2dfea9804b91744ff8b034b9fc58d65af8e	accept	wo gen liu xian sheng shi xiang shi duo nian de lao peng you le	Pre-output agent review: reading and per-character alignment checked; source wording retained

@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "before": {
+    "schemaVersion": 1,
+    "serial": "emulator-5580",
+    "sdk": "37",
+    "scope": "True system IME in explicit font/orientation configurations; emulator only",
+    "apks": {
+      "io.github.ethanbird.senseime.debug": "5c82a4e9c986d870ddfa6dca0c2e47a6e30bd48f6af2341956c7b4a9cb2a79f0",
+      "io.github.ethanbird.senseime.inputqualityfixture": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+      "io.github.ethanbird.senseime.inputqualityfixture.test": "6ed666aeec0e48df4ffbc7eeee1ee4459ca105ce20c6a52457913fb59123cb46"
+    },
+    "runs": [
+      {
+        "name": "timeout",
+        "fontScale": 1.0,
+        "rotation": 0,
+        "expectedTests": 1,
+        "passed": false,
+        "expectedFailure": true,
+        "logSha256": "cc81c9303292c8e70a5ce646b766a5f08751d9befd7854ee9c4463b24fc695f8"
+      }
+    ],
+    "settingsBefore": {
+      "system/font_scale": "1.0",
+      "system/accelerometer_rotation": "1",
+      "system/user_rotation": "0",
+      "secure/accessibility_interactive_ui_timeout_ms": "null",
+      "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+      "secure/show_ime_with_hard_keyboard": "1"
+    },
+    "settingsRestored": {
+      "system/font_scale": "1.0",
+      "system/accelerometer_rotation": "1",
+      "system/user_rotation": "0",
+      "secure/accessibility_interactive_ui_timeout_ms": "null",
+      "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+      "secure/show_ime_with_hard_keyboard": "1"
+    }
+  },
+  "beforeLog": {
+    "path": ".artifacts/input-quality/d8-timeout-red/timeout/instrumentation.log",
+    "sha256": "cc81c9303292c8e70a5ce646b766a5f08751d9befd7854ee9c4463b24fc695f8"
+  },
+  "after": {
+    "schemaVersion": 1,
+    "serial": "emulator-5580",
+    "sdk": "37",
+    "scope": "True system IME in explicit font/orientation configurations; emulator only",
+    "apks": {
+      "io.github.ethanbird.senseime.debug": "d420f01909f775a5fd96ba8e795b0dc989c5a275b99e83078667b7e1e86d3202",
+      "io.github.ethanbird.senseime.inputqualityfixture": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+      "io.github.ethanbird.senseime.inputqualityfixture.test": "40700dcab7ed45917982bc3c3f37082e9cd99d259feebeb3127decf9f5f9d073"
+    },
+    "runs": [
+      {
+        "name": "timeout",
+        "fontScale": 1.0,
+        "rotation": 0,
+        "expectedTests": 1,
+        "passed": true,
+        "expectedFailure": false,
+        "logSha256": "d961ea22977238b0f6c73ef2be21a3686856a831728999347a3aa5d7fbd0480a",
+        "observations": {
+          "associationHonorsTheUsersSystemInteractionTimeout.txt": "state=started\nrequestedOrientation=1; actualOrientation=1; displayRotation=0\n"
+        }
+      }
+    ],
+    "settingsBefore": {
+      "system/font_scale": "1.0",
+      "system/accelerometer_rotation": "1",
+      "system/user_rotation": "0",
+      "secure/accessibility_interactive_ui_timeout_ms": "null",
+      "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+      "secure/show_ime_with_hard_keyboard": "1"
+    },
+    "settingsRestored": {
+      "system/font_scale": "1.0",
+      "system/accelerometer_rotation": "1",
+      "system/user_rotation": "0",
+      "secure/accessibility_interactive_ui_timeout_ms": "null",
+      "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+      "secure/show_ime_with_hard_keyboard": "1"
+    }
+  },
+  "observation": "10-second platform preference: suggestion retained and selected after 5.5 seconds"
+}

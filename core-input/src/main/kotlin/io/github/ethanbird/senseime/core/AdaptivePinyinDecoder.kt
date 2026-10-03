@@ -1,7 +1,7 @@
 package io.github.ethanbird.senseime.core
 
 class AdaptivePinyinDecoder(
-    private val base: InputDecoder,
+    base: InputDecoder,
     private val userLexicon: UserLexicon,
     private val segmenter: PinyinSyllableSegmenter,
     private val englishLexicon: EnglishLexicon = EnglishLexicon.EMPTY,
@@ -9,6 +9,9 @@ class AdaptivePinyinDecoder(
     ContextualInputDecoder,
     CanonicalChineseOnlyInputDecoder,
     CanonicalChineseLexicalProbeDecoder {
+    // Each adaptive instance owns its personal overlay. Immutable dictionary/model arrays are
+    // shared; binding one user must never mutate a base decoder used by another profile.
+    private val base: InputDecoder = (base as? PinyinDecoder)?.withUserLexicon(userLexicon) ?: base
     override fun decode(composing: String, limit: Int): List<Candidate> {
         if (limit <= 0) return emptyList()
         val decoderInput = normalizeDecoderInput(composing)
@@ -18,7 +21,7 @@ class AdaptivePinyinDecoder(
         }
 
         val chinese = decodeChinese(decoderInput, query, limit)
-        return MixedCandidateRanker.merge(chinese, englishLexicon.suggest(query, limit), limit)
+        return MixedCandidateRanker.merge(chinese, englishSuggestions(composing, query, limit), limit)
     }
 
     override fun decodeAfter(previousCodePoint: Int, composing: String, limit: Int): List<Candidate> {
@@ -29,7 +32,7 @@ class AdaptivePinyinDecoder(
             return emptyList()
         }
         val chinese = decodeChinese(decoderInput, query, limit, previousCodePoint)
-        return MixedCandidateRanker.merge(chinese, englishLexicon.suggest(query, limit), limit)
+        return MixedCandidateRanker.merge(chinese, englishSuggestions(composing, query, limit), limit)
     }
 
     override fun decodeChineseOnly(composing: String, limit: Int): List<Candidate> {
@@ -155,8 +158,12 @@ class AdaptivePinyinDecoder(
         limit: Int,
         previousCodePoint: Int? = null,
         prefixProbe: Boolean = false,
+        leftContext: CharSequence? = null,
     ): List<Candidate> {
         val baseCandidates = when {
+            leftContext != null && base is TextContextualInputDecoder ->
+                base.decodeWithContext(leftContext, decoderInput, limit, prefixProbe)
+
             prefixProbe && base is ProgressivePrefixProbeDecoder && previousCodePoint != null ->
                 base.decodePrefixProbeAfter(previousCodePoint, decoderInput, limit)
 
@@ -276,12 +283,14 @@ class AdaptivePinyinDecoder(
                     hasCanonicalComposition,
                 )
             } ?: (topBaseTotal - USER_ONLY_BASE_GAP)
-            // A strong, exact user observation must not inherit an arbitrarily deep composed
+            // A strong, exact user observation (canonical or its explicitly learned alias)
+            // must not inherit an arbitrarily deep composed/corrected
             // base score. Otherwise the same learned phrase is near the front with a small decode
             // limit (where it is user-only), yet disappears with production's 255-result limit
             // after colliding with a deep BASE_COMPOSED row.
             val effectiveBaseTotal = if (
-                fullMatch && learned.rankingBoost >= USER_OBSERVED_FLOOR_MIN_BOOST
+                (fullMatch || (!initialsMatch && query in learned.aliases)) &&
+                learned.rankingBoost >= USER_OBSERVED_FLOOR_MIN_BOOST
             ) {
                 maxOf(baseTotal, topBaseTotal - USER_ONLY_BASE_GAP)
             } else {
@@ -317,6 +326,7 @@ class AdaptivePinyinDecoder(
         leftContext: CharSequence,
         limit: Int,
     ): ProgressivePinyinDecoding {
+        DecodeWorkScope.checkpoint()
         if (composition.composingCodeLength > PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH) {
             return ProgressivePinyinDecoding(
                 revision = composition.revision,
@@ -325,23 +335,27 @@ class AdaptivePinyinDecoder(
                 prefixCandidates = emptyList(),
             )
         }
-        val query = PinyinSyllableSegmenter.normalize(composition.remainingPinyin)
+        val rawInput = composition.remainingPinyin
+        val decoderInput = normalizeDecoderInput(rawInput)
+        val query = PinyinSyllableSegmenter.normalize(decoderInput)
         if (limit <= 0 || query.isEmpty()) {
             return ProgressivePinyinDecoding(
                 revision = composition.revision,
-                remainingPinyin = query,
+                remainingPinyin = rawInput,
                 wholeCandidates = emptyList(),
                 prefixCandidates = emptyList(),
             )
         }
 
-        val localContext = composition.acceptedText.ifEmpty { leftContext.toString() }
+        // Preserve the external preceding character when only one composing segment was
+        // accepted. The LM consumes at most the final two scalars, never a stored editor body.
+        val localContext = leftContext.takeLast(4).toString() + composition.acceptedText.takeLast(4)
         val contextCodePoint = localContext
             .takeIf { it.isNotEmpty() }
             ?.let { it.codePointBefore(it.length) }
-        val wholeCandidates = contextCodePoint
-            ?.let { decodeAfter(it, query, limit) }
-            ?: decode(query, limit)
+        val chinese = decodeChinese(decoderInput, query, limit, contextCodePoint, leftContext = localContext)
+        DecodeWorkScope.checkpoint()
+        val wholeCandidates = MixedCandidateRanker.merge(chinese, englishSuggestions(rawInput, query, limit), limit)
         val wholePrefixCodePoints = IntArray(wholeCandidates.size) { NO_CODE_POINT }
         wholeCandidates.forEachIndexed { index, candidate ->
             if (candidate.text.isNotEmpty()) {
@@ -350,8 +364,8 @@ class AdaptivePinyinDecoder(
         }
 
         val prefixLimit = minOf(limit, MAX_PROGRESSIVE_CANDIDATES)
-        val segmentablePrefixLengths = segmenter.selectablePrefixLengths(query)
-        val fallbackPrefixLength = if (segmenter.isComplete(query)) {
+        val segmentablePrefixLengths = segmenter.selectablePrefixLengths(decoderInput)
+        val fallbackPrefixLength = if (segmenter.isComplete(decoderInput)) {
             0
         } else {
             minOf(query.length - 1, MAX_FALLBACK_PREFIX_LENGTH)
@@ -361,8 +375,19 @@ class AdaptivePinyinDecoder(
             fallbackPrefixLength,
         )
         val prefixGroups = ArrayList<List<RankedPrefixCandidate>>()
+        // A consumed raw span owns its following explicit separator. The tail starts
+        // with letters; undo restores the exact typed boundary. Plain input allocates
+        // no offset map and keeps the established fast path.
+        val rawCuts = if (rawInput == query) null else IntArray(query.length + 1).also { cuts ->
+            var letters = 0
+            rawInput.forEachIndexed { index, c ->
+                if (c.lowercaseChar() in 'a'..'z') letters++
+                if (letters <= query.length) cuts[letters] = index + 1
+            }
+        }
         var segmentableIndex = 0
         for (length in 1..maximumPrefixLength) {
+            DecodeWorkScope.checkpoint()
             if (length >= query.length) continue
             while (
                 segmentableIndex < segmentablePrefixLengths.size &&
@@ -375,15 +400,15 @@ class AdaptivePinyinDecoder(
                     segmentablePrefixLengths[segmentableIndex] == length
             if (!isSegmentable && length > fallbackPrefixLength) continue
             val consumed = query.substring(0, length)
-            val remaining = query.substring(length)
+            val rawCut = rawCuts?.get(length) ?: length
+            val consumedRaw = rawInput.substring(0, rawCut)
+            val remaining = rawInput.substring(rawCut)
             val maximumHanCharacters = if (isSegmentable) {
                 1
             } else {
                 MAX_FALLBACK_PREFIX_HAN_CHARACTERS
             }
-            val decoded = contextCodePoint
-                ?.let { decodeChinese(consumed, consumed, prefixLimit, it, prefixProbe = true) }
-                ?: decodeChinese(consumed, consumed, prefixLimit, prefixProbe = true)
+            val decoded = decodeChinese(normalizeDecoderInput(consumedRaw), consumed, prefixLimit, contextCodePoint, prefixProbe = true, leftContext = localContext)
             val group = ArrayList<RankedPrefixCandidate>()
             val seenTexts = HashSet<String>()
             decoded.forEach { candidate ->
@@ -391,10 +416,10 @@ class AdaptivePinyinDecoder(
                     isSelectableHanCandidate(candidate, maximumHanCharacters) &&
                     seenTexts.add(candidate.text)
                 ) {
-                    val prefix = PinyinPrefixCandidate(candidate, consumed, remaining)
+                    val prefix = PinyinPrefixCandidate(candidate, consumedRaw, remaining)
                     group += RankedPrefixCandidate(
                         value = prefix,
-                        identity = PrefixIdentity(consumed, candidate.text),
+                        identity = PrefixIdentity(consumedRaw, candidate.text),
                         wholeRank = wholePrefixRank(
                             wholePrefixCodePoints,
                             candidate.text.codePointAt(0),
@@ -413,7 +438,7 @@ class AdaptivePinyinDecoder(
         )
         return ProgressivePinyinDecoding(
             revision = composition.revision,
-            remainingPinyin = query,
+            remainingPinyin = rawInput,
             wholeCandidates = wholeCandidates,
             prefixCandidates = prefixes,
         )
@@ -516,6 +541,10 @@ class AdaptivePinyinDecoder(
     ): LearnedPhrase? = userLexicon.demote(phrase.fullPinyin, phrase.text, feedback)
 
     fun forget(phrase: LearnedPhrase): Boolean = userLexicon.forget(phrase.fullPinyin, phrase.text)
+
+    private fun englishSuggestions(raw: String, normalized: String, limit: Int): List<Candidate> =
+        // A typed separator is explicit Chinese segmentation, not an English completion request.
+        if ('\'' in raw) emptyList() else englishLexicon.suggest(normalized, limit)
 
     /** Keeps explicit syllable joints for the base spelling graph while normalizing user lookup. */
     private fun normalizeDecoderInput(value: String): String {

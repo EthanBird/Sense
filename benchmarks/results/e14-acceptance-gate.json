@@ -1,0 +1,223 @@
+{
+  "schemaVersion": 1,
+  "stage": "E14",
+  "decision": "retain-sense-reference-not-promoted",
+  "referenceEnginePromoted": false,
+  "qualityImprovementClaimed": false,
+  "productionChanged": false,
+  "independentEvaluation": false,
+  "currentUpstreamEngineEvaluated": false,
+  "releaseReady": false,
+  "goalComplete": false,
+  "python": {
+    "run": 375,
+    "passed": 374,
+    "skipped": 1
+  },
+  "hostKotlinExecutionsThisStage": 0,
+  "androidExecutionsThisStage": 0,
+  "apkRebuiltThisStage": false,
+  "unchangedExistingApk": {
+    "sha256": "af42f66a54b7a7c297071792984a809479bd0551f084d2d0af67025d94135a1f",
+    "bytes": 85875348,
+    "signing": "Android Debug v2; not a release artifact"
+  },
+  "results": {
+    "dev-reference": {
+      "sense": {
+        "count": 64,
+        "top1": 40,
+        "top5": 54,
+        "top10": 59,
+        "mrrAt10": 0.7108940972222222,
+        "cer": 0.06462035541195477
+      },
+      "reference": {
+        "count": 64,
+        "top1": 35,
+        "top5": 48,
+        "top10": 53,
+        "mrrAt10": 0.6518415178571428,
+        "cer": 0.0840064620355412
+      },
+      "firstGains": 3,
+      "firstLosses": 8
+    },
+    "dev-model-only": {
+      "sense": {
+        "count": 64,
+        "top1": 40,
+        "top5": 54,
+        "top10": 59,
+        "mrrAt10": 0.7108940972222222,
+        "cer": 0.06462035541195477
+      },
+      "reference": {
+        "count": 64,
+        "top1": 41,
+        "top5": 54,
+        "top10": 56,
+        "mrrAt10": 0.7184027777777777,
+        "cer": 0.07269789983844911
+      },
+      "firstGains": 7,
+      "firstLosses": 6
+    },
+    "dev-dictionary-only": {
+      "sense": {
+        "count": 64,
+        "top1": 40,
+        "top5": 54,
+        "top10": 59,
+        "mrrAt10": 0.7108940972222222,
+        "cer": 0.06462035541195477
+      },
+      "reference": {
+        "count": 64,
+        "top1": 35,
+        "top5": 48,
+        "top10": 53,
+        "mrrAt10": 0.651171875,
+        "cer": 0.0840064620355412
+      },
+      "firstGains": 3,
+      "firstLosses": 8
+    },
+    "dev-both": {
+      "sense": {
+        "count": 64,
+        "top1": 40,
+        "top5": 54,
+        "top10": 59,
+        "mrrAt10": 0.7108940972222222,
+        "cer": 0.06462035541195477
+      },
+      "reference": {
+        "count": 64,
+        "top1": 43,
+        "top5": 55,
+        "top10": 55,
+        "mrrAt10": 0.7440104166666667,
+        "cer": 0.06946688206785137
+      },
+      "firstGains": 7,
+      "firstLosses": 4
+    },
+    "test-reference": {
+      "sense": {
+        "count": 124,
+        "top1": 91,
+        "top5": 106,
+        "top10": 111,
+        "mrrAt10": 0.7936155913978494,
+        "cer": 0.04702970297029703
+      },
+      "reference": {
+        "count": 124,
+        "top1": 69,
+        "top5": 98,
+        "top10": 102,
+        "mrrAt10": 0.6596198156682028,
+        "cer": 0.08333333333333333
+      },
+      "firstGains": 3,
+      "firstLosses": 25
+    },
+    "test-model-only": {
+      "sense": {
+        "count": 124,
+        "top1": 91,
+        "top5": 106,
+        "top10": 111,
+        "mrrAt10": 0.7936155913978494,
+        "cer": 0.04702970297029703
+      },
+      "reference": {
+        "count": 124,
+        "top1": 80,
+        "top5": 100,
+        "top10": 103,
+        "mrrAt10": 0.7169578853046594,
+        "cer": 0.07260726072607261
+      },
+      "firstGains": 6,
+      "firstLosses": 17
+    },
+    "test-dictionary-only": {
+      "sense": {
+        "count": 124,
+        "top1": 91,
+        "top5": 106,
+        "top10": 111,
+        "mrrAt10": 0.7936155913978494,
+        "cer": 0.04702970297029703
+      },
+      "reference": {
+        "count": 124,
+        "top1": 69,
+        "top5": 100,
+        "top10": 104,
+        "mrrAt10": 0.6676843317972351,
+        "cer": 0.08003300330033003
+      },
+      "firstGains": 3,
+      "firstLosses": 25
+    },
+    "test-both": {
+      "sense": {
+        "count": 124,
+        "top1": 91,
+        "top5": 106,
+        "top10": 111,
+        "mrrAt10": 0.7936155913978494,
+        "cer": 0.04702970297029703
+      },
+      "reference": {
+        "count": 124,
+        "top1": 82,
+        "top5": 107,
+        "top10": 113,
+        "mrrAt10": 0.7533346134152585,
+        "cer": 0.07260726072607261
+      },
+      "firstGains": 5,
+      "firstLosses": 14
+    },
+    "test-both-repeat": {
+      "sense": {
+        "count": 124,
+        "top1": 91,
+        "top5": 106,
+        "top10": 111,
+        "mrrAt10": 0.7936155913978494,
+        "cer": 0.04702970297029703
+      },
+      "reference": {
+        "count": 124,
+        "top1": 81,
+        "top5": 107,
+        "top10": 113,
+        "mrrAt10": 0.7493023553507424,
+        "cer": 0.07343234323432343
+      },
+      "firstGains": 5,
+      "firstLosses": 15
+    }
+  },
+  "diagnosticSentenceFamilies": 188,
+  "primaryQueries": 752,
+  "repeatedQueries": 124,
+  "isolationQueries": 4,
+  "completeCandidateRepeatEqualRows": 123,
+  "completeCandidateRepeatComparedRows": 124,
+  "repeatGatePassed": false,
+  "modelRebuildByteIdentical": true,
+  "currentDataModel": {
+    "bytes": 34736327,
+    "sha256": "3588b3942c8fd62e1a6bd3bae8c7cadc0faf928c175b245224ed475862218387"
+  },
+  "dictionaryAcceptedRecords": 300526,
+  "dictionaryExcludedRecords": 98,
+  "evidenceManifestSha256": "c08ec601832dc484ccd6d2f98ad16bc28a05d9c5fec23fcbefcd9760a127adba",
+  "archivedFiles": 94
+}

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "scope": "Known replay equivalence after LM-only routing; not a second blind audit",
+  "comparedFields": "Every recorded prediction, score, rank, count and graph diagnostic; only timing and reviewed source hash differ",
+  "reports": {
+    "known-long": {
+      "rows": 1874,
+      "equal": true,
+      "beforeSha256": "9e52c88233e4b149e63fd21b96d4d8749e612b6d2a4d3496cbe931b6e2f172e3",
+      "afterSha256": "6e51b277025765d7c2d5148a130a72e4fedc1f38811b80fbc31267b55e09a7d5"
+    },
+    "known-e4": {
+      "rows": 929,
+      "equal": true,
+      "beforeSha256": "fc7712204bb694a2113641b8bb1b9fdb8645b661adb69918c7ec191b7bd74eb9",
+      "afterSha256": "c8326fa5f651052a8d3b32f4d0a161f683f76faeb6eb8e90d98ab1c92ba7bacf"
+    },
+    "known-e6": {
+      "rows": 929,
+      "equal": true,
+      "beforeSha256": "29b13f24070a49daace341d032182320aac95362292e87f43804973d7caa1996",
+      "afterSha256": "ae7a82dbe7139b4458f41e703147af36188b8c4df71570f181ca1575aa17a8df"
+    },
+    "known-short": {
+      "rows": 48,
+      "equal": true,
+      "beforeSha256": "0e70127335f1916d06cac14843e823d7a36c2014de9b8e2d5590f35bbcbbae90",
+      "afterSha256": "12f851b20c3134193832bec69252b8ea3b87e78cdfc07c96c3938b303070374d"
+    },
+    "vocabulary-audit": {
+      "rows": 63,
+      "equal": true,
+      "beforeSha256": "12f746ec4f0ecbe78013b6107a646009b771e612605626fab90d653dbc41fdef",
+      "afterSha256": "f0745ded9aaf2ec8ad50ac3286b3ff394db72c7038b8d4d126e4509106d09015"
+    },
+    "p2c-audit": {
+      "rows": 959,
+      "equal": true,
+      "beforeSha256": "1f7be54e783a6184debbc409fbd8a9e9058490a50f997c84d4b988503cea9776",
+      "afterSha256": "5d51bed490b6f64c80a06042989f77a42ec54a0ba7531f402c3432c6bed26b08"
+    },
+    "long-dev": {
+      "rows": 945,
+      "equal": true,
+      "beforeSha256": "5aaccd63c77cce20754761584e7e6d9e292f56062212a351078c7e0b24ea8b82",
+      "afterSha256": "5186a80903ee55e55db1866002e913135877ed2d8562771c263899cdd223583e"
+    }
+  },
+  "rows": 5747,
+  "learningEqual": true,
+  "legacyCompleteResultsEqual": 72,
+  "t9CompleteResultsEqual": 104,
+  "legacyReportSha256": "4ffd38f8420e5d2cce15ff9e14fd907eb62b531a33c9eac2f10900e7a9022f7b",
+  "routingFreezeSha256": "ab4384bac0c1772cc05481837eebc31ed8dd6d17da82e5a534951422e9f19d31"
+}

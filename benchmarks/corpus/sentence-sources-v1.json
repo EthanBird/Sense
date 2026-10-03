@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "snapshotDate": "2026-09-26",
+  "retrievedDate": "2026-10-02",
+  "purpose": "Candidate corpus audit only; not shipped or trained into the Android app",
+  "sources": [
+    {
+      "id": "tatoeba-cc0-20260926",
+      "fileName": "sentences_CC0.tar.bz2",
+      "format": "tatoeba-cc0-tar",
+      "url": "https://downloads.tatoeba.org/exports/sentences_CC0.tar.bz2",
+      "sha256": "ea567c9c3efef007eac9aecf0b518bd2845a92d16a1564ba40b003811dfca4d1",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "licenseEvidence": "https://tatoeba.org/ar/downloads"
+    },
+    {
+      "id": "tatoeba-cmn-detailed-20260926",
+      "fileName": "cmn_sentences_detailed.tsv.bz2",
+      "format": "tatoeba-detailed-bz2",
+      "url": "https://downloads.tatoeba.org/exports/per_language/cmn/cmn_sentences_detailed.tsv.bz2",
+      "sha256": "8b689948972ff7676dd3fb28bef092e893959e6c561dbf06c8434e3d668adfea",
+      "license": "CC-BY-2.0-FR",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0/fr/",
+      "licenseEvidence": "https://tatoeba.org/ar/downloads",
+      "attributionPolicy": "Preserve sentence id, contributor, https://tatoeba.org/en/sentences/show/<id>, license and modification metadata per selected sentence; preserve the contributor index with any future model distribution"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "sense-observed-third-context-v1",
+  "baselineSha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+  "algorithm": "Keep the exact original SCNG1 vocabulary and conditional 1/2/3-gram tables. Add absolute-discount interpolated fourgram entries only for three preceding known Han characters; no BOS/UNK/EOS contexts. Missing retained contexts return the original trigram exactly. Pruned direct mass backs off to that same trigram.",
+  "training": {"discount": 0.75, "min_fourgram_count": 2},
+  "trials": [
+    {"name": "daily-fourgram", "data": "all original Tatoeba train only"},
+    {"name": "balanced-fourgram", "data": "all original Tatoeba train plus the exact E15 selected AISHELL train families"}
+  ],
+  "vocabulary": "Fixed baseline vocabulary; other characters map to one UNK during fitting, with unchanged per-unseen-glyph IME OOV feature -4",
+  "maxCombinedModelBytes": 16777216,
+  "runtime": {"lmWeight": 0.5, "oovFeature": -4, "correctionBoost": 12, "limit": 255},
+  "development": {
+    "domains": {"aishell": "p2c-aishell-v7/dev.tsv", "tatoeba": "p2c-supervised-v6/dev.tsv"},
+    "gate": "Per-domain top1/top5/recall255 nondecreasing, top1 character errors nonincreasing; combined top1 strictly increases. Retain individual and stratum regressions.",
+    "selection": "Eligible only: greatest combined top1, lowest combined character errors, highest combined top5, prefer daily-only if tied. Known development sets; no discount/cutoff/weight sweep."
+  },
+  "test": {
+    "domains": {"aishell": "p2c-aishell-v7/test.tsv", "tatoeba": "p2c-daily-mixture-v8/test.tsv"},
+    "gate": "Same per-domain nonregression and combined strict top1 gain; selected model only, no post-test tuning. Test only after development hashes freeze."
+  },
+  "deployment": "Offline pass does not enable the factory. Require short-input/partial-pinyin, progressive result consistency, personal-word protection, Android memory/latency/lifecycle and notices before adoption. External editor capture remains unchanged in this initial experiment."
+}

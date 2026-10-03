@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "modelSha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+  "frozenReportSha256": "c5123f2e2998543a67ee5c23c84421f55d4b5e1b8019ac851d087a25450ac87e",
+  "corpusManifestSha256": "a15434cad002c282b2cc12d3146abc3bbe0114e6e9c450fc504bdaffa7a4c988",
+  "test": {
+    "1": {
+      "all": {
+        "crossEntropyBitsPerToken": 8.487638469154092,
+        "perplexity": 358.94984618414213,
+        "tokensIncludingEos": 45952,
+        "characters": 41076,
+        "oovCharacters": 71,
+        "oovRate": 0.0017285032622455935,
+        "segments": 4876
+      },
+      "conversational-heuristic": {
+        "crossEntropyBitsPerToken": 8.083551684031388,
+        "perplexity": 271.26360457087765,
+        "tokensIncludingEos": 17327,
+        "characters": 15480,
+        "oovCharacters": 15,
+        "oovRate": 0.0009689922480620155,
+        "segments": 1847
+      },
+      "general-heuristic": {
+        "crossEntropyBitsPerToken": 8.731683718054693,
+        "perplexity": 425.1074458388125,
+        "tokensIncludingEos": 28478,
+        "characters": 25466,
+        "oovCharacters": 56,
+        "oovRate": 0.0021990104452996153,
+        "segments": 3012
+      },
+      "technical-heuristic": {
+        "crossEntropyBitsPerToken": 8.839278793166406,
+        "perplexity": 458.0238118339887,
+        "tokensIncludingEos": 147,
+        "characters": 130,
+        "oovCharacters": 0,
+        "oovRate": 0.0,
+        "segments": 17
+      }
+    },
+    "2": {
+      "all": {
+        "crossEntropyBitsPerToken": 5.985968514965872,
+        "perplexity": 63.3805605863102,
+        "tokensIncludingEos": 45952,
+        "characters": 41076,
+        "oovCharacters": 71,
+        "oovRate": 0.0017285032622455935,
+        "segments": 4876
+      },
+      "conversational-heuristic": {
+        "crossEntropyBitsPerToken": 5.420032833800721,
+        "perplexity": 42.81465614611557,
+        "tokensIncludingEos": 17327,
+        "characters": 15480,
+        "oovCharacters": 15,
+        "oovRate": 0.0009689922480620155,
+        "segments": 1847
+      },
+      "general-heuristic": {
+        "crossEntropyBitsPerToken": 6.330128953110339,
+        "perplexity": 80.45604708987514,
+        "tokensIncludingEos": 28478,
+        "characters": 25466,
+        "oovCharacters": 56,
+        "oovRate": 0.0021990104452996153,
+        "segments": 3012
+      },
+      "technical-heuristic": {
+        "crossEntropyBitsPerToken": 6.019754841975951,
+        "perplexity": 64.8823802683591,
+        "tokensIncludingEos": 147,
+        "characters": 130,
+        "oovCharacters": 0,
+        "oovRate": 0.0,
+        "segments": 17
+      }
+    },
+    "3": {
+      "all": {
+        "crossEntropyBitsPerToken": 5.671482503633703,
+        "perplexity": 50.96668107605918,
+        "tokensIncludingEos": 45952,
+        "characters": 41076,
+        "oovCharacters": 71,
+        "oovRate": 0.0017285032622455935,
+        "segments": 4876
+      },
+      "conversational-heuristic": {
+        "crossEntropyBitsPerToken": 5.0542508256678,
+        "perplexity": 33.22623283832788,
+        "tokensIncludingEos": 17327,
+        "characters": 15480,
+        "oovCharacters": 15,
+        "oovRate": 0.0009689922480620155,
+        "segments": 1847
+      },
+      "general-heuristic": {
+        "crossEntropyBitsPerToken": 6.046053931571346,
+        "perplexity": 66.07597631104177,
+        "tokensIncludingEos": 28478,
+        "characters": 25466,
+        "oovCharacters": 56,
+        "oovRate": 0.0021990104452996153,
+        "segments": 3012
+      },
+      "technical-heuristic": {
+        "crossEntropyBitsPerToken": 5.86010943769752,
+        "perplexity": 58.085631941943916,
+        "tokensIncludingEos": 147,
+        "characters": 130,
+        "oovCharacters": 0,
+        "oovRate": 0.0,
+        "segments": 17
+      }
+    }
+  },
+  "productionReady": false,
+  "note": "Independent sentence-likelihood evaluation; still requires decoder and UI acceptance"
+}

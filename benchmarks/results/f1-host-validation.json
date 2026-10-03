@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "modules": {
+    "core-input": {
+      "tests": 289,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 231,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 291,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 3,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    }
+  },
+  "pythonTests": 48,
+  "apkSha256": "5c82a4e9c986d870ddfa6dca0c2e47a6e30bd48f6af2341956c7b4a9cb2a79f0",
+  "scope": "Full core/UI/service host suite and targeted App About tests; unchanged Gradle tasks can be cached",
+  "logs": {
+    ".artifacts/input-quality/f1-art-build.log": "6a0fa34259795fe265682f36ca03a445d3ad092349d9977f15bd8b6382c49698",
+    ".artifacts/input-quality/f1-build-final-fast-han.log": "5ff7f532175108ca17edb15ce38a2bd8180cc6bd1f466af05783c0e35df2c225",
+    ".artifacts/input-quality/f1-build-final.log": "b52db7fd6a5dd1c159d2e866daa5bc85b161f3490e60690542fe03011916550c",
+    ".artifacts/input-quality/f1-build-initial.log": "5ae6bfabc4e3a7b929a7618f19d6918c6d23f8dc88ba05608c304b4b3cd2acb1",
+    ".artifacts/input-quality/f1-fixture-build.log": "6cead3cc999cf41ff293f86b63d217e8946e86710d39ae7bc3abeeecb26e19c3",
+    ".artifacts/input-quality/f1-python-tests.log": "4dde91c597c971b6109a12ac3c72790fabd24719eb7a154c7c9ca93b79ff95d6",
+    ".artifacts/input-quality/f1-ui-build.log": "fe2659ffe969cc806ebdf83176b95af37d068f65b8cd5fbbf48d7f1f1977394f"
+  }
+}

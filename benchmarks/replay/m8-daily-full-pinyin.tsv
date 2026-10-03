@@ -1,0 +1,43 @@
+# Sense authored daily-input audit, frozen before decoder changes (2026-10-02).
+# This is a diagnostic holdout, not a population accuracy estimate or training data.
+# query<TAB>expected<TAB>category<TAB>leftContext<TAB>aliases separated by |
+wozaiditiezhan	我在地铁站	travel
+qingfageweizhigeiwo	请发个位置给我	chat
+wodenghuierhuifu	我等会儿回复	chat
+nihaimeiyoushuijiaoma	你还没有睡觉吗	chat
+jintianyouyidianlei	今天有一点累	chat
+womenmingtianzailiao	我们明天再聊	chat
+zhegewenjianfageiwo	这个文件发给我	work
+jidebaocunwenjian	记得保存文件	work
+huiyigaiwanshangle	会议改晚上了	work
+qingjianchayixiayoujian	请检查一下邮件	work
+mingtianzaoshangkaihui	明天早上开会	work
+woxuyaoyidianshijian	我需要一点时间	work
+daolegeiwodadianhua	到了给我打电话	travel
+lumianyouyidianhua	路面有一点滑	travel
+woxianzaizailushang	我现在在路上	travel
+xianzaiyoudian duche	现在有点堵车	travel
+fujinyoumeiyouchaoshi	附近有没有超市	life
+woqumaiyidian shuiguo	我去买一点水果	life
+jintiande caibucuo	今天的菜不错	life
+bangwodaiyibeikafei	帮我带一杯咖啡	life
+wanshangxiangchishenme	晚上想吃什么	life
+zhejiafandiande cai henhao	这家饭店的菜很好	life
+qingbawendangdakai	请把文档打开	software
+wozhengzaigengxinxitong	我正在更新系统	software
+zhegeyingyonghenhaoyong	这个应用很好用	software
+wangluolianjieyou wenti	网络连接有问题	software
+qingchongxindenglu	请重新登录	software
+shurufahai xuyaoyouhua	输入法还需要优化	software
+zhinengtikeyibangmang	智能体可以帮忙	technical
+ceshiyixia hou tai renwu	测试一下后台任务	technical
+zhegejiekouxuyaorenzheng	这个接口需要认证	technical
+qingbaocun duihua jilu	请保存对话记录	technical
+chaxun yixia shijian	查询一下时间	ambiguous
+xianqu xian	先去西安	ambiguous
+yiqiqu gongyuan	一起去公园	life
+haiyou duoshao dian	还有多少电	life
+suishikeyilianxiwo	随时可以联系我	chat
+womeiyou tingqingchu	我没有听清楚	chat
+huiqu lushang xiaoxin	回去路上小心	travel
+women zhoumo zai jian	我们周末再见	chat

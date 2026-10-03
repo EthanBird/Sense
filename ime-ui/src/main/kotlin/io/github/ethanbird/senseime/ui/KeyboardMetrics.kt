@@ -3,14 +3,11 @@ package io.github.ethanbird.senseime.ui
 /**
  * Density-resolved geometry shared by keyboard layout and rendering.
  *
- * Keeping the values in one immutable object prevents individual panels from
- * quietly drifting to different spacing rules. The keyboard's overall height
- * remains controlled independently by [KeyboardSizeProfile].
+ * The shared instance changes only on configuration updates. Font-scaled chrome
+ * and the host height use the same policy, leaving the letter rows unchanged.
  */
 internal class KeyboardMetrics private constructor(
     val density: Float,
-    val candidateHeight: Float,
-    val toolbarHeight: Float,
     val systemBarHeight: Float,
     val keyGap: Float,
     val horizontalPadding: Float,
@@ -19,18 +16,28 @@ internal class KeyboardMetrics private constructor(
     val candidateGap: Float,
     val candidateMinimumWidth: Float,
     val candidateControlWidth: Float,
-    val expandedCandidateRowHeight: Float,
     val expandedCandidateStatusHeight: Float,
 ) {
+    var chromeScale: Float = 1f
+        private set
+    val candidateHeight: Float get() = dp(45f) * chromeScale
+    val toolbarHeight: Float get() = dp(42f) * chromeScale
+    // Expanded mode has a one-line header, unlike the two-line compact strip.
+    // Keep its padding fixed rather than doubling all empty space at 200%.
+    val expandedCandidateHeaderHeight: Float get() = dp(maxOf(45f, 26f * chromeScale))
+    val expandedCandidateRowHeight: Float get() = dp(42f + 19f * (chromeScale - 1f))
+
+    fun updateFontScale(fontScale: Float) {
+        chromeScale = KeyboardFontGeometry.chromeScale(fontScale)
+    }
+
     fun dp(value: Float): Float = value * density
 
     companion object {
-        fun fromDensity(density: Float): KeyboardMetrics {
+        fun fromDensity(density: Float, fontScale: Float = 1f): KeyboardMetrics {
             require(density.isFinite() && density > 0f)
             return KeyboardMetrics(
                 density = density,
-                candidateHeight = 45f * density,
-                toolbarHeight = 42f * density,
                 systemBarHeight = 52f * density,
                 keyGap = 5f * density,
                 horizontalPadding = 6f * density,
@@ -39,9 +46,8 @@ internal class KeyboardMetrics private constructor(
                 candidateGap = 3f * density,
                 candidateMinimumWidth = 44f * density,
                 candidateControlWidth = 44f * density,
-                expandedCandidateRowHeight = 42f * density,
                 expandedCandidateStatusHeight = 38f * density,
-            )
+            ).also { it.updateFontScale(fontScale) }
         }
     }
 }

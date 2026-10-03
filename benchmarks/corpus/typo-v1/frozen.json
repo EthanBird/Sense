@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "seed": "sense-26qwerty-error-v1",
+  "source": "../p2c-v1",
+  "sourceFrozenSha256": "7f8ff68e5337d3aeef62b3efb559e8c254cbf4e3c5b051d1b52430ce32839b4e",
+  "sourceAttributionSha256": "a0c786c5de32c82f6274440df39e085a13ecaee01fd5467ebb34e2a25e0de185",
+  "generatorSha256": "1b436d4a7a75fe1d71c6da6b7253a55c431271a7d1181a8444a8c2a0be5a8a31",
+  "scope": "Known reviewed P2C base sentences; new deterministic single-error perturbations, not natural user typo gold",
+  "candidateOutputsUsed": false,
+  "selection": "SHA256-min within each operation and equal-width character-offset third; include all eligible source rows without result-based filtering",
+  "operations": [
+    "clean",
+    "joints",
+    "delete",
+    "repeat",
+    "neighbor",
+    "transpose",
+    "fuzzy"
+  ],
+  "keyboard": {
+    "rows": [
+      [
+        "qwertyuiop",
+        0.0
+      ],
+      [
+        "asdfghjkl",
+        0.25
+      ],
+      [
+        "zxcvbnm",
+        0.75
+      ]
+    ],
+    "neighborRadius": 1.25
+  },
+  "duplicates": "Keep source/operation/zone labels even if typed strings collide; report by source family, not independent IID errors",
+  "holdoutPolicy": "Development mutations may be inspected; test mutation outputs only opened after candidate code freeze. Existing clean test results are known.",
+  "outputs": {
+    "dev": {
+      "sha256": "cd10fb361a57e2281b222bff01e5aa3cb12b39eacc98592c2c5b1a0aa7637fea",
+      "rows": 945,
+      "families": 63,
+      "operations": {
+        "clean": 63,
+        "joints": 63,
+        "delete": 189,
+        "repeat": 189,
+        "neighbor": 189,
+        "transpose": 189,
+        "fuzzy": 63
+      },
+      "distinctSourceInputs": 941
+    },
+    "test": {
+      "sha256": "d409309f6497fc5d83629037a79622d6727d657ff0d1c3280c620e0177a87e26",
+      "rows": 1874,
+      "families": 125,
+      "operations": {
+        "clean": 125,
+        "joints": 125,
+        "delete": 375,
+        "repeat": 375,
+        "neighbor": 375,
+        "transpose": 375,
+        "fuzzy": 124
+      },
+      "distinctSourceInputs": 1865
+    }
+  }
+}

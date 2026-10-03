@@ -1,7 +1,7 @@
 {
   "schemaVersion": 4,
   "stage": "M5-mixed-input",
-  "generatedAt": "2026-08-19T08:23:22.203957700Z",
+  "generatedAt": "2026-10-02T06:24:12.397462Z",
   "correctness": {
     "w": "我",
     "wChineseHead": ["我", "为", "啊", "万"],
@@ -17,29 +17,29 @@
     "funLearnedAlias": "fun",
     "zhongwsrf": "中文输入法",
     "zhongwensrf": "中文输入法",
-    "dynamicMixed": [{"query":"hunshenxs","expected":"浑身解数","segmentation":"hun'shen'x's","canonicalPinyin":"hunshenxieshu","rank":1,"maximumRank":1,"matchKind":"BASE_HYBRID"}, {"query":"kaiyuanxy","expected":"开源协议","segmentation":"kai'yuan'x'y","canonicalPinyin":"kaiyuanxieyi","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"suanfafzd","expected":"算法复杂度","segmentation":"suan'fa'f'z'd","canonicalPinyin":"suanfafuzadu","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"yemianxs","expected":"页面显示","segmentation":"ye'mian'x's","canonicalPinyin":"yemianxianshi","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"wenjianxz","expected":"文件下载","segmentation":"wen'jian'x'z","canonicalPinyin":"wenjianxiazai","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"quanxiansz","expected":"权限设置","segmentation":"quan'xian's'z","canonicalPinyin":"quanxianshezhi","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"yisscp","expected":"艺术收藏品","segmentation":"yi's's'c'p","canonicalPinyin":"yishushoucangpin","rank":1,"maximumRank":64,"matchKind":"BASE_HYBRID"}, {"query":"xiaszf","expected":"西安市政府","segmentation":"xi'a's'z'f","canonicalPinyin":"xianshizhengfu","rank":1,"maximumRank":64,"matchKind":"BASE_HYBRID"}, {"query":"dancs","expected":"大年初三","segmentation":"da'n'c's","canonicalPinyin":"danianchusan","rank":62,"maximumRank":64,"matchKind":"BASE_HYBRID"}, {"query":"gongjijin","expected":"攻击技能","segmentation":"gong'ji'ji'n","canonicalPinyin":"gongjijineng","rank":97,"maximumRank":255,"matchKind":"BASE_HYBRID"}]
+    "dynamicMixed": [{"query":"hunshenxs","expected":"浑身解数","segmentation":"hun'shen'x's","canonicalPinyin":"hunshenxieshu","rank":1,"maximumRank":1,"matchKind":"BASE_HYBRID"}, {"query":"kaiyuanxy","expected":"开源协议","segmentation":"kai'yuan'x'y","canonicalPinyin":"kaiyuanxieyi","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"suanfafzd","expected":"算法复杂度","segmentation":"suan'fa'f'z'd","canonicalPinyin":"suanfafuzadu","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"yemianxs","expected":"页面显示","segmentation":"ye'mian'x's","canonicalPinyin":"yemianxianshi","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"wenjianxz","expected":"文件下载","segmentation":"wen'jian'x'z","canonicalPinyin":"wenjianxiazai","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"quanxiansz","expected":"权限设置","segmentation":"quan'xian's'z","canonicalPinyin":"quanxianshezhi","rank":1,"maximumRank":10,"matchKind":"BASE_HYBRID"}, {"query":"yisscp","expected":"艺术收藏品","segmentation":"yi's's'c'p","canonicalPinyin":"yishushoucangpin","rank":1,"maximumRank":64,"matchKind":"BASE_HYBRID"}, {"query":"xiaszf","expected":"西安市政府","segmentation":"xi'a's'z'f","canonicalPinyin":"xianshizhengfu","rank":1,"maximumRank":64,"matchKind":"BASE_HYBRID"}, {"query":"dancs","expected":"大年初三","segmentation":"da'n'c's","canonicalPinyin":"danianchusan","rank":62,"maximumRank":64,"matchKind":"BASE_HYBRID"}, {"query":"gongjijin","expected":"攻击技能","segmentation":"gong'ji'ji'n","canonicalPinyin":"gongjijineng","rank":96,"maximumRank":255,"matchKind":"BASE_HYBRID"}]
   },
   "englishLexicon": {
     "words": 20000,
     "bytes": 161139,
     "sha256": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624",
-    "p95Ns": 1832.16,
+    "p95Ns": 2562.68,
     "gateNs": 500000.00
   },
   "mixedProgressiveDecode": {
-    "p95Ns": 531024.00,
+    "p95Ns": 331180.50,
     "gateNs": 5000000.00
   },
   "hybridDecode": {
-    "p95Ns": 129502.90,
+    "p95Ns": 112573.80,
     "gateNs": 5000000.00
   },
   "dynamicMixedDecode": {
     "cases": 10,
     "candidateLimit": 255,
-    "p95Ns": 1865000.00,
-    "maxNs": 3452400,
+    "p95Ns": 2400900.00,
+    "maxNs": 3226200,
     "gateNs": 5000000.00,
-    "byQuery": [{"query":"hunshenxs","p95Ns":113600.00,"maxNs":825300}, {"query":"kaiyuanxy","p95Ns":74600.00,"maxNs":891500}, {"query":"suanfafzd","p95Ns":62100.00,"maxNs":720900}, {"query":"yemianxs","p95Ns":113400.00,"maxNs":631700}, {"query":"wenjianxz","p95Ns":108800.00,"maxNs":771900}, {"query":"quanxiansz","p95Ns":73700.00,"maxNs":1022500}, {"query":"yisscp","p95Ns":1004700.00,"maxNs":1136800}, {"query":"xiaszf","p95Ns":1187000.00,"maxNs":1385700}, {"query":"dancs","p95Ns":1397100.00,"maxNs":3452400}, {"query":"gongjijin","p95Ns":1865000.00,"maxNs":2335300}]
+    "byQuery": [{"query":"hunshenxs","p95Ns":109500.00,"maxNs":932500}, {"query":"kaiyuanxy","p95Ns":105200.00,"maxNs":966400}, {"query":"suanfafzd","p95Ns":65200.00,"maxNs":756600}, {"query":"yemianxs","p95Ns":100400.00,"maxNs":695000}, {"query":"wenjianxz","p95Ns":95600.00,"maxNs":772700}, {"query":"quanxiansz","p95Ns":64400.00,"maxNs":1043500}, {"query":"yisscp","p95Ns":877100.00,"maxNs":2844200}, {"query":"xiaszf","p95Ns":1127100.00,"maxNs":1330300}, {"query":"dancs","p95Ns":2041400.00,"maxNs":2270500}, {"query":"gongjijin","p95Ns":2400900.00,"maxNs":3226200}]
   }
 }

@@ -1,0 +1,1066 @@
+{
+  "schemaVersion": 1,
+  "stage": "E18",
+  "decision": "hold-default-promotion-short-completion-and-cost",
+  "developmentGatePassed": true,
+  "testGatePassed": true,
+  "shortInputPromotionGatePassed": false,
+  "deploymentEnabled": false,
+  "defaultFactoryChanged": false,
+  "optionalRuntimeImplemented": true,
+  "goalComplete": false,
+  "releaseReady": false,
+  "selectedMode": "balanced-fourgram",
+  "test": {
+    "aishell": {
+      "before": {
+        "states": 248,
+        "top1": 150,
+        "top5": 194,
+        "top10": 204,
+        "recall255": 223,
+        "characterErrors": 226,
+        "characters": 2033
+      },
+      "after": {
+        "states": 248,
+        "top1": 152,
+        "top5": 196,
+        "top10": 204,
+        "recall255": 227,
+        "characterErrors": 222,
+        "characters": 2033
+      },
+      "nonregressionPassed": true,
+      "slices": {
+        "mode": {
+          "editor": {
+            "before": {
+              "states": 124,
+              "top1": 80,
+              "top5": 103,
+              "top10": 106,
+              "recall255": 116,
+              "characterErrors": 93,
+              "characters": 703
+            },
+            "after": {
+              "states": 124,
+              "top1": 81,
+              "top5": 103,
+              "top10": 106,
+              "recall255": 118,
+              "characterErrors": 92,
+              "characters": 703
+            }
+          },
+          "empty": {
+            "before": {
+              "states": 124,
+              "top1": 70,
+              "top5": 91,
+              "top10": 98,
+              "recall255": 107,
+              "characterErrors": 133,
+              "characters": 1330
+            },
+            "after": {
+              "states": 124,
+              "top1": 71,
+              "top5": 93,
+              "top10": 98,
+              "recall255": 109,
+              "characterErrors": 130,
+              "characters": 1330
+            }
+          }
+        },
+        "stratum": {
+          "long": {
+            "before": {
+              "states": 124,
+              "top1": 78,
+              "top5": 95,
+              "top10": 99,
+              "recall255": 107,
+              "characterErrors": 97,
+              "characters": 1221
+            },
+            "after": {
+              "states": 124,
+              "top1": 80,
+              "top5": 96,
+              "top10": 99,
+              "recall255": 109,
+              "characterErrors": 92,
+              "characters": 1221
+            }
+          },
+          "short": {
+            "before": {
+              "states": 124,
+              "top1": 72,
+              "top5": 99,
+              "top10": 105,
+              "recall255": 116,
+              "characterErrors": 129,
+              "characters": 812
+            },
+            "after": {
+              "states": 124,
+              "top1": 72,
+              "top5": 100,
+              "top10": 105,
+              "recall255": 118,
+              "characterErrors": 130,
+              "characters": 812
+            }
+          }
+        }
+      },
+      "firstGains": 3,
+      "firstLosses": 1,
+      "rankLosses": 3
+    },
+    "tatoeba": {
+      "before": {
+        "states": 248,
+        "top1": 170,
+        "top5": 213,
+        "top10": 223,
+        "recall255": 236,
+        "characterErrors": 129,
+        "characters": 1833
+      },
+      "after": {
+        "states": 248,
+        "top1": 170,
+        "top5": 213,
+        "top10": 222,
+        "recall255": 236,
+        "characterErrors": 127,
+        "characters": 1833
+      },
+      "nonregressionPassed": true,
+      "slices": {
+        "mode": {
+          "editor": {
+            "before": {
+              "states": 124,
+              "top1": 89,
+              "top5": 110,
+              "top10": 113,
+              "recall255": 121,
+              "characterErrors": 55,
+              "characters": 628
+            },
+            "after": {
+              "states": 124,
+              "top1": 89,
+              "top5": 110,
+              "top10": 113,
+              "recall255": 121,
+              "characterErrors": 55,
+              "characters": 628
+            }
+          },
+          "empty": {
+            "before": {
+              "states": 124,
+              "top1": 81,
+              "top5": 103,
+              "top10": 110,
+              "recall255": 115,
+              "characterErrors": 74,
+              "characters": 1205
+            },
+            "after": {
+              "states": 124,
+              "top1": 81,
+              "top5": 103,
+              "top10": 109,
+              "recall255": 115,
+              "characterErrors": 72,
+              "characters": 1205
+            }
+          }
+        },
+        "stratum": {
+          "long": {
+            "before": {
+              "states": 126,
+              "top1": 86,
+              "top5": 108,
+              "top10": 114,
+              "recall255": 119,
+              "characterErrors": 66,
+              "characters": 1141
+            },
+            "after": {
+              "states": 126,
+              "top1": 86,
+              "top5": 108,
+              "top10": 114,
+              "recall255": 119,
+              "characterErrors": 64,
+              "characters": 1141
+            }
+          },
+          "short": {
+            "before": {
+              "states": 122,
+              "top1": 84,
+              "top5": 105,
+              "top10": 109,
+              "recall255": 117,
+              "characterErrors": 63,
+              "characters": 692
+            },
+            "after": {
+              "states": 122,
+              "top1": 84,
+              "top5": 105,
+              "top10": 108,
+              "recall255": 117,
+              "characterErrors": 63,
+              "characters": 692
+            }
+          }
+        }
+      },
+      "firstGains": 0,
+      "firstLosses": 0,
+      "rankLosses": 7
+    }
+  },
+  "sourcePins": {
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptivePinyinDecoder.kt": "e15165a52f0a1acf1e5ffd50e8bc1c5724cf6851b272caa69cb9d8414e139970",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptiveWubi86Decoder.kt": "a35838bab4a81024eb4de8a91e13cd9d6016e2d944bfc3a1f1a68b3fb7ec92b8",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRanker.kt": "c2fdabe176aabf9157141663e8c30a6ce6e7ab6d75775c5b6a351bf51072a4b2",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRankingDiagnostics.kt": "40fb7520701e8c8a5b68ad5054646d9210ffc6dd3386b81393bb64a7c0cfa90e",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateSnapshot.kt": "a9e67e6cad44e6444d6f973e4a166bf8740031ee499db7c8f450e84a2e8778c7",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterBigramModel.kt": "31932aa41a2941ee4a25ee64ef20376e1c8c22cebf8e6c4e5761f65f2eb319a1",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterLanguageModel.kt": "13edc15ff7b3e35a4aa6b1097e86a3798660a1d7cea1b9c60fc6688e51bda6f9",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CommitSequenceTracker.kt": "b5553d8064c4e5fea98957301751f4f8dc15047f04daecb357919d663bc2dfc4",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ContextAssociationModel.kt": "42d5303703626c49fde56b018baa78e1412c82ed7a7e9a9c6e7ab53aafc4c969",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchBudget.kt": "b7a20c3cc3baadc70eafc9b82531b7109d196b8252d9c8e142495808d55586a9",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchDiagnostics.kt": "f2c8a89a8056cb6ee494a574b952013c37da6de9d5d15c36d8ec988f71168f08",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CuratedLexicalCandidateCatalog.kt": "003535f8f5a2e42ffb622b728370166c8f83060fbe99c8feab40c6505cecd9ff",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/DecodeWorkScope.kt": "d6bb4d8c36c245bd9d6309e7eda14524035b8c0d9402df5f3355fbec786a5741",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishInputSession.kt": "b2f710e2eb0d1d6f0a3d8e61a00745e2442a822a57818f54ff15e94ba4077401",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishLexicon.kt": "d4023375ffcf9636f2f099001864b12d97de587d074964fb855fe33cf7b2f509",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishWordUsage.kt": "66f3433d8ec70682e9481916502998a9b0fd30a731c784ff890750fdcfa562d5",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/FakeDecoder.kt": "2ea5166529da40546f4f6f1cef86036ec5a1152a129fdebc7cdfa18e969ba591",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/FourgramLanguageModel.kt": "6ecdfcef4786c342ce6504b8ff879a7ec5a03400f156b6e2c4fdf3c8b2af223d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputModel.kt": "5a5316e26a1a3da6f90cf0248208e0a39d7f7ee97ec4a65e2341bb7c1a7fde38",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputReducer.kt": "b608ea6ca6a3e53067d215acc6949f1007b1cc519b3f2de42a28507c7daf936d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/LinearMixtureCharacterModel.kt": "bace39c3341ef6513dca1d969ac6a077cd816932416539183f5bc8c967680546",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M0HostBenchmark.kt": "e18a429e81795794463f53f304894b8938dd52a98ddddd24550bd4ca176f3adf",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M10CharacterLmBenchmark.kt": "c88f3f193ce2ebf37b14c5baad0e3dbc76c540cd55f5859105a4bc9d1570be45",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M11LatticeLanguageBenchmark.kt": "1c79b49983defc05c8889d8c266168df99801dcf20f8362bae073c306b6a58d2",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M12P2cBenchmark.kt": "ff18694be688990b63de59e7c67555a69389bfa2533ab3db82ef11ca83db0d75",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M14ProgressiveEquivalenceBenchmark.kt": "7bd20f4a75222d016b8e8a10452c7f0aa71d33c85c38e9e4fe3d752e756ea294",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M15TypoRecallBenchmark.kt": "9c120a1e77361cf65a0d40f00c27af0a428fcc458213d8562281d906cbf168b2",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M16SpellingGraphBenchmark.kt": "f6e730fd5f77e54108ad61d2d28e43f77a69d5afd935f6cd20972842e04b8852",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M17CandidateScoreBenchmark.kt": "9e15d6e51cfff4ec32002ca3f09f1ce1c75bef268bc64c124d6eba6234e9d8be",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M18LexiconLearningBenchmark.kt": "dde32fe267107971573ff16562c69a44d09fe85093761bdada92d36c67ccbd98",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M19ScoreFeatureBenchmark.kt": "af21ccd30f4ab71c3b9f666b4b4c2424df83a83267fc23ebfd8d7d5ed52162dd",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M1PinyinBenchmark.kt": "9e3ebc93691e8420c8edbb8eb4a55d801b19c5e7e631cab11063408f1576d212",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M20CrossDomainBenchmark.kt": "31dbf40a0d6c4b87cd15a78ad352b552ed65ed5141ff27e9338fda89ad4c9ac8",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M21MixtureBenchmark.kt": "bcc88358ce50a678aaca846630d4b2e551fc07f6fd708605f70c4f0b068d9a46",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M23FourgramBenchmark.kt": "c2cb6111912ab4ffe16bf2333214222f1790db5737d6c2b80e355ba08e9c5a12",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M2AdaptiveBenchmark.kt": "88ae82e685b28b79c68d6eb549867e70f2da66e75c2d014a2710cdf24be606f2",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M3SentenceBenchmark.kt": "03c5de47af070a2cf89ac0700711bbd9488ccb49a6ddc9a6938b49da9c7f3cd7",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M4CoreBenchmark.kt": "3fa4158cf9cdf414b2e0e2f8a3eaac64d81e7e317f719dd6baf91ee020e97c18",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M5MixedInputBenchmark.kt": "47e1ff5639ea06dc8f1f28b2da3df4099b4cb8a3e088a78e238e98398732e114",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M6InputPolishBenchmark.kt": "14a226681511b1c2cb76323452424c7759d130bc1926b1ada25b464a12fb7a55",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M7ChineseSchemeBenchmark.kt": "583ad236955f77f87ddc120795b89f70ef88c19f477c7d42d2fb8ee59641b755",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M8DailyInputBenchmark.kt": "77c83f59177ec5619dd759ccb87b3ad42e7ed246f3cc1b9d3792f8d3b20d0e30",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M9PersonalSentenceBenchmark.kt": "54bd54fac46b6ba4fce9c0e442c628ac6b3d6e512e8df4371dcffbc56e18fd0e",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/MixedCandidateRanker.kt": "c0a24077e62e51e5edaddbbc5ff694d2a939a5bf075802ef5b9999cad5483769",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/OovLanguageModelAblation.kt": "08bcd990204c8dc6e0ecf3c85254f91384e6f40179633386a90167457aee8195",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinDecoder.kt": "0590f4d6deb9d8578de01fcb2a184eb76878948115c3dd6e3c92a6220ffdda23",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinInputLimits.kt": "7759ce67e9dbaffffba153c3c3cf2fa71e919198de6bb9799840b4f0b8a47a6f",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinLanguageScorer.kt": "9f56d21f40faaaea58d138d0f3203427acf0ba6805f6819b93696eb703f88fac",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinScoreDiagnostics.kt": "1b3b66df0d87f3857825af5028b7c9423563ff7c1c68959a94d9a03fdf606c56",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt": "9ba8e935fcb197e0dc9bf79a2e057a44a9c74fa14c15412c68b38970900212ee",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSyllableSegmenter.kt": "5e277fbbd408c5d712be0b8b1c0d0f736e4a2b5b6c0d566720d54eac5d9d6d05",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PrefixCandidateCache.kt": "5dc949d24ac6df2050628c930323d0fc5370599844f53fe68eb91b5f572a7408",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ProgressivePinyin.kt": "dbeb7d86ad3ee13c9635d38c208c87ce4fc1e45d2f45ef4767fbb9172ae6238a",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/QueryLexicalCache.kt": "57706a81a9c49d6a6d9b3fef39de8eca2a548b0a1d332540f6603a46c1d46b2d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SemanticCandidateCatalog.kt": "b7308ba865dace349456daa3bf666b97affa5bf77945474bde2352cdfd3e87a1",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SerialPersistenceQueue.kt": "d7882ff60210696c825be60b5c9cfe10651f55f05fcb0209d27fff3994bcc8d9",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/StableTopK.kt": "4047e249e45037b3808e99660205bcebfe905e072ab4a2f7cb377abc76917ce7",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9AlternativeInputDecoder.kt": "cf2e3f1aa4e394074902fbed017eb0a7afdf6f3df09560fad6755ed5ec0bf62d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9Composition.kt": "ff2663ef91b666386f41954ceebe945ab421cbcfdb5a944dca64aab0b0a16727",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9PinyinChoice.kt": "2c63475a857b941c78950bca98b9915676c59e3544fd2d6f75c077c11d590152",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9SyllableIndex.kt": "5b9752addfe68ac197beff57b9869d161e8fb1543106667d4b2b1cd2a3fba223",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserAssociation.kt": "3439f4711ae5ab9719568eb4bcac0cce649d8ca328a9c0839a83d91566832d52",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPersonalization.kt": "663743456c32c102401f8401b119c18b0321015d6efc5e47bb43e0dce78c0507",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPinyinLattice.kt": "8a71df09fcc5e5d14122ad767f03ed4150773833aad2ddc3bb17a9120588fb5f",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Lexicon.kt": "468f3b0aa998c34376c7486ec063eadc626b4de6d41cd89527fa9976bf7bf912",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Personalization.kt": "5777e86c2bffccf1f30557e5a648d0ec5cd0c430c077c9db56491dc4c033b44d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/WubiComposition.kt": "e9c7567a5dbb6985d8098cdc8a6a8d02724e5ea5f809526fdd5c80e6db3f06ee"
+  },
+  "assetPins": {
+    "pinyin_lexicon.bin": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232",
+    "pinyin_bigrams.bin": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
+    "pinyin_character_lm.scng": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+    "pinyin_syllables.txt": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+    "english_lexicon.txt": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624"
+  },
+  "primaryDevStates": 768,
+  "primaryTestStates": 992,
+  "testCandidatesNowKnown": true,
+  "interaction": {
+    "type": "summary",
+    "states": 1468,
+    "completeEqual": 1101,
+    "repeatedCompleteResults": 2936,
+    "shortStates": 1188,
+    "shortCompleteEqual": 996,
+    "shortTop1Equal": 1186,
+    "personalAssertions": 12,
+    "passed": true
+  },
+  "shortInputChanges": [
+    {
+      "type": "row",
+      "query": "wox",
+      "context": "",
+      "limit": 255,
+      "completeEqual": false,
+      "beforeTop5": [
+        "我想",
+        "我想和你在一起",
+        "我喜欢",
+        "我现在",
+        "我想告诉你"
+      ],
+      "afterTop5": [
+        "我想和你在一起",
+        "我想",
+        "我想告诉你",
+        "我喜欢",
+        "我现在"
+      ]
+    },
+    {
+      "type": "row",
+      "query": "wox",
+      "context": "我想",
+      "limit": 255,
+      "completeEqual": false,
+      "beforeTop5": [
+        "我想",
+        "我想和你在一起",
+        "我喜欢",
+        "我现在",
+        "我想告诉你"
+      ],
+      "afterTop5": [
+        "我想和你在一起",
+        "我想",
+        "我想告诉你",
+        "我喜欢",
+        "我现在"
+      ]
+    }
+  ],
+  "probabilityControl": {
+    "passed": true,
+    "baselineSha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+    "extensionSha256": "75371c3861341bee9a0b0bb488ac1e95295aec317a8de1cc48360be13f818bb4",
+    "vocabulary": 3352,
+    "distributions": 70,
+    "lowerApiBitEqual": 234640,
+    "bosThirdContextBitEqual": 10056,
+    "maximumMassError": 7.748916031058428e-08,
+    "estimatedRetainedBytes": 6072092,
+    "rows": [
+      {
+        "context": [
+          19968,
+          19968,
+          19971
+        ],
+        "mass": 1.0000000084421472
+      },
+      {
+        "context": [
+          19968,
+          30340,
+          20301
+        ],
+        "mass": 0.9999999949988005
+      },
+      {
+        "context": [
+          19978,
+          30340,
+          22478
+        ],
+        "mass": 0.9999999990483823
+      },
+      {
+        "context": [
+          19981,
+          35201,
+          25171
+        ],
+        "mass": 0.9999999550525317
+      },
+      {
+        "context": [
+          20010,
+          24456,
+          22823
+        ],
+        "mass": 1.0000000034987093
+      },
+      {
+        "context": [
+          20027,
+          21697,
+          29260
+        ],
+        "mass": 0.9999999862642086
+      },
+      {
+        "context": [
+          20102,
+          19968,
+          26479
+        ],
+        "mass": 0.9999999838553717
+      },
+      {
+        "context": [
+          20110,
+          26143,
+          26143
+        ],
+        "mass": 1.0000000109164067
+      },
+      {
+        "context": [
+          20154,
+          25110,
+          24322
+        ],
+        "mass": 1.0000000111864593
+      },
+      {
+        "context": [
+          20182,
+          23478,
+          22312
+        ],
+        "mass": 0.9999999225108397
+      },
+      {
+        "context": [
+          20204,
+          25285,
+          24515
+        ],
+        "mass": 1.0000000162759979
+      },
+      {
+        "context": [
+          20250,
+          35758,
+          38750
+        ],
+        "mass": 1.0000000014389854
+      },
+      {
+        "context": [
+          20320,
+          25152,
+          33021
+        ],
+        "mass": 0.9999999525438054
+      },
+      {
+        "context": [
+          20570,
+          36873,
+          25321
+        ],
+        "mass": 0.9999999600067988
+      },
+      {
+        "context": [
+          20845,
+          23478,
+          19978
+        ],
+        "mass": 0.9999999982354053
+      },
+      {
+        "context": [
+          20986,
+          30340,
+          20027
+        ],
+        "mass": 1.0000000024481985
+      },
+      {
+        "context": [
+          21069,
+          20123,
+          26085
+        ],
+        "mass": 0.9999999976484514
+      },
+      {
+        "context": [
+          21313,
+          20960,
+          20010
+        ],
+        "mass": 1.0000000346922562
+      },
+      {
+        "context": [
+          21451,
+          36873,
+          25321
+        ],
+        "mass": 0.9999999928124748
+      },
+      {
+        "context": [
+          21507,
+          19981,
+          28040
+        ],
+        "mass": 0.9999999585299341
+      },
+      {
+        "context": [
+          21644,
+          21487,
+          25345
+        ],
+        "mass": 1.0000000232570503
+      },
+      {
+        "context": [
+          22242,
+          20013,
+          22830
+        ],
+        "mass": 0.9999999376805075
+      },
+      {
+        "context": [
+          22312,
+          27773,
+          36710
+        ],
+        "mass": 0.9999999948120277
+      },
+      {
+        "context": [
+          22686,
+          38271,
+          36235
+        ],
+        "mass": 0.9999999997162557
+      },
+      {
+        "context": [
+          22825,
+          27668,
+          20250
+        ],
+        "mass": 0.9999999714954256
+      },
+      {
+        "context": [
+          22914,
+          26159,
+          35780
+        ],
+        "mass": 1.0000000018034942
+      },
+      {
+        "context": [
+          23398,
+          33521,
+          25991
+        ],
+        "mass": 1.0000000087680885
+      },
+      {
+        "context": [
+          23545,
+          23478,
+          24237
+        ],
+        "mass": 1.0000000190105949
+      },
+      {
+        "context": [
+          23681,
+          30340,
+          30007
+        ],
+        "mass": 0.9999999836540278
+      },
+      {
+        "context": [
+          24125,
+          23376,
+          20102
+        ],
+        "mass": 1.000000000698947
+      },
+      {
+        "context": [
+          24320,
+          22987,
+          36827
+        ],
+        "mass": 1.0000000046354947
+      },
+      {
+        "context": [
+          24471,
+          24840,
+          22810
+        ],
+        "mass": 0.9999999987823769
+      },
+      {
+        "context": [
+          24819,
+          26126,
+          24180
+        ],
+        "mass": 0.999999986802649
+      },
+      {
+        "context": [
+          25105,
+          21516,
+          26679
+        ],
+        "mass": 0.9999999856097619
+      },
+      {
+        "context": [
+          25143,
+          20449,
+          24687
+        ],
+        "mass": 0.9999999938974315
+      },
+      {
+        "context": [
+          25253,
+          20108,
+          38646
+        ],
+        "mass": 1.0000000005153322
+      },
+      {
+        "context": [
+          25910,
+          36141,
+          26426
+        ],
+        "mass": 1.0000000078282874
+      },
+      {
+        "context": [
+          26080,
+          27861,
+          20445
+        ],
+        "mass": 0.9999999987038581
+      },
+      {
+        "context": [
+          26159,
+          20889,
+          19981
+        ],
+        "mass": 1.0000000236458524
+      },
+      {
+        "context": [
+          26368,
+          20851,
+          24515
+        ],
+        "mass": 1.0000000009813323
+      },
+      {
+        "context": [
+          26395,
+          25345,
+          32493
+        ],
+        "mass": 1.0000000131309323
+      },
+      {
+        "context": [
+          26524,
+          20320,
+          38169
+        ],
+        "mass": 1.0000000038159855
+      },
+      {
+        "context": [
+          27493,
+          19978,
+          21319
+        ],
+        "mass": 1.0000000006792147
+      },
+      {
+        "context": [
+          27809,
+          26377,
+          22826
+        ],
+        "mass": 1.000000014981008
+      },
+      {
+        "context": [
+          28385,
+          20102,
+          20182
+        ],
+        "mass": 1.000000000011044
+      },
+      {
+        "context": [
+          29579,
+          20808,
+          29983
+        ],
+        "mass": 1.0000000385282652
+      },
+      {
+        "context": [
+          30005,
+          20449,
+          19994
+        ],
+        "mass": 0.9999999947942666
+      },
+      {
+        "context": [
+          30340,
+          22320,
+          20013
+        ],
+        "mass": 1.000000007044692
+      },
+      {
+        "context": [
+          30340,
+          32937,
+          33152
+        ],
+        "mass": 0.9999999955824646
+      },
+      {
+        "context": [
+          30495,
+          30340,
+          21916
+        ],
+        "mass": 0.9999999917326575
+      },
+      {
+        "context": [
+          31361,
+          30772,
+          19977
+        ],
+        "mass": 0.9999999939220555
+      },
+      {
+        "context": [
+          32463,
+          24120,
+          24341
+        ],
+        "mass": 1.000000003119171
+      },
+      {
+        "context": [
+          32780,
+          21448,
+          35880
+        ],
+        "mass": 0.9999999992398488
+      },
+      {
+        "context": [
+          33455,
+          29255,
+          19994
+        ],
+        "mass": 0.9999999947942666
+      },
+      {
+        "context": [
+          34989,
+          20102,
+          22810
+        ],
+        "mass": 0.9999999849451705
+      },
+      {
+        "context": [
+          35753,
+          23458,
+          25143
+        ],
+        "mass": 0.9999999797999057
+      },
+      {
+        "context": [
+          35834,
+          22522,
+          20122
+        ],
+        "mass": 0.999999993168405
+      },
+      {
+        "context": [
+          36305,
+          24471,
+          36319
+        ],
+        "mass": 0.9999999948054296
+      },
+      {
+        "context": [
+          36824,
+          22312,
+          31561
+        ],
+        "mass": 0.9999999660487213
+      },
+      {
+        "context": [
+          36831,
+          21040,
+          30340
+        ],
+        "mass": 0.9999999887291261
+      },
+      {
+        "context": [
+          37117,
+          26159,
+          29983
+        ],
+        "mass": 1.0000000043719552
+      },
+      {
+        "context": [
+          38376,
+          30340,
+          26680
+        ],
+        "mass": 1.0000000032686813
+      },
+      {
+        "context": [
+          38750,
+          29289,
+          36136
+        ],
+        "mass": 1.0000000063310026
+      },
+      {
+        "context": [
+          40857,
+          40644,
+          24120
+        ],
+        "mass": 0.9999999969141208
+      },
+      {
+        "context": [
+          1114112,
+          1114112,
+          1114112
+        ],
+        "mass": 1.0000000080810414
+      },
+      {
+        "context": [
+          1114112,
+          1114112,
+          25105
+        ],
+        "mass": 0.9999999828134809
+      },
+      {
+        "context": [
+          1114112,
+          25105,
+          20204
+        ],
+        "mass": 0.9999999869212675
+      },
+      {
+        "context": [
+          1114114,
+          25105,
+          20204
+        ],
+        "mass": 0.9999999869212675
+      },
+      {
+        "context": [
+          131072,
+          25105,
+          20204
+        ],
+        "mass": 0.9999999869212675
+      },
+      {
+        "context": [
+          40856,
+          38736,
+          40777
+        ],
+        "mass": 1.0000000413038537
+      }
+    ]
+  },
+  "hostTests": {
+    "core-input": {
+      "tests": 348,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 310,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "python": {
+    "run": 398,
+    "passed": 397,
+    "skipped": 1
+  },
+  "androidInstrumentationTests": 1,
+  "androidMeasuredDecodes": 128,
+  "androidMicrobenchmark": {
+    "0": {
+      "medianNanos": 35654100.0,
+      "p95NearestRankNanos": 241160500,
+      "maximumNanos": 254745900,
+      "byQuery": {
+        "womenmingtianjian": {
+          "medianNanos": 107421100.0,
+          "first": "我们明天见"
+        },
+        "wox": {
+          "medianNanos": 6975550.0,
+          "first": "我想"
+        },
+        "chengche": {
+          "medianNanos": 15523000.0,
+          "first": "乘车"
+        },
+        "qingfageweizhigeiwo": {
+          "medianNanos": 81356300.0,
+          "first": "请发个位置给我"
+        },
+        "tangmumeiyouzhuyidaomalihuanlexinfaxing": {
+          "medianNanos": 234035950.0,
+          "first": "汤姆没有注意到玛丽换了新发型"
+        },
+        "woxiangchifan": {
+          "medianNanos": 55704600.0,
+          "first": "我想吃饭"
+        },
+        "zhinengti": {
+          "medianNanos": 6155500.0,
+          "first": "智能体"
+        },
+        "nihao": {
+          "medianNanos": 11242750.0,
+          "first": "你好"
+        }
+      }
+    },
+    "1": {
+      "medianNanos": 36994800.0,
+      "p95NearestRankNanos": 276766400,
+      "maximumNanos": 370901800,
+      "byQuery": {
+        "womenmingtianjian": {
+          "medianNanos": 118837750.0,
+          "first": "我们明天见"
+        },
+        "wox": {
+          "medianNanos": 8119050.0,
+          "first": "我想和你在一起"
+        },
+        "chengche": {
+          "medianNanos": 14632900.0,
+          "first": "乘车"
+        },
+        "qingfageweizhigeiwo": {
+          "medianNanos": 111164250.0,
+          "first": "请发个位置给我"
+        },
+        "tangmumeiyouzhuyidaomalihuanlexinfaxing": {
+          "medianNanos": 275798050.0,
+          "first": "汤姆没有注意到玛丽换了新发型"
+        },
+        "woxiangchifan": {
+          "medianNanos": 62865650.0,
+          "first": "我想吃饭"
+        },
+        "zhinengti": {
+          "medianNanos": 7606050.0,
+          "first": "智能体"
+        },
+        "nihao": {
+          "medianNanos": 13491550.0,
+          "first": "你好"
+        }
+      }
+    }
+  },
+  "androidUiTestsThisStage": 0,
+  "appApkRebuiltThisStage": false,
+  "unchangedExistingApk": {
+    "sha256": "af42f66a54b7a7c297071792984a809479bd0551f084d2d0af67025d94135a1f",
+    "bytes": 85875348,
+    "signing": "Android Debug v2; not a release artifact"
+  },
+  "libraryTestApkSha256": "8e92e5cadc63be63f3e83146f1c426583c3862e39c55200e0cd7364ae6ed8344",
+  "evidenceManifestSha256": "9ff6cde832e31f7517b6486763951d31e92db988939be5ce071d134806749426",
+  "archivedFiles": 222
+}

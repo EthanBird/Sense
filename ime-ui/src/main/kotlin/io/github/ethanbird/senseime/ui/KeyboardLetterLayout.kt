@@ -11,6 +11,7 @@ internal data class KeyboardLetterLayoutRequest(
     val chineseMode: Boolean,
     val swipeMode: SwipeCharacterMode,
     val legendMode: PrimaryKeyboardLegendMode = PrimaryKeyboardLegendMode.SWIPE_HINTS,
+    val pinyinCompositionActive: Boolean = false,
     val t9CompositionActive: Boolean = false,
     val t9PinyinChoiceRevision: Long = 0L,
     val t9PinyinChoices: List<T9PinyinChoice> = emptyList(),

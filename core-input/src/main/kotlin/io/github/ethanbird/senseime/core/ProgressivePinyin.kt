@@ -54,7 +54,10 @@ data class PinyinComposition(
 
     fun type(character: Char): PinyinComposition {
         val normalized = character.lowercaseChar()
-        if (normalized !in 'a'..'z') return this
+        if (normalized !in 'a'..'z' && normalized != '\'') return this
+        // Typed boundaries are part of the reversible transaction, unlike display-only
+        // inferred joints. Leading/repeated joints have no syllable to separate.
+        if (normalized == '\'' && remainingPinyin.lastOrNull() !in 'a'..'z') return this
         if (composingCodeLength >= PinyinInputLimits.MAX_COMPOSING_CODE_LENGTH) return this
         return copy(remainingPinyin = remainingPinyin + normalized, revision = revision + 1)
     }

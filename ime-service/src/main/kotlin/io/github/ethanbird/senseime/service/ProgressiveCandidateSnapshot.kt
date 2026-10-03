@@ -59,10 +59,9 @@ internal class ProgressiveCandidateSnapshot private constructor(
                 if (choices.size < limit && displayedChoices.add(identity)) choices += choice
             }
 
-            // A small prefix sample keeps progressive character selection close
-            // to the strip head. The complete whole-candidate ranking follows
-            // before the bulk prefix tail, so hundreds of first-syllable
-            // characters cannot push a valid whole phrase several pages away.
+            // Keep the useful whole head, then interleave bounded blocks. Neither
+            // a large completion pool nor hundreds of first-syllable characters
+            // may bury the other selection path at the end of the entire list.
             val wholeHeadSize = if (
                 decoding.wholeCandidates.firstOrNull()?.matchKind in ENGLISH_MATCH_KINDS
             ) {
@@ -79,14 +78,18 @@ internal class ProgressiveCandidateSnapshot private constructor(
             decoding.wholeCandidates.take(wholeHeadSize).forEach { candidate ->
                 add(ProgressiveCandidateChoice.Whole(candidate))
             }
-            presentedPrefixes.take(REPRESENTATIVE_PREFIX_COUNT).forEach { prefix ->
-                add(ProgressiveCandidateChoice.Prefix(prefix))
-            }
-            decoding.wholeCandidates.drop(wholeHeadSize).forEach { candidate ->
-                add(ProgressiveCandidateChoice.Whole(candidate))
-            }
-            presentedPrefixes.drop(REPRESENTATIVE_PREFIX_COUNT).forEach { prefix ->
-                add(ProgressiveCandidateChoice.Prefix(prefix))
+            var wholeIndex = minOf(wholeHeadSize, decoding.wholeCandidates.size)
+            var prefixIndex = 0
+            while (choices.size < limit &&
+                (wholeIndex < decoding.wholeCandidates.size || prefixIndex < presentedPrefixes.size)) {
+                val prefixEnd = minOf(prefixIndex + REPRESENTATIVE_PREFIX_COUNT, presentedPrefixes.size)
+                while (prefixIndex < prefixEnd && choices.size < limit) {
+                    add(ProgressiveCandidateChoice.Prefix(presentedPrefixes[prefixIndex++]))
+                }
+                val wholeEnd = minOf(wholeIndex + WHOLE_CANDIDATE_HEAD_SIZE, decoding.wholeCandidates.size)
+                while (wholeIndex < wholeEnd && choices.size < limit) {
+                    add(ProgressiveCandidateChoice.Whole(decoding.wholeCandidates[wholeIndex++]))
+                }
             }
             return ProgressiveCandidateSnapshot(
                 snapshot = CandidateSnapshot(decoding.revision, choices.map { it.candidate }),

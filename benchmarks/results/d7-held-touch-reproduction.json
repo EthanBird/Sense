@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "scope": "Identical one-test fixture, E3 before fails on the held-touch expiry assertion; D7 after passes",
+  "sameFixtureApkSha256": "10ceb665bcaacb9dd818ab516ee662a8bbd4c10ece69d999fd841afebaed5716",
+  "before": {
+    "apkSha256": "4854022ee70632fd4cc261676cf1c16ebb20f2c1bbb5ef54180ad48abcca537a",
+    "expectedFailureObserved": true,
+    "logSha256": "eccf25e38e94f337cb4642b2629927b8826d2053cb49a7da9e548863942d7707"
+  },
+  "after": {
+    "apkSha256": "64244812ea365af07db4c0f00adf8affaefa6bc08263751571d6566c292b2777",
+    "passed": true,
+    "logSha256": "ed8590d397906dc762ac23219fb944c94a987c242fb98d61c218d32c82b7d4dd"
+  },
+  "finalEightTestSuite": "d7-system-ime.json"
+}

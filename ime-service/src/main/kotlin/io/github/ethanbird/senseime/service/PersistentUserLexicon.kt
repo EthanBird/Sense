@@ -11,6 +11,8 @@ import io.github.ethanbird.senseime.core.SerialPersistenceQueue
 import io.github.ethanbird.senseime.core.UserLearningEvidence
 import io.github.ethanbird.senseime.core.UserLexicon
 import io.github.ethanbird.senseime.core.UserNegativeFeedback
+import io.github.ethanbird.senseime.core.UserPinyinMatch
+import java.util.concurrent.TimeUnit
 
 /**
  * Hot lookups stay in a pure Kotlin snapshot; SQLite is only the durable journal.
@@ -29,6 +31,9 @@ class PersistentUserLexicon private constructor(
     private var closed = false
 
     override fun lookup(code: String, limit: Int): List<LearnedPhrase> = memory.lookup(code, limit)
+
+    override fun matchFullPinyin(query: String, limitPerStart: Int): List<UserPinyinMatch> =
+        memory.matchFullPinyin(query, limitPerStart)
 
     override fun record(
         fullPinyin: String,
@@ -62,6 +67,9 @@ class PersistentUserLexicon private constructor(
             writer.close()
         }
     }
+
+    /** Test/shutdown observation seam; normal IME teardown remains non-blocking. */
+    internal fun awaitClosed(timeout: Long, unit: TimeUnit): Boolean = writer.awaitClosed(timeout, unit)
 
     private companion object {
         fun createResources(context: Context): PersistentUserLexiconResources =

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 2,
+  "stage": "M7",
+  "generatedAt": "2026-10-02T12:46:00.828771400Z",
+  "wubi": {
+    "bytes": 5611947,
+    "sha256": "e2d47d43ab702862c349cd7f9ad36b2d4cbd72963c95cdb6f7911bf849937207",
+    "coldLoadMs": 43.19,
+    "estimatedRetainedBytes": 7089539,
+    "exactGroups": 99054,
+    "prefixGroups": 15259,
+    "reverseEntries": 70386,
+    "medianLookupNs": 3380.35,
+    "p95LookupNs": 4894.95,
+    "maxSampleLookupNs": 4894.95
+  },
+  "t9": {
+    "inventorySha256": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+    "indexBuildMs": 66.20,
+    "beamLimit": 32,
+    "medianPathNs": 57577.65,
+    "p95PathNs": 93541.50,
+    "maxSamplePathNs": 93541.50,
+    "worstPath": {
+      "digits": "742674267426742674267426742674267426742674267426742674267426742674267426742674267426742674267426",
+      "sampleCount": 100,
+      "p50Ns": 2844900.00,
+      "p95Ns": 4718500.00,
+      "maxNs": 27044400.00
+    },
+    "alternativeInputDecoder": {
+      "sampleUnit": "single-complete-decode",
+      "sampleCount": 100,
+      "limit": 64,
+      "p50Ns": 1199400.00,
+      "p95Ns": 3674000.00,
+      "p99Ns": 4977600.00,
+      "maxNs": 5577800.00,
+      "cases": [
+        { "name": "short", "digits": "486", "availablePaths": 18, "probedQueries": 12, "expandedQueries": 2, "decodeInvocations": 14, "p50Ns": 835700.00, "p95Ns": 2467800.00, "maxNs": 2467800.00 },
+        { "name": "highAmbiguityLong", "digits": "94664936", "availablePaths": 32, "probedQueries": 8, "expandedQueries": 2, "decodeInvocations": 10, "p50Ns": 1003000.00, "p95Ns": 2126000.00, "maxNs": 2126000.00 },
+        { "name": "hunshenxs", "digits": "486743697", "availablePaths": 32, "probedQueries": 8, "expandedQueries": 2, "decodeInvocations": 10, "p50Ns": 1409400.00, "p95Ns": 3069900.00, "maxNs": 3069900.00 },
+        { "name": "forcedBoundaryNihao", "digits": "64426", "availablePaths": 32, "probedQueries": 16, "expandedQueries": 2, "decodeInvocations": 18, "p50Ns": 288900.00, "p95Ns": 527400.00, "maxNs": 527400.00 },
+        { "name": "boundary7426x8", "digits": "74267426742674267426742674267426", "availablePaths": 32, "probedQueries": 32, "expandedQueries": 1, "decodeInvocations": 33, "p50Ns": 3428800.00, "p95Ns": 5577800.00, "maxNs": 5577800.00 },
+        { "name": "worst7426x24", "digits": "742674267426742674267426742674267426742674267426742674267426742674267426742674267426742674267426", "availablePaths": 32, "probedQueries": 1, "expandedQueries": 0, "decodeInvocations": 1, "p50Ns": 2980900.00, "p95Ns": 4153400.00, "maxNs": 4153400.00 }
+      ]
+    }
+  },
+  "deviceMetrics": {
+    "status": "pending-real-device"
+  }
+}

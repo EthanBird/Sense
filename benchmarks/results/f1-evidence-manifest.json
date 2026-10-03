@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "reports": {
+    "f1-acceptance-gate.json": "c19792e1613c8d6be837572a991842b86e383884e42e5b1b7fb9ed52684d6ca2",
+    "f1-apk-asset-audit.json": "e660b3c7e25b846af520f4ea24fd636db699cbf28fdf12888b9aaea7c2dc772f",
+    "f1-art-instrumentation.json": "5a2c6a44ec885b2bfe0dad82464e27b7d401c8de3e177ece1e0f595b3e1ab97e",
+    "f1-association-art-byte-scan.json": "e79a76f1cb548149a4047e0cb21beebf2ec4257f6a147d6814c01cad49164054",
+    "f1-association-art-initial.json": "0aa9b3e336423ad52c131581027a670e7905d0e747d6b1452c912ee639d22ebe",
+    "f1-association-art.json": "c66ba8f99a937122b85a672b7a5379c2c14fb521cad1347e9c9f954689ea18f5",
+    "f1-association-development-freeze.json": "3a9bc1f60cb277868bb028ff4c743eed0b7f1951bb6b83ed14f5841b0e7962e7",
+    "f1-association-test.json": "8d120bb3e16028530ed317428d785200a23ffd32dad5d2bcb81d29e1d23ce33b",
+    "f1-host-validation.json": "3fd713c09799e6f686e556dde6698f610aa44afbe22eb7a8181988cab9f7d70a",
+    "f1-implementation-snapshot.json": "f62c5ddb2007a500112582865db3280541b5cabb93ea58da40a6f3b3fdda8912",
+    "f1-learning-persistence.json": "be6eaf2ca69bafa9816d203e3fe729571954d6eb3154f1378d61914ecb0fa1e9",
+    "f1-raw-manifest.json": "a40831a624df0b567fdf444c5ad0f42f79579caa0ff60e93429c24be9f315bc9",
+    "f1-slow-system.json": "db19cbf744977cabe412c34b734496e452000e1fdc69c4796e4dc1b48bc4e713",
+    "f1-system-ime.json": "cc26c8896c22b90e17066d073bfba408ebe84bc535549b80904989138fb6111a",
+    "f1-ui-layout.json": "21ee55e221727458e52977f4d1a12929990eece30ac6e5e9a3b8a3764507904f"
+  },
+  "collectorSha256": "4a06d6d910c84827361772f8fc0268a9ef4bdf94830dc97829b23736d50d5937",
+  "visuallyInspectedInitialSystemImages": {
+    ".artifacts/input-quality/external-editor-f1-associations/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable-visible.png": "0504bfc7eabcaec91ad8651bb91d53d9bb28437c15241f5abfc620ef69d78daf",
+    ".artifacts/input-quality/external-editor-f1-associations/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters-stop.png": "571525714e068fbd4621fd9988412689ddaca15d49810cc0d928a96401835218"
+  }
+}

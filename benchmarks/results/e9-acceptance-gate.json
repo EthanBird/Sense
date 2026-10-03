@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "stage": "E9",
+  "passed": true,
+  "goalComplete": false,
+  "releaseReady": false,
+  "scope": "Bounded mixed-spelling retrieval repair; known/synthetic diagnostics and dedicated AVD",
+  "host": {
+    "core-input": {
+      "tests": 318,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 299,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "hostTests": 855,
+  "python": {
+    "run": 342,
+    "passed": 341,
+    "skipped": 1
+  },
+  "systemEditor": [
+    {
+      "group": "mixed-final",
+      "tests": 3,
+      "passed": true,
+      "testApkSha256": "31e4e5bc86c624c559be0bc61a86232148fffe77c43e9022ada86251917c0c8c"
+    },
+    {
+      "group": "boundary-final",
+      "tests": 6,
+      "passed": true,
+      "testApkSha256": "31e4e5bc86c624c559be0bc61a86232148fffe77c43e9022ada86251917c0c8c"
+    },
+    {
+      "group": "warm-final",
+      "tests": 10,
+      "passed": true,
+      "testApkSha256": "31e4e5bc86c624c559be0bc61a86232148fffe77c43e9022ada86251917c0c8c"
+    },
+    {
+      "group": "correction-final",
+      "tests": 8,
+      "passed": true,
+      "testApkSha256": "31e4e5bc86c624c559be0bc61a86232148fffe77c43e9022ada86251917c0c8c"
+    },
+    {
+      "group": "association-final",
+      "tests": 9,
+      "passed": true,
+      "testApkSha256": "31e4e5bc86c624c559be0bc61a86232148fffe77c43e9022ada86251917c0c8c"
+    },
+    {
+      "group": "cold-final",
+      "tests": 4,
+      "passed": true,
+      "testApkSha256": "31e4e5bc86c624c559be0bc61a86232148fffe77c43e9022ada86251917c0c8c"
+    },
+    {
+      "group": "learning-final",
+      "tests": 2,
+      "passed": true,
+      "testApkSha256": "31e4e5bc86c624c559be0bc61a86232148fffe77c43e9022ada86251917c0c8c"
+    },
+    {
+      "group": "mixed-render",
+      "tests": 3,
+      "passed": true,
+      "testApkSha256": "90501202446784a947ec2ec56f6771d6800eb70b465d5457c4c7788dded81139"
+    }
+  ],
+  "systemFunctionalTests": 42,
+  "additionalRenderedRechecks": 3,
+  "baselineFunctionalTests": {
+    "tests": 3,
+    "failures": 3
+  },
+  "mixedRecall": {
+    "before": {
+      "rows": 960,
+      "targetFirst": 597,
+      "targetTop10": 728,
+      "targetRecall255": 748
+    },
+    "after": {
+      "rows": 960,
+      "targetFirst": 611,
+      "targetTop10": 745,
+      "targetRecall255": 765
+    },
+    "rankDemotionsRetained": 5
+  },
+  "ordinaryRecall": {
+    "rows": 2819,
+    "top1OrTargetRankChanges": 0,
+    "completeResultChanges": 9
+  },
+  "latency": {
+    "baseline": {
+      "count": 32,
+      "medianMs": 205.0,
+      "observedP95Ms": 343,
+      "maxMs": 383
+    },
+    "optimized": {
+      "count": 32,
+      "medianMs": 199.0,
+      "observedP95Ms": 341,
+      "maxMs": 363
+    }
+  },
+  "unchangedPackagedAssets": 25,
+  "apk": {
+    "sha256": "6251392aceb40333823b3fbeb10a7e1264bcd551980d04bfab39148158732754",
+    "bytes": 85826196,
+    "signing": "Android Debug; v2 verified"
+  },
+  "evidenceManifestSha256": "c8c88813f247267a92f650c779fac3877c0e0c15483c452fc23a39b0efa44c45",
+  "archivedFiles": 518
+}

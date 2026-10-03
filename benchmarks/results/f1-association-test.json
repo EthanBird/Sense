@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "freezeSha256": "3a9bc1f60cb277868bb028ff4c743eed0b7f1951bb6b83ed14f5841b0e7962e7",
+  "modelSha256": "d0b157b46ee6df5fe0466870f6a5bf2951b0498a081d4860b3791bb2f123bf39",
+  "testPartition": {
+    "fileName": "test.jsonl",
+    "sha256": "d2c2cd1fe598bc2efd37b6f06660c64fffca077ebc62ef5fcf63b46b59dea622",
+    "records": 4089,
+    "segments": 4876,
+    "characters": 41076,
+    "domains": {
+      "conversational-heuristic": 1665,
+      "general-heuristic": 2411,
+      "technical-heuristic": 13
+    }
+  },
+  "developmentExportParity": {
+    "observations": 40529,
+    "mismatches": 0
+  },
+  "summary": {
+    "legacy": {
+      "opportunities": 41076,
+      "offers": 40879,
+      "continuations": 36200,
+      "exactUnitTop1": 4213,
+      "prefixTop1": 5975,
+      "prefixCharactersTop1": 5975,
+      "multiCharacterTop1": 0,
+      "exactUnitTop3": 7364,
+      "prefixTop3": 10491,
+      "prefixCharactersTop3": 10491,
+      "multiCharacterTop3": 0,
+      "exactUnitTop8": 10154,
+      "prefixTop8": 14959,
+      "prefixCharactersTop8": 14959,
+      "multiCharacterTop8": 0,
+      "wordBoundaryContinuations": 13986,
+      "wordBoundaryExactTop3": 342,
+      "segmentEnds": 4876,
+      "endOffers": 4818
+    },
+    "character_lm": {
+      "opportunities": 41076,
+      "offers": 41076,
+      "continuations": 36200,
+      "exactUnitTop1": 7653,
+      "prefixTop1": 10822,
+      "prefixCharactersTop1": 10822,
+      "multiCharacterTop1": 0,
+      "exactUnitTop3": 10623,
+      "prefixTop3": 15762,
+      "prefixCharactersTop3": 15762,
+      "multiCharacterTop3": 0,
+      "exactUnitTop8": 12847,
+      "prefixTop8": 20047,
+      "prefixCharactersTop8": 20047,
+      "multiCharacterTop8": 0,
+      "wordBoundaryContinuations": 13986,
+      "wordBoundaryExactTop3": 1069,
+      "segmentEnds": 4876,
+      "endOffers": 4876
+    },
+    "selected": {
+      "opportunities": 41076,
+      "offers": 23821,
+      "continuations": 36200,
+      "exactUnitTop1": 7258,
+      "prefixTop1": 8704,
+      "prefixCharactersTop1": 9635,
+      "multiCharacterTop1": 839,
+      "exactUnitTop3": 9998,
+      "prefixTop3": 11781,
+      "prefixCharactersTop3": 13778,
+      "multiCharacterTop3": 1721,
+      "exactUnitTop8": 11937,
+      "prefixTop8": 13914,
+      "prefixCharactersTop8": 16981,
+      "multiCharacterTop8": 2601,
+      "wordBoundaryContinuations": 13986,
+      "wordBoundaryExactTop3": 643,
+      "segmentEnds": 4876,
+      "endOffers": 683
+    }
+  },
+  "testReportSha256": "d5576b6c907467b8f7fd6cbddcab698b007afefe64263c1c14f926fea3e5a51d",
+  "evaluatorSha256": "7105942b786a35f5f0472c41ebd6f8033008352b8f2f10faf11e48e5a88a3cf4",
+  "acceptance": {
+    "unitTop3": true,
+    "multiCharacter": true,
+    "endOffers": true
+  }
+}

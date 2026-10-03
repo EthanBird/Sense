@@ -394,11 +394,13 @@ def _candidate_sort_key(candidate: LexiconCandidate) -> tuple[int, int, int, str
     )
 
 
-def write_binary(entries: dict[str, list[LexiconCandidate]], output: Path) -> None:
+def write_binary(entries: dict[str, list[LexiconCandidate]], output: Path, version: int = VERSION) -> None:
+    if version not in (3, 4):
+        raise ValueError("Unsupported SPLX output version")
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("wb") as stream:
         stream.write(MAGIC)
-        stream.write(struct.pack(">HI", VERSION, len(entries)))
+        stream.write(struct.pack(">HI", version, len(entries)))
         for code in sorted(entries):
             code_bytes = code.encode("ascii")
             candidates = entries[code]
@@ -406,6 +408,8 @@ def write_binary(entries: dict[str, list[LexiconCandidate]], output: Path) -> No
             stream.write(code_bytes)
             stream.write(struct.pack("B", len(candidates)))
             for candidate in candidates:
+                if candidate.source_tier not in range(3 if version == 4 else 2):
+                    raise ValueError("Source tier requires the matching SPLX format")
                 text_bytes = candidate.text.encode("utf-8")
                 initials_bytes = candidate.initials.encode("ascii")
                 stream.write(struct.pack("B", len(text_bytes)))
@@ -417,12 +421,12 @@ def write_binary(entries: dict[str, list[LexiconCandidate]], output: Path) -> No
 
 
 def read_binary(path: Path) -> dict[str, list[LexiconCandidate]]:
-    """Read a v3 SPLX asset so a pinned release asset can be enhanced deterministically."""
+    """Read v3/v4 SPLX assets; base builders still emit v3 unless explicitly requested."""
     data = path.read_bytes()
     if len(data) < 10 or data[:4] != MAGIC:
         raise ValueError("Pinyin lexicon header is invalid")
     version, record_count = struct.unpack_from(">HI", data, 4)
-    if version != VERSION or record_count <= 0:
+    if version not in (3, 4) or record_count <= 0:
         raise ValueError(f"Unsupported pinyin lexicon version: {version}")
     offset = 10
     result: dict[str, list[LexiconCandidate]] = {}
@@ -460,7 +464,7 @@ def read_binary(path: Path) -> dict[str, list[LexiconCandidate]]:
             offset = initials_end
             source_tier = data[offset]
             offset += 1
-            if source_tier not in (0, 1):
+            if source_tier not in range(3 if version == 4 else 2):
                 raise ValueError("Pinyin candidate source tier is invalid")
             candidates.append(LexiconCandidate(text, weight, initials, source_tier))
         result[code] = candidates

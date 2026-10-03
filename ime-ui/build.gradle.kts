@@ -24,6 +24,12 @@ android {
 
 dependencies {
     implementation(project(":core-input"))
+    implementation("androidx.customview:customview:1.1.0")
+    implementation("androidx.core:core:1.12.0")
+    constraints {
+        // Match the runtime already used by the application in standalone UI test builds.
+        implementation("androidx.concurrent:concurrent-futures:1.2.0")
+    }
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "scope": "D7 touch-aware association lifecycle acceptance on dedicated emulator; overall input-quality goal remains active",
+  "checks": {
+    "productionSourcesMatchSnapshot": true,
+    "decoderAndModelUnchangedFromE3": true,
+    "sameFixtureReproducesOriginalFailureAndPassesFix": true,
+    "eightAssociationSystemTestsPass": true,
+    "ordinarySystemExecutions27Pass": true,
+    "slowWorkerFaultTests4Pass": true,
+    "androidViewTests13Pass": true,
+    "host802Pass": true,
+    "python40Pass": true,
+    "sameFinalAppApkAcrossAllSystemEvidence": true,
+    "modelAndAttributionAssetAuditPass": true,
+    "learnedWordsRetained": true,
+    "privateLearningAbsent": true
+  },
+  "passed": true,
+  "apkSha256": "64244812ea365af07db4c0f00adf8affaefa6bc08263751571d6566c292b2777",
+  "finalAndroidExecutions": {
+    "systemIme": 27,
+    "faultInjection": 4,
+    "isolatedAndroidView": 13
+  },
+  "latencyScope": "No new latency distribution measured this UI-only stage; do not relabel E3 timing as this APK"
+}

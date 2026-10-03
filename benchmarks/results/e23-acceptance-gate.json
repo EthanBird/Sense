@@ -1,0 +1,1106 @@
+{
+  "schemaVersion": 1,
+  "stage": "E23",
+  "decision": "bounded-final-syllable-recall-and-learning-verified-performance-promotion-still-held",
+  "comparisons": {
+    "scope": "Known regressions and hand-authored prefix recall probes; not fresh natural accuracy or phone performance",
+    "probes": {
+      "before": {
+        "rows": 115,
+        "top1": 81,
+        "top10": 108,
+        "recall": 114
+      },
+      "after": {
+        "rows": 115,
+        "top1": 81,
+        "top10": 112,
+        "recall": 115
+      },
+      "changes": [
+        {
+          "query": "beiji",
+          "expected": "北京",
+          "beforeRank": 0,
+          "afterRank": 2,
+          "beforeTop5": [
+            "北极",
+            "背记",
+            "beijing",
+            "被挤",
+            "背脊"
+          ],
+          "afterTop5": [
+            "北极",
+            "北京",
+            "beijing",
+            "背记",
+            "被挤"
+          ]
+        },
+        {
+          "query": "shiji",
+          "expected": "世界",
+          "beforeRank": 110,
+          "afterRank": 8,
+          "beforeTop5": [
+            "实际",
+            "世纪",
+            "十几",
+            "时机",
+            "史记"
+          ],
+          "afterTop5": [
+            "实际",
+            "世纪",
+            "十几",
+            "时机",
+            "史记"
+          ]
+        },
+        {
+          "query": "tianji",
+          "expected": "天津",
+          "beforeRank": 155,
+          "afterRank": 7,
+          "beforeTop5": [
+            "天际",
+            "天机",
+            "田鸡",
+            "田忌",
+            "添加"
+          ],
+          "afterTop5": [
+            "天际",
+            "天机",
+            "田鸡",
+            "田忌",
+            "添加"
+          ]
+        },
+        {
+          "query": "yanji",
+          "expected": "研究",
+          "beforeRank": 48,
+          "afterRank": 3,
+          "beforeTop5": [
+            "演技",
+            "烟机",
+            "言及",
+            "眼疾",
+            "演讲"
+          ],
+          "afterTop5": [
+            "演技",
+            "烟机",
+            "研究",
+            "眼睛",
+            "言及"
+          ]
+        }
+      ],
+      "firstLosses": [],
+      "rankLosses": [],
+      "completeProgressiveEqual": 73
+    },
+    "clean": {
+      "dev-aishell": {
+        "before": {
+          "states": 128,
+          "top1": 65,
+          "top5": 97,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 142,
+          "characters": 1087
+        },
+        "after": {
+          "states": 128,
+          "top1": 65,
+          "top5": 97,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 142,
+          "characters": 1087
+        },
+        "slices": {
+          "mode": {
+            "editor": {
+              "before": {
+                "states": 64,
+                "top1": 36,
+                "top5": 51,
+                "top10": 56,
+                "recall255": 61,
+                "characterErrors": 59,
+                "characters": 375
+              },
+              "after": {
+                "states": 64,
+                "top1": 36,
+                "top5": 51,
+                "top10": 56,
+                "recall255": 61,
+                "characterErrors": 59,
+                "characters": 375
+              }
+            },
+            "empty": {
+              "before": {
+                "states": 64,
+                "top1": 29,
+                "top5": 46,
+                "top10": 49,
+                "recall255": 57,
+                "characterErrors": 83,
+                "characters": 712
+              },
+              "after": {
+                "states": 64,
+                "top1": 29,
+                "top5": 46,
+                "top10": 49,
+                "recall255": 57,
+                "characterErrors": 83,
+                "characters": 712
+              }
+            }
+          },
+          "stratum": {
+            "long": {
+              "before": {
+                "states": 64,
+                "top1": 34,
+                "top5": 47,
+                "top10": 50,
+                "recall255": 57,
+                "characterErrors": 82,
+                "characters": 656
+              },
+              "after": {
+                "states": 64,
+                "top1": 34,
+                "top5": 47,
+                "top10": 50,
+                "recall255": 57,
+                "characterErrors": 82,
+                "characters": 656
+              }
+            },
+            "short": {
+              "before": {
+                "states": 64,
+                "top1": 31,
+                "top5": 50,
+                "top10": 55,
+                "recall255": 61,
+                "characterErrors": 60,
+                "characters": 431
+              },
+              "after": {
+                "states": 64,
+                "top1": 31,
+                "top5": 50,
+                "top10": 55,
+                "recall255": 61,
+                "characterErrors": 60,
+                "characters": 431
+              }
+            }
+          }
+        },
+        "firstGains": [],
+        "firstLosses": [],
+        "rankLosses": [],
+        "baselineModel": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+        "proposedModel": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+        "nonregressionPassed": true,
+        "strictImprovementPassed": false,
+        "productionChanged": true,
+        "scope": "Source reconstruction with agent-reviewed labels; midpoint is oracle context; states within sentence are correlated",
+        "fullProgressiveEqual": 128
+      },
+      "dev-tatoeba": {
+        "before": {
+          "states": 128,
+          "top1": 83,
+          "top5": 113,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        },
+        "after": {
+          "states": 128,
+          "top1": 83,
+          "top5": 113,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        },
+        "slices": {
+          "mode": {
+            "editor": {
+              "before": {
+                "states": 64,
+                "top1": 43,
+                "top5": 59,
+                "top10": 61,
+                "recall255": 62,
+                "characterErrors": 30,
+                "characters": 322
+              },
+              "after": {
+                "states": 64,
+                "top1": 43,
+                "top5": 59,
+                "top10": 61,
+                "recall255": 62,
+                "characterErrors": 30,
+                "characters": 322
+              }
+            },
+            "empty": {
+              "before": {
+                "states": 64,
+                "top1": 40,
+                "top5": 54,
+                "top10": 59,
+                "recall255": 59,
+                "characterErrors": 40,
+                "characters": 619
+              },
+              "after": {
+                "states": 64,
+                "top1": 40,
+                "top5": 54,
+                "top10": 59,
+                "recall255": 59,
+                "characterErrors": 40,
+                "characters": 619
+              }
+            }
+          },
+          "stratum": {
+            "long": {
+              "before": {
+                "states": 64,
+                "top1": 40,
+                "top5": 56,
+                "top10": 60,
+                "recall255": 61,
+                "characterErrors": 35,
+                "characters": 587
+              },
+              "after": {
+                "states": 64,
+                "top1": 40,
+                "top5": 56,
+                "top10": 60,
+                "recall255": 61,
+                "characterErrors": 35,
+                "characters": 587
+              }
+            },
+            "short": {
+              "before": {
+                "states": 64,
+                "top1": 43,
+                "top5": 57,
+                "top10": 60,
+                "recall255": 60,
+                "characterErrors": 35,
+                "characters": 354
+              },
+              "after": {
+                "states": 64,
+                "top1": 43,
+                "top5": 57,
+                "top10": 60,
+                "recall255": 60,
+                "characterErrors": 35,
+                "characters": 354
+              }
+            }
+          }
+        },
+        "firstGains": [],
+        "firstLosses": [],
+        "rankLosses": [],
+        "baselineModel": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+        "proposedModel": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+        "nonregressionPassed": true,
+        "strictImprovementPassed": false,
+        "productionChanged": true,
+        "scope": "Source reconstruction with agent-reviewed labels; midpoint is oracle context; states within sentence are correlated",
+        "fullProgressiveEqual": 128
+      },
+      "test-aishell": {
+        "before": {
+          "states": 248,
+          "top1": 150,
+          "top5": 194,
+          "top10": 204,
+          "recall255": 223,
+          "characterErrors": 226,
+          "characters": 2033
+        },
+        "after": {
+          "states": 248,
+          "top1": 150,
+          "top5": 194,
+          "top10": 204,
+          "recall255": 223,
+          "characterErrors": 226,
+          "characters": 2033
+        },
+        "slices": {
+          "mode": {
+            "editor": {
+              "before": {
+                "states": 124,
+                "top1": 80,
+                "top5": 103,
+                "top10": 106,
+                "recall255": 116,
+                "characterErrors": 93,
+                "characters": 703
+              },
+              "after": {
+                "states": 124,
+                "top1": 80,
+                "top5": 103,
+                "top10": 106,
+                "recall255": 116,
+                "characterErrors": 93,
+                "characters": 703
+              }
+            },
+            "empty": {
+              "before": {
+                "states": 124,
+                "top1": 70,
+                "top5": 91,
+                "top10": 98,
+                "recall255": 107,
+                "characterErrors": 133,
+                "characters": 1330
+              },
+              "after": {
+                "states": 124,
+                "top1": 70,
+                "top5": 91,
+                "top10": 98,
+                "recall255": 107,
+                "characterErrors": 133,
+                "characters": 1330
+              }
+            }
+          },
+          "stratum": {
+            "long": {
+              "before": {
+                "states": 124,
+                "top1": 78,
+                "top5": 95,
+                "top10": 99,
+                "recall255": 107,
+                "characterErrors": 97,
+                "characters": 1221
+              },
+              "after": {
+                "states": 124,
+                "top1": 78,
+                "top5": 95,
+                "top10": 99,
+                "recall255": 107,
+                "characterErrors": 97,
+                "characters": 1221
+              }
+            },
+            "short": {
+              "before": {
+                "states": 124,
+                "top1": 72,
+                "top5": 99,
+                "top10": 105,
+                "recall255": 116,
+                "characterErrors": 129,
+                "characters": 812
+              },
+              "after": {
+                "states": 124,
+                "top1": 72,
+                "top5": 99,
+                "top10": 105,
+                "recall255": 116,
+                "characterErrors": 129,
+                "characters": 812
+              }
+            }
+          }
+        },
+        "firstGains": [],
+        "firstLosses": [],
+        "rankLosses": [],
+        "baselineModel": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+        "proposedModel": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+        "nonregressionPassed": true,
+        "strictImprovementPassed": false,
+        "productionChanged": true,
+        "scope": "Source reconstruction with agent-reviewed labels; midpoint is oracle context; states within sentence are correlated",
+        "fullProgressiveEqual": 248
+      },
+      "test-tatoeba": {
+        "before": {
+          "states": 248,
+          "top1": 170,
+          "top5": 213,
+          "top10": 223,
+          "recall255": 236,
+          "characterErrors": 129,
+          "characters": 1833
+        },
+        "after": {
+          "states": 248,
+          "top1": 170,
+          "top5": 213,
+          "top10": 223,
+          "recall255": 236,
+          "characterErrors": 129,
+          "characters": 1833
+        },
+        "slices": {
+          "mode": {
+            "editor": {
+              "before": {
+                "states": 124,
+                "top1": 89,
+                "top5": 110,
+                "top10": 113,
+                "recall255": 121,
+                "characterErrors": 55,
+                "characters": 628
+              },
+              "after": {
+                "states": 124,
+                "top1": 89,
+                "top5": 110,
+                "top10": 113,
+                "recall255": 121,
+                "characterErrors": 55,
+                "characters": 628
+              }
+            },
+            "empty": {
+              "before": {
+                "states": 124,
+                "top1": 81,
+                "top5": 103,
+                "top10": 110,
+                "recall255": 115,
+                "characterErrors": 74,
+                "characters": 1205
+              },
+              "after": {
+                "states": 124,
+                "top1": 81,
+                "top5": 103,
+                "top10": 110,
+                "recall255": 115,
+                "characterErrors": 74,
+                "characters": 1205
+              }
+            }
+          },
+          "stratum": {
+            "long": {
+              "before": {
+                "states": 126,
+                "top1": 86,
+                "top5": 108,
+                "top10": 114,
+                "recall255": 119,
+                "characterErrors": 66,
+                "characters": 1141
+              },
+              "after": {
+                "states": 126,
+                "top1": 86,
+                "top5": 108,
+                "top10": 114,
+                "recall255": 119,
+                "characterErrors": 66,
+                "characters": 1141
+              }
+            },
+            "short": {
+              "before": {
+                "states": 122,
+                "top1": 84,
+                "top5": 105,
+                "top10": 109,
+                "recall255": 117,
+                "characterErrors": 63,
+                "characters": 692
+              },
+              "after": {
+                "states": 122,
+                "top1": 84,
+                "top5": 105,
+                "top10": 109,
+                "recall255": 117,
+                "characterErrors": 63,
+                "characters": 692
+              }
+            }
+          }
+        },
+        "firstGains": [],
+        "firstLosses": [],
+        "rankLosses": [],
+        "baselineModel": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+        "proposedModel": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+        "nonregressionPassed": true,
+        "strictImprovementPassed": false,
+        "productionChanged": true,
+        "scope": "Source reconstruction with agent-reviewed labels; midpoint is oracle context; states within sentence are correlated",
+        "fullProgressiveEqual": 248
+      }
+    },
+    "typo": {
+      "typo-v1": {
+        "before": {
+          "rows": 1874,
+          "top1": 854,
+          "top10": 1267,
+          "recall": 1386,
+          "characterErrors": 2006
+        },
+        "after": {
+          "rows": 1874,
+          "top1": 854,
+          "top10": 1267,
+          "recall": 1386,
+          "characterErrors": 2006
+        },
+        "graphEvidenceEqual": true,
+        "firstGains": [],
+        "firstLosses": [],
+        "rankLosses": []
+      },
+      "typo-layered-v4": {
+        "before": {
+          "rows": 959,
+          "top1": 425,
+          "top10": 612,
+          "recall": 676,
+          "characterErrors": 1130
+        },
+        "after": {
+          "rows": 959,
+          "top1": 425,
+          "top10": 612,
+          "recall": 676,
+          "characterErrors": 1130
+        },
+        "graphEvidenceEqual": true,
+        "firstGains": [],
+        "firstLosses": [],
+        "rankLosses": []
+      }
+    },
+    "sourcePins": {
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptivePinyinDecoder.kt": "48e2dcc1bcd5580912ce3904b60078585bfc58f85ab949b3b781131079ed18f8",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptiveWubi86Decoder.kt": "a35838bab4a81024eb4de8a91e13cd9d6016e2d944bfc3a1f1a68b3fb7ec92b8",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRanker.kt": "c2fdabe176aabf9157141663e8c30a6ce6e7ab6d75775c5b6a351bf51072a4b2",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRankingDiagnostics.kt": "40fb7520701e8c8a5b68ad5054646d9210ffc6dd3386b81393bb64a7c0cfa90e",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateSnapshot.kt": "a9e67e6cad44e6444d6f973e4a166bf8740031ee499db7c8f450e84a2e8778c7",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterBigramModel.kt": "31932aa41a2941ee4a25ee64ef20376e1c8c22cebf8e6c4e5761f65f2eb319a1",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterLanguageModel.kt": "13edc15ff7b3e35a4aa6b1097e86a3798660a1d7cea1b9c60fc6688e51bda6f9",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CommitSequenceTracker.kt": "b5553d8064c4e5fea98957301751f4f8dc15047f04daecb357919d663bc2dfc4",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ContextAssociationModel.kt": "42d5303703626c49fde56b018baa78e1412c82ed7a7e9a9c6e7ab53aafc4c969",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchBudget.kt": "b7a20c3cc3baadc70eafc9b82531b7109d196b8252d9c8e142495808d55586a9",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchDiagnostics.kt": "f2c8a89a8056cb6ee494a574b952013c37da6de9d5d15c36d8ec988f71168f08",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CuratedLexicalCandidateCatalog.kt": "003535f8f5a2e42ffb622b728370166c8f83060fbe99c8feab40c6505cecd9ff",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/DecodeWorkScope.kt": "d6bb4d8c36c245bd9d6309e7eda14524035b8c0d9402df5f3355fbec786a5741",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishInputSession.kt": "b2f710e2eb0d1d6f0a3d8e61a00745e2442a822a57818f54ff15e94ba4077401",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishLexicon.kt": "d4023375ffcf9636f2f099001864b12d97de587d074964fb855fe33cf7b2f509",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishWordUsage.kt": "66f3433d8ec70682e9481916502998a9b0fd30a731c784ff890750fdcfa562d5",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/FakeDecoder.kt": "2ea5166529da40546f4f6f1cef86036ec5a1152a129fdebc7cdfa18e969ba591",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/FourgramLanguageModel.kt": "6ecdfcef4786c342ce6504b8ff879a7ec5a03400f156b6e2c4fdf3c8b2af223d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputModel.kt": "5a5316e26a1a3da6f90cf0248208e0a39d7f7ee97ec4a65e2341bb7c1a7fde38",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputReducer.kt": "b608ea6ca6a3e53067d215acc6949f1007b1cc519b3f2de42a28507c7daf936d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/LinearMixtureCharacterModel.kt": "bace39c3341ef6513dca1d969ac6a077cd816932416539183f5bc8c967680546",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M0HostBenchmark.kt": "e18a429e81795794463f53f304894b8938dd52a98ddddd24550bd4ca176f3adf",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M10CharacterLmBenchmark.kt": "c88f3f193ce2ebf37b14c5baad0e3dbc76c540cd55f5859105a4bc9d1570be45",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M11LatticeLanguageBenchmark.kt": "1c79b49983defc05c8889d8c266168df99801dcf20f8362bae073c306b6a58d2",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M12P2cBenchmark.kt": "ff18694be688990b63de59e7c67555a69389bfa2533ab3db82ef11ca83db0d75",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M14ProgressiveEquivalenceBenchmark.kt": "7bd20f4a75222d016b8e8a10452c7f0aa71d33c85c38e9e4fe3d752e756ea294",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M15TypoRecallBenchmark.kt": "9c120a1e77361cf65a0d40f00c27af0a428fcc458213d8562281d906cbf168b2",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M16SpellingGraphBenchmark.kt": "f6e730fd5f77e54108ad61d2d28e43f77a69d5afd935f6cd20972842e04b8852",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M17CandidateScoreBenchmark.kt": "9e15d6e51cfff4ec32002ca3f09f1ce1c75bef268bc64c124d6eba6234e9d8be",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M18LexiconLearningBenchmark.kt": "dde32fe267107971573ff16562c69a44d09fe85093761bdada92d36c67ccbd98",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M19ScoreFeatureBenchmark.kt": "af21ccd30f4ab71c3b9f666b4b4c2424df83a83267fc23ebfd8d7d5ed52162dd",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M1PinyinBenchmark.kt": "9e3ebc93691e8420c8edbb8eb4a55d801b19c5e7e631cab11063408f1576d212",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M20CrossDomainBenchmark.kt": "31dbf40a0d6c4b87cd15a78ad352b552ed65ed5141ff27e9338fda89ad4c9ac8",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M21MixtureBenchmark.kt": "bcc88358ce50a678aaca846630d4b2e551fc07f6fd708605f70c4f0b068d9a46",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M23FourgramBenchmark.kt": "c2cb6111912ab4ffe16bf2333214222f1790db5737d6c2b80e355ba08e9c5a12",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M2AdaptiveBenchmark.kt": "88ae82e685b28b79c68d6eb549867e70f2da66e75c2d014a2710cdf24be606f2",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M3SentenceBenchmark.kt": "03c5de47af070a2cf89ac0700711bbd9488ccb49a6ddc9a6938b49da9c7f3cd7",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M4CoreBenchmark.kt": "3fa4158cf9cdf414b2e0e2f8a3eaac64d81e7e317f719dd6baf91ee020e97c18",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M5MixedInputBenchmark.kt": "47e1ff5639ea06dc8f1f28b2da3df4099b4cb8a3e088a78e238e98398732e114",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M6InputPolishBenchmark.kt": "14a226681511b1c2cb76323452424c7759d130bc1926b1ada25b464a12fb7a55",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M7ChineseSchemeBenchmark.kt": "583ad236955f77f87ddc120795b89f70ef88c19f477c7d42d2fb8ee59641b755",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M8DailyInputBenchmark.kt": "77c83f59177ec5619dd759ccb87b3ad42e7ed246f3cc1b9d3792f8d3b20d0e30",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M9PersonalSentenceBenchmark.kt": "54bd54fac46b6ba4fce9c0e442c628ac6b3d6e512e8df4371dcffbc56e18fd0e",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/MixedCandidateRanker.kt": "c0a24077e62e51e5edaddbbc5ff694d2a939a5bf075802ef5b9999cad5483769",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/OovLanguageModelAblation.kt": "08bcd990204c8dc6e0ecf3c85254f91384e6f40179633386a90167457aee8195",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinDecoder.kt": "e8f24a62c470caea0de53f5996c53f1e45bb1c3809e7736f2fb491d536f7dad7",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinInputLimits.kt": "7759ce67e9dbaffffba153c3c3cf2fa71e919198de6bb9799840b4f0b8a47a6f",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinLanguageScorer.kt": "c4c569bcde6ff5a65e010ef159e557aad50f08ac9cf56c7af2907ddec73b3cbb",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinScoreDiagnostics.kt": "1b3b66df0d87f3857825af5028b7c9423563ff7c1c68959a94d9a03fdf606c56",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt": "9ba8e935fcb197e0dc9bf79a2e057a44a9c74fa14c15412c68b38970900212ee",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSyllableSegmenter.kt": "c817b1bd2b62858bb33f38a908f2df220788e71abb65d7938747a9234ac7de59",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PrefixCandidateCache.kt": "5dc949d24ac6df2050628c930323d0fc5370599844f53fe68eb91b5f572a7408",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ProgressivePinyin.kt": "dbeb7d86ad3ee13c9635d38c208c87ce4fc1e45d2f45ef4767fbb9172ae6238a",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/QueryLexicalCache.kt": "57706a81a9c49d6a6d9b3fef39de8eca2a548b0a1d332540f6603a46c1d46b2d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SemanticCandidateCatalog.kt": "b7308ba865dace349456daa3bf666b97affa5bf77945474bde2352cdfd3e87a1",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SerialPersistenceQueue.kt": "d7882ff60210696c825be60b5c9cfe10651f55f05fcb0209d27fff3994bcc8d9",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/StableTopK.kt": "4047e249e45037b3808e99660205bcebfe905e072ab4a2f7cb377abc76917ce7",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9AlternativeInputDecoder.kt": "cf2e3f1aa4e394074902fbed017eb0a7afdf6f3df09560fad6755ed5ec0bf62d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9Composition.kt": "ff2663ef91b666386f41954ceebe945ab421cbcfdb5a944dca64aab0b0a16727",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9PinyinChoice.kt": "2c63475a857b941c78950bca98b9915676c59e3544fd2d6f75c077c11d590152",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9SyllableIndex.kt": "5b9752addfe68ac197beff57b9869d161e8fb1543106667d4b2b1cd2a3fba223",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserAssociation.kt": "3439f4711ae5ab9719568eb4bcac0cce649d8ca328a9c0839a83d91566832d52",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPersonalization.kt": "663743456c32c102401f8401b119c18b0321015d6efc5e47bb43e0dce78c0507",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPinyinLattice.kt": "8a71df09fcc5e5d14122ad767f03ed4150773833aad2ddc3bb17a9120588fb5f",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Lexicon.kt": "468f3b0aa998c34376c7486ec063eadc626b4de6d41cd89527fa9976bf7bf912",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Personalization.kt": "5777e86c2bffccf1f30557e5a648d0ec5cd0c430c077c9db56491dc4c033b44d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/WubiComposition.kt": "e9c7567a5dbb6985d8098cdc8a6a8d02724e5ea5f809526fdd5c80e6db3f06ee"
+    },
+    "assets": {
+      "pinyin_lexicon.bin": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232",
+      "pinyin_bigrams.bin": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
+      "pinyin_character_lm.scng": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+      "pinyin_syllables.txt": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+      "english_lexicon.txt": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624"
+    }
+  },
+  "sourcePins": {
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptivePinyinDecoder.kt": "48e2dcc1bcd5580912ce3904b60078585bfc58f85ab949b3b781131079ed18f8",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptiveWubi86Decoder.kt": "a35838bab4a81024eb4de8a91e13cd9d6016e2d944bfc3a1f1a68b3fb7ec92b8",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRanker.kt": "c2fdabe176aabf9157141663e8c30a6ce6e7ab6d75775c5b6a351bf51072a4b2",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRankingDiagnostics.kt": "40fb7520701e8c8a5b68ad5054646d9210ffc6dd3386b81393bb64a7c0cfa90e",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateSnapshot.kt": "a9e67e6cad44e6444d6f973e4a166bf8740031ee499db7c8f450e84a2e8778c7",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterBigramModel.kt": "31932aa41a2941ee4a25ee64ef20376e1c8c22cebf8e6c4e5761f65f2eb319a1",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterLanguageModel.kt": "13edc15ff7b3e35a4aa6b1097e86a3798660a1d7cea1b9c60fc6688e51bda6f9",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CommitSequenceTracker.kt": "b5553d8064c4e5fea98957301751f4f8dc15047f04daecb357919d663bc2dfc4",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ContextAssociationModel.kt": "42d5303703626c49fde56b018baa78e1412c82ed7a7e9a9c6e7ab53aafc4c969",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchBudget.kt": "b7a20c3cc3baadc70eafc9b82531b7109d196b8252d9c8e142495808d55586a9",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchDiagnostics.kt": "f2c8a89a8056cb6ee494a574b952013c37da6de9d5d15c36d8ec988f71168f08",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CuratedLexicalCandidateCatalog.kt": "003535f8f5a2e42ffb622b728370166c8f83060fbe99c8feab40c6505cecd9ff",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/DecodeWorkScope.kt": "d6bb4d8c36c245bd9d6309e7eda14524035b8c0d9402df5f3355fbec786a5741",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishInputSession.kt": "b2f710e2eb0d1d6f0a3d8e61a00745e2442a822a57818f54ff15e94ba4077401",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishLexicon.kt": "d4023375ffcf9636f2f099001864b12d97de587d074964fb855fe33cf7b2f509",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishWordUsage.kt": "66f3433d8ec70682e9481916502998a9b0fd30a731c784ff890750fdcfa562d5",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/FakeDecoder.kt": "2ea5166529da40546f4f6f1cef86036ec5a1152a129fdebc7cdfa18e969ba591",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/FourgramLanguageModel.kt": "6ecdfcef4786c342ce6504b8ff879a7ec5a03400f156b6e2c4fdf3c8b2af223d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputModel.kt": "5a5316e26a1a3da6f90cf0248208e0a39d7f7ee97ec4a65e2341bb7c1a7fde38",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputReducer.kt": "b608ea6ca6a3e53067d215acc6949f1007b1cc519b3f2de42a28507c7daf936d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/LinearMixtureCharacterModel.kt": "bace39c3341ef6513dca1d969ac6a077cd816932416539183f5bc8c967680546",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M0HostBenchmark.kt": "e18a429e81795794463f53f304894b8938dd52a98ddddd24550bd4ca176f3adf",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M10CharacterLmBenchmark.kt": "c88f3f193ce2ebf37b14c5baad0e3dbc76c540cd55f5859105a4bc9d1570be45",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M11LatticeLanguageBenchmark.kt": "1c79b49983defc05c8889d8c266168df99801dcf20f8362bae073c306b6a58d2",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M12P2cBenchmark.kt": "ff18694be688990b63de59e7c67555a69389bfa2533ab3db82ef11ca83db0d75",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M14ProgressiveEquivalenceBenchmark.kt": "7bd20f4a75222d016b8e8a10452c7f0aa71d33c85c38e9e4fe3d752e756ea294",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M15TypoRecallBenchmark.kt": "9c120a1e77361cf65a0d40f00c27af0a428fcc458213d8562281d906cbf168b2",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M16SpellingGraphBenchmark.kt": "f6e730fd5f77e54108ad61d2d28e43f77a69d5afd935f6cd20972842e04b8852",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M17CandidateScoreBenchmark.kt": "9e15d6e51cfff4ec32002ca3f09f1ce1c75bef268bc64c124d6eba6234e9d8be",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M18LexiconLearningBenchmark.kt": "dde32fe267107971573ff16562c69a44d09fe85093761bdada92d36c67ccbd98",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M19ScoreFeatureBenchmark.kt": "af21ccd30f4ab71c3b9f666b4b4c2424df83a83267fc23ebfd8d7d5ed52162dd",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M1PinyinBenchmark.kt": "9e3ebc93691e8420c8edbb8eb4a55d801b19c5e7e631cab11063408f1576d212",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M20CrossDomainBenchmark.kt": "31dbf40a0d6c4b87cd15a78ad352b552ed65ed5141ff27e9338fda89ad4c9ac8",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M21MixtureBenchmark.kt": "bcc88358ce50a678aaca846630d4b2e551fc07f6fd708605f70c4f0b068d9a46",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M23FourgramBenchmark.kt": "c2cb6111912ab4ffe16bf2333214222f1790db5737d6c2b80e355ba08e9c5a12",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M2AdaptiveBenchmark.kt": "88ae82e685b28b79c68d6eb549867e70f2da66e75c2d014a2710cdf24be606f2",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M3SentenceBenchmark.kt": "03c5de47af070a2cf89ac0700711bbd9488ccb49a6ddc9a6938b49da9c7f3cd7",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M4CoreBenchmark.kt": "3fa4158cf9cdf414b2e0e2f8a3eaac64d81e7e317f719dd6baf91ee020e97c18",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M5MixedInputBenchmark.kt": "47e1ff5639ea06dc8f1f28b2da3df4099b4cb8a3e088a78e238e98398732e114",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M6InputPolishBenchmark.kt": "14a226681511b1c2cb76323452424c7759d130bc1926b1ada25b464a12fb7a55",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M7ChineseSchemeBenchmark.kt": "583ad236955f77f87ddc120795b89f70ef88c19f477c7d42d2fb8ee59641b755",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M8DailyInputBenchmark.kt": "77c83f59177ec5619dd759ccb87b3ad42e7ed246f3cc1b9d3792f8d3b20d0e30",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M9PersonalSentenceBenchmark.kt": "54bd54fac46b6ba4fce9c0e442c628ac6b3d6e512e8df4371dcffbc56e18fd0e",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/MixedCandidateRanker.kt": "c0a24077e62e51e5edaddbbc5ff694d2a939a5bf075802ef5b9999cad5483769",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/OovLanguageModelAblation.kt": "08bcd990204c8dc6e0ecf3c85254f91384e6f40179633386a90167457aee8195",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinDecoder.kt": "e8f24a62c470caea0de53f5996c53f1e45bb1c3809e7736f2fb491d536f7dad7",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinInputLimits.kt": "7759ce67e9dbaffffba153c3c3cf2fa71e919198de6bb9799840b4f0b8a47a6f",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinLanguageScorer.kt": "c4c569bcde6ff5a65e010ef159e557aad50f08ac9cf56c7af2907ddec73b3cbb",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinScoreDiagnostics.kt": "1b3b66df0d87f3857825af5028b7c9423563ff7c1c68959a94d9a03fdf606c56",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt": "9ba8e935fcb197e0dc9bf79a2e057a44a9c74fa14c15412c68b38970900212ee",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSyllableSegmenter.kt": "c817b1bd2b62858bb33f38a908f2df220788e71abb65d7938747a9234ac7de59",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PrefixCandidateCache.kt": "5dc949d24ac6df2050628c930323d0fc5370599844f53fe68eb91b5f572a7408",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ProgressivePinyin.kt": "dbeb7d86ad3ee13c9635d38c208c87ce4fc1e45d2f45ef4767fbb9172ae6238a",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/QueryLexicalCache.kt": "57706a81a9c49d6a6d9b3fef39de8eca2a548b0a1d332540f6603a46c1d46b2d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SemanticCandidateCatalog.kt": "b7308ba865dace349456daa3bf666b97affa5bf77945474bde2352cdfd3e87a1",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SerialPersistenceQueue.kt": "d7882ff60210696c825be60b5c9cfe10651f55f05fcb0209d27fff3994bcc8d9",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/StableTopK.kt": "4047e249e45037b3808e99660205bcebfe905e072ab4a2f7cb377abc76917ce7",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9AlternativeInputDecoder.kt": "cf2e3f1aa4e394074902fbed017eb0a7afdf6f3df09560fad6755ed5ec0bf62d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9Composition.kt": "ff2663ef91b666386f41954ceebe945ab421cbcfdb5a944dca64aab0b0a16727",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9PinyinChoice.kt": "2c63475a857b941c78950bca98b9915676c59e3544fd2d6f75c077c11d590152",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9SyllableIndex.kt": "5b9752addfe68ac197beff57b9869d161e8fb1543106667d4b2b1cd2a3fba223",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserAssociation.kt": "3439f4711ae5ab9719568eb4bcac0cce649d8ca328a9c0839a83d91566832d52",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPersonalization.kt": "663743456c32c102401f8401b119c18b0321015d6efc5e47bb43e0dce78c0507",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPinyinLattice.kt": "8a71df09fcc5e5d14122ad767f03ed4150773833aad2ddc3bb17a9120588fb5f",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Lexicon.kt": "468f3b0aa998c34376c7486ec063eadc626b4de6d41cd89527fa9976bf7bf912",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Personalization.kt": "5777e86c2bffccf1f30557e5a648d0ec5cd0c430c077c9db56491dc4c033b44d",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/WubiComposition.kt": "e9c7567a5dbb6985d8098cdc8a6a8d02724e5ea5f809526fdd5c80e6db3f06ee"
+  },
+  "presentationSourcePins": {
+    "ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ProgressiveCandidateSnapshot.kt": "88a31d3329123d2491a38bdfdb81a12b949b9d9c686fb2d6cda6110398994d93"
+  },
+  "assetPins": {
+    "pinyin_lexicon.bin": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232",
+    "pinyin_bigrams.bin": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
+    "pinyin_character_lm.scng": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+    "pinyin_syllables.txt": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+    "english_lexicon.txt": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624"
+  },
+  "hostTests": {
+    "core-input": {
+      "tests": 378,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 312,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "python": {
+    "run": 409,
+    "passed": 408,
+    "skipped": 1
+  },
+  "android": {
+    "after-bounded": {
+      "tests": 4,
+      "environment": {
+        "imePidBefore": "",
+        "sdk": "37",
+        "installedDuringRun": true,
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "apks": {
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "e865a8c0757af87c6305b14db708cf5aab966fec8649e6e0c3fced651a31ce94",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+          "app/build/outputs/apk/debug/app-debug.apk": "7ce9874adf9f9b0a84408aa67c90727b8d98ab5f4e7f1433e1d4eded05ee16ed"
+        },
+        "imePidAfter": "25360",
+        "serial": "emulator-5580",
+        "debugProfileReset": false
+      }
+    },
+    "completion": {
+      "tests": 10,
+      "environment": {
+        "debugProfileReset": false,
+        "installedDuringRun": true,
+        "imePidBefore": "",
+        "serial": "emulator-5580",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "imePidAfter": "26548",
+        "sdk": "37",
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "7ce9874adf9f9b0a84408aa67c90727b8d98ab5f4e7f1433e1d4eded05ee16ed",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "facb89c7cf3ee6d19ae05d36e1a672249b5005279f24732a5df40223225ce625"
+        }
+      }
+    },
+    "context": {
+      "tests": 8,
+      "environment": {
+        "debugProfileReset": false,
+        "installedDuringRun": false,
+        "imePidBefore": "26548",
+        "serial": "emulator-5580",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "imePidAfter": "26548",
+        "sdk": "37",
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "7ce9874adf9f9b0a84408aa67c90727b8d98ab5f4e7f1433e1d4eded05ee16ed",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "facb89c7cf3ee6d19ae05d36e1a672249b5005279f24732a5df40223225ce625"
+        }
+      }
+    },
+    "mixed": {
+      "tests": 3,
+      "environment": {
+        "debugProfileReset": false,
+        "installedDuringRun": false,
+        "imePidBefore": "26548",
+        "serial": "emulator-5580",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "imePidAfter": "26548",
+        "sdk": "37",
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "7ce9874adf9f9b0a84408aa67c90727b8d98ab5f4e7f1433e1d4eded05ee16ed",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "facb89c7cf3ee6d19ae05d36e1a672249b5005279f24732a5df40223225ce625"
+        }
+      }
+    },
+    "boundary": {
+      "tests": 6,
+      "environment": {
+        "debugProfileReset": false,
+        "installedDuringRun": false,
+        "imePidBefore": "26548",
+        "serial": "emulator-5580",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "imePidAfter": "26548",
+        "sdk": "37",
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "7ce9874adf9f9b0a84408aa67c90727b8d98ab5f4e7f1433e1d4eded05ee16ed",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "facb89c7cf3ee6d19ae05d36e1a672249b5005279f24732a5df40223225ce625"
+        }
+      }
+    },
+    "correction": {
+      "tests": 8,
+      "environment": {
+        "debugProfileReset": false,
+        "installedDuringRun": false,
+        "imePidBefore": "26548",
+        "serial": "emulator-5580",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "imePidAfter": "26548",
+        "sdk": "37",
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "7ce9874adf9f9b0a84408aa67c90727b8d98ab5f4e7f1433e1d4eded05ee16ed",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "facb89c7cf3ee6d19ae05d36e1a672249b5005279f24732a5df40223225ce625"
+        }
+      }
+    },
+    "association": {
+      "tests": 9,
+      "environment": {
+        "debugProfileReset": false,
+        "installedDuringRun": false,
+        "imePidBefore": "26548",
+        "serial": "emulator-5580",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "imePidAfter": "26548",
+        "sdk": "37",
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "7ce9874adf9f9b0a84408aa67c90727b8d98ab5f4e7f1433e1d4eded05ee16ed",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "facb89c7cf3ee6d19ae05d36e1a672249b5005279f24732a5df40223225ce625"
+        }
+      }
+    },
+    "warm": {
+      "tests": 10,
+      "environment": {
+        "debugProfileReset": false,
+        "installedDuringRun": false,
+        "imePidBefore": "26548",
+        "serial": "emulator-5580",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "imePidAfter": "26548",
+        "sdk": "37",
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "7ce9874adf9f9b0a84408aa67c90727b8d98ab5f4e7f1433e1d4eded05ee16ed",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "facb89c7cf3ee6d19ae05d36e1a672249b5005279f24732a5df40223225ce625"
+        }
+      }
+    },
+    "cold": {
+      "tests": 4,
+      "environment": {
+        "debugProfileReset": false,
+        "installedDuringRun": false,
+        "imePidBefore": "26548",
+        "serial": "emulator-5580",
+        "scope": "Real system IME touch -> external EditText; force-stopped debug app, loading runtime asserted; not phone certification",
+        "imePidAfter": "1649",
+        "sdk": "37",
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "7ce9874adf9f9b0a84408aa67c90727b8d98ab5f4e7f1433e1d4eded05ee16ed",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "facb89c7cf3ee6d19ae05d36e1a672249b5005279f24732a5df40223225ce625"
+        }
+      }
+    },
+    "learning": {
+      "tests": 4,
+      "environment": {
+        "debugProfileReset": true,
+        "installedDuringRun": false,
+        "imePidBefore": "",
+        "serial": "emulator-5580",
+        "scope": "Real candidate selection, reuse, privacy and process-restart persistence; clean disposable debug profile; not phone certification",
+        "imePidAfter": "6994",
+        "sdk": "37",
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "7ce9874adf9f9b0a84408aa67c90727b8d98ab5f4e7f1433e1d4eded05ee16ed",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "facb89c7cf3ee6d19ae05d36e1a672249b5005279f24732a5df40223225ce625"
+        }
+      }
+    }
+  },
+  "validatedFunctionalExecutions": 66,
+  "performanceGate": {
+    "scope": "Fixed ABBA workload only; not statistical significance or phone certification",
+    "rule": "paired median and observed P95 each no worse than reference",
+    "checks": {
+      "medianMs": false,
+      "observedP95Ms": false
+    },
+    "passed": false
+  },
+  "performanceGateInheritedFrom": "E21; not remeasured in E23",
+  "fast32msTypingCoverage": false,
+  "apk": {
+    "delivery": "G:\\workspace\\sense-input-quality-reference\\e23\\sense-input-quality-e23-debug.apk",
+    "sha256": "7ce9874adf9f9b0a84408aa67c90727b8d98ab5f4e7f1433e1d4eded05ee16ed",
+    "bytes": 87092864,
+    "changedZipMembers": [
+      "classes7.dex"
+    ],
+    "assetPins": {
+      "pinyin_lexicon.bin": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232",
+      "pinyin_bigrams.bin": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
+      "pinyin_character_lm.scng": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+      "pinyin_syllables.txt": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+      "english_lexicon.txt": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624"
+    },
+    "sourcePins": {
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptivePinyinDecoder.kt": "48e2dcc1bcd5580912ce3904b60078585bfc58f85ab949b3b781131079ed18f8",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/AdaptiveWubi86Decoder.kt": "a35838bab4a81024eb4de8a91e13cd9d6016e2d944bfc3a1f1a68b3fb7ec92b8",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRanker.kt": "c2fdabe176aabf9157141663e8c30a6ce6e7ab6d75775c5b6a351bf51072a4b2",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateRankingDiagnostics.kt": "40fb7520701e8c8a5b68ad5054646d9210ffc6dd3386b81393bb64a7c0cfa90e",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CandidateSnapshot.kt": "a9e67e6cad44e6444d6f973e4a166bf8740031ee499db7c8f450e84a2e8778c7",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterBigramModel.kt": "31932aa41a2941ee4a25ee64ef20376e1c8c22cebf8e6c4e5761f65f2eb319a1",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CharacterLanguageModel.kt": "13edc15ff7b3e35a4aa6b1097e86a3798660a1d7cea1b9c60fc6688e51bda6f9",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CommitSequenceTracker.kt": "b5553d8064c4e5fea98957301751f4f8dc15047f04daecb357919d663bc2dfc4",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ContextAssociationModel.kt": "42d5303703626c49fde56b018baa78e1412c82ed7a7e9a9c6e7ab53aafc4c969",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchBudget.kt": "b7a20c3cc3baadc70eafc9b82531b7109d196b8252d9c8e142495808d55586a9",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CorrectionSearchDiagnostics.kt": "f2c8a89a8056cb6ee494a574b952013c37da6de9d5d15c36d8ec988f71168f08",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/CuratedLexicalCandidateCatalog.kt": "003535f8f5a2e42ffb622b728370166c8f83060fbe99c8feab40c6505cecd9ff",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/DecodeWorkScope.kt": "d6bb4d8c36c245bd9d6309e7eda14524035b8c0d9402df5f3355fbec786a5741",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishInputSession.kt": "b2f710e2eb0d1d6f0a3d8e61a00745e2442a822a57818f54ff15e94ba4077401",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishLexicon.kt": "d4023375ffcf9636f2f099001864b12d97de587d074964fb855fe33cf7b2f509",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/EnglishWordUsage.kt": "66f3433d8ec70682e9481916502998a9b0fd30a731c784ff890750fdcfa562d5",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/FakeDecoder.kt": "2ea5166529da40546f4f6f1cef86036ec5a1152a129fdebc7cdfa18e969ba591",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/FourgramLanguageModel.kt": "6ecdfcef4786c342ce6504b8ff879a7ec5a03400f156b6e2c4fdf3c8b2af223d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputModel.kt": "5a5316e26a1a3da6f90cf0248208e0a39d7f7ee97ec4a65e2341bb7c1a7fde38",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/InputReducer.kt": "b608ea6ca6a3e53067d215acc6949f1007b1cc519b3f2de42a28507c7daf936d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/LinearMixtureCharacterModel.kt": "bace39c3341ef6513dca1d969ac6a077cd816932416539183f5bc8c967680546",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M0HostBenchmark.kt": "e18a429e81795794463f53f304894b8938dd52a98ddddd24550bd4ca176f3adf",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M10CharacterLmBenchmark.kt": "c88f3f193ce2ebf37b14c5baad0e3dbc76c540cd55f5859105a4bc9d1570be45",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M11LatticeLanguageBenchmark.kt": "1c79b49983defc05c8889d8c266168df99801dcf20f8362bae073c306b6a58d2",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M12P2cBenchmark.kt": "ff18694be688990b63de59e7c67555a69389bfa2533ab3db82ef11ca83db0d75",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M14ProgressiveEquivalenceBenchmark.kt": "7bd20f4a75222d016b8e8a10452c7f0aa71d33c85c38e9e4fe3d752e756ea294",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M15TypoRecallBenchmark.kt": "9c120a1e77361cf65a0d40f00c27af0a428fcc458213d8562281d906cbf168b2",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M16SpellingGraphBenchmark.kt": "f6e730fd5f77e54108ad61d2d28e43f77a69d5afd935f6cd20972842e04b8852",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M17CandidateScoreBenchmark.kt": "9e15d6e51cfff4ec32002ca3f09f1ce1c75bef268bc64c124d6eba6234e9d8be",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M18LexiconLearningBenchmark.kt": "dde32fe267107971573ff16562c69a44d09fe85093761bdada92d36c67ccbd98",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M19ScoreFeatureBenchmark.kt": "af21ccd30f4ab71c3b9f666b4b4c2424df83a83267fc23ebfd8d7d5ed52162dd",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M1PinyinBenchmark.kt": "9e3ebc93691e8420c8edbb8eb4a55d801b19c5e7e631cab11063408f1576d212",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M20CrossDomainBenchmark.kt": "31dbf40a0d6c4b87cd15a78ad352b552ed65ed5141ff27e9338fda89ad4c9ac8",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M21MixtureBenchmark.kt": "bcc88358ce50a678aaca846630d4b2e551fc07f6fd708605f70c4f0b068d9a46",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M23FourgramBenchmark.kt": "c2cb6111912ab4ffe16bf2333214222f1790db5737d6c2b80e355ba08e9c5a12",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M2AdaptiveBenchmark.kt": "88ae82e685b28b79c68d6eb549867e70f2da66e75c2d014a2710cdf24be606f2",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M3SentenceBenchmark.kt": "03c5de47af070a2cf89ac0700711bbd9488ccb49a6ddc9a6938b49da9c7f3cd7",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M4CoreBenchmark.kt": "3fa4158cf9cdf414b2e0e2f8a3eaac64d81e7e317f719dd6baf91ee020e97c18",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M5MixedInputBenchmark.kt": "47e1ff5639ea06dc8f1f28b2da3df4099b4cb8a3e088a78e238e98398732e114",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M6InputPolishBenchmark.kt": "14a226681511b1c2cb76323452424c7759d130bc1926b1ada25b464a12fb7a55",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M7ChineseSchemeBenchmark.kt": "583ad236955f77f87ddc120795b89f70ef88c19f477c7d42d2fb8ee59641b755",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M8DailyInputBenchmark.kt": "77c83f59177ec5619dd759ccb87b3ad42e7ed246f3cc1b9d3792f8d3b20d0e30",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/M9PersonalSentenceBenchmark.kt": "54bd54fac46b6ba4fce9c0e442c628ac6b3d6e512e8df4371dcffbc56e18fd0e",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/MixedCandidateRanker.kt": "c0a24077e62e51e5edaddbbc5ff694d2a939a5bf075802ef5b9999cad5483769",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/OovLanguageModelAblation.kt": "08bcd990204c8dc6e0ecf3c85254f91384e6f40179633386a90167457aee8195",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinDecoder.kt": "e8f24a62c470caea0de53f5996c53f1e45bb1c3809e7736f2fb491d536f7dad7",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinInputLimits.kt": "7759ce67e9dbaffffba153c3c3cf2fa71e919198de6bb9799840b4f0b8a47a6f",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinLanguageScorer.kt": "c4c569bcde6ff5a65e010ef159e557aad50f08ac9cf56c7af2907ddec73b3cbb",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinScoreDiagnostics.kt": "1b3b66df0d87f3857825af5028b7c9423563ff7c1c68959a94d9a03fdf606c56",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt": "9ba8e935fcb197e0dc9bf79a2e057a44a9c74fa14c15412c68b38970900212ee",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSyllableSegmenter.kt": "c817b1bd2b62858bb33f38a908f2df220788e71abb65d7938747a9234ac7de59",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PrefixCandidateCache.kt": "5dc949d24ac6df2050628c930323d0fc5370599844f53fe68eb91b5f572a7408",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/ProgressivePinyin.kt": "dbeb7d86ad3ee13c9635d38c208c87ce4fc1e45d2f45ef4767fbb9172ae6238a",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/QueryLexicalCache.kt": "57706a81a9c49d6a6d9b3fef39de8eca2a548b0a1d332540f6603a46c1d46b2d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SemanticCandidateCatalog.kt": "b7308ba865dace349456daa3bf666b97affa5bf77945474bde2352cdfd3e87a1",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SerialPersistenceQueue.kt": "d7882ff60210696c825be60b5c9cfe10651f55f05fcb0209d27fff3994bcc8d9",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/StableTopK.kt": "4047e249e45037b3808e99660205bcebfe905e072ab4a2f7cb377abc76917ce7",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9AlternativeInputDecoder.kt": "cf2e3f1aa4e394074902fbed017eb0a7afdf6f3df09560fad6755ed5ec0bf62d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9Composition.kt": "ff2663ef91b666386f41954ceebe945ab421cbcfdb5a944dca64aab0b0a16727",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9PinyinChoice.kt": "2c63475a857b941c78950bca98b9915676c59e3544fd2d6f75c077c11d590152",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/T9SyllableIndex.kt": "5b9752addfe68ac197beff57b9869d161e8fb1543106667d4b2b1cd2a3fba223",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserAssociation.kt": "3439f4711ae5ab9719568eb4bcac0cce649d8ca328a9c0839a83d91566832d52",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPersonalization.kt": "663743456c32c102401f8401b119c18b0321015d6efc5e47bb43e0dce78c0507",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/UserPinyinLattice.kt": "8a71df09fcc5e5d14122ad767f03ed4150773833aad2ddc3bb17a9120588fb5f",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Lexicon.kt": "468f3b0aa998c34376c7486ec063eadc626b4de6d41cd89527fa9976bf7bf912",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/Wubi86Personalization.kt": "5777e86c2bffccf1f30557e5a648d0ec5cd0c430c077c9db56491dc4c033b44d",
+      "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/WubiComposition.kt": "e9c7567a5dbb6985d8098cdc8a6a8d02724e5ea5f809526fdd5c80e6db3f06ee"
+    },
+    "presentationSourcePins": {
+      "ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/ProgressiveCandidateSnapshot.kt": "88a31d3329123d2491a38bdfdb81a12b949b9d9c686fb2d6cda6110398994d93"
+    },
+    "boundedFixturePins": {
+      "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+      "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "e865a8c0757af87c6305b14db708cf5aab966fec8649e6e0c3fced651a31ce94"
+    },
+    "hostTests": {
+      "core-input": {
+        "tests": 378,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ime-ui": {
+        "tests": 235,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ime-service": {
+        "tests": 312,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "app": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "goalComplete": false,
+  "releaseReady": false,
+  "evidenceManifestSha256": "816b1d210bacf1ea40305eba238e3670eeec406f634c4241178822fb40c1b226",
+  "archivedFiles": 521
+}

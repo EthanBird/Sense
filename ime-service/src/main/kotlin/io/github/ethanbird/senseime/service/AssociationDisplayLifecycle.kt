@@ -16,6 +16,7 @@ internal class AssociationDisplayLifecycle {
 
     private var generation = 0L
     private var phase = Phase.IDLE
+    private var interactionHeld = false
 
     val waiting: Boolean
         get() = phase == Phase.WAITING
@@ -23,9 +24,13 @@ internal class AssociationDisplayLifecycle {
     val visible: Boolean
         get() = phase == Phase.VISIBLE
 
+    val visibleTicket: Long?
+        get() = generation.takeIf { visible }
+
     fun arm(): Long {
         generation = nextGeneration(generation)
         phase = Phase.WAITING
+        interactionHeld = false
         return generation
     }
 
@@ -36,15 +41,32 @@ internal class AssociationDisplayLifecycle {
     }
 
     fun expire(ticket: Long): Boolean {
-        if (phase != Phase.VISIBLE || ticket != generation) return false
+        if (phase != Phase.VISIBLE || interactionHeld || ticket != generation) return false
         phase = Phase.IDLE
         return true
+    }
+
+    /** Idle time excludes an active candidate touch/drag. Invalidate already queued expiry. */
+    fun holdInteraction(): Boolean {
+        if (!visible || interactionHeld) return false
+        interactionHeld = true
+        generation = nextGeneration(generation)
+        return true
+    }
+
+    /** Returns a fresh expiry ticket only when the same visible strip resumes being idle. */
+    fun releaseInteraction(): Long? {
+        if (!visible || !interactionHeld) return null
+        interactionHeld = false
+        generation = nextGeneration(generation)
+        return generation
     }
 
     fun cancel(): Boolean {
         val changed = phase != Phase.IDLE
         generation = nextGeneration(generation)
         phase = Phase.IDLE
+        interactionHeld = false
         return changed
     }
 

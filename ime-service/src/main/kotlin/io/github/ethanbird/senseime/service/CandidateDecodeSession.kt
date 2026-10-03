@@ -10,6 +10,7 @@ internal data class CandidatePresentation(
     val snapshot: ProgressiveCandidateSnapshot,
     val decoding: ProgressivePinyinDecoding?,
     val pending: Boolean,
+    val decoderReady: Boolean = true,
 )
 
 internal data class CandidateDecodeLaunch(
@@ -42,16 +43,19 @@ internal class CandidateDecodeSession {
         composition: PinyinComposition,
         decoderGeneration: Long = 0L,
         forceDecode: Boolean = false,
+        decoderReady: Boolean = true,
     ): CandidateDecodeLaunch {
         if (
             !forceDecode &&
             composition == current.composition &&
-            decoderGeneration == current.decoderGeneration
+            decoderGeneration == current.decoderGeneration &&
+            decoderReady == current.decoderReady
         ) {
             return CandidateDecodeLaunch(current, shouldDecode = false, stateChanged = false)
         }
-        val shouldDecode = composition.remainingPinyin.isNotEmpty()
-        val retainedVisualSnapshot = if (shouldDecode) {
+        val pending = composition.remainingPinyin.isNotEmpty()
+        val shouldDecode = pending && decoderReady
+        val retainedVisualSnapshot = if (pending && decoderReady) {
             current.snapshot
         } else {
             ProgressiveCandidateSnapshot.EMPTY
@@ -61,7 +65,8 @@ internal class CandidateDecodeSession {
             decoderGeneration = decoderGeneration,
             snapshot = retainedVisualSnapshot,
             decoding = null,
-            pending = shouldDecode,
+            pending = pending,
+            decoderReady = decoderReady,
         )
         return CandidateDecodeLaunch(current, shouldDecode, stateChanged = true)
     }
@@ -73,6 +78,7 @@ internal class CandidateDecodeSession {
         decoderGeneration: Long = 0L,
     ): CandidatePresentation? {
         if (
+            !current.decoderReady ||
             requestedComposition != current.composition ||
             decoderGeneration != current.decoderGeneration ||
             decoding.revision != requestedComposition.revision ||

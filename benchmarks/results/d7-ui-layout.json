@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "scope": "Self-hosted real Android View tests, not the system InputMethodService fixture; includes actual nonzero candidate scroll, canceled/replaced touches, toolbar exclusion and accessibility",
+  "passedTests": 13,
+  "seconds": 9.833,
+  "testApkSha256": "e6dd23fde70c40ae735c474c42593ff7296644d9c6b02a56fa789ac0519d40bd",
+  "installedApkVerified": true,
+  "testSourceSha256": "9b04dee9b9f24b8e781b246abf35dd17be65907e042642edc1a46b8e96a2ac03",
+  "logSha256": "8604ec8403305c65fe8feb39f9777e2634f5880fb56807ee1b0d3fec3985547d",
+  "images": {
+    ".artifacts/input-quality/d7/ui-images/association-strip.png": "3a6d4a39ca082e3b0e20733a4697c34a264e6aa1dbb39dedd78be39c750129d9",
+    ".artifacts/input-quality/d7/ui-images/toolbar-restored.png": "a4e4d4a6d3dcd2f775741676b2c2edac6078c808bf589edb0378424a81ba32d5"
+  }
+}

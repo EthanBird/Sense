@@ -1,0 +1,7 @@
+{
+  "path": ".artifacts\\input-quality\\f1-ui-layout.log",
+  "sha256": "43901cddb2d455f457189c09a0742055416a93d2aee6fc58093e7d8b09a9aa23",
+  "tests": 13,
+  "seconds": 9.278,
+  "testApkSha256": "92f27a9859607962462d689eb61d79a8f6be74725cb2c4e69d4295b7cd2381fe"
+}

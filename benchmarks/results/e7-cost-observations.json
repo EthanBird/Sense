@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "scope": "Two sequential dedicated-AVD cold scenarios and post-scenario process snapshots; not peak memory, repeated distribution, or a speed claim",
+  "measurements": {
+    "baseline": {
+      "apkSha256": "dd8b1cef85d331f57d83fe257d4af0b42215feeb9a412c2a4445a1526fd7fb80",
+      "apkBytes": 97094639,
+      "sumCompressedEntries": 80401627,
+      "otherZipBytes": 16693012,
+      "lexiconBytes": 35069585,
+      "lexiconCompressedBytes": 15404517,
+      "coldImmediateConfirmationMs": 2525,
+      "postColdPssKiB": 112643,
+      "postColdRssKiB": 284244
+    },
+    "candidate": {
+      "apkSha256": "7ac39b1114234f68d173266a6426de66d698343499e040d4462f9a1a3a0fecef",
+      "apkBytes": 117793050,
+      "sumCompressedEntries": 85729485,
+      "otherZipBytes": 32063565,
+      "lexiconBytes": 46495514,
+      "lexiconCompressedBytes": 20698211,
+      "coldImmediateConfirmationMs": 2202,
+      "postColdPssKiB": 129115,
+      "postColdRssKiB": 300648
+    }
+  },
+  "limitations": [
+    "APK has retained incremental ZIP gaps; byte size is not the sum of useful payload sizes",
+    "PSS captured after cold scenario group, not concurrent peak",
+    "Only one timing observation per APK; no cold-start speed conclusion"
+  ]
+}

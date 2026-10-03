@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "scope": "F1 local phase only; broader input-quality objective remains active",
+  "passed": true,
+  "apkSha256": "5c82a4e9c986d870ddfa6dca0c2e47a6e30bd48f6af2341956c7b4a9cb2a79f0",
+  "checks": {
+    "sourcePinsAndUnchangedP2c": true,
+    "modelFrozenBeforeTestAndRawEvidenceMatches": true,
+    "testRetrievalGates": true,
+    "host814": true,
+    "python48": true,
+    "systemIme28": true,
+    "fault4": true,
+    "androidView13": true,
+    "artModel1": true,
+    "sameFinalApkAcrossSystemEvidence": true,
+    "attributionAssetAudit": true,
+    "learnedWordsPersist": true,
+    "privateLearningAbsent": true
+  },
+  "limitations": [
+    "Corpus proxy, not human acceptability",
+    "Lower prefix Top8 than legacy",
+    "Word-boundary exact Top3 still 4.6%",
+    "ART load still adds startup cost",
+    "No new system latency distribution or physical phone test"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "schemaVersion":1,"modelSha256":"39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d","referenceSha256":"8711be52ff908489e3bcac6c5c391019b5a60dcb8d4d4bd1034fe77544e05c44",
+  "device":"host JVM; conditional transition includes timer overhead; not Android latency",
+  "modelBytes":3090930,"estimatedRetainedPayloadBytes":3090904,
+  "loadMs":45.27880000,"vocabulary":3352,"bigrams":127109,"trigrams":89418,
+  "referenceTransitions":579,"maxAbsoluteLogScoreError":0.00000191,"passed":true,
+  "transitionNs":{"samples":10000,"p50":400,"p95":700,"p99":900,"max":18800},
+  "checksum":-89732.87103741,"productionEnabled":false
+}

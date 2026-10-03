@@ -1,0 +1,29 @@
+{
+  "core-input": {
+    "tests": 258,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ime-ui": {
+    "tests": 224,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ime-service": {
+    "tests": 262,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "app": {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "scope": "Latest successful module suites: full core/UI/service, app AboutNoticeControllerTest only. JVM/Robolectric, not device.",
+  "p2cFirstUseCoreModelDataPinsUnchanged": true,
+  "pythonTests": 23
+}

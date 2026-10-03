@@ -1,0 +1,8 @@
+{
+  "path": ".artifacts\\input-quality\\f1-art-final-fast-han.log",
+  "sha256": "8d426ec2d286d3315c6fefb396db056eb2fb5c4b3b1ba05687abce02636bc013",
+  "tests": 1,
+  "seconds": 1.402,
+  "testApkSha256": "019362586994e66efbd47ec7b8d78c9fdc537effa3ec014dcb506152356d4d24",
+  "reportSha256": "c66ba8f99a937122b85a672b7a5379c2c14fb521cad1347e9c9f954689ea18f5"
+}

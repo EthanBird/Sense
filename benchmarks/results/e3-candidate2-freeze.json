@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "frozenAt": "2026-10-02T12:32:47.5685857Z",
+  "scope": "Revision after graph-only candidate failed known-regression mutation coverage; this known partition is now also used for regression debugging, never a fresh blind claim",
+  "prior": "e3-development-freeze.json",
+  "policy": {
+    "typoTop10NetGainAtLeast": 20,
+    "androidObservedP95RatioAtMost": 1.15,
+    "mutationCoverageEachNondecreasing": true,
+    "cleanCountsPreserved": true,
+    "completeSystemOutputCorrect": true,
+    "typoCharacterErrorsNonIncreasing": true,
+    "regression": "Core/UI/service, App About targeted, Python, M1/M7, warm/cold/correction/learning and slow-worker tests",
+    "androidMedianRatioAtMost": 1.15,
+    "androidMaxBelowMs": 1000
+  },
+  "algorithm": "Channel frontier in graph plus at most half the existing malformed-input full-beam slots for single generic insertion/deletion; budgets unchanged",
+  "productionSources": {
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinDecoder.kt": "08a077c9fd83d87c39b8c89b955be51695b390dd12bb57fd0943cc2e5d2893e0",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt": "9ba8e935fcb197e0dc9bf79a2e057a44a9c74fa14c15412c68b38970900212ee"
+  }
+}

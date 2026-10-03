@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "scope": "E2 algorithm-preserving optimization acceptance; full input-quality goal remains active",
+  "checks": {
+    "frozenSourcesInputsAndAssetsMatch": true,
+    "fullProgressiveResultsIdentical": true,
+    "all64SystemConfirmationsCorrect": true,
+    "systemMedianLower": true,
+    "systemP95WithinDeclaredMargin": true,
+    "systemMaxBelow1000ms": true,
+    "host793Passing": true,
+    "python40Passing": true,
+    "ordinarySystemExecutions19Passing": true,
+    "faultInjection4Passing": true,
+    "finalApkMatchesAllEvidence": true,
+    "assetAuditPassed": true,
+    "privateLearningAbsent": true
+  },
+  "passed": true,
+  "systemObservedP95Ratio": 0.9423728813559322,
+  "systemMedianDeltaMs": -13.0,
+  "apkSha256": "f2696b5e961943956f1dacb6f9db3d787c01b1508bce0f94c0e1c18e957630e9"
+}

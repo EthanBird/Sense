@@ -1,0 +1,1098 @@
+{
+  "schemaVersion": 1,
+  "scope": "Paired synthetic errors on known reviewed source text; not fresh natural-error or phone latency evidence",
+  "before": {
+    "rows": 945,
+    "families": 63,
+    "top1": 342,
+    "top3": 416,
+    "top10": 434,
+    "covered": 471,
+    "mrr": 0.4039977378700401,
+    "graphAligned": 593,
+    "graphCanonical": 597,
+    "selectedCanonical": 377,
+    "characterErrors": 1297,
+    "characters": 9000,
+    "cer": 0.1441111111111111,
+    "hostMedianMs": 14.5468,
+    "hostObservedP95Ms": 29.2432
+  },
+  "after": {
+    "rows": 945,
+    "families": 63,
+    "top1": 366,
+    "top3": 451,
+    "top10": 478,
+    "covered": 530,
+    "mrr": 0.4368382744217773,
+    "graphAligned": 593,
+    "graphCanonical": 597,
+    "selectedCanonical": 443,
+    "characterErrors": 1177,
+    "characters": 9000,
+    "cer": 0.13077777777777777,
+    "hostMedianMs": 17.8292,
+    "hostObservedP95Ms": 36.1232
+  },
+  "byOperation": {
+    "clean": {
+      "before": {
+        "rows": 63,
+        "families": 63,
+        "top1": 45,
+        "top3": 55,
+        "top10": 57,
+        "covered": 60,
+        "mrr": 0.7975949975949976,
+        "graphAligned": 63,
+        "graphCanonical": 63,
+        "selectedCanonical": 0,
+        "characterErrors": 29,
+        "characters": 600,
+        "cer": 0.04833333333333333,
+        "hostMedianMs": 21.4066,
+        "hostObservedP95Ms": 37.5551
+      },
+      "after": {
+        "rows": 63,
+        "families": 63,
+        "top1": 45,
+        "top3": 55,
+        "top10": 57,
+        "covered": 60,
+        "mrr": 0.7975949975949976,
+        "graphAligned": 63,
+        "graphCanonical": 63,
+        "selectedCanonical": 0,
+        "characterErrors": 29,
+        "characters": 600,
+        "cer": 0.04833333333333333,
+        "hostMedianMs": 25.6922,
+        "hostObservedP95Ms": 42.462
+      }
+    },
+    "delete": {
+      "before": {
+        "rows": 189,
+        "families": 63,
+        "top1": 4,
+        "top3": 4,
+        "top10": 5,
+        "covered": 10,
+        "mrr": 0.023039733875765696,
+        "graphAligned": 96,
+        "graphCanonical": 97,
+        "selectedCanonical": 11,
+        "characterErrors": 373,
+        "characters": 1800,
+        "cer": 0.20722222222222222,
+        "hostMedianMs": 16.4885,
+        "hostObservedP95Ms": 29.2432
+      },
+      "after": {
+        "rows": 189,
+        "families": 63,
+        "top1": 27,
+        "top3": 39,
+        "top10": 47,
+        "covered": 64,
+        "mrr": 0.18114665172916267,
+        "graphAligned": 96,
+        "graphCanonical": 97,
+        "selectedCanonical": 71,
+        "characterErrors": 311,
+        "characters": 1800,
+        "cer": 0.17277777777777778,
+        "hostMedianMs": 19.8296,
+        "hostObservedP95Ms": 36.218
+      }
+    },
+    "fuzzy": {
+      "before": {
+        "rows": 63,
+        "families": 63,
+        "top1": 1,
+        "top3": 1,
+        "top10": 1,
+        "covered": 9,
+        "mrr": 0.01853009275727276,
+        "graphAligned": 11,
+        "graphCanonical": 11,
+        "selectedCanonical": 9,
+        "characterErrors": 120,
+        "characters": 600,
+        "cer": 0.2,
+        "hostMedianMs": 19.3401,
+        "hostObservedP95Ms": 31.9744
+      },
+      "after": {
+        "rows": 63,
+        "families": 63,
+        "top1": 1,
+        "top3": 1,
+        "top10": 1,
+        "covered": 11,
+        "mrr": 0.01897226962802106,
+        "graphAligned": 11,
+        "graphCanonical": 11,
+        "selectedCanonical": 11,
+        "characterErrors": 118,
+        "characters": 600,
+        "cer": 0.19666666666666666,
+        "hostMedianMs": 23.0685,
+        "hostObservedP95Ms": 39.7988
+      }
+    },
+    "joints": {
+      "before": {
+        "rows": 63,
+        "families": 63,
+        "top1": 45,
+        "top3": 55,
+        "top10": 57,
+        "covered": 60,
+        "mrr": 0.7975949975949976,
+        "graphAligned": 63,
+        "graphCanonical": 63,
+        "selectedCanonical": 0,
+        "characterErrors": 29,
+        "characters": 600,
+        "cer": 0.04833333333333333,
+        "hostMedianMs": 17.8308,
+        "hostObservedP95Ms": 28.8252
+      },
+      "after": {
+        "rows": 63,
+        "families": 63,
+        "top1": 45,
+        "top3": 55,
+        "top10": 57,
+        "covered": 60,
+        "mrr": 0.7975949975949976,
+        "graphAligned": 63,
+        "graphCanonical": 63,
+        "selectedCanonical": 0,
+        "characterErrors": 29,
+        "characters": 600,
+        "cer": 0.04833333333333333,
+        "hostMedianMs": 22.1307,
+        "hostObservedP95Ms": 37.619
+      }
+    },
+    "neighbor": {
+      "before": {
+        "rows": 189,
+        "families": 63,
+        "top1": 82,
+        "top3": 103,
+        "top10": 109,
+        "covered": 116,
+        "mrr": 0.49430415263748595,
+        "graphAligned": 125,
+        "graphCanonical": 126,
+        "selectedCanonical": 124,
+        "characterErrors": 209,
+        "characters": 1800,
+        "cer": 0.11611111111111111,
+        "hostMedianMs": 12.6056,
+        "hostObservedP95Ms": 27.7883
+      },
+      "after": {
+        "rows": 189,
+        "families": 63,
+        "top1": 82,
+        "top3": 103,
+        "top10": 109,
+        "covered": 116,
+        "mrr": 0.49430415263748595,
+        "graphAligned": 125,
+        "graphCanonical": 126,
+        "selectedCanonical": 124,
+        "characterErrors": 209,
+        "characters": 1800,
+        "cer": 0.11611111111111111,
+        "hostMedianMs": 15.816,
+        "hostObservedP95Ms": 36.1232
+      }
+    },
+    "repeat": {
+      "before": {
+        "rows": 189,
+        "families": 63,
+        "top1": 98,
+        "top3": 119,
+        "top10": 124,
+        "covered": 132,
+        "mrr": 0.5774773043853907,
+        "graphAligned": 143,
+        "graphCanonical": 143,
+        "selectedCanonical": 143,
+        "characterErrors": 201,
+        "characters": 1800,
+        "cer": 0.11166666666666666,
+        "hostMedianMs": 13.1409,
+        "hostObservedP95Ms": 24.5596
+      },
+      "after": {
+        "rows": 189,
+        "families": 63,
+        "top1": 98,
+        "top3": 118,
+        "top10": 124,
+        "covered": 132,
+        "mrr": 0.5767718370132566,
+        "graphAligned": 143,
+        "graphCanonical": 143,
+        "selectedCanonical": 143,
+        "characterErrors": 191,
+        "characters": 1800,
+        "cer": 0.10611111111111111,
+        "hostMedianMs": 16.6407,
+        "hostObservedP95Ms": 31.381
+      }
+    },
+    "transpose": {
+      "before": {
+        "rows": 189,
+        "families": 63,
+        "top1": 67,
+        "top3": 79,
+        "top10": 81,
+        "covered": 84,
+        "mrr": 0.3872608024691358,
+        "graphAligned": 92,
+        "graphCanonical": 94,
+        "selectedCanonical": 90,
+        "characterErrors": 336,
+        "characters": 1800,
+        "cer": 0.18666666666666668,
+        "hostMedianMs": 11.1027,
+        "hostObservedP95Ms": 25.7291
+      },
+      "after": {
+        "rows": 189,
+        "families": 63,
+        "top1": 68,
+        "top3": 80,
+        "top10": 83,
+        "covered": 87,
+        "mrr": 0.39391464245630914,
+        "graphAligned": 92,
+        "graphCanonical": 94,
+        "selectedCanonical": 94,
+        "characterErrors": 290,
+        "characters": 1800,
+        "cer": 0.16111111111111112,
+        "hostMedianMs": 14.7071,
+        "hostObservedP95Ms": 32.1698
+      }
+    }
+  },
+  "byZone": {
+    "head": {
+      "before": {
+        "rows": 252,
+        "families": 63,
+        "top1": 83,
+        "top3": 105,
+        "top10": 109,
+        "covered": 114,
+        "mrr": 0.3750901875901876,
+        "graphAligned": 150,
+        "graphCanonical": 153,
+        "selectedCanonical": 123,
+        "characterErrors": 373,
+        "characters": 2400,
+        "cer": 0.15541666666666668,
+        "hostMedianMs": 12.1175,
+        "hostObservedP95Ms": 26.5503
+      },
+      "after": {
+        "rows": 252,
+        "families": 63,
+        "top1": 95,
+        "top3": 122,
+        "top10": 129,
+        "covered": 139,
+        "mrr": 0.4346339950121463,
+        "graphAligned": 150,
+        "graphCanonical": 153,
+        "selectedCanonical": 150,
+        "characterErrors": 332,
+        "characters": 2400,
+        "cer": 0.13833333333333334,
+        "hostMedianMs": 15.8631,
+        "hostObservedP95Ms": 32.9521
+      }
+    },
+    "middle": {
+      "before": {
+        "rows": 252,
+        "families": 63,
+        "top1": 87,
+        "top3": 100,
+        "top10": 104,
+        "covered": 107,
+        "mrr": 0.37138949013949013,
+        "graphAligned": 137,
+        "graphCanonical": 137,
+        "selectedCanonical": 114,
+        "characterErrors": 375,
+        "characters": 2400,
+        "cer": 0.15625,
+        "hostMedianMs": 12.9952,
+        "hostObservedP95Ms": 27.5351
+      },
+      "after": {
+        "rows": 252,
+        "families": 63,
+        "top1": 91,
+        "top3": 105,
+        "top10": 113,
+        "covered": 120,
+        "mrr": 0.392972668865526,
+        "graphAligned": 137,
+        "graphCanonical": 137,
+        "selectedCanonical": 130,
+        "characterErrors": 336,
+        "characters": 2400,
+        "cer": 0.14,
+        "hostMedianMs": 16.92755,
+        "hostObservedP95Ms": 34.5615
+      }
+    },
+    "none": {
+      "before": {
+        "rows": 126,
+        "families": 63,
+        "top1": 90,
+        "top3": 110,
+        "top10": 114,
+        "covered": 120,
+        "mrr": 0.7975949975949976,
+        "graphAligned": 126,
+        "graphCanonical": 126,
+        "selectedCanonical": 0,
+        "characterErrors": 58,
+        "characters": 1200,
+        "cer": 0.04833333333333333,
+        "hostMedianMs": 19.50095,
+        "hostObservedP95Ms": 33.5947
+      },
+      "after": {
+        "rows": 126,
+        "families": 63,
+        "top1": 90,
+        "top3": 110,
+        "top10": 114,
+        "covered": 120,
+        "mrr": 0.7975949975949976,
+        "graphAligned": 126,
+        "graphCanonical": 126,
+        "selectedCanonical": 0,
+        "characterErrors": 58,
+        "characters": 1200,
+        "cer": 0.04833333333333333,
+        "hostMedianMs": 24.1175,
+        "hostObservedP95Ms": 40.307
+      }
+    },
+    "phonetic": {
+      "before": {
+        "rows": 63,
+        "families": 63,
+        "top1": 1,
+        "top3": 1,
+        "top10": 1,
+        "covered": 9,
+        "mrr": 0.01853009275727276,
+        "graphAligned": 11,
+        "graphCanonical": 11,
+        "selectedCanonical": 9,
+        "characterErrors": 120,
+        "characters": 600,
+        "cer": 0.2,
+        "hostMedianMs": 19.3401,
+        "hostObservedP95Ms": 31.9744
+      },
+      "after": {
+        "rows": 63,
+        "families": 63,
+        "top1": 1,
+        "top3": 1,
+        "top10": 1,
+        "covered": 11,
+        "mrr": 0.01897226962802106,
+        "graphAligned": 11,
+        "graphCanonical": 11,
+        "selectedCanonical": 11,
+        "characterErrors": 118,
+        "characters": 600,
+        "cer": 0.19666666666666666,
+        "hostMedianMs": 23.0685,
+        "hostObservedP95Ms": 39.7988
+      }
+    },
+    "tail": {
+      "before": {
+        "rows": 252,
+        "families": 63,
+        "top1": 81,
+        "top3": 100,
+        "top10": 106,
+        "covered": 121,
+        "mrr": 0.36508181729615585,
+        "graphAligned": 169,
+        "graphCanonical": 170,
+        "selectedCanonical": 131,
+        "characterErrors": 371,
+        "characters": 2400,
+        "cer": 0.15458333333333332,
+        "hostMedianMs": 13.22175,
+        "hostObservedP95Ms": 27.5034
+      },
+      "after": {
+        "rows": 252,
+        "families": 63,
+        "top1": 89,
+        "top3": 113,
+        "top10": 121,
+        "covered": 140,
+        "mrr": 0.4069962989994885,
+        "graphAligned": 169,
+        "graphCanonical": 170,
+        "selectedCanonical": 152,
+        "characterErrors": 333,
+        "characters": 2400,
+        "cer": 0.13875,
+        "hostMedianMs": 16.261200000000002,
+        "hostObservedP95Ms": 34.2999
+      }
+    }
+  },
+  "top1Gains": [
+    {
+      "id": "e17d91d69e0191b32b15758a5cd046d9c9064dc7b737ee9e63621ecfe4e7ca28",
+      "typed": "wbuxihuanzuoye",
+      "expected": "我不喜欢作业",
+      "operation": "delete",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "啊不喜欢作业",
+          "canonical": "abuxihuanzuoye",
+          "kind": "CORRECTED",
+          "score": 7.113488
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我不喜欢作业",
+          "canonical": "wobuxihuanzuoye",
+          "kind": "CORRECTED",
+          "score": 10.106764
+        }
+      ]
+    },
+    {
+      "id": "409ed53fe689bf0d408cf99c63be2bcc9e5c9af7f3ba7640b7ab70dd5e568ec5",
+      "typed": "wobuxhuanzuoye",
+      "expected": "我不喜欢作业",
+      "operation": "delete",
+      "zone": "middle",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我不穿作业",
+          "canonical": "wobuchuanzuoye",
+          "kind": "CORRECTED",
+          "score": 7.104565
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我不喜欢作业",
+          "canonical": "wobuxihuanzuoye",
+          "kind": "CORRECTED",
+          "score": 10.106764
+        }
+      ]
+    },
+    {
+      "id": "463411384791129ef405a884a928470f754a357fb070643b10ddfada126d8661",
+      "typed": "malitaiiaoaole",
+      "expected": "玛丽太骄傲了",
+      "operation": "delete",
+      "zone": "middle",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "玛丽太嗷嗷了",
+          "canonical": "malitaiaoaole",
+          "kind": "CORRECTED",
+          "score": 0.8072691
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "玛丽太骄傲了",
+          "canonical": "malitaijiaoaole",
+          "kind": "CORRECTED",
+          "score": 3.5198593
+        }
+      ]
+    },
+    {
+      "id": "01b1aa049ff97860ea3755add1d0c4ba7fb28f3a9dec1f0600fe8612de281136",
+      "typed": "zhexieshiwomendshuzhuo",
+      "expected": "这些是我们的书桌",
+      "operation": "delete",
+      "zone": "middle",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "这些是我们的附着",
+          "canonical": "zhexieshiwomendefuzhuo",
+          "kind": "CORRECTED",
+          "score": 10.4463625
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这些是我们的书桌",
+          "canonical": "zhexieshiwomendeshuzhuo",
+          "kind": "CORRECTED",
+          "score": 10.8117485
+        }
+      ]
+    },
+    {
+      "id": "7960a0b0c9df0021680ca2b1a9d202406079e8bb9c187b7e4072f873b2354bb0",
+      "typed": "byaorangnishiwangcaihao",
+      "expected": "不要让你失望才好",
+      "operation": "delete",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "不凹让你失望才好",
+          "canonical": "buaorangnishiwangcaihao",
+          "kind": "CORRECTED",
+          "score": 5.024595
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "不要让你失望才好",
+          "canonical": "buyaorangnishiwangcaihao",
+          "kind": "CORRECTED",
+          "score": 7.267273
+        }
+      ]
+    },
+    {
+      "id": "b084f8f320e0b6be66aeb64b84673413b96727870225e573a63e10f17e8318fa",
+      "typed": "woxangqumaigeyoupan",
+      "expected": "我想去买个优盘",
+      "operation": "delete",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我当去买个优盘",
+          "canonical": "wodangqumaigeyoupan",
+          "kind": "CORRECTED",
+          "score": 3.7230766
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我想去买个优盘",
+          "canonical": "woxiangqumaigeyoupan",
+          "kind": "CORRECTED",
+          "score": 4.5916657
+        }
+      ]
+    },
+    {
+      "id": "1b8d537c0c146e4b678d3b0b6cac2431f28795f786ef9778e1dc1f09a74ccb29",
+      "typed": "nizuoianfangxuezuoleshenme",
+      "expected": "你昨天放学做了什么",
+      "operation": "delete",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "你做看放学做了什么",
+          "canonical": "nizuokanfangxuezuoleshenme",
+          "kind": "CORRECTED",
+          "score": 8.77426
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "你昨天放学做了什么",
+          "canonical": "nizuotianfangxuezuoleshenme",
+          "kind": "CORRECTED",
+          "score": 9.125183
+        }
+      ]
+    },
+    {
+      "id": "a44245a8bea3ca6e6165391404ee7817946416a62e02b96978b8ca6a24a93e07",
+      "typed": "euosiruqinlewukelan",
+      "expected": "俄罗斯入侵了乌克兰",
+      "operation": "delete",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "呃藕丝入侵了乌克兰",
+          "canonical": "eousiruqinlewukelan",
+          "kind": "CORRECTED",
+          "score": 0.26312578
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "俄罗斯入侵了乌克兰",
+          "canonical": "eluosiruqinlewukelan",
+          "kind": "CORRECTED",
+          "score": 7.008048
+        }
+      ]
+    },
+    {
+      "id": "a7a35492ba09c284c1be785a1e27b61cd694fe4dc245d2884b8a7dbdcefb85bd",
+      "typed": "eluosiruqinlewukeln",
+      "expected": "俄罗斯入侵了乌克兰",
+      "operation": "delete",
+      "zone": "tail",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "俄罗斯入侵了无可了",
+          "canonical": "eluosiruqinlewukele",
+          "kind": "CORRECTED",
+          "score": 3.9812832
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "俄罗斯入侵了乌克兰",
+          "canonical": "eluosiruqinlewukelan",
+          "kind": "CORRECTED",
+          "score": 7.008048
+        }
+      ]
+    },
+    {
+      "id": "55836486f9695545ccc0f04e0502691f77532900f7657f7e3d25ab361b0493a8",
+      "typed": "dngtiandeyelimeiyoubeizi",
+      "expected": "冬天的夜里没有被子",
+      "operation": "delete",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "嗯天的夜里没有被子",
+          "canonical": "engtiandeyelimeiyoubeizi",
+          "kind": "CORRECTED",
+          "score": 6.266245
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "冬天的夜里没有被子",
+          "canonical": "dongtiandeyelimeiyoubeizi",
+          "kind": "CORRECTED",
+          "score": 6.4857936
+        }
+      ]
+    },
+    {
+      "id": "667cc9abf62f7ef7d50222c8855a116ec70999f7033abf844eb6d3706193ca6d",
+      "typed": "woxihuanyouhenduoshqingzuo",
+      "expected": "我喜欢有很多事情做",
+      "operation": "delete",
+      "zone": "tail",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我喜欢有很多肃清做",
+          "canonical": "woxihuanyouhenduosuqingzuo",
+          "kind": "CORRECTED",
+          "score": 9.537793
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我喜欢有很多事情做",
+          "canonical": "woxihuanyouhenduoshiqingzuo",
+          "kind": "CORRECTED",
+          "score": 10.804221
+        }
+      ]
+    },
+    {
+      "id": "d60c4a1ed0a64f613301bec22b64299ed266e052e07358033f91eee3544e8c27",
+      "typed": "wornweibushitangmuzuode",
+      "expected": "我认为不是汤姆做的",
+      "operation": "delete",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我嗯为不是汤姆做的",
+          "canonical": "woenweibushitangmuzuode",
+          "kind": "CORRECTED",
+          "score": 7.3567486
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我认为不是汤姆做的",
+          "canonical": "worenweibushitangmuzuode",
+          "kind": "CORRECTED",
+          "score": 9.257962
+        }
+      ]
+    },
+    {
+      "id": "033b3945422a1a7721178135c7763547e0929b1264fd3324287d735fed228971",
+      "typed": "zhonggoshiyigexinxingshichang",
+      "expected": "中国是一个新兴市场",
+      "operation": "delete",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "中博士一个新兴市场",
+          "canonical": "zhongboshiyigexinxingshichang",
+          "kind": "CORRECTED",
+          "score": 10.374442
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "中国是一个新兴市场",
+          "canonical": "zhongguoshiyigexinxingshichang",
+          "kind": "CORRECTED",
+          "score": 10.775902
+        }
+      ]
+    },
+    {
+      "id": "4dbe6909f4cdd39988ea9ac2e2a46731cae025d93d8cffbf97a71390178c13e8",
+      "typed": "uoyiyoubushaobiwu",
+      "expected": "所以有不少笔误",
+      "operation": "delete",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我一有不少笔误",
+          "canonical": "woyiyoubushaobiwu",
+          "kind": "CORRECTED",
+          "score": 3.7927604
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "所以有不少笔误",
+          "canonical": "suoyiyoubushaobiwu",
+          "kind": "CORRECTED",
+          "score": 5.468469
+        }
+      ]
+    },
+    {
+      "id": "28133e4525670a3d6b69d1531db485194ae942b06e19c6018b51231ad27e1095",
+      "typed": "wopingchngzaoshangbadianzhongqichuang",
+      "expected": "我平常早上八点钟起床",
+      "operation": "delete",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我平从早上八点钟起床",
+          "canonical": "wopingcongzaoshangbadianzhongqichuang",
+          "kind": "CORRECTED",
+          "score": 8.43675
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我平常早上八点钟起床",
+          "canonical": "wopingchangzaoshangbadianzhongqichuang",
+          "kind": "CORRECTED",
+          "score": 9.8585
+        }
+      ]
+    },
+    {
+      "id": "54807cd6943e13e84e1d6c5e8d605251d148069fa83eb7afc4f255e3b38a6f29",
+      "typed": "woduitamendeguanxiyiwusozhi",
+      "expected": "我对他们的关系一无所知",
+      "operation": "delete",
+      "zone": "tail",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我对他们的关系义务我只",
+          "canonical": "woduitamendeguanxiyiwuwozhi",
+          "kind": "CORRECTED",
+          "score": 9.784272
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我对他们的关系一无所知",
+          "canonical": "woduitamendeguanxiyiwusuozhi",
+          "kind": "CORRECTED",
+          "score": 10.850152
+        }
+      ]
+    },
+    {
+      "id": "258c9d7e688a64b0d552a72f58aa7e59b7c03f86107dbf417500ca15af1a1e85",
+      "typed": "tagmuhaimeigenwomenwanguopukepai",
+      "expected": "汤姆还没跟我们玩过扑克牌",
+      "operation": "delete",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "他够还没跟我们玩过扑克牌",
+          "canonical": "tagouhaimeigenwomenwanguopukepai",
+          "kind": "CORRECTED",
+          "score": 5.693371
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "汤姆还没跟我们玩过扑克牌",
+          "canonical": "tangmuhaimeigenwomenwanguopukepai",
+          "kind": "CORRECTED",
+          "score": 7.2778616
+        }
+      ]
+    },
+    {
+      "id": "177b74341c5d8da288e92c62470080fbdb84465af116fa1de7c6ff0afa97ae0d",
+      "typed": "tangmuhaimeigenwomenwanguopukpai",
+      "expected": "汤姆还没跟我们玩过扑克牌",
+      "operation": "delete",
+      "zone": "tail",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "汤姆还没跟我们玩过噗哦拍",
+          "canonical": "tangmuhaimeigenwomenwanguopuopai",
+          "kind": "CORRECTED",
+          "score": 4.8678813
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "汤姆还没跟我们玩过扑克牌",
+          "canonical": "tangmuhaimeigenwomenwanguopukepai",
+          "kind": "CORRECTED",
+          "score": 7.2778616
+        }
+      ]
+    },
+    {
+      "id": "66db4c75a8facf4964c9c22729dbea221c9ade5afb18850c82288cdfcfea7976",
+      "typed": "aerjiliyayoujizuojichng",
+      "expected": "阿尔及利亚有几座机场",
+      "operation": "delete",
+      "zone": "tail",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "阿尔及利亚有机做几层",
+          "canonical": "aerjiliyayoujizuojiceng",
+          "kind": "CORRECTED",
+          "score": 5.9068675
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "阿尔及利亚有几座机场",
+          "canonical": "aerjiliyayoujizuojichang",
+          "kind": "CORRECTED",
+          "score": 6.726811
+        }
+      ]
+    },
+    {
+      "id": "fe079fbf0efdde1ef1d7a8d5a25aab5d5c64dbcc16aad2461a5bf3333a41b41b",
+      "typed": "wodangranyouzigezhemsehuola",
+      "expected": "我当然有资格这么说啦",
+      "operation": "transpose",
+      "zone": "tail",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我当然有资格真的火辣",
+          "canonical": "wodangranyouzigezhendehuola",
+          "kind": "CORRECTED",
+          "score": 7.3900547
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我当然有资格这么说啦",
+          "canonical": "wodangranyouzigezhemeshuola",
+          "kind": "CORRECTED",
+          "score": 8.416185
+        }
+      ]
+    },
+    {
+      "id": "1a30704dd604f4dc35ffc5a744e0093c53aca39cd4df6d8230f9169a6f4f599b",
+      "typed": "nirenshizhaopianlidnanrenma",
+      "expected": "你认识照片里的男人吗",
+      "operation": "delete",
+      "zone": "tail",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "你认识照片列男人吗",
+          "canonical": "nirenshizhaopianlienanrenma",
+          "kind": "CORRECTED",
+          "score": 7.3985662
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "你认识照片里的男人吗",
+          "canonical": "nirenshizhaopianlidenanrenma",
+          "kind": "CORRECTED",
+          "score": 8.256953
+        }
+      ]
+    },
+    {
+      "id": "0d9d97059c5a39041386528e194f536373fc52d2e884647851203f03b08076c6",
+      "typed": "tangmshuotaxiwangmalinengzuodao",
+      "expected": "汤姆说他希望玛丽能做到",
+      "operation": "delete",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "糖吗或他希望玛丽能做到",
+          "canonical": "tangmahuotaxiwangmalinengzuodao",
+          "kind": "CORRECTED",
+          "score": 6.957605
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "汤姆说他希望玛丽能做到",
+          "canonical": "tangmushuotaxiwangmalinengzuodao",
+          "kind": "CORRECTED",
+          "score": 8.480991
+        }
+      ]
+    },
+    {
+      "id": "1d928711b4daa7dbf4f7d4fa2d8527ab296c80c9af03d2e75bafed0591ac8720",
+      "typed": "taduizijidhaizihenyange",
+      "expected": "他对自己的孩子很严格",
+      "operation": "delete",
+      "zone": "middle",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "他对自己筛子很严格",
+          "canonical": "taduizijishaizihenyange",
+          "kind": "CORRECTED",
+          "score": 8.549648
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "他对自己的孩子很严格",
+          "canonical": "taduizijidehaizihenyange",
+          "kind": "CORRECTED",
+          "score": 10.300526
+        }
+      ]
+    },
+    {
+      "id": "4de817a9f67a16f9bb15604765d5ffddd5743dbab08d645957d5e349e6c96cd2",
+      "typed": "taduizijidehaizihnyange",
+      "expected": "他对自己的孩子很严格",
+      "operation": "delete",
+      "zone": "tail",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "他对自己的孩子和严格",
+          "canonical": "taduizijidehaiziheyange",
+          "kind": "CORRECTED",
+          "score": 9.24989
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "他对自己的孩子很严格",
+          "canonical": "taduizijidehaizihenyange",
+          "kind": "CORRECTED",
+          "score": 10.300526
+        }
+      ]
+    }
+  ],
+  "top1Losses": [],
+  "syntheticFamilyWeightedTop1Delta": {
+    "estimate": 0.029304029304029304,
+    "percentile95": [
+      0.018315018315018316,
+      0.04151404151404152
+    ],
+    "families": 63,
+    "resamples": 2000,
+    "seed": 271828,
+    "interpretation": "Cluster resampling source families, not evidence of real-user error prevalence or independent validation of source labels"
+  },
+  "qualityGate": {
+    "cleanCountsPreserved": true,
+    "typoTop10GainAtLeast20": true,
+    "typoCharacterErrorsNonIncreasing": true,
+    "everyMutationCoverageNonDecreasing": true
+  },
+  "inputReports": {
+    "before": "563c513fd3e8c7b3594e4191c227ba83b1123c7066b9b5e15fb1b3c0b834a442",
+    "after": "a80b0cd6ce4669683f5c39afc355b23a10c3d329d64405139986b336966e6731"
+  }
+}

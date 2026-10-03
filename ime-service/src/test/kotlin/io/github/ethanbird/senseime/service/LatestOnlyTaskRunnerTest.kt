@@ -10,6 +10,42 @@ import org.junit.Test
 
 class LatestOnlyTaskRunnerTest {
     @Test
+    fun invalidationCancelsRunningAndPendingWorkWithoutClosingTheWorker() {
+        val started = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val stopped = CountDownLatch(1)
+        val delivered = CountDownLatch(1)
+        val values = Collections.synchronizedList(mutableListOf<Int>())
+        val worked = Collections.synchronizedList(mutableListOf<Int>())
+        val runner = LatestOnlyTaskRunner<Int, Int>(
+            threadName = "invalidate-test",
+            work = { input, shouldContinue ->
+                worked += input
+                if (input == 1) {
+                    started.countDown()
+                    assertTrue(release.await(2, TimeUnit.SECONDS))
+                    assertFalse(shouldContinue())
+                    stopped.countDown()
+                }
+                input
+            },
+            deliver = { _, _, value -> values += value; delivered.countDown() },
+        )
+        try {
+            runner.submit(1)
+            assertTrue(started.await(2, TimeUnit.SECONDS))
+            runner.submit(2)
+            runner.invalidate()
+            release.countDown()
+            assertTrue(stopped.await(2, TimeUnit.SECONDS))
+            runner.submit(3)
+            assertTrue(delivered.await(2, TimeUnit.SECONDS))
+            assertEquals(listOf(1, 3), worked.toList())
+            assertEquals(listOf(3), values.toList())
+        } finally { release.countDown(); runner.close() }
+    }
+
+    @Test
     fun submissionCannotCrossFreshnessCheckAndDeliveryBoundary() {
         val firstDeliveryStarted = CountDownLatch(1)
         val releaseFirstDelivery = CountDownLatch(1)

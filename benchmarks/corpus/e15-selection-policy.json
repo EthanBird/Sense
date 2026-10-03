@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "sense-p2c-aishell-v7",
+  "seed": "sense-p2c-aishell-v7",
+  "partitions": {"dev": 64, "test": 128},
+  "strata": [
+    {"name": "short", "minCharacters": 6, "maxCharacters": 9},
+    {"name": "long", "minCharacters": 10, "maxCharacters": 18}
+  ],
+  "proposal": {"package": "pypinyin", "version": "0.55.0", "style": "NORMAL", "vToU": false, "toneSandhi": false},
+  "selectionNote": "Equal short/long families; retain exclusions without replacement; review before decoder outputs. AISHELL read speech is a second domain, not natural mobile input."
+}

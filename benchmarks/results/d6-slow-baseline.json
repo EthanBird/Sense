@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "scope": "JDWP single-worker suspension + true external editor; not performance evidence",
+  "serial": "emulator-5580",
+  "sdk": "37",
+  "apkSha256": {
+    "io.github.ethanbird.senseime.debug": "801cca9f0ce9e2ed9c88e02bde25a1edc12050ab12ffa2adcce75699e09666bc",
+    "io.github.ethanbird.senseime.inputqualityfixture": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+    "io.github.ethanbird.senseime.inputqualityfixture.test": "84aab98d8ccb63e303707dc6a1990ed7e22e5e707a92955447d7806366d825e7"
+  },
+  "tests": [
+    {
+      "method": "delayedChineseConfirmationPreservesBothWordsAndOrder",
+      "passed": false,
+      "imePid": 17941,
+      "workerPausedMs": 3047
+    }
+  ]
+}

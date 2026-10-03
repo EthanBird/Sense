@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "scope": "APK zip content audit; not Android execution",
+  "apkSha256": "64244812ea365af07db4c0f00adf8affaefa6bc08263751571d6566c292b2777",
+  "apkBytes": 97094401,
+  "model": {
+    "file": "pinyin_character_lm.scng",
+    "sha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+    "bytes": 3090930,
+    "trainingConfig": {
+      "discount": 0.75,
+      "min_char_count": 2,
+      "min_bigram_count": 1,
+      "min_trigram_count": 2,
+      "alpha": 0.1
+    }
+  },
+  "attribution": {
+    "file": "pinyin_character_lm_attribution.tsv",
+    "sha256": "acfb932b806f02bd53b57f4a902628fea2c29f6efda7a785a11be432ac22173a",
+    "sentences": 77733,
+    "contributors": 932
+  },
+  "attributionBytes": 1359869,
+  "attributionCompressedBytes": 286294,
+  "decoderMode": "lm0.5",
+  "passed": true
+}

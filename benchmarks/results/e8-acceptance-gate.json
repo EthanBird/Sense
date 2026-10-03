@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "stage": "E8",
+  "passed": true,
+  "goalComplete": false,
+  "releaseReady": false,
+  "scope": "Explicit 26-key pinyin boundary lifecycle; known/synthetic host and dedicated API37 x86_64 AVD",
+  "host": {
+    "core-input": {
+      "tests": 316,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 299,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "hostTests": 853,
+  "python": {
+    "run": 339,
+    "passed": 338,
+    "skipped": 1
+  },
+  "systemEditor": [
+    {
+      "group": "boundary",
+      "tests": 6,
+      "passed": true
+    },
+    {
+      "group": "warm",
+      "tests": 10,
+      "passed": true
+    },
+    {
+      "group": "correction",
+      "tests": 8,
+      "passed": true
+    },
+    {
+      "group": "association",
+      "tests": 9,
+      "passed": true
+    },
+    {
+      "group": "cold",
+      "tests": 4,
+      "passed": true
+    },
+    {
+      "group": "learning",
+      "tests": 2,
+      "passed": true
+    }
+  ],
+  "systemEditorTests": 39,
+  "keyboardViewTests": 15,
+  "baselineSystemEditor": {
+    "tests": 6,
+    "failures": 5,
+    "apkSha256": "47bb32a6654a55a1aa4259f517e21de76740dc51119b854fbf0603481b02e084"
+  },
+  "ordinaryProgressiveEquivalence": {
+    "observations": 1790,
+    "identical": 1790,
+    "scope": "895 states twice; complete result hashes, not fresh accuracy or Android latency"
+  },
+  "unchangedPackagedAssets": 25,
+  "apk": {
+    "bytes": 85826196,
+    "sha256": "ec0662b46821a04646a146de93d2fbffc14ec5624b690ac80ff48ba94d09d162",
+    "signing": "Android Debug; v2 verified"
+  },
+  "evidenceManifestSha256": "025f18c67adb41110322763b8620555c9fabea86a8cf634e21ba5cdbcdb55ac7",
+  "archivedFiles": 479
+}

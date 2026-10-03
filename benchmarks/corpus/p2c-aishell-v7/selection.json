@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "policy": {
+    "schemaVersion": 1,
+    "id": "sense-p2c-aishell-v7",
+    "seed": "sense-p2c-aishell-v7",
+    "partitions": {
+      "dev": 64,
+      "test": 128
+    },
+    "strata": [
+      {
+        "name": "short",
+        "minCharacters": 6,
+        "maxCharacters": 9
+      },
+      {
+        "name": "long",
+        "minCharacters": 10,
+        "maxCharacters": 18
+      }
+    ],
+    "proposal": {
+      "package": "pypinyin",
+      "version": "0.55.0",
+      "style": "NORMAL",
+      "vToU": false,
+      "toneSandhi": false
+    },
+    "selectionNote": "Equal short/long families; retain exclusions without replacement; review before decoder outputs. AISHELL read speech is a second domain, not natural mobile input."
+  },
+  "policySha256": "1dfd1bbc82f09ec0e294524f92e92c30695160dfecab901427023e74b75c03b5",
+  "corpusManifestSha256": "e4cc8a3c4abb8e6b2421cc993c055c126432a570837d9bd459b8a41fa2e99b0a",
+  "corpusPartitions": {
+    "train": {
+      "fileName": "train.jsonl",
+      "sha256": "3ef268ed475c2d33b2bfc9a951ec15a855bcdf24fbf02f87baa57a0e1e63e5d3",
+      "records": 112862,
+      "segments": 112862,
+      "characters": 1636310
+    },
+    "dev": {
+      "fileName": "dev.jsonl",
+      "sha256": "903431127a9892b6ebf8e690b990ece95a0db0dcb5f7280b39c1058ed43e058c",
+      "records": 13811,
+      "segments": 13811,
+      "characters": 198307
+    },
+    "test": {
+      "fileName": "test.jsonl",
+      "sha256": "16f0ce60b0054832e3aa3d5907db184a152791efcfa1b70a330a1c49a1290072",
+      "records": 7161,
+      "segments": 7161,
+      "characters": 103508
+    }
+  },
+  "scriptSha256": "8abd727e888beed9c3f6e22f23c6cd03eb3ce8ad577e2961135cdde001caad88",
+  "proposalsSha256": "e53a70684eaadbe6827b41469a34cc5eeb18bf32f30b7ec36b8275d3a26bdffe",
+  "attributionSha256": "f0161a7e32fd7086b963b4c3303c92cb6683ef1ee8462bde381bf0537995a2ad",
+  "selected": {
+    "dev": 64,
+    "test": 128
+  },
+  "automaticExclusions": {
+    "test:substring": 3
+  },
+  "candidateOutputsUsed": false,
+  "annotationStatus": "pending agent review; not human gold"
+}

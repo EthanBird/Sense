@@ -64,6 +64,8 @@ import io.github.ethanbird.senseime.core.CommitSequenceTracker
 import io.github.ethanbird.senseime.core.CommittedTextUnit
 import io.github.ethanbird.senseime.core.CuratedLexicalCandidateCatalog
 import io.github.ethanbird.senseime.core.EnglishLexicon
+import io.github.ethanbird.senseime.core.DecodeWorkScope
+import io.github.ethanbird.senseime.core.DecodeSupersededException
 import io.github.ethanbird.senseime.core.EnglishInputSession
 import io.github.ethanbird.senseime.core.FakeDecoder
 import io.github.ethanbird.senseime.core.InputDecoder
@@ -155,6 +157,11 @@ class SenseInputMethodService : InputMethodService() {
     )
     private val associationSession = AssociationSession()
     private val associationDisplayLifecycle = AssociationDisplayLifecycle()
+    private var publishedAssociationQuery: AssociationQuery? = null
+    private val associationQueries = AssociationQueryController(
+        deliveryExecutor = java.util.concurrent.Executor { command -> mainHandler.post(command) },
+        deliver = ::applyAssociationSuggestions,
+    )
     private val commitSequenceTracker = CommitSequenceTracker()
     private val pendingAssociationObservations = ArrayDeque<AssociationObservation>()
     private val pendingPinyinLearnings = PendingPinyinLearningQueue(MAX_PENDING_PINYIN_LEARNINGS)
@@ -174,7 +181,13 @@ class SenseInputMethodService : InputMethodService() {
     private var englishLexicon = EnglishLexicon.EMPTY
     private lateinit var englishWordUsage: PersistentEnglishWordUsageStore
     private var englishShiftState = EnglishShiftState.LOWERCASE
-    private var chineseMode = true
+    private var preferredChineseMode = true
+    // A password field temporarily uses literal keys without changing the user's language choice.
+    private val literalEditorInput: Boolean
+        get() = !isAgentTextTarget() && currentEditorInfo?.let(::isPasswordVariation) == true
+    private var chineseMode: Boolean
+        get() = preferredChineseMode && !literalEditorInput
+        set(value) { preferredChineseMode = value }
     private var keyboardView: SenseKeyboardView? = null
     private var keyboardSurface: SenseKeyboardSurface? = null
     private var imeRoot: SenseImeRootLayout? = null
@@ -224,6 +237,7 @@ class SenseInputMethodService : InputMethodService() {
     private var selectionEnd = -1
     private var localPersistenceAllowed = false
     private var productionDecoderReady = false
+    private var characterLanguageState: BundledPinyinLanguageModel.State? = null
     private var decodeContextAllowed = true
     private var clipboardHistoryAllowed = false
     private lateinit var clipboardManager: ClipboardManager
@@ -296,7 +310,8 @@ class SenseInputMethodService : InputMethodService() {
         englishInput = EnglishInputSession(englishLexicon, DECODE_CANDIDATE_LIMIT)
         candidateRunner = LatestOnlyTaskRunner(
             threadName = "sense-candidate-decoder",
-            work = { request, _ ->
+            work = { request, shouldContinue -> tracePinyinWork {
+                DecodeWorkScope.whileCurrent(shouldContinue) {
                 val activeDecoder = request.decoder
                 val decoding = (activeDecoder as? ProgressivePinyinDecoder)?.decodeProgressively(
                     composition = request.composition,
@@ -324,26 +339,19 @@ class SenseInputMethodService : InputMethodService() {
                         limit = DECODE_CANDIDATE_LIMIT,
                     ),
                 )
-            },
+                }
+            } },
             deliver = { _, request, decoding ->
                 postDecodedCandidates(request, decoding)
             },
-            fail = { _, request, _ ->
-                postDecodedCandidates(
-                    request,
-                    ProgressivePinyinDecoding(
-                        revision = request.composition.revision,
-                        remainingPinyin = request.composition.remainingPinyin,
-                        wholeCandidates = emptyList(),
-                        prefixCandidates = emptyList(),
-                    ),
-                )
-            },
+            fail = { _, request, _ -> postCandidateDecodeFailure(request) },
         )
         alternativeCandidateRunner = LatestOnlyTaskRunner(
             threadName = "sense-alternative-candidate-decoder",
             work = { request, shouldContinue ->
-                AlternativeInputDecoder.decodeWhileCurrent(request, shouldContinue)
+                DecodeWorkScope.whileCurrent(shouldContinue) {
+                    AlternativeInputDecoder.decodeWhileCurrent(request, shouldContinue)
+                }
             },
             deliver = { _, request, decoding ->
                 postAlternativeDecodedCandidates(request, decoding)
@@ -463,10 +471,14 @@ class SenseInputMethodService : InputMethodService() {
                     Log.e(TAG, "Bigram model load failed", error)
                 }.getOrElse { CharacterBigramModel.EMPTY }
                 val baseDecoder = runCatching<InputDecoder> {
-                    assets.open(PINYIN_ASSET).use { PinyinDecoder.load(it, bigramModel) }
+                    BundledPinyinLexicon.loadForProcess(bigramModel) { assets.open(it) }
                 }.onFailure { error ->
                     Log.e(TAG, "Pinyin lexicon load failed", error)
                 }.getOrElse { FakeDecoder() }
+                val characterLanguage = BundledPinyinLanguageModel.load(enabled = baseDecoder is PinyinDecoder) { name -> assets.open(name) }
+                Log.i(TAG, "Character language model: ${characterLanguage.state}")
+                val associationLanguage = BundledAssociationModel.load { name -> assets.open(name) }
+                Log.i(TAG, "Association language model: ${associationLanguage.state}")
                 val syllables = runCatching {
                     assets.open(PINYIN_SYLLABLES_ASSET)
                         .bufferedReader()
@@ -487,12 +499,14 @@ class SenseInputMethodService : InputMethodService() {
                     Log.e(TAG, "Persistent user lexicon migration/load failed", error)
                 }.getOrElse { MemoryUserLexicon() }
                 val segmenter = PinyinSyllableSegmenter(syllables)
-                val loadedDecoder = AdaptivePinyinDecoder(
+                val decoders = ProductionPinyinDecoders.create(
                     base = baseDecoder,
                     userLexicon = learned,
                     segmenter = segmenter,
-                    englishLexicon = englishLexicon,
+                    english = englishLexicon,
+                    languageModel = characterLanguage.model,
                 )
+                val loadedDecoder = decoders.fullPinyin
                 val t9Index = runCatching {
                     T9SyllableIndex(syllables)
                 }.onFailure { error ->
@@ -506,9 +520,12 @@ class SenseInputMethodService : InputMethodService() {
                     Log.e(TAG, "Persistent user association load failed", error)
                 }.getOrElse { MemoryUserAssociationLexicon() }
                 LoadedCandidateDecoderRuntime(
+                    languageModelState = characterLanguage.state,
+                    associationModel = associationLanguage.model,
                     runtime = CandidateDecoderRuntime(
                         generation = 0L,
                         decoder = loadedDecoder,
+                        t9Decoder = decoders.t9,
                         segmenter = segmenter,
                         t9Index = t9Index,
                     ),
@@ -533,6 +550,7 @@ class SenseInputMethodService : InputMethodService() {
                 associationEngine = LocalAssociationEngine(
                     userLexicon = loaded.userAssociationLexicon,
                     characterBigrams = loaded.bigramModel,
+                    contextModel = loaded.associationModel,
                 )
                 associationPersistenceReady = true
                 while (pendingAssociationObservations.isNotEmpty()) {
@@ -559,6 +577,10 @@ class SenseInputMethodService : InputMethodService() {
                     generation = nextGeneration(decoderRuntime.generation),
                 )
                 productionDecoderReady = true
+                characterLanguageState = loaded.languageModelState
+                pendingDecodeCommit.intent?.takeIf {
+                    it is PendingDecodeCommit.Candidate && inputScheme.scheme == ChineseInputScheme.PINYIN_QWERTY
+                }?.let(::schedulePendingCommitTimeout)
                 localPersistenceAllowed = allowsLocalPersistence(currentEditorInfo)
 
                 val pendingEnglish = englishInput.composing
@@ -572,6 +594,28 @@ class SenseInputMethodService : InputMethodService() {
                 render(forceDecode = chineseMode && hasActiveChineseComposition())
             },
         )
+    }
+
+    override fun dump(fd: java.io.FileDescriptor, writer: java.io.PrintWriter, args: Array<out String>?) {
+        super.dump(fd, writer, args)
+        // Read-only Android diagnostics, without composing text or personalization contents.
+        writer.println("Sense candidate runtime: ready=$productionDecoderReady generation=${decoderRuntime.generation} characterModel=$characterLanguageState")
+        writer.println("Sense candidate confirmation: pending=${pendingDecodeCommit.isPending} attention=${pendingDecodeCommit.needsAttention} queued=${pendingDecodeCommit.deferredCount}")
+    }
+
+    private inline fun <T> tracePinyinWork(work: () -> T): T {
+        android.os.Trace.beginSection("Sense.Pinyin.decode")
+        return try {
+            work()
+        } catch (error: DecodeSupersededException) {
+            // System trace only, no text/identifiers. The nested marker classifies the parent
+            // slice as canceled so a fast abort is not mistaken for a completed decode.
+            android.os.Trace.beginSection("Sense.Pinyin.canceled")
+            android.os.Trace.endSection()
+            throw error
+        } finally {
+            android.os.Trace.endSection()
+        }
     }
 
     override fun onCreateInputView(): View = SenseImeRootLayout(this).also { root ->
@@ -589,6 +633,7 @@ class SenseInputMethodService : InputMethodService() {
         view.keyListener = SenseKeyboardView.KeyListener(::handleKey)
         view.candidateListener = ::commitCandidate
         view.associationDismissListener = ::dismissIdleAssociations
+        view.candidateInteractionListener = ::onCandidateInteraction
         view.textListener = ::commitText
         view.clipboardActionListener = ::handleClipboardAction
         view.editorActionListener = ::handleEditorAction
@@ -1295,6 +1340,7 @@ class SenseInputMethodService : InputMethodService() {
                 newSelectionEnd = newSelEnd,
                 candidatesStart = candidatesStart,
                 candidatesEnd = candidatesEnd,
+                acknowledgesOwnCommit = acknowledgesOwnCommit,
             )
         ) {
             // Clear local state before asking the host to finish its span so a
@@ -1330,6 +1376,8 @@ class SenseInputMethodService : InputMethodService() {
         mainHandler.removeCallbacksAndMessages(candidateResultToken)
         mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
         mainHandler.removeCallbacksAndMessages(associationDisplayToken)
+        associationQueries.close()
+        publishedAssociationQuery = null
         candidateRunner?.close()
         candidateRunner = null
         alternativeCandidateRunner?.close()
@@ -1465,7 +1513,9 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun handleKey(code: Int) {
         dismissAssociationForInteraction()
-        if (deferIfDecodeCommitPending(DeferredInput.Key(code))) return
+        if (handlePendingPinyinControl(code)) return
+        // Closing the keyboard is never trapped behind a slow decoder.
+        if (code != KeyCodes.HIDE && deferIfDecodeCommitPending(DeferredInput.Key(code))) return
         when (code) {
             KeyCodes.VOICE -> {
                 openVoiceInput()
@@ -1545,6 +1595,13 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun handleCharacter(character: Char) {
+        if (literalEditorInput) {
+            // No composing buffer, dictionary lookup, candidate preview, or learning for secrets.
+            if (commitToActiveTextTarget(englishShiftState.applyTo(character).toString())) {
+                setEnglishShiftState(englishShiftState.afterAcceptedLetter())
+            }
+            return
+        }
         val replacementFeedback = if (
             !hasAnyComposition()
         ) {
@@ -1579,12 +1636,13 @@ class SenseInputMethodService : InputMethodService() {
         character: Char,
         replacementFeedback: PersonalizationFeedbackWindow.Attempt?,
     ) {
-        if (character.lowercaseChar() !in 'a'..'z') {
+        if (character.lowercaseChar() !in 'a'..'z' && !(character == '\'' && hasActiveChineseComposition())) {
             commitText(character.toString())
             return
         }
         val previous = composition
         val next = previous.type(character)
+        if (next == previous) return
         val nextLeftContext = if (previous.visibleText.isEmpty()) {
             captureDecodeLeftContext()
         } else {
@@ -1836,8 +1894,7 @@ class SenseInputMethodService : InputMethodService() {
         if (decoding == null) {
             startPendingCommit(composition.revision)
             if (candidateRunner == null) {
-                val completion = finishPendingCandidateCommit(composition.revision)
-                commitAndReplayPending(completion, ::commitRawComposition)
+                resolvePendingCommitTimeout()
             }
             return
         }
@@ -1879,30 +1936,7 @@ class SenseInputMethodService : InputMethodService() {
         if (!chineseMode && englishInput.composing.isNotEmpty()) {
             commitEnglishComposition(candidate = null)
         } else if (chineseMode && hasActiveChineseComposition()) {
-            // Enter confirms exactly what the user can see. It never auto-selects
-            // a Chinese candidate and does not append a newline in this branch.
-            val englishSelection = if (
-                inputScheme.scheme == ChineseInputScheme.PINYIN_QWERTY &&
-                composition.acceptedSegments.isEmpty()
-            ) {
-                ChineseEnglishEnterPolicy.select(
-                    rawInput = composition.remainingPinyin,
-                    candidates = currentDecoding()?.wholeCandidates.orEmpty(),
-                )
-            } else {
-                null
-            }
-            if (englishSelection == null) {
-                commitActiveRawComposition()
-            } else {
-                commitPrimary(
-                    englishSelection.candidate,
-                    UserLearningEvidence(
-                        UserSelectionKind.EXPLICIT_SELECTION,
-                        englishSelection.candidateRank,
-                    ),
-                )
-            }
+            commitChineseEnterComposition()
         } else {
             val feedback =
                 prepareTextReplacementFeedback()
@@ -1916,6 +1950,23 @@ class SenseInputMethodService : InputMethodService() {
                 render()
             }
         }
+    }
+
+    /** Enter, unlike Space, explicitly confirms visible raw text without a newline. */
+    private fun commitChineseEnterComposition(): Boolean {
+        val englishSelection = if (
+            !isAgentTextTarget() && inputScheme.scheme == ChineseInputScheme.PINYIN_QWERTY &&
+            composition.acceptedSegments.isEmpty()
+        ) {
+            ChineseEnglishEnterPolicy.select(
+                rawInput = composition.remainingPinyin,
+                candidates = currentDecoding()?.wholeCandidates.orEmpty(),
+            )
+        } else null
+        return if (englishSelection == null) commitActiveRawComposition() else commitPrimary(
+            englishSelection.candidate,
+            UserLearningEvidence(UserSelectionKind.EXPLICIT_SELECTION, englishSelection.candidateRank),
+        )
     }
 
     private fun commitCandidate(revision: Long, sourceIndex: Int) {
@@ -2028,8 +2079,7 @@ class SenseInputMethodService : InputMethodService() {
                     triggerInput = DeferredInput.Text(text),
                 )
                 if (candidateRunner == null) {
-                    val completion = finishPendingCandidateCommit(composition.revision)
-                    commitAndReplayPending(completion, ::commitRawComposition)
+                    resolvePendingCommitTimeout()
                 }
                 return
             }
@@ -2051,6 +2101,7 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun toggleLanguage() {
+        if (literalEditorInput) return
         if (!commitActiveRawComposition()) return
         chineseMode = !chineseMode
         resetEnglishShiftState()
@@ -2812,6 +2863,8 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun resetComposition(finishConnection: Boolean) {
+        candidateRunner?.invalidate()
+        alternativeCandidateRunner?.invalidate()
         composition = composition.reset()
         compositionLeftContext = ""
         inputScheme.reset()
@@ -2827,11 +2880,21 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun render(forceDecode: Boolean = false) {
+        if (literalEditorInput) {
+            cancelAssociationPresentation()
+            candidateRunner?.invalidate()
+            alternativeCandidateRunner?.invalidate()
+            publishEmptyIdleCandidates()
+            return
+        }
         inputScheme.takePendingPreferences(compositionActive = hasAnyComposition())?.let { value ->
             applyImePreferences(value)
             return
         }
         if (!chineseMode) {
+            cancelAssociationPresentation()
+            candidateRunner?.invalidate()
+            alternativeCandidateRunner?.invalidate()
             associationSession.clear()
             keyboardView?.updateComposing(
                 englishInput.revision,
@@ -2844,11 +2907,13 @@ class SenseInputMethodService : InputMethodService() {
             renderIdleAssociations()
             return
         }
-        associationSession.clear()
+        cancelAssociationPresentation()
         if (inputScheme.scheme != ChineseInputScheme.PINYIN_QWERTY) {
+            candidateRunner?.invalidate()
             renderAlternative(forceDecode)
             return
         }
+        alternativeCandidateRunner?.invalidate()
         val runtime = decoderRuntime
         val request = CandidateDecodeRequest(
             composition = composition,
@@ -2861,15 +2926,29 @@ class SenseInputMethodService : InputMethodService() {
             composition = request.composition,
             decoderGeneration = request.decoderGeneration,
             forceDecode = forceDecode,
+            decoderReady = productionDecoderReady,
         )
         if (launch.stateChanged) mainHandler.removeCallbacksAndMessages(candidateResultToken)
-        val candidateBarText = CandidateBarCompositionPresenter.text(
+        val candidateBarText = if (pendingDecodeCommit.needsAttention) {
+            if (pendingDecodeCommit.isFull && pendingDecodeCommit.capacityRejected) "缓存已满 · 退格撤回 · 回车原文"
+            else if (pendingDecodeCommit.deferredCount == 0) "候选较慢 · 回车原文 · 退格编辑"
+            else "候选较慢 · 暂存 ${pendingDecodeCommit.deferredCount} 键 · 回车原文"
+        } else CandidateBarCompositionPresenter.text(
             composition = request.composition,
             segmenter = request.segmenter,
             decodingPending = launch.presentation.pending,
             primaryCandidate = launch.presentation.snapshot.candidates.firstOrNull(),
         )
-        if (launch.presentation.pending) {
+        if (!productionDecoderReady) {
+            // The bootstrap decoder is a contract fixture, not an authoritative dictionary.
+            // Retain real host composing text but expose no selectable placeholder candidates.
+            candidateRunner?.invalidate()
+            keyboardView?.updateComposing(
+                request.composition.revision,
+                "$candidateBarText · 词库准备中",
+                emptyList(),
+            )
+        } else if (launch.presentation.pending) {
             keyboardView?.updateComposition(
                 request.composition.revision,
                 candidateBarText,
@@ -2887,6 +2966,8 @@ class SenseInputMethodService : InputMethodService() {
     }
 
     private fun renderIdleAssociations() {
+        candidateRunner?.invalidate()
+        alternativeCandidateRunner?.invalidate()
         mainHandler.removeCallbacksAndMessages(candidateResultToken)
         mainHandler.removeCallbacksAndMessages(alternativeCandidateResultToken)
         candidateSession.begin(
@@ -2900,31 +2981,55 @@ class SenseInputMethodService : InputMethodService() {
             return
         }
         val context = captureAssociationContext()
-        val suggestions = if (decodeContextAllowed && context.isNotEmpty()) {
-            associationEngine.suggest(
-                leftContext = context,
-                limit = ASSOCIATION_CANDIDATE_LIMIT,
-                includeUserHistory = localPersistenceAllowed,
-            )
-        } else {
-            emptyList()
+        if (!decodeContextAllowed || context.isEmpty()) {
+            cancelAssociationPresentation()
+            publishEmptyIdleCandidates()
+            return
         }
+        val connection = activeAssociationConnectionIdentity()
+        val current = associationSession.current
+        if (current != null && current.editorSessionId == editorSessionId &&
+            current.connectionIdentity === connection && current.context == context &&
+            publishedAssociationQuery?.engine === associationEngine &&
+            publishedAssociationQuery?.includeUserHistory == localPersistenceAllowed
+        ) {
+            // Preserve revision and touch ownership across unrelated view renders/idle tickets.
+            keyboardView?.updateAssociations(current.revision, current.suggestions.map(AssociationSuggestion::text))
+            return
+        }
+        val ticket = associationDisplayLifecycle.visibleTicket ?: return
+        associationSession.clear()
+        publishedAssociationQuery = null
+        publishEmptyIdleCandidates()
+        associationQueries.submit(AssociationQuery(ticket, editorSessionId, connection, context,
+            associationEngine, localPersistenceAllowed))
+    }
+
+    private fun applyAssociationSuggestions(query: AssociationQuery, suggestions: List<AssociationSuggestion>) {
+        if (query.ticket != associationDisplayLifecycle.visibleTicket || !associationSurfaceEligible() ||
+            !decodeContextAllowed || query.editorSessionId != editorSessionId ||
+            query.connectionIdentity !== activeAssociationConnectionIdentity() ||
+            query.engine !== associationEngine || query.includeUserHistory != localPersistenceAllowed ||
+            query.context != captureAssociationContext()
+        ) return
         if (suggestions.isEmpty()) {
             cancelAssociationPresentation()
-            associationSession.clear()
             publishEmptyIdleCandidates()
             return
         }
         val presentation = associationSession.publish(
-            editorSessionId = editorSessionId,
-            connectionIdentity = activeAssociationConnectionIdentity(),
-            context = context,
+            editorSessionId = query.editorSessionId,
+            connectionIdentity = query.connectionIdentity,
+            context = query.context,
             suggestions = suggestions,
         )
+        publishedAssociationQuery = query
         keyboardView?.updateAssociations(
             presentation.revision,
             suggestions.map(AssociationSuggestion::text),
         )
+        // The idle interval starts when words actually appear, not when inference begins.
+        scheduleAssociationExpiry(query.ticket)
     }
 
     private fun publishEmptyIdleCandidates() {
@@ -2958,6 +3063,18 @@ class SenseInputMethodService : InputMethodService() {
             candidateResultToken,
             SystemClock.uptimeMillis(),
         )
+    }
+
+    private fun postCandidateDecodeFailure(request: CandidateDecodeRequest) {
+        mainHandler.removeCallbacksAndMessages(candidateResultToken)
+        mainHandler.postAtTime({
+            if (destroyed || !chineseMode || inputScheme.scheme != ChineseInputScheme.PINYIN_QWERTY ||
+                request.composition != composition || request.decoderGeneration != decoderRuntime.generation
+            ) return@postAtTime
+            // An exception is not a valid empty result: keep the composition and confirmation.
+            if (pendingDecodeCommit.markDelayed(request.composition.revision)) render()
+            else keyboardView?.updateComposition(composition.revision, "候选暂未就绪 · 回车原文 · 退格重试")
+        }, candidateResultToken, SystemClock.uptimeMillis())
     }
 
     private fun applyDecodedCandidates(
@@ -3019,7 +3136,7 @@ class SenseInputMethodService : InputMethodService() {
                 inputScheme.scheme == ChineseInputScheme.WUBI_86
             },
             t9Index = pinyinRuntime.t9Index,
-            pinyinDecoder = pinyinRuntime.decoder,
+            pinyinDecoder = pinyinRuntime.t9Decoder,
             pinyinDecoderGeneration = pinyinRuntime.generation,
             wubiDecoder = activeWubiRuntime.decoder,
             wubiCandidateDecoder = activeWubiRuntime.candidateDecoder,
@@ -3530,13 +3647,11 @@ class SenseInputMethodService : InputMethodService() {
     private fun captureDecodeLeftContext(): String {
         if (!decodeContextAllowed) return ""
         if (isAgentTextTarget()) {
-            return agentDraft.contextBeforeCursor(MAX_DECODE_CONTEXT_CHARS)
+            return EditorDecodeContext.retain(agentDraft.contextBeforeCursor(EditorDecodeContext.MAX_UTF16_UNITS))
         }
         return runCatching {
-            currentInputConnection
-                ?.getTextBeforeCursor(MAX_DECODE_CONTEXT_CHARS, 0)
-                ?.toString()
-                .orEmpty()
+            EditorDecodeContext.retain(currentInputConnection
+                ?.getTextBeforeCursor(EditorDecodeContext.MAX_UTF16_UNITS, 0))
         }.getOrDefault("")
     }
 
@@ -3559,6 +3674,8 @@ class SenseInputMethodService : InputMethodService() {
 
     private fun scheduleAssociationPresentation() {
         mainHandler.removeCallbacksAndMessages(associationDisplayToken)
+        associationQueries.cancel()
+        publishedAssociationQuery = null
         associationSession.clear()
         if (!chineseMode || !decodeContextAllowed) {
             associationDisplayLifecycle.cancel()
@@ -3579,16 +3696,37 @@ class SenseInputMethodService : InputMethodService() {
             return
         }
         render()
-        if (!associationDisplayLifecycle.visible || associationSession.current == null) return
+    }
+
+    private fun scheduleAssociationExpiry(ticket: Long) {
+        val delay = AssociationTimeoutPolicy.delayMillis { original, flags ->
+            getSystemService(android.view.accessibility.AccessibilityManager::class.java)
+                ?.getRecommendedTimeoutMillis(original, flags) ?: original
+        }
         mainHandler.postAtTime(
             { expireAssociationPresentation(ticket) },
             associationDisplayToken,
-            SystemClock.uptimeMillis() + ASSOCIATION_AUTO_HIDE_MS,
+            SystemClock.uptimeMillis() + delay,
         )
+    }
+
+    private fun onCandidateInteraction(active: Boolean) {
+        if (active) {
+            if (associationDisplayLifecycle.holdInteraction()) {
+                mainHandler.removeCallbacksAndMessages(associationDisplayToken)
+            }
+        } else {
+            associationDisplayLifecycle.releaseInteraction()?.let { ticket ->
+                mainHandler.removeCallbacksAndMessages(associationDisplayToken)
+                scheduleAssociationExpiry(ticket)
+            }
+        }
     }
 
     private fun expireAssociationPresentation(ticket: Long) {
         if (!associationDisplayLifecycle.expire(ticket)) return
+        associationQueries.cancel()
+        publishedAssociationQuery = null
         associationSession.clear()
         render()
     }
@@ -3605,6 +3743,8 @@ class SenseInputMethodService : InputMethodService() {
     private fun cancelAssociationPresentation(): Boolean {
         val wasVisible = associationDisplayLifecycle.visible
         mainHandler.removeCallbacksAndMessages(associationDisplayToken)
+        associationQueries.cancel()
+        publishedAssociationQuery = null
         associationDisplayLifecycle.cancel()
         associationSession.clear()
         return wasVisible
@@ -3722,8 +3862,23 @@ class SenseInputMethodService : InputMethodService() {
     private fun deferIfDecodeCommitPending(input: DeferredInput): Boolean {
         return when (pendingDecodeCommit.defer(input)) {
             DeferredInputOffer.NOT_PENDING -> false
-            DeferredInputOffer.ACCEPTED -> true
+            DeferredInputOffer.ACCEPTED -> {
+                if (pendingDecodeCommit.needsAttention) render()
+                true
+            }
             DeferredInputOffer.CAPACITY_REACHED -> {
+                if (isPendingFullPinyinCommit()) {
+                    // Never reinterpret an overfull Chinese confirmation as raw input. Already
+                    // accepted events stay intact. Reject this new event visibly and allow Delete
+                    // / Enter / Hide to recover, instead of growing memory or silently flushing.
+                    val firstOverflow = pendingDecodeCommit.markCapacityRejected()
+                    resolvePendingCommitTimeout()
+                    if (firstOverflow) Toast.makeText(
+                        this, "输入缓存已满，本次按键未接收；退格撤回，回车保留当前原文", Toast.LENGTH_LONG,
+                    ).show()
+                    keyboardView?.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                    return true
+                }
                 // Resolve the older transaction without exceeding the hard queue bound, then
                 // preserve this input if draining happened to start a new pending transaction.
                 resolvePendingCommitTimeout()
@@ -3736,6 +3891,56 @@ class SenseInputMethodService : InputMethodService() {
             }
         }
     }
+
+    private fun isPendingFullPinyinCommit(): Boolean =
+        inputScheme.scheme == ChineseInputScheme.PINYIN_QWERTY &&
+            pendingDecodeCommit.intent is PendingDecodeCommit.Candidate
+
+    private fun handlePendingPinyinControl(code: Int): Boolean {
+        if (!isPendingFullPinyinCommit()) return false
+        if (pendingDecodeCommit.presentationRevision != composition.revision) {
+            clearPendingCommit()
+            return false
+        }
+        if (!pendingDecodeCommit.needsAttention && !pendingDecodeCommit.isFull) return false
+        when (code) {
+            KeyCodes.ENTER -> {
+                // The visible recovery action concerns the CURRENT waiting composition. Inputs
+                // already accepted after its boundary are replayed unchanged, not discarded.
+                val completion = finishPendingCandidateCommit(composition.revision)
+                commitAndReplayPending(completion, ::commitChineseEnterComposition)
+                return true
+            }
+            KeyCodes.DELETE -> {
+                when (val tail = pendingDecodeCommit.lastQueuedInput) {
+                    null -> {
+                        clearPendingCommit()
+                        handleBackspace()
+                    }
+                    is DeferredInput.Text -> {
+                        val shortened = tail.text.dropLastCodePoint()
+                        pendingDecodeCommit.replaceLastQueuedInput(shortened.takeIf(String::isNotEmpty)?.let(DeferredInput::Text))
+                        render()
+                    }
+                    is DeferredInput.Key -> {
+                        if (!isDeferredPrintableKey(tail.code)) return false
+                        pendingDecodeCommit.replaceLastQueuedInput(null)
+                        render()
+                    }
+                    is DeferredInput.AiHold -> return false
+                }
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun isDeferredPrintableKey(code: Int): Boolean =
+        code in 'a'.code..'z'.code || code in 'A'.code..'Z'.code || code in '0'.code..'9'.code ||
+            code in setOf(KeyCodes.SPACE, KeyCodes.COMMA, KeyCodes.PERIOD, '\''.code)
+
+    private fun String.dropLastCodePoint(): String =
+        if (isEmpty()) this else substring(0, offsetByCodePoints(length, -1))
 
     private fun replayPendingCompletion(
         completion: FinishedPendingDecodeCommit<DeferredInput>,
@@ -3797,8 +4002,18 @@ class SenseInputMethodService : InputMethodService() {
         triggerInput: DeferredInput?,
     ) {
         pendingDecodeCommit.start(intent, triggerInput)
+        schedulePendingCommitTimeout(intent)
+    }
+
+    private fun schedulePendingCommitTimeout(intent: PendingDecodeCommit) {
         mainHandler.removeCallbacks(pendingCommitTimeout)
-        mainHandler.postDelayed(pendingCommitTimeout, PENDING_COMMIT_TIMEOUT_MS)
+        // Android's first/JIT-cold progressive decode can exceed 120 ms while an older task
+        // drains. Keep the Chinese confirmation bound to its revision instead of emitting raw
+        // letters prematurely. Ready results still commit immediately; editor changes cancel.
+        mainHandler.postDelayed(pendingCommitTimeout, CandidateCommitTimeoutPolicy.maximumWaitMillis(
+            intent, fullPinyin = inputScheme.scheme == ChineseInputScheme.PINYIN_QWERTY,
+            runtimeLoading = !productionDecoderReady,
+        ))
     }
 
     private fun finishPendingCandidateCommit(
@@ -3850,6 +4065,11 @@ class SenseInputMethodService : InputMethodService() {
         }
         when (intent) {
             is PendingDecodeCommit.Candidate -> {
+                if (inputScheme.scheme == ChineseInputScheme.PINYIN_QWERTY) {
+                    pendingDecodeCommit.markDelayed(intent.presentationRevision)
+                    render()
+                    return
+                }
                 val completion = finishPendingCandidateCommit(intent.presentationRevision)
                 commitAndReplayPending(completion, ::commitActiveRawComposition)
             }
@@ -4077,7 +4297,6 @@ class SenseInputMethodService : InputMethodService() {
         const val SENSE_SETTINGS_ACTIVITY =
             "io.github.ethanbird.senseime.SettingsActivity"
         const val TAG = "SenseInputMethod"
-        const val PINYIN_ASSET = "pinyin_lexicon.bin"
         const val PINYIN_BIGRAM_ASSET = "pinyin_bigrams.bin"
         const val PINYIN_SYLLABLES_ASSET = "pinyin_syllables.txt"
         const val ENGLISH_LEXICON_ASSET = "english_lexicon.txt"
@@ -4089,16 +4308,13 @@ class SenseInputMethodService : InputMethodService() {
         const val PRESENTATION_CANDIDATE_LIMIT = DECODE_CANDIDATE_LIMIT + MAX_PROGRESSIVE_PREFIX_CANDIDATES
         const val ASSOCIATION_CANDIDATE_LIMIT = 8
         const val ASSOCIATION_REVEAL_DELAY_MS = 420L
-        const val ASSOCIATION_AUTO_HIDE_MS = 4_500L
         const val CLIPBOARD_HISTORY_LIMIT = 30
         const val MAX_CLIPBOARD_TEXT_LENGTH = 4096
         const val MAX_VOICE_PREVIEW_CHARS = 1024
-        const val MAX_DECODE_CONTEXT_CHARS = 2
         const val MAX_ASSOCIATION_CONTEXT_CHARS = 16
         const val MAX_PENDING_ASSOCIATIONS = 64
         const val MAX_PENDING_PINYIN_LEARNINGS = 64
         const val MAX_DEFERRED_INPUT_EVENTS = 512
-        const val PENDING_COMMIT_TIMEOUT_MS = 120L
         const val CLIPBOARD_PREFERENCES = "sense_clipboard_history"
         const val CLIPBOARD_HISTORY_KEY = "items"
         val PASSWORD_TEXT_VARIATIONS = setOf(
@@ -4123,9 +4339,12 @@ private data class CandidateDecoderRuntime(
     val decoder: InputDecoder,
     val segmenter: PinyinSyllableSegmenter,
     val t9Index: T9SyllableIndex,
+    val t9Decoder: InputDecoder = decoder,
 )
 
 private data class LoadedCandidateDecoderRuntime(
+    val languageModelState: BundledPinyinLanguageModel.State,
+    val associationModel: io.github.ethanbird.senseime.core.ContextAssociationModel?,
     val runtime: CandidateDecoderRuntime,
     val adaptiveDecoder: AdaptivePinyinDecoder,
     val userLexicon: UserLexicon,

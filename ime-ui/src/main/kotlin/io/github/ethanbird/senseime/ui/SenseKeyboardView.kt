@@ -4,11 +4,14 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Canvas
+import android.graphics.Rect
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.view.KeyEvent
 import android.view.View
 import android.view.ViewConfiguration
+import androidx.core.view.ViewCompat
 
 /**
  * Android lifecycle and public-API facade for the keyboard.
@@ -88,6 +91,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     var keyListener: KeyListener? = null
     var candidateListener: ((revision: Long, sourceIndex: Int) -> Unit)? = null
     var associationDismissListener: (() -> Unit)? = null
+    var candidateInteractionListener: ((Boolean) -> Unit)? = null
     var textListener: ((text: String) -> Unit)? = null
     var clipboardActionListener: ((action: ClipboardAction, index: Int) -> Unit)? = null
     var editorActionListener: ((action: EditorAction) -> Unit)? = null
@@ -100,7 +104,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     var skillSelectionListener: KeyboardSkillSelectionListener? = null
 
     private val density = resources.displayMetrics.density
-    private val metrics = KeyboardMetrics.fromDensity(density)
+    private val metrics = KeyboardMetrics.fromDensity(density, resources.configuration.fontScale)
     private val keyboardScene = MutableKeyboardScene()
     private val sceneBuilder = KeyboardSceneBuilder(metrics)
     private val scaledTouchSlop =
@@ -144,7 +148,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     private var keyboardSizeProfile = KeyboardSizeProfile.DEFAULT
     private var renderPassCount = 0L
 
-    private val frameScheduler = ViewKeyboardFrameScheduler(this)
+    private val frameScheduler: ViewKeyboardFrameScheduler = ViewKeyboardFrameScheduler(this) { candidateAccessibility.sceneChanged() }
     private val interactionActions = object : KeyboardInteractionActionSink {
         override fun onKey(code: Int) {
             keyListener?.onKey(code)
@@ -156,6 +160,10 @@ class SenseKeyboardView @JvmOverloads constructor(
 
         override fun onCandidateDismiss() {
             associationDismissListener?.invoke()
+        }
+
+        override fun onCandidateInteraction(active: Boolean) {
+            candidateInteractionListener?.invoke(active)
         }
 
         override fun onText(text: String) {
@@ -392,10 +400,32 @@ class SenseKeyboardView @JvmOverloads constructor(
         override fun isKeyEnabled(key: Key): Boolean = interaction.isKeyEnabled(key)
     }
 
+    private val candidateAccessibilityProjection = CandidateAccessibilityProjection()
+    private val candidateAccessibility: CandidateExploreByTouchHelper = CandidateExploreByTouchHelper(
+        host = this,
+        scene = candidatePanel,
+        shown = ::accessibleCandidatesShown,
+        items = { candidateAccessibilityProjection.visible(candidatePanel, accessibleCandidatesShown()) },
+        activate = interaction::activateAccessibleCandidate,
+        canScroll = ::canScrollAccessibleCandidates,
+        scroll = interaction::scrollAccessibleCandidates,
+    )
+
+    private fun accessibleCandidatesShown(): Boolean = isShown && showsCandidates() &&
+        interaction.aiSurfaceState == null && !interaction.skillPickerVisible
+
+    private fun canScrollAccessibleCandidates(forward: Boolean): Boolean {
+        if (!accessibleCandidatesShown() || !candidatePanel.candidatesReady) return false
+        val offset = if (candidatePanel.expanded) candidatePanel.expandedScrollOffset else candidatePanel.scrollOffset
+        val maximum = if (candidatePanel.expanded) candidatePanel.maximumExpandedScrollOffset else candidatePanel.maximumScrollOffset
+        return if (forward) offset < maximum else offset > 0f
+    }
+
     init {
         isFocusable = true
         isFocusableInTouchMode = true
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
+        ViewCompat.setAccessibilityDelegate(this, candidateAccessibility)
         interaction.initialize()
     }
 
@@ -441,6 +471,7 @@ class SenseKeyboardView @JvmOverloads constructor(
         t9Choices: List<T9PinyinChoice>?,
         association: Boolean,
     ) {
+        val previousSeparatorVisible = pinyinSeparatorVisible()
         val nextT9CompositionActive =
             primaryKeyboardMode == PrimaryKeyboardMode.T9 && text.isNotEmpty()
         val t9CompositionStateChanged = t9CompositionActive != nextT9CompositionActive
@@ -479,7 +510,10 @@ class SenseKeyboardView @JvmOverloads constructor(
         )
         if (change.cancelInteraction) interaction.cancelCandidatePointers()
         if (change.cancelSettle) interaction.stopCandidateSettle()
-        if (change.requiresKeySceneRebuild || t9SceneChanged) rebuildKeys(width, height)
+        if (change.requiresKeySceneRebuild || t9SceneChanged ||
+            previousSeparatorVisible != pinyinSeparatorVisible()
+        ) rebuildKeys(width, height)
+        candidateAccessibility.sceneChanged()
         invalidate()
     }
 
@@ -662,6 +696,9 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     internal fun candidateSceneBuildCountForTesting(): Long = candidatePanel.sceneBuildCount
 
+    internal fun accessibleCandidatesForTesting(): List<AccessibleCandidate> =
+        candidateAccessibilityProjection.visible(candidatePanel, accessibleCandidatesShown())
+
     internal fun scrollViewportBoundsForTesting(panel: ScrollPanel): RectF? =
         interaction.panelViewportBounds(panel)?.let(::RectF)
 
@@ -675,6 +712,13 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     internal fun candidateMaximumOffsetForTesting(): Float =
         candidatePanel.maximumScrollOffset
+
+    internal fun candidateControlBoundsForTesting(control: CandidateControl): RectF? =
+        candidatePanel.controls.firstOrNull { it.control == control && it.enabled }?.bounds?.toRectF()
+
+    internal fun expandedCandidateViewportForTesting(): RectF? = candidatePanel.expandedGridBounds?.toRectF()
+
+    internal fun expandedCandidateOffsetForTesting(): Float = candidatePanel.expandedScrollOffset
 
     internal fun aiStopBoundsForTesting(): RectF? {
         val bounds = aiRenderGeometry.stopBounds
@@ -848,6 +892,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 resources.configuration.orientation ==
                     Configuration.ORIENTATION_LANDSCAPE,
             density = density,
+            fontScale = resources.configuration.fontScale,
         )
         setMeasuredDimension(
             MeasureSpec.getSize(widthMeasureSpec),
@@ -866,6 +911,7 @@ class SenseKeyboardView @JvmOverloads constructor(
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         interaction.onConfigurationChanged()
+        metrics.updateFontScale(newConfig.fontScale)
         palette.update(newConfig.isNightMode())
         keyboardRenderer.updateSurface(width, height, newConfig.fontScale)
         relayoutCandidates()
@@ -884,12 +930,24 @@ class SenseKeyboardView @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent): Boolean =
         interaction.onTouchEvent(event)
 
+    override fun dispatchHoverEvent(event: MotionEvent): Boolean =
+        candidateAccessibility.dispatchHoverEvent(event) || super.dispatchHoverEvent(event)
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean =
+        candidateAccessibility.dispatchKeyEvent(event) || super.dispatchKeyEvent(event)
+
+    override fun onFocusChanged(gainFocus: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
+        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
+        candidateAccessibility.onFocusChanged(gainFocus, direction, previouslyFocusedRect)
+    }
+
     override fun computeScroll() {
         super.computeScroll()
         interaction.computeScroll()
     }
 
     override fun onDetachedFromWindow() {
+        candidateAccessibility.detach()
         interaction.onDetached()
         super.onDetachedFromWindow()
     }
@@ -922,6 +980,7 @@ class SenseKeyboardView @JvmOverloads constructor(
                 voiceSurfaceState = voiceSurfaceState,
                 fontScale = resources.configuration.fontScale,
                 primaryLegendMode = primaryKeyboardLegendMode,
+                pinyinCompositionActive = pinyinSeparatorVisible(),
                 t9CompositionActive = t9CompositionActive,
                 t9PinyinChoiceRevision = t9PinyinChoiceRevision,
                 t9PinyinChoices = t9PinyinChoices,
@@ -931,6 +990,7 @@ class SenseKeyboardView @JvmOverloads constructor(
             target = keyboardScene,
         )
         interaction.onSceneRebuilt()
+        candidateAccessibility.sceneChanged()
     }
 
     private fun Configuration.isNightMode(): Boolean =
@@ -939,6 +999,13 @@ class SenseKeyboardView @JvmOverloads constructor(
 
     private fun candidateTakesToolbar(): Boolean =
         candidatePanel.takesToolbar(isCandidateToolbarSuppressedByPanel())
+
+    // Only the active full-pinyin transaction borrows Shift. Candidate refreshes
+    // with the same empty/nonempty state do not rebuild the letter-key scene.
+    private fun pinyinSeparatorVisible(): Boolean =
+        chineseMode && primaryKeyboardMode == PrimaryKeyboardMode.QWERTY &&
+            primaryKeyboardLegendMode == PrimaryKeyboardLegendMode.SWIPE_HINTS &&
+            candidatePanel.composing.isNotEmpty()
 
     private fun showsCandidates(): Boolean =
         panel != KeyboardPanel.EDITOR &&

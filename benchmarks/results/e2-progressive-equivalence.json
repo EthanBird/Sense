@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "scope": "LM 0.5 full progressive result equality on known corpora; host-JVM timing is diagnostic, not Android latency",
+  "observations": 7428,
+  "identical": 7428,
+  "mismatches": [],
+  "passed": true,
+  "hostDecodeMs": {
+    "before": {
+      "pass0-daily": {
+        "count": 770,
+        "medianMs": 6.8815,
+        "observedP95Ms": 22.6228,
+        "maxMs": 40.668
+      },
+      "pass0-known-p2c": {
+        "count": 125,
+        "medianMs": 26.6222,
+        "observedP95Ms": 46.5773,
+        "maxMs": 61.9456
+      },
+      "pass0-known-typo-dev": {
+        "count": 945,
+        "medianMs": 16.9623,
+        "observedP95Ms": 34.6657,
+        "maxMs": 51.8631
+      },
+      "pass0-known-typo-test": {
+        "count": 1874,
+        "medianMs": 18.25815,
+        "observedP95Ms": 39.9798,
+        "maxMs": 61.8598
+      },
+      "pass1-daily": {
+        "count": 770,
+        "medianMs": 5.4449000000000005,
+        "observedP95Ms": 18.3013,
+        "maxMs": 33.3122
+      },
+      "pass1-known-p2c": {
+        "count": 125,
+        "medianMs": 26.6182,
+        "observedP95Ms": 46.3823,
+        "maxMs": 63.0304
+      },
+      "pass1-known-typo-dev": {
+        "count": 945,
+        "medianMs": 16.9808,
+        "observedP95Ms": 35.2036,
+        "maxMs": 61.7714
+      },
+      "pass1-known-typo-test": {
+        "count": 1874,
+        "medianMs": 18.313299999999998,
+        "observedP95Ms": 39.4504,
+        "maxMs": 69.3548
+      }
+    },
+    "after": {
+      "pass0-daily": {
+        "count": 770,
+        "medianMs": 6.140549999999999,
+        "observedP95Ms": 20.4036,
+        "maxMs": 43.4486
+      },
+      "pass0-known-p2c": {
+        "count": 125,
+        "medianMs": 25.0825,
+        "observedP95Ms": 43.9717,
+        "maxMs": 57.4833
+      },
+      "pass0-known-typo-dev": {
+        "count": 945,
+        "medianMs": 15.1522,
+        "observedP95Ms": 32.5628,
+        "maxMs": 49.5312
+      },
+      "pass0-known-typo-test": {
+        "count": 1874,
+        "medianMs": 16.235799999999998,
+        "observedP95Ms": 36.7577,
+        "maxMs": 59.5613
+      },
+      "pass1-daily": {
+        "count": 770,
+        "medianMs": 4.9704999999999995,
+        "observedP95Ms": 17.1638,
+        "maxMs": 29.8323
+      },
+      "pass1-known-p2c": {
+        "count": 125,
+        "medianMs": 24.6399,
+        "observedP95Ms": 43.5431,
+        "maxMs": 57.4399
+      },
+      "pass1-known-typo-dev": {
+        "count": 945,
+        "medianMs": 15.1655,
+        "observedP95Ms": 32.258,
+        "maxMs": 53.5254
+      },
+      "pass1-known-typo-test": {
+        "count": 1874,
+        "medianMs": 16.04425,
+        "observedP95Ms": 36.5763,
+        "maxMs": 60.2643
+      }
+    }
+  },
+  "changedSourceFiles": [
+    "io/github/ethanbird/senseime/core/PinyinDecoder.kt",
+    "io/github/ethanbird/senseime/core/QueryLexicalCache.kt"
+  ],
+  "inputSha256": {
+    "before": "a5b02c32eab39a55ce9155b306dbd526a8ad64ef5c09aedf928d5a08cdec571d",
+    "after": "d54efe40d233e609eb8f0202ecf844e7b281e96b7949316720d1b7908578304b"
+  }
+}

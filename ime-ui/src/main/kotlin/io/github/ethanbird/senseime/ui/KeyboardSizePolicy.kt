@@ -22,9 +22,10 @@ data class KeyboardSizeProfile(
     fun preferredHeightPx(
         isLandscape: Boolean,
         density: Float,
+        fontScale: Float = 1f,
     ): Int {
         require(density.isFinite() && density > 0f)
-        return (preferredHeightDp(isLandscape) * density).toInt()
+        return ((preferredHeightDp(isLandscape) + KeyboardFontGeometry.extraChromeDp(fontScale)) * density).toInt()
     }
 
     companion object {
@@ -40,4 +41,14 @@ data class KeyboardSizeProfile(
 
         val DEFAULT = KeyboardSizeProfile()
     }
+}
+
+/** Grow chrome rather than taking touch space away from the four letter rows. */
+internal object KeyboardFontGeometry {
+    fun chromeScale(fontScale: Float): Float {
+        require(fontScale.isFinite() && fontScale > 0f)
+        return fontScale.coerceAtLeast(1f)
+    }
+
+    fun extraChromeDp(fontScale: Float): Float = 45f * (chromeScale(fontScale) - 1f)
 }

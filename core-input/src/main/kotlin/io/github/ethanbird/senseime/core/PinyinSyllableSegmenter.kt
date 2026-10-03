@@ -8,8 +8,9 @@ data class MixedPinyinSegment(
 /**
  * A display-only view of how continuous input was interpreted.
  *
- * [rawCode] remains separator-free and is the value kept in the composing
- * transaction. [formatted] is suitable for candidate-bar explanation only.
+ * [rawCode] is the separator-free lookup code. The composing transaction retains
+ * user-typed separators independently; [formatted] may also contain inferred
+ * boundaries and is suitable for candidate-bar explanation only.
  */
 data class MixedPinyinPath(
     val segments: List<MixedPinyinSegment>,
@@ -64,6 +65,45 @@ class PinyinSyllableSegmenter(syllables: Collection<String>) {
             .filter { it.startsWith(prefix) }
     }
 
+    /** Atomic completed spelling, distinct from a sequence of several complete syllables. */
+    internal fun isCompleteSyllable(code: String): Boolean =
+        code.isNotEmpty() && syllablesByInitial[code.first()].orEmpty().any { it == code }
+
+    private val maximumSyllableLength = syllablesByInitial.values.maxOfOrNull { values ->
+        values.maxOf { it.length }
+    } ?: 0
+
+    /**
+     * Exact lookup keys that finish only the already-started final syllable.
+     * Prefix reachability keeps every legal boundary, not just a greedy split.
+     * No new syllable, initial abbreviation, typo or dictionary-range scan is added.
+     */
+    internal fun finalSyllableCompletions(query: String): List<String> {
+        if (query.length !in 2..MAX_SEGMENT_INPUT_LENGTH || query.any { it !in 'a'..'z' }) return emptyList()
+        val reachable = BooleanArray(query.length + 1).also { it[0] = true }
+        for (start in query.indices) {
+            DecodeWorkScope.checkpoint()
+            if (!reachable[start]) continue
+            for (syllable in syllablesByInitial[query[start]].orEmpty()) {
+                val end = start + syllable.length
+                if (end < query.length && query.regionMatches(start, syllable, 0, syllable.length)) reachable[end] = true
+            }
+        }
+        val keys = LinkedHashSet<String>()
+        // A strict extension fits only within the longest syllable. Require at least
+        // one completed earlier syllable; the atomic-syllable index covers the first.
+        for (start in maxOf(1, query.length - maximumSyllableLength + 1) until query.length) {
+            if (!reachable[start]) continue
+            val tailLength = query.length - start
+            for (syllable in syllablesByInitial[query[start]].orEmpty()) {
+                if (syllable.length > tailLength && query.regionMatches(start, syllable, 0, tailLength)) {
+                    keys += query.substring(0, start) + syllable
+                }
+            }
+        }
+        return keys.toList()
+    }
+
     /**
      * Verifies that candidate metadata follows this exact mixed segmentation,
      * rather than merely sharing the same initials string.
@@ -104,13 +144,15 @@ class PinyinSyllableSegmenter(syllables: Collection<String>) {
     /** Returns one deterministic complete segmentation, preferring longer leading syllables. */
     fun segment(fullPinyin: String): List<String>? {
         val normalized = normalize(fullPinyin)
+        val joints = if ('\'' in fullPinyin) parseMixedInput(fullPinyin).forcedJoints else null
         if (normalized.isEmpty() || normalized.length > MAX_SEGMENT_INPUT_LENGTH) return null
         val next = IntArray(normalized.length + 1) { -1 }
         next[normalized.length] = normalized.length
         for (offset in normalized.lastIndex downTo 0) {
             for (syllable in syllablesByInitial[normalized[offset]].orEmpty()) {
                 val end = offset + syllable.length
-                if (end <= normalized.length && next[end] >= 0 && normalized.regionMatches(offset, syllable, 0, syllable.length)) {
+                if (end <= normalized.length && next[end] >= 0 &&
+                    (joints == null || !crossesForcedJoint(joints, offset, end)) && normalized.regionMatches(offset, syllable, 0, syllable.length)) {
                     next[offset] = end
                     break
                 }
@@ -130,9 +172,68 @@ class PinyinSyllableSegmenter(syllables: Collection<String>) {
 
     fun isComplete(fullPinyin: String): Boolean {
         val normalized = normalize(fullPinyin)
+        val joints = if ('\'' in fullPinyin) parseMixedInput(fullPinyin).forcedJoints else null
         return normalized.isNotEmpty() &&
             normalized.length <= MAX_SEGMENT_INPUT_LENGTH &&
-            suffixReachability(normalized)[0]
+            suffixReachability(normalized, joints)[0]
+    }
+
+    /**
+     * Exact DP for a dictionary-backed literal pinyin prefix. Metadata fixes the output
+     * characters' initials. Consume full syllables and at most one unfinished tail;
+     * no typo expansion, mixed-initial beam, or maximum-length guess is involved.
+     * The unfinished tail counts as touched; zero letters never cover the next character.
+     */
+    internal fun coveredPrefixCharacters(query: String, initials: String?): Int {
+        if (query.isEmpty() || query.length > MAX_SEGMENT_INPUT_LENGTH || initials.isNullOrEmpty()) return 0
+        var reachable = BooleanArray(query.length).also { it[0] = true }
+        var covered = 0
+        for ((index, initial) in initials.withIndex()) {
+            DecodeWorkScope.checkpoint()
+            val next = BooleanArray(query.length)
+            var hasNext = false
+            for (offset in query.indices) {
+                if (!reachable[offset] || query[offset] != initial) continue
+                val remaining = query.length - offset
+                for (syllable in syllablesByInitial[initial].orEmpty()) {
+                    val shared = minOf(remaining, syllable.length)
+                    if (!query.regionMatches(offset, syllable, 0, shared)) continue
+                    if (remaining <= syllable.length) covered = maxOf(covered, index + 1)
+                    else { next[offset + syllable.length] = true; hasNext = true }
+                }
+            }
+            if (!hasNext) break
+            reachable = next
+        }
+        return covered
+    }
+
+    /** Exact bounded DP: apostrophes constrain syllables, not dictionary-word boundaries. */
+    internal fun matchesFullSpelling(
+        code: String,
+        start: Int,
+        end: Int,
+        initials: String?,
+        forcedJoints: BooleanArray?,
+    ): Boolean {
+        if (start < 0 || end > code.length || end <= start || end - start > MAX_SEGMENT_INPUT_LENGTH ||
+            initials.isNullOrEmpty() || initials.length > end - start
+        ) return false
+        var reachable = BooleanArray(end - start + 1).also { it[0] = true }
+        for (initial in initials) {
+            val next = BooleanArray(reachable.size)
+            for (offset in start until end) {
+                if (!reachable[offset - start] || code[offset] != initial) continue
+                for (syllable in syllablesByInitial[initial].orEmpty()) {
+                    val stop = offset + syllable.length
+                    if (stop > end || !code.regionMatches(offset, syllable, 0, syllable.length)) continue
+                    if (forcedJoints != null && (offset + 1 until stop).any { forcedJoints.getOrElse(it) { false } }) continue
+                    next[stop - start] = true
+                }
+            }
+            reachable = next
+        }
+        return reachable.last()
     }
 
     /**
@@ -175,6 +276,7 @@ class PinyinSyllableSegmenter(syllables: Collection<String>) {
             MixedPathState(emptyList(), abbreviatedSyllables = 0, fullCharacters = 0),
         )
         normalized.indices.forEach { offset ->
+            DecodeWorkScope.checkpoint()
             val states = paths[offset] ?: return@forEach
             val syllables = syllablesByInitial[normalized[offset]].orEmpty()
             states.forEach { state ->
@@ -240,7 +342,8 @@ class PinyinSyllableSegmenter(syllables: Collection<String>) {
     fun selectablePrefixLengths(fullPinyin: String): IntArray {
         val normalized = normalize(fullPinyin)
         if (normalized.length !in 2..MAX_SEGMENT_INPUT_LENGTH) return IntArray(0)
-        val reachable = suffixReachability(normalized)
+        val joints = if ('\'' in fullPinyin) parseMixedInput(fullPinyin).forcedJoints else null
+        val reachable = suffixReachability(normalized, joints)
         val values = IntArray(MAX_PREFIX_BOUNDARIES)
         var size = 0
         for (syllable in syllablesByInitial[normalized[0]].orEmpty()) {
@@ -248,6 +351,7 @@ class PinyinSyllableSegmenter(syllables: Collection<String>) {
             if (
                 end < normalized.length &&
                 reachable[end] &&
+                (joints == null || !crossesForcedJoint(joints, 0, end)) &&
                 normalized.regionMatches(0, syllable, 0, syllable.length)
             ) {
                 values[size++] = end
@@ -258,13 +362,14 @@ class PinyinSyllableSegmenter(syllables: Collection<String>) {
         return values.copyOf(size)
     }
 
-    private fun suffixReachability(code: String): BooleanArray {
+    private fun suffixReachability(code: String, joints: BooleanArray? = null): BooleanArray {
         val reachable = BooleanArray(code.length + 1)
         reachable[code.length] = true
         for (offset in code.lastIndex downTo 0) {
             for (syllable in syllablesByInitial[code[offset]].orEmpty()) {
                 val end = offset + syllable.length
-                if (end <= code.length && reachable[end] && code.regionMatches(offset, syllable, 0, syllable.length)) {
+                if (end <= code.length && reachable[end] &&
+                    (joints == null || !crossesForcedJoint(joints, offset, end)) && code.regionMatches(offset, syllable, 0, syllable.length)) {
                     reachable[offset] = true
                     break
                 }

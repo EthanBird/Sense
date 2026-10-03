@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "sense-p2c-v1",
+  "seed": "sense-p2c-independent-v1",
+  "sourceCorpus": "sentence-corpus-prepared-v1.json",
+  "partitions": {"dev": 64, "test": 128},
+  "strata": [{"name": "short", "minCharacters": 6, "maxCharacters": 9}, {"name": "long", "minCharacters": 10, "maxCharacters": 16}],
+  "selection": "One Han segment per prepared near-duplicate family per partition; order by SHA256(seed + partition + recordId + segment); half of each partition per length stratum. No decoder/lexicon/model output is consulted.",
+  "leakageAudit": "After sampling, exclude exact/substring and edit-distance<=1 overlaps with earlier corpus partitions (dev vs train; test vs train and dev). Record every exclusion without replacement. Thus accepted counts may be below sampled counts.",
+  "proposal": {"package": "pypinyin", "version": "0.55.0", "style": "NORMAL", "vToU": false, "toneSandhi": false},
+  "annotation": "Agent review of every selected text and proposed syllable sequence, before any candidate output; explicit status/note per row. Preserve awkward but interpretable source text. Any exclusion must be recorded, not silently replaced. This is not a human-annotated gold claim.",
+  "measurement": "Unspaced full-pinyin, empty editor context, candidateLimit 255, exact source reconstruction and Unicode CER; no post-result homophone aliases.",
+  "developmentModes": ["legacy", "lm0.25", "lm0.5", "lm1.0", "lm2.0"],
+  "selectionGate": {"minimumTop1Gain": 3, "maximumTop10Loss": 1, "maximumCoverageLoss": 0, "cerMustNotIncrease": true},
+  "selectionTieBreak": "top1 descending, CER ascending, top3 descending, LM weight ascending; otherwise choose legacy",
+  "testUse": "Only legacy and the frozen development-selected mode. Freeze source/model/data hashes before test. Do not retune from this test or present later runs as first-use held-out results.",
+  "promotionGate": {"testTop1MustNotDecrease": true, "testCerMustNotIncrease": true, "maximumTestCoverageLoss": 0, "requiresAndroidLifecycleAcceptance": true}
+}

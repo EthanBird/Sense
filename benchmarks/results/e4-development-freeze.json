@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "chosenCorrectionCompositionBoost": 12,
+  "application": "Only LM-active, non-exact queries with a canonical composition; exact-word, legacy and personal-only backoff unchanged",
+  "selectionEvidence": ".artifacts/input-quality/e4/source-prior-development.json",
+  "selectionTiming": "After dev fixed-pool inspection, before new audit output",
+  "qualityGate": {
+    "newAuditCleanTop1Nondecreasing": true,
+    "newAuditCleanCerNonIncreasing": true,
+    "newAuditAllTop1GainAtLeast": 20,
+    "newAuditAllTop10GainAtLeast": 20,
+    "newAuditAllCerNonIncreasing": true,
+    "newAuditCoverageNondecreasing": true
+  },
+  "engineeringGate": {
+    "androidMedianRatioAtMost": 1.15,
+    "androidObservedP95RatioAtMost": 1.15,
+    "unitAndSystemRegression": true
+  },
+  "noRetuningFromAudit": true,
+  "frozenAt": "2026-10-02T15:50:32.391493+00:00",
+  "developmentSweepSha256": "a3482a34352e15919575a46630d0aea1df4b0a9e3c4b15d3e3f0c65ace9e5ff6",
+  "auditPolicySha256": "11c178ece4595df2de147fbe1e3b19bc23a191066c0799ac3a577ada7f084cff"
+}

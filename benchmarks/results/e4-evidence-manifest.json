@@ -1,0 +1,907 @@
+{
+  "e4__acceptance-collector.log.gz": {
+    "path": ".artifacts/input-quality/e4/acceptance-collector.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compressedSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e"
+  },
+  "e4__audit-after.json.gz": {
+    "path": ".artifacts/input-quality/e4/audit-after.json",
+    "sha256": "efc30fd71db9fe7848c97aee9375cd6af923c4023a28c98fb1a54d5149a757d5",
+    "compressedSha256": "b9c78a7d2d9ef3592672c88619d3bde1831cfcc88047bc48dc029f66ae5a8101"
+  },
+  "e4__audit-after.log.gz": {
+    "path": ".artifacts/input-quality/e4/audit-after.log",
+    "sha256": "ca40ee6513ddace77c40a2a9b4fe7f5a77f5e3dc7eed6232f91a6a4c3465d67e",
+    "compressedSha256": "1683b5c1e16457a912ffa963e0eb9619d9b423d46745f624e44e24a1b87a253d"
+  },
+  "e4__audit-before.json.gz": {
+    "path": ".artifacts/input-quality/e4/audit-before.json",
+    "sha256": "ffbaf55c29a1de93278b6ae16d0648c0132ab421b642720e494d1843e63c09d2",
+    "compressedSha256": "abd8b1bae0ecb90cd862cf8c96a16794a3944a8389628d8d051b977530d20b68"
+  },
+  "e4__audit-before.log.gz": {
+    "path": ".artifacts/input-quality/e4/audit-before.log",
+    "sha256": "6cb7a22b809344fc3714d1b1419d4f8c71b40edcd6eea66b03634e48f2e5a03c",
+    "compressedSha256": "3f70a9d3fd9d8336a689e99620a0cc939d59e100877a2bcbb136293d19ce5948"
+  },
+  "e4__calibration-red.log.gz": {
+    "path": ".artifacts/input-quality/e4/calibration-red.log",
+    "sha256": "033517f826507a416fdb0699d736b3e886682d5db5c5997d423ae7fdd8126a20",
+    "compressedSha256": "3acccac7fbce4181e097c530897b6d7280f0be6f25ea25b47496e3ccf82e0624"
+  },
+  "e4__collector-tests.log.gz": {
+    "path": ".artifacts/input-quality/e4/collector-tests.log",
+    "sha256": "50464462a11d11046f4c93355152b55624b0675dd161c96439cdf46c87395929",
+    "compressedSha256": "f89c4fd8ba2ec6ac965f56dd9f9d2d31098da916f1007075843ed09c3e503d02"
+  },
+  "e4__core-green-v2.log.gz": {
+    "path": ".artifacts/input-quality/e4/core-green-v2.log",
+    "sha256": "e38e44b341221ed23c34b31b0205c4ab1affa3d077838bbe910cc85f260caa50",
+    "compressedSha256": "8b34483d0e8d55b76ccd6e2fe89ed5adf96c251f54a697ad0559cbc49d348a0b"
+  },
+  "e4__core-green.log.gz": {
+    "path": ".artifacts/input-quality/e4/core-green.log",
+    "sha256": "758f45519145c7b3d764da88f3f2078028e2750126e9f0fc7838e1a143261e01",
+    "compressedSha256": "e9746a16c78c6a0f85407f30a2551c826fbec77fb700e70c3e0d403527a14f4d"
+  },
+  "e4__correction-red-device__validExtraSyllableDoesNotBuryTheContextualRepair-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4/correction-red-device/validExtraSyllableDoesNotBuryTheContextualRepair-cadence.txt",
+    "sha256": "de156c8ba489104ee4d61f882e53f07c7016c505dea954a1ce55f6d3a9e8d455",
+    "compressedSha256": "72f87e0579640db071a624432e384d46cbb3829c8cb0567bc45a32e4976b4dff"
+  },
+  "e4__correction-red-device__validExtraSyllableDoesNotBuryTheContextualRepair.txt.gz": {
+    "path": ".artifacts/input-quality/e4/correction-red-device/validExtraSyllableDoesNotBuryTheContextualRepair.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "e4__correction-red-device__validFuzzySyllableDoesNotBuryTheContextualRepair-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4/correction-red-device/validFuzzySyllableDoesNotBuryTheContextualRepair-cadence.txt",
+    "sha256": "b0918d2c6cb9e8601ccc4e0ae5a39a78c0dc8334f99f0c77d67770ff7c23fe52",
+    "compressedSha256": "b5f7fcc897a6e8096fd533ffcf04f432f6a1b77e34aa045eaa94a0dd04e9a080"
+  },
+  "e4__correction-red-device__validFuzzySyllableDoesNotBuryTheContextualRepair.txt.gz": {
+    "path": ".artifacts/input-quality/e4/correction-red-device/validFuzzySyllableDoesNotBuryTheContextualRepair.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "e4__correction-red-environment.json.gz": {
+    "path": ".artifacts/input-quality/e4/correction-red-environment.json",
+    "sha256": "268ec9e9a3ffdccbb064d712ec15a5c13d701cf3dc0fa1ff1a42f50fd54b86f0",
+    "compressedSha256": "aca6d4cc7d2193b8729e3db643d5dd974b61a745de675487812c145b8583ad34"
+  },
+  "e4__correction-red.log.gz": {
+    "path": ".artifacts/input-quality/e4/correction-red.log",
+    "sha256": "d321cc2d64c4df034f0dadd263158b91d16b1cfb953c930625d9cd0fa4ad05e6",
+    "compressedSha256": "d55b2fa7e281208312c11500b41ac5349fc55ef819486dfd4e1795c6d4424f70"
+  },
+  "e4__dev-after.log.gz": {
+    "path": ".artifacts/input-quality/e4/dev-after.log",
+    "sha256": "6b8cc4f61ca0ba6435b1da4fc5bf6586b07ebe4db4066eba2c0cd4c379be803e",
+    "compressedSha256": "f2b9b15f1721a5f805049e659e57c03c448a49d41872531b82e2688f79d27aa9"
+  },
+  "e4__dev-before.log.gz": {
+    "path": ".artifacts/input-quality/e4/dev-before.log",
+    "sha256": "bf3a85cd2dc5f18751f17d57596bf8ae4d2765210f3ac94293227ad175a8326f",
+    "compressedSha256": "a87205072f65dc33d25246b78ab752b165e56c124395383b93c84a45f826aee3"
+  },
+  "e4__dev-production-after.json.gz": {
+    "path": ".artifacts/input-quality/e4/dev-production-after.json",
+    "sha256": "2c439bac0c85c9db96b3121b88c43a3edbc90f69f661fcb2e7d70b994098d447",
+    "compressedSha256": "c4032f2792a0698ecda30df7b7b9c95b3fb0d4b00f38619a795d05cc1dd5080f"
+  },
+  "e4__dev-production-before.json.gz": {
+    "path": ".artifacts/input-quality/e4/dev-production-before.json",
+    "sha256": "135933b326eb94b82eb7f908534053e7ee2fafda460b767ada941b3d15fc32da",
+    "compressedSha256": "98fecb76f13e6de19d5ff2f22f76619b4a975bd0a79d07064e9c33062fa8ee29"
+  },
+  "e4__dev-scores-baseline-v2.jsonl.gz": {
+    "path": ".artifacts/input-quality/e4/dev-scores-baseline-v2.jsonl",
+    "sha256": "a8be95f03af91427c366456333595d5e18c10555fc67827f48585c20b6ffb592",
+    "compressedSha256": "5f396f0794fc285277296504f56c81dd6ab2b799c9b4168e1814748fa370a98f"
+  },
+  "e4__dev-scores-baseline.jsonl.gz": {
+    "path": ".artifacts/input-quality/e4/dev-scores-baseline.jsonl",
+    "sha256": "7a225abbf103a1669c9816403769b92918044fbaf8737b7d2f885612e2aa04a9",
+    "compressedSha256": "5376eab843520517c874d5cd05716a032b53b346e43ab5784c6bd2797a0d191e"
+  },
+  "e4__export-dev-v2.log.gz": {
+    "path": ".artifacts/input-quality/e4/export-dev-v2.log",
+    "sha256": "c86bdd843a4a9a19c1f5a97b1643e98967e4a0bd1e74f8c4daf068d8186f3110",
+    "compressedSha256": "745d4dfc24cb32e02e4aa3a791b041ca2fb9f7856388894f1903d95321bc62fe"
+  },
+  "e4__export-dev.log.gz": {
+    "path": ".artifacts/input-quality/e4/export-dev.log",
+    "sha256": "67704c095c65173eee62890c17a5e710a78920b4d2177f97375846e785869204",
+    "compressedSha256": "af184cc7c8ede7866d0f78c7e50ae54d942ca9b4e6ef2fba8e660f27d8807f78"
+  },
+  "e4__host-build-v2.log.gz": {
+    "path": ".artifacts/input-quality/e4/host-build-v2.log",
+    "sha256": "3c6dfa96105aa1ccb055785a8a8215e6bcadd28f2c526e1a0eaf66af708327c5",
+    "compressedSha256": "ac5578b1e75f3be27a14f5917d91acc556b522a057d13bda4e082680ccf34ad4"
+  },
+  "e4__host-build.log.gz": {
+    "path": ".artifacts/input-quality/e4/host-build.log",
+    "sha256": "4b323f298b373ee0f50c8bb8390683e63f1d440fb60aa0d78d74703c2416a194",
+    "compressedSha256": "855f15f857968afe47e338c94a3e5b91b1cf8d348b74f5a1c1a2fb6802b3d712"
+  },
+  "e4__known-after.json.gz": {
+    "path": ".artifacts/input-quality/e4/known-after.json",
+    "sha256": "acd0510d12133abe95682357f0e739b482ea9b484ec5b98b7b2671fc6e8fa60f",
+    "compressedSha256": "a60a48e9f3851a64368f0c1b92f479e4181b712980c01e1a47004b70d1219924"
+  },
+  "e4__known-after.log.gz": {
+    "path": ".artifacts/input-quality/e4/known-after.log",
+    "sha256": "9a6b2e58711e4a58594b73717eecbe6589f7499bfcd2579b19dc38ff8767a3c6",
+    "compressedSha256": "3c6e999c8ee609957d024132468892214e492c1b17fda95070e55062f48fe558"
+  },
+  "e4__known-before.json.gz": {
+    "path": ".artifacts/input-quality/e4/known-before.json",
+    "sha256": "1cb090d981a1eb4f17db26504c9e7a90e26c9dbcc6306ac3c0578eaa7237ea55",
+    "compressedSha256": "e02714ebe8d87c2fb20cb424a7ab731f18d7d81413470d845052c08e8dfb0ee6"
+  },
+  "e4__known-before.log.gz": {
+    "path": ".artifacts/input-quality/e4/known-before.log",
+    "sha256": "43ee41832d75a4a828ed3450ac70882c40b52ea471247c5ffaf6e5316192eef5",
+    "compressedSha256": "8383cf877cbfd3fd0ce9ade704f6b9b0be21896628abb2c6b392b3dea9121223"
+  },
+  "e4__latency-run.log.gz": {
+    "path": ".artifacts/input-quality/e4/latency-run.log",
+    "sha256": "dcf323181e85bc709881c5cdfd080f0499a0bf2ad942936307702ae0db05bbbc",
+    "compressedSha256": "c4e072824979a63c4d89517a1436146ed49d066b873142bba2c16c729cb8d368"
+  },
+  "e4__layout-run.log.gz": {
+    "path": ".artifacts/input-quality/e4/layout-run.log",
+    "sha256": "09fb6b6fbad9e8a199d97ef28ba9b0a8f941c9a5636461e91dc7de0325650432",
+    "compressedSha256": "1361d4bbd570010197948be608854467eb24ea2f408efbdf2b90c0c4eebabd27"
+  },
+  "e4__python-tests.log.gz": {
+    "path": ".artifacts/input-quality/e4/python-tests.log",
+    "sha256": "09131edf2997b51212872dea600f852383ff5fad8bcef8126defe6e1a550710c",
+    "compressedSha256": "f2d03f9b482786b8aa5412fdd08762ec2fc3f88c8c11983f3983aca3e1e47d4c"
+  },
+  "e4__short-words-after.json.gz": {
+    "path": ".artifacts/input-quality/e4/short-words-after.json",
+    "sha256": "4f8d2945f471010a6616428a211fc1b8e11e8c1e01b9b27990717a1e974cf61c",
+    "compressedSha256": "41f68a4317b171b49ed3d4b08fd9e95c49858b3d5d70a42455a025c2d00097e4"
+  },
+  "e4__short-words-after.log.gz": {
+    "path": ".artifacts/input-quality/e4/short-words-after.log",
+    "sha256": "dd4ae2259e836212035a945785d3bd392c6d5fe96d692ec49be236f1790017e2",
+    "compressedSha256": "4b4ae14d5480a3b283d38e48ff8c2fdeb141d607f711b1e9a9df7f67efcd454f"
+  },
+  "e4__short-words-before.json.gz": {
+    "path": ".artifacts/input-quality/e4/short-words-before.json",
+    "sha256": "a57c379849cfa817cfe04294a4997aa2516005e7989c73cda63b83a92111ceb7",
+    "compressedSha256": "69b7f021f78bd72828121760bdce9d9e7dd38ed19b69da159a5da522033a8b18"
+  },
+  "e4__short-words-before.log.gz": {
+    "path": ".artifacts/input-quality/e4/short-words-before.log",
+    "sha256": "3444ae4b6d1a5172f1b6ad7f1ea5f1606a9cd5966866f2baa0e4e2e2cc028fe3",
+    "compressedSha256": "8059912f2e1eb7aba94d4e444f81fc655ab2b527bea7327bb0cac93927de80a5"
+  },
+  "e4__slow-run.log.gz": {
+    "path": ".artifacts/input-quality/e4/slow-run.log",
+    "sha256": "c02f2f4312f62e7b824b730851f31b0c2a7b11c72963726adfc00af593b45d24",
+    "compressedSha256": "8477f317dbad2c302e6d2c5993af7d2ccbc754df2bd077f77c33ac7a2dd4bbe2"
+  },
+  "e4__source-prior-development.json.gz": {
+    "path": ".artifacts/input-quality/e4/source-prior-development.json",
+    "sha256": "a3482a34352e15919575a46630d0aea1df4b0a9e3c4b15d3e3f0c65ace9e5ff6",
+    "compressedSha256": "c22be127fd612a4ef9ffd434f969305a93cc078c969b4a3f309f37c18993dc64"
+  },
+  "e4__system-associations.log.gz": {
+    "path": ".artifacts/input-quality/e4/system-associations.log",
+    "sha256": "ffaf9e2bc09546e8d4c095646c23dec25a60081e3f1081314f9ad1a87af1ac08",
+    "compressedSha256": "352aa1821e3a2be0c421dd2273ab93a5d691ba8a0e04bb9b4e98b6942ceaad9e"
+  },
+  "e4__system-cold.log.gz": {
+    "path": ".artifacts/input-quality/e4/system-cold.log",
+    "sha256": "ae6903b67396e0a0b9a2bc013991db35780863553354c654f8bdda029c234c01",
+    "compressedSha256": "6ef38238f58e18355ac2fcc6a3b1a7f1a026dac0658097b454987e1d217f85cd"
+  },
+  "e4__system-corrections.log.gz": {
+    "path": ".artifacts/input-quality/e4/system-corrections.log",
+    "sha256": "7dd3870d5668d08c0a3c5c362e01cf72f917995a3e45ef3817aac69d1fe826b8",
+    "compressedSha256": "5cb72f33e162214d837787e5314956b049a322596be5f628254bfc4973954712"
+  },
+  "e4__system-learning.log.gz": {
+    "path": ".artifacts/input-quality/e4/system-learning.log",
+    "sha256": "33c6a973e52942286b2d4baf636b676cf18329c2e4e8d7d0bf0244c2ff7f5958",
+    "compressedSha256": "969f8e548ba196f4e958e8aef368ec77c392c54410ea3dcc7d4551dfff99a7e4"
+  },
+  "e4__system-warm.log.gz": {
+    "path": ".artifacts/input-quality/e4/system-warm.log",
+    "sha256": "576a99f70d44c509b66805723328df88ee52f00bf9a31dacb5cbd2cba0103f8c",
+    "compressedSha256": "188e9e9a5abb36ad4873f64bfb980fda9b4f1b2552012b2c36ce7af20a9cb97e"
+  },
+  "e4__timeout-run.log.gz": {
+    "path": ".artifacts/input-quality/e4/timeout-run.log",
+    "sha256": "50a0ebb965bd585fa1fc1c52ff07af9d0d259a2fd1e7fd23add6b3244a2aefca",
+    "compressedSha256": "40972b4e5eb442f1401169a751a016a587df8a550a7a7b4967bd2e8c85e53cd4"
+  },
+  "e4-latency__e4-latency-1-baseline__device__latency.tsv.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-1-baseline/device/latency.tsv",
+    "sha256": "b29a2455378221c2112d068fe46cec913629df31c7eb09bd89ca0a8446a91eb1",
+    "compressedSha256": "7e268b54474207d3a163c1fbd6d01e112e50f11fd15ba91ab86bec08df212254"
+  },
+  "e4-latency__e4-latency-1-baseline__device__shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-1-baseline/device/shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput-cadence.txt",
+    "sha256": "8cdf20c837e1a2f7aba869cfbb74e10231f39e7ee06d413ea9af90a3e6aee3f0",
+    "compressedSha256": "26d8d429c68828132b84e21871580e65e88f86a890db61b9ba8a340b5234d4df"
+  },
+  "e4-latency__e4-latency-1-baseline__device__shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput.txt.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-1-baseline/device/shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "e4-latency__e4-latency-1-baseline__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-1-baseline/instrumentation.log",
+    "sha256": "adbb72f620a82baa2521672fb5f785ca33e26e1a5d870a917d3d80139905c319",
+    "compressedSha256": "93230ab0078ff8a896b240f97db72d409c1afa2f51dd9bd6ff480da434b8d2a4"
+  },
+  "e4-latency__e4-latency-2-optimized__device__latency.tsv.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-2-optimized/device/latency.tsv",
+    "sha256": "af12db1188d6cf6508ff60aad283bb106c75e1d1ee8def4035043e7fcfd0f4bb",
+    "compressedSha256": "4f8cf4df41bd654251ed2dc83c8f052e6d27e7568bba1c1366329ef005f953df"
+  },
+  "e4-latency__e4-latency-2-optimized__device__shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-2-optimized/device/shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput-cadence.txt",
+    "sha256": "3689fd7625b6f15aba313c6e74ff9291a7f007e950c3bcd76321f61f67f481bc",
+    "compressedSha256": "f7bc450c94c971c6006c2670d2344ee676973ebebf6313801539843721863d5d"
+  },
+  "e4-latency__e4-latency-2-optimized__device__shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput.txt.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-2-optimized/device/shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "e4-latency__e4-latency-2-optimized__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-2-optimized/instrumentation.log",
+    "sha256": "b264ee74ec18e8c7b5c01dbc09e53dffa7445428d32d10d80f343d94128e90dd",
+    "compressedSha256": "1cc86b70c35d10c47146792ee639551a4a36229aaf8a986198528f85261868f4"
+  },
+  "e4-latency__e4-latency-3-optimized__device__latency.tsv.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-3-optimized/device/latency.tsv",
+    "sha256": "5e8e1eaa5afa7a318bdf9e508ad237eeb71f6c70117fe99902cda10e462aa654",
+    "compressedSha256": "a963d3eba7e8c24824c54b0c8cb1e36b52486b4a730dbc9255d1decd5bcf6d87"
+  },
+  "e4-latency__e4-latency-3-optimized__device__shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-3-optimized/device/shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput-cadence.txt",
+    "sha256": "1fa3989586852147a63e8a66b749b3a48f433a6acde54252724544221f7ba404",
+    "compressedSha256": "22e948db722f428eca803c8ea14e238c0b86fb2d4989e4a6a24135bd91d08c94"
+  },
+  "e4-latency__e4-latency-3-optimized__device__shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput.txt.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-3-optimized/device/shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "e4-latency__e4-latency-3-optimized__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-3-optimized/instrumentation.log",
+    "sha256": "8c625a58aca5490b87b254c5d5a2fd42134e5feab594e008f2d550a67471d3b4",
+    "compressedSha256": "65715320c5838fdc4fb00ca886975afe7b06a286574b2c4eec2c7297aca4c9c7"
+  },
+  "e4-latency__e4-latency-4-baseline__device__latency.tsv.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-4-baseline/device/latency.tsv",
+    "sha256": "613e6122aad76eb1ce5e314690f13f810eab3455ed39a0d00f6f63fb03348f15",
+    "compressedSha256": "a19f7a561fa862e30849852b38bc6cb379f948f5eb2ad6fcf21a8cd079c8ab36"
+  },
+  "e4-latency__e4-latency-4-baseline__device__shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-4-baseline/device/shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput-cadence.txt",
+    "sha256": "0f1f59087ea73f48dc3d1f0d883bc8f5c18f9b5c4e5dc69212a95fcd7ee3ad95",
+    "compressedSha256": "351d619cbf3e57d4c2312c10837d377600156a56c5add2e0018e6daf98590382"
+  },
+  "e4-latency__e4-latency-4-baseline__device__shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput.txt.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-4-baseline/device/shortAndLongConfirmationLatencyKeepsTheCompleteBaselineOutput.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "e4-latency__e4-latency-4-baseline__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/e4-latency/e4-latency-4-baseline/instrumentation.log",
+    "sha256": "8f42629237d47a6541c0e090dfd866ff20b613a09278f3d3300a2724d4a74543",
+    "compressedSha256": "9f3a251d84572756f8be9fea998cfb326e6d993efad3a79754acbbd502327f80"
+  },
+  "e4-latency__measurements.json.gz": {
+    "path": ".artifacts/input-quality/e4-latency/measurements.json",
+    "sha256": "d02729876f5cffc2d7f9e77bc764c2dffd3e18ade1a9f9d90e674323f32045f6",
+    "compressedSha256": "2a3c3f99b595079deb1fe0d69b44be7f8e195284c8f32f34958d4506860249e2"
+  },
+  "e4-layout__landscape__device__associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt",
+    "sha256": "2d7135b214b0b7184a063d9d252d0a2273a13453abe7ce96dd40a5a71aad2973",
+    "compressedSha256": "c98a703690b1ca6e4625c6b6a9d044280a1c5677c90d61a95eca3e3092191d74"
+  },
+  "e4-layout__landscape__device__associationCloseRestoresToolbarWithoutMovingLetterRows.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt",
+    "sha256": "d9840f1c0c1d2c5704784b6b90a144fca9c418749ea982adb40b736cc843245a",
+    "compressedSha256": "17c039c01047104824366c3d682a6e463729a25de64afce96c2babdb4804636f"
+  },
+  "e4-layout__landscape__device__composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt",
+    "sha256": "ddfc8b25ceaa3532dabb31618916d08d05de1d8db22efac66dcb72201f451626",
+    "compressedSha256": "35d297e0b5c2816c517dcb47ec9fec73285553aeefcafbb4a401d07288b7524a"
+  },
+  "e4-layout__landscape__device__composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt",
+    "sha256": "d9840f1c0c1d2c5704784b6b90a144fca9c418749ea982adb40b736cc843245a",
+    "compressedSha256": "17c039c01047104824366c3d682a6e463729a25de64afce96c2babdb4804636f"
+  },
+  "e4-layout__landscape__device__expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt",
+    "sha256": "87dae4b7871c38f5ab1dc57fd1418fb36b7ad75429d4f6d5b1d9b55636f8d229",
+    "compressedSha256": "ad0873fb04f9beb5b073f19a46e3d8756a561dc74b158e7b29f021a8b9cd98c8"
+  },
+  "e4-layout__landscape__device__expandedCandidateScrollSelectsItsActualVisibleWord.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt",
+    "sha256": "d9840f1c0c1d2c5704784b6b90a144fca9c418749ea982adb40b736cc843245a",
+    "compressedSha256": "17c039c01047104824366c3d682a6e463729a25de64afce96c2babdb4804636f"
+  },
+  "e4-layout__landscape__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/e4-layout/landscape/instrumentation.log",
+    "sha256": "e154700f2b34fc9c4f096c3a2e5c2e2da5eda81589f387201ba47748432b9fdf",
+    "compressedSha256": "dce7c3772195a290e52027353239de86ee007ee3ebfea6b8212ff14d06ce5ba3"
+  },
+  "e4-layout__landscape-large__device__associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt",
+    "sha256": "6ae0e93f20046626be5da80732a2119212b3c95f9202d2518e718f017993e821",
+    "compressedSha256": "6be7de32d54d8dd2bd2eea2b28f230da8e73248bbd3a4e97346c2fbd6d8d8de9"
+  },
+  "e4-layout__landscape-large__device__associationCloseRestoresToolbarWithoutMovingLetterRows.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt",
+    "sha256": "91d086435671b5b5586d7e9c07a40673b5af13635babc58ec2abf96ddc01a8d6",
+    "compressedSha256": "53401d12896d5d6b4f64fbd0acf00c6f55effc2cfb03996c978fcb4f7e6745f2"
+  },
+  "e4-layout__landscape-large__device__composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt",
+    "sha256": "c116a03c6a69064f08a33b3a072c4c3df7155f01352eee1e4476d80ec27aba8c",
+    "compressedSha256": "591bc95bd7ce0d0b504d26a8e41ad99a54e91868427f6280c97edbf55b19780e"
+  },
+  "e4-layout__landscape-large__device__composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt",
+    "sha256": "91d086435671b5b5586d7e9c07a40673b5af13635babc58ec2abf96ddc01a8d6",
+    "compressedSha256": "53401d12896d5d6b4f64fbd0acf00c6f55effc2cfb03996c978fcb4f7e6745f2"
+  },
+  "e4-layout__landscape-large__device__expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt",
+    "sha256": "cf37cefe096bc2477c56777893e2d9d732e5625ff81eb20a0bb6df95ad5c5563",
+    "compressedSha256": "4fa0f0f86fd5fc3a128e39e5a66e025a4f01a9be6bb8478d6fb0fcc6f7631332"
+  },
+  "e4-layout__landscape-large__device__expandedCandidateScrollSelectsItsActualVisibleWord.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt",
+    "sha256": "91d086435671b5b5586d7e9c07a40673b5af13635babc58ec2abf96ddc01a8d6",
+    "compressedSha256": "53401d12896d5d6b4f64fbd0acf00c6f55effc2cfb03996c978fcb4f7e6745f2"
+  },
+  "e4-layout__landscape-large__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/e4-layout/landscape-large/instrumentation.log",
+    "sha256": "d3ed1c5015437965d6263e1a8f37bd5bb737ed4d8bdbfd089565c9c9b34771fc",
+    "compressedSha256": "96925ce60dadb9a394e644970d0825916e20d7bfdbef66d1e78b44fd695f5cc6"
+  },
+  "e4-layout__portrait__device__associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt",
+    "sha256": "bd1ff20cd74b4e68de06c5dda6792d8c9139954b5a0408e46a0f3955294ec78e",
+    "compressedSha256": "b88b67bb8094b4dc3583865d0a5287e7c97f5496f2d5579dc38ae446e35e8f45"
+  },
+  "e4-layout__portrait__device__associationCloseRestoresToolbarWithoutMovingLetterRows.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt",
+    "sha256": "0befe4328a657f1eb1fdf071f7357662ea2f8f2319ad8c439c6bd3a4e8248c58",
+    "compressedSha256": "5215063af15c3808d17297c105449213f2b604a83a247a7e4aa63e02d4a1d9c2"
+  },
+  "e4-layout__portrait__device__composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt",
+    "sha256": "825a5a258b2147d00005eb50865e717f880f3184ba8a34b4b5c60b5c6d5ccab3",
+    "compressedSha256": "6beb99b8cd4e5cf720aa6c6eb27adced4696e74e4bfd8e07246664ea8e0ecaf8"
+  },
+  "e4-layout__portrait__device__composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt",
+    "sha256": "0befe4328a657f1eb1fdf071f7357662ea2f8f2319ad8c439c6bd3a4e8248c58",
+    "compressedSha256": "5215063af15c3808d17297c105449213f2b604a83a247a7e4aa63e02d4a1d9c2"
+  },
+  "e4-layout__portrait__device__expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt",
+    "sha256": "eabe8f8e96dd752c59e7777a539d0f75e000bf9db563cd24d2be2be7d31bf466",
+    "compressedSha256": "3921fa86c95a53381c40c2fa873f04e54d9089626ec9f7b0e7039aa9091e17e0"
+  },
+  "e4-layout__portrait__device__expandedCandidateScrollSelectsItsActualVisibleWord.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt",
+    "sha256": "0befe4328a657f1eb1fdf071f7357662ea2f8f2319ad8c439c6bd3a4e8248c58",
+    "compressedSha256": "5215063af15c3808d17297c105449213f2b604a83a247a7e4aa63e02d4a1d9c2"
+  },
+  "e4-layout__portrait__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/e4-layout/portrait/instrumentation.log",
+    "sha256": "07e568348507578d1ebd533d0f9724ba318b9f2a9a7e3aa90b0ba8bcdb2eac25",
+    "compressedSha256": "a5e12bc45b9c77a9bd785b7af93f109b434fb397d4937fb9d484c63b34e4d04d"
+  },
+  "e4-layout__portrait-large__device__associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt",
+    "sha256": "ff74223439e52a5c773d263172cb9c1b4b7fce19d11723323571bf7a72987016",
+    "compressedSha256": "e53d76b5d57bd6740291dfc6ee174069fd7e3b552ca1097976804d6508254c91"
+  },
+  "e4-layout__portrait-large__device__associationCloseRestoresToolbarWithoutMovingLetterRows.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt",
+    "sha256": "f41e23283b2ee63df5a1a30648efe0498d1b14575394255d87d7c374336344df",
+    "compressedSha256": "c10862af5a080fc5a7acd3aabd8cabfa28197344bf766fa76975098ef60470b5"
+  },
+  "e4-layout__portrait-large__device__composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt",
+    "sha256": "38b280344daa9c9501e237eac4e7ef505fce3dc9d38b980ea43d5a90828ef467",
+    "compressedSha256": "71b65e372b29dba6f8ee97e6d493d228457f3c3fccf3843f68e27b2411d53cf2"
+  },
+  "e4-layout__portrait-large__device__composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt",
+    "sha256": "f41e23283b2ee63df5a1a30648efe0498d1b14575394255d87d7c374336344df",
+    "compressedSha256": "c10862af5a080fc5a7acd3aabd8cabfa28197344bf766fa76975098ef60470b5"
+  },
+  "e4-layout__portrait-large__device__expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt",
+    "sha256": "0cfbac832e77e98d6159da4cb7927569b99cc1604d34331639c2da9ff3cb72d7",
+    "compressedSha256": "4181d1114d4f0604aec45652c05c86166a948afb57a38455813041ad9b51df76"
+  },
+  "e4-layout__portrait-large__device__expandedCandidateScrollSelectsItsActualVisibleWord.txt.gz": {
+    "path": ".artifacts/input-quality/e4-layout/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt",
+    "sha256": "f41e23283b2ee63df5a1a30648efe0498d1b14575394255d87d7c374336344df",
+    "compressedSha256": "c10862af5a080fc5a7acd3aabd8cabfa28197344bf766fa76975098ef60470b5"
+  },
+  "e4-layout__portrait-large__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/e4-layout/portrait-large/instrumentation.log",
+    "sha256": "8f3f78ffc3afd68ac2fb3aa297b0d63a6d6272212409406ba283964527de3874",
+    "compressedSha256": "f69f0665bb50588d336d606109e0fdc3a85d01cc370aed25bcdfd8956e7fa9b8"
+  },
+  "e4-layout__result.json.gz": {
+    "path": ".artifacts/input-quality/e4-layout/result.json",
+    "sha256": "6c013792445666ceefc3b9453659785be6a170239e4e0acf66fc6fb8edc156db",
+    "compressedSha256": "e364419b012a2f5c0e567e025163a92758ed96990d4c8725c197f555fb42f720"
+  },
+  "e4-slow__e4-slow-0__device__delayedChineseConfirmationPreservesBothWordsAndOrder-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-0/device/delayedChineseConfirmationPreservesBothWordsAndOrder-cadence.txt",
+    "sha256": "33148c36eb2c176f903e92a329ccda8144dfcaf25ea0a7113183e31b8bc76a6f",
+    "compressedSha256": "ac947c7a0d0f65405a5bd64f15b26775064daa249f676e3dcb3f9f81d6c242da"
+  },
+  "e4-slow__e4-slow-0__device__delayedChineseConfirmationPreservesBothWordsAndOrder-waiting.txt.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-0/device/delayedChineseConfirmationPreservesBothWordsAndOrder-waiting.txt",
+    "sha256": "b8496937794238829d052c2b6f10076422036359a6e2f13eb4378ca6d991637d",
+    "compressedSha256": "0736438457a979c662dade09ca81a304665b6f23adabe07fcf66121d56de8e40"
+  },
+  "e4-slow__e4-slow-0__device__delayedChineseConfirmationPreservesBothWordsAndOrder.txt.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-0/device/delayedChineseConfirmationPreservesBothWordsAndOrder.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "e4-slow__e4-slow-0__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-0/instrumentation.log",
+    "sha256": "722e9573bd517ce054560041b7e61046f248abd308d7088cf7daed960f24af53",
+    "compressedSha256": "9fb23b89462a8a0b1ad65cd7c59995b171ff9c609e181193148ecdfd30c7ec4c"
+  },
+  "e4-slow__e4-slow-1__device__enterExplicitlyKeepsRawDuringSlowWait-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-1/device/enterExplicitlyKeepsRawDuringSlowWait-cadence.txt",
+    "sha256": "ac0cffe9c714d8b1548c86ecca8e4e9d57ee106e8dcd631ec51a29af40c741d2",
+    "compressedSha256": "183209e076ad74c984dcf3c798709839ab5fef9d2ebd3a778f9bc5763cc1349f"
+  },
+  "e4-slow__e4-slow-1__device__enterExplicitlyKeepsRawDuringSlowWait-waiting.txt.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-1/device/enterExplicitlyKeepsRawDuringSlowWait-waiting.txt",
+    "sha256": "7047433e4504b3d30bf016acf268d3d40895707abb0df1ba4f38c6af0ba49d07",
+    "compressedSha256": "d4e8b56f48b5a638617a7e19704cd63371eeb9d3a3fcc07e527873833288890d"
+  },
+  "e4-slow__e4-slow-1__device__enterExplicitlyKeepsRawDuringSlowWait.txt.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-1/device/enterExplicitlyKeepsRawDuringSlowWait.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "e4-slow__e4-slow-1__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-1/instrumentation.log",
+    "sha256": "2fec3dfd039796ed9a8087f37b8b7d9a9b6b92228f2c364cfd4c09847089d678",
+    "compressedSha256": "ba1ce3583629c17a1fa6d54836660db1a36e1cfe7518c02e6a2b1e6439026a0d"
+  },
+  "e4-slow__e4-slow-2__device__deleteCanCorrectTheCompositionBeforeWorkerResumes-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-2/device/deleteCanCorrectTheCompositionBeforeWorkerResumes-cadence.txt",
+    "sha256": "0a6b680a44339aebd47ab6a038db4129115eef89e4632822fc52fbee9143209f",
+    "compressedSha256": "45508f024ad8eef580e4c84b20a1bb95ad01f44ceed814596a804c3e5cb52534"
+  },
+  "e4-slow__e4-slow-2__device__deleteCanCorrectTheCompositionBeforeWorkerResumes-waiting.txt.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-2/device/deleteCanCorrectTheCompositionBeforeWorkerResumes-waiting.txt",
+    "sha256": "184c8c86679ab627b43466ffd48b9a1fd74d79af43ceffae9c36fe576d038795",
+    "compressedSha256": "42abc7f2857b20a3c95032e323517c7d1519feaa68458acdce601deab1cb2612"
+  },
+  "e4-slow__e4-slow-2__device__deleteCanCorrectTheCompositionBeforeWorkerResumes.txt.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-2/device/deleteCanCorrectTheCompositionBeforeWorkerResumes.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "e4-slow__e4-slow-2__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-2/instrumentation.log",
+    "sha256": "bb706c833d1c07ef942cc3edfae87d810420b9f21e364848c74029b6da1d40e9",
+    "compressedSha256": "2888e804b3996e28cd417cfda24a30f6bb4e11783685e16fdfa24accb22618ef"
+  },
+  "e4-slow__e4-slow-3__device__editorSwitchInvalidatesDelayedConfirmationAndQueuedInput-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-3/device/editorSwitchInvalidatesDelayedConfirmationAndQueuedInput-cadence.txt",
+    "sha256": "2bac50b849a81dfead91de28545d68f5e64eefebf56def770b275da68d2c6729",
+    "compressedSha256": "e8c1011ef091232452f1a381d94b21d6bd15034bc08090b569fda62f6b7589aa"
+  },
+  "e4-slow__e4-slow-3__device__editorSwitchInvalidatesDelayedConfirmationAndQueuedInput-waiting.txt.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-3/device/editorSwitchInvalidatesDelayedConfirmationAndQueuedInput-waiting.txt",
+    "sha256": "2a337b94b3f235e9c7a46ddf0f59ad50406d9907104c5f9b4c42538cca3d3f17",
+    "compressedSha256": "59216cd16edec757ad828d80a9506cf6bd6a49b68770c9e3c351f2c24459861f"
+  },
+  "e4-slow__e4-slow-3__device__editorSwitchInvalidatesDelayedConfirmationAndQueuedInput.txt.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-3/device/editorSwitchInvalidatesDelayedConfirmationAndQueuedInput.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "e4-slow__e4-slow-3__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/e4-slow/e4-slow-3/instrumentation.log",
+    "sha256": "fbe43ac08ecff856e046f1880bef8bc960be72d671657861ae4cb634f647437f",
+    "compressedSha256": "020c9008c12bd980a079647f3fa2e2381627ed0a33ef8a23026d9f4d595c5991"
+  },
+  "e4-slow__result.json.gz": {
+    "path": ".artifacts/input-quality/e4-slow/result.json",
+    "sha256": "7dd9f06f2fe2d14e2249f20346e13f431897c2641b6f0f3c7f4fc9a81d949d9a",
+    "compressedSha256": "0a5fe2b11805e5467812b6e115df3f629251840acfa1956eb7f520b52fbf7a72"
+  },
+  "e4-timeout__result.json.gz": {
+    "path": ".artifacts/input-quality/e4-timeout/result.json",
+    "sha256": "fe86dd9543760015021642d577feff05e1471f24eb1220f58bb3a9569fcbfbbb",
+    "compressedSha256": "45a44253942de7f5d1d9a24d9b783e58add447cb77b3ded12f63cc11353cd47d"
+  },
+  "e4-timeout__timeout__device__associationHonorsTheUsersSystemInteractionTimeout-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/e4-timeout/timeout/device/associationHonorsTheUsersSystemInteractionTimeout-cadence.txt",
+    "sha256": "8adca038d3288d209308fe37cfed488bfdda5193724b51f2b8244fad2cf7c437",
+    "compressedSha256": "a278add6ad59fc05ef18892a7beeff6c3ad739772b39f3eab6a6d0c04d2fdcbf"
+  },
+  "e4-timeout__timeout__device__associationHonorsTheUsersSystemInteractionTimeout.txt.gz": {
+    "path": ".artifacts/input-quality/e4-timeout/timeout/device/associationHonorsTheUsersSystemInteractionTimeout.txt",
+    "sha256": "c306a6adc1fea99f5aecf4b7cff25c2d07719cd7fda6c49176a5cf8b91031c27",
+    "compressedSha256": "8c2c38314166c71accc7b0ba0ba0ed0ffbf298fe9edd7e83bfbf0e40c7984dd5"
+  },
+  "e4-timeout__timeout__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/e4-timeout/timeout/instrumentation.log",
+    "sha256": "3243c05b5d3abb2e71275fa40d5de72c13de015cd77258c6ddb7ae18ce172670",
+    "compressedSha256": "922413ab65e2be173e2e70195fc2dc1eed240a381872c3e0d695610b68ca27e0"
+  },
+  "external-editor-e4-associations__device__aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters-cadence.txt",
+    "sha256": "55e878fd3064331f11a8146e028b3c078d166d3acfd8a6316c9f63c8ab4af9bb",
+    "compressedSha256": "5007bb8e8609ef784da7261065e66b3422e1c19bea5656a0d9c151ea2743ee83"
+  },
+  "external-editor-e4-associations__device__aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-associations__device__associationDoesNotExpireUnderAnActiveTouch-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/associationDoesNotExpireUnderAnActiveTouch-cadence.txt",
+    "sha256": "05ad443527e52c6805c12440397acf6aaa9d4e06841a62b0c2b5098c161f43a0",
+    "compressedSha256": "5cd292a0b5e62fa0dedf1993fcdab53cea0a2adb548940798a6c5a1bc9ade9ec"
+  },
+  "external-editor-e4-associations__device__associationDoesNotExpireUnderAnActiveTouch.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/associationDoesNotExpireUnderAnActiveTouch.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-associations__device__changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry-cadence.txt",
+    "sha256": "dcc6185818d62322ed2df7c0a21c1d346563edf9d89b7285420c6ba01db832bc",
+    "compressedSha256": "5012d12d739a0e634adc2a2ed7108a08cbd5a2908795724911d61cb0d5545e69"
+  },
+  "external-editor-e4-associations__device__changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-associations__device__dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable-cadence.txt",
+    "sha256": "4f088a6402381e1871ffdb998f826ae2ae296d6454ff4e3c499f09cc5cddb055",
+    "compressedSha256": "0f5d492687547e9b58d633481c6daaec7c671eb713266824cd68250dbc9b3388"
+  },
+  "external-editor-e4-associations__device__dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-associations__device__draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout-cadence.txt",
+    "sha256": "e197e53358b292b77f697bbfd3fc14bfecc4d6ad1e0d9f8c2cc4d7922982797b",
+    "compressedSha256": "17201867126196491e24f71236a0f2cb409c6abff1054a9c76daaf71a8f99d98"
+  },
+  "external-editor-e4-associations__device__draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-associations__device__hidingAndReopeningDoesNotResurrectThePreviousAssociation-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/hidingAndReopeningDoesNotResurrectThePreviousAssociation-cadence.txt",
+    "sha256": "f8c9e686d2a2e6e8d1eab104abe57c76f271ed029eafc2fa84b7577a1be3a525",
+    "compressedSha256": "05ac95dcf006c4a9ee05a6647b2ff7eb73e7d43651d40b99a6b063d61579c002"
+  },
+  "external-editor-e4-associations__device__hidingAndReopeningDoesNotResurrectThePreviousAssociation.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/hidingAndReopeningDoesNotResurrectThePreviousAssociation.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-associations__device__idleTimeoutRestoresToolbarWithoutChangingExternalText-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/idleTimeoutRestoresToolbarWithoutChangingExternalText-cadence.txt",
+    "sha256": "ac69b8dcff96b15d6341590859aa3ac5ec86d69dac091c565d423416c35bc98a",
+    "compressedSha256": "ab5f498a6ef26f94e5f5a1f1bac38c9078f5c51aaaa8984f5677aec3c6f8c9b9"
+  },
+  "external-editor-e4-associations__device__idleTimeoutRestoresToolbarWithoutChangingExternalText.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/idleTimeoutRestoresToolbarWithoutChangingExternalText.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-associations__device__switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping-cadence.txt",
+    "sha256": "e22609521d4b4f05b28ea3ce30a3890033f942335323c9a270e7a396ef5768e5",
+    "compressedSha256": "471c92dbd5f4840ba782dca8cd7bd3e547e7a92673c846a74d1e3d5094a55d9d"
+  },
+  "external-editor-e4-associations__device__switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-associations__device__typingTheNextWordCancelsThePendingReveal-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/typingTheNextWordCancelsThePendingReveal-cadence.txt",
+    "sha256": "5acc603e221cbfe1998963e8292fc17c31fb7f79466def28d2a7ba36fe715e9e",
+    "compressedSha256": "f5d00dc5269023b4308a7b618b326118ca9735756d9580fb515d803bec1b31f6"
+  },
+  "external-editor-e4-associations__device__typingTheNextWordCancelsThePendingReveal.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/device/typingTheNextWordCancelsThePendingReveal.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-associations__environment.json.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/environment.json",
+    "sha256": "de34c64d7fc48918505953c80b3da3b76f2113fa70474f06e5ba3258c11e6353",
+    "compressedSha256": "3969cda147d7d8a22a8cd202867992fb2602a4c2eb4618aca2fc1b2370329574"
+  },
+  "external-editor-e4-associations__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-associations/instrumentation.log",
+    "sha256": "944bb1e2898fe0b173b7671172ee23fbbbb8de02001e7dc3f8bf7cfa05fafb4f",
+    "compressedSha256": "4fefbf8709bac26ea8f1398afc90e66f367e49f93cebb991c9025b455a655110"
+  },
+  "external-editor-e4-cold__device__confirmationReplaysFollowingInputInOrder-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-cold/device/confirmationReplaysFollowingInputInOrder-cadence.txt",
+    "sha256": "ec561c538942799ffc39138ef174815cf9f00c910f264ae22843edd2b0e7adcb",
+    "compressedSha256": "9ad85ec8b287bb4c5e556c3490631b03b340fff80d6587965b8c448fac547e5d"
+  },
+  "external-editor-e4-cold__device__confirmationReplaysFollowingInputInOrder.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-cold/device/confirmationReplaysFollowingInputInOrder.txt",
+    "sha256": "10bf4d34a14cec5b2591728642afeabaa5d86efa7218da472007772b75dd43f4",
+    "compressedSha256": "e1a2e708a36da383496a43f656e1c66568c8abb6cbf3ca5e5577c061f2a559c8"
+  },
+  "external-editor-e4-cold__device__enterCommitsRawEnglishInChineseModeWithoutANewline-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-cold/device/enterCommitsRawEnglishInChineseModeWithoutANewline-cadence.txt",
+    "sha256": "240583fc1697a8e78c9eb845296b1915a9097f038207a69af620379c9786ced3",
+    "compressedSha256": "6107f525b39994759435f7ddb4f88956eba0d250a386c9d3731336cbde7d94d0"
+  },
+  "external-editor-e4-cold__device__enterCommitsRawEnglishInChineseModeWithoutANewline.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-cold/device/enterCommitsRawEnglishInChineseModeWithoutANewline.txt",
+    "sha256": "afd175abd0307aba4fac0449e19592814e9bb6932af85d18b46aa343a1253591",
+    "compressedSha256": "21fe819e7a0f052e7c23306a01a6260d6b3e8005c467ae52f3bf9d61234fefb2"
+  },
+  "external-editor-e4-cold__device__rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-cold/device/rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce-cadence.txt",
+    "sha256": "f1eeb43ea1d66e17471ae7c8a17bc6c6be9276e119903d71b2706d8fc2b973b3",
+    "compressedSha256": "03a373d546eb4f0628a5011be82e73cee41d003b3abd99ea5002e1d187c773b9"
+  },
+  "external-editor-e4-cold__device__rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-cold/device/rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.txt",
+    "sha256": "cbe36ef44c8a153de960c1a286ede20a1647ef487e4f01052f1623435babe19f",
+    "compressedSha256": "b4476dc3fd89c87ed558b87d1854818a73f313a4ae186f08b44d8846f67e0f7c"
+  },
+  "external-editor-e4-cold__device__switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-cold/device/switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField-cadence.txt",
+    "sha256": "cdc556333bdeb8eb016ab66e87b4b458c211e3b32381c1f19deae12ed85e697e",
+    "compressedSha256": "f68de2ad93868c19277fdabc492d56a3eb14da8e2f634400e7a80c2f9d1076c1"
+  },
+  "external-editor-e4-cold__device__switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-cold/device/switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.txt",
+    "sha256": "54bd14701a02ed5d3384c605e285a7b9a0c9e66ba91e09faa09d5c8610daf977",
+    "compressedSha256": "a542f6e536053336dc95922923cf336a1beb6d71859341bface348b1cde41bbf"
+  },
+  "external-editor-e4-cold__environment.json.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-cold/environment.json",
+    "sha256": "c29659f341b1ae3cef44b872bc290196242b956f38529d0dd72f724b71fb29dd",
+    "compressedSha256": "c4e11c7dea4ab6e60629a67695d7824613b58132ad3f9210c255ddf39b7342c2"
+  },
+  "external-editor-e4-cold__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-cold/instrumentation.log",
+    "sha256": "ee3ca2ca8d650a8b383246d384a5a90b92cce4c47c5ca6117f623fe7c5df887b",
+    "compressedSha256": "48eca158415990994f18e8ce52ede04566ac5cdaaad3fdbde6fea6c040494381"
+  },
+  "external-editor-e4-corrections__device__missingKeyAtSentenceStartCanBeConfirmedAsChinese-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-corrections/device/missingKeyAtSentenceStartCanBeConfirmedAsChinese-cadence.txt",
+    "sha256": "ddf9e1ac738996faf6bc271752836b60e36584d9c03b913add50c27c16d621d7",
+    "compressedSha256": "37a4827ac6a6712638a898fed142318ddcb7355ed34610c85b27f49d005096c1"
+  },
+  "external-editor-e4-corrections__device__missingKeyAtSentenceStartCanBeConfirmedAsChinese.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-corrections/device/missingKeyAtSentenceStartCanBeConfirmedAsChinese.txt",
+    "sha256": "18b120c6a837939f4d912862d86f58b4d74eb59672253e53b9c9fbdd53d35066",
+    "compressedSha256": "6cf6f175f88a411a637253154f27c1463ef33695ad8b32905bb44e05fc001dae"
+  },
+  "external-editor-e4-corrections__device__missingKeyInsideTheSentenceCanBeConfirmedAsChinese-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-corrections/device/missingKeyInsideTheSentenceCanBeConfirmedAsChinese-cadence.txt",
+    "sha256": "10866435bb9dae16b36c735333a3542e62fd92d5531fbab0702e937fba1c6849",
+    "compressedSha256": "13f7e5eaa90cf1789e31593718caa872523b0aefab85a663b1d49b627e95c7dd"
+  },
+  "external-editor-e4-corrections__device__missingKeyInsideTheSentenceCanBeConfirmedAsChinese.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-corrections/device/missingKeyInsideTheSentenceCanBeConfirmedAsChinese.txt",
+    "sha256": "4ee9fa259811e22e855f59fcb487bdca3508fa68064a82638a7ea33972a1cdca",
+    "compressedSha256": "951d7b0ce1c4667699efbacfbbb7796df49887f79a28b08d22173d5350c33a2a"
+  },
+  "external-editor-e4-corrections__device__missingParticleKeyKeepsTheSentenceContext-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-corrections/device/missingParticleKeyKeepsTheSentenceContext-cadence.txt",
+    "sha256": "6688324b7689e187c44b995ae6891b1bf2c3d5d6469f60ac0a2ac9b141bc4255",
+    "compressedSha256": "15251c333079364589165f7c780bb3f1109a885e147d718a853724b53eaae715"
+  },
+  "external-editor-e4-corrections__device__missingParticleKeyKeepsTheSentenceContext.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-corrections/device/missingParticleKeyKeepsTheSentenceContext.txt",
+    "sha256": "f404d6f865a85c6468cc7a7fac09c6dd3b679b55528dc2d1578f613e91d76c91",
+    "compressedSha256": "e8fdbb869721b8f8b478350ff50bcd88a0a28713e8cea30b75cb0d8e415512dd"
+  },
+  "external-editor-e4-corrections__device__validExtraSyllableDoesNotBuryTheContextualRepair-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-corrections/device/validExtraSyllableDoesNotBuryTheContextualRepair-cadence.txt",
+    "sha256": "ffdbaa2bd035339a3b08e83c3d3c628827454dcb2fe198fc0b643d0fa975051d",
+    "compressedSha256": "9c2f9eabd826bddfdb2acd240d4a18d6f433c22d7fa2902e4390989c8c801a7b"
+  },
+  "external-editor-e4-corrections__device__validExtraSyllableDoesNotBuryTheContextualRepair.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-corrections/device/validExtraSyllableDoesNotBuryTheContextualRepair.txt",
+    "sha256": "418a8bf4736e0fd6a6c46ad7d24a1c5585ac410694e1476d5ccebc16570c2397",
+    "compressedSha256": "2516f124d10622443556de813c58d07ee968f54eeacc821311a321e540b8c3ce"
+  },
+  "external-editor-e4-corrections__device__validFuzzySyllableDoesNotBuryTheContextualRepair-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-corrections/device/validFuzzySyllableDoesNotBuryTheContextualRepair-cadence.txt",
+    "sha256": "1a8e1d5cd4f2477a2704cd3f71d39d684d3e4eb57a85771aeace0dd9ff209dc0",
+    "compressedSha256": "b755237640f029a32865611ecfe57805aecc6e38f02cb7273470cf1edd32d799"
+  },
+  "external-editor-e4-corrections__device__validFuzzySyllableDoesNotBuryTheContextualRepair.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-corrections/device/validFuzzySyllableDoesNotBuryTheContextualRepair.txt",
+    "sha256": "5a99dda87dfbd3efdbe95e446257ea9be49ab3a204380a95791f8f0dd448ac35",
+    "compressedSha256": "91fdb3f8a29624dd066f957f80e6522a78c494f5793e77827c4760df6d7d10e0"
+  },
+  "external-editor-e4-corrections__environment.json.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-corrections/environment.json",
+    "sha256": "c5ab126c7cb5cca421c21fb11962958336b23e64848943b3725ab0e8b5537e0d",
+    "compressedSha256": "6201534170163d1cd0991bc27da192121c0a11b7e6947dfbe84ed01aa1a6b73b"
+  },
+  "external-editor-e4-corrections__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-corrections/instrumentation.log",
+    "sha256": "e78db0a05b6202dc6c5b8686b89176fed5de4a41f861a520ff1700f85b10a8a6",
+    "compressedSha256": "da9bf090bc2237e974d0b974f24cbe3d1f8f17fd81639d47cfb7c4ea67a90f24"
+  },
+  "external-editor-e4-learning__device__noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-learning/device/noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections-cadence.txt",
+    "sha256": "12153b0ce9f6846f91686bf0f0233282ccb328a5e620b386ca773c67c30be0d3",
+    "compressedSha256": "76cd0fa30238b15d0319bbbe0c7161f0c297cd2b31d7aa6f31d1c2ae3c34dcdd"
+  },
+  "external-editor-e4-learning__device__noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-learning/device/noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections.txt",
+    "sha256": "eca6802db0e5fbdc3992db605652adc243868464d314d00ab24b7d863628e3a5",
+    "compressedSha256": "fa63de3e0cde38401ff6a3beb741131a9d2138ccfd62425e2a531b5c142b1dd0"
+  },
+  "external-editor-e4-learning__device__progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-cadence.txt",
+    "sha256": "15c47bf8f7fe5eaa6c4f5f0093476a75707a7046718d2e1b78db1ab7dc711aee",
+    "compressedSha256": "5df449cf37ee5e71092995a117c20aaa0666e09add0813a5d2b0d8339e79a0a9"
+  },
+  "external-editor-e4-learning__device__progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart.txt",
+    "sha256": "b1f0688a3c9eff29253d28464cfecb37f39f51801c24a8f84f85481dd4f5b6ec",
+    "compressedSha256": "763925d6e0f32dc805e24163dffbe35c82f1285bed5101c832814fc5015b096f"
+  },
+  "external-editor-e4-learning__environment.json.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-learning/environment.json",
+    "sha256": "9f266fc90b0981701ae1edb351f8e16e8fb2419e38491865f0ab26249fff0823",
+    "compressedSha256": "eab6dab1a7d4923b6fbb68b0507c8eb58ce921aa7dd5f9ef51630e6b2de8e34e"
+  },
+  "external-editor-e4-learning__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-learning/instrumentation.log",
+    "sha256": "acfe6595b9dd0b57705ddfa9b87f9ded7e581bde13e1c78f28182f06fb547791",
+    "compressedSha256": "5cc55af94980a8886cf0201c1a8fb64eae1c45624d81567824ffbe53797b604c"
+  },
+  "external-editor-e4-warm__device__backspaceEditsThePendingSpellingBeforeSpaceConfirms-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/backspaceEditsThePendingSpellingBeforeSpaceConfirms-cadence.txt",
+    "sha256": "9ff71884c6db29b965b08d7c880536cd8ca7101b60f5b679931c85a3b6447075",
+    "compressedSha256": "634ba9eb85b02af44bcbdd8bfdd5c93954aaeb2d7358795e21af9e0b43afa97a"
+  },
+  "external-editor-e4-warm__device__backspaceEditsThePendingSpellingBeforeSpaceConfirms.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/backspaceEditsThePendingSpellingBeforeSpaceConfirms.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-warm__device__candidateWordsAreExposedAsActionsToAccessibilityServices-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/candidateWordsAreExposedAsActionsToAccessibilityServices-cadence.txt",
+    "sha256": "e2ad47bec858dcd56609e36ffbe7e8d43f4a14431dd45a816ef26eeda8ed6a5b",
+    "compressedSha256": "a037468827037fafa79667eb5e0b62f3ca05e45bcc11db1b0d06f3da72f2ca8b"
+  },
+  "external-editor-e4-warm__device__candidateWordsAreExposedAsActionsToAccessibilityServices.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/candidateWordsAreExposedAsActionsToAccessibilityServices.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-warm__device__confirmationReplaysFollowingInputInOrder-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/confirmationReplaysFollowingInputInOrder-cadence.txt",
+    "sha256": "8ca3996e161e9ed53b74eed7afb14e3cd65ee601583ea77583585bd161eabe3f",
+    "compressedSha256": "23094df515442c0dde0e805f5ad1602d0e73ee56440d4b4c7579523895d569d1"
+  },
+  "external-editor-e4-warm__device__confirmationReplaysFollowingInputInOrder.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/confirmationReplaysFollowingInputInOrder.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-warm__device__enterCommitsRawEnglishInChineseModeWithoutANewline-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/enterCommitsRawEnglishInChineseModeWithoutANewline-cadence.txt",
+    "sha256": "270044b67941fb11abb56ee17c8c74c19023a7988a562386406e9d0f5568b4db",
+    "compressedSha256": "6c57ca1aa152c159cba4a16ee65ddd3f6838032eb4ecaa16f2a488054b424b27"
+  },
+  "external-editor-e4-warm__device__enterCommitsRawEnglishInChineseModeWithoutANewline.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/enterCommitsRawEnglishInChineseModeWithoutANewline.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-warm__device__hidingAndReopeningTheImeKeepsTheExternalCommittedText-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/hidingAndReopeningTheImeKeepsTheExternalCommittedText-cadence.txt",
+    "sha256": "a5366ac86e9fe0e5df9db15545ffe18a87e6420f1534a0146e879cdc60d5f3ef",
+    "compressedSha256": "6a0b0a9eb54bcca82f8859cd77bd2647a89147279b91c2431670ff8537418cbc"
+  },
+  "external-editor-e4-warm__device__hidingAndReopeningTheImeKeepsTheExternalCommittedText.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/hidingAndReopeningTheImeKeepsTheExternalCommittedText.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-warm__device__movingCursorAfterCommitInsertsAtTheExternalSelection-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/movingCursorAfterCommitInsertsAtTheExternalSelection-cadence.txt",
+    "sha256": "0da0989a3257fc5c95f2bb9cfe4df61633ea72d9c744ed29e8133f3aac0f3af9",
+    "compressedSha256": "4fc30a6bffad6ecdc1062388cde18183504664322519c575217e3fa3575b7c74"
+  },
+  "external-editor-e4-warm__device__movingCursorAfterCommitInsertsAtTheExternalSelection.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/movingCursorAfterCommitInsertsAtTheExternalSelection.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-warm__device__passwordFieldUsesLiteralInputRatherThanChineseCandidates-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/passwordFieldUsesLiteralInputRatherThanChineseCandidates-cadence.txt",
+    "sha256": "e85d86b72d85b402956fc2cb0bd31a10592968b00c9a1ecb3ebd94d884de893b",
+    "compressedSha256": "df8043e240d384771c5134a3aacaf1b223ffc9fc133f6501b4fac5de03309036"
+  },
+  "external-editor-e4-warm__device__passwordFieldUsesLiteralInputRatherThanChineseCandidates.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/passwordFieldUsesLiteralInputRatherThanChineseCandidates.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-warm__device__rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce-cadence.txt",
+    "sha256": "9e2ed863421012c63c1d7cb5484ab68e7ed3d9b67ed6cf13fb33d1fdb96d426d",
+    "compressedSha256": "7f3a7315a08668875cc38649581217036ae0ae93555db32b2ccddb23cd58c973"
+  },
+  "external-editor-e4-warm__device__rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.txt",
+    "sha256": "a89256e48580e50ddf5b489510b062beca5d54748fa1e2a14a3c1641a290ab8f",
+    "compressedSha256": "4976c8fdbb4a0b218c835163bf40f6ebd9d7522f996d5f1c1f89a44cb91955ab"
+  },
+  "external-editor-e4-warm__device__switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField-cadence.txt",
+    "sha256": "3e856aea4e3d941f5688a05ac8ecaae5c06837fb09e268ca1ddb4d1f46c98457",
+    "compressedSha256": "debb5e6f30503f784d91088e4bf8c0cf64e8cb4b09efe36fec6d8ba9af82f8d8"
+  },
+  "external-editor-e4-warm__device__switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-warm__device__touchscreenPinyinCandidateCommitsThroughExternalInputConnection-cadence.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection-cadence.txt",
+    "sha256": "6eb84c1f26a781c0a1ad1b03644bae0b57e53e1ebd1b68afac0e322c2317d50e",
+    "compressedSha256": "8470b1c79643cd06af51ab8637581e1fcf9f2f89b4833d37faa12b23ff1aa72f"
+  },
+  "external-editor-e4-warm__device__touchscreenPinyinCandidateCommitsThroughExternalInputConnection.txt.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection.txt",
+    "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+    "compressedSha256": "f5e28f2a2421faca762f295acd24d4d1f3c149b4b36ad45ca10d4662f45fcd81"
+  },
+  "external-editor-e4-warm__environment.json.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/environment.json",
+    "sha256": "b90c87a48a8f6f6098a4260b9cf2ac3c9af930322dbb4d1d3386e37870c014d2",
+    "compressedSha256": "eccea1aba30cebe8e0502112e640866f55480d55d8a1102f00b8514c723a5cc4"
+  },
+  "external-editor-e4-warm__instrumentation.log.gz": {
+    "path": ".artifacts/input-quality/external-editor-e4-warm/instrumentation.log",
+    "sha256": "6aa50d0e27f985343a87727ca7b0d4c75e56891c24f203660b4934b9ccb9a447",
+    "compressedSha256": "e0bda5e7ebf97de54cc882827007ff921d8203daa7df6c2c13f05398a83e6f16"
+  }
+}

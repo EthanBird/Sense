@@ -12,6 +12,8 @@ data class PinyinSpellingPath(
     val cost: Float,
     val syllableEnds: List<Int>,
     val firstEditOffset: Int,
+    /** One generic insertion/deletion, excluding fuzzy/repeated keys or a mix of edits. */
+    val singleInsertionDeletion: Boolean = false,
 ) {
     val syllableCount: Int
         get() = syllableEnds.size
@@ -59,15 +61,18 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
                 syllableEnds = emptyList(),
                 firstEditOffset = NO_EDIT_OFFSET,
                 firstEditTier = null,
+                editCount = 0,
             ),
         )
 
         query.indices.forEach { start ->
+            DecodeWorkScope.checkpoint()
             val states = beams[start] ?: return@forEach
             prune(states, maxPaths)
             val outgoing = edges[start] ?: edgesAt(parsed, start).also { edges[start] = it }
             if (outgoing.isEmpty()) return@forEach
             states.forEach { state ->
+                DecodeWorkScope.checkpoint()
                 outgoing.forEach { edge ->
                     val nextCost = state.cost + edge.cost
                     if (nextCost > maxCost + EPSILON) return@forEach
@@ -83,6 +88,7 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
                         },
                         firstEditTier = state.firstEditTier
                             ?: edge.cost.takeIf { it > EPSILON }?.let(::edgeCostTier),
+                        editCount = state.editCount + if (edge.cost > EPSILON) 1 else 0,
                     )
                     if (target.size >= maxPaths * PRUNE_MULTIPLIER) prune(target, maxPaths)
                 }
@@ -99,6 +105,7 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
                     cost = it.cost,
                     syllableEnds = it.syllableEnds,
                     firstEditOffset = it.firstEditOffset,
+                    singleInsertionDeletion = it.editCount == 1 && it.firstEditTier == EdgeCostTier.INSERT_DELETE,
                 )
             }
     }
@@ -326,8 +333,23 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
             .filter { it.firstEditOffset == NO_EDIT_OFFSET }
             .take(MAX_EXACT_PATHS_PER_BEAM)
             .forEach(::retain)
-        eligible.asSequence()
+        fun retainRounds(groups: List<List<PathState>>, targetSize: Int, rounds: Int) {
+            for (depth in 0 until rounds) {
+                for (paths in groups) {
+                    if (retainedByIdentity.size >= targetSize) return
+                    paths.getOrNull(depth)?.let(::retain)
+                }
+            }
+        }
+        val corrected = eligible
             .filter { it.firstEditOffset != NO_EDIT_OFFSET && it.firstEditTier != null }
+        // A global low-cost-only frontier would replace missing-key routes with many
+        // fuzzy variants. Give each error channel a cost-ordered share before applying
+        // recency, so neither an early fuzzy origin nor a costlier missing key is starved.
+        val channels = corrected.groupBy { requireNotNull(it.firstEditTier) }.entries
+            .sortedBy { correctionTierPriority(it.key) }.map { it.value }
+        retainRounds(channels, maxOf(1, limit / 2), channels.maxOfOrNull { it.size } ?: 0)
+        val origins = corrected
             .groupBy { CorrectionOrigin(it.firstEditOffset, requireNotNull(it.firstEditTier)) }
             .entries
             .sortedWith(
@@ -335,11 +357,12 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
                     it.key.offset
                 }.thenBy { correctionTierPriority(it.key.tier) },
             )
-            .forEach { (_, paths) ->
-                paths.asSequence()
-                    .take(MIN_PATHS_PER_CORRECTION_ORIGIN)
-                    .forEach(::retain)
-            }
+        // After reserving the channel frontier, retain the existing recent-origin
+        // depth. Missing-key alternatives often need more than the first path of an
+        // origin; flattening these into one-per-origin rounds loses their recall.
+        origins.forEach { (_, paths) ->
+            paths.take(MAX_PRIORITY_PATHS_PER_CORRECTION_ORIGIN).forEach(::retain)
+        }
         eligible.forEach(::retain)
         states.clear()
         states.addAll(retainedByIdentity.values.sortedWith(PATH_ORDER))
@@ -394,6 +417,7 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
         val syllableEnds: List<Int>,
         val firstEditOffset: Int,
         val firstEditTier: EdgeCostTier?,
+        val editCount: Int,
     )
 
     private data class PathIdentity(
@@ -456,7 +480,7 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
         private const val PRUNE_MULTIPLIER = 4
         private const val MAX_SEGMENTATIONS_PER_CANONICAL_COST = 4
         private const val MAX_EXACT_PATHS_PER_BEAM = 4
-        private const val MIN_PATHS_PER_CORRECTION_ORIGIN = 12
+        private const val MAX_PRIORITY_PATHS_PER_CORRECTION_ORIGIN = 12
         private const val COST_QUANTIZATION = 1_000f
         private const val NO_EDIT_OFFSET = -1
         private const val EPSILON = 0.0001f

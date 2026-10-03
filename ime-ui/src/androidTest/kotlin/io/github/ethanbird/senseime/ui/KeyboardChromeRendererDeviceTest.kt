@@ -3,6 +3,7 @@ package io.github.ethanbird.senseime.ui
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.RectF
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -13,6 +14,58 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class KeyboardChromeRendererDeviceTest {
+    @Test
+    fun largeFontCandidatePreservesTheEntireMeasuredGlyph() = assertMeasuredGlyph(expanded = false)
+
+    @Test
+    fun expandedCandidateUsesTheMeasuredFontRatherThanASmallerFont() = assertMeasuredGlyph(expanded = true)
+
+    private fun assertMeasuredGlyph(expanded: Boolean) {
+        val density = 2.625f
+        val fontScale = 2f
+        val width = 1080
+        val height = 1200
+        val metrics = KeyboardMetrics.fromDensity(density)
+        val measurePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        var measuredSize = 0f
+        val panel = CandidatePanel(metrics, 8f, CandidateTextMeasurer { value, size ->
+            measuredSize = size
+            measurePaint.textSize = size
+            measurePaint.measureText(value)
+        })
+        panel.publish(1L, "ni'hao", List(if (expanded) 30 else 1) { "你好" }, width, height, false, fontScale)
+        if (expanded) panel.activate(CandidateControl.EXPAND, width, height, false, fontScale)
+        assertEquals(expanded, panel.expanded)
+        val candidate = panel.visibleCandidates.first()
+        val state = BackgroundOnlyRendererState(width, height, panel)
+        val renderer = KeyboardChromeRenderer(density, fontScale, metrics, KeyboardPalette(false))
+        renderer.updateSurface(width, height, fontScale)
+        val actual = renderFreshFrame(width, height) { renderer.drawCandidates(it, state) }
+        val expected = renderFreshFrame(width, height) { canvas ->
+            measurePaint.color = 0xFF172033.toInt()
+            measurePaint.textAlign = Paint.Align.LEFT
+            measurePaint.textSize = measuredSize
+            KeyboardCanvasText().drawCentered(canvas, "你好", measurePaint, candidate.textAnchor,
+                CandidateTextVerticalPolicy.centerY(candidate.bounds.top, candidate.bounds.bottom, density))
+        }
+        try {
+            // Compare actual raster ink, not an independent approximation of font metrics.
+            // The reference has no per-slot clip. Raw-pinyin/header colors are different.
+            fun ink(bitmap: Bitmap): Int {
+                var count = 0
+                val bottom = if (expanded) candidate.bounds.bottom.toInt() else metrics.candidateHeight.toInt() + 40
+                for (y in 0 until bottom) for (x in candidate.bounds.left.toInt() until candidate.bounds.right.toInt()) {
+                    if (bitmap.getPixel(x, y) == 0xFF172033.toInt()) count++
+                }
+                return count
+            }
+            assertEquals("Candidate raster must retain the measured glyph, without clipping or a font switch", ink(expected), ink(actual))
+        } finally {
+            actual.recycle()
+            expected.recycle()
+        }
+    }
+
     @Test
     fun consecutiveBackgroundFramesStayOpaqueAndColorStable() {
         val width = 128
@@ -122,15 +175,16 @@ class KeyboardChromeRendererDeviceTest {
     private class BackgroundOnlyRendererState(
         override val viewWidth: Int,
         override val viewHeight: Int,
+        private val candidateScene: CandidateScene? = null,
     ) : KeyboardRendererState {
         override val panel: KeyboardPanel
             get() = unused()
         override val scene: KeyboardScene
             get() = unused()
         override val candidates: CandidateScene
-            get() = unused()
+            get() = candidateScene ?: unused()
         override val candidatesTakeToolbar: Boolean
-            get() = unused()
+            get() = candidateScene != null
         override val chromeBottom: Float
             get() = unused()
         override val collapsedCandidateBottom: Float
@@ -174,9 +228,9 @@ class KeyboardChromeRendererDeviceTest {
         override val editorSelectionMode: Boolean
             get() = unused()
 
-        override fun isCandidatePressed(sourceIndex: Int): Boolean = unused()
+        override fun isCandidatePressed(sourceIndex: Int): Boolean = false
 
-        override fun isCandidateControlPressed(control: CandidateControl): Boolean = unused()
+        override fun isCandidateControlPressed(control: CandidateControl): Boolean = false
 
         override fun isKeyPressed(key: Key): Boolean = unused()
 

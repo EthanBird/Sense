@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "scope": "Known-data diagnostic, not a current-engine benchmark or independent test",
+  "engine": "Keep the exact libime 1.0.11 host reference binary, Inner flag and NBest 10; no fitting",
+  "model": "Pinned upstream lm_sc.arpa-20260629; convert with packaged KenLM tool, -s -a 22 -q 4 trie; sorting memory 256M, Linux scratch",
+  "dictionary": "Pinned dict-20260907; preserve scores and rows accepted by the old PinyinEncoder, record every rejected row; not the entire current dictionary",
+  "arms": ["old-model-old-dictionary", "new-model-old-dictionary", "old-model-compatible-new-dictionary", "new-model-compatible-new-dictionary"],
+  "workload": "Existing E13 dev 64 and already opened test 124 whole-sentence states, same as first reference comparison",
+  "claims": "Report all arms and all first-choice losses. Native host times are not Android times. Modern full engine and its correction API remain untested.",
+  "production": "No new models or native code in APK; data provenance/license review and Android lifecycle integration separate"
+}

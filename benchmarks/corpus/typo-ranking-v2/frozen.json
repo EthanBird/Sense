@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "seed": "sense-26qwerty-error-v1",
+  "source": "../p2c-v1",
+  "sourceFrozenSha256": "437b92172ccce01fc5676b2d8177b90f3c66e7cb632d51fed27024de4f54c645",
+  "sourceAttributionSha256": "d0c1de4a2fc744f847c3ed4d5e6a3623ee1182ff9ccb8651a6829efeb37bfcf8",
+  "generatorSha256": "1b436d4a7a75fe1d71c6da6b7253a55c431271a7d1181a8444a8c2a0be5a8a31",
+  "scope": "Known reviewed P2C base sentences; new deterministic single-error perturbations, not natural user typo gold",
+  "candidateOutputsUsed": false,
+  "selection": "SHA256-min within each operation and equal-width character-offset third; include all eligible source rows without result-based filtering",
+  "operations": [
+    "clean",
+    "joints",
+    "delete",
+    "repeat",
+    "neighbor",
+    "transpose",
+    "fuzzy"
+  ],
+  "keyboard": {
+    "rows": [
+      [
+        "qwertyuiop",
+        0.0
+      ],
+      [
+        "asdfghjkl",
+        0.25
+      ],
+      [
+        "zxcvbnm",
+        0.75
+      ]
+    ],
+    "neighborRadius": 1.25
+  },
+  "duplicates": "Keep source/operation/zone labels even if typed strings collide; report by source family, not independent IID errors",
+  "holdoutPolicy": "Development mutations may be inspected; test mutation outputs only opened after candidate code freeze. Existing clean test results are known.",
+  "outputs": {
+    "dev": {
+      "sha256": "7720f904d1c44f91e767bc8d49ec78bb08ec4442a196f6a6531eb878c14086ea",
+      "rows": 0,
+      "families": 0,
+      "operations": {},
+      "distinctSourceInputs": 0
+    },
+    "test": {
+      "sha256": "facbc39663bf8ce72ac3abd2089e654a5271ab37f08e0fb52a6998e068e8c535",
+      "rows": 929,
+      "families": 62,
+      "operations": {
+        "clean": 62,
+        "joints": 62,
+        "delete": 186,
+        "repeat": 186,
+        "neighbor": 186,
+        "transpose": 186,
+        "fuzzy": 61
+      },
+      "distinctSourceInputs": 924
+    }
+  }
+}

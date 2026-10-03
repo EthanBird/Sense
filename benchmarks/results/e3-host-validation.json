@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "scope": "Full core/UI/service and App About targeted JVM/Robolectric tests; unchanged Gradle tasks may be reused; not full app test suite",
+  "apkSha256": "4854022ee70632fd4cc261676cf1c16ebb20f2c1bbb5ef54180ad48abcca537a",
+  "modules": {
+    "core-input": {
+      "tests": 284,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 229,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 282,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "pythonTests": 40,
+  "logs": {
+    "anchored-final-build.log": "c5d1575a95b64c3000ac6a40f335dfa8464cc33deb72bee37c45cded37ecbb7e",
+    "about-tests.log": "83ae522d16d746f3e5b2004d4fe6c89a4a9d0adf41c7df0b0f0d17021b2b9f43",
+    "python-tests.log": "b792808bef7c67662c4ae0d116ca31d99ff995446f0122ca184ffd9aa407eeaf"
+  },
+  "hostBenchmarks": [
+    "e3-m1.json",
+    "e3-m7.json"
+  ]
+}

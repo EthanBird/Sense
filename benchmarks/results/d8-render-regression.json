@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "beforeLog": {
+    "path": ".artifacts/input-quality/d8-render-red.log",
+    "sha256": "27dee4a4ff1b55f20687a80df85e28666511ef15e8137bd4272e7e1370d62694"
+  },
+  "beforeObservation": "Measured glyph ink 4725; collapsed clipped 3517; expanded wrong-font 3654",
+  "beforeProvenance": "Pre-fix UI library sources; red test APK hash was not captured",
+  "after": {
+    "path": ".artifacts/input-quality/d8-render-accepted.log",
+    "sha256": "5a54673aacd3a5bbafceb7e72c262eacace64d6945898787d45c758a444e15c5",
+    "passedTests": 19
+  },
+  "afterTestApk": {
+    "path": "ime-ui/build/outputs/apk/androidTest/debug/ime-ui-debug-androidTest.apk",
+    "sha256": "03169ff99595b52657358ab8679cee1d7fadec306b844f84a5bfde6d3df3032b"
+  },
+  "scope": "4 renderer tests, 1 fitted-text test, 14 real View tests including large-font scene reuse"
+}

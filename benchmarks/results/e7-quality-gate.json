@@ -1,0 +1,2956 @@
+{
+  "schemaVersion": 1,
+  "stage": "E7",
+  "qualityPassed": true,
+  "scope": "Frozen synthetic source reconstruction and authored isolated words, not natural typing accuracy",
+  "candidateFreezeSha256": "db93e58342fff9c8b6893eff53bfa0edb78150cae69ea232cc4980600890e64b",
+  "gates": {
+    "known-long-no-correct-top1-loss": true,
+    "known-long-top10": true,
+    "known-e4-no-correct-top1-loss": true,
+    "known-e4-top10": true,
+    "known-e6-no-correct-top1-loss": true,
+    "known-e6-top10": true,
+    "known-short-no-correct-top1-loss": true,
+    "known-short-top10": true,
+    "vocabulary-audit-no-correct-top1-loss": true,
+    "vocabulary-audit-top10": true,
+    "vocabulary-audit-top1": true,
+    "vocabulary-audit-errors": true,
+    "vocabulary-audit-top3": true,
+    "p2c-audit-no-correct-top1-loss": true,
+    "p2c-audit-top10": true,
+    "p2c-audit-top1": true,
+    "p2c-audit-errors": true,
+    "required-memory": true,
+    "restore-and-forget": true
+  },
+  "comparisons": {
+    "known-long": {
+      "schemaVersion": 1,
+      "scope": "Known isolated word / synthetic source reconstruction, not natural user accuracy",
+      "before": {
+        "rows": 1874,
+        "families": 125,
+        "top1": 854,
+        "top3": 1092,
+        "top10": 1267,
+        "covered": 1386,
+        "mrr": 0.535151970014959,
+        "graphAligned": 1495,
+        "graphCanonical": 1498,
+        "selectedCanonical": 1228,
+        "characterErrors": 2005,
+        "characters": 18517,
+        "cer": 0.10827887886806718,
+        "hostMedianMs": 18.37925,
+        "hostObservedP95Ms": 40.0341
+      },
+      "after": {
+        "rows": 1874,
+        "families": 125,
+        "top1": 854,
+        "top3": 1092,
+        "top10": 1267,
+        "covered": 1386,
+        "mrr": 0.5346136546355337,
+        "graphAligned": 1495,
+        "graphCanonical": 1498,
+        "selectedCanonical": 1228,
+        "characterErrors": 2006,
+        "characters": 18517,
+        "cer": 0.1083328832964303,
+        "hostMedianMs": 18.90745,
+        "hostObservedP95Ms": 40.781
+      },
+      "byGroup": {
+        "operation": {
+          "clean": {
+            "before": {
+              "rows": 125,
+              "families": 125,
+              "top1": 82,
+              "top3": 103,
+              "top10": 116,
+              "covered": 120,
+              "mrr": 0.7563935231435231,
+              "graphAligned": 125,
+              "graphCanonical": 125,
+              "selectedCanonical": 0,
+              "characterErrors": 67,
+              "characters": 1235,
+              "cer": 0.05425101214574899,
+              "hostMedianMs": 26.5848,
+              "hostObservedP95Ms": 47.3796
+            },
+            "after": {
+              "rows": 125,
+              "families": 125,
+              "top1": 82,
+              "top3": 103,
+              "top10": 116,
+              "covered": 120,
+              "mrr": 0.7555363802863804,
+              "graphAligned": 125,
+              "graphCanonical": 125,
+              "selectedCanonical": 0,
+              "characterErrors": 67,
+              "characters": 1235,
+              "cer": 0.05425101214574899,
+              "hostMedianMs": 27.9755,
+              "hostObservedP95Ms": 51.3928
+            }
+          },
+          "delete": {
+            "before": {
+              "rows": 375,
+              "families": 125,
+              "top1": 69,
+              "top3": 100,
+              "top10": 123,
+              "covered": 168,
+              "mrr": 0.23641893466279085,
+              "graphAligned": 189,
+              "graphCanonical": 190,
+              "selectedCanonical": 183,
+              "characterErrors": 650,
+              "characters": 3705,
+              "cer": 0.17543859649122806,
+              "hostMedianMs": 20.2144,
+              "hostObservedP95Ms": 38.8174
+            },
+            "after": {
+              "rows": 375,
+              "families": 125,
+              "top1": 69,
+              "top3": 100,
+              "top10": 123,
+              "covered": 168,
+              "mrr": 0.23613156337624805,
+              "graphAligned": 189,
+              "graphCanonical": 190,
+              "selectedCanonical": 183,
+              "characterErrors": 652,
+              "characters": 3705,
+              "cer": 0.17597840755735492,
+              "hostMedianMs": 20.8011,
+              "hostObservedP95Ms": 38.9134
+            }
+          },
+          "fuzzy": {
+            "before": {
+              "rows": 124,
+              "families": 124,
+              "top1": 33,
+              "top3": 52,
+              "top10": 65,
+              "covered": 81,
+              "mrr": 0.3589779330019295,
+              "graphAligned": 91,
+              "graphCanonical": 92,
+              "selectedCanonical": 84,
+              "characterErrors": 169,
+              "characters": 1227,
+              "cer": 0.13773431132844335,
+              "hostMedianMs": 25.6443,
+              "hostObservedP95Ms": 46.3145
+            },
+            "after": {
+              "rows": 124,
+              "families": 124,
+              "top1": 33,
+              "top3": 52,
+              "top10": 65,
+              "covered": 81,
+              "mrr": 0.35898728316555734,
+              "graphAligned": 91,
+              "graphCanonical": 92,
+              "selectedCanonical": 84,
+              "characterErrors": 169,
+              "characters": 1227,
+              "cer": 0.13773431132844335,
+              "hostMedianMs": 27.1455,
+              "hostObservedP95Ms": 45.6587
+            }
+          },
+          "joints": {
+            "before": {
+              "rows": 125,
+              "families": 125,
+              "top1": 82,
+              "top3": 103,
+              "top10": 116,
+              "covered": 120,
+              "mrr": 0.7563935231435231,
+              "graphAligned": 125,
+              "graphCanonical": 125,
+              "selectedCanonical": 0,
+              "characterErrors": 67,
+              "characters": 1235,
+              "cer": 0.05425101214574899,
+              "hostMedianMs": 23.317,
+              "hostObservedP95Ms": 41.4732
+            },
+            "after": {
+              "rows": 125,
+              "families": 125,
+              "top1": 82,
+              "top3": 103,
+              "top10": 116,
+              "covered": 120,
+              "mrr": 0.7555363802863804,
+              "graphAligned": 125,
+              "graphCanonical": 125,
+              "selectedCanonical": 0,
+              "characterErrors": 67,
+              "characters": 1235,
+              "cer": 0.05425101214574899,
+              "hostMedianMs": 24.3766,
+              "hostObservedP95Ms": 41.408
+            }
+          },
+          "neighbor": {
+            "before": {
+              "rows": 375,
+              "families": 125,
+              "top1": 194,
+              "top3": 243,
+              "top10": 280,
+              "covered": 297,
+              "mrr": 0.5977930722627759,
+              "graphAligned": 319,
+              "graphCanonical": 319,
+              "selectedCanonical": 318,
+              "characterErrors": 341,
+              "characters": 3705,
+              "cer": 0.09203778677462889,
+              "hostMedianMs": 15.7846,
+              "hostObservedP95Ms": 38.4595
+            },
+            "after": {
+              "rows": 375,
+              "families": 125,
+              "top1": 194,
+              "top3": 243,
+              "top10": 280,
+              "covered": 297,
+              "mrr": 0.5972216436913473,
+              "graphAligned": 319,
+              "graphCanonical": 319,
+              "selectedCanonical": 318,
+              "characterErrors": 340,
+              "characters": 3705,
+              "cer": 0.09176788124156546,
+              "hostMedianMs": 16.5904,
+              "hostObservedP95Ms": 39.6898
+            }
+          },
+          "repeat": {
+            "before": {
+              "rows": 375,
+              "families": 125,
+              "top1": 230,
+              "top3": 287,
+              "top10": 332,
+              "covered": 350,
+              "mrr": 0.710225453852941,
+              "graphAligned": 375,
+              "graphCanonical": 375,
+              "selectedCanonical": 374,
+              "characterErrors": 249,
+              "characters": 3705,
+              "cer": 0.06720647773279352,
+              "hostMedianMs": 17.0621,
+              "hostObservedP95Ms": 34.6387
+            },
+            "after": {
+              "rows": 375,
+              "families": 125,
+              "top1": 230,
+              "top3": 287,
+              "top10": 332,
+              "covered": 350,
+              "mrr": 0.7095314904089774,
+              "graphAligned": 375,
+              "graphCanonical": 375,
+              "selectedCanonical": 374,
+              "characterErrors": 249,
+              "characters": 3705,
+              "cer": 0.06720647773279352,
+              "hostMedianMs": 17.49,
+              "hostObservedP95Ms": 38.7852
+            }
+          },
+          "transpose": {
+            "before": {
+              "rows": 375,
+              "families": 125,
+              "top1": 164,
+              "top3": 204,
+              "top10": 235,
+              "covered": 250,
+              "mrr": 0.5069309321012605,
+              "graphAligned": 271,
+              "graphCanonical": 272,
+              "selectedCanonical": 269,
+              "characterErrors": 462,
+              "characters": 3705,
+              "cer": 0.12469635627530365,
+              "hostMedianMs": 14.109,
+              "hostObservedP95Ms": 29.3963
+            },
+            "after": {
+              "rows": 375,
+              "families": 125,
+              "top1": 164,
+              "top3": 204,
+              "top10": 235,
+              "covered": 250,
+              "mrr": 0.5063618907977364,
+              "graphAligned": 271,
+              "graphCanonical": 272,
+              "selectedCanonical": 269,
+              "characterErrors": 462,
+              "characters": 3705,
+              "cer": 0.12469635627530365,
+              "hostMedianMs": 14.6558,
+              "hostObservedP95Ms": 32.4605
+            }
+          }
+        },
+        "stratum": {
+          "long": {
+            "before": {
+              "rows": 960,
+              "families": 64,
+              "top1": 423,
+              "top3": 537,
+              "top10": 611,
+              "covered": 684,
+              "mrr": 0.5128111780026707,
+              "graphAligned": 742,
+              "graphCanonical": 745,
+              "selectedCanonical": 610,
+              "characterErrors": 1125,
+              "characters": 11550,
+              "cer": 0.09740259740259741,
+              "hostMedianMs": 21.88015,
+              "hostObservedP95Ms": 44.4856
+            },
+            "after": {
+              "rows": 960,
+              "families": 64,
+              "top1": 423,
+              "top3": 537,
+              "top10": 611,
+              "covered": 684,
+              "mrr": 0.5117603415224177,
+              "graphAligned": 742,
+              "graphCanonical": 745,
+              "selectedCanonical": 610,
+              "characterErrors": 1124,
+              "characters": 11550,
+              "cer": 0.09731601731601731,
+              "hostMedianMs": 22.5435,
+              "hostObservedP95Ms": 43.6924
+            }
+          },
+          "short": {
+            "before": {
+              "rows": 914,
+              "families": 61,
+              "top1": 431,
+              "top3": 555,
+              "top10": 656,
+              "covered": 702,
+              "mrr": 0.5586171344917606,
+              "graphAligned": 753,
+              "graphCanonical": 753,
+              "selectedCanonical": 618,
+              "characterErrors": 880,
+              "characters": 6967,
+              "cer": 0.12630974594517008,
+              "hostMedianMs": 14.482050000000001,
+              "hostObservedP95Ms": 30.0656
+            },
+            "after": {
+              "rows": 914,
+              "families": 61,
+              "top1": 431,
+              "top3": 555,
+              "top10": 656,
+              "covered": 702,
+              "mrr": 0.5586171344917606,
+              "graphAligned": 753,
+              "graphCanonical": 753,
+              "selectedCanonical": 618,
+              "characterErrors": 882,
+              "characters": 6967,
+              "cer": 0.12659681354959093,
+              "hostMedianMs": 14.99325,
+              "hostObservedP95Ms": 31.1719
+            }
+          }
+        }
+      },
+      "changes": [
+        {
+          "id": "fedac3035e81020bebb243e45fde0688e4988355e932d62979552d2cafd3e83c",
+          "query": "maoxiuanzhuizhemaoxianqiupao",
+          "expected": "猫喜欢追着毛线球跑",
+          "beforeRank": 0,
+          "afterRank": 0,
+          "beforeTop1": "猫修按追着毛线球跑",
+          "afterTop1": "昴宿按追着毛线球跑",
+          "operation": "delete",
+          "stratum": "short"
+        },
+        {
+          "id": "8e39f0d91775438533b12d589e0f903d9eda35ea64477fc95951ef7e37f4c0b0",
+          "query": "tangmuxihungenmalijianghua",
+          "expected": "汤姆喜欢跟玛丽讲话",
+          "beforeRank": 0,
+          "afterRank": 0,
+          "beforeTop1": "汤姆喜混跟玛丽讲话",
+          "afterTop1": "汤姆锡婚跟玛丽讲话",
+          "operation": "delete",
+          "stratum": "short"
+        },
+        {
+          "id": "ac7c92b2920bf78e1ef4c8045ef187b1bd2cbafcc5e700a7fde6174519b1226e",
+          "query": "tangmuxiangzhidaonalinengmadiaojianghuang",
+          "expected": "汤姆想知道哪里能买到姜黄",
+          "beforeRank": 0,
+          "afterRank": 0,
+          "beforeTop1": "汤姆想知道哪里能吗掉姜黄",
+          "afterTop1": "汤姆想知道哪里能抹掉姜黄",
+          "operation": "transpose",
+          "stratum": "long"
+        },
+        {
+          "id": "e0c5d1f0a3f35b8c7916dfe4352d61f96c26bf9cb8e0bf4f1aca450293e06646",
+          "query": "wozhidaoniamoleduodadefengxian",
+          "expected": "我知道你冒了多大的风险",
+          "beforeRank": 60,
+          "afterRank": 58,
+          "beforeTop1": "我知道你啊摸了多大的风险",
+          "afterTop1": "我知道你啊摸了多大的风险",
+          "operation": "transpose",
+          "stratum": "long"
+        },
+        {
+          "id": "1ca4cad3cbc18e6c39db552432be3a06b74636726b87f64f082ec0b7e79420a0",
+          "query": "wonengcongshijieyuzhesuoqushenme",
+          "expected": "我能从世界语这索取什么",
+          "beforeRank": 4,
+          "afterRank": 7,
+          "beforeTop1": "我能从世界语这所取什么",
+          "afterTop1": "我能从世界语者索取什么",
+          "operation": "clean",
+          "stratum": "long"
+        },
+        {
+          "id": "5a08e20a3d8af5714aa8ba2a82416bba992ef9fd53dac05fe5225e8e9e851f57",
+          "query": "wo'neng'cong'shi'jie'yu'zhe'suo'qu'shen'me",
+          "expected": "我能从世界语这索取什么",
+          "beforeRank": 4,
+          "afterRank": 7,
+          "beforeTop1": "我能从世界语这所取什么",
+          "afterTop1": "我能从世界语者索取什么",
+          "operation": "joints",
+          "stratum": "long"
+        },
+        {
+          "id": "7a9dc376b7deb35124ce18bb2ba4fc12600997067aa4fc1d009dcaf41485abea",
+          "query": "wonengcogshijieyuzhesuoqushenme",
+          "expected": "我能从世界语这索取什么",
+          "beforeRank": 4,
+          "afterRank": 7,
+          "beforeTop1": "我能从世界语这所取什么",
+          "afterTop1": "我能从世界语者索取什么",
+          "operation": "delete",
+          "stratum": "long"
+        },
+        {
+          "id": "d2dac9ee15b116a887701ac31faca57164226c03b4183cff1beceb925bd674c0",
+          "query": "wonengcongshijieyzhesuoqushenme",
+          "expected": "我能从世界语这索取什么",
+          "beforeRank": 68,
+          "afterRank": 71,
+          "beforeTop1": "我能从事解压和索取什么",
+          "afterTop1": "我能从事解压和索取什么",
+          "operation": "delete",
+          "stratum": "long"
+        },
+        {
+          "id": "9bde4f20d6560552530f3df90ab011a4f97be45d2b1424ed30f273034284135d",
+          "query": "woonengcongshijieyuzhesuoqushenme",
+          "expected": "我能从世界语这索取什么",
+          "beforeRank": 22,
+          "afterRank": 32,
+          "beforeTop1": "我哦能从世界语这所取什么",
+          "afterTop1": "我哦能从世界语者索取什么",
+          "operation": "repeat",
+          "stratum": "long"
+        },
+        {
+          "id": "b764d82875711af60857203b0e24563e77738260bdb396a0c06fc3b169023d20",
+          "query": "wonengcongshiijieyuzhesuoqushenme",
+          "expected": "我能从世界语这索取什么",
+          "beforeRank": 4,
+          "afterRank": 7,
+          "beforeTop1": "我能从世界语这所取什么",
+          "afterTop1": "我能从世界语者索取什么",
+          "operation": "repeat",
+          "stratum": "long"
+        },
+        {
+          "id": "3c4e6ded79ed6a8eaabee877529a4ad45067cdc5049ba3cd156876743d31002e",
+          "query": "wonengcongshijieyuzhesuuoqushenme",
+          "expected": "我能从世界语这索取什么",
+          "beforeRank": 4,
+          "afterRank": 9,
+          "beforeTop1": "我能从世界语这所取什么",
+          "afterTop1": "我能从世界语者索取什么",
+          "operation": "repeat",
+          "stratum": "long"
+        },
+        {
+          "id": "806c6a5a808ef212863af67e69823a5d6de924577bf784f4b862b6d59d2bbc0d",
+          "query": "wonenhcongshijieyuzhesuoqushenme",
+          "expected": "我能从世界语这索取什么",
+          "beforeRank": 4,
+          "afterRank": 7,
+          "beforeTop1": "我能从世界语这所取什么",
+          "afterTop1": "我能从世界语者索取什么",
+          "operation": "neighbor",
+          "stratum": "long"
+        },
+        {
+          "id": "8e7441e3e603a51e3b08106c5e8fe1b37633b535e9a5fd3d507a434a406605f8",
+          "query": "wonengcongsgijieyuzhesuoqushenme",
+          "expected": "我能从世界语这索取什么",
+          "beforeRank": 4,
+          "afterRank": 7,
+          "beforeTop1": "我能从世界语这所取什么",
+          "afterTop1": "我能从世界语者索取什么",
+          "operation": "neighbor",
+          "stratum": "long"
+        },
+        {
+          "id": "070aad0d34de29ed1332867da854fbcfff83638e7f93ec1633697d7ea9c86646",
+          "query": "wonengcongshijieyuzhesuoqushenne",
+          "expected": "我能从世界语这索取什么",
+          "beforeRank": 0,
+          "afterRank": 0,
+          "beforeTop1": "我能从世界语这所屈身呢",
+          "afterTop1": "我能从世界语者索取神呢",
+          "operation": "neighbor",
+          "stratum": "long"
+        },
+        {
+          "id": "6c3518bf06f0b8f2da1e6402520909b4ae55e2ede9b7912b4f68bfbc744577a6",
+          "query": "wonengcognshijieyuzhesuoqushenme",
+          "expected": "我能从世界语这索取什么",
+          "beforeRank": 4,
+          "afterRank": 7,
+          "beforeTop1": "我能从世界语这所取什么",
+          "afterTop1": "我能从世界语者索取什么",
+          "operation": "transpose",
+          "stratum": "long"
+        },
+        {
+          "id": "2ed217dfe33a6aadfb42aa905d376f4985b483619447c703cccecdd0ff5878d2",
+          "query": "wonengcongshijieyuzheusoqushenme",
+          "expected": "我能从世界语这索取什么",
+          "beforeRank": 4,
+          "afterRank": 7,
+          "beforeTop1": "我能从世界语这所取什么",
+          "afterTop1": "我能从世界语者索取什么",
+          "operation": "transpose",
+          "stratum": "long"
+        },
+        {
+          "id": "886ff450ec0f1f5bb5e44c3c2a1e91042ba311d043ae754119e6b88dfc90bbe8",
+          "query": "wonengcongshijieyuzhesouqushenme",
+          "expected": "我能从世界语这索取什么",
+          "beforeRank": 80,
+          "afterRank": 78,
+          "beforeTop1": "我能从世界语这艘去什么",
+          "afterTop1": "我能从世界语这艘去什么",
+          "operation": "transpose",
+          "stratum": "long"
+        },
+        {
+          "id": "80b3949cebf8c36fce54ed71f035884cbfdd2db4a9b93184cea893a74b76cbff",
+          "query": "wonengchongshijieyuzhesuoqushenme",
+          "expected": "我能从世界语这索取什么",
+          "beforeRank": 75,
+          "afterRank": 69,
+          "beforeTop1": "我能重世界语这所取什么",
+          "afterTop1": "我能重世界语者索取什么",
+          "operation": "fuzzy",
+          "stratum": "long"
+        }
+      ],
+      "top1Gains": 0,
+      "top1Losses": 0,
+      "lexiconSha256": {
+        "before": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
+        "after": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232"
+      },
+      "inputReports": {
+        "before": "74149943823dc331e374ddea6d0c73d3269c974d29222ee1f0596f052ae15a08",
+        "after": "9e52c88233e4b149e63fd21b96d4d8749e612b6d2a4d3496cbe931b6e2f172e3"
+      }
+    },
+    "known-e4": {
+      "schemaVersion": 1,
+      "scope": "Known isolated word / synthetic source reconstruction, not natural user accuracy",
+      "before": {
+        "rows": 929,
+        "families": 62,
+        "top1": 423,
+        "top3": 528,
+        "top10": 606,
+        "covered": 666,
+        "mrr": 0.5271949566909089,
+        "graphAligned": 723,
+        "graphCanonical": 730,
+        "selectedCanonical": 595,
+        "characterErrors": 1036,
+        "characters": 9123,
+        "cer": 0.11355913624904089,
+        "hostMedianMs": 18.3493,
+        "hostObservedP95Ms": 37.9181
+      },
+      "after": {
+        "rows": 929,
+        "families": 62,
+        "top1": 423,
+        "top3": 528,
+        "top10": 606,
+        "covered": 666,
+        "mrr": 0.5271948703346037,
+        "graphAligned": 723,
+        "graphCanonical": 730,
+        "selectedCanonical": 595,
+        "characterErrors": 1036,
+        "characters": 9123,
+        "cer": 0.11355913624904089,
+        "hostMedianMs": 18.9294,
+        "hostObservedP95Ms": 37.6007
+      },
+      "byGroup": {
+        "operation": {
+          "clean": {
+            "before": {
+              "rows": 62,
+              "families": 62,
+              "top1": 43,
+              "top3": 51,
+              "top10": 57,
+              "covered": 61,
+              "mrr": 0.7770273297491039,
+              "graphAligned": 62,
+              "graphCanonical": 62,
+              "selectedCanonical": 0,
+              "characterErrors": 33,
+              "characters": 609,
+              "cer": 0.054187192118226604,
+              "hostMedianMs": 28.69245,
+              "hostObservedP95Ms": 42.5235
+            },
+            "after": {
+              "rows": 62,
+              "families": 62,
+              "top1": 43,
+              "top3": 51,
+              "top10": 57,
+              "covered": 61,
+              "mrr": 0.7770273297491039,
+              "graphAligned": 62,
+              "graphCanonical": 62,
+              "selectedCanonical": 0,
+              "characterErrors": 33,
+              "characters": 609,
+              "cer": 0.054187192118226604,
+              "hostMedianMs": 28.51325,
+              "hostObservedP95Ms": 44.1777
+            }
+          },
+          "delete": {
+            "before": {
+              "rows": 186,
+              "families": 62,
+              "top1": 31,
+              "top3": 47,
+              "top10": 60,
+              "covered": 85,
+              "mrr": 0.22473756036738657,
+              "graphAligned": 97,
+              "graphCanonical": 99,
+              "selectedCanonical": 92,
+              "characterErrors": 326,
+              "characters": 1827,
+              "cer": 0.17843459222769567,
+              "hostMedianMs": 20.28655,
+              "hostObservedP95Ms": 37.9122
+            },
+            "after": {
+              "rows": 186,
+              "families": 62,
+              "top1": 31,
+              "top3": 47,
+              "top10": 60,
+              "covered": 85,
+              "mrr": 0.22473458343267672,
+              "graphAligned": 97,
+              "graphCanonical": 99,
+              "selectedCanonical": 92,
+              "characterErrors": 326,
+              "characters": 1827,
+              "cer": 0.17843459222769567,
+              "hostMedianMs": 20.653750000000002,
+              "hostObservedP95Ms": 37.2384
+            }
+          },
+          "fuzzy": {
+            "before": {
+              "rows": 61,
+              "families": 61,
+              "top1": 12,
+              "top3": 19,
+              "top10": 24,
+              "covered": 33,
+              "mrr": 0.2634123670965317,
+              "graphAligned": 35,
+              "graphCanonical": 36,
+              "selectedCanonical": 35,
+              "characterErrors": 101,
+              "characters": 597,
+              "cer": 0.16917922948073702,
+              "hostMedianMs": 26.1647,
+              "hostObservedP95Ms": 43.551
+            },
+            "after": {
+              "rows": 61,
+              "families": 61,
+              "top1": 12,
+              "top3": 19,
+              "top10": 24,
+              "covered": 33,
+              "mrr": 0.26342012914322815,
+              "graphAligned": 35,
+              "graphCanonical": 36,
+              "selectedCanonical": 35,
+              "characterErrors": 101,
+              "characters": 597,
+              "cer": 0.16917922948073702,
+              "hostMedianMs": 25.391,
+              "hostObservedP95Ms": 43.7189
+            }
+          },
+          "joints": {
+            "before": {
+              "rows": 62,
+              "families": 62,
+              "top1": 43,
+              "top3": 51,
+              "top10": 57,
+              "covered": 61,
+              "mrr": 0.7770273297491039,
+              "graphAligned": 62,
+              "graphCanonical": 62,
+              "selectedCanonical": 0,
+              "characterErrors": 33,
+              "characters": 609,
+              "cer": 0.054187192118226604,
+              "hostMedianMs": 23.4458,
+              "hostObservedP95Ms": 37.1626
+            },
+            "after": {
+              "rows": 62,
+              "families": 62,
+              "top1": 43,
+              "top3": 51,
+              "top10": 57,
+              "covered": 61,
+              "mrr": 0.7770273297491039,
+              "graphAligned": 62,
+              "graphCanonical": 62,
+              "selectedCanonical": 0,
+              "characterErrors": 33,
+              "characters": 609,
+              "cer": 0.054187192118226604,
+              "hostMedianMs": 24.43495,
+              "hostObservedP95Ms": 36.2798
+            }
+          },
+          "neighbor": {
+            "before": {
+              "rows": 186,
+              "families": 62,
+              "top1": 102,
+              "top3": 126,
+              "top10": 144,
+              "covered": 146,
+              "mrr": 0.6276747217107307,
+              "graphAligned": 160,
+              "graphCanonical": 162,
+              "selectedCanonical": 161,
+              "characterErrors": 157,
+              "characters": 1827,
+              "cer": 0.08593322386425835,
+              "hostMedianMs": 15.9709,
+              "hostObservedP95Ms": 34.876
+            },
+            "after": {
+              "rows": 186,
+              "families": 62,
+              "top1": 102,
+              "top3": 126,
+              "top10": 144,
+              "covered": 146,
+              "mrr": 0.6276747217107307,
+              "graphAligned": 160,
+              "graphCanonical": 162,
+              "selectedCanonical": 161,
+              "characterErrors": 157,
+              "characters": 1827,
+              "cer": 0.08593322386425835,
+              "hostMedianMs": 16.8874,
+              "hostObservedP95Ms": 34.877
+            }
+          },
+          "repeat": {
+            "before": {
+              "rows": 186,
+              "families": 62,
+              "top1": 119,
+              "top3": 144,
+              "top10": 162,
+              "covered": 170,
+              "mrr": 0.7239024693929874,
+              "graphAligned": 186,
+              "graphCanonical": 186,
+              "selectedCanonical": 185,
+              "characterErrors": 121,
+              "characters": 1827,
+              "cer": 0.0662287903667214,
+              "hostMedianMs": 17.856,
+              "hostObservedP95Ms": 37.1211
+            },
+            "after": {
+              "rows": 186,
+              "families": 62,
+              "top1": 119,
+              "top3": 144,
+              "top10": 162,
+              "covered": 170,
+              "mrr": 0.7239024693929874,
+              "graphAligned": 186,
+              "graphCanonical": 186,
+              "selectedCanonical": 185,
+              "characterErrors": 121,
+              "characters": 1827,
+              "cer": 0.0662287903667214,
+              "hostMedianMs": 18.54955,
+              "hostObservedP95Ms": 37.9222
+            }
+          },
+          "transpose": {
+            "before": {
+              "rows": 186,
+              "families": 62,
+              "top1": 73,
+              "top3": 90,
+              "top10": 102,
+              "covered": 110,
+              "mrr": 0.45241950381963203,
+              "graphAligned": 121,
+              "graphCanonical": 123,
+              "selectedCanonical": 122,
+              "characterErrors": 265,
+              "characters": 1827,
+              "cer": 0.14504652435686918,
+              "hostMedianMs": 15.267900000000001,
+              "hostObservedP95Ms": 31.7455
+            },
+            "after": {
+              "rows": 186,
+              "families": 62,
+              "top1": 73,
+              "top3": 90,
+              "top10": 102,
+              "covered": 110,
+              "mrr": 0.45241950381963203,
+              "graphAligned": 121,
+              "graphCanonical": 123,
+              "selectedCanonical": 122,
+              "characterErrors": 265,
+              "characters": 1827,
+              "cer": 0.14504652435686918,
+              "hostMedianMs": 16.0121,
+              "hostObservedP95Ms": 32.7256
+            }
+          }
+        },
+        "stratum": {
+          "long": {
+            "before": {
+              "rows": 479,
+              "families": 32,
+              "top1": 210,
+              "top3": 242,
+              "top10": 289,
+              "covered": 330,
+              "mrr": 0.49392572149365266,
+              "graphAligned": 363,
+              "graphCanonical": 365,
+              "selectedCanonical": 297,
+              "characterErrors": 553,
+              "characters": 5673,
+              "cer": 0.09747928785475057,
+              "hostMedianMs": 20.9922,
+              "hostObservedP95Ms": 41.7996
+            },
+            "after": {
+              "rows": 479,
+              "families": 32,
+              "top1": 210,
+              "top3": 242,
+              "top10": 289,
+              "covered": 330,
+              "mrr": 0.4939255540092945,
+              "graphAligned": 363,
+              "graphCanonical": 365,
+              "selectedCanonical": 297,
+              "characterErrors": 553,
+              "characters": 5673,
+              "cer": 0.09747928785475057,
+              "hostMedianMs": 21.0535,
+              "hostObservedP95Ms": 41.4755
+            }
+          },
+          "short": {
+            "before": {
+              "rows": 450,
+              "families": 30,
+              "top1": 213,
+              "top3": 286,
+              "top10": 317,
+              "covered": 336,
+              "mrr": 0.5626082092675438,
+              "graphAligned": 360,
+              "graphCanonical": 365,
+              "selectedCanonical": 298,
+              "characterErrors": 483,
+              "characters": 3450,
+              "cer": 0.14,
+              "hostMedianMs": 15.325700000000001,
+              "hostObservedP95Ms": 30.209
+            },
+            "after": {
+              "rows": 450,
+              "families": 30,
+              "top1": 213,
+              "top3": 286,
+              "top10": 317,
+              "covered": 336,
+              "mrr": 0.5626082092675438,
+              "graphAligned": 360,
+              "graphCanonical": 365,
+              "selectedCanonical": 298,
+              "characterErrors": 483,
+              "characters": 3450,
+              "cer": 0.14,
+              "hostMedianMs": 16.97435,
+              "hostObservedP95Ms": 31.53
+            }
+          }
+        }
+      },
+      "changes": [
+        {
+          "id": "3782a25af4e18843158bdf5e34023d3c1c631732a25de21a07b5b887825feca1",
+          "query": "hinengbaxiwangjituozaisunzishenshang",
+          "expected": "只能把希望寄托在孙子身上",
+          "beforeRank": 42,
+          "afterRank": 43,
+          "beforeTop1": "你能把希望寄托在孙子身上",
+          "afterTop1": "你能把希望寄托在孙子身上",
+          "operation": "delete",
+          "stratum": "long"
+        },
+        {
+          "id": "bee4843ec555d50b0d72ee08d2dc9dae65928d79468129838df6313479077586",
+          "query": "qizhongyijianfangjianyoulaozhongma",
+          "expected": "其中一间房间有闹钟吗",
+          "beforeRank": 66,
+          "afterRank": 64,
+          "beforeTop1": "其中一间房间有老中吗",
+          "afterTop1": "其中一间房间有老中吗",
+          "operation": "fuzzy",
+          "stratum": "long"
+        },
+        {
+          "id": "888a754a7a86c7b2f5c390fcca98968ecc739560b73e030402819154e3ce0b23",
+          "query": "jijinshichuadezhonghualiyiyongyu",
+          "expected": "几近失传的中华礼仪用语",
+          "beforeRank": 0,
+          "afterRank": 0,
+          "beforeTop1": "基金是出啊的中华利益用于",
+          "afterTop1": "基金是欻地中华利益用于",
+          "operation": "delete",
+          "stratum": "long"
+        }
+      ],
+      "top1Gains": 0,
+      "top1Losses": 0,
+      "lexiconSha256": {
+        "before": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
+        "after": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232"
+      },
+      "inputReports": {
+        "before": "e57652488535625c7b1852486d47e5726325833f8966bffa9ef95a7c95c7d898",
+        "after": "fc7712204bb694a2113641b8bb1b9fdb8645b661adb69918c7ec191b7bd74eb9"
+      }
+    },
+    "known-e6": {
+      "schemaVersion": 1,
+      "scope": "Known isolated word / synthetic source reconstruction, not natural user accuracy",
+      "before": {
+        "rows": 929,
+        "families": 62,
+        "top1": 398,
+        "top3": 559,
+        "top10": 630,
+        "covered": 695,
+        "mrr": 0.523354489524276,
+        "graphAligned": 734,
+        "graphCanonical": 734,
+        "selectedCanonical": 589,
+        "characterErrors": 1059,
+        "characters": 8871,
+        "cer": 0.11937774771728103,
+        "hostMedianMs": 17.8385,
+        "hostObservedP95Ms": 39.8192
+      },
+      "after": {
+        "rows": 929,
+        "families": 62,
+        "top1": 398,
+        "top3": 559,
+        "top10": 630,
+        "covered": 695,
+        "mrr": 0.5233561322415886,
+        "graphAligned": 734,
+        "graphCanonical": 734,
+        "selectedCanonical": 589,
+        "characterErrors": 1059,
+        "characters": 8871,
+        "cer": 0.11937774771728103,
+        "hostMedianMs": 17.9946,
+        "hostObservedP95Ms": 40.8962
+      },
+      "byGroup": {
+        "operation": {
+          "clean": {
+            "before": {
+              "rows": 62,
+              "families": 62,
+              "top1": 40,
+              "top3": 54,
+              "top10": 59,
+              "covered": 61,
+              "mrr": 0.7644383394383394,
+              "graphAligned": 62,
+              "graphCanonical": 62,
+              "selectedCanonical": 0,
+              "characterErrors": 39,
+              "characters": 592,
+              "cer": 0.06587837837837837,
+              "hostMedianMs": 26.65795,
+              "hostObservedP95Ms": 51.3564
+            },
+            "after": {
+              "rows": 62,
+              "families": 62,
+              "top1": 40,
+              "top3": 54,
+              "top10": 59,
+              "covered": 61,
+              "mrr": 0.7644383394383394,
+              "graphAligned": 62,
+              "graphCanonical": 62,
+              "selectedCanonical": 0,
+              "characterErrors": 39,
+              "characters": 592,
+              "cer": 0.06587837837837837,
+              "hostMedianMs": 26.75965,
+              "hostObservedP95Ms": 52.4148
+            }
+          },
+          "delete": {
+            "before": {
+              "rows": 186,
+              "families": 62,
+              "top1": 24,
+              "top3": 43,
+              "top10": 61,
+              "covered": 89,
+              "mrr": 0.19883267364246152,
+              "graphAligned": 102,
+              "graphCanonical": 102,
+              "selectedCanonical": 90,
+              "characterErrors": 332,
+              "characters": 1776,
+              "cer": 0.18693693693693694,
+              "hostMedianMs": 20.82585,
+              "hostObservedP95Ms": 41.8549
+            },
+            "after": {
+              "rows": 186,
+              "families": 62,
+              "top1": 24,
+              "top3": 43,
+              "top10": 61,
+              "covered": 89,
+              "mrr": 0.1988355042904535,
+              "graphAligned": 102,
+              "graphCanonical": 102,
+              "selectedCanonical": 90,
+              "characterErrors": 332,
+              "characters": 1776,
+              "cer": 0.18693693693693694,
+              "hostMedianMs": 20.5991,
+              "hostObservedP95Ms": 42.48
+            }
+          },
+          "fuzzy": {
+            "before": {
+              "rows": 61,
+              "families": 61,
+              "top1": 15,
+              "top3": 23,
+              "top10": 26,
+              "covered": 37,
+              "mrr": 0.3200413701082326,
+              "graphAligned": 39,
+              "graphCanonical": 39,
+              "selectedCanonical": 38,
+              "characterErrors": 96,
+              "characters": 583,
+              "cer": 0.1646655231560892,
+              "hostMedianMs": 24.1815,
+              "hostObservedP95Ms": 46.5185
+            },
+            "after": {
+              "rows": 61,
+              "families": 61,
+              "top1": 15,
+              "top3": 23,
+              "top10": 26,
+              "covered": 37,
+              "mrr": 0.3200620913249824,
+              "graphAligned": 39,
+              "graphCanonical": 39,
+              "selectedCanonical": 38,
+              "characterErrors": 96,
+              "characters": 583,
+              "cer": 0.1646655231560892,
+              "hostMedianMs": 23.7608,
+              "hostObservedP95Ms": 41.8862
+            }
+          },
+          "joints": {
+            "before": {
+              "rows": 62,
+              "families": 62,
+              "top1": 40,
+              "top3": 54,
+              "top10": 59,
+              "covered": 61,
+              "mrr": 0.7644383394383394,
+              "graphAligned": 62,
+              "graphCanonical": 62,
+              "selectedCanonical": 0,
+              "characterErrors": 39,
+              "characters": 592,
+              "cer": 0.06587837837837837,
+              "hostMedianMs": 23.50705,
+              "hostObservedP95Ms": 41.1577
+            },
+            "after": {
+              "rows": 62,
+              "families": 62,
+              "top1": 40,
+              "top3": 54,
+              "top10": 59,
+              "covered": 61,
+              "mrr": 0.7644383394383394,
+              "graphAligned": 62,
+              "graphCanonical": 62,
+              "selectedCanonical": 0,
+              "characterErrors": 39,
+              "characters": 592,
+              "cer": 0.06587837837837837,
+              "hostMedianMs": 23.6688,
+              "hostObservedP95Ms": 46.2488
+            }
+          },
+          "neighbor": {
+            "before": {
+              "rows": 186,
+              "families": 62,
+              "top1": 87,
+              "top3": 124,
+              "top10": 138,
+              "covered": 142,
+              "mrr": 0.5688546406592664,
+              "graphAligned": 148,
+              "graphCanonical": 148,
+              "selectedCanonical": 146,
+              "characterErrors": 184,
+              "characters": 1776,
+              "cer": 0.1036036036036036,
+              "hostMedianMs": 15.5388,
+              "hostObservedP95Ms": 32.0903
+            },
+            "after": {
+              "rows": 186,
+              "families": 62,
+              "top1": 87,
+              "top3": 124,
+              "top10": 138,
+              "covered": 142,
+              "mrr": 0.5688546406592664,
+              "graphAligned": 148,
+              "graphCanonical": 148,
+              "selectedCanonical": 146,
+              "characterErrors": 184,
+              "characters": 1776,
+              "cer": 0.1036036036036036,
+              "hostMedianMs": 15.86995,
+              "hostObservedP95Ms": 32.5204
+            }
+          },
+          "repeat": {
+            "before": {
+              "rows": 186,
+              "families": 62,
+              "top1": 112,
+              "top3": 153,
+              "top10": 168,
+              "covered": 179,
+              "mrr": 0.7209637525962398,
+              "graphAligned": 186,
+              "graphCanonical": 186,
+              "selectedCanonical": 185,
+              "characterErrors": 137,
+              "characters": 1776,
+              "cer": 0.07713963963963964,
+              "hostMedianMs": 16.36065,
+              "hostObservedP95Ms": 37.646
+            },
+            "after": {
+              "rows": 186,
+              "families": 62,
+              "top1": 112,
+              "top3": 153,
+              "top10": 168,
+              "covered": 179,
+              "mrr": 0.7209637525962398,
+              "graphAligned": 186,
+              "graphCanonical": 186,
+              "selectedCanonical": 185,
+              "characterErrors": 137,
+              "characters": 1776,
+              "cer": 0.07713963963963964,
+              "hostMedianMs": 16.799799999999998,
+              "hostObservedP95Ms": 36.7584
+            }
+          },
+          "transpose": {
+            "before": {
+              "rows": 186,
+              "families": 62,
+              "top1": 80,
+              "top3": 108,
+              "top10": 119,
+              "covered": 126,
+              "mrr": 0.5107222831079257,
+              "graphAligned": 135,
+              "graphCanonical": 135,
+              "selectedCanonical": 130,
+              "characterErrors": 232,
+              "characters": 1776,
+              "cer": 0.13063063063063063,
+              "hostMedianMs": 14.3661,
+              "hostObservedP95Ms": 27.9688
+            },
+            "after": {
+              "rows": 186,
+              "families": 62,
+              "top1": 80,
+              "top3": 108,
+              "top10": 119,
+              "covered": 126,
+              "mrr": 0.5107208615468241,
+              "graphAligned": 135,
+              "graphCanonical": 135,
+              "selectedCanonical": 130,
+              "characterErrors": 232,
+              "characters": 1776,
+              "cer": 0.13063063063063063,
+              "hostMedianMs": 14.662700000000001,
+              "hostObservedP95Ms": 28.6501
+            }
+          }
+        },
+        "stratum": {
+          "long": {
+            "before": {
+              "rows": 480,
+              "families": 32,
+              "top1": 217,
+              "top3": 278,
+              "top10": 314,
+              "covered": 349,
+              "mrr": 0.5285547053106031,
+              "graphAligned": 374,
+              "graphCanonical": 374,
+              "selectedCanonical": 303,
+              "characterErrors": 550,
+              "characters": 5505,
+              "cer": 0.09990917347865577,
+              "hostMedianMs": 21.307450000000003,
+              "hostObservedP95Ms": 44.4742
+            },
+            "after": {
+              "rows": 480,
+              "families": 32,
+              "top1": 217,
+              "top3": 278,
+              "top10": 314,
+              "covered": 349,
+              "mrr": 0.5285578846530684,
+              "graphAligned": 374,
+              "graphCanonical": 374,
+              "selectedCanonical": 303,
+              "characterErrors": 550,
+              "characters": 5505,
+              "cer": 0.09990917347865577,
+              "hostMedianMs": 22.23885,
+              "hostObservedP95Ms": 46.6329
+            }
+          },
+          "short": {
+            "before": {
+              "rows": 449,
+              "families": 30,
+              "top1": 181,
+              "top3": 281,
+              "top10": 316,
+              "covered": 346,
+              "mrr": 0.5177952387950177,
+              "graphAligned": 360,
+              "graphCanonical": 360,
+              "selectedCanonical": 286,
+              "characterErrors": 509,
+              "characters": 3366,
+              "cer": 0.15121806298276885,
+              "hostMedianMs": 15.3976,
+              "hostObservedP95Ms": 31.7528
+            },
+            "after": {
+              "rows": 449,
+              "families": 30,
+              "top1": 181,
+              "top3": 281,
+              "top10": 316,
+              "covered": 346,
+              "mrr": 0.5177952387950177,
+              "graphAligned": 360,
+              "graphCanonical": 360,
+              "selectedCanonical": 286,
+              "characterErrors": 509,
+              "characters": 3366,
+              "cer": 0.15121806298276885,
+              "hostMedianMs": 15.1865,
+              "hostObservedP95Ms": 30.8562
+            }
+          }
+        }
+      },
+      "changes": [
+        {
+          "id": "65691e0ba71a0af7cf17231f7560e81b6b277733c3585399f94148bbe47b5022",
+          "query": "lundunguoquyinweijinjihewenhuadeyuangu",
+          "expected": "伦敦过去因为经济和文化的缘故",
+          "beforeRank": 77,
+          "afterRank": 74,
+          "beforeTop1": "伦敦过去因为禁忌和文化的缘故",
+          "afterTop1": "伦敦过去因为禁忌和文化的缘故",
+          "operation": "delete",
+          "stratum": "long"
+        },
+        {
+          "id": "2f1d0cd205baf785356f703967dd50b1d307fbb3eb7b04210dfd637167e56f65",
+          "query": "tajujuezuotamenxianyaodeshi",
+          "expected": "她拒绝做他们想要的事",
+          "beforeRank": 78,
+          "afterRank": 71,
+          "beforeTop1": "他拒绝做他们先要的是",
+          "afterTop1": "他拒绝做他们先要的是",
+          "operation": "fuzzy",
+          "stratum": "long"
+        },
+        {
+          "id": "38ec658ff9b81892e2d3ec3af6cfd97f92d5b0dedb591db37b1b61bdcc923115",
+          "query": "shuiminashijiandechangduankeyinreneryi",
+          "expected": "睡眠时间的长短可因人而异",
+          "beforeRank": 61,
+          "afterRank": 62,
+          "beforeTop1": "水米那时间的长短可因人而异",
+          "afterTop1": "水米那时间的长短可因人而异",
+          "operation": "transpose",
+          "stratum": "long"
+        }
+      ],
+      "top1Gains": 0,
+      "top1Losses": 0,
+      "lexiconSha256": {
+        "before": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
+        "after": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232"
+      },
+      "inputReports": {
+        "before": "4e5fe612065ea4c272183c88e5dd9cd42fa2373190a8e98ff80d8dc9c0a0ddc6",
+        "after": "29b13f24070a49daace341d032182320aac95362292e87f43804973d7caa1996"
+      }
+    },
+    "known-short": {
+      "schemaVersion": 1,
+      "scope": "Known isolated word / synthetic source reconstruction, not natural user accuracy",
+      "before": {
+        "rows": 48,
+        "families": 48,
+        "top1": 43,
+        "top3": 46,
+        "top10": 47,
+        "covered": 48,
+        "mrr": 0.9334490740740741,
+        "graphAligned": 48,
+        "graphCanonical": 48,
+        "selectedCanonical": 0,
+        "characterErrors": 8,
+        "characters": 154,
+        "cer": 0.05194805194805195,
+        "hostMedianMs": 15.625499999999999,
+        "hostObservedP95Ms": 35.7165
+      },
+      "after": {
+        "rows": 48,
+        "families": 48,
+        "top1": 43,
+        "top3": 46,
+        "top10": 48,
+        "covered": 48,
+        "mrr": 0.9346064814814815,
+        "graphAligned": 48,
+        "graphCanonical": 48,
+        "selectedCanonical": 0,
+        "characterErrors": 8,
+        "characters": 154,
+        "cer": 0.05194805194805195,
+        "hostMedianMs": 14.62125,
+        "hostObservedP95Ms": 35.6453
+      },
+      "byGroup": {
+        "operation": {
+          "clean": {
+            "before": {
+              "rows": 48,
+              "families": 48,
+              "top1": 43,
+              "top3": 46,
+              "top10": 47,
+              "covered": 48,
+              "mrr": 0.9334490740740741,
+              "graphAligned": 48,
+              "graphCanonical": 48,
+              "selectedCanonical": 0,
+              "characterErrors": 8,
+              "characters": 154,
+              "cer": 0.05194805194805195,
+              "hostMedianMs": 15.625499999999999,
+              "hostObservedP95Ms": 35.7165
+            },
+            "after": {
+              "rows": 48,
+              "families": 48,
+              "top1": 43,
+              "top3": 46,
+              "top10": 48,
+              "covered": 48,
+              "mrr": 0.9346064814814815,
+              "graphAligned": 48,
+              "graphCanonical": 48,
+              "selectedCanonical": 0,
+              "characterErrors": 8,
+              "characters": 154,
+              "cer": 0.05194805194805195,
+              "hostMedianMs": 14.62125,
+              "hostObservedP95Ms": 35.6453
+            }
+          }
+        },
+        "stratum": {
+          "daily": {
+            "before": {
+              "rows": 16,
+              "families": 16,
+              "top1": 16,
+              "top3": 16,
+              "top10": 16,
+              "covered": 16,
+              "mrr": 1.0,
+              "graphAligned": 16,
+              "graphCanonical": 16,
+              "selectedCanonical": 0,
+              "characterErrors": 0,
+              "characters": 45,
+              "cer": 0.0,
+              "hostMedianMs": 15.625499999999999,
+              "hostObservedP95Ms": 75.1393
+            },
+            "after": {
+              "rows": 16,
+              "families": 16,
+              "top1": 16,
+              "top3": 16,
+              "top10": 16,
+              "covered": 16,
+              "mrr": 1.0,
+              "graphAligned": 16,
+              "graphCanonical": 16,
+              "selectedCanonical": 0,
+              "characterErrors": 0,
+              "characters": 45,
+              "cer": 0.0,
+              "hostMedianMs": 14.992550000000001,
+              "hostObservedP95Ms": 78.7245
+            }
+          },
+          "input-software": {
+            "before": {
+              "rows": 16,
+              "families": 16,
+              "top1": 15,
+              "top3": 16,
+              "top10": 16,
+              "covered": 16,
+              "mrr": 0.96875,
+              "graphAligned": 16,
+              "graphCanonical": 16,
+              "selectedCanonical": 0,
+              "characterErrors": 2,
+              "characters": 49,
+              "cer": 0.04081632653061224,
+              "hostMedianMs": 12.860199999999999,
+              "hostObservedP95Ms": 29.1265
+            },
+            "after": {
+              "rows": 16,
+              "families": 16,
+              "top1": 15,
+              "top3": 16,
+              "top10": 16,
+              "covered": 16,
+              "mrr": 0.96875,
+              "graphAligned": 16,
+              "graphCanonical": 16,
+              "selectedCanonical": 0,
+              "characterErrors": 2,
+              "characters": 49,
+              "cer": 0.04081632653061224,
+              "hostMedianMs": 12.98875,
+              "hostObservedP95Ms": 36.6744
+            }
+          },
+          "modern-technical": {
+            "before": {
+              "rows": 16,
+              "families": 16,
+              "top1": 12,
+              "top3": 14,
+              "top10": 15,
+              "covered": 16,
+              "mrr": 0.8315972222222222,
+              "graphAligned": 16,
+              "graphCanonical": 16,
+              "selectedCanonical": 0,
+              "characterErrors": 6,
+              "characters": 60,
+              "cer": 0.1,
+              "hostMedianMs": 17.28415,
+              "hostObservedP95Ms": 40.0041
+            },
+            "after": {
+              "rows": 16,
+              "families": 16,
+              "top1": 12,
+              "top3": 14,
+              "top10": 16,
+              "covered": 16,
+              "mrr": 0.8350694444444444,
+              "graphAligned": 16,
+              "graphCanonical": 16,
+              "selectedCanonical": 0,
+              "characterErrors": 6,
+              "characters": 60,
+              "cer": 0.1,
+              "hostMedianMs": 14.652999999999999,
+              "hostObservedP95Ms": 34.4401
+            }
+          }
+        }
+      },
+      "changes": [
+        {
+          "id": "bfcef2c9c6f99ceac770baa8c9d64ed45b4c70c3a2a8945cb2104e62d1891cae",
+          "query": "duozhinengti",
+          "expected": "多智能体",
+          "beforeRank": 18,
+          "afterRank": 9,
+          "beforeTop1": "多只能提",
+          "afterTop1": "多只能提",
+          "operation": "clean",
+          "stratum": "modern-technical"
+        }
+      ],
+      "top1Gains": 0,
+      "top1Losses": 0,
+      "lexiconSha256": {
+        "before": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
+        "after": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232"
+      },
+      "inputReports": {
+        "before": "b517ea75c77bbab7d113c1ccc5a01a0cb7b540402c3904b2888f9280acb6c967",
+        "after": "0e70127335f1916d06cac14843e823d7a36c2014de9b8e2d5590f35bbcbbae90"
+      }
+    },
+    "vocabulary-audit": {
+      "schemaVersion": 1,
+      "scope": "Known isolated word / synthetic source reconstruction, not natural user accuracy",
+      "before": {
+        "rows": 63,
+        "families": 63,
+        "top1": 51,
+        "top3": 54,
+        "top10": 59,
+        "covered": 63,
+        "mrr": 0.8465516021071576,
+        "graphAligned": 63,
+        "graphCanonical": 63,
+        "selectedCanonical": 0,
+        "characterErrors": 23,
+        "characters": 252,
+        "cer": 0.09126984126984126,
+        "hostMedianMs": 17.9232,
+        "hostObservedP95Ms": 34.81
+      },
+      "after": {
+        "rows": 63,
+        "families": 63,
+        "top1": 51,
+        "top3": 54,
+        "top10": 59,
+        "covered": 63,
+        "mrr": 0.8465516021071576,
+        "graphAligned": 63,
+        "graphCanonical": 63,
+        "selectedCanonical": 0,
+        "characterErrors": 23,
+        "characters": 252,
+        "cer": 0.09126984126984126,
+        "hostMedianMs": 19.0281,
+        "hostObservedP95Ms": 33.0936
+      },
+      "byGroup": {
+        "operation": {
+          "clean": {
+            "before": {
+              "rows": 63,
+              "families": 63,
+              "top1": 51,
+              "top3": 54,
+              "top10": 59,
+              "covered": 63,
+              "mrr": 0.8465516021071576,
+              "graphAligned": 63,
+              "graphCanonical": 63,
+              "selectedCanonical": 0,
+              "characterErrors": 23,
+              "characters": 252,
+              "cer": 0.09126984126984126,
+              "hostMedianMs": 17.9232,
+              "hostObservedP95Ms": 34.81
+            },
+            "after": {
+              "rows": 63,
+              "families": 63,
+              "top1": 51,
+              "top3": 54,
+              "top10": 59,
+              "covered": 63,
+              "mrr": 0.8465516021071576,
+              "graphAligned": 63,
+              "graphCanonical": 63,
+              "selectedCanonical": 0,
+              "characterErrors": 23,
+              "characters": 252,
+              "cer": 0.09126984126984126,
+              "hostMedianMs": 19.0281,
+              "hostObservedP95Ms": 33.0936
+            }
+          }
+        },
+        "stratum": {
+          "ai": {
+            "before": {
+              "rows": 16,
+              "families": 16,
+              "top1": 13,
+              "top3": 14,
+              "top10": 15,
+              "covered": 16,
+              "mrr": 0.8512731481481481,
+              "graphAligned": 16,
+              "graphCanonical": 16,
+              "selectedCanonical": 0,
+              "characterErrors": 7,
+              "characters": 65,
+              "cer": 0.1076923076923077,
+              "hostMedianMs": 17.439349999999997,
+              "hostObservedP95Ms": 31.0369
+            },
+            "after": {
+              "rows": 16,
+              "families": 16,
+              "top1": 13,
+              "top3": 14,
+              "top10": 15,
+              "covered": 16,
+              "mrr": 0.8512731481481481,
+              "graphAligned": 16,
+              "graphCanonical": 16,
+              "selectedCanonical": 0,
+              "characterErrors": 7,
+              "characters": 65,
+              "cer": 0.1076923076923077,
+              "hostMedianMs": 19.2654,
+              "hostObservedP95Ms": 28.952
+            }
+          },
+          "daily": {
+            "before": {
+              "rows": 24,
+              "families": 24,
+              "top1": 19,
+              "top3": 20,
+              "top10": 22,
+              "covered": 24,
+              "mrr": 0.8350378787878787,
+              "graphAligned": 24,
+              "graphCanonical": 24,
+              "selectedCanonical": 0,
+              "characterErrors": 8,
+              "characters": 95,
+              "cer": 0.08421052631578947,
+              "hostMedianMs": 19.36085,
+              "hostObservedP95Ms": 36.1207
+            },
+            "after": {
+              "rows": 24,
+              "families": 24,
+              "top1": 19,
+              "top3": 20,
+              "top10": 22,
+              "covered": 24,
+              "mrr": 0.8350378787878787,
+              "graphAligned": 24,
+              "graphCanonical": 24,
+              "selectedCanonical": 0,
+              "characterErrors": 8,
+              "characters": 95,
+              "cer": 0.08421052631578947,
+              "hostMedianMs": 21.16315,
+              "hostObservedP95Ms": 33.0936
+            }
+          },
+          "software": {
+            "before": {
+              "rows": 23,
+              "families": 23,
+              "top1": 19,
+              "top3": 20,
+              "top10": 22,
+              "covered": 23,
+              "mrr": 0.8552813683248466,
+              "graphAligned": 23,
+              "graphCanonical": 23,
+              "selectedCanonical": 0,
+              "characterErrors": 8,
+              "characters": 92,
+              "cer": 0.08695652173913043,
+              "hostMedianMs": 17.3272,
+              "hostObservedP95Ms": 34.81
+            },
+            "after": {
+              "rows": 23,
+              "families": 23,
+              "top1": 19,
+              "top3": 20,
+              "top10": 22,
+              "covered": 23,
+              "mrr": 0.8552813683248466,
+              "graphAligned": 23,
+              "graphCanonical": 23,
+              "selectedCanonical": 0,
+              "characterErrors": 8,
+              "characters": 92,
+              "cer": 0.08695652173913043,
+              "hostMedianMs": 17.2002,
+              "hostObservedP95Ms": 35.0489
+            }
+          }
+        }
+      },
+      "changes": [],
+      "top1Gains": 0,
+      "top1Losses": 0,
+      "lexiconSha256": {
+        "before": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
+        "after": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232"
+      },
+      "inputReports": {
+        "before": "f81c0ba3dff4f57cf2f27dbb47347477cccad5a33efdd44f106d8a9cd0588659",
+        "after": "12f746ec4f0ecbe78013b6107a646009b771e612605626fab90d653dbc41fdef"
+      }
+    },
+    "p2c-audit": {
+      "schemaVersion": 1,
+      "scope": "Known isolated word / synthetic source reconstruction, not natural user accuracy",
+      "before": {
+        "rows": 959,
+        "families": 64,
+        "top1": 425,
+        "top3": 531,
+        "top10": 612,
+        "covered": 676,
+        "mrr": 0.5126351996645603,
+        "graphAligned": 761,
+        "graphCanonical": 763,
+        "selectedCanonical": 609,
+        "characterErrors": 1130,
+        "characters": 9053,
+        "cer": 0.12482050149121839,
+        "hostMedianMs": 18.1592,
+        "hostObservedP95Ms": 42.8702
+      },
+      "after": {
+        "rows": 959,
+        "families": 64,
+        "top1": 425,
+        "top3": 532,
+        "top10": 612,
+        "covered": 676,
+        "mrr": 0.5129912272746224,
+        "graphAligned": 761,
+        "graphCanonical": 763,
+        "selectedCanonical": 609,
+        "characterErrors": 1130,
+        "characters": 9053,
+        "cer": 0.12482050149121839,
+        "hostMedianMs": 18.6592,
+        "hostObservedP95Ms": 41.6905
+      },
+      "byGroup": {
+        "operation": {
+          "clean": {
+            "before": {
+              "rows": 64,
+              "families": 64,
+              "top1": 42,
+              "top3": 50,
+              "top10": 57,
+              "covered": 59,
+              "mrr": 0.7355087187118438,
+              "graphAligned": 64,
+              "graphCanonical": 64,
+              "selectedCanonical": 0,
+              "characterErrors": 41,
+              "characters": 604,
+              "cer": 0.06788079470198675,
+              "hostMedianMs": 30.48455,
+              "hostObservedP95Ms": 50.6557
+            },
+            "after": {
+              "rows": 64,
+              "families": 64,
+              "top1": 42,
+              "top3": 50,
+              "top10": 57,
+              "covered": 59,
+              "mrr": 0.7355087187118438,
+              "graphAligned": 64,
+              "graphCanonical": 64,
+              "selectedCanonical": 0,
+              "characterErrors": 41,
+              "characters": 604,
+              "cer": 0.06788079470198675,
+              "hostMedianMs": 31.3646,
+              "hostObservedP95Ms": 54.8239
+            }
+          },
+          "delete": {
+            "before": {
+              "rows": 192,
+              "families": 64,
+              "top1": 33,
+              "top3": 44,
+              "top10": 59,
+              "covered": 82,
+              "mrr": 0.21762888077479017,
+              "graphAligned": 97,
+              "graphCanonical": 97,
+              "selectedCanonical": 86,
+              "characterErrors": 348,
+              "characters": 1812,
+              "cer": 0.19205298013245034,
+              "hostMedianMs": 21.09985,
+              "hostObservedP95Ms": 42.9672
+            },
+            "after": {
+              "rows": 192,
+              "families": 64,
+              "top1": 33,
+              "top3": 45,
+              "top10": 59,
+              "covered": 82,
+              "mrr": 0.2194071645146314,
+              "graphAligned": 97,
+              "graphCanonical": 97,
+              "selectedCanonical": 86,
+              "characterErrors": 348,
+              "characters": 1812,
+              "cer": 0.19205298013245034,
+              "hostMedianMs": 21.8427,
+              "hostObservedP95Ms": 42.7312
+            }
+          },
+          "fuzzy": {
+            "before": {
+              "rows": 63,
+              "families": 63,
+              "top1": 13,
+              "top3": 19,
+              "top10": 24,
+              "covered": 32,
+              "mrr": 0.26695739284020287,
+              "graphAligned": 36,
+              "graphCanonical": 36,
+              "selectedCanonical": 32,
+              "characterErrors": 105,
+              "characters": 597,
+              "cer": 0.17587939698492464,
+              "hostMedianMs": 27.8802,
+              "hostObservedP95Ms": 44.7141
+            },
+            "after": {
+              "rows": 63,
+              "families": 63,
+              "top1": 13,
+              "top3": 19,
+              "top10": 24,
+              "covered": 32,
+              "mrr": 0.26695739284020287,
+              "graphAligned": 36,
+              "graphCanonical": 36,
+              "selectedCanonical": 32,
+              "characterErrors": 105,
+              "characters": 597,
+              "cer": 0.17587939698492464,
+              "hostMedianMs": 29.1149,
+              "hostObservedP95Ms": 45.8884
+            }
+          },
+          "joints": {
+            "before": {
+              "rows": 64,
+              "families": 64,
+              "top1": 42,
+              "top3": 50,
+              "top10": 57,
+              "covered": 59,
+              "mrr": 0.7355087187118438,
+              "graphAligned": 64,
+              "graphCanonical": 64,
+              "selectedCanonical": 0,
+              "characterErrors": 41,
+              "characters": 604,
+              "cer": 0.06788079470198675,
+              "hostMedianMs": 26.119,
+              "hostObservedP95Ms": 44.5604
+            },
+            "after": {
+              "rows": 64,
+              "families": 64,
+              "top1": 42,
+              "top3": 50,
+              "top10": 57,
+              "covered": 59,
+              "mrr": 0.7355087187118438,
+              "graphAligned": 64,
+              "graphCanonical": 64,
+              "selectedCanonical": 0,
+              "characterErrors": 41,
+              "characters": 604,
+              "cer": 0.06788079470198675,
+              "hostMedianMs": 26.26075,
+              "hostObservedP95Ms": 43.8166
+            }
+          },
+          "neighbor": {
+            "before": {
+              "rows": 192,
+              "families": 64,
+              "top1": 99,
+              "top3": 122,
+              "top10": 138,
+              "covered": 146,
+              "mrr": 0.589162579518183,
+              "graphAligned": 161,
+              "graphCanonical": 161,
+              "selectedCanonical": 158,
+              "characterErrors": 183,
+              "characters": 1812,
+              "cer": 0.10099337748344371,
+              "hostMedianMs": 15.599450000000001,
+              "hostObservedP95Ms": 38.9178
+            },
+            "after": {
+              "rows": 192,
+              "families": 64,
+              "top1": 99,
+              "top3": 122,
+              "top10": 138,
+              "covered": 146,
+              "mrr": 0.589162579518183,
+              "graphAligned": 161,
+              "graphCanonical": 161,
+              "selectedCanonical": 158,
+              "characterErrors": 183,
+              "characters": 1812,
+              "cer": 0.10099337748344371,
+              "hostMedianMs": 16.36435,
+              "hostObservedP95Ms": 36.8152
+            }
+          },
+          "repeat": {
+            "before": {
+              "rows": 192,
+              "families": 64,
+              "top1": 115,
+              "top3": 144,
+              "top10": 164,
+              "covered": 174,
+              "mrr": 0.6914574008679103,
+              "graphAligned": 192,
+              "graphCanonical": 192,
+              "selectedCanonical": 192,
+              "characterErrors": 141,
+              "characters": 1812,
+              "cer": 0.07781456953642384,
+              "hostMedianMs": 17.308,
+              "hostObservedP95Ms": 42.7498
+            },
+            "after": {
+              "rows": 192,
+              "families": 64,
+              "top1": 115,
+              "top3": 144,
+              "top10": 164,
+              "covered": 174,
+              "mrr": 0.6914574008679103,
+              "graphAligned": 192,
+              "graphCanonical": 192,
+              "selectedCanonical": 192,
+              "characterErrors": 141,
+              "characters": 1812,
+              "cer": 0.07781456953642384,
+              "hostMedianMs": 17.50005,
+              "hostObservedP95Ms": 41.1567
+            }
+          },
+          "transpose": {
+            "before": {
+              "rows": 192,
+              "families": 64,
+              "top1": 81,
+              "top3": 102,
+              "top10": 113,
+              "covered": 124,
+              "mrr": 0.4843226218300778,
+              "graphAligned": 147,
+              "graphCanonical": 149,
+              "selectedCanonical": 141,
+              "characterErrors": 271,
+              "characters": 1812,
+              "cer": 0.14955849889624723,
+              "hostMedianMs": 15.3067,
+              "hostObservedP95Ms": 33.3484
+            },
+            "after": {
+              "rows": 192,
+              "families": 64,
+              "top1": 81,
+              "top3": 102,
+              "top10": 113,
+              "covered": 124,
+              "mrr": 0.4843226218300778,
+              "graphAligned": 147,
+              "graphCanonical": 149,
+              "selectedCanonical": 141,
+              "characterErrors": 271,
+              "characters": 1812,
+              "cer": 0.14955849889624723,
+              "hostMedianMs": 15.73845,
+              "hostObservedP95Ms": 33.1062
+            }
+          }
+        },
+        "stratum": {
+          "long": {
+            "before": {
+              "rows": 480,
+              "families": 32,
+              "top1": 183,
+              "top3": 230,
+              "top10": 296,
+              "covered": 340,
+              "mrr": 0.4554233699907753,
+              "graphAligned": 370,
+              "graphCanonical": 370,
+              "selectedCanonical": 297,
+              "characterErrors": 633,
+              "characters": 5505,
+              "cer": 0.11498637602179837,
+              "hostMedianMs": 20.8509,
+              "hostObservedP95Ms": 44.0822
+            },
+            "after": {
+              "rows": 480,
+              "families": 32,
+              "top1": 183,
+              "top3": 230,
+              "top10": 296,
+              "covered": 340,
+              "mrr": 0.45543869754516536,
+              "graphAligned": 370,
+              "graphCanonical": 370,
+              "selectedCanonical": 297,
+              "characterErrors": 633,
+              "characters": 5505,
+              "cer": 0.11498637602179837,
+              "hostMedianMs": 21.558100000000003,
+              "hostObservedP95Ms": 43.814
+            }
+          },
+          "short": {
+            "before": {
+              "rows": 479,
+              "families": 32,
+              "top1": 242,
+              "top3": 301,
+              "top10": 316,
+              "covered": 336,
+              "mrr": 0.569966469483802,
+              "graphAligned": 391,
+              "graphCanonical": 393,
+              "selectedCanonical": 312,
+              "characterErrors": 497,
+              "characters": 3548,
+              "cer": 0.14007891770011274,
+              "hostMedianMs": 15.6153,
+              "hostObservedP95Ms": 38.5001
+            },
+            "after": {
+              "rows": 479,
+              "families": 32,
+              "top1": 242,
+              "top3": 302,
+              "top10": 316,
+              "covered": 336,
+              "mrr": 0.5706639084231387,
+              "graphAligned": 391,
+              "graphCanonical": 393,
+              "selectedCanonical": 312,
+              "characterErrors": 497,
+              "characters": 3548,
+              "cer": 0.14007891770011274,
+              "hostMedianMs": 16.608,
+              "hostObservedP95Ms": 34.4081
+            }
+          }
+        }
+      },
+      "changes": [
+        {
+          "id": "2d0244643dc491fe3b2cdd08048ad41d195e7921a884ff9ff233389c4025c49c",
+          "query": "yingiangcheliangtongxing",
+          "expected": "影响车辆通行",
+          "beforeRank": 6,
+          "afterRank": 2,
+          "beforeTop1": "一年车辆通行",
+          "afterTop1": "一年车辆通行",
+          "operation": "delete",
+          "stratum": "short"
+        },
+        {
+          "id": "9ac9aad1639bbf597062afd3e6a805149fbcc286942d0a464fd74cd90234c857",
+          "query": "nikeyiqutadnche",
+          "expected": "你可以去踏单车",
+          "beforeRank": 53,
+          "afterRank": 51,
+          "beforeTop1": "你可以去他的车",
+          "afterTop1": "你可以去他的车",
+          "operation": "delete",
+          "stratum": "short"
+        },
+        {
+          "id": "b1dc376493fbc8984a3d2584fb35c663065069dcf629176a7871164f983f85ed",
+          "query": "zheyangzuodehuashenmedouuhuigaibiande",
+          "expected": "这样做的话什么都不会改变的",
+          "beforeRank": 13,
+          "afterRank": 12,
+          "beforeTop1": "这样做的话什么都会改变的",
+          "afterTop1": "这样做的话什么都会改变的",
+          "operation": "delete",
+          "stratum": "long"
+        },
+        {
+          "id": "ee8da1194c20e39419025cefe053dbabcbb8563eb70bf191be4b08e1b3ea2f9f",
+          "query": "tanazheyigezhuangmanlepingguodedaiz",
+          "expected": "他拿着一个装满了苹果的袋子",
+          "beforeRank": 33,
+          "afterRank": 32,
+          "beforeTop1": "他拿着一个装满了苹果的打字",
+          "afterTop1": "他拿着一个装满了苹果的打字",
+          "operation": "delete",
+          "stratum": "long"
+        }
+      ],
+      "top1Gains": 0,
+      "top1Losses": 0,
+      "lexiconSha256": {
+        "before": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
+        "after": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232"
+      },
+      "inputReports": {
+        "before": "30efda6f1b91b3b159ff47e4f5b542ef69b928bf8c8e64838c40aa5c823aa5e1",
+        "after": "1f7be54e783a6184debbc409fbd8a9e9058490a50f997c84d4b988503cea9776"
+      }
+    },
+    "development": {
+      "schemaVersion": 1,
+      "scope": "Known isolated word / synthetic source reconstruction, not natural user accuracy",
+      "before": {
+        "rows": 945,
+        "families": 63,
+        "top1": 461,
+        "top3": 576,
+        "top10": 621,
+        "covered": 698,
+        "mrr": 0.5543484259346362,
+        "graphAligned": 752,
+        "graphCanonical": 757,
+        "selectedCanonical": 613,
+        "characterErrors": 910,
+        "characters": 9000,
+        "cer": 0.10111111111111111,
+        "hostMedianMs": 17.4801,
+        "hostObservedP95Ms": 36.7168
+      },
+      "after": {
+        "rows": 945,
+        "families": 63,
+        "top1": 462,
+        "top3": 577,
+        "top10": 622,
+        "covered": 699,
+        "mrr": 0.5553987189955653,
+        "graphAligned": 752,
+        "graphCanonical": 757,
+        "selectedCanonical": 613,
+        "characterErrors": 911,
+        "characters": 9000,
+        "cer": 0.10122222222222223,
+        "hostMedianMs": 18.119,
+        "hostObservedP95Ms": 37.2904
+      },
+      "byGroup": {
+        "operation": {
+          "clean": {
+            "before": {
+              "rows": 63,
+              "families": 63,
+              "top1": 46,
+              "top3": 56,
+              "top10": 58,
+              "covered": 60,
+              "mrr": 0.8073833573833574,
+              "graphAligned": 63,
+              "graphCanonical": 63,
+              "selectedCanonical": 0,
+              "characterErrors": 27,
+              "characters": 600,
+              "cer": 0.045,
+              "hostMedianMs": 26.1382,
+              "hostObservedP95Ms": 39.376
+            },
+            "after": {
+              "rows": 63,
+              "families": 63,
+              "top1": 46,
+              "top3": 56,
+              "top10": 58,
+              "covered": 60,
+              "mrr": 0.8073833573833574,
+              "graphAligned": 63,
+              "graphCanonical": 63,
+              "selectedCanonical": 0,
+              "characterErrors": 27,
+              "characters": 600,
+              "cer": 0.045,
+              "hostMedianMs": 27.2411,
+              "hostObservedP95Ms": 42.0648
+            }
+          },
+          "delete": {
+            "before": {
+              "rows": 189,
+              "families": 63,
+              "top1": 32,
+              "top3": 47,
+              "top10": 55,
+              "covered": 82,
+              "mrr": 0.21628086308019612,
+              "graphAligned": 100,
+              "graphCanonical": 101,
+              "selectedCanonical": 90,
+              "characterErrors": 295,
+              "characters": 1800,
+              "cer": 0.1638888888888889,
+              "hostMedianMs": 19.8295,
+              "hostObservedP95Ms": 37.4091
+            },
+            "after": {
+              "rows": 189,
+              "families": 63,
+              "top1": 32,
+              "top3": 47,
+              "top10": 55,
+              "covered": 82,
+              "mrr": 0.2163363397761546,
+              "graphAligned": 100,
+              "graphCanonical": 101,
+              "selectedCanonical": 90,
+              "characterErrors": 295,
+              "characters": 1800,
+              "cer": 0.1638888888888889,
+              "hostMedianMs": 20.7665,
+              "hostObservedP95Ms": 38.4
+            }
+          },
+          "fuzzy": {
+            "before": {
+              "rows": 63,
+              "families": 63,
+              "top1": 17,
+              "top3": 26,
+              "top10": 36,
+              "covered": 47,
+              "mrr": 0.36360237455443384,
+              "graphAligned": 49,
+              "graphCanonical": 50,
+              "selectedCanonical": 48,
+              "characterErrors": 82,
+              "characters": 600,
+              "cer": 0.13666666666666666,
+              "hostMedianMs": 22.79,
+              "hostObservedP95Ms": 42.4993
+            },
+            "after": {
+              "rows": 63,
+              "families": 63,
+              "top1": 17,
+              "top3": 26,
+              "top10": 36,
+              "covered": 47,
+              "mrr": 0.36360237455443384,
+              "graphAligned": 49,
+              "graphCanonical": 50,
+              "selectedCanonical": 48,
+              "characterErrors": 82,
+              "characters": 600,
+              "cer": 0.13666666666666666,
+              "hostMedianMs": 24.5766,
+              "hostObservedP95Ms": 42.1402
+            }
+          },
+          "joints": {
+            "before": {
+              "rows": 63,
+              "families": 63,
+              "top1": 46,
+              "top3": 56,
+              "top10": 58,
+              "covered": 60,
+              "mrr": 0.8073833573833574,
+              "graphAligned": 63,
+              "graphCanonical": 63,
+              "selectedCanonical": 0,
+              "characterErrors": 27,
+              "characters": 600,
+              "cer": 0.045,
+              "hostMedianMs": 22.4029,
+              "hostObservedP95Ms": 40.6492
+            },
+            "after": {
+              "rows": 63,
+              "families": 63,
+              "top1": 46,
+              "top3": 56,
+              "top10": 58,
+              "covered": 60,
+              "mrr": 0.8073833573833574,
+              "graphAligned": 63,
+              "graphCanonical": 63,
+              "selectedCanonical": 0,
+              "characterErrors": 27,
+              "characters": 600,
+              "cer": 0.045,
+              "hostMedianMs": 22.9113,
+              "hostObservedP95Ms": 37.1275
+            }
+          },
+          "neighbor": {
+            "before": {
+              "rows": 189,
+              "families": 63,
+              "top1": 100,
+              "top3": 126,
+              "top10": 133,
+              "covered": 145,
+              "mrr": 0.6040200751561563,
+              "graphAligned": 157,
+              "graphCanonical": 158,
+              "selectedCanonical": 155,
+              "characterErrors": 164,
+              "characters": 1800,
+              "cer": 0.09111111111111111,
+              "hostMedianMs": 15.0701,
+              "hostObservedP95Ms": 37.0541
+            },
+            "after": {
+              "rows": 189,
+              "families": 63,
+              "top1": 100,
+              "top3": 126,
+              "top10": 133,
+              "covered": 145,
+              "mrr": 0.6040200751561563,
+              "graphAligned": 157,
+              "graphCanonical": 158,
+              "selectedCanonical": 155,
+              "characterErrors": 164,
+              "characters": 1800,
+              "cer": 0.09111111111111111,
+              "hostMedianMs": 15.863,
+              "hostObservedP95Ms": 36.6469
+            }
+          },
+          "repeat": {
+            "before": {
+              "rows": 189,
+              "families": 63,
+              "top1": 136,
+              "top3": 161,
+              "top10": 171,
+              "covered": 180,
+              "mrr": 0.7904234370709466,
+              "graphAligned": 189,
+              "graphCanonical": 189,
+              "selectedCanonical": 189,
+              "characterErrors": 89,
+              "characters": 1800,
+              "cer": 0.049444444444444444,
+              "hostMedianMs": 16.5011,
+              "hostObservedP95Ms": 29.9283
+            },
+            "after": {
+              "rows": 189,
+              "families": 63,
+              "top1": 136,
+              "top3": 161,
+              "top10": 171,
+              "covered": 180,
+              "mrr": 0.7904229026259677,
+              "graphAligned": 189,
+              "graphCanonical": 189,
+              "selectedCanonical": 189,
+              "characterErrors": 89,
+              "characters": 1800,
+              "cer": 0.049444444444444444,
+              "hostMedianMs": 17.0673,
+              "hostObservedP95Ms": 33.1321
+            }
+          },
+          "transpose": {
+            "before": {
+              "rows": 189,
+              "families": 63,
+              "top1": 84,
+              "top3": 104,
+              "top10": 110,
+              "covered": 124,
+              "mrr": 0.5015613912588323,
+              "graphAligned": 131,
+              "graphCanonical": 133,
+              "selectedCanonical": 131,
+              "characterErrors": 226,
+              "characters": 1800,
+              "cer": 0.12555555555555556,
+              "hostMedianMs": 13.4443,
+              "hostObservedP95Ms": 32.4562
+            },
+            "after": {
+              "rows": 189,
+              "families": 63,
+              "top1": 85,
+              "top3": 105,
+              "top10": 111,
+              "covered": 125,
+              "mrr": 0.5067579143124981,
+              "graphAligned": 131,
+              "graphCanonical": 133,
+              "selectedCanonical": 131,
+              "characterErrors": 227,
+              "characters": 1800,
+              "cer": 0.12611111111111112,
+              "hostMedianMs": 14.2024,
+              "hostObservedP95Ms": 34.2106
+            }
+          }
+        },
+        "stratum": {
+          "long": {
+            "before": {
+              "rows": 480,
+              "families": 32,
+              "top1": 211,
+              "top3": 257,
+              "top10": 274,
+              "covered": 322,
+              "mrr": 0.4932093699723836,
+              "graphAligned": 372,
+              "graphCanonical": 377,
+              "selectedCanonical": 299,
+              "characterErrors": 544,
+              "characters": 5340,
+              "cer": 0.10187265917602996,
+              "hostMedianMs": 19.81745,
+              "hostObservedP95Ms": 38.5703
+            },
+            "after": {
+              "rows": 480,
+              "families": 32,
+              "top1": 212,
+              "top3": 258,
+              "top10": 275,
+              "covered": 323,
+              "mrr": 0.49529397461290936,
+              "graphAligned": 372,
+              "graphCanonical": 377,
+              "selectedCanonical": 299,
+              "characterErrors": 545,
+              "characters": 5340,
+              "cer": 0.10205992509363296,
+              "hostMedianMs": 19.4448,
+              "hostObservedP95Ms": 38.5682
+            }
+          },
+          "short": {
+            "before": {
+              "rows": 465,
+              "families": 31,
+              "top1": 250,
+              "top3": 319,
+              "top10": 347,
+              "covered": 376,
+              "mrr": 0.6174597095085742,
+              "graphAligned": 380,
+              "graphCanonical": 380,
+              "selectedCanonical": 314,
+              "characterErrors": 366,
+              "characters": 3660,
+              "cer": 0.1,
+              "hostMedianMs": 15.6525,
+              "hostObservedP95Ms": 31.1986
+            },
+            "after": {
+              "rows": 465,
+              "families": 31,
+              "top1": 250,
+              "top3": 319,
+              "top10": 347,
+              "covered": 376,
+              "mrr": 0.6174423261002424,
+              "graphAligned": 380,
+              "graphCanonical": 380,
+              "selectedCanonical": 314,
+              "characterErrors": 366,
+              "characters": 3660,
+              "cer": 0.1,
+              "hostMedianMs": 17.5103,
+              "hostObservedP95Ms": 33.7857
+            }
+          }
+        }
+      },
+      "changes": [
+        {
+          "id": "ce0b8372de7a110ca428089e1cfdd72da766e439ef7fa8a9948fb96ec14d6cc3",
+          "query": "wokanlebxiashibian",
+          "expected": "我看了不下十遍",
+          "beforeRank": 25,
+          "afterRank": 20,
+          "beforeTop1": "我看了下是便",
+          "afterTop1": "我看了下是便",
+          "operation": "delete",
+          "stratum": "short"
+        },
+        {
+          "id": "4c6894eb76be08e4f03176712d02bc30b43286e627598bff3606acf2f2977e73",
+          "query": "wokanlebuxiashibia",
+          "expected": "我看了不下十遍",
+          "beforeRank": 66,
+          "afterRank": 67,
+          "beforeTop1": "我看了不下失败",
+          "afterTop1": "我看了不下失败",
+          "operation": "delete",
+          "stratum": "short"
+        },
+        {
+          "id": "e47050dfcf668ccb758ec3b11c3b75286ec8d07a17172275e98f4e65c9db189f",
+          "query": "zhonggoushiyigexinxingshichang",
+          "expected": "中国是一个新兴市场",
+          "beforeRank": 7,
+          "afterRank": 8,
+          "beforeTop1": "中狗是一个新兴市场",
+          "afterTop1": "中狗是一个新兴市场",
+          "operation": "transpose",
+          "stratum": "short"
+        },
+        {
+          "id": "dcc600649813ee457d193d6b44376f467269e9445a8741b391dfeb4aa01deb94",
+          "query": "woduitamendeguanxyiiwusuozhi",
+          "expected": "我对他们的关系一无所知",
+          "beforeRank": 0,
+          "afterRank": 0,
+          "beforeTop1": "我对他们的关续集无所知",
+          "afterTop1": "我对他们的光绪计无所之",
+          "operation": "transpose",
+          "stratum": "long"
+        },
+        {
+          "id": "7dcfe29071c3c1a38905c9a4bb2a211138320ef6a8c76a5e715526953e549b86",
+          "query": "renrendouzhidaotauinagoudeganqing",
+          "expected": "人人都知道他对那狗的感情",
+          "beforeRank": 38,
+          "afterRank": 37,
+          "beforeTop1": "人人都知道他以那狗的感情",
+          "afterTop1": "人人都知道他以那狗的感情",
+          "operation": "delete",
+          "stratum": "long"
+        },
+        {
+          "id": "adda158b5d10346a165b9eeb77a5d2fad2579ebe3f188e23719e53c87d7bbbbb",
+          "query": "nirenshizhaopianlidneanrenma",
+          "expected": "你认识照片里的男人吗",
+          "beforeRank": 0,
+          "afterRank": 1,
+          "beforeTop1": "你认识照片里的安人吗",
+          "afterTop1": "你认识照片里的男人吗",
+          "operation": "transpose",
+          "stratum": "long"
+        },
+        {
+          "id": "1e2d5744885a39896a4843caece2f0ff22c36efe3a2f4e84238a2b2db19bd905",
+          "query": "faxianzijianxialeechuansongjian",
+          "expected": "发现自己按下了传送键",
+          "beforeRank": 99,
+          "afterRank": 100,
+          "beforeTop1": "发现自己按下了讹传耸肩",
+          "afterTop1": "发现自己按下了讹传耸肩",
+          "operation": "repeat",
+          "stratum": "long"
+        }
+      ],
+      "top1Gains": 1,
+      "top1Losses": 0,
+      "lexiconSha256": {
+        "before": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
+        "after": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232"
+      }
+    }
+  },
+  "requiredMemoryCases": [
+    {
+      "query": "chengchexihuanzhinengti",
+      "expected": "程彻喜欢智能体",
+      "seed": "程彻",
+      "required": true,
+      "category": "name-start",
+      "before": {
+        "rank": 0,
+        "top5": [
+          "澄澈喜欢只能提",
+          "乘车喜欢只能提",
+          "澄澈喜欢只能题",
+          "乘车喜欢只能题",
+          "澄澈喜欢只能替"
+        ]
+      },
+      "learned": {
+        "rank": 1,
+        "top5": [
+          "程彻喜欢智能体",
+          "程彻喜欢只能题",
+          "乘车喜欢智能体",
+          "程彻喜欢只能提",
+          "澄澈喜欢智能体"
+        ]
+      },
+      "reused": {
+        "rank": 1,
+        "top5": [
+          "程彻喜欢智能体",
+          "程彻喜欢只能题",
+          "乘车喜欢智能体",
+          "程彻喜欢只能提",
+          "澄澈喜欢智能体"
+        ]
+      },
+      "restored": {
+        "rank": 1,
+        "top5": [
+          "程彻喜欢智能体",
+          "程彻喜欢只能题",
+          "乘车喜欢智能体",
+          "程彻喜欢只能提",
+          "澄澈喜欢智能体"
+        ]
+      },
+      "forgotten": {
+        "rank": 0,
+        "top5": [
+          "澄澈喜欢只能提",
+          "乘车喜欢只能提",
+          "澄澈喜欢只能题",
+          "乘车喜欢只能题",
+          "澄澈喜欢只能替"
+        ]
+      }
+    },
+    {
+      "query": "woxihuanchengche",
+      "expected": "我喜欢程彻",
+      "seed": "程彻",
+      "required": true,
+      "category": "name-end",
+      "before": {
+        "rank": 0,
+        "top5": [
+          "我喜欢乘车",
+          "我喜欢澄澈",
+          "我喜欢成车",
+          "我喜欢程车",
+          "我喜欢橙车"
+        ]
+      },
+      "learned": {
+        "rank": 1,
+        "top5": [
+          "我喜欢程彻",
+          "我喜欢乘车",
+          "我喜欢澄澈",
+          "我喜欢成车",
+          "我喜欢称车"
+        ]
+      },
+      "reused": {
+        "rank": 1,
+        "top5": [
+          "我喜欢程彻",
+          "我喜欢乘车",
+          "我喜欢澄澈",
+          "我喜欢成车",
+          "我喜欢称车"
+        ]
+      },
+      "restored": {
+        "rank": 1,
+        "top5": [
+          "我喜欢程彻",
+          "我喜欢乘车",
+          "我喜欢澄澈",
+          "我喜欢成车",
+          "我喜欢称车"
+        ]
+      },
+      "forgotten": {
+        "rank": 0,
+        "top5": [
+          "我喜欢乘车",
+          "我喜欢澄澈",
+          "我喜欢成车",
+          "我喜欢程车",
+          "我喜欢橙车"
+        ]
+      }
+    },
+    {
+      "query": "zhinengtikeyibangmang",
+      "expected": "智能体可以帮忙",
+      "seed": "智能体",
+      "required": true,
+      "category": "technical-start",
+      "before": {
+        "rank": 6,
+        "top5": [
+          "只能提可以帮忙",
+          "只能题可以帮忙",
+          "只能体可以帮忙",
+          "只能替可以帮忙",
+          "只能踢可以帮忙"
+        ]
+      },
+      "learned": {
+        "rank": 1,
+        "top5": [
+          "智能体可以帮忙",
+          "只能题可以帮忙",
+          "只能提可以帮忙",
+          "只能体可以帮忙",
+          "只能踢可以帮忙"
+        ]
+      },
+      "reused": {
+        "rank": 1,
+        "top5": [
+          "智能体可以帮忙",
+          "只能题可以帮忙",
+          "只能提可以帮忙",
+          "只能体可以帮忙",
+          "只能踢可以帮忙"
+        ]
+      },
+      "restored": {
+        "rank": 1,
+        "top5": [
+          "智能体可以帮忙",
+          "只能题可以帮忙",
+          "只能提可以帮忙",
+          "只能体可以帮忙",
+          "只能踢可以帮忙"
+        ]
+      },
+      "forgotten": {
+        "rank": 6,
+        "top5": [
+          "只能提可以帮忙",
+          "只能题可以帮忙",
+          "只能体可以帮忙",
+          "只能替可以帮忙",
+          "只能踢可以帮忙"
+        ]
+      }
+    },
+    {
+      "query": "wodezhinengti",
+      "expected": "我的智能体",
+      "seed": "智能体",
+      "required": true,
+      "category": "technical-end",
+      "before": {
+        "rank": 8,
+        "top5": [
+          "我的只能提",
+          "我的只能题",
+          "我的只能替",
+          "我的只能体",
+          "我的智能提"
+        ]
+      },
+      "learned": {
+        "rank": 1,
+        "top5": [
+          "我的智能体",
+          "我的只能题",
+          "我的只能提",
+          "我的智能题",
+          "我的只能体"
+        ]
+      },
+      "reused": {
+        "rank": 1,
+        "top5": [
+          "我的智能体",
+          "我的只能题",
+          "我的只能提",
+          "我的智能题",
+          "我的只能体"
+        ]
+      },
+      "restored": {
+        "rank": 1,
+        "top5": [
+          "我的智能体",
+          "我的只能题",
+          "我的只能提",
+          "我的智能题",
+          "我的只能体"
+        ]
+      },
+      "forgotten": {
+        "rank": 8,
+        "top5": [
+          "我的只能提",
+          "我的只能题",
+          "我的只能替",
+          "我的只能体",
+          "我的智能提"
+        ]
+      }
+    }
+  ],
+  "limitations": [
+    "New vocabulary audit Top1 is unchanged; no general accuracy improvement claim",
+    "Known-long and development character errors each increase by one; known CER was not a frozen rejection gate",
+    "Engineering/Android/cost gates remain separate; this is not release approval"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "collector": {
+    "path": "tools/report_input_configuration_acceptance.py",
+    "sha256": "b35a1488d846408d1f6ac0b6593f0d6949a84bfec7a789f3fb07a000c3824eec"
+  },
+  "reports": {
+    "d8-acceptance-gate.json": "aaf0af119c02372b17d0013ac22d4c6d626e98a49252e9609512d80b3f572245",
+    "d8-apk-asset-audit.json": "4567b75a045478ec48232a111b5299eaa9a0d90bf5d8a6e865033e4f701ad2af",
+    "d8-configuration-system.json": "615860969aff86c50800a726aca539fdb70ac62d091e9d88d464f94f80382016",
+    "d8-first-apk-asset-audit.json": "2c5f8cbf126b95bd73443120f82be5ccc97dd5ff01ee5a1ce5640ac9fd3e5b16",
+    "d8-first-learning-persistence.json": "8fb20e385f8327906b07521d1c0f8e37435c3bf51318df098a39a682047be24f",
+    "d8-host-validation.json": "3f5354470c8c07345c9beb6290a0aa139bb64ff5439c383e7190bb24dd66c70b",
+    "d8-implementation-snapshot.json": "df54396d201156583993f25fe87ef8784e19c6ed13a67527129343370b5f38c2",
+    "d8-learning-persistence.json": "44af90d3e239a2ee06569f3f415ccabae5bfa39cd1b85d80f39dfff8ee6747c8",
+    "d8-raw-manifest.json": "b12adc985cdddf8ef3b8dbfb950bc064354453501fbde065212370d80f367be6",
+    "d8-render-regression.json": "5f911cec31cea637efeab8f0c2acdcdaae0a6c275d1a317f1f4bd66a6e082a25",
+    "d8-system-ime.json": "78456c375b13706a4c53916cc85d431e3359dbc9f62023ef885665bc103777e7",
+    "d8-timeout-regression.json": "97959ce433804f7345d48d9ba613857994a3c7986a015cd90dd3a031239bb092"
+  },
+  "images": [
+    {
+      "path": "docs/research/images/d8-landscape-large-after.png",
+      "sha256": "2a987f8ca39bf144b010b03f65626e844f0bdd830d4eddeab543700770af9aa8"
+    },
+    {
+      "path": "docs/research/images/d8-landscape-large-before.png",
+      "sha256": "76290605e0c73e6c149184d23de378b5ba43cd6a791b48d7f5ec18203f3380c8"
+    },
+    {
+      "path": "docs/research/images/d8-landscape-large-expanded.png",
+      "sha256": "2e70ed1da3daff876eb6aefbdacec53a4af6f164b27fd95902a55c22527967c4"
+    },
+    {
+      "path": "docs/research/images/d8-portrait-large-after.png",
+      "sha256": "b165e0d1420ff61e572399e15ad0def59a6d9790bd2e5ea6f8279ca5d49acc3b"
+    },
+    {
+      "path": "docs/research/images/d8-portrait-large-before.png",
+      "sha256": "563f19ed47329adaa48807f6a05639cf8253db8ec40494e773d4599ab3e63bc1"
+    }
+  ]
+}

@@ -1,0 +1,1024 @@
+{
+  "schemaVersion": 1,
+  "scope": "Paired synthetic errors on known reviewed source text; not fresh natural-error or phone latency evidence",
+  "before": {
+    "rows": 945,
+    "families": 63,
+    "top1": 366,
+    "top3": 451,
+    "top10": 478,
+    "covered": 530,
+    "mrr": 0.4368382744217773,
+    "graphAligned": 593,
+    "graphCanonical": 597,
+    "selectedCanonical": 443,
+    "characterErrors": 1177,
+    "characters": 9000,
+    "cer": 0.13077777777777777,
+    "hostMedianMs": 15.9481,
+    "hostObservedP95Ms": 33.0855
+  },
+  "after": {
+    "rows": 945,
+    "families": 63,
+    "top1": 385,
+    "top3": 475,
+    "top10": 503,
+    "covered": 633,
+    "mrr": 0.460507461207409,
+    "graphAligned": 752,
+    "graphCanonical": 757,
+    "selectedCanonical": 552,
+    "characterErrors": 1121,
+    "characters": 9000,
+    "cer": 0.12455555555555556,
+    "hostMedianMs": 16.7086,
+    "hostObservedP95Ms": 33.6285
+  },
+  "byOperation": {
+    "clean": {
+      "before": {
+        "rows": 63,
+        "families": 63,
+        "top1": 45,
+        "top3": 55,
+        "top10": 57,
+        "covered": 60,
+        "mrr": 0.7975949975949976,
+        "graphAligned": 63,
+        "graphCanonical": 63,
+        "selectedCanonical": 0,
+        "characterErrors": 29,
+        "characters": 600,
+        "cer": 0.04833333333333333,
+        "hostMedianMs": 23.6017,
+        "hostObservedP95Ms": 38.7292
+      },
+      "after": {
+        "rows": 63,
+        "families": 63,
+        "top1": 45,
+        "top3": 55,
+        "top10": 57,
+        "covered": 60,
+        "mrr": 0.7975949975949976,
+        "graphAligned": 63,
+        "graphCanonical": 63,
+        "selectedCanonical": 0,
+        "characterErrors": 29,
+        "characters": 600,
+        "cer": 0.04833333333333333,
+        "hostMedianMs": 24.6257,
+        "hostObservedP95Ms": 44.124
+      }
+    },
+    "delete": {
+      "before": {
+        "rows": 189,
+        "families": 63,
+        "top1": 27,
+        "top3": 39,
+        "top10": 47,
+        "covered": 64,
+        "mrr": 0.18114665172916267,
+        "graphAligned": 96,
+        "graphCanonical": 97,
+        "selectedCanonical": 71,
+        "characterErrors": 311,
+        "characters": 1800,
+        "cer": 0.17277777777777778,
+        "hostMedianMs": 18.3202,
+        "hostObservedP95Ms": 34.9723
+      },
+      "after": {
+        "rows": 189,
+        "families": 63,
+        "top1": 26,
+        "top3": 38,
+        "top10": 46,
+        "covered": 70,
+        "mrr": 0.17544605709018984,
+        "graphAligned": 100,
+        "graphCanonical": 101,
+        "selectedCanonical": 76,
+        "characterErrors": 310,
+        "characters": 1800,
+        "cer": 0.17222222222222222,
+        "hostMedianMs": 18.8372,
+        "hostObservedP95Ms": 33.692
+      }
+    },
+    "fuzzy": {
+      "before": {
+        "rows": 63,
+        "families": 63,
+        "top1": 1,
+        "top3": 1,
+        "top10": 1,
+        "covered": 11,
+        "mrr": 0.01897226962802106,
+        "graphAligned": 11,
+        "graphCanonical": 11,
+        "selectedCanonical": 11,
+        "characterErrors": 118,
+        "characters": 600,
+        "cer": 0.19666666666666666,
+        "hostMedianMs": 21.8831,
+        "hostObservedP95Ms": 37.7592
+      },
+      "after": {
+        "rows": 63,
+        "families": 63,
+        "top1": 5,
+        "top3": 6,
+        "top10": 6,
+        "covered": 35,
+        "mrr": 0.09257394418521898,
+        "graphAligned": 49,
+        "graphCanonical": 50,
+        "selectedCanonical": 36,
+        "characterErrors": 114,
+        "characters": 600,
+        "cer": 0.19,
+        "hostMedianMs": 23.0129,
+        "hostObservedP95Ms": 37.6096
+      }
+    },
+    "joints": {
+      "before": {
+        "rows": 63,
+        "families": 63,
+        "top1": 45,
+        "top3": 55,
+        "top10": 57,
+        "covered": 60,
+        "mrr": 0.7975949975949976,
+        "graphAligned": 63,
+        "graphCanonical": 63,
+        "selectedCanonical": 0,
+        "characterErrors": 29,
+        "characters": 600,
+        "cer": 0.04833333333333333,
+        "hostMedianMs": 20.6445,
+        "hostObservedP95Ms": 33.369
+      },
+      "after": {
+        "rows": 63,
+        "families": 63,
+        "top1": 45,
+        "top3": 55,
+        "top10": 57,
+        "covered": 60,
+        "mrr": 0.7975949975949976,
+        "graphAligned": 63,
+        "graphCanonical": 63,
+        "selectedCanonical": 0,
+        "characterErrors": 29,
+        "characters": 600,
+        "cer": 0.04833333333333333,
+        "hostMedianMs": 20.9523,
+        "hostObservedP95Ms": 34.4291
+      }
+    },
+    "neighbor": {
+      "before": {
+        "rows": 189,
+        "families": 63,
+        "top1": 82,
+        "top3": 103,
+        "top10": 109,
+        "covered": 116,
+        "mrr": 0.49430415263748595,
+        "graphAligned": 125,
+        "graphCanonical": 126,
+        "selectedCanonical": 124,
+        "characterErrors": 209,
+        "characters": 1800,
+        "cer": 0.11611111111111111,
+        "hostMedianMs": 13.8933,
+        "hostObservedP95Ms": 32.2476
+      },
+      "after": {
+        "rows": 189,
+        "families": 63,
+        "top1": 85,
+        "top3": 106,
+        "top10": 113,
+        "covered": 132,
+        "mrr": 0.5118564856677909,
+        "graphAligned": 157,
+        "graphCanonical": 158,
+        "selectedCanonical": 143,
+        "characterErrors": 205,
+        "characters": 1800,
+        "cer": 0.11388888888888889,
+        "hostMedianMs": 14.405,
+        "hostObservedP95Ms": 33.0955
+      }
+    },
+    "repeat": {
+      "before": {
+        "rows": 189,
+        "families": 63,
+        "top1": 98,
+        "top3": 118,
+        "top10": 124,
+        "covered": 132,
+        "mrr": 0.5767718370132566,
+        "graphAligned": 143,
+        "graphCanonical": 143,
+        "selectedCanonical": 143,
+        "characterErrors": 191,
+        "characters": 1800,
+        "cer": 0.10611111111111111,
+        "hostMedianMs": 14.1427,
+        "hostObservedP95Ms": 29.3863
+      },
+      "after": {
+        "rows": 189,
+        "families": 63,
+        "top1": 101,
+        "top3": 122,
+        "top10": 127,
+        "covered": 158,
+        "mrr": 0.5952784140871886,
+        "graphAligned": 189,
+        "graphCanonical": 189,
+        "selectedCanonical": 170,
+        "characterErrors": 183,
+        "characters": 1800,
+        "cer": 0.10166666666666667,
+        "hostMedianMs": 15.0051,
+        "hostObservedP95Ms": 28.8965
+      }
+    },
+    "transpose": {
+      "before": {
+        "rows": 189,
+        "families": 63,
+        "top1": 68,
+        "top3": 80,
+        "top10": 83,
+        "covered": 87,
+        "mrr": 0.39391464245630914,
+        "graphAligned": 92,
+        "graphCanonical": 94,
+        "selectedCanonical": 94,
+        "characterErrors": 290,
+        "characters": 1800,
+        "cer": 0.16111111111111112,
+        "hostMedianMs": 12.6115,
+        "hostObservedP95Ms": 29.7334
+      },
+      "after": {
+        "rows": 189,
+        "families": 63,
+        "top1": 78,
+        "top3": 93,
+        "top10": 97,
+        "covered": 118,
+        "mrr": 0.4573683694001377,
+        "graphAligned": 131,
+        "graphCanonical": 133,
+        "selectedCanonical": 127,
+        "characterErrors": 251,
+        "characters": 1800,
+        "cer": 0.13944444444444445,
+        "hostMedianMs": 13.1015,
+        "hostObservedP95Ms": 30.0384
+      }
+    }
+  },
+  "byZone": {
+    "head": {
+      "before": {
+        "rows": 252,
+        "families": 63,
+        "top1": 95,
+        "top3": 122,
+        "top10": 129,
+        "covered": 139,
+        "mrr": 0.4346339950121463,
+        "graphAligned": 150,
+        "graphCanonical": 153,
+        "selectedCanonical": 150,
+        "characterErrors": 332,
+        "characters": 2400,
+        "cer": 0.13833333333333334,
+        "hostMedianMs": 13.7346,
+        "hostObservedP95Ms": 30.1893
+      },
+      "after": {
+        "rows": 252,
+        "families": 63,
+        "top1": 103,
+        "top3": 131,
+        "top10": 138,
+        "covered": 171,
+        "mrr": 0.4694111496781202,
+        "graphAligned": 199,
+        "graphCanonical": 202,
+        "selectedCanonical": 183,
+        "characterErrors": 305,
+        "characters": 2400,
+        "cer": 0.12708333333333333,
+        "hostMedianMs": 13.937000000000001,
+        "hostObservedP95Ms": 31.2518
+      }
+    },
+    "middle": {
+      "before": {
+        "rows": 252,
+        "families": 63,
+        "top1": 91,
+        "top3": 105,
+        "top10": 113,
+        "covered": 120,
+        "mrr": 0.392972668865526,
+        "graphAligned": 137,
+        "graphCanonical": 137,
+        "selectedCanonical": 130,
+        "characterErrors": 336,
+        "characters": 2400,
+        "cer": 0.14,
+        "hostMedianMs": 14.989999999999998,
+        "hostObservedP95Ms": 30.7361
+      },
+      "after": {
+        "rows": 252,
+        "families": 63,
+        "top1": 94,
+        "top3": 110,
+        "top10": 118,
+        "covered": 144,
+        "mrr": 0.4093927474710225,
+        "graphAligned": 181,
+        "graphCanonical": 181,
+        "selectedCanonical": 157,
+        "characterErrors": 325,
+        "characters": 2400,
+        "cer": 0.13541666666666666,
+        "hostMedianMs": 15.8683,
+        "hostObservedP95Ms": 31.926
+      }
+    },
+    "none": {
+      "before": {
+        "rows": 126,
+        "families": 63,
+        "top1": 90,
+        "top3": 110,
+        "top10": 114,
+        "covered": 120,
+        "mrr": 0.7975949975949976,
+        "graphAligned": 126,
+        "graphCanonical": 126,
+        "selectedCanonical": 0,
+        "characterErrors": 58,
+        "characters": 1200,
+        "cer": 0.04833333333333333,
+        "hostMedianMs": 22.1891,
+        "hostObservedP95Ms": 38.544
+      },
+      "after": {
+        "rows": 126,
+        "families": 63,
+        "top1": 90,
+        "top3": 110,
+        "top10": 114,
+        "covered": 120,
+        "mrr": 0.7975949975949976,
+        "graphAligned": 126,
+        "graphCanonical": 126,
+        "selectedCanonical": 0,
+        "characterErrors": 58,
+        "characters": 1200,
+        "cer": 0.04833333333333333,
+        "hostMedianMs": 22.57855,
+        "hostObservedP95Ms": 40.0624
+      }
+    },
+    "phonetic": {
+      "before": {
+        "rows": 63,
+        "families": 63,
+        "top1": 1,
+        "top3": 1,
+        "top10": 1,
+        "covered": 11,
+        "mrr": 0.01897226962802106,
+        "graphAligned": 11,
+        "graphCanonical": 11,
+        "selectedCanonical": 11,
+        "characterErrors": 118,
+        "characters": 600,
+        "cer": 0.19666666666666666,
+        "hostMedianMs": 21.8831,
+        "hostObservedP95Ms": 37.7592
+      },
+      "after": {
+        "rows": 63,
+        "families": 63,
+        "top1": 5,
+        "top3": 6,
+        "top10": 6,
+        "covered": 35,
+        "mrr": 0.09257394418521898,
+        "graphAligned": 49,
+        "graphCanonical": 50,
+        "selectedCanonical": 36,
+        "characterErrors": 114,
+        "characters": 600,
+        "cer": 0.19,
+        "hostMedianMs": 23.0129,
+        "hostObservedP95Ms": 37.6096
+      }
+    },
+    "tail": {
+      "before": {
+        "rows": 252,
+        "families": 63,
+        "top1": 89,
+        "top3": 113,
+        "top10": 121,
+        "covered": 140,
+        "mrr": 0.4069962989994885,
+        "graphAligned": 169,
+        "graphCanonical": 170,
+        "selectedCanonical": 152,
+        "characterErrors": 333,
+        "characters": 2400,
+        "cer": 0.13875,
+        "hostMedianMs": 14.30335,
+        "hostObservedP95Ms": 31.5757
+      },
+      "after": {
+        "rows": 252,
+        "families": 63,
+        "top1": 93,
+        "top3": 118,
+        "top10": 127,
+        "covered": 163,
+        "mrr": 0.42615809753483763,
+        "graphAligned": 197,
+        "graphCanonical": 198,
+        "selectedCanonical": 176,
+        "characterErrors": 319,
+        "characters": 2400,
+        "cer": 0.13291666666666666,
+        "hostMedianMs": 15.15275,
+        "hostObservedP95Ms": 31.7777
+      }
+    }
+  },
+  "top1Gains": [
+    {
+      "id": "4cd916dcacd272bd1da97aac8ae30684d68bd347278c45086adc2ba55a355db6",
+      "typed": "amlitaijiaoaole",
+      "expected": "玛丽太骄傲了",
+      "operation": "transpose",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "安利太骄傲了",
+          "canonical": "anlitaijiaoaole",
+          "kind": "CORRECTED",
+          "score": 5.212495
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "玛丽太骄傲了",
+          "canonical": "malitaijiaoaole",
+          "kind": "CORRECTED",
+          "score": 6.5049734
+        }
+      ]
+    },
+    {
+      "id": "3e533e428e579a565a11168c1144cf698d903584ff47fa27439d70ce7940a5e0",
+      "typed": "zhexieshiwomenndeshuzhuo",
+      "expected": "这些是我们的书桌",
+      "operation": "repeat",
+      "zone": "middle",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "这些是我们你的书桌",
+          "canonical": "zhexieshiwomennideshuzhuo",
+          "kind": "CORRECTED",
+          "score": 9.441279
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这些是我们的书桌",
+          "canonical": "zhexieshiwomendeshuzhuo",
+          "kind": "CORRECTED",
+          "score": 13.985484
+        }
+      ]
+    },
+    {
+      "id": "be60b548ab365fc9ea1cc1c40d9bd21a2e12f2601c566a9ad7b15efc76a7c313",
+      "typed": "zhexieshiwoemndeshuzhuo",
+      "expected": "这些是我们的书桌",
+      "operation": "transpose",
+      "zone": "middle",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "这些是我嗯的书桌",
+          "canonical": "zhexieshiwoendeshuzhuo",
+          "kind": "CORRECTED",
+          "score": 6.898578
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "这些是我们的书桌",
+          "canonical": "zhexieshiwomendeshuzhuo",
+          "kind": "CORRECTED",
+          "score": 13.206741
+        }
+      ]
+    },
+    {
+      "id": "5708e0b4ad422ee0cf8b241fcc39680131e31d7a349181586d577b73412fae92",
+      "typed": "yeewibijiuyoujiaoyang",
+      "expected": "也未必就有教养",
+      "operation": "transpose",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "也饿死比就有教养",
+          "canonical": "yeesibijiuyoujiaoyang",
+          "kind": "CORRECTED",
+          "score": 3.421476
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "也未必就有教养",
+          "canonical": "yeweibijiuyoujiaoyang",
+          "kind": "CORRECTED",
+          "score": 7.621278
+        }
+      ]
+    },
+    {
+      "id": "7b5a5f275074e14b769f45dc560f246136d0b2f515d48c7a783415c4324c25f9",
+      "typed": "chuntianbozhongqiutiannshouhuo",
+      "expected": "春天播种秋天收获",
+      "operation": "repeat",
+      "zone": "tail",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "春天播种秋天那后或",
+          "canonical": "chuntianbozhongqiutiannahouhuo",
+          "kind": "CORRECTED",
+          "score": 5.5094857
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "春天播种秋天收获",
+          "canonical": "chuntianbozhongqiutianshouhuo",
+          "kind": "CORRECTED",
+          "score": 8.822711
+        }
+      ]
+    },
+    {
+      "id": "655f7c4690348950cfc9e4e848b7959706e8c74676875348b751bda0ef5909ae",
+      "typed": "chuntainbozhongqiutianshouhuo",
+      "expected": "春天播种秋天收获",
+      "operation": "transpose",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "纯太脑中秋天收获",
+          "canonical": "chuntainaozhongqiutianshouhuo",
+          "kind": "CORRECTED",
+          "score": 3.8998878
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "春天播种秋天收获",
+          "canonical": "chuntianbozhongqiutianshouhuo",
+          "kind": "CORRECTED",
+          "score": 7.902922
+        }
+      ]
+    },
+    {
+      "id": "ada67a952df7c83d85cfa5e40dafc78776b620abf7fa25422394f4a307c9de45",
+      "typed": "wobuxiangyigeernzhu",
+      "expected": "我不想一个人住",
+      "operation": "transpose",
+      "zone": "tail",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我不想一个而那句",
+          "canonical": "wobuxiangyigeernaju",
+          "kind": "CORRECTED",
+          "score": 7.1560063
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我不想一个人住",
+          "canonical": "wobuxiangyigerenzhu",
+          "kind": "CORRECTED",
+          "score": 13.258986
+        }
+      ]
+    },
+    {
+      "id": "73818722225b70218052af723a9b3acc7b296c17be2084a35937e9b67ec32349",
+      "typed": "dongtaindeyelimeiyoubeizi",
+      "expected": "冬天的夜里没有被子",
+      "operation": "transpose",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "懂他你的夜里没有被子",
+          "canonical": "dongtanideyelimeiyoubeizi",
+          "kind": "CORRECTED",
+          "score": 5.9194317
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "冬天的夜里没有被子",
+          "canonical": "dongtiandeyelimeiyoubeizi",
+          "kind": "CORRECTED",
+          "score": 9.038224
+        }
+      ]
+    },
+    {
+      "id": "e958aab51225cf4204bc8418d9afa5c84470ee72b597114eb21845ed9112ab4c",
+      "typed": "danfaimeiyouxuehuidulishenghuo",
+      "expected": "但还没有学会独立生活",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "但凡没有学会独立生活",
+          "canonical": "danfanmeiyouxuehuidulishenghuo",
+          "kind": "CORRECTED",
+          "score": 7.5652266
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "但还没有学会独立生活",
+          "canonical": "danhaimeiyouxuehuidulishenghuo",
+          "kind": "CORRECTED",
+          "score": 12.018524
+        }
+      ]
+    },
+    {
+      "id": "9e1179a4ce9c6d79cf9cd12218c9c9eda820b8e1e9d6327833d077322e95ebc8",
+      "typed": "wopingchanhzaoshangbadianzhongqichuang",
+      "expected": "我平常早上八点钟起床",
+      "operation": "neighbor",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我平产找上八点钟起床",
+          "canonical": "wopingchanzhaoshangbadianzhongqichuang",
+          "kind": "CORRECTED",
+          "score": 8.0819645
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我平常早上八点钟起床",
+          "canonical": "wopingchangzaoshangbadianzhongqichuang",
+          "kind": "CORRECTED",
+          "score": 12.601607
+        }
+      ]
+    },
+    {
+      "id": "a8d12e0c89caf3ab9fe36a6e2bc4f6a2d3c7fee098904aeec5e72eec6e6af26f",
+      "typed": "womaileyilianghongseedpaoche",
+      "expected": "我买了一辆红色的跑车",
+      "operation": "transpose",
+      "zone": "tail",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我买了一辆红色而跑车",
+          "canonical": "womaileyilianghongseerpaoche",
+          "kind": "CORRECTED",
+          "score": 9.421599
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我买了一辆红色的跑车",
+          "canonical": "womaileyilianghongsedepaoche",
+          "kind": "CORRECTED",
+          "score": 11.309155
+        }
+      ]
+    },
+    {
+      "id": "b41312e85086aeb9a45aa314995ba349fe8ff1c324d1c3ece3201aa68a327267",
+      "typed": "womaileyiliangfongsedepaoche",
+      "expected": "我买了一辆红色的跑车",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "我买了一辆同色的跑车",
+          "canonical": "womaileyiliangtongsedepaoche",
+          "kind": "CORRECTED",
+          "score": 9.259466
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "我买了一辆红色的跑车",
+          "canonical": "womaileyilianghongsedepaoche",
+          "kind": "CORRECTED",
+          "score": 12.109156
+        }
+      ]
+    },
+    {
+      "id": "ed7247681a799559ba23b20683ec2131a8cbaebd23fa3d5ff33dd53e95f92bde",
+      "typed": "danshiwomenhaishifuichuqusanbu",
+      "expected": "但是我们还是会出去散步",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "但是我们还是推出去散步",
+          "canonical": "danshiwomenhaishituichuqusanbu",
+          "kind": "CORRECTED",
+          "score": 12.124414
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "但是我们还是会出去散步",
+          "canonical": "danshiwomenhaishihuichuqusanbu",
+          "kind": "CORRECTED",
+          "score": 12.679996
+        }
+      ]
+    },
+    {
+      "id": "b9ffbfd2540a8e215458712096c7d3fc595fb858b2196cd4cd564f7a62e301ec",
+      "typed": "congzheeddaodagaiyaozoushifenzhong",
+      "expected": "从这儿到大概要走十分钟",
+      "operation": "neighbor",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "从这呃到大概要走十分钟",
+          "canonical": "congzheedaodagaiyaozoushifenzhong",
+          "kind": "CORRECTED",
+          "score": 7.9353423
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "从这儿到大概要走十分钟",
+          "canonical": "congzheerdaodagaiyaozoushifenzhong",
+          "kind": "CORRECTED",
+          "score": 9.265714
+        }
+      ]
+    },
+    {
+      "id": "bfb81d3b38992b5627b52427c70ddd3a2efc616584a90089625953687a9f1de6",
+      "typed": "nirenshizhaopianlidenantenma",
+      "expected": "你认识照片里的男人吗",
+      "operation": "neighbor",
+      "zone": "tail",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "你认识照片里的男疼吗",
+          "canonical": "nirenshizhaopianlidenantengma",
+          "kind": "CORRECTED",
+          "score": 8.272831
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "你认识照片里的男人吗",
+          "canonical": "nirenshizhaopianlidenanrenma",
+          "kind": "CORRECTED",
+          "score": 11.10837
+        }
+      ]
+    },
+    {
+      "id": "835214bd2f45264b7a8ca0c9d83501dc015b684dfa0f06e3132b1aa3aabbcd4e",
+      "typed": "tangumshuotaxiwangmalinengzuodao",
+      "expected": "汤姆说他希望玛丽能做到",
+      "operation": "transpose",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "谈鲧说他希望玛丽能做到",
+          "canonical": "tangunshuotaxiwangmalinengzuodao",
+          "kind": "CORRECTED",
+          "score": 7.465606
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "汤姆说他希望玛丽能做到",
+          "canonical": "tangmushuotaxiwangmalinengzuodao",
+          "kind": "CORRECTED",
+          "score": 10.893978
+        }
+      ]
+    },
+    {
+      "id": "85ff9d1a2f5d2c8538d8c108278bd062fa735aef34edc94125151063b00ac47e",
+      "typed": "tangmushuotaxiwangmailnengzuodao",
+      "expected": "汤姆说他希望玛丽能做到",
+      "operation": "transpose",
+      "zone": "middle",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "汤姆说他希望买哦能做到",
+          "canonical": "tangmushuotaxiwangmaionengzuodao",
+          "kind": "CORRECTED",
+          "score": 8.413493
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "汤姆说他希望玛丽能做到",
+          "canonical": "tangmushuotaxiwangmalinengzuodao",
+          "kind": "CORRECTED",
+          "score": 10.893978
+        }
+      ]
+    },
+    {
+      "id": "c2eab295d95ee252c8d0ec463383537745d04fef4ef03e9992385356939bccee",
+      "typed": "taduizijiedhaizihenyange",
+      "expected": "他对自己的孩子很严格",
+      "operation": "transpose",
+      "zone": "middle",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "他对自己呃筛子很严格",
+          "canonical": "taduizijieshaizihenyange",
+          "kind": "CORRECTED",
+          "score": 5.923134
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "他对自己的孩子很严格",
+          "canonical": "taduizijidehaizihenyange",
+          "kind": "CORRECTED",
+          "score": 12.7086935
+        }
+      ]
+    },
+    {
+      "id": "4bd904aab14c97dbf658afc6df5ab3e48af9cc064171f9074fae4b405f090075",
+      "typed": "taduizijidefaizihenyange",
+      "expected": "他对自己的孩子很严格",
+      "operation": "fuzzy",
+      "zone": "phonetic",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "他对自己的才子很严格",
+          "canonical": "taduizijidecaizihenyange",
+          "kind": "CORRECTED",
+          "score": 10.001053
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "他对自己的孩子很严格",
+          "canonical": "taduizijidehaizihenyange",
+          "kind": "CORRECTED",
+          "score": 13.508694
+        }
+      ]
+    },
+    {
+      "id": "bb1d21df02273393ffbc56859c9df0ad096d8092f9bce9ce00b4c7a01b61b997",
+      "typed": "shinindadiannguanxijiangwojiulechulai",
+      "expected": "是您打点关系将我救了出来",
+      "operation": "repeat",
+      "zone": "head",
+      "beforeRank": 0,
+      "afterRank": 1,
+      "beforeTop1": [
+        {
+          "text": "是您打电暖细讲我救了出来",
+          "canonical": "shinindadiannuanxijiangwojiulechulai",
+          "kind": "CORRECTED",
+          "score": 6.2754536
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "是您打点关系将我救了出来",
+          "canonical": "shinindadianguanxijiangwojiulechulai",
+          "kind": "CORRECTED",
+          "score": 9.045191
+        }
+      ]
+    }
+  ],
+  "top1Losses": [
+    {
+      "id": "463411384791129ef405a884a928470f754a357fb070643b10ddfada126d8661",
+      "typed": "malitaiiaoaole",
+      "expected": "玛丽太骄傲了",
+      "operation": "delete",
+      "zone": "middle",
+      "beforeRank": 1,
+      "afterRank": 3,
+      "beforeTop1": [
+        {
+          "text": "玛丽太骄傲了",
+          "canonical": "malitaijiaoaole",
+          "kind": "CORRECTED",
+          "score": 3.5198593
+        }
+      ],
+      "afterTop1": [
+        {
+          "text": "玛丽他骄傲了",
+          "canonical": "malitajiaoaole",
+          "kind": "CORRECTED",
+          "score": 4.701189
+        }
+      ]
+    }
+  ],
+  "syntheticFamilyWeightedTop1Delta": {
+    "estimate": 0.0231990231990232,
+    "percentile95": [
+      0.01221001221001221,
+      0.03540903540903541
+    ],
+    "families": 63,
+    "resamples": 2000,
+    "seed": 271828,
+    "interpretation": "Cluster resampling source families, not evidence of real-user error prevalence or independent validation of source labels"
+  },
+  "qualityGate": {
+    "cleanCountsPreserved": true,
+    "typoTop10GainAtLeast20": true,
+    "typoCharacterErrorsNonIncreasing": true,
+    "everyMutationCoverageNonDecreasing": true
+  },
+  "inputReports": {
+    "before": "b143f9bb81d34236cf9055c7f724a78b8d917daa69648689f112df21dd938937",
+    "after": "b1e32eb02daeb33fe707417b0e66f1ca786a8b0802e49030fe16e235ffa31f7e"
+  }
+}

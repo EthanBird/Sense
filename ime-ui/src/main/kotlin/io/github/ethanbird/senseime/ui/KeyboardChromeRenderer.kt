@@ -119,7 +119,7 @@ internal class KeyboardChromeRenderer(
                 text = candidates.composing,
                 paint = paint,
                 x = dp(10f),
-                centerY = dp(10f),
+                centerY = dp(10f) * metrics.chromeScale,
                 maximumWidth = state.viewWidth - dp(20f),
                 trimTrailingWhitespace = false,
             )
@@ -144,9 +144,9 @@ internal class KeyboardChromeRenderer(
         paint.color = color(0x16000000, 0x24FFFFFF)
         canvas.drawRect(
             0f,
-            metrics.candidateHeight - max(1f, density),
+            metrics.expandedCandidateHeaderHeight - max(1f, density),
             state.viewWidth.toFloat(),
-            metrics.candidateHeight,
+            metrics.expandedCandidateHeaderHeight,
             paint,
         )
 
@@ -155,13 +155,13 @@ internal class KeyboardChromeRenderer(
         paint.textAlign = Paint.Align.LEFT
         val headerRight = state.viewWidth - metrics.candidateControlWidth
         val saveCount = canvas.save()
-        canvas.clipRect(dp(14f), 0f, headerRight, metrics.candidateHeight)
+        canvas.clipRect(dp(14f), 0f, headerRight, metrics.expandedCandidateHeaderHeight)
         text.drawCentered(
             canvas,
             if (candidates.composing.isBlank()) CANDIDATE_HEADER else candidates.composing,
             paint,
             dp(14f),
-            metrics.candidateHeight / 2f,
+            metrics.expandedCandidateHeaderHeight / 2f,
         )
         canvas.restoreToCount(saveCount)
 
@@ -216,7 +216,6 @@ internal class KeyboardChromeRenderer(
                     canvas,
                     state,
                     candidate,
-                    textSizeSp = 17f,
                 )
                 index += 1
             }
@@ -232,11 +231,10 @@ internal class KeyboardChromeRenderer(
         canvas.clipRect(viewport.left, viewport.top, viewport.right, viewport.bottom)
         canvas.translate(-offset, 0f)
         var candidateIndex = candidates.firstCandidateEndingAfter(visibleContentLeft)
-        val textSize = if (state.candidatesTakeToolbar) 19f else 17f
         while (candidateIndex < candidates.visibleCandidates.size) {
             val candidate = candidates.visibleCandidates[candidateIndex]
             if (candidate.bounds.left >= visibleContentRight) break
-            drawCandidateValue(canvas, state, candidate, textSizeSp = textSize)
+            drawCandidateValue(canvas, state, candidate)
             candidateIndex += 1
         }
         canvas.restoreToCount(saveCount)
@@ -280,7 +278,6 @@ internal class KeyboardChromeRenderer(
         canvas: Canvas,
         state: KeyboardRendererState,
         candidate: VisibleCandidate,
-        textSizeSp: Float,
     ) {
         val value = state.candidates.candidates.getOrNull(candidate.sourceIndex) ?: return
         val bounds = candidate.bounds
@@ -307,7 +304,7 @@ internal class KeyboardChromeRenderer(
         // a full candidate-strip flash.
         paint.color = color(0xFF172033.toInt(), 0xFFF3F4F7.toInt())
         paint.isFakeBoldText = false
-        paint.textSize = sp(textSizeSp)
+        paint.textSize = state.candidates.textSizePx
         paint.textAlign = Paint.Align.LEFT
         val saveCount = canvas.save()
         canvas.clipRect(bounds.left, bounds.top, bounds.right, bounds.bottom)

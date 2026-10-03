@@ -66,6 +66,7 @@ class SenseKeyboardSurface @JvmOverloads constructor(
             resources.configuration.orientation ==
                 android.content.res.Configuration.ORIENTATION_LANDSCAPE,
         density = resources.displayMetrics.density,
+        fontScale = resources.configuration.fontScale,
     )
 
     override fun onConfigurationChanged(newConfig: Configuration) {

@@ -1,0 +1,579 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "releaseReady": false,
+  "scope": "Local frozen E4 long-sentence gates only; short-word regression and broad IME-quality goal remain open",
+  "collector": {
+    "path": "tools/report_candidate_calibration.py",
+    "sha256": "6245c4bbd231f37b500f5f0fa011606dac94950f50e7b51367159518eab9897c"
+  },
+  "harnessSources": [
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorAccessibilityTimeoutTest.kt",
+      "sha256": "90eb296b8b640ee1bd1adee25228e5684eb70035e32b6b943c598fb3fdb74bf3"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorAssociationTest.kt",
+      "sha256": "45124802d77102488e0f3301b5551f64e87f78075a3ca14935b331646a0b2d1c"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorConfigurationTest.kt",
+      "sha256": "8156aee400f1f8a6af995c668614768553b6e303d853ad6b9e0aca53e6d87ff0"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorCorrectionTest.kt",
+      "sha256": "44f6cc3d9c084ba4e1879f292ed1aa5ae716da20b5ca59f17a1ff0e351924796"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorInputTest.kt",
+      "sha256": "f1d2f21e0e82116bab7bf907aa34054e250e4df825150e05e062e204cd37a103"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorLatencyTest.kt",
+      "sha256": "d8c3a9c7a940a27e2989a667e1360413e9a868fa193258abcebb07122d3c3eb7"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorLearningTest.kt",
+      "sha256": "20a543306ff3a9f40cda2413eae41b626895ac3f069381e5a8c8d638dd0366e3"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorSlowCandidateTest.kt",
+      "sha256": "33d86bd93464a008bc171878510502ccffa110fb11cdd5d2cbae827fd1264040"
+    },
+    {
+      "path": "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorTestFixture.kt",
+      "sha256": "85ff44b389d399b308b53310ca2e057931dff15a8d33d892983be6f1a32b53c9"
+    },
+    {
+      "path": "input-quality-device/src/main/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorActivity.kt",
+      "sha256": "05322ed0a58e834da19e01b2138660d94b1cd077c57c9021f7b61f2f195cbf2d"
+    }
+  ],
+  "evidenceFinalization": "Initial collector archived its own open log; retained first archive, final archive excludes collector stdout. Test and APK results unchanged.",
+  "apk": {
+    "path": "app/build/outputs/apk/debug/app-debug.apk",
+    "sha256": "9e5ec26f823139c314a4ec58971fa788817ea45bca66789f2b62db55f8ed18a8"
+  },
+  "qualityChecks": {
+    "newAuditCleanTop1Nondecreasing": true,
+    "newAuditCleanCerNonIncreasing": true,
+    "newAuditAllTop1GainAtLeast": true,
+    "newAuditAllTop10GainAtLeast": true,
+    "newAuditAllCerNonIncreasing": true,
+    "newAuditCoverageNondecreasing": true
+  },
+  "frozenPolicy": {
+    "path": "benchmarks/results/e4-development-freeze.json",
+    "sha256": "9a4b976702a7ddc07e539c104b4907dc24b42c85771785cea209384c0e9a3fae"
+  },
+  "sourceFreeze": {
+    "path": "benchmarks/results/e4-candidate-freeze.json",
+    "sha256": "3030a1619ff269c7ff5f70f85fe74ca4a54580616e3478ea0f72a108551deb3b"
+  },
+  "audit": {
+    "before": {
+      "rows": 929,
+      "families": 62,
+      "top1": 362,
+      "top3": 447,
+      "top10": 501,
+      "covered": 666,
+      "mrr": 0.4487830485734135,
+      "graphAligned": 723,
+      "graphCanonical": 730,
+      "selectedCanonical": 595,
+      "characterErrors": 1231,
+      "characters": 9123,
+      "cer": 0.13493368409514414,
+      "hostMedianMs": 17.4842,
+      "hostObservedP95Ms": 36.1246
+    },
+    "after": {
+      "rows": 929,
+      "families": 62,
+      "top1": 419,
+      "top3": 525,
+      "top10": 596,
+      "covered": 666,
+      "mrr": 0.5227392842502996,
+      "graphAligned": 723,
+      "graphCanonical": 730,
+      "selectedCanonical": 595,
+      "characterErrors": 1051,
+      "characters": 9123,
+      "cer": 0.11520333223720268,
+      "hostMedianMs": 17.8955,
+      "hostObservedP95Ms": 36.6451
+    }
+  },
+  "modules": {
+    "core-input": {
+      "tests": 293,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 234,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 293,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 3,
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0
+    }
+  },
+  "pythonTests": 39,
+  "systemTests": 30,
+  "configurationTests": 13,
+  "slowWorkerTests": 4,
+  "confirmationSamples": 64,
+  "latencyRatios": {
+    "medianMs": 0.9855907780979827,
+    "observedP95Ms": 1.1398601398601398
+  },
+  "systems": [
+    {
+      "name": "warm",
+      "environment": {
+        "serial": "emulator-5580",
+        "debugProfileReset": false,
+        "apks": {
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "47fee88be804622f19f5ac36d3c2a648642b27d747035cfaad5fa8fbc1da211a",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "app/build/outputs/apk/debug/app-debug.apk": "9e5ec26f823139c314a4ec58971fa788817ea45bca66789f2b62db55f8ed18a8"
+        },
+        "sdk": "37",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "imePidBefore": "25450",
+        "imePidAfter": "25450",
+        "installedDuringRun": false
+      },
+      "log": {
+        "path": ".artifacts/input-quality/external-editor-e4-warm/instrumentation.log",
+        "sha256": "6aa50d0e27f985343a87727ca7b0d4c75e56891c24f203660b4934b9ccb9a447",
+        "tests": 10
+      },
+      "observations": {
+        "backspaceEditsThePendingSpellingBeforeSpaceConfirms-cadence.txt": "input=nihaoa\nactual_key_start_intervals_ms=79,77,72,98,85\n",
+        "backspaceEditsThePendingSpellingBeforeSpaceConfirms.txt": "state=started\n",
+        "candidateWordsAreExposedAsActionsToAccessibilityServices-cadence.txt": "input=nihao\nactual_key_start_intervals_ms=99,94,72,80\n",
+        "candidateWordsAreExposedAsActionsToAccessibilityServices.txt": "state=started\n",
+        "confirmationReplaysFollowingInputInOrder-cadence.txt": "input=woxihuanbeijing\nactual_key_start_intervals_ms=67,96,92,60,72,66,68,64,76,75,81,73,119,99\ninput=nihao\nactual_key_start_intervals_ms=75,146,102,96\n",
+        "confirmationReplaysFollowingInputInOrder.txt": "state=started\n",
+        "enterCommitsRawEnglishInChineseModeWithoutANewline-cadence.txt": "input=sensecustomword\nactual_key_start_intervals_ms=80,88,80,84,84,83,80,66,76,79,78,75,71,75\n",
+        "enterCommitsRawEnglishInChineseModeWithoutANewline.txt": "state=started\n",
+        "hidingAndReopeningTheImeKeepsTheExternalCommittedText-cadence.txt": "input=nihao\nactual_key_start_intervals_ms=79,100,84,75\ninput=shijie\nactual_key_start_intervals_ms=87,138,90,83,81\n",
+        "hidingAndReopeningTheImeKeepsTheExternalCommittedText.txt": "state=started\n",
+        "movingCursorAfterCommitInsertsAtTheExternalSelection-cadence.txt": "input=nihao\nactual_key_start_intervals_ms=86,100,104,86\ninput=wo\nactual_key_start_intervals_ms=87\n",
+        "movingCursorAfterCommitInsertsAtTheExternalSelection.txt": "state=started\n",
+        "passwordFieldUsesLiteralInputRatherThanChineseCandidates-cadence.txt": "input=senseprivate\nactual_key_start_intervals_ms=89,105,71,113,82,75,85,80,80,70,86\ninput=nihao\nactual_key_start_intervals_ms=77,108,81,74\n",
+        "passwordFieldUsesLiteralInputRatherThanChineseCandidates.txt": "state=started\n",
+        "rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce-cadence.txt": "input=woxihuanbeijing\nactual_key_start_intervals_ms=70,83,71,68,53,73,80,66,66,77,62,70,76,82\n",
+        "rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.txt": "state=started\nspace_to_committed_editor_ms=160\nscope=single emulator sample; includes injection and polling; not decoder p95\n",
+        "switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField-cadence.txt": "input=woxihuanbeijing\nactual_key_start_intervals_ms=79,94,65,62,74,61,72,59,68,69,65,70,69,66\ninput=nihao\nactual_key_start_intervals_ms=63,67,65,68\n",
+        "switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.txt": "state=started\n",
+        "touchscreenPinyinCandidateCommitsThroughExternalInputConnection-cadence.txt": "input=nihao\nactual_key_start_intervals_ms=171,135,150,156\n",
+        "touchscreenPinyinCandidateCommitsThroughExternalInputConnection.txt": "state=started\n"
+      }
+    },
+    {
+      "name": "cold",
+      "environment": {
+        "serial": "emulator-5580",
+        "debugProfileReset": false,
+        "apks": {
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "47fee88be804622f19f5ac36d3c2a648642b27d747035cfaad5fa8fbc1da211a",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "app/build/outputs/apk/debug/app-debug.apk": "9e5ec26f823139c314a4ec58971fa788817ea45bca66789f2b62db55f8ed18a8"
+        },
+        "sdk": "37",
+        "scope": "Real system IME touch -> external EditText; force-stopped debug app, loading runtime asserted; not phone certification",
+        "imePidBefore": "25450",
+        "imePidAfter": "28260",
+        "installedDuringRun": false
+      },
+      "log": {
+        "path": ".artifacts/input-quality/external-editor-e4-cold/instrumentation.log",
+        "sha256": "ee3ca2ca8d650a8b383246d384a5a90b92cce4c47c5ca6117f623fe7c5df887b",
+        "tests": 4
+      },
+      "observations": {
+        "confirmationReplaysFollowingInputInOrder-cadence.txt": "input=woxihuanbeijing\nactual_key_start_intervals_ms=84,63,101,71,60,73,55,90,60,77,79,60,71,87\ninput=nihao\nactual_key_start_intervals_ms=88,77,83,77\n",
+        "confirmationReplaysFollowingInputInOrder.txt": "state=started\nbefore_typing=Sense candidate runtime: ready=false generation=1 characterModel=null\nbefore_first_space=Sense candidate runtime: ready=false generation=1 characterModel=null\n",
+        "enterCommitsRawEnglishInChineseModeWithoutANewline-cadence.txt": "input=sensecustomword\nactual_key_start_intervals_ms=95,72,83,101,78,74,75,73,89,72,82,82,71,76\n",
+        "enterCommitsRawEnglishInChineseModeWithoutANewline.txt": "state=started\nbefore_typing=Sense candidate runtime: ready=false generation=1 characterModel=null\n",
+        "rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce-cadence.txt": "input=woxihuanbeijing\nactual_key_start_intervals_ms=84,79,111,89,78,82,67,82,78,93,83,71,95,78\n",
+        "rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.txt": "state=started\nbefore_typing=Sense candidate runtime: ready=false generation=1 characterModel=null\nbefore_space=Sense candidate runtime: ready=false generation=1 characterModel=null\nspace_to_committed_editor_ms=1747\nscope=single emulator sample; includes injection and polling; not decoder p95\n",
+        "switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField-cadence.txt": "input=woxihuanbeijing\nactual_key_start_intervals_ms=84,78,56,66,73,66,82,86,64,66,64,65,83,74\ninput=nihao\nactual_key_start_intervals_ms=89,66,65,92\n",
+        "switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.txt": "state=started\nbefore_typing=Sense candidate runtime: ready=false generation=1 characterModel=null\nbefore_space_and_editor_switch=Sense candidate runtime: ready=false generation=1 characterModel=null\n"
+      }
+    },
+    {
+      "name": "corrections",
+      "environment": {
+        "serial": "emulator-5580",
+        "debugProfileReset": false,
+        "apks": {
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "47fee88be804622f19f5ac36d3c2a648642b27d747035cfaad5fa8fbc1da211a",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "app/build/outputs/apk/debug/app-debug.apk": "9e5ec26f823139c314a4ec58971fa788817ea45bca66789f2b62db55f8ed18a8"
+        },
+        "sdk": "37",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "imePidBefore": "",
+        "imePidAfter": "25450",
+        "installedDuringRun": true
+      },
+      "log": {
+        "path": ".artifacts/input-quality/external-editor-e4-corrections/instrumentation.log",
+        "sha256": "e78db0a05b6202dc6c5b8686b89176fed5de4a41f861a520ff1700f85b10a8a6",
+        "tests": 5
+      },
+      "observations": {
+        "missingKeyAtSentenceStartCanBeConfirmedAsChinese-cadence.txt": "input=wbuxihuanzuoye\nactual_key_start_intervals_ms=57,74,65,57,78,81,64,70,67,66,82,82,64\n",
+        "missingKeyAtSentenceStartCanBeConfirmedAsChinese.txt": "state=started\nspace_to_committed_editor_ms=128\nscope=single diagnostic system sample, not p95\n",
+        "missingKeyInsideTheSentenceCanBeConfirmedAsChinese-cadence.txt": "input=wobuxhuanzuoye\nactual_key_start_intervals_ms=65,58,67,70,83,60,76,57,73,69,68,67,93\n",
+        "missingKeyInsideTheSentenceCanBeConfirmedAsChinese.txt": "state=started\nspace_to_committed_editor_ms=158\nscope=single diagnostic system sample, not p95\n",
+        "missingParticleKeyKeepsTheSentenceContext-cadence.txt": "input=zhexieshiwomendshuzhuo\nactual_key_start_intervals_ms=76,72,115,72,69,69,78,69,65,71,66,62,85,62,58,71,65,74,75,69,70\n",
+        "missingParticleKeyKeepsTheSentenceContext.txt": "state=started\nspace_to_committed_editor_ms=167\nscope=single diagnostic system sample, not p95\n",
+        "validExtraSyllableDoesNotBuryTheContextualRepair-cadence.txt": "input=woobuxihuanzuoye\nactual_key_start_intervals_ms=104,82,92,74,66,108,81,88,66,120,109,70,72,81,58\n",
+        "validExtraSyllableDoesNotBuryTheContextualRepair.txt": "state=started\nspace_to_committed_editor_ms=517\nscope=single diagnostic system sample, not p95\n",
+        "validFuzzySyllableDoesNotBuryTheContextualRepair-cadence.txt": "input=wobujieyizaiyuzongmanbu\nactual_key_start_intervals_ms=73,64,90,56,77,81,100,80,73,79,71,65,66,86,73,91,69,56,66,79,60,71\n",
+        "validFuzzySyllableDoesNotBuryTheContextualRepair.txt": "state=started\nspace_to_committed_editor_ms=210\nscope=single diagnostic system sample, not p95\n"
+      }
+    },
+    {
+      "name": "associations",
+      "environment": {
+        "serial": "emulator-5580",
+        "debugProfileReset": false,
+        "apks": {
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "47fee88be804622f19f5ac36d3c2a648642b27d747035cfaad5fa8fbc1da211a",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "app/build/outputs/apk/debug/app-debug.apk": "9e5ec26f823139c314a4ec58971fa788817ea45bca66789f2b62db55f8ed18a8"
+        },
+        "sdk": "37",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification",
+        "imePidBefore": "28260",
+        "imePidAfter": "28260",
+        "installedDuringRun": false
+      },
+      "log": {
+        "path": ".artifacts/input-quality/external-editor-e4-associations/instrumentation.log",
+        "sha256": "944bb1e2898fe0b173b7671172ee23fbbbb8de02001e7dc3f8bf7cfa05fafb4f",
+        "tests": 9
+      },
+      "observations": {
+        "aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters-cadence.txt": "input=nihao\nactual_key_start_intervals_ms=76,76,75,80\ninput=jintian\nactual_key_start_intervals_ms=70,76,74,79,83,83\n",
+        "aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters.txt": "state=started\n",
+        "associationDoesNotExpireUnderAnActiveTouch-cadence.txt": "input=jintian\nactual_key_start_intervals_ms=71,75,92,101,75,70\n",
+        "associationDoesNotExpireUnderAnActiveTouch.txt": "state=started\n",
+        "changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry-cadence.txt": "input=jintian\nactual_key_start_intervals_ms=68,85,94,140,76,96\n",
+        "changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry.txt": "state=started\n",
+        "dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable-cadence.txt": "input=jintian\nactual_key_start_intervals_ms=76,119,125,110,98,92\ninput=women\nactual_key_start_intervals_ms=89,77,97,161\n",
+        "dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable.txt": "state=started\n",
+        "draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout-cadence.txt": "input=jintian\nactual_key_start_intervals_ms=95,70,104,248,65,77\n",
+        "draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout.txt": "state=started\n",
+        "hidingAndReopeningDoesNotResurrectThePreviousAssociation-cadence.txt": "input=jintian\nactual_key_start_intervals_ms=75,94,66,128,95,88\n",
+        "hidingAndReopeningDoesNotResurrectThePreviousAssociation.txt": "state=started\n",
+        "idleTimeoutRestoresToolbarWithoutChangingExternalText-cadence.txt": "input=jintian\nactual_key_start_intervals_ms=75,70,80,62,69,93\n",
+        "idleTimeoutRestoresToolbarWithoutChangingExternalText.txt": "state=started\n",
+        "switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping-cadence.txt": "input=jintian\nactual_key_start_intervals_ms=107,85,100,146,106,103\ninput=nihao\nactual_key_start_intervals_ms=98,111,70,115\n",
+        "switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping.txt": "state=started\n",
+        "typingTheNextWordCancelsThePendingReveal-cadence.txt": "input=jintian\nactual_key_start_intervals_ms=91,112,68,69,70,79\ninput=omen\nactual_key_start_intervals_ms=68,74,79\n",
+        "typingTheNextWordCancelsThePendingReveal.txt": "state=started\n"
+      }
+    },
+    {
+      "name": "learning",
+      "environment": {
+        "serial": "emulator-5580",
+        "debugProfileReset": true,
+        "apks": {
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "47fee88be804622f19f5ac36d3c2a648642b27d747035cfaad5fa8fbc1da211a",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "app/build/outputs/apk/debug/app-debug.apk": "9e5ec26f823139c314a4ec58971fa788817ea45bca66789f2b62db55f8ed18a8"
+        },
+        "sdk": "37",
+        "scope": "Real candidate selection, reuse, privacy and process-restart persistence; clean disposable debug profile; not phone certification",
+        "imePidBefore": "",
+        "imePidAfter": "30892",
+        "installedDuringRun": false
+      },
+      "log": {
+        "path": ".artifacts/input-quality/external-editor-e4-learning/instrumentation.log",
+        "sha256": "acfe6595b9dd0b57705ddfa9b87f9ded7e581bde13e1c78f28182f06fb547791",
+        "tests": 2
+      },
+      "observations": {
+        "noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections-cadence.txt": "input=chengche\nactual_key_start_intervals_ms=123,115,76,86,69,83,104\ninput=chengche\nactual_key_start_intervals_ms=92,84,85,88,123,80,76\ninput=chengche\nactual_key_start_intervals_ms=68,70,86,88,76,80,65\ninput=chengche\nactual_key_start_intervals_ms=107,94,90,84,95,80,64\n",
+        "noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections.txt": "state=started\nordinary_before_private_first=乘车\nselected=候选词，16，程\nselected=候选词，10，澈\nprivate_commit=程澈\nprivate_after_selection_first=乘车\nprocess_restart=29421->29928\nordinary_after_restart_first=乘车\n",
+        "progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-cadence.txt": "input=chengche\nactual_key_start_intervals_ms=106,106,100,122,90,83,83\ninput=chengche\nactual_key_start_intervals_ms=74,87,78,91,74,67,71\ninput=chengche\nactual_key_start_intervals_ms=79,90,77,79,76,84,85\ninput=chengche\nactual_key_start_intervals_ms=101,77,126,117,119,84,81\ninput=zhinengti\nactual_key_start_intervals_ms=87,104,112,104,102,79,105,90\ninput=zhinengti\nactual_key_start_intervals_ms=78,95,72,84,86,76,94,96\ninput=zhinengti\nactual_key_start_intervals_ms=93,104,104,99,84,73,64,72\n",
+        "progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart.txt": "state=started\nbefore_learning_first=乘车\nselected=候选词，16，程\nselected=候选词，9，彻\nlearned_through=touchscreen progressive candidates\nimmediate_1_first=程彻\nimmediate_2_first=程彻\nprocess_restart=29928->30432\nafter_process_restart_first=程彻\nselected=候选词，2，智能体\nintelligent_agent_reuse_first=智能体\nprocess_restart=30432->30892\nintelligent_agent_restart_first=智能体\n"
+      }
+    }
+  ],
+  "configurations": [
+    {
+      "schemaVersion": 1,
+      "serial": "emulator-5580",
+      "sdk": "37",
+      "scope": "True system IME in explicit font/orientation configurations; emulator only",
+      "apks": {
+        "io.github.ethanbird.senseime.debug": "9e5ec26f823139c314a4ec58971fa788817ea45bca66789f2b62db55f8ed18a8",
+        "io.github.ethanbird.senseime.inputqualityfixture": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+        "io.github.ethanbird.senseime.inputqualityfixture.test": "47fee88be804622f19f5ac36d3c2a648642b27d747035cfaad5fa8fbc1da211a"
+      },
+      "runs": [
+        {
+          "name": "portrait",
+          "fontScale": 1.0,
+          "rotation": 0,
+          "expectedTests": 3,
+          "passed": true,
+          "expectedFailure": false,
+          "logSha256": "07e568348507578d1ebd533d0f9724ba318b9f2a9a7e3aa90b0ba8bcdb2eac25"
+        },
+        {
+          "name": "portrait-large",
+          "fontScale": 2.0,
+          "rotation": 0,
+          "expectedTests": 3,
+          "passed": true,
+          "expectedFailure": false,
+          "logSha256": "8f3f78ffc3afd68ac2fb3aa297b0d63a6d6272212409406ba283964527de3874"
+        },
+        {
+          "name": "landscape",
+          "fontScale": 1.0,
+          "rotation": 1,
+          "expectedTests": 3,
+          "passed": true,
+          "expectedFailure": false,
+          "logSha256": "e154700f2b34fc9c4f096c3a2e5c2e2da5eda81589f387201ba47748432b9fdf"
+        },
+        {
+          "name": "landscape-large",
+          "fontScale": 2.0,
+          "rotation": 1,
+          "expectedTests": 3,
+          "passed": true,
+          "expectedFailure": false,
+          "logSha256": "d3ed1c5015437965d6263e1a8f37bd5bb737ed4d8bdbfd089565c9c9b34771fc"
+        }
+      ],
+      "settingsBefore": {
+        "system/font_scale": "1.0",
+        "system/accelerometer_rotation": "1",
+        "system/user_rotation": "0",
+        "secure/accessibility_interactive_ui_timeout_ms": "null",
+        "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+        "secure/show_ime_with_hard_keyboard": "1"
+      },
+      "settingsRestored": {
+        "system/font_scale": "1.0",
+        "system/accelerometer_rotation": "1",
+        "system/user_rotation": "0",
+        "secure/accessibility_interactive_ui_timeout_ms": "null",
+        "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+        "secure/show_ime_with_hard_keyboard": "1"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "serial": "emulator-5580",
+      "sdk": "37",
+      "scope": "True system IME in explicit font/orientation configurations; emulator only",
+      "apks": {
+        "io.github.ethanbird.senseime.debug": "9e5ec26f823139c314a4ec58971fa788817ea45bca66789f2b62db55f8ed18a8",
+        "io.github.ethanbird.senseime.inputqualityfixture": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+        "io.github.ethanbird.senseime.inputqualityfixture.test": "47fee88be804622f19f5ac36d3c2a648642b27d747035cfaad5fa8fbc1da211a"
+      },
+      "runs": [
+        {
+          "name": "timeout",
+          "fontScale": 1.0,
+          "rotation": 0,
+          "expectedTests": 1,
+          "passed": true,
+          "expectedFailure": false,
+          "logSha256": "3243c05b5d3abb2e71275fa40d5de72c13de015cd77258c6ddb7ae18ce172670"
+        }
+      ],
+      "settingsBefore": {
+        "system/font_scale": "1.0",
+        "system/accelerometer_rotation": "1",
+        "system/user_rotation": "0",
+        "secure/accessibility_interactive_ui_timeout_ms": "null",
+        "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+        "secure/show_ime_with_hard_keyboard": "1"
+      },
+      "settingsRestored": {
+        "system/font_scale": "1.0",
+        "system/accelerometer_rotation": "1",
+        "system/user_rotation": "0",
+        "secure/accessibility_interactive_ui_timeout_ms": "null",
+        "secure/default_input_method": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+        "secure/show_ime_with_hard_keyboard": "1"
+      }
+    }
+  ],
+  "learning": {
+    "scope": "Disposable debug AVD SQLite read-only observation after UI learning/privacy; no DB seeding",
+    "databaseSha256": "39099bf1a4fa04fcc2f550cb8ef746a6618c7da63b1da5b4afa4be121cc815fc",
+    "forbiddenPrivatePhraseAbsent": true,
+    "records": [
+      {
+        "pinyin": "chengche",
+        "text": "程彻",
+        "useCount": 4,
+        "positiveEvidence": 3.1688740253448486,
+        "negativeEvidence": 0.0,
+        "recentPeakEvidence": 2.628870725631714
+      },
+      {
+        "pinyin": "zhinengti",
+        "text": "智能体",
+        "useCount": 3,
+        "positiveEvidence": 2.3872478008270264,
+        "negativeEvidence": 0.0,
+        "recentPeakEvidence": 2.027245044708252
+      }
+    ]
+  },
+  "slowWorker": {
+    "schemaVersion": 1,
+    "scope": "JDWP single-worker suspension + true external editor; not performance evidence",
+    "serial": "emulator-5580",
+    "sdk": "37",
+    "apkSha256": {
+      "io.github.ethanbird.senseime.debug": "9e5ec26f823139c314a4ec58971fa788817ea45bca66789f2b62db55f8ed18a8",
+      "io.github.ethanbird.senseime.inputqualityfixture": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+      "io.github.ethanbird.senseime.inputqualityfixture.test": "47fee88be804622f19f5ac36d3c2a648642b27d747035cfaad5fa8fbc1da211a"
+    },
+    "tests": [
+      {
+        "method": "delayedChineseConfirmationPreservesBothWordsAndOrder",
+        "passed": true,
+        "imePid": 1764,
+        "workerPausedMs": 3703
+      },
+      {
+        "method": "enterExplicitlyKeepsRawDuringSlowWait",
+        "passed": true,
+        "imePid": 1764,
+        "workerPausedMs": 3094
+      },
+      {
+        "method": "deleteCanCorrectTheCompositionBeforeWorkerResumes",
+        "passed": true,
+        "imePid": 1764,
+        "workerPausedMs": 2406
+      },
+      {
+        "method": "editorSwitchInvalidatesDelayedConfirmationAndQueuedInput",
+        "passed": true,
+        "imePid": 1764,
+        "workerPausedMs": 3422
+      }
+    ]
+  },
+  "packagedAssets": {
+    "schemaVersion": 1,
+    "scope": "APK contents only, Android execution reported separately",
+    "apkSha256": "9e5ec26f823139c314a4ec58971fa788817ea45bca66789f2b62db55f8ed18a8",
+    "apkBytes": 97094639,
+    "model": {
+      "file": "association_words.snwp",
+      "bytes": 3756683,
+      "sha256": "d0b157b46ee6df5fe0466870f6a5bf2951b0498a081d4860b3791bb2f123bf39"
+    },
+    "modelCompressedBytes": 2521317,
+    "contexts": 73253,
+    "sharedAttribution": {
+      "file": "pinyin_character_lm_attribution.tsv",
+      "sha256": "acfb932b806f02bd53b57f4a902628fea2c29f6efda7a785a11be432ac22173a",
+      "sentences": 77733,
+      "contributors": 932
+    },
+    "dictionary": {
+      "file": "pinyin_lexicon.bin",
+      "sha256": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
+      "license": "GPL-3.0",
+      "notice": "RIME-FROST-NOTICE.txt"
+    },
+    "characterModelAudit": {
+      "schemaVersion": 1,
+      "scope": "APK zip content audit; not Android execution",
+      "apkSha256": "9e5ec26f823139c314a4ec58971fa788817ea45bca66789f2b62db55f8ed18a8",
+      "apkBytes": 97094639,
+      "model": {
+        "file": "pinyin_character_lm.scng",
+        "sha256": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+        "bytes": 3090930,
+        "trainingConfig": {
+          "discount": 0.75,
+          "min_char_count": 2,
+          "min_bigram_count": 1,
+          "min_trigram_count": 2,
+          "alpha": 0.1
+        }
+      },
+      "attribution": {
+        "file": "pinyin_character_lm_attribution.tsv",
+        "sha256": "acfb932b806f02bd53b57f4a902628fea2c29f6efda7a785a11be432ac22173a",
+        "sentences": 77733,
+        "contributors": 932
+      },
+      "attributionBytes": 1359869,
+      "attributionCompressedBytes": 286294,
+      "decoderMode": "lm0.5",
+      "passed": true
+    },
+    "passed": true
+  },
+  "sourcePathErratum": {
+    "frozenLabel": "../p2c-v1",
+    "resolvedSource": "../p2c-ranking-v2",
+    "contentHashesMatch": true,
+    "reason": "Generator used a hardcoded v1 label; original manifest and all TSV bytes retained, generator fixed for future runs."
+  },
+  "knownProductRegressions": [
+    {
+      "query": "zhinengti",
+      "expected": "智能体",
+      "beforeRank": 15,
+      "afterRank": 20,
+      "beforeTop1": "只能提",
+      "afterTop1": "只能提",
+      "condition": "No personal learning",
+      "evidence": "benchmarks/results/e4-short-word-diagnostic.json",
+      "status": "Open; prioritize short-word coverage/ranking before release"
+    },
+    {
+      "metric": "Observed confirmation p95",
+      "beforeMs": 286,
+      "afterMs": 326,
+      "status": "Within frozen 1.15 budget but higher; no speedup claim"
+    }
+  ],
+  "limitations": [
+    "Source split used by earlier association evaluation; these sentence families were excluded from old P2C studies, not a wholly untouched corpus.",
+    "Agent reviewed source readings before candidate output; not independent human gold.",
+    "Synthetic mutations are correlated by source family; joints are duplicate clean controls.",
+    "Apostrophe controls are normalized duplicates, not forced-boundary support.",
+    "Only one API 37 emulator; observed timings are not real-phone tail-latency guarantees.",
+    "All audit labels and results are now known; future tuning needs a new audit.",
+    "No release signing or publishing performed in this phase."
+  ]
+}

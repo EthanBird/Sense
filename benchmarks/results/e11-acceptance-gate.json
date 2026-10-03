@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "stage": "E11",
+  "decision": "reject-candidate",
+  "candidateQualityGatePassed": false,
+  "candidatePromoted": false,
+  "restorationVerified": true,
+  "goalComplete": false,
+  "releaseReady": false,
+  "host": {
+    "core-input": {
+      "tests": 318,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 310,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "hostTests": 866,
+  "python": {
+    "run": 352,
+    "passed": 351,
+    "skipped": 1
+  },
+  "developmentSuffixes": 270,
+  "frozenSuffixes": 550,
+  "frozenBefore": {
+    "count": 550,
+    "first": 432,
+    "top5": 513,
+    "recall255": 542
+  },
+  "frozenCandidate": {
+    "count": 550,
+    "first": 430,
+    "top5": 513,
+    "recall255": 542
+  },
+  "frozenFirstGains": 1,
+  "frozenFirstLosses": 3,
+  "frozenRankLosses": 5,
+  "restoredCoreSourceFiles": 60,
+  "restoredCompleteResultsIdentical": 1080,
+  "newAndroidExecutions": 0,
+  "newAndroidLatencyMeasurements": 0,
+  "reusedSystemEvidence": {
+    "stage": "E10",
+    "tests": 50,
+    "sameApkBytesVerified": true
+  },
+  "apk": {
+    "sha256": "5ecf199435663ef1cbb6436b0bbdb0354612a7ca4cb8998cf6cf89ef8dee6f81",
+    "bytes": 85826196,
+    "signing": "Unchanged E10 Android Debug APK"
+  },
+  "evidenceManifestSha256": "a67daca40355b49dc877385b03764cd90920295b9e6e9c30a0bad5a7bbb507d7",
+  "archivedFiles": 201
+}

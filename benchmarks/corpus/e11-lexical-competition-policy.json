@@ -1,0 +1,29 @@
+{
+  "stage": "E11",
+  "candidate": "Compete overlapping dictionary pairs only if the preceding two Han scalars are an actual primary-tier canonical two-character word. Sentence-sized queries only; bounded shared primitive index built from validated existing asset; no new model or dictionary bytes.",
+  "parametersTuned": false,
+  "productionAssetsChanged": false,
+  "beforeInspectingDevelopmentReplay": true,
+  "development": {
+    "requireEditorFirstNotLower": true,
+    "requireEditorTop5NotLower": true,
+    "requireEditorRecallNotLower": true,
+    "retainAllFirstAndRankLosses": true
+  },
+  "frozen": {
+    "requireEditorFirstNotLower": true,
+    "requireEditorTop5NotLower": true,
+    "requireEditorRecallNotLower": true,
+    "noTuningAfterTest": true,
+    "retainAllFirstAndRankLosses": true
+  },
+  "invariants": [
+    "No-context and punctuation-boundary complete results unchanged",
+    "At most six typed letters complete results unchanged",
+    "Editor versus accepted-prefix complete results equivalent",
+    "Disabled LM, legacy/T9 and personal-new-word backoff preserved",
+    "Same final APK passes host, external-editor, personalization and APK asset/signature checks"
+  ],
+  "interpretation": "Synthetic oracle-correct contextual suffixes from attributed sentences, not natural user accuracy or a general quality guarantee",
+  "supersedes": "Ungated pair competition improved first but lost two top-five targets on non-word incoming pairs, so it failed development. Frozen test remains unevaluated."
+}

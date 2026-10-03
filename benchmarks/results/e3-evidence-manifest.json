@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "scope": "Known synthetic replay and graph diagnostics; baseline, rejected prototypes and final results all retained; deterministic gzip; not independent natural-input evidence",
+  "finalCandidate": "e3-candidate3-freeze.json",
+  "reports": {
+    "graph-all-before": {
+      "file": "benchmarks/results/baselines/e3-graph-all-before.json.gz",
+      "rawSha256": "fc9632d480661e3bab854f4412e75eae66830c5d90537589996ec9193ba136b7",
+      "gzipSha256": "30af1946a66d647f847161d8f3192756fbe984ad87f5df17b5adcf1c3ab88400",
+      "compressedBytes": 123634,
+      "observations": 945
+    },
+    "graph-balanced": {
+      "file": "benchmarks/results/baselines/e3-graph-balanced.json.gz",
+      "rawSha256": "98ff948e216e37fe9babc95383af9c0612752d3419760a93e7e97935e2987e4c",
+      "gzipSha256": "0f24da449f2f188af418c2cd9a20e6fb3872f8ce00ba97ee2510e5e64d7ac15e",
+      "compressedBytes": 75366,
+      "observations": 945
+    },
+    "dev-before": {
+      "file": "benchmarks/results/baselines/e3-dev-before.json.gz",
+      "rawSha256": "b143f9bb81d34236cf9055c7f724a78b8d917daa69648689f112df21dd938937",
+      "gzipSha256": "c0d6fd1268516daeab6d579b7bdbae5f4391f5709c962f55751e202a54872090",
+      "compressedBytes": 140574,
+      "observations": 945
+    },
+    "test-before": {
+      "file": "benchmarks/results/baselines/e3-test-before.json.gz",
+      "rawSha256": "76042d285590bd5ad31c5e6ff1582454d53e0b8a773ec7fa1bf4da0ce4c5ca31",
+      "gzipSha256": "0fa5452360ba0440224135e05fb69c7dac3a79ff710d8e48580e1cbb5c52dbd0",
+      "compressedBytes": 271895,
+      "observations": 1874
+    },
+    "dev-balanced": {
+      "file": "benchmarks/results/baselines/e3-dev-balanced.json.gz",
+      "rawSha256": "893cfffce04fc3713cc425822cabbfc7811f88664ae8b183d3556f08ce6929fd",
+      "gzipSha256": "85c742f40246718153bffd918809e45717394440915a5bfec0d86e2e32e0c54c",
+      "compressedBytes": 139883,
+      "observations": 945
+    },
+    "dev-channels": {
+      "file": "benchmarks/results/baselines/e3-dev-channels.json.gz",
+      "rawSha256": "0efdfb6eb2bc571d6c3fa94fa1918d0e8e90a63fc6b25983dce28cb83d2bd48a",
+      "gzipSha256": "dfef66e161aeba1370d39ffa217ceba018bba265e1863d7452072739e1c54ffb",
+      "compressedBytes": 139642,
+      "observations": 945
+    },
+    "dev-channel-depth": {
+      "file": "benchmarks/results/baselines/e3-dev-channel-depth.json.gz",
+      "rawSha256": "b1e32eb02daeb33fe707417b0e66f1ca786a8b0802e49030fe16e235ffa31f7e",
+      "gzipSha256": "e0ecd3cb6d91da63846a2a15e76cd651696cbcb8cbc85c089965bea23545a540",
+      "compressedBytes": 139193,
+      "observations": 945
+    },
+    "test-candidate": {
+      "file": "benchmarks/results/baselines/e3-test-candidate.json.gz",
+      "rawSha256": "1a7a873442fea4a72b4d269d232fd54727605c403a271d5127d23c5979ea4925",
+      "gzipSha256": "b106949c247a321c360917c619530ccef1c7ac991fa4f82e8b0375367aa4cf74",
+      "compressedBytes": 269136,
+      "observations": 1874
+    },
+    "dev-selector": {
+      "file": "benchmarks/results/baselines/e3-dev-selector.json.gz",
+      "rawSha256": "ede1598308f8889968acf5e9b4226226f791e0c7081c802b3bcc9f54bbbfde5a",
+      "gzipSha256": "84f71de5f3ac5b2b4dfb1f0cebdf0ab2e40bb9db4d67745768611b043d6fcbcf",
+      "compressedBytes": 140552,
+      "observations": 945
+    },
+    "dev-selector-half": {
+      "file": "benchmarks/results/baselines/e3-dev-selector-half.json.gz",
+      "rawSha256": "f78a67de651b881416b53d72373d0fba08ff5cd408e6599e57819432128da04d",
+      "gzipSha256": "50cba432592d5786222f7da19fe5f0628dc5ea31a6b79ec953abecb0519572fd",
+      "compressedBytes": 140370,
+      "observations": 945
+    },
+    "test-selector-half": {
+      "file": "benchmarks/results/baselines/e3-test-selector-half.json.gz",
+      "rawSha256": "dc3b34b4c3ca7e613487b35f472fbb8e63e8445b3308b770f5f4086ffdc367be",
+      "gzipSha256": "70fd73580dbff9e02a88a3ab6223acaf787ef939e1ae309e1fd26bc2268df65a",
+      "compressedBytes": 271602,
+      "observations": 1874
+    },
+    "dev-anchored": {
+      "file": "benchmarks/results/baselines/e3-dev-anchored.json.gz",
+      "rawSha256": "38fe33139da3c6e8008a59570ce60df198f8b68e68f0397fefb1bfdd3a876a94",
+      "gzipSha256": "9b02054b96a0da81d433cc35d8d956290b2486b8a9dd22b2712633e77b4a8439",
+      "compressedBytes": 140149,
+      "observations": 945
+    },
+    "test-anchored": {
+      "file": "benchmarks/results/baselines/e3-test-anchored.json.gz",
+      "rawSha256": "c1e51c0a76bd9c85d3025cc34a006021701836834cfbf02cf6f16ad0e7fcfdcd",
+      "gzipSha256": "f8045c3018b0530ca7905acee9762c66cb2ef8e7ac3008aae1226649a695e7cc",
+      "compressedBytes": 270791,
+      "observations": 1874
+    }
+  },
+  "validationReports": {
+    "e3-acceptance-gate.json": "bde8d929dbf76ddcc9b7945842623c40fd87aa66a68c4d3d396d794e69e8e66b",
+    "e3-apk-asset-audit.json": "03d6a929ed0ad1a90947971c6916499b87d3c9cc1e317db76b63d8a7acf1ce85",
+    "e3-candidate2-freeze.json": "1886bc3776d6e5badd68cf5549f43231f45b110e5f60bae8584de79f495f5900",
+    "e3-candidate3-freeze.json": "23fc3b94d629f0ab6c257e2e8539cb8d566d0a24c23c61379c233782e22055cf",
+    "e3-development-comparison.json": "ae47f0ebcf923e8c2ff66d705d6931296b71a308a8890ed194ffc2cabbf8b562",
+    "e3-development-freeze.json": "cb6dc1dfab0b73df045883e9d1297102e7fc01c1bcc6322d56f13e3ba3850831",
+    "e3-graph-only-development-comparison.json": "22234b8ac44518e7611fbeba22dda2b6bc9bd2e0f74477e20befe34d7b59e33b",
+    "e3-graph-only-known-regression-comparison.json": "810c699fbbf40bc51ce8b77eccb4768c2fa645e24c9544586e5335a8844631a6",
+    "e3-host-validation.json": "4c9a6d35469ee7bc8271139cccac6b9fae470c7630c373bf053c1e88505a4ce6",
+    "e3-known-regression-comparison.json": "0fb8b2a5b579e6bb60e20d29838dcdf8c966d8f76ea25c30b658f46a72925068",
+    "e3-learning-persistence.json": "49eb8a24db684b4d9bf16bdfc7fe334df2629a00c455a007d135e6158598675e",
+    "e3-m1.json": "fc94c8ad1217f389b2e401d7ac3db01ef5b8698551bae106621026e20e10bae2",
+    "e3-m7.json": "9045a3e2455ea144f5ecd24f16c69cd14c2abb6f9fe705dc95c214dd760fe2d9",
+    "e3-slow-system.json": "64b15e46e2dae3c10248c1a764c7b64c2aa6931009424c9b96536ed99e5569ec",
+    "e3-system-ime.json": "bf4b0a568082daf57629f2d24c625471286e49d7d4e663d51d2d227731cc96ab",
+    "e3-system-latency.json": "89fa30a9abe4fea5bac615c716169c6b6f78fb708e7147a8ff27fb10bbf11795",
+    "e3-unanchored-development-comparison.json": "572e83cc36d4219831992b17fe20cdc1281faa8b291a19071eb788c7f9402bf3",
+    "e3-unanchored-known-regression-comparison.json": "bd414b54f1f33fa54d5db80d44f1c0dc2f616725e240c6f0cc349acd8dcba4c2"
+  },
+  "localFailureLogs": {
+    ".artifacts/input-quality/e3/graph-red.log": "291d115250b257bbe0017bff46b49b5c67b6216a04bc81aa5b3e74982ffe83b8",
+    ".artifacts/input-quality/e3/reserve.log": "f055c2bc47e3952dc3ac1b839ed3752c669bcb6ec6d7aced301969b50d042234",
+    ".artifacts/input-quality/e3/selector-red.log": "321197446d714fd8bc42303b10739eb94b6e24f9695b594e8d60fc4f7b949d56",
+    ".artifacts/input-quality/e3/anchor-red.log": "c43723e76c9fb605553495f6fc019bb0f1f0c52cb1b8480dda29c2521b95c949"
+  },
+  "localFinalBuildLogs": {
+    "anchored-final-build.log": "c5d1575a95b64c3000ac6a40f335dfa8464cc33deb72bee37c45cded37ecbb7e",
+    "about-tests.log": "83ae522d16d746f3e5b2004d4fe6c89a4a9d0adf41c7df0b0f0d17021b2b9f43",
+    "python-tests.log": "b792808bef7c67662c4ae0d116ca31d99ff995446f0122ca184ffd9aa407eeaf"
+  },
+  "localSystemRawMeasurements": {
+    ".artifacts/input-quality/e3-latency-abba/measurements.json": "eb2c773dfa3e7bad3e9935f2c7a7e2c3ba86d5a454e55c73215bff300d8712ca"
+  }
+}

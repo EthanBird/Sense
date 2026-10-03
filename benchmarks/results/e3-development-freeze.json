@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "frozenAt": "2026-10-02T12:15:51.2655178Z",
+  "scope": "Selected on known E1 development mutations; test partition is a known regression, not a new blind evaluation",
+  "algorithm": "Reserve half the existing beam through cost-ordered error-channel rounds; retain existing recent-origin depth for remaining slots",
+  "graphSha256": "d6482a5b83eacc7b02423459819f9313d98054184d9bda5ac1a646b0c8de2010",
+  "baselineGraphSha256": "0f433f318f1aacfa55ee5f366b05abe098c20a7a186bd02551744528f5bed05f",
+  "policy": {
+    "typoTop10NetGainAtLeast": 20,
+    "androidObservedP95RatioAtMost": 1.15,
+    "mutationCoverageEachNondecreasing": true,
+    "cleanCountsPreserved": true,
+    "completeSystemOutputCorrect": true,
+    "typoCharacterErrorsNonIncreasing": true,
+    "regression": "Core/UI/service, App About targeted, Python, M1/M7, warm/cold/correction/learning and slow-worker tests",
+    "androidMedianRatioAtMost": 1.15,
+    "androidMaxBelowMs": 1000
+  }
+}

@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "stage": "E10",
+  "passed": true,
+  "goalComplete": false,
+  "releaseReady": false,
+  "scope": "Two-scalar context transport correctness; existing-model diagnostics, not a new semantic accuracy promotion",
+  "host": {
+    "core-input": {
+      "tests": 318,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 310,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "app": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "hostTests": 866,
+  "python": {
+    "run": 347,
+    "passed": 346,
+    "skipped": 1
+  },
+  "redServiceTests": {
+    "tests": 8,
+    "failures": 2
+  },
+  "systemEditor": [
+    {
+      "group": "context",
+      "tests": 8,
+      "passed": true,
+      "apks": {
+        "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+        "app/build/outputs/apk/debug/app-debug.apk": "5ecf199435663ef1cbb6436b0bbdb0354612a7ca4cb8998cf6cf89ef8dee6f81",
+        "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "f193cd6eeefd19efae2415e836330b6aa0c9686c88fd1382f6dec5129e54aab5"
+      },
+      "serial": "emulator-5580",
+      "sdk": "37"
+    },
+    {
+      "group": "warm",
+      "tests": 10,
+      "passed": true,
+      "apks": {
+        "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "f193cd6eeefd19efae2415e836330b6aa0c9686c88fd1382f6dec5129e54aab5",
+        "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+        "app/build/outputs/apk/debug/app-debug.apk": "5ecf199435663ef1cbb6436b0bbdb0354612a7ca4cb8998cf6cf89ef8dee6f81"
+      },
+      "serial": "emulator-5580",
+      "sdk": "37"
+    },
+    {
+      "group": "boundary",
+      "tests": 6,
+      "passed": true,
+      "apks": {
+        "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "f193cd6eeefd19efae2415e836330b6aa0c9686c88fd1382f6dec5129e54aab5",
+        "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+        "app/build/outputs/apk/debug/app-debug.apk": "5ecf199435663ef1cbb6436b0bbdb0354612a7ca4cb8998cf6cf89ef8dee6f81"
+      },
+      "serial": "emulator-5580",
+      "sdk": "37"
+    },
+    {
+      "group": "mixed",
+      "tests": 3,
+      "passed": true,
+      "apks": {
+        "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "f193cd6eeefd19efae2415e836330b6aa0c9686c88fd1382f6dec5129e54aab5",
+        "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+        "app/build/outputs/apk/debug/app-debug.apk": "5ecf199435663ef1cbb6436b0bbdb0354612a7ca4cb8998cf6cf89ef8dee6f81"
+      },
+      "serial": "emulator-5580",
+      "sdk": "37"
+    },
+    {
+      "group": "correction",
+      "tests": 8,
+      "passed": true,
+      "apks": {
+        "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+        "app/build/outputs/apk/debug/app-debug.apk": "5ecf199435663ef1cbb6436b0bbdb0354612a7ca4cb8998cf6cf89ef8dee6f81",
+        "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "f193cd6eeefd19efae2415e836330b6aa0c9686c88fd1382f6dec5129e54aab5"
+      },
+      "serial": "emulator-5580",
+      "sdk": "37"
+    },
+    {
+      "group": "association",
+      "tests": 9,
+      "passed": true,
+      "apks": {
+        "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+        "app/build/outputs/apk/debug/app-debug.apk": "5ecf199435663ef1cbb6436b0bbdb0354612a7ca4cb8998cf6cf89ef8dee6f81",
+        "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "f193cd6eeefd19efae2415e836330b6aa0c9686c88fd1382f6dec5129e54aab5"
+      },
+      "serial": "emulator-5580",
+      "sdk": "37"
+    },
+    {
+      "group": "cold",
+      "tests": 4,
+      "passed": true,
+      "apks": {
+        "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+        "app/build/outputs/apk/debug/app-debug.apk": "5ecf199435663ef1cbb6436b0bbdb0354612a7ca4cb8998cf6cf89ef8dee6f81",
+        "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "f193cd6eeefd19efae2415e836330b6aa0c9686c88fd1382f6dec5129e54aab5"
+      },
+      "serial": "emulator-5580",
+      "sdk": "37"
+    },
+    {
+      "group": "learning",
+      "tests": 2,
+      "passed": true,
+      "apks": {
+        "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+        "app/build/outputs/apk/debug/app-debug.apk": "5ecf199435663ef1cbb6436b0bbdb0354612a7ca4cb8998cf6cf89ef8dee6f81",
+        "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "f193cd6eeefd19efae2415e836330b6aa0c9686c88fd1382f6dec5129e54aab5"
+      },
+      "serial": "emulator-5580",
+      "sdk": "37"
+    }
+  ],
+  "systemFunctionalTests": 50,
+  "pairedSuffixes": 540,
+  "pairedDecodeCalls": 2160,
+  "contextAblation": {
+    "empty": {
+      "count": 540,
+      "first": 323,
+      "top5": 437,
+      "recall255": 511
+    },
+    "editor": {
+      "count": 540,
+      "first": 397,
+      "top5": 469,
+      "recall255": 520
+    },
+    "boundary": {
+      "count": 540,
+      "first": 323,
+      "top5": 437,
+      "recall255": 511
+    },
+    "accepted": {
+      "count": 540,
+      "first": 397,
+      "top5": 469,
+      "recall255": 520
+    }
+  },
+  "existingContextFirstLosses": 4,
+  "existingContextRankLosses": 18,
+  "singletonModelPromoted": false,
+  "coreDecoderSourcePinsUnchanged": 60,
+  "assetHashes": {
+    "assets/ASSOCIATION-MODEL-NOTICE.txt": "4629a89db03218238cd3b9651da106b9100d5f07a7386f1b1ab155c6ecf27433",
+    "assets/CONCENTUS-BSD-3-CLAUSE.txt": "fa08d794f35b8c2517a2b929ff388cf179e6eb452383e8dc13de81452741a564",
+    "assets/LARK-OAPI-APACHE-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "assets/LICENSE.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "assets/NOTICE.txt": "2ec41d46d5ce7c0f2e4bfd8ee4db1d59e81b963662212c84aed90b1e0e48470f",
+    "assets/OKHTTP-APACHE-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "assets/PINYIN-LM-NOTICE.txt": "42e67712562a6b3b2e491f42146efd7235d7fcd6d3ac2a156eabfbae1e6565d0",
+    "assets/POPULAR-ENGLISH-WORDS-ISC.txt": "f432301e16a48011db30f6fd74d5ec906745d5c9bfcacb91c924e4738d7e4fa7",
+    "assets/PublicSuffixDatabase.list": "c75ab827afd7ffff59a51b14729c25dbfc3b45237eb40ccf02bec7b7d44304a4",
+    "assets/RIME-FROST-GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "assets/RIME-FROST-NOTICE.txt": "bacf7e02bf7b78343aa6c718021d24c701092cb0e14b737a84f13c551b181a83",
+    "assets/RIME-ICE-GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "assets/RIME-ICE-NOTICE.txt": "268b2226666b6597f6ebcc2e084888ecd6288a9655eedbdea3e1e9b6e092a496",
+    "assets/RIME-WUBI-LGPL-3.0.txt": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+    "assets/RIME-WUBI-NOTICE.txt": "c1ccba91f1ba2ebe970ef62a80e69feef1d1a61b568d078a20e9b904782035a8",
+    "assets/association_words.snwp": "d0b157b46ee6df5fe0466870f6a5bf2951b0498a081d4860b3791bb2f123bf39",
+    "assets/association_words_notice.json": "7648de91d2fc68049d9ea7dca14c3cb7b80432d395b3a19b7b9bcf246a88ae4f",
+    "assets/english_lexicon.txt": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624",
+    "assets/pinyin_bigrams.bin": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
+    "assets/pinyin_character_lm.scng": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+    "assets/pinyin_character_lm_attribution.tsv": "acfb932b806f02bd53b57f4a902628fea2c29f6efda7a785a11be432ac22173a",
+    "assets/pinyin_character_lm_notice.json": "131039406d56f7b729331d91bdb4c8891d4e79d36ab7bd1fc95d761a4f881d7a",
+    "assets/pinyin_lexicon.bin": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232",
+    "assets/pinyin_syllables.txt": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+    "assets/wubi86_lexicon.bin": "e2d47d43ab702862c349cd7f9ad36b2d4cbd72963c95cdb6f7911bf849937207"
+  },
+  "unchangedPackagedAssets": 25,
+  "latencyMeasuredThisStage": false,
+  "apk": {
+    "sha256": "5ecf199435663ef1cbb6436b0bbdb0354612a7ca4cb8998cf6cf89ef8dee6f81",
+    "bytes": 85826196,
+    "signing": "Android Debug; v2 verified"
+  },
+  "evidenceManifestSha256": "35df118bdffa6b6b3f94684be09eaef09cbeb0b444d024e09573d09fbfa529d5",
+  "archivedFiles": 424
+}

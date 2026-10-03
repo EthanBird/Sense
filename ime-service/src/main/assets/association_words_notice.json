@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "title": "Sense offline context-to-word continuation model v1",
+  "model": {
+    "file": "association_words.snwp",
+    "bytes": 3756683,
+    "sha256": "d0b157b46ee6df5fe0466870f6a5bf2951b0498a081d4860b3791bb2f123bf39"
+  },
+  "source": {
+    "id": "tatoeba-cmn-detailed-20260926",
+    "fileName": "cmn_sentences_detailed.tsv.bz2",
+    "format": "tatoeba-detailed-bz2",
+    "url": "https://downloads.tatoeba.org/exports/per_language/cmn/cmn_sentences_detailed.tsv.bz2",
+    "sha256": "8b689948972ff7676dd3fb28bef092e893959e6c561dbf06c8434e3d668adfea",
+    "license": "CC-BY-2.0-FR",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/fr/",
+    "licenseEvidence": "https://tatoeba.org/ar/downloads",
+    "attributionPolicy": "Preserve sentence id, contributor, https://tatoeba.org/en/sentences/show/<id>, license and modification metadata per selected sentence; preserve the contributor index with any future model distribution"
+  },
+  "sourceAttributionLicense": "CC-BY-2.0-FR",
+  "sourceLicenseUrl": "https://creativecommons.org/licenses/by/2.0/fr/",
+  "authors": "Tatoeba contributors; per-sentence names in pinyin_character_lm_attribution.tsv; model transformation by Sense contributors",
+  "attribution": {
+    "file": "pinyin_character_lm_attribution.tsv",
+    "sha256": "acfb932b806f02bd53b57f4a902628fea2c29f6efda7a785a11be432ac22173a",
+    "sentences": 77733,
+    "contributors": 932
+  },
+  "sourceSentenceUrlTemplate": "https://tatoeba.org/en/sentences/show/{sentenceId}",
+  "trainingPartition": {
+    "fileName": "train.jsonl",
+    "sha256": "e710abf1ccdfcffe416bed9e99304cb898d71ff4c1bc5f702ab11e54eff4b0de",
+    "records": 76736,
+    "segments": 94195,
+    "characters": 776701,
+    "domains": {
+      "conversational-heuristic": 29292,
+      "general-heuristic": 47185,
+      "technical-heuristic": 259
+    }
+  },
+  "dictionaryDependency": {
+    "file": "pinyin_lexicon.bin",
+    "sha256": "71258c3d1b4cade8693a13564ead0217a7e92068bbe554ecc806ae0f3a08e800",
+    "license": "GPL-3.0",
+    "notice": "RIME-FROST-NOTICE.txt",
+    "projection": {
+      "format": "SPLX/3",
+      "operation": "remove-tier-2"
+    },
+    "runtimeAsset": {
+      "format": "SPLX/4",
+      "bytes": 46495514,
+      "sha256": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232"
+    }
+  },
+  "transformation": "Same normalized grouped train partition as character LM; dictionary-unigram Viterbi units; suffix contexts 1..3 Han; interpolated discounted next-unit/remaining-suffix counts; STOP-aware precomputed top8; no neural model or online API",
+  "parameters": {
+    "lengthBonus": 0,
+    "stopRatio": 1,
+    "minimumContextEvents": 3,
+    "minimumDirectCount": 2,
+    "maxDirectSuccessors": 32,
+    "discount": 0.75,
+    "unigramAlpha": 0.1,
+    "minOfferedProbability": 0.02
+  },
+  "freezeSha256": "3a9bc1f60cb277868bb028ff4c743eed0b7f1951bb6b83ed14f5841b0e7962e7",
+  "evaluationSha256": "8d120bb3e16028530ed317428d785200a23ffd32dad5d2bcb81d29e1d23ce33b",
+  "rebuild": "tools/train_association_model.py; tools/evaluate_association_model.py; tools/package_association_model.py; benchmarks/corpus/README-association.md",
+  "packagerSha256": "475aa635c7a2853739546c770e6a08b1603cc4abb85a4a45f18deb482c98fcba",
+  "scope": "Local debug-stage model; single-reference offline retrieval evidence, not human acceptability or release certification"
+}

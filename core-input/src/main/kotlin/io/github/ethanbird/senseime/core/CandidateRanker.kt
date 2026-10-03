@@ -54,7 +54,9 @@ object CandidateRanker {
                             canonicalPinyin = metadataSource.canonicalPinyin,
                             canonicalInitials = best.candidate.canonicalInitials
                                 ?: metadataSource.canonicalInitials,
-                        ),
+                        ).also {
+                            PinyinScoreDiagnostics.current?.inherit(best.candidate, it)
+                        },
                     )
                 } else {
                     best

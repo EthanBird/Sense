@@ -8,13 +8,14 @@ import android.view.MotionEvent
 import android.view.ViewConfiguration
 
 /**
- * Single internal action boundary. [SenseKeyboardView] adapts its eight public
+ * Single internal action boundary. [SenseKeyboardView] adapts its public
  * listener properties to one instance of this sink.
  */
 internal interface KeyboardInteractionActionSink {
     fun onKey(code: Int)
     fun onCandidate(revision: Long, sourceIndex: Int)
     fun onCandidateDismiss() = Unit
+    fun onCandidateInteraction(active: Boolean) = Unit
     fun onText(text: String)
     fun onClipboardAction(action: KeyboardClipboardAction, index: Int)
     fun onEditorAction(action: KeyboardEditorAction)
@@ -143,6 +144,7 @@ internal class KeyboardInteractionController(
     private var candidateSettleStartedAtMillis = 0L
     private var candidateSettleStartOffset = 0f
     private var candidateSettleTargetOffset = 0f
+    private val candidatePointerActivity = CandidatePointerActivity(actions::onCandidateInteraction)
 
     val activeKeyboardSkill: ActiveKeyboardSkill?
         get() = gestureCoordinator.activeKeyboardSkill
@@ -175,6 +177,40 @@ internal class KeyboardInteractionController(
 
     fun initialize() {
         gestureCoordinator.initialize()
+    }
+
+    fun activateAccessibleCandidate(item: AccessibleCandidate): Boolean {
+        if (!host.interactionIsShown || aiSurfaceState != null || skillPickerVisible) return false
+        val target = hitTester.targetAt(item.bounds.centerX, item.bounds.centerY) ?: return false
+        val matches = when (val action = item.action) {
+            is CandidateAccessibilityAction.Select -> target is FrozenTouchTarget.CandidateValue &&
+                target.revision == action.revision && target.sourceIndex == action.sourceIndex
+            is CandidateAccessibilityAction.Control -> target is FrozenTouchTarget.CandidateControlValue && target.value == action.control
+        }
+        if (!matches) return false
+        cancelAllTouches()
+        stopCandidateSettle()
+        stopPanelFling()
+        actionDispatcher.activate(target, TouchInputReducer.Gesture.TAP)
+        return true
+    }
+
+    fun scrollAccessibleCandidates(forward: Boolean): Boolean {
+        if (!host.interactionIsShown || aiSurfaceState != null || skillPickerVisible ||
+            !host.interactionShowsCandidates() || !candidatePanel.candidatesReady) return false
+        cancelCandidatePointers()
+        stopCandidateSettle()
+        stopPanelFling()
+        val sign = if (forward) 1f else -1f
+        val changed = if (candidatePanel.expanded) {
+            val viewport = candidatePanel.expandedGridBounds ?: return false
+            candidatePanel.expandedScrollState.scrollBy(sign * viewport.height * .8f)
+        } else {
+            val viewport = candidatePanel.collapsedViewportBounds ?: return false
+            candidatePanel.moveTo(candidatePanel.scrollOffset + sign * viewport.width * .8f)
+        }
+        if (changed) scheduler.invalidate()
+        return changed
     }
 
     private val candidateSettleRunnable = object : Runnable {
@@ -422,6 +458,7 @@ internal class KeyboardInteractionController(
             touchReducer.onDown(pointerId, target, x, y)
         }
         pressedTargets.put(pointerId, target)
+        if (target.isCandidatePointerTarget()) candidatePointerActivity.down(pointerId)
         if (isCollapsedCandidateScrollTarget(target)) {
             stopCandidateSettle()
             candidatePanel.beginDrag(
@@ -458,6 +495,7 @@ internal class KeyboardInteractionController(
 
     private fun handlePointerUp(event: MotionEvent, pointerIndex: Int): Boolean {
         val pointerId = event.getPointerId(pointerIndex)
+        candidatePointerActivity.up(pointerId)
         val x = event.getX(pointerIndex)
         val y = event.getY(pointerIndex)
         if (gestureCoordinator.finishAiPointer(pointerId, event.eventTime)) {
@@ -553,6 +591,7 @@ internal class KeyboardInteractionController(
      * disturbing simultaneous physical-key pointers.
      */
     fun cancelCandidatePointers() {
+        candidatePointerActivity.cancel()
         var changed = false
         for (index in pressedTargets.size() - 1 downTo 0) {
             val target = pressedTargets.valueAt(index)
@@ -612,6 +651,7 @@ internal class KeyboardInteractionController(
         actionDispatcher.canStartSkillGesture(key)
 
     private fun clearOrdinaryPointerCore() {
+        candidatePointerActivity.cancel()
         touchReducer.cancelAll()
         pressedTargets.clear()
         panelScroll.clear()

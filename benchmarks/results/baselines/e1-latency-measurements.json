@@ -1,0 +1,556 @@
+{
+  "schemaVersion": 1,
+  "scope": "True external-editor touch input; ready runtime, clean profile per block, no learning; fixed ABBA diagnostic, not phone certification",
+  "serial": "emulator-5580",
+  "sdk": "37",
+  "apkSha256": {
+    "baseline": "b423eb9919d927acde43885ac8430b8ed07a3cae5c6557a7a3e6f02d5fab3545",
+    "optimized": "d42994ace9e62d290b91390d90a3e01c7e5e203ddfc07d098b1077dfcf980a56"
+  },
+  "runs": [
+    {
+      "block": 1,
+      "mode": "baseline",
+      "artifactDirectory": "e1-latency-abba-1-baseline",
+      "passed": true,
+      "samples": [
+        {
+          "round": 0,
+          "query": "nihao",
+          "expectedBaselineOutput": "你好",
+          "actual": "你好",
+          "spaceToEditorMs": 140,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "woxihuanbeijing",
+          "expectedBaselineOutput": "我喜欢北京",
+          "actual": "我喜欢北京",
+          "spaceToEditorMs": 357,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "qingfageweizhigeiwo",
+          "expectedBaselineOutput": "请发个位置给我",
+          "actual": "请发个位置给我",
+          "spaceToEditorMs": 115,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "qingjianchayixiayoujian",
+          "expectedBaselineOutput": "请检查一下邮件",
+          "actual": "请检查一下邮件",
+          "spaceToEditorMs": 166,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "zhegeyingyonghenhaoyong",
+          "expectedBaselineOutput": "这个应用很好用",
+          "actual": "这个应用很好用",
+          "spaceToEditorMs": 117,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "jintianyouyidianlei",
+          "expectedBaselineOutput": "今天有一点类",
+          "actual": "今天有一点类",
+          "spaceToEditorMs": 128,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "tangmuhemalimeitianwanshangdoukandianshi",
+          "expectedBaselineOutput": "汤姆和玛丽每天晚上都看电视",
+          "actual": "汤姆和玛丽每天晚上都看电视",
+          "spaceToEditorMs": 210,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+          "expectedBaselineOutput": "汤姆没有注意到玛丽换了新发型",
+          "actual": "汤姆没有注意到玛丽换了新发型",
+          "spaceToEditorMs": 214,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+          "expectedBaselineOutput": "汤姆没有注意到玛丽换了新发型",
+          "actual": "汤姆没有注意到玛丽换了新发型",
+          "spaceToEditorMs": 247,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "tangmuhemalimeitianwanshangdoukandianshi",
+          "expectedBaselineOutput": "汤姆和玛丽每天晚上都看电视",
+          "actual": "汤姆和玛丽每天晚上都看电视",
+          "spaceToEditorMs": 219,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "jintianyouyidianlei",
+          "expectedBaselineOutput": "今天有一点类",
+          "actual": "今天有一点类",
+          "spaceToEditorMs": 112,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "zhegeyingyonghenhaoyong",
+          "expectedBaselineOutput": "这个应用很好用",
+          "actual": "这个应用很好用",
+          "spaceToEditorMs": 128,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "qingjianchayixiayoujian",
+          "expectedBaselineOutput": "请检查一下邮件",
+          "actual": "请检查一下邮件",
+          "spaceToEditorMs": 138,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "qingfageweizhigeiwo",
+          "expectedBaselineOutput": "请发个位置给我",
+          "actual": "请发个位置给我",
+          "spaceToEditorMs": 104,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "woxihuanbeijing",
+          "expectedBaselineOutput": "我喜欢北京",
+          "actual": "我喜欢北京",
+          "spaceToEditorMs": 107,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "nihao",
+          "expectedBaselineOutput": "你好",
+          "actual": "你好",
+          "spaceToEditorMs": 55,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "block": 2,
+      "mode": "optimized",
+      "artifactDirectory": "e1-latency-abba-2-optimized",
+      "passed": true,
+      "samples": [
+        {
+          "round": 0,
+          "query": "nihao",
+          "expectedBaselineOutput": "你好",
+          "actual": "你好",
+          "spaceToEditorMs": 90,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "woxihuanbeijing",
+          "expectedBaselineOutput": "我喜欢北京",
+          "actual": "我喜欢北京",
+          "spaceToEditorMs": 357,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "qingfageweizhigeiwo",
+          "expectedBaselineOutput": "请发个位置给我",
+          "actual": "请发个位置给我",
+          "spaceToEditorMs": 159,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "qingjianchayixiayoujian",
+          "expectedBaselineOutput": "请检查一下邮件",
+          "actual": "请检查一下邮件",
+          "spaceToEditorMs": 211,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "zhegeyingyonghenhaoyong",
+          "expectedBaselineOutput": "这个应用很好用",
+          "actual": "这个应用很好用",
+          "spaceToEditorMs": 144,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "jintianyouyidianlei",
+          "expectedBaselineOutput": "今天有一点类",
+          "actual": "今天有一点类",
+          "spaceToEditorMs": 201,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "tangmuhemalimeitianwanshangdoukandianshi",
+          "expectedBaselineOutput": "汤姆和玛丽每天晚上都看电视",
+          "actual": "汤姆和玛丽每天晚上都看电视",
+          "spaceToEditorMs": 246,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+          "expectedBaselineOutput": "汤姆没有注意到玛丽换了新发型",
+          "actual": "汤姆没有注意到玛丽换了新发型",
+          "spaceToEditorMs": 267,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+          "expectedBaselineOutput": "汤姆没有注意到玛丽换了新发型",
+          "actual": "汤姆没有注意到玛丽换了新发型",
+          "spaceToEditorMs": 247,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "tangmuhemalimeitianwanshangdoukandianshi",
+          "expectedBaselineOutput": "汤姆和玛丽每天晚上都看电视",
+          "actual": "汤姆和玛丽每天晚上都看电视",
+          "spaceToEditorMs": 231,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "jintianyouyidianlei",
+          "expectedBaselineOutput": "今天有一点类",
+          "actual": "今天有一点类",
+          "spaceToEditorMs": 142,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "zhegeyingyonghenhaoyong",
+          "expectedBaselineOutput": "这个应用很好用",
+          "actual": "这个应用很好用",
+          "spaceToEditorMs": 137,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "qingjianchayixiayoujian",
+          "expectedBaselineOutput": "请检查一下邮件",
+          "actual": "请检查一下邮件",
+          "spaceToEditorMs": 192,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "qingfageweizhigeiwo",
+          "expectedBaselineOutput": "请发个位置给我",
+          "actual": "请发个位置给我",
+          "spaceToEditorMs": 131,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "woxihuanbeijing",
+          "expectedBaselineOutput": "我喜欢北京",
+          "actual": "我喜欢北京",
+          "spaceToEditorMs": 132,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "nihao",
+          "expectedBaselineOutput": "你好",
+          "actual": "你好",
+          "spaceToEditorMs": 48,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "block": 3,
+      "mode": "optimized",
+      "artifactDirectory": "e1-latency-abba-3-optimized",
+      "passed": true,
+      "samples": [
+        {
+          "round": 0,
+          "query": "nihao",
+          "expectedBaselineOutput": "你好",
+          "actual": "你好",
+          "spaceToEditorMs": 129,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "woxihuanbeijing",
+          "expectedBaselineOutput": "我喜欢北京",
+          "actual": "我喜欢北京",
+          "spaceToEditorMs": 394,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "qingfageweizhigeiwo",
+          "expectedBaselineOutput": "请发个位置给我",
+          "actual": "请发个位置给我",
+          "spaceToEditorMs": 187,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "qingjianchayixiayoujian",
+          "expectedBaselineOutput": "请检查一下邮件",
+          "actual": "请检查一下邮件",
+          "spaceToEditorMs": 216,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "zhegeyingyonghenhaoyong",
+          "expectedBaselineOutput": "这个应用很好用",
+          "actual": "这个应用很好用",
+          "spaceToEditorMs": 135,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "jintianyouyidianlei",
+          "expectedBaselineOutput": "今天有一点类",
+          "actual": "今天有一点类",
+          "spaceToEditorMs": 156,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "tangmuhemalimeitianwanshangdoukandianshi",
+          "expectedBaselineOutput": "汤姆和玛丽每天晚上都看电视",
+          "actual": "汤姆和玛丽每天晚上都看电视",
+          "spaceToEditorMs": 245,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+          "expectedBaselineOutput": "汤姆没有注意到玛丽换了新发型",
+          "actual": "汤姆没有注意到玛丽换了新发型",
+          "spaceToEditorMs": 265,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+          "expectedBaselineOutput": "汤姆没有注意到玛丽换了新发型",
+          "actual": "汤姆没有注意到玛丽换了新发型",
+          "spaceToEditorMs": 311,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "tangmuhemalimeitianwanshangdoukandianshi",
+          "expectedBaselineOutput": "汤姆和玛丽每天晚上都看电视",
+          "actual": "汤姆和玛丽每天晚上都看电视",
+          "spaceToEditorMs": 256,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "jintianyouyidianlei",
+          "expectedBaselineOutput": "今天有一点类",
+          "actual": "今天有一点类",
+          "spaceToEditorMs": 163,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "zhegeyingyonghenhaoyong",
+          "expectedBaselineOutput": "这个应用很好用",
+          "actual": "这个应用很好用",
+          "spaceToEditorMs": 135,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "qingjianchayixiayoujian",
+          "expectedBaselineOutput": "请检查一下邮件",
+          "actual": "请检查一下邮件",
+          "spaceToEditorMs": 153,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "qingfageweizhigeiwo",
+          "expectedBaselineOutput": "请发个位置给我",
+          "actual": "请发个位置给我",
+          "spaceToEditorMs": 133,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "woxihuanbeijing",
+          "expectedBaselineOutput": "我喜欢北京",
+          "actual": "我喜欢北京",
+          "spaceToEditorMs": 126,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "nihao",
+          "expectedBaselineOutput": "你好",
+          "actual": "你好",
+          "spaceToEditorMs": 52,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "block": 4,
+      "mode": "baseline",
+      "artifactDirectory": "e1-latency-abba-4-baseline",
+      "passed": true,
+      "samples": [
+        {
+          "round": 0,
+          "query": "nihao",
+          "expectedBaselineOutput": "你好",
+          "actual": "你好",
+          "spaceToEditorMs": 98,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "woxihuanbeijing",
+          "expectedBaselineOutput": "我喜欢北京",
+          "actual": "我喜欢北京",
+          "spaceToEditorMs": 331,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "qingfageweizhigeiwo",
+          "expectedBaselineOutput": "请发个位置给我",
+          "actual": "请发个位置给我",
+          "spaceToEditorMs": 140,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "qingjianchayixiayoujian",
+          "expectedBaselineOutput": "请检查一下邮件",
+          "actual": "请检查一下邮件",
+          "spaceToEditorMs": 181,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "zhegeyingyonghenhaoyong",
+          "expectedBaselineOutput": "这个应用很好用",
+          "actual": "这个应用很好用",
+          "spaceToEditorMs": 110,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "jintianyouyidianlei",
+          "expectedBaselineOutput": "今天有一点类",
+          "actual": "今天有一点类",
+          "spaceToEditorMs": 132,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "tangmuhemalimeitianwanshangdoukandianshi",
+          "expectedBaselineOutput": "汤姆和玛丽每天晚上都看电视",
+          "actual": "汤姆和玛丽每天晚上都看电视",
+          "spaceToEditorMs": 235,
+          "passed": true
+        },
+        {
+          "round": 0,
+          "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+          "expectedBaselineOutput": "汤姆没有注意到玛丽换了新发型",
+          "actual": "汤姆没有注意到玛丽换了新发型",
+          "spaceToEditorMs": 216,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+          "expectedBaselineOutput": "汤姆没有注意到玛丽换了新发型",
+          "actual": "汤姆没有注意到玛丽换了新发型",
+          "spaceToEditorMs": 224,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "tangmuhemalimeitianwanshangdoukandianshi",
+          "expectedBaselineOutput": "汤姆和玛丽每天晚上都看电视",
+          "actual": "汤姆和玛丽每天晚上都看电视",
+          "spaceToEditorMs": 172,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "jintianyouyidianlei",
+          "expectedBaselineOutput": "今天有一点类",
+          "actual": "今天有一点类",
+          "spaceToEditorMs": 120,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "zhegeyingyonghenhaoyong",
+          "expectedBaselineOutput": "这个应用很好用",
+          "actual": "这个应用很好用",
+          "spaceToEditorMs": 115,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "qingjianchayixiayoujian",
+          "expectedBaselineOutput": "请检查一下邮件",
+          "actual": "请检查一下邮件",
+          "spaceToEditorMs": 179,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "qingfageweizhigeiwo",
+          "expectedBaselineOutput": "请发个位置给我",
+          "actual": "请发个位置给我",
+          "spaceToEditorMs": 116,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "woxihuanbeijing",
+          "expectedBaselineOutput": "我喜欢北京",
+          "actual": "我喜欢北京",
+          "spaceToEditorMs": 130,
+          "passed": true
+        },
+        {
+          "round": 1,
+          "query": "nihao",
+          "expectedBaselineOutput": "你好",
+          "actual": "你好",
+          "spaceToEditorMs": 45,
+          "passed": true
+        }
+      ]
+    }
+  ]
+}

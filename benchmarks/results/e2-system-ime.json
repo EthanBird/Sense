@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "scope": "Final E2 debug APK; real system IME to external editor on dedicated API 37 emulator, not physical phone",
+  "passedTestExecutions": 19,
+  "runs": [
+    {
+      "name": "e2-corrections",
+      "passedTests": 3,
+      "seconds": 20.952,
+      "environment": {
+        "serial": "emulator-5580",
+        "imePidBefore": "",
+        "debugProfileReset": false,
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "f2696b5e961943956f1dacb6f9db3d787c01b1508bce0f94c0e1c18e957630e9",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "db126508c9f0f02c8419a1664cf74a07eeea948c264750adaed54740ed75791e"
+        },
+        "installedDuringRun": true,
+        "sdk": "37",
+        "imePidAfter": "10706",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification"
+      },
+      "logSha256": "ff77b8de95e3fdb1893c180fe57421c46635a6b4d1b0ce2f255bdd027e70a7df",
+      "evidence": {
+        "missingKeyAtSentenceStartCanBeConfirmedAsChinese-cadence.txt": "input=wbuxihuanzuoye\nactual_key_start_intervals_ms=86,67,59,69,69,70,64,92,61,60,69,65,79\n",
+        "missingKeyAtSentenceStartCanBeConfirmedAsChinese.txt": "state=started\nspace_to_committed_editor_ms=163\nscope=single diagnostic system sample, not p95\n",
+        "missingKeyInsideTheSentenceCanBeConfirmedAsChinese-cadence.txt": "input=wobuxhuanzuoye\nactual_key_start_intervals_ms=125,85,62,78,72,63,68,72,62,70,69,64,82\n",
+        "missingKeyInsideTheSentenceCanBeConfirmedAsChinese.txt": "state=started\nspace_to_committed_editor_ms=184\nscope=single diagnostic system sample, not p95\n",
+        "missingParticleKeyKeepsTheSentenceContext-cadence.txt": "input=zhexieshiwomendshuzhuo\nactual_key_start_intervals_ms=63,69,57,78,64,57,75,64,71,61,65,67,70,70,66,65,67,69,66,63,62\n",
+        "missingParticleKeyKeepsTheSentenceContext.txt": "state=started\nspace_to_committed_editor_ms=138\nscope=single diagnostic system sample, not p95\n"
+      }
+    },
+    {
+      "name": "e2-warm",
+      "passedTests": 10,
+      "seconds": 55.972,
+      "environment": {
+        "serial": "emulator-5580",
+        "imePidBefore": "10706",
+        "debugProfileReset": false,
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "f2696b5e961943956f1dacb6f9db3d787c01b1508bce0f94c0e1c18e957630e9",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "db126508c9f0f02c8419a1664cf74a07eeea948c264750adaed54740ed75791e"
+        },
+        "installedDuringRun": false,
+        "sdk": "37",
+        "imePidAfter": "10706",
+        "scope": "Real system IME touch -> external EditText; warm production runtime; not cold-start or phone certification"
+      },
+      "logSha256": "e188365be3def51ad3983c2f74e290d5c02daa6cbab7c673d7a51dbd224e961e",
+      "evidence": {
+        "backspaceEditsThePendingSpellingBeforeSpaceConfirms-cadence.txt": "input=nihaoa\nactual_key_start_intervals_ms=65,69,62,68,66\n",
+        "backspaceEditsThePendingSpellingBeforeSpaceConfirms.txt": "state=started\n",
+        "candidateWordsAreExposedAsActionsToAccessibilityServices-cadence.txt": "input=nihao\nactual_key_start_intervals_ms=95,76,76,66\n",
+        "candidateWordsAreExposedAsActionsToAccessibilityServices.txt": "state=started\n",
+        "confirmationReplaysFollowingInputInOrder-cadence.txt": "input=woxihuanbeijing\nactual_key_start_intervals_ms=61,61,69,68,62,74,62,73,63,71,62,71,65,64\ninput=nihao\nactual_key_start_intervals_ms=60,74,66,68\n",
+        "confirmationReplaysFollowingInputInOrder.txt": "state=started\n",
+        "enterCommitsRawEnglishInChineseModeWithoutANewline-cadence.txt": "input=sensecustomword\nactual_key_start_intervals_ms=80,74,67,71,79,71,71,79,59,71,70,89,76,65\n",
+        "enterCommitsRawEnglishInChineseModeWithoutANewline.txt": "state=started\n",
+        "hidingAndReopeningTheImeKeepsTheExternalCommittedText-cadence.txt": "input=nihao\nactual_key_start_intervals_ms=80,75,69,68\ninput=shijie\nactual_key_start_intervals_ms=87,99,83,79,85\n",
+        "hidingAndReopeningTheImeKeepsTheExternalCommittedText.txt": "state=started\n",
+        "movingCursorAfterCommitInsertsAtTheExternalSelection-cadence.txt": "input=nihao\nactual_key_start_intervals_ms=78,72,74,66\ninput=wo\nactual_key_start_intervals_ms=83\n",
+        "movingCursorAfterCommitInsertsAtTheExternalSelection.txt": "state=started\n",
+        "passwordFieldUsesLiteralInputRatherThanChineseCandidates-cadence.txt": "input=senseprivate\nactual_key_start_intervals_ms=69,81,66,72,77,70,64,68,65,68,71\ninput=nihao\nactual_key_start_intervals_ms=73,78,68,86\n",
+        "passwordFieldUsesLiteralInputRatherThanChineseCandidates.txt": "state=started\n",
+        "rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce-cadence.txt": "input=woxihuanbeijing\nactual_key_start_intervals_ms=67,62,64,69,72,65,67,61,71,63,65,63,68,67\n",
+        "rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.txt": "state=started\nspace_to_committed_editor_ms=134\nscope=single emulator sample; includes injection and polling; not decoder p95\n",
+        "switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField-cadence.txt": "input=woxihuanbeijing\nactual_key_start_intervals_ms=72,67,62,70,59,58,65,69,67,66,60,65,77,59\ninput=nihao\nactual_key_start_intervals_ms=82,76,69,66\n",
+        "switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.txt": "state=started\n",
+        "touchscreenPinyinCandidateCommitsThroughExternalInputConnection-cadence.txt": "input=nihao\nactual_key_start_intervals_ms=171,149,145,134\n",
+        "touchscreenPinyinCandidateCommitsThroughExternalInputConnection.txt": "state=started\n"
+      }
+    },
+    {
+      "name": "e2-cold",
+      "passedTests": 4,
+      "seconds": 27.611,
+      "environment": {
+        "serial": "emulator-5580",
+        "imePidBefore": "10706",
+        "debugProfileReset": false,
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "f2696b5e961943956f1dacb6f9db3d787c01b1508bce0f94c0e1c18e957630e9",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "db126508c9f0f02c8419a1664cf74a07eeea948c264750adaed54740ed75791e"
+        },
+        "installedDuringRun": false,
+        "sdk": "37",
+        "imePidAfter": "13188",
+        "scope": "Real system IME touch -> external EditText; force-stopped debug app, loading runtime asserted; not phone certification"
+      },
+      "logSha256": "bf00ef7b097ca2dd58bd6800223ab3693e2f7b926677413a8deb601e9f37b0e8",
+      "evidence": {
+        "confirmationReplaysFollowingInputInOrder-cadence.txt": "input=woxihuanbeijing\nactual_key_start_intervals_ms=79,70,61,85,59,76,57,77,62,68,66,59,55,68\ninput=nihao\nactual_key_start_intervals_ms=67,73,60,66\n",
+        "confirmationReplaysFollowingInputInOrder.txt": "state=started\nbefore_typing=Sense candidate runtime: ready=false generation=1 characterModel=null\nbefore_first_space=Sense candidate runtime: ready=false generation=1 characterModel=null\n",
+        "enterCommitsRawEnglishInChineseModeWithoutANewline-cadence.txt": "input=sensecustomword\nactual_key_start_intervals_ms=84,74,74,62,72,60,73,63,63,76,80,61,73,64\n",
+        "enterCommitsRawEnglishInChineseModeWithoutANewline.txt": "state=started\nbefore_typing=Sense candidate runtime: ready=false generation=1 characterModel=null\n",
+        "rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce-cadence.txt": "input=woxihuanbeijing\nactual_key_start_intervals_ms=60,75,71,71,66,68,62,66,67,63,76,65,61,66\n",
+        "rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.txt": "state=started\nbefore_typing=Sense candidate runtime: ready=false generation=1 characterModel=null\nbefore_space=Sense candidate runtime: ready=false generation=1 characterModel=null\nspace_to_committed_editor_ms=1162\nscope=single emulator sample; includes injection and polling; not decoder p95\n",
+        "switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField-cadence.txt": "input=woxihuanbeijing\nactual_key_start_intervals_ms=90,90,54,70,63,66,90,61,73,70,65,65,69,57\ninput=nihao\nactual_key_start_intervals_ms=74,72,50,64\n",
+        "switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.txt": "state=started\nbefore_typing=Sense candidate runtime: ready=false generation=1 characterModel=null\nbefore_space_and_editor_switch=Sense candidate runtime: ready=false generation=1 characterModel=null\n"
+      }
+    },
+    {
+      "name": "e2-learning",
+      "passedTests": 2,
+      "seconds": 55.555,
+      "environment": {
+        "serial": "emulator-5580",
+        "imePidBefore": "",
+        "debugProfileReset": true,
+        "apks": {
+          "app/build/outputs/apk/debug/app-debug.apk": "f2696b5e961943956f1dacb6f9db3d787c01b1508bce0f94c0e1c18e957630e9",
+          "input-quality-device/build/outputs/apk/debug/input-quality-device-debug.apk": "62a9401bff2e1c2de4136806a1017e93cd31f143363aa8d6018e34119cb6d03f",
+          "input-quality-device/build/outputs/apk/androidTest/debug/input-quality-device-debug-androidTest.apk": "db126508c9f0f02c8419a1664cf74a07eeea948c264750adaed54740ed75791e"
+        },
+        "installedDuringRun": true,
+        "sdk": "37",
+        "imePidAfter": "14845",
+        "scope": "Real candidate selection, reuse, privacy and process-restart persistence; clean disposable debug profile; not phone certification"
+      },
+      "logSha256": "13ad27c7ecc0871d9b3db2057ff54cbb05042d0bee7f9484a005ee2df5295dd5",
+      "evidence": {
+        "noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections-cadence.txt": "input=chengche\nactual_key_start_intervals_ms=96,81,85,87,79,81,81\ninput=chengche\nactual_key_start_intervals_ms=84,85,76,75,84,75,75\ninput=chengche\nactual_key_start_intervals_ms=71,71,86,80,90,72,77\ninput=chengche\nactual_key_start_intervals_ms=90,95,79,94,83,94,84\n",
+        "noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections.txt": "state=started\nordinary_before_private_first=乘车\nselected=候选词，16，程\nselected=候选词，10，澈\nprivate_commit=程澈\nprivate_after_selection_first=乘车\nprocess_restart=13511->13956\nordinary_after_restart_first=乘车\n",
+        "progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-cadence.txt": "input=chengche\nactual_key_start_intervals_ms=78,84,67,82,94,79,84\ninput=chengche\nactual_key_start_intervals_ms=69,73,79,77,83,76,96\ninput=chengche\nactual_key_start_intervals_ms=75,82,81,67,81,76,73\ninput=chengche\nactual_key_start_intervals_ms=106,79,73,73,83,87,78\ninput=zhinengti\nactual_key_start_intervals_ms=86,71,77,73,76,74,77,77\ninput=zhinengti\nactual_key_start_intervals_ms=77,86,78,68,92,74,67,75\ninput=zhinengti\nactual_key_start_intervals_ms=102,80,78,66,66,69,76,83\n",
+        "progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart.txt": "state=started\nbefore_learning_first=乘车\nselected=候选词，16，程\nselected=候选词，9，彻\nlearned_through=touchscreen progressive candidates\nimmediate_1_first=程彻\nimmediate_2_first=程彻\nprocess_restart=13956->14424\nafter_process_restart_first=程彻\nselected=候选词，2，智能体\nintelligent_agent_reuse_first=智能体\nprocess_restart=14424->14845\nintelligent_agent_restart_first=智能体\n"
+      }
+    }
+  ]
+}
