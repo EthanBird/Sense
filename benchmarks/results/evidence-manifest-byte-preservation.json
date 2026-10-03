@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "f26d32a",
+  "affectedManifests": [
+    {
+      "path": "benchmarks/results/d7-evidence-manifest.json",
+      "originalSha256": "ffd3953ebde2c3aa97fec978540ad6b9fa966168cd3bf05fa0f10a84e62716c3",
+      "normalizedGitSha256": "e8bd1e2aff6dd2785da38c3b26438201aa1e49312333107de630dec2c4cc900a",
+      "jsonUnchanged": true,
+      "indexExactBytes": true
+    },
+    {
+      "path": "benchmarks/results/d8-evidence-manifest.json",
+      "originalSha256": "b644c171c97d9a7808acea92e3d4b07791c582f5778e066a1e05da947670df37",
+      "normalizedGitSha256": "b7eb76fc4c0c8634c7b43db46f144a491b7415ca51e955e382729b6ff3849cd9",
+      "jsonUnchanged": true,
+      "indexExactBytes": true
+    },
+    {
+      "path": "benchmarks/results/e2-evidence-manifest.json",
+      "originalSha256": "67c37327c9793d7601af76666fe65a45c6780af00045f9959b4eecbcadd4a446",
+      "normalizedGitSha256": "1ac84b44ecaf21b4a477e5fa3c7d623a4276e37b855766db057f0b40a595630c",
+      "jsonUnchanged": true,
+      "indexExactBytes": true
+    },
+    {
+      "path": "benchmarks/results/e22-evidence-manifest.json",
+      "originalSha256": "622edb41463ad8d910816c15bca6be06107608e1517b22d13730970dc61935b7",
+      "normalizedGitSha256": "04a30f42583b8f7ed46c55b2874befce45a55d6df52ca30050d440c780fefffd",
+      "jsonUnchanged": true,
+      "indexExactBytes": true
+    },
+    {
+      "path": "benchmarks/results/e23-evidence-manifest.json",
+      "originalSha256": "816b1d210bacf1ea40305eba238e3670eeec406f634c4241178822fb40c1b226",
+      "normalizedGitSha256": "8f9ad521591b0f54bcc30e01f6f8c07d6d437fcf488747dbc2257693fb6313f8",
+      "jsonUnchanged": true,
+      "indexExactBytes": true
+    },
+    {
+      "path": "benchmarks/results/e24-evidence-manifest.json",
+      "originalSha256": "f113da92a77f64e365c6325147265ad1fc6fd369a44c2ea1b5f29b8ee8b4ae11",
+      "normalizedGitSha256": "332b2b5275ee0c1bff982859bdb9dc4c643b84346d565acdae3d3eefde0823b3",
+      "jsonUnchanged": true,
+      "indexExactBytes": true
+    },
+    {
+      "path": "benchmarks/results/e25-evidence-manifest.json",
+      "originalSha256": "666d29cddcddb1636ce275c1e81bfa495b12fea5db5ccbab61588e258ebb89c6",
+      "normalizedGitSha256": "64a74d009e0bc0cf5109c156b58742f8166d071e3fac3bac7c18259cb32e68fa",
+      "jsonUnchanged": true,
+      "indexExactBytes": true
+    },
+    {
+      "path": "benchmarks/results/e3-evidence-manifest.json",
+      "originalSha256": "ee58a9c36d6badec8fefd2d03ac0b43cce605f59b523860290549ba692e2613c",
+      "normalizedGitSha256": "a675caca865115d5bfd206fbda1444ec48c71976696d88b7448c500e049933cf",
+      "jsonUnchanged": true,
+      "indexExactBytes": true
+    },
+    {
+      "path": "benchmarks/results/e4-evidence-manifest.json",
+      "originalSha256": "1613ac1f42ae4f4678ae3b42dcc72018c7e5e4cf380d956add57fb5f9a562167",
+      "normalizedGitSha256": "348a1c29ad4cf2f1dc27afb16f7fe6f8aa4ce6375198a957c152397b9d808028",
+      "jsonUnchanged": true,
+      "indexExactBytes": true
+    },
+    {
+      "path": "benchmarks/results/e4-final-evidence-manifest.json",
+      "originalSha256": "40fc01fd0c4a8bec9cdd790699c5c81245d5c3b88817ec7ba69ba165feff580e",
+      "normalizedGitSha256": "9b9aaf1c0052498c99fcf256f6133285f14db4360c08e243e7eea6b8882d7134",
+      "jsonUnchanged": true,
+      "indexExactBytes": true
+    },
+    {
+      "path": "benchmarks/results/e5-evidence-manifest.json",
+      "originalSha256": "6f12c79a3b7e5b737492e65f5f32381ed4998afc05ecab3b758a31b5e7610c12",
+      "normalizedGitSha256": "76c8364f7bd761824e3d263b655ac05f49f0199447cd5fb3f0ecb38b2cfefaa1",
+      "jsonUnchanged": true,
+      "indexExactBytes": true
+    },
+    {
+      "path": "benchmarks/results/e6-evidence-manifest.json",
+      "originalSha256": "442b79d011afc0d2037a2bf03534504d1050bffa24ce9bd900b041e697c5ba29",
+      "normalizedGitSha256": "fd0ac11b22ad741c1c532c37dea900170637a17b0e200e70207e9818d9f8d35c",
+      "jsonUnchanged": true,
+      "indexExactBytes": true
+    },
+    {
+      "path": "benchmarks/results/e7-evidence-manifest.json",
+      "originalSha256": "c1610f00548ba58c54421648e75a0b4b1311c0c8995e440712e0a2161f2e8dd5",
+      "normalizedGitSha256": "a6303bd0c53b334034813b4f24d3faa41393be2807f077b97313bbc9e9e91fba",
+      "jsonUnchanged": true,
+      "indexExactBytes": true
+    },
+    {
+      "path": "benchmarks/results/f1-evidence-manifest.json",
+      "originalSha256": "b33c4aa191255f479c212f1c97836019a603e166822c1592bff53afba6f8c284",
+      "normalizedGitSha256": "69967d80932b4d50a4dad023abef32230abc1520d476268a49f3881d1b999d46",
+      "jsonUnchanged": true,
+      "indexExactBytes": true
+    }
+  ],
+  "gzipPayloadsVerified": 8447,
+  "algorithmAndApkChanged": false,
+  "regressionLogs": {
+    "manifest-checkout-before.log": "F.\n======================================================================\nFAIL: test_hashed_manifest_retains_exact_bytes_in_git (tools.test_evidence_manifest_checkout.EvidenceManifestCheckoutTest.test_hashed_manifest_retains_exact_bytes_in_git)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"C:\\Users\\syc\\.codex\\worktrees\\sense-input-quality\\sense\\tools\\test_evidence_manifest_checkout.py\", line 24, in test_hashed_manifest_retains_exact_bytes_in_git\n    self.assertEqual(before,after)\nAssertionError: b'{\\r\\n  \"sha256\": \"synthetic\"\\r\\n}\\r\\n' != b'{\\n  \"sha256\": \"synthetic\"\\n}\\n'\n\n----------------------------------------------------------------------\nRan 2 tests in 0.202s\n\nFAILED (failures=1)\n",
+    "manifest-checkout-after.log": "..\n----------------------------------------------------------------------\nRan 2 tests in 0.197s\n\nOK\n",
+    "python-tests-after-manifest-fix.log": "CC-CEDICT audit: total=1, parsed=1, imported=1, retained=1, duplicates=0, skipped=0\nCC-CEDICT audit: total=0, parsed=0, imported=0, retained=1, duplicates=0, skipped=0\nCC-CEDICT audit: total=0, parsed=0, imported=0, retained=0, duplicates=0, skipped=0\nCC-CEDICT audit: total=1, parsed=1, imported=1, retained=1, duplicates=0, skipped=0\nCC-CEDICT audit: total=1, parsed=0, imported=0, retained=0, duplicates=0, skipped=1\nWrote 2 exact codes, 1 prefixes and 2 reverse entries to F:\\Android\\Temp\\tmpd5zq700z\\wubi.bin (81 bytes)\n127.0.0.1 \"GET /central/org/jetbrains/kotlin/kotlin-gradle-plugin/2.2.21/kotlin-gradle-plugin-2.2.21.module HTTP/1.1\" 200 -\n127.0.0.1 \"GET /central/org/jetbrains/kotlin/kotlin-gradle-plugin/2.2.21/kotlin-gradle-plugin-2.2.21.module HTTP/1.1\" 200 -\n....................................................................................................................s........................................................................................................................................curl: (22) The requested URL returned error: 403\n127.0.0.1 code 403, message Forbidden\n127.0.0.1 \"GET /central/example/denied/1.0/denied-1.0.module HTTP/1.1\" 403 -\ncurl: (22) The requested URL returned error: 403\n127.0.0.1 code 403, message Forbidden\n127.0.0.1 \"GET /central/example/denied/1.0/denied-1.0.module HTTP/1.1\" 403 -\n.curl: (22) The requested URL returned error: 404\n127.0.0.1 code 404, message Not Found\n127.0.0.1 \"GET /central/example/missing/1.0/missing-1.0.module HTTP/1.1\" 404 -\n127.0.0.1 code 404, message Not Found\n127.0.0.1 \"GET /central/example/missing/1.0/missing-1.0.module HTTP/1.1\" 404 -\n................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 430 tests in 34.917s\n\nOK (skipped=1)\n"
+  },
+  "python": {
+    "run": 430,
+    "passed": 429,
+    "skipped": 1
+  },
+  "e23ThroughE25IndexPinsVerified": true
+}

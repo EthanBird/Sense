@@ -3,3 +3,7 @@
 *.jar binary
 *.apk binary
 
+# Evidence dependency pins hash these exact bytes, including line endings.
+# Ordinary source/report JSON still follows the repository LF policy above.
+benchmarks/results/*-evidence-manifest.json -text
+
