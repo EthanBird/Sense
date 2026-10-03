@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "stage": "E29",
+  "decision": "retain-bounded-contextual-explicit-choice-memory",
+  "functionalAccepted": true,
+  "productionChanged": true,
+  "databaseVersion": 4,
+  "hostTests": {
+    "core-input": {
+      "tests": 390,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 314,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "finalAndroid": {
+    "learning": 6,
+    "defaultInput": 10,
+    "contextualInput": 8
+  },
+  "oldApkExpectedFailures": 1,
+  "sameFixtureApkForBaselineAndFinal": true,
+  "noLearningEquivalence": {
+    "tatoeba": {
+      "states": 128,
+      "fullResultMismatches": [],
+      "configuration": {
+        "lmWeight": 0.5,
+        "oovFeature": -4,
+        "correctionBoost": 12,
+        "limit": 255
+      }
+    },
+    "aishell": {
+      "states": 128,
+      "fullResultMismatches": [],
+      "configuration": {
+        "lmWeight": 0.5,
+        "oovFeature": -4,
+        "correctionBoost": 12,
+        "limit": 255
+      }
+    }
+  },
+  "debugApkSha256": "ccd7afb590c713c7d40578331ff84b5abaaf60a74a65fb12e6feeee918aa8d59",
+  "fixtureApkSha256": "0ff44be0948ea081d3087b34f2f8a95d9c0c2279c4acb67520fd7e0a8a5ed21b",
+  "releaseApkSha256": "48b24fded1430f7aa85dedffb93122607013d65e4015ba03945ef3998b413e23",
+  "publishedReleaseChanged": false,
+  "performanceRemeasured": false,
+  "inheritedColdLoadingCoverageGap": true,
+  "stableReleaseReady": false,
+  "goalComplete": false,
+  "archivedFiles": 257,
+  "evidenceManifestSha256": "05502b9338564747bd9e6603940ffdf5f4053acf2655508b885a69b49cb3780a"
+}

@@ -13,6 +13,62 @@ import org.junit.runner.RunWith
 /** Run on the disposable input-quality AVD with a fresh debug profile, not a user's profile. */
 @RunWith(AndroidJUnit4::class)
 class ExternalEditorLearningTest : ExternalEditorTestFixture() {
+    @Test fun explicitHomophonesKeepSeparateContextsAcrossRestartAndPrivateSelection() {
+        fun seed(context: String) {
+            onMain { activity.first.setText(context); activity.first.setSelection(context.length) }
+            SystemClock.sleep(250)
+            typingBounds = keyboardBounds()
+        }
+        fun choose(context: String, word: String) {
+            seed(context)
+            type("quanli", 25)
+            evidence("before_explicit_${context}=${firstCandidate()}")
+            chooseCandidate(word)
+            await("Explicit contextual commit") { text() == context + word && !composing() }
+        }
+        fun recall(context: String, word: String, phase: String) {
+            seed(context)
+            type("quanli", 25)
+            evidence("${phase}_${context}=${firstCandidate()}")
+            assertEquals("Context $context should retain its explicit choice", word, firstCandidate())
+            key(' ')
+            await("Contextual Space commit") { text() == context + word && !composing() }
+        }
+        // Both are valid user-selected expressions. They deliberately differ from
+        // common static preferences so this checks learning rather than just the LM.
+        choose("人民", "权力")
+        choose("获得", "权利")
+        recall("人民", "权力", "immediate")
+        recall("获得", "权利", "immediate")
+        restartImeProcess()
+        recall("人民", "权力", "restart")
+        recall("获得", "权利", "restart")
+        reopenExternalEditor(noLearning = true)
+        choose("人民", "权利")
+        reopenExternalEditor(noLearning = false)
+        restartImeProcess()
+        recall("人民", "权力", "after_private")
+        recall("获得", "权利", "after_private")
+        device.takeScreenshot(File(artifacts, "${name.methodName}-final.png"))
+    }
+
+    @Test fun quickSingleCharacterRejectionRemovesTheContextChoice() {
+        onMain { activity.first.setText("属于"); activity.first.setSelection(2) }
+        SystemClock.sleep(250)
+        type("lei", 25)
+        evidence("before_rejection_first=${firstCandidate()}")
+        assertEquals("类", firstCandidate())
+        chooseCandidate("累")
+        await("Explicit single-character commit") { text() == "属于累" && !composing() }
+        key('\b')
+        await("The rejected code point is gone") { text() == "属于" && !composing() }
+        type("lei", 25)
+        evidence("after_rejection_first=${firstCandidate()}")
+        assertEquals("类", firstCandidate())
+        key(' ')
+        await("Ordinary candidate commits after rejection") { text() == "属于类" && !composing() }
+    }
+
     @Test fun recalledCompletionAliasSurvivesDefaultReuseAndProcessRestart() {
         type("beiji", 25)
         assertEquals("北极", firstCandidate())

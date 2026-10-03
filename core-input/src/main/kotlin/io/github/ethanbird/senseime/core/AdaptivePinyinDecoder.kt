@@ -180,6 +180,7 @@ class AdaptivePinyinDecoder(
             limit = limit,
             baseCandidates = baseCandidates,
             boundaryInput = decoderInput.takeIf { '\'' in it },
+            leftContext = leftContext,
         )
     }
 
@@ -210,13 +211,15 @@ class AdaptivePinyinDecoder(
         limit: Int,
         baseCandidates: List<Candidate>,
         boundaryInput: String? = null,
+        leftContext: CharSequence? = null,
     ): List<Candidate> {
         val learnedLookupLimit = if (boundaryInput == null) {
             limit
         } else {
             maxOf(limit, FORCED_BOUNDARY_USER_LOOKUP_LIMIT)
         }
-        val learnedCandidates = userLexicon.lookup(query, learnedLookupLimit).let { learned ->
+        val learnedCandidates = (if (leftContext == null) userLexicon.lookup(query, learnedLookupLimit)
+            else userLexicon.lookupInContext(query, leftContext, learnedLookupLimit)).let { learned ->
             if (boundaryInput == null) {
                 learned
             } else {
@@ -303,6 +306,17 @@ class AdaptivePinyinDecoder(
                 matchKind = userKind,
                 canonicalInitials = learned.initials,
             )
+        }
+        // An explicit choice in this exact short context is stronger than our own
+        // subsequent global frequency. Do not apply it to merely matching initials.
+        learnedCandidates.firstOrNull { it.preferredInContext }?.let { preferred ->
+            val top = candidates.maxOfOrNull {
+                it.score + CandidateRanker.sourcePrior(it.matchKind, hasCanonicalExact, hasCanonicalComposition)
+            } ?: topBaseTotal
+            val kind = CandidateMatchKind.USER_FULL
+            candidates += Candidate(preferred.text,
+                top + 0.5f - CandidateRanker.sourcePrior(kind, hasCanonicalExact, hasCanonicalComposition),
+                preferred.fullPinyin, kind, preferred.initials)
         }
         return CandidateRanker.rank(
             candidates = candidates,
@@ -538,7 +552,9 @@ class AdaptivePinyinDecoder(
     fun demote(
         phrase: LearnedPhrase,
         feedback: UserNegativeFeedback = UserNegativeFeedback.MANUAL_DEMOTION,
-    ): LearnedPhrase? = userLexicon.demote(phrase.fullPinyin, phrase.text, feedback)
+    ): LearnedPhrase? = userLexicon.demoteInContext(phrase.fullPinyin, phrase.text, feedback,
+        if (feedback == UserNegativeFeedback.MANUAL_DEMOTION) "" else phrase.learningContext,
+        phrase.contextSelections[phrase.learningContext])
 
     fun forget(phrase: LearnedPhrase): Boolean = userLexicon.forget(phrase.fullPinyin, phrase.text)
 

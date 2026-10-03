@@ -9,6 +9,7 @@ import io.github.ethanbird.senseime.core.LearnedPhrase
 import io.github.ethanbird.senseime.core.MemoryUserLexicon
 import io.github.ethanbird.senseime.core.SerialPersistenceQueue
 import io.github.ethanbird.senseime.core.UserLearningEvidence
+import io.github.ethanbird.senseime.core.UserContextSelection
 import io.github.ethanbird.senseime.core.UserLexicon
 import io.github.ethanbird.senseime.core.UserNegativeFeedback
 import io.github.ethanbird.senseime.core.UserPinyinMatch
@@ -31,6 +32,9 @@ class PersistentUserLexicon private constructor(
     private var closed = false
 
     override fun lookup(code: String, limit: Int): List<LearnedPhrase> = memory.lookup(code, limit)
+
+    override fun lookupInContext(code: String, context: CharSequence, limit: Int): List<LearnedPhrase> =
+        memory.lookupInContext(code, context, limit)
 
     override fun matchFullPinyin(query: String, limitPerStart: Int): List<UserPinyinMatch> =
         memory.matchFullPinyin(query, limitPerStart)
@@ -59,6 +63,13 @@ class PersistentUserLexicon private constructor(
         check(!closed) { "User lexicon is closed" }
         memory.forget(fullPinyin, text)
     }
+
+    override fun demoteInContext(fullPinyin: String, text: String, feedback: UserNegativeFeedback, context: String,
+                                 expectedSelectionAtMillis: Long?): LearnedPhrase? =
+        synchronized(lifecycleLock) {
+            check(!closed) { "User lexicon is closed" }
+            memory.demoteInContext(fullPinyin, text, feedback, context, expectedSelectionAtMillis)
+        }
 
     override fun close() {
         synchronized(lifecycleLock) {
@@ -192,6 +203,7 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
                 negative_evidence REAL NOT NULL DEFAULT 0,
                 last_positive_evidence REAL NOT NULL DEFAULT 0.18,
                 last_negative_at_ms INTEGER NOT NULL DEFAULT 0,
+                context_selections TEXT NOT NULL DEFAULT '',
                 PRIMARY KEY(full_pinyin, phrase)
             ) WITHOUT ROWID
             """.trimIndent(),
@@ -211,6 +223,9 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
             db.execSQL("ALTER TABLE $TABLE_PHRASE ADD COLUMN last_positive_evidence REAL NOT NULL DEFAULT 0.18")
             db.execSQL("ALTER TABLE $TABLE_PHRASE ADD COLUMN last_negative_at_ms INTEGER NOT NULL DEFAULT 0")
             db.execSQL("UPDATE $TABLE_PHRASE SET positive_evidence = use_count")
+        }
+        if (oldVersion < 4) {
+            db.execSQL("ALTER TABLE $TABLE_PHRASE ADD COLUMN context_selections TEXT NOT NULL DEFAULT ''")
         }
     }
 
@@ -242,6 +257,7 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
                     negativeEvidence = cursor.getFloat(8),
                     lastPositiveEvidence = cursor.getFloat(9),
                     lastNegativeAtMillis = cursor.getLong(10),
+                    contextSelections = UserContextSelection.decode(cursor.getString(11)),
                 )
             }
         } finally {
@@ -270,6 +286,7 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
                 put("negative_evidence", phrase.negativeEvidence)
                 put("last_positive_evidence", phrase.lastPositiveEvidence)
                 put("last_negative_at_ms", phrase.lastNegativeAtMillis)
+                put("context_selections", UserContextSelection.encode(phrase.contextSelections))
             }
             val changed = db.update(
                 TABLE_PHRASE,
@@ -301,7 +318,7 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
 
     private companion object {
         const val DATABASE_NAME = "sense_user_lexicon.db"
-        const val DATABASE_VERSION = 3
+        const val DATABASE_VERSION = 4
         const val TABLE_PHRASE = "user_phrase"
         val COLUMNS = arrayOf(
             "full_pinyin",
@@ -315,6 +332,7 @@ private class UserLexiconDatabase(context: Context) : SQLiteOpenHelper(context, 
             "negative_evidence",
             "last_positive_evidence",
             "last_negative_at_ms",
+            "context_selections",
         )
     }
 }

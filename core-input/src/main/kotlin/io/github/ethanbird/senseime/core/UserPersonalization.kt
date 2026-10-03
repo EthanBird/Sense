@@ -28,6 +28,8 @@ enum class UserSelectionKind {
 data class UserLearningEvidence(
     val kind: UserSelectionKind,
     val selectedRank: Int = 0,
+    /** Pre-commit editor context. Persistence retains only a bounded Han suffix. */
+    val leftContext: String = "",
 ) {
     init {
         require(selectedRank >= 0)
@@ -63,10 +65,16 @@ data class LearnedPhrase(
     val lastNegativeAtMillis: Long = 0L,
     /** Runtime-only bounded ranking adjustment populated by [UserLexicon.lookup]. */
     val rankingBoost: Float = 0f,
+    val contextSelections: Map<String, Long> = emptyMap(),
+    /** Lookup-only flag; the latest explicit choice for the exact current context/code. */
+    val preferredInContext: Boolean = false,
+    /** Commit-only snapshot used by quick rejection; never serialized. */
+    val learningContext: String = "",
 )
 
 interface UserLexicon : AutoCloseable {
     fun lookup(code: String, limit: Int): List<LearnedPhrase>
+    fun lookupInContext(code: String, context: CharSequence, limit: Int): List<LearnedPhrase> = lookup(code, limit)
     /** Optional indexed, point-in-time canonical word matches for sentence composition. */
     fun matchFullPinyin(query: String, limitPerStart: Int = 16): List<UserPinyinMatch> = emptyList()
     fun record(
@@ -82,6 +90,9 @@ interface UserLexicon : AutoCloseable {
         feedback: UserNegativeFeedback = UserNegativeFeedback.MANUAL_DEMOTION,
     ): LearnedPhrase?
     fun forget(fullPinyin: String, text: String): Boolean
+    fun demoteInContext(fullPinyin: String, text: String, feedback: UserNegativeFeedback, context: String,
+                        expectedSelectionAtMillis: Long? = null): LearnedPhrase? =
+        demote(fullPinyin, text, feedback)
     override fun close() = Unit
 }
 
@@ -152,6 +163,24 @@ class MemoryUserLexicon(
             }
         }
         return selected.toList().sortedWith(ranking)
+    }
+
+    @Synchronized
+    override fun lookupInContext(code: String, context: CharSequence, limit: Int): List<LearnedPhrase> {
+        if (limit <= 0) return emptyList()
+        val suffix = UserContextSelection.suffix(context)
+        if (suffix.isEmpty()) return lookup(code, limit)
+        val query = PinyinSyllableSegmenter.normalize(code)
+        // Indexed lookup remains bounded by the existing per-code budgets; inspect before
+        // truncation so a limit of one cannot hide the remembered contextual choice.
+        val values = lookup(query, Int.MAX_VALUE)
+        val now = clock()
+        val preferred = values.asSequence()
+            .filter { it.fullPinyin == query || query in it.aliases }
+            .filter { it.contextSelections[suffix]?.let { time -> UserContextSelection.isFresh(time, now) } == true }
+            .maxWithOrNull(compareBy<LearnedPhrase> { it.contextSelections.getValue(suffix) }.thenBy { it.text })
+        if (preferred == null) return values.take(limit)
+        return (listOf(preferred.copy(preferredInContext = true)) + values.filter { it !== preferred }).take(limit)
     }
 
     @Synchronized
@@ -228,6 +257,8 @@ class MemoryUserLexicon(
                 ?.takeIf { it.lastNegativeAtMillis > 0L && it.negativeEvidence > 0f }
                 ?.let { now }
                 ?: 0L,
+            contextSelections = UserContextSelection.updated(previous?.contextSelections.orEmpty(), evidence, now),
+            learningContext = UserContextSelection.suffix(evidence.leftContext),
         )
         records[key] = value
         if (previous == null) {
@@ -250,7 +281,11 @@ class MemoryUserLexicon(
         fullPinyin: String,
         text: String,
         feedback: UserNegativeFeedback,
-    ): LearnedPhrase? {
+    ): LearnedPhrase? = demoteInContext(fullPinyin, text, feedback, "")
+
+    @Synchronized
+    override fun demoteInContext(fullPinyin: String, text: String, feedback: UserNegativeFeedback, context: String,
+                                 expectedSelectionAtMillis: Long?): LearnedPhrase? {
         val full = PinyinSyllableSegmenter.normalize(fullPinyin)
         val key = full to text
         val previous = records[key] ?: return null
@@ -262,6 +297,15 @@ class MemoryUserLexicon(
             ).coerceAtMost(PersonalizationScoring.MAX_ACCUMULATED_EVIDENCE),
             lastNegativeAtMillis = now,
             rankingBoost = 0f,
+            contextSelections = when {
+                feedback == UserNegativeFeedback.MANUAL_DEMOTION -> emptyMap()
+                context.isEmpty() -> previous.contextSelections
+                expectedSelectionAtMillis != null &&
+                    previous.contextSelections[UserContextSelection.suffix(context)] != expectedSelectionAtMillis -> previous.contextSelections
+                else -> UserContextSelection.sanitize(previous.contextSelections - UserContextSelection.suffix(context))
+            },
+            preferredInContext = false,
+            learningContext = "",
         )
         records[key] = value
         onRecord(value)
@@ -283,6 +327,9 @@ class MemoryUserLexicon(
             retained = emptySet(),
         )
         val restored = value.copy(
+            contextSelections = UserContextSelection.sanitize(value.contextSelections),
+            preferredInContext = false,
+            learningContext = "",
             aliases = normalizedAliases,
             positiveEvidence = sanitizedPositiveEvidence(value),
             negativeEvidence = sanitizedNegativeEvidence(value),

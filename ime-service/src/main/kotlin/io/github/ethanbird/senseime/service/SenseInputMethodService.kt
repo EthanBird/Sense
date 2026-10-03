@@ -85,6 +85,7 @@ import io.github.ethanbird.senseime.core.T9Composition
 import io.github.ethanbird.senseime.core.T9PinyinChoice as CoreT9PinyinChoice
 import io.github.ethanbird.senseime.core.T9SyllableIndex
 import io.github.ethanbird.senseime.core.UserLearningEvidence
+import io.github.ethanbird.senseime.core.UserContextSelection
 import io.github.ethanbird.senseime.core.UserAssociationLexicon
 import io.github.ethanbird.senseime.core.UserLexicon
 import io.github.ethanbird.senseime.core.UserNegativeFeedback
@@ -2021,6 +2022,7 @@ class SenseInputMethodService : InputMethodService() {
                     evidence = UserLearningEvidence(
                         UserSelectionKind.PROGRESSIVE_SELECTION,
                         rank,
+                        UserContextSelection.suffix(compositionLeftContext + composition.acceptedText),
                     ),
                 )
                 if (!updateConnectionComposition(next.visibleText)) return
@@ -3544,6 +3546,9 @@ class SenseInputMethodService : InputMethodService() {
     ): Boolean {
         val committingComposition = composition
         val stagedProgressiveLearnings = progressiveLearnings.snapshotForCommit()
+        // Freeze context before the editor call: synchronous selection callbacks may
+        // clear compositionLeftContext or begin a different editing session.
+        val contextualEvidence = evidence.copy(leftContext = UserContextSelection.suffix(compositionLeftContext))
         val learningTarget = adaptiveDecoder.takeIf { pinyinLearningReady() }
         val committedEditorSessionId = editorSessionId
         val agentTarget = isAgentTextTarget()
@@ -3579,7 +3584,7 @@ class SenseInputMethodService : InputMethodService() {
             }
             if (rawInput != null && learnable != null) {
                 runCatching {
-                    learningTarget.learn(rawInput, learnable, evidence)
+                    learningTarget.learn(rawInput, learnable, contextualEvidence)
                 }.onFailure { error ->
                     Log.e(TAG, "Personalization update failed", error)
                 }.getOrNull()?.let { learned ->
@@ -3610,7 +3615,7 @@ class SenseInputMethodService : InputMethodService() {
                     PendingPinyinLearning(
                         rawInput = rawInput,
                         candidate = learnable,
-                        evidence = evidence,
+                        evidence = contextualEvidence,
                     ),
                 )
             }

@@ -80,7 +80,7 @@ try {
     $expectedTests = 10
     if ($Learning) {
         $class = "io.github.ethanbird.senseime.inputqualityfixture.ExternalEditorLearningTest"
-        $expectedTests = 4
+        $expectedTests = 6
     }
     if ($Correction) {
         $class = "io.github.ethanbird.senseime.inputqualityfixture.ExternalEditorCorrectionTest"
