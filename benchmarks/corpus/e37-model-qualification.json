@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "model": "hfl/rbt3",
+  "revision": "0aa0527ff4170f29e1dfd3eb6ef60dc67e1bf75c",
+  "modelCardLicense": "apache-2.0",
+  "modelCardTask": "fill-mask",
+  "trainedMaskedLmHeadVerified": false,
+  "upstreamProject": "https://github.com/ymcui/Chinese-BERT-wwm",
+  "upstreamRevision": "4c256d460f30cf899f42a16f4125be205e9ea270",
+  "upstreamEvidence": "https://github.com/ymcui/Chinese-BERT-wwm/blob/4c256d460f30cf899f42a16f4125be205e9ea270/README.md#L117",
+  "upstreamStatement": "The project says its released version does not include MLM task weights and requires further pretraining for MLM use.",
+  "finding": "The downloaded file contains MLM-shaped tensors and loads strictly, but tensor presence and the HF fill-mask label do not establish a correctly trained/matched MLM head. Full forward agrees with the optimized head and still produces implausible fill-mask outputs.",
+  "decision": "Reject this checkpoint as a ready-to-use zero-shot language scorer. E37 is a model-qualification failure, not evidence against properly pretrained MLM rescoring for Sense.",
+  "runner": "Default execution stops before model loading. An explicit diagnostic replay flag permits reproducing the rejected checkpoint; it does not qualify it for production."
+}

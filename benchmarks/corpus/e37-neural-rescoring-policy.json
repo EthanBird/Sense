@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "stage": "E37",
+  "sourceBaseCommit": "9504f3726301bc889e91f2954b22bab5fb391e3a",
+  "trial": "One frozen pretrained masked-LM candidate: hfl/rbt3, revision 0aa0527ff4170f29e1dfd3eb6ef60dc67e1bf75c. No fine-tuning, weight sweep, or production change.",
+  "selection": "RBT3 model card declares Apache-2.0. UER L2 H128 card/API has no explicit weight license, so it is not selected. Code licenses are not substituted for weight licenses.",
+  "method": {
+    "pool": "First 8 actual production whole candidates; reorder only slots with the same Han-only character count as the original first candidate, length 2..24. Preserve all other slots and all 255-candidate membership. Unknown characters in any selected candidate/context skip the whole row.",
+    "score": "Sum natural-log conditional probabilities with each candidate character masked individually; left context stays visible but is not scored. Each Han character must have exactly one vocabulary token. Stable original order breaks score ties. No interpolation with old scores.",
+    "context": "Exactly the same zero or two characters supplied to the production replay. No oracle future text or expected candidate may enter inference.",
+    "execution": "CPU float32 eager PyTorch, inference/eval mode, 2 intraop threads, 1 interop thread, microbatch 32 masks, no candidate score cache across queries. Model load and scoring timing reported separately.",
+    "meaning": "Host-only feasibility baseline, not Android integration or a production-safe personalization design. The existing benchmark has empty personalization."
+  },
+  "development": {
+    "aishell": "benchmarks/corpus/p2c-aishell-v7/dev.tsv",
+    "tatoeba": "benchmarks/corpus/p2c-supervised-v6/dev.tsv",
+    "baseline": "Reuse E36 baseline actual production candidate streams only after verifying input, source and asset pins against current production. Do not regenerate or change candidates based on target text.",
+    "gate": "Each domain top1 and top5 nondecreasing, recall255 unchanged, character errors nonincreasing; combined top1 strictly increases. Known development regression, not new blind accuracy."
+  },
+  "diagnosticOnly": "E28 six known lei states, excluded from promotion decision.",
+  "stopRule": "If development fails, retain every result and stop this scorer; no alternate pooling, lengths, interpolation or model choice after observing outputs in this trial. If it passes, proceed later with held regression and device-cost investigation before production adoption.",
+  "deployment": "No runtime/model/asset additions to the app in E37. Current model bytes are about 156 MB before any conversion; mobile footprint, privacy lifecycle, cancellation, personalized evidence and training provenance require separate assessment. Published rc.4 stays unchanged."
+}
