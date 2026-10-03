@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "releaseVersion": "0.4.16-rc.4",
+  "versionCode": 44,
+  "releaseType": "preview",
+  "sourceBaseCommit": "7208d60defa628539381bb3af2e31d53c1d6f0c6",
+  "branch": "codex/input-quality-v2",
+  "createdAt": "2026-10-03T19:04:58.301468+00:00",
+  "apkSha256": "f571badcd03361fe4b80a096553ca566ffecd117c4ad7694a22f4686ee2de528",
+  "bytes": 73102385,
+  "certificateSha256": "76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984",
+  "packageName": "io.github.ethanbird.senseime",
+  "minSdk": 29,
+  "targetSdk": 36,
+  "productionInputLogicUnchangedSinceE34": true,
+  "productionSourceFilesChecked": 189,
+  "releaseChanges": "Version code/name and release metadata only; includes accepted E33/E34 production code from source base",
+  "inheritedHostTests": {
+    "stage": "E34",
+    "counts": {
+      "core-input": {
+        "tests": 403,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ime-service": {
+        "tests": 317,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ime-ui": {
+        "tests": 235,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "total": 955,
+    "rerunForRelease": false
+  },
+  "inheritedPythonTests": {
+    "stage": "E34",
+    "run": 448,
+    "passed": 447,
+    "skipped": 1,
+    "rerunForRelease": false
+  },
+  "freshReleaseContractTests": {
+    "run": 33,
+    "passed": 33
+  },
+  "androidFunctionalEvidence": {
+    "stage": "E34",
+    "debugApkSha256": "1dfa19d48e9fcfdb491f9bed56c24911192caebe3ce8e7f42c65d1b67895a9df",
+    "groups": {
+      "correction": 10,
+      "default": 10,
+      "learning": 6,
+      "context": 8
+    },
+    "total": 34,
+    "rerunForRelease": false,
+    "scope": "Dedicated API 37 x86_64 emulator; actual IME to external editor on pinned E34 Debug APK, not this signed release APK"
+  },
+  "personalCapacityEvidence": {
+    "stage": "E33",
+    "debugApkSha256": "404ababaee1b040b9192c3ae08f3e238563cb75b506aecc04aa58b9f04e85b0e",
+    "confirmations": 56,
+    "differentPidRestarts": 4,
+    "rerunForRelease": false
+  },
+  "inheritedE34Timing": {
+    "accepted": true,
+    "confirmationMs": {
+      "baseline": {
+        "count": 32,
+        "medianMs": 138.0,
+        "observedP95Ms": 307,
+        "maxMs": 312
+      },
+      "optimized": {
+        "count": 32,
+        "medianMs": 129.5,
+        "observedP95Ms": 296,
+        "maxMs": 346
+      }
+    },
+    "latencyGate": {
+      "scope": "Fixed ABBA workload only; not statistical significance or phone certification",
+      "rule": "paired median and observed P95 each no worse than reference",
+      "checks": {
+        "medianMs": true,
+        "observedP95Ms": true
+      },
+      "passed": true
+    },
+    "functionalConfirmations": 64,
+    "immediateFollowups": 8,
+    "maximumRegressedFrom312To346Ms": true
+  },
+  "inheritedE34Quality": {
+    "m15Development": 945,
+    "m15Test": 1874,
+    "crossDomainStates": 256,
+    "allNonTimingObservationsEqualE31": true,
+    "transpositionTestTop1": {
+      "baseline": 164,
+      "candidate": 228,
+      "total": 375
+    },
+    "transpositionTestTop10": {
+      "baseline": 235,
+      "candidate": 328,
+      "total": 375
+    },
+    "knownDeleteTop10Losses": [
+      "taiwanhiwozuiaideguojia",
+      "tangmuxiangzhidaonalinegmaidaojianghuang"
+    ]
+  },
+  "assetHashes": {
+    "assets/dexopt/baseline.prof": "dbd454340b39af2f41d1ad159643e65c5d5372ea4f20bacc356dab07b144eaa7",
+    "assets/dexopt/baseline.profm": "5a4312ce6bffe630ec2a4cb9f0e180cc4e910752f625d7092245352bed8dec82",
+    "assets/ASSOCIATION-MODEL-NOTICE.txt": "4629a89db03218238cd3b9651da106b9100d5f07a7386f1b1ab155c6ecf27433",
+    "assets/CONCENTUS-BSD-3-CLAUSE.txt": "fa08d794f35b8c2517a2b929ff388cf179e6eb452383e8dc13de81452741a564",
+    "assets/LARK-OAPI-APACHE-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "assets/LICENSE.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "assets/NOTICE.txt": "bfcfbe84562a5a614b2790d85465f18f809dc700fa44e7e51e2db633fc37dd14",
+    "assets/OKHTTP-APACHE-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "assets/PINYIN-LM-NOTICE.txt": "42e67712562a6b3b2e491f42146efd7235d7fcd6d3ac2a156eabfbae1e6565d0",
+    "assets/POPULAR-ENGLISH-WORDS-ISC.txt": "f432301e16a48011db30f6fd74d5ec906745d5c9bfcacb91c924e4738d7e4fa7",
+    "assets/PublicSuffixDatabase.list": "c75ab827afd7ffff59a51b14729c25dbfc3b45237eb40ccf02bec7b7d44304a4",
+    "assets/RIME-FROST-GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "assets/RIME-FROST-NOTICE.txt": "bacf7e02bf7b78343aa6c718021d24c701092cb0e14b737a84f13c551b181a83",
+    "assets/RIME-ICE-GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "assets/RIME-ICE-NOTICE.txt": "268b2226666b6597f6ebcc2e084888ecd6288a9655eedbdea3e1e9b6e092a496",
+    "assets/RIME-WUBI-LGPL-3.0.txt": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+    "assets/RIME-WUBI-NOTICE.txt": "c1ccba91f1ba2ebe970ef62a80e69feef1d1a61b568d078a20e9b904782035a8",
+    "assets/association_words.snwp": "d0b157b46ee6df5fe0466870f6a5bf2951b0498a081d4860b3791bb2f123bf39",
+    "assets/association_words_notice.json": "7648de91d2fc68049d9ea7dca14c3cb7b80432d395b3a19b7b9bcf246a88ae4f",
+    "assets/english_lexicon.txt": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624",
+    "assets/pinyin_bigrams.bin": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
+    "assets/pinyin_character_lm.scng": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+    "assets/pinyin_character_lm_attribution.tsv": "acfb932b806f02bd53b57f4a902628fea2c29f6efda7a785a11be432ac22173a",
+    "assets/pinyin_character_lm_notice.json": "131039406d56f7b729331d91bdb4c8891d4e79d36ab7bd1fc95d761a4f881d7a",
+    "assets/pinyin_lexicon.bin": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232",
+    "assets/pinyin_syllables.txt": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+    "assets/wubi86_lexicon.bin": "e2d47d43ab702862c349cd7f9ad36b2d4cbd72963c95cdb6f7911bf849937207"
+  },
+  "changedAssetsVsRc3": [
+    "assets/dexopt/baseline.prof",
+    "assets/dexopt/baseline.profm"
+  ],
+  "all25InputAndNoticeAssetsEqualE34": true,
+  "dictionaryAndModelsUnchanged": true,
+  "appReleaseLint": {
+    "Warning": 28
+  },
+  "spellingEdgeCachePresentInDex": true,
+  "fixtureDexExcluded": true,
+  "physicalPhoneTested": false,
+  "goalComplete": false,
+  "staticVerification": "Fresh signed assembleRelease and lintRelease; local_release.ps1 -SkipBuild -SkipTests checks certificate, identity, alignment, permissions and Wubi asset provenance. Explicit current-release JAR/APK and merged-manifest boundary checks passed.",
+  "checkScopeNote": "First default boundary invocation required an absent benchmark APK and stopped; retained log. Explicit release artifact mode then checked the APK being published, not the benchmark variant.",
+  "publication": "Feature-branch prerelease; manual gh draft/tag/publish, not main-only local_release -Publish pipeline",
+  "evidenceManifestSha256": "5c9ae026772cd952cd58b9d127d94ad977b337f38aeb404dadef00ec2e15d4fa",
+  "archivedFiles": 17
+}
