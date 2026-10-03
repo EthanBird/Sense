@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "stage": "E32",
+  "decision": "accept-capacity-system-coverage-on-unchanged-rc3-input-code",
+  "productionChanged": false,
+  "publishedApkChanged": false,
+  "publishedRelease": "v0.4.16-rc.3",
+  "releaseApkSha256": "790e0bb4148ebca59801c4de1096da8c64d552c31cdcd02f94c510ced92081e3",
+  "debugApkSha256": "2d0f42c1bd6944b1a2fff1ab296d3065d6fbd3e75dceea9624fd6fa060010da1",
+  "fixtureApks": {
+    "io.github.ethanbird.senseime.debug": "2d0f42c1bd6944b1a2fff1ab296d3065d6fbd3e75dceea9624fd6fa060010da1",
+    "io.github.ethanbird.senseime.inputqualityfixture": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+    "io.github.ethanbird.senseime.inputqualityfixture.test": "bc436b8d46371c41971f231ed69d5475bb743a2c50a877de5807d18386dfc437"
+  },
+  "sourceBaseCommit": "5ee1995",
+  "androidFunctional": {
+    "blocks": 4,
+    "realInputConfirmations": 56,
+    "differentPidRestarts": 4,
+    "maxSeedRows": 10000,
+    "allDurableRowIdentitiesAndContextsPreserved": true,
+    "sampledPhraseReusesPersisted": true
+  },
+  "pythonTests": {
+    "run": 443,
+    "passed": 442,
+    "skipped": 1
+  },
+  "productHostTestsRerun": false,
+  "capacityObservations": {
+    "1000": {
+      "confirmationMs": {
+        "count": 28,
+        "medianMs": 69.5,
+        "observedP95Ms": 136,
+        "maxMs": 164
+      },
+      "restartObservedReadyMs": [
+        3595,
+        3804
+      ],
+      "senderIntervalsMs": [
+        {
+          "count": 94,
+          "medianMs": 33.0,
+          "observedP95Ms": 37,
+          "maxMs": 45
+        },
+        {
+          "count": 94,
+          "medianMs": 33.0,
+          "observedP95Ms": 36,
+          "maxMs": 38
+        }
+      ],
+      "durability": [
+        {
+          "rows": 1000,
+          "contextsPreserved": true,
+          "untouchedRowsUnchanged": true,
+          "sampledDurableUpdates": 7,
+          "integrity": "ok"
+        },
+        {
+          "rows": 1000,
+          "contextsPreserved": true,
+          "untouchedRowsUnchanged": true,
+          "sampledDurableUpdates": 7,
+          "integrity": "ok"
+        }
+      ]
+    },
+    "10000": {
+      "confirmationMs": {
+        "count": 28,
+        "medianMs": 70.5,
+        "observedP95Ms": 126,
+        "maxMs": 163
+      },
+      "restartObservedReadyMs": [
+        5185,
+        5195
+      ],
+      "senderIntervalsMs": [
+        {
+          "count": 94,
+          "medianMs": 33.0,
+          "observedP95Ms": 38,
+          "maxMs": 40
+        },
+        {
+          "count": 94,
+          "medianMs": 33.0,
+          "observedP95Ms": 35,
+          "maxMs": 38
+        }
+      ],
+      "durability": [
+        {
+          "rows": 10000,
+          "contextsPreserved": true,
+          "untouchedRowsUnchanged": true,
+          "sampledDurableUpdates": 7,
+          "integrity": "ok"
+        },
+        {
+          "rows": 10000,
+          "contextsPreserved": true,
+          "untouchedRowsUnchanged": true,
+          "sampledDurableUpdates": 7,
+          "integrity": "ok"
+        }
+      ]
+    }
+  },
+  "timingScope": "Fixed short remembered words only; not ordinary long queries, statistical significance or physical-phone frames",
+  "priorAttempts": {
+    "transportFailedBlocks": 4,
+    "firstDeviceBlocksPassed": 3,
+    "firstDeviceBlocksWithIncompleteRestartCoverage": 1,
+    "all49ObservedFirstDeviceCommitsPassed": true,
+    "initialCountErrorWasSecondaryToIncompleteCoverage": true,
+    "finalFixtureUnbindsBeforeStop": true
+  },
+  "diagnosticNextStep": "Separate database read and index restoration from system switching/observation costs",
+  "newWordAtCapacityEvictionTested": false,
+  "physicalPhoneTested": false,
+  "goalComplete": false,
+  "evidenceManifestSha256": "49b8184c0bb9c0daf62f205ce962a12a484c1d565cf4cbbfbb855eacbd0ad970",
+  "archivedFiles": 130
+}
