@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "stage": "E38-known-test",
+  "model": "google-bert/bert-base-chinese",
+  "revision": "8f23c25b06e129b6c986331a13d8d025a92cf0ea",
+  "condition": "Run only after the fixed E38 development gate passed. No scorer, model, candidate-pool, context, batch or thread changes.",
+  "aishell": "benchmarks/corpus/p2c-aishell-v7/test.tsv",
+  "tatoeba": "benchmarks/corpus/p2c-daily-mixture-v8/test.tsv",
+  "baseline": "E35 test-*-baseline.jsonl, where fourgram.enabled=false; verify all current production source/assets/input hashes before reuse.",
+  "gate": "Each domain top1/top5 nondecreasing, recall unchanged, character errors nonincreasing; combined top1 strictly increases. All gains and losses retained.",
+  "scope": "These 248+248 states were opened in prior stages; known regression only, not new blind validation. No personal-history, typo, UI or mobile-runtime claim.",
+  "stopRule": "Freeze this result without changing a score to repair losses. A passing offline test does not authorize direct model deployment; next evaluate lightweight distillation or task-specific trained reranking.",
+  "release": "rc.4 unchanged."
+}

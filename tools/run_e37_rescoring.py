@@ -24,7 +24,7 @@ def check_model_qualification(qualification, diagnostic_replay=False):
 
 
 def write_new(path, value):
-    with path.open("x", encoding="utf-8") as f:
+    with path.open("x", encoding="utf-8", newline="\n") as f:
         json.dump(value, f, ensure_ascii=False, indent=2); f.write("\n")
 
 
@@ -90,12 +90,17 @@ def run(root, model_folder, output, diagnostic_replay=False):
     write_new(output / "model-runtime.json", {**scorer.metadata, "constructorIncludingHashesNanos": startup,
                                               "verification": scorer.verify_numerics()})
     print("Pinned model loaded; full-head equivalence/tokenizer/determinism checks passed", flush=True)
+    evaluate_pools(scorer, validated, policy_path, lock, output, "E37")
+
+
+def evaluate_pools(scorer, validated, policy_path, lock, output, stage, accuracy_scope=None):
+    """Shared target-blind evaluation; inputs were pinned and validated by callers."""
     reports = {}
-    for domain in sources:
+    for domain in validated:
         header, old = validated[domain]
         new = {}; timings = []; traces = []
         with (output / f"{domain}-rescore.jsonl").open("x", encoding="utf-8") as f:
-            f.write(json.dumps(dict(type="header", schemaVersion=1, scope="offline E37 reranking, not production replay",
+            f.write(json.dumps(dict(type="header", schemaVersion=1, scope=f"offline {stage} reranking, not production replay",
                                     baselineSha256=lock["inputs"][domain]["baselineSha256"],
                                     policySha256=digest(policy_path), model=scorer.metadata), ensure_ascii=False) + "\n")
             for index, (key, row) in enumerate(old.items()):
@@ -131,20 +136,20 @@ def run(root, model_folder, output, diagnostic_replay=False):
                       slices={mode: dict(before=metrics([r for r in old.values() if r["mode"] == mode]),
                                          after=metrics([r for r in new.values() if r["mode"] == mode])) for mode in ["empty", "editor"]},
                       timingScope="Warm desktop CPU added rescoring only; excludes decoder and Android UI",
-                      accuracyScope="Known development workload with empty personalization; not blind or natural mobile input")
+                      accuracyScope=accuracy_scope or "Known development workload with empty personalization; not blind or natural mobile input")
         write_new(output / f"{domain}-comparison.json", report)
         reports[domain] = report
         print(json.dumps(dict(domain=domain, before=before, after=after, passed=report["nonregressionPassed"],
                               latency=report["latencyScoredRows"]), ensure_ascii=False), flush=True)
     gate = all(reports[d]["nonregressionPassed"] for d in ["aishell", "tatoeba"]) and sum(
         reports[d]["after"]["top1"] - reports[d]["before"]["top1"] for d in ["aishell", "tatoeba"]) > 0
-    result = dict(stage="E37", developmentGatePassed=gate, domains=reports,
+    result = dict(stage=stage, developmentGatePassed=gate, domains=reports,
                   model=scorer.metadata, modelCalls=scorer.calls, independentlyMaskedInputs=scorer.masks,
                   totalInferenceNanos=scorer.inference_nanos, productionChanged=False,
                   decision="eligible-for-later-regression-and-device-feasibility" if gate else "reject-fixed-pure-PLL-reranker",
                   diagnosticExcludedFromGate=True, noParameterSweep=True, androidMeasured=False)
     write_new(output / "development-decision.json", result)
-    print(f"E37 development gate: {gate}", flush=True)
+    print(f"{stage} development gate: {gate}", flush=True)
 
 
 if __name__ == "__main__":

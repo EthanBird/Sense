@@ -1,0 +1,6523 @@
+{
+  "schemaVersion": 1,
+  "stage": "E38",
+  "sourceBaseCommit": "51b30f87db5d25d51b4884ee808ebdddddbe2c09",
+  "decision": "qualified-teacher-offline-evidence; no-mobile-deployment",
+  "qualification": {
+    "results": [
+      {
+        "passed": false,
+        "fixtures": [
+          {
+            "text": "北京是[MASK]国的首都。",
+            "targets": [
+              "中"
+            ],
+            "top5": [
+              "中",
+              "全",
+              "国",
+              "美",
+              "一"
+            ],
+            "probabilities": [
+              0.3938719928264618,
+              0.26277974247932434,
+              0.177451953291893,
+              0.031136078760027885,
+              0.013393428176641464
+            ],
+            "hitTop5": true
+          },
+          {
+            "text": "中国的首都是[MASK]京。",
+            "targets": [
+              "北"
+            ],
+            "top5": [
+              "中",
+              "国",
+              "北",
+              "大",
+              "南"
+            ],
+            "probabilities": [
+              0.4173968434333801,
+              0.3257032632827759,
+              0.06073293462395668,
+              0.03931765258312225,
+              0.013408411294221878
+            ],
+            "hitTop5": true
+          },
+          {
+            "text": "一年有十二个[MASK]。",
+            "targets": [
+              "月"
+            ],
+            "top5": [
+              "年",
+              "人",
+              "月",
+              "天",
+              "个"
+            ],
+            "probabilities": [
+              0.2625722587108612,
+              0.13542214035987854,
+              0.10296569019556046,
+              0.047282908111810684,
+              0.04127795249223709
+            ],
+            "hitTop5": true
+          },
+          {
+            "text": "春夏秋[MASK]。",
+            "targets": [
+              "冬"
+            ],
+            "top5": [
+              "!",
+              "！",
+              ".",
+              "你",
+              "?"
+            ],
+            "probabilities": [
+              0.050344400107860565,
+              0.036792654544115067,
+              0.03021068684756756,
+              0.023143045604228973,
+              0.01955563575029373
+            ],
+            "hitTop5": false
+          },
+          {
+            "text": "人类需要呼吸空[MASK]。",
+            "targets": [
+              "气"
+            ],
+            "top5": [
+              "你",
+              ".",
+              "您",
+              "!",
+              "！"
+            ],
+            "probabilities": [
+              0.03333848714828491,
+              0.01885361410677433,
+              0.015747850760817528,
+              0.014445212669670582,
+              0.013495386578142643
+            ],
+            "hitTop5": false
+          },
+          {
+            "text": "请把门关[MASK]。",
+            "targets": [
+              "上"
+            ],
+            "top5": [
+              "!",
+              "你",
+              "您",
+              ".",
+              "！"
+            ],
+            "probabilities": [
+              0.10261747241020203,
+              0.06674453616142273,
+              0.05822606384754181,
+              0.05796997249126434,
+              0.049772147089242935
+            ],
+            "hitTop5": false
+          },
+          {
+            "text": "医生在医[MASK]工作。",
+            "targets": [
+              "院"
+            ],
+            "top5": [
+              "院",
+              "医",
+              "室",
+              "师",
+              "学"
+            ],
+            "probabilities": [
+              0.44208085536956787,
+              0.16267389059066772,
+              0.0396917350590229,
+              0.02829296886920929,
+              0.02492259256541729
+            ],
+            "hitTop5": true
+          },
+          {
+            "text": "一加一等于[MASK]。",
+            "targets": [
+              "二",
+              "2",
+              "两"
+            ],
+            "top5": [
+              "你",
+              "您",
+              "！",
+              "哦",
+              "1"
+            ],
+            "probabilities": [
+              0.29272663593292236,
+              0.04914186894893646,
+              0.04703984409570694,
+              0.04231146350502968,
+              0.0408947728574276
+            ],
+            "hitTop5": false
+          }
+        ],
+        "numerics": {
+          "maxAbsoluteLogitError": 0.0,
+          "fullAndGatheredAgree": true,
+          "tokenizerAgreement": true,
+          "repeatedScoresEqual": true
+        },
+        "metadata": {
+          "model": "hfl/minirbt-h256",
+          "modelRevision": "446e1b4012b10946f479563005700c54c9db3f7c",
+          "weightsSha256": "6728ca573fd5197f28198eb7e6119a76e4d5dc626f953fca8c0dc5ba2798f9fc",
+          "torch": "2.6.0+cpu",
+          "transformers": "4.48.3",
+          "parameters": 10366856,
+          "parameterBytes": 41467424,
+          "modelLoadNanos": 45504700,
+          "intraopThreads": 2,
+          "interopThreads": 1,
+          "device": "cpu",
+          "dtype": "float32",
+          "microbatch": 32,
+          "loadingInfo": {
+            "missing_keys": [],
+            "unexpected_keys": [],
+            "mismatched_keys": [],
+            "error_msgs": []
+          },
+          "head": "masked-positions-only",
+          "verifiedCheckpointHeadKeys": {
+            "cls.predictions.bias": "cls.predictions.bias",
+            "cls.predictions.transform.LayerNorm.bias": "cls.predictions.transform.LayerNorm.bias",
+            "cls.predictions.transform.LayerNorm.weight": "cls.predictions.transform.LayerNorm.weight",
+            "cls.predictions.transform.dense.bias": "cls.predictions.transform.dense.bias",
+            "cls.predictions.transform.dense.weight": "cls.predictions.transform.dense.weight"
+          }
+        },
+        "scope": "Task-qualification smoke fixtures, not Sense accuracy",
+        "model": "hfl/minirbt-h256",
+        "revision": "446e1b4012b10946f479563005700c54c9db3f7c",
+        "folder": "E:\\CodexWorkspace\\sense-input-quality-build\\models\\minirbt-h256-446e1b4",
+        "manifestSha256": "08372aa15fa2b91a4650d225d87f262c71a43dc25e8e046d7dcc828e0e88ef51"
+      },
+      {
+        "passed": true,
+        "fixtures": [
+          {
+            "text": "北京是[MASK]国的首都。",
+            "targets": [
+              "中"
+            ],
+            "top5": [
+              "中",
+              "我",
+              "全",
+              "美",
+              "英"
+            ],
+            "probabilities": [
+              0.9675801992416382,
+              0.015999749302864075,
+              0.0048605818301439285,
+              0.0020109955221414566,
+              0.0010233975481241941
+            ],
+            "hitTop5": true
+          },
+          {
+            "text": "中国的首都是[MASK]京。",
+            "targets": [
+              "北"
+            ],
+            "top5": [
+              "北",
+              "南",
+              "东",
+              "西",
+              "天"
+            ],
+            "probabilities": [
+              0.9257179498672485,
+              0.07168974727392197,
+              0.0020973135251551867,
+              0.00014822004595771432,
+              7.738351268926635e-05
+            ],
+            "hitTop5": true
+          },
+          {
+            "text": "一年有十二个[MASK]。",
+            "targets": [
+              "月"
+            ],
+            "top5": [
+              "月",
+              "人",
+              "花",
+              "班",
+              "日"
+            ],
+            "probabilities": [
+              0.4969158172607422,
+              0.14521384239196777,
+              0.010305455885827541,
+              0.009937319904565811,
+              0.008071329444646835
+            ],
+            "hitTop5": true
+          },
+          {
+            "text": "春夏秋[MASK]。",
+            "targets": [
+              "冬"
+            ],
+            "top5": [
+              "冬",
+              "夏",
+              "季",
+              "秋",
+              "春"
+            ],
+            "probabilities": [
+              0.927995502948761,
+              0.023118510842323303,
+              0.019510485231876373,
+              0.007183608133345842,
+              0.004598894622176886
+            ],
+            "hitTop5": true
+          },
+          {
+            "text": "人类需要呼吸空[MASK]。",
+            "targets": [
+              "气"
+            ],
+            "top5": [
+              "气",
+              "间",
+              "调",
+              "氧",
+              "氣"
+            ],
+            "probabilities": [
+              0.9975090026855469,
+              0.001402034074999392,
+              0.0005798102938570082,
+              0.00011968873877776787,
+              5.533524745260365e-05
+            ],
+            "hitTop5": true
+          },
+          {
+            "text": "请把门关[MASK]。",
+            "targets": [
+              "上"
+            ],
+            "top5": [
+              "上",
+              "好",
+              "了",
+              "紧",
+              "掉"
+            ],
+            "probabilities": [
+              0.9042578339576721,
+              0.07193654775619507,
+              0.005151273682713509,
+              0.004257360473275185,
+              0.0023505636490881443
+            ],
+            "hitTop5": true
+          },
+          {
+            "text": "医生在医[MASK]工作。",
+            "targets": [
+              "院"
+            ],
+            "top5": [
+              "院",
+              "生",
+              "校",
+              "学",
+              "疗"
+            ],
+            "probabilities": [
+              0.9858574867248535,
+              0.004069777205586433,
+              0.001262023812159896,
+              0.0011655261041596532,
+              0.0009684867109172046
+            ],
+            "hitTop5": true
+          },
+          {
+            "text": "一加一等于[MASK]。",
+            "targets": [
+              "二",
+              "2",
+              "两"
+            ],
+            "top5": [
+              "零",
+              "二",
+              "十",
+              "2",
+              "0"
+            ],
+            "probabilities": [
+              0.2034830003976822,
+              0.1668235957622528,
+              0.13251818716526031,
+              0.048088189214468,
+              0.04368269443511963
+            ],
+            "hitTop5": true
+          }
+        ],
+        "numerics": {
+          "maxAbsoluteLogitError": 0.0,
+          "fullAndGatheredAgree": true,
+          "tokenizerAgreement": true,
+          "repeatedScoresEqual": true
+        },
+        "metadata": {
+          "model": "google-bert/bert-base-chinese",
+          "modelRevision": "8f23c25b06e129b6c986331a13d8d025a92cf0ea",
+          "weightsSha256": "3404a1ffd8da507042e8161013ba2a4fc49858b4e3f8fbf5ce5724f94883aec3",
+          "torch": "2.6.0+cpu",
+          "transformers": "4.48.3",
+          "parameters": 102290312,
+          "parameterBytes": 409161248,
+          "modelLoadNanos": 137613600,
+          "intraopThreads": 2,
+          "interopThreads": 1,
+          "device": "cpu",
+          "dtype": "float32",
+          "microbatch": 32,
+          "loadingInfo": {
+            "missing_keys": [],
+            "unexpected_keys": [
+              "bert.pooler.dense.bias",
+              "bert.pooler.dense.weight",
+              "cls.seq_relationship.bias",
+              "cls.seq_relationship.weight"
+            ],
+            "mismatched_keys": [],
+            "error_msgs": []
+          },
+          "head": "masked-positions-only",
+          "verifiedCheckpointHeadKeys": {
+            "cls.predictions.bias": "cls.predictions.bias",
+            "cls.predictions.transform.LayerNorm.bias": "cls.predictions.transform.LayerNorm.beta",
+            "cls.predictions.transform.LayerNorm.weight": "cls.predictions.transform.LayerNorm.gamma",
+            "cls.predictions.transform.dense.bias": "cls.predictions.transform.dense.bias",
+            "cls.predictions.transform.dense.weight": "cls.predictions.transform.dense.weight"
+          }
+        },
+        "scope": "Task-qualification smoke fixtures, not Sense accuracy",
+        "model": "google-bert/bert-base-chinese",
+        "revision": "8f23c25b06e129b6c986331a13d8d025a92cf0ea",
+        "folder": "E:\\CodexWorkspace\\sense-input-quality-build\\models\\bert-base-chinese-8f23c25",
+        "manifestSha256": "02ef163c33fba2ac664697327ac726b72fe03ee2335e9a2efa75978f14945658"
+      }
+    ],
+    "selectedModel": "google-bert/bert-base-chinese",
+    "selectionByTaskQualificationOnly": true,
+    "senseDevelopmentOpened": false
+  },
+  "phases": {
+    "run": {
+      "gatePassed": true,
+      "domains": {
+        "aishell": {
+          "before": {
+            "states": 128,
+            "top1": 65,
+            "top5": 97,
+            "top10": 105,
+            "recall255": 118,
+            "characterErrors": 142,
+            "characters": 1087
+          },
+          "after": {
+            "states": 128,
+            "top1": 85,
+            "top5": 102,
+            "top10": 105,
+            "recall255": 118,
+            "characterErrors": 83,
+            "characters": 1087
+          },
+          "nonregressionPassed": true,
+          "eligibleRows": 121,
+          "firstChanged": 59,
+          "skipReasons": {
+            "scored": 121,
+            "unknown-character": 7
+          },
+          "firstGains": [
+            {
+              "id": "00160e84c797cd08e4721149ac9b99d2e17d02afb99cb85565d634625ad31b25",
+              "cut": 0,
+              "query": "dangweiwurenjiashizhuangtaishi",
+              "context": "",
+              "expected": "当为无人驾驶状态时",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "当为无人驾驶状态是",
+                "当为无人驾驶状态时",
+                "挡位无人驾驶状态是",
+                "挡位无人驾驶状态时",
+                "党委无人驾驶状态是"
+              ],
+              "afterTop5": [
+                "当为无人驾驶状态时",
+                "党委无人驾驶状态是",
+                "挡位无人驾驶状态时",
+                "党委无人驾驶状态时",
+                "当为无人驾驶状态是"
+              ]
+            },
+            {
+              "id": "007678dd51f43d4c2db4007304a65756fde263dd529b120d9d437f281e03140d",
+              "cut": 4,
+              "query": "yanjiangshibiaoshi",
+              "context": "娜在",
+              "expected": "演讲时表示",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "演讲是表示",
+                "演讲时表示",
+                "演讲式表示",
+                "演讲时标识",
+                "演讲是标识"
+              ],
+              "afterTop5": [
+                "演讲时表示",
+                "演讲式表示",
+                "演讲是表示",
+                "演讲是标识",
+                "演讲时标识"
+              ]
+            },
+            {
+              "id": "00d2bffa0584b7b690fe3b40c58be552f8c96bfa6768cd439eb5727b345afb8a",
+              "cut": 4,
+              "query": "qingbijiaofuza",
+              "context": "案案",
+              "expected": "情比较复杂",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "请比较复杂",
+                "情比较复杂",
+                "轻比较复杂",
+                "清比较复杂",
+                "青比较复杂"
+              ],
+              "afterTop5": [
+                "情比较复杂",
+                "卿比较复杂",
+                "氢比较复杂",
+                "晴比较复杂",
+                "青比较复杂"
+              ]
+            },
+            {
+              "id": "01801a4d5a1f2b542f41570222532f9f3f33bd29cc8bad7c6b169ab30be111a7",
+              "cut": 0,
+              "query": "gaishijianyinqiwangyourelun",
+              "context": "",
+              "expected": "该事件引起网友热论",
+              "beforeRank": 7,
+              "afterRank": 1,
+              "beforeTop5": [
+                "该时间引起网友热论",
+                "该时间引起网游热论",
+                "该是件引起网友热论",
+                "该时间引起往右热论",
+                "该时间引起网友惹论"
+              ],
+              "afterTop5": [
+                "该事件引起网友热论",
+                "该时间引起网友热论",
+                "该时间引起网友热轮",
+                "该是件引起网友热论",
+                "该时间引起网友惹论"
+              ]
+            },
+            {
+              "id": "01801a4d5a1f2b542f41570222532f9f3f33bd29cc8bad7c6b169ab30be111a7",
+              "cut": 4,
+              "query": "qiwangyourelun",
+              "context": "件引",
+              "expected": "起网友热论",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "起网友而论",
+                "起网游而论",
+                "起网友热论",
+                "起网游热论",
+                "起往右而论"
+              ],
+              "afterTop5": [
+                "起网友热论",
+                "起网友而论",
+                "期望又热论",
+                "起网游热论",
+                "起网又热论"
+              ]
+            },
+            {
+              "id": "02dce1acd6c4d8f5ca694dab382ab0bb8fd6306c322d43deeefb803391224f9e",
+              "cut": 0,
+              "query": "tiaozhengrengshiloushizhujidiao",
+              "context": "",
+              "expected": "调整仍是楼市主基调",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "调整仍是楼是主基调",
+                "调整仍是楼市主基调",
+                "调整仍是喽是主基调",
+                "调整仍是搂是主基调",
+                "调整仍是漏是主基调"
+              ],
+              "afterTop5": [
+                "调整仍是楼市主基调",
+                "调整仍是陋室主基调",
+                "调整仍是楼是主基调",
+                "调整仍是搂是主基调",
+                "调整仍是瘘是主基调"
+              ]
+            },
+            {
+              "id": "02dce1acd6c4d8f5ca694dab382ab0bb8fd6306c322d43deeefb803391224f9e",
+              "cut": 4,
+              "query": "loushizhujidiao",
+              "context": "仍是",
+              "expected": "楼市主基调",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "楼是主基调",
+                "楼市主基调",
+                "喽是主基调",
+                "搂是主基调",
+                "漏是主基调"
+              ],
+              "afterTop5": [
+                "楼市主基调",
+                "都是主基调",
+                "陋室主基调",
+                "楼是主基调",
+                "搂是主基调"
+              ]
+            },
+            {
+              "id": "034639a5f63d7dde10eaec18fc1b3415f6d2a4cbe26e4442fee8f630f5cb22e8",
+              "cut": 0,
+              "query": "rucisuchengdamanguanrongyu",
+              "context": "",
+              "expected": "如此速成大满贯荣誉",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "如此俗称大满贯荣誉",
+                "如此速成大满贯荣誉",
+                "如此俗称大满贯溶于",
+                "如此速成大满贯溶于",
+                "如此俗称大满贯冗余"
+              ],
+              "afterTop5": [
+                "如此速成大满贯荣誉",
+                "如此俗称大满贯荣誉",
+                "如此俗称大满贯冗余",
+                "如此塑成大满贯荣誉",
+                "如此速成大满贯冗余"
+              ]
+            },
+            {
+              "id": "036a2b433505093465b058a5d3e597dcef9b747810d01bdda0bfbaa6178f9ec6",
+              "cut": 0,
+              "query": "shoulibianyoudabadeyinzi",
+              "context": "",
+              "expected": "手里边有大把的银子",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "手里边有大把的因子",
+                "手里边有大把的银子",
+                "手里边有大把的引子",
+                "手里边有大把的引自",
+                "手里边有大巴的因子"
+              ],
+              "afterTop5": [
+                "手里边有大把的银子",
+                "手里边有大把的印子",
+                "手里边有大把的引子",
+                "手里边有大把的因子",
+                "手里便有大把的因子"
+              ]
+            },
+            {
+              "id": "036a2b433505093465b058a5d3e597dcef9b747810d01bdda0bfbaa6178f9ec6",
+              "cut": 4,
+              "query": "dabadeyinzi",
+              "context": "边有",
+              "expected": "大把的银子",
+              "beforeRank": 6,
+              "afterRank": 1,
+              "beforeTop5": [
+                "大巴的因子",
+                "大巴的影子",
+                "大巴的银子",
+                "大把的因子",
+                "大把的影子"
+              ],
+              "afterTop5": [
+                "大把的银子",
+                "大巴的影子",
+                "大把的影子",
+                "大巴的因子",
+                "大把的因子"
+              ]
+            },
+            {
+              "id": "03933f5f169a766ceff1603ea43c4119ddfbe448fc1b3b0c8040febe67fa0596",
+              "cut": 4,
+              "query": "jiajisuangongshi",
+              "context": "差比",
+              "expected": "价计算公式",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "家计算公式",
+                "加计算公式",
+                "假计算公式",
+                "价计算公式",
+                "甲计算公式"
+              ],
+              "afterTop5": [
+                "价计算公式",
+                "加计算公式",
+                "甲计算公式",
+                "假计算公式",
+                "架计算公式"
+              ]
+            },
+            {
+              "id": "03d55d2c695e011b2efece13a381dc31657c492a63cdbe261bb1a1ef159e7cfe",
+              "cut": 0,
+              "query": "yinweiquanjiayeshouhui",
+              "context": "",
+              "expected": "因为全家也受惠",
+              "beforeRank": 6,
+              "afterRank": 1,
+              "beforeTop5": [
+                "因为全家也收回",
+                "因为全家野兽会",
+                "因为全家也手绘",
+                "因为全家也受贿",
+                "因为全家也受会"
+              ],
+              "afterTop5": [
+                "因为全家也受惠",
+                "因为全家也受贿",
+                "因为全家也收回",
+                "因为全家也手绘",
+                "因为全家野兽回"
+              ]
+            },
+            {
+              "id": "043073942dbff83a18855193b72c16836b6eba00b1af8ff824bf8aba85b48054",
+              "cut": 4,
+              "query": "shihenduopengyou",
+              "context": "以结",
+              "expected": "识很多朋友",
+              "beforeRank": 5,
+              "afterRank": 1,
+              "beforeTop5": [
+                "是很多朋友",
+                "时很多朋友",
+                "实很多朋友",
+                "事很多朋友",
+                "识很多朋友"
+              ],
+              "afterTop5": [
+                "识很多朋友",
+                "实很多朋友",
+                "是很多朋友",
+                "式很多朋友",
+                "使很多朋友"
+              ]
+            },
+            {
+              "id": "04995368a91cf2a28121566a13bb9c68fc9e565dd8007a6a1a50b844bb87bf85",
+              "cut": 0,
+              "query": "tamendexuejiyuanzaiwenshan",
+              "context": "",
+              "expected": "他们的学籍远在文山",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "他们的学妓院在文山",
+                "他们的学籍远在文山",
+                "他们的血迹远在文山",
+                "他们的学计院在文山",
+                "他们的学籍元在文山"
+              ],
+              "afterTop5": [
+                "他们的学籍远在文山",
+                "他们的血迹远在文山",
+                "他们的学妓院在文山",
+                "它们的学妓院在文山",
+                "他们的学计院在文山"
+              ]
+            },
+            {
+              "id": "049b254e2c29b2bae6c7eee8cdd1201bffb57a0b2340935578857d561a8270d6",
+              "cut": 4,
+              "query": "ribaobaodaocheng",
+              "context": "财经",
+              "expected": "日报报道称",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "日报报道成",
+                "日报报道称",
+                "日报报道城",
+                "日报报道呈",
+                "日报报道乘"
+              ],
+              "afterTop5": [
+                "日报报道称",
+                "日报报道成",
+                "日报报道呈",
+                "日报报道橙",
+                "日报报道程"
+              ]
+            },
+            {
+              "id": "0002953dd647c00d2ec30ec8495703eb47610dbbdf2689afd07abec8037a9070",
+              "cut": 0,
+              "query": "womenqiantianganggangjieshouwanzonghangdezicha",
+              "context": "",
+              "expected": "我们前天刚刚接受完总行的自查",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "我们前天刚刚接受万总行的自查",
+                "我们前天刚刚接受玩总行的自查",
+                "我们前天刚刚接受完总行的自查",
+                "我们前天刚刚接受晚总行的自查",
+                "我们前天刚刚接手腕总行的自查"
+              ],
+              "afterTop5": [
+                "我们前天刚刚接受完总行的自查",
+                "我们前天刚刚接受碗总行的自查",
+                "我们前天刚刚接受晚总行的自查",
+                "我们前天刚刚接受弯总行的自查",
+                "我们前天刚刚接受玩总行的自查"
+              ]
+            },
+            {
+              "id": "0002953dd647c00d2ec30ec8495703eb47610dbbdf2689afd07abec8037a9070",
+              "cut": 7,
+              "query": "shouwanzonghangdezicha",
+              "context": "刚接",
+              "expected": "受完总行的自查",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "受万总行的自查",
+                "受玩总行的自查",
+                "受完总行的自查",
+                "受晚总行的自查",
+                "手腕总行的自查"
+              ],
+              "afterTop5": [
+                "受完总行的自查",
+                "收完总行的自查",
+                "受晚总行的自查",
+                "受万总行的自查",
+                "受碗总行的自查"
+              ]
+            },
+            {
+              "id": "0005d0c47439eebaa5482f61161ff07ae91977c6192c15d5ff040447bec41612",
+              "cut": 0,
+              "query": "meiershifenzhongshoujimeiyoubeijiesuo",
+              "context": "",
+              "expected": "每二十分钟手机没有被解锁",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "没二十分钟手机没有被解锁",
+                "每二十分钟手机没有被解锁",
+                "美二十分钟手机没有被解锁",
+                "没二十分钟收集没有被解锁",
+                "每二十分钟收集没有被解锁"
+              ],
+              "afterTop5": [
+                "每二十分钟手机没有被解锁",
+                "没二十分钟手机没有被解锁",
+                "梅二十分钟手机没有被解锁",
+                "酶二十分钟手机没有被解锁",
+                "镁二十分钟手机没有被解锁"
+              ]
+            },
+            {
+              "id": "0039aa9108173e5ae9b3b3b86e7be19a2968ce78fbeea468234bcdededf2d687",
+              "cut": 0,
+              "query": "quanmiantuijinshuishoufadingdeluxiantushishenme",
+              "context": "",
+              "expected": "全面推进税收法定的路线图是什么",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "全面推进水手法定的路线图是什么",
+                "全面推进税收法定的路线图是什么",
+                "全面推进水受法定的路线图是什么",
+                "全面推进水手法顶的路线图是什么",
+                "全面推进水守法定的路线图是什么"
+              ],
+              "afterTop5": [
+                "全面推进税收法定的路线图是什么",
+                "全面推进水受法定的路线图是什么",
+                "全面推进税收法顶的路线图是什么",
+                "全面推进谁手法定的路线图是什么",
+                "全面推进水手法定的路线图是什么"
+              ]
+            },
+            {
+              "id": "004128ffa27f9d820186844aea738a3c6ab187b6af58ed55bd08de4afdce2b12",
+              "cut": 0,
+              "query": "wankezuoweifangdichanyezhongdedashi",
+              "context": "",
+              "expected": "万科作为房地产业中的大师",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "万可作为房地产业中的大师",
+                "万可作为房地产业中的大事",
+                "万科作为房地产业中的大师",
+                "万科作为房地产业中的大事",
+                "玩可作为房地产业中的大师"
+              ],
+              "afterTop5": [
+                "万科作为房地产业中的大师",
+                "万科作为房地产业中的大事",
+                "万科作为房地产业中的大使",
+                "玩可作为房地产业中的大事",
+                "玩可作为房地产业中的大师"
+              ]
+            },
+            {
+              "id": "005e6a24991b0dde7d32956730d500878255e1cb3b33f562d360c5ad7b924008",
+              "cut": 9,
+              "query": "sicainiandierjiducaibao",
+              "context": "零一",
+              "expected": "四财年第二季度财报",
+              "beforeRank": 7,
+              "afterRank": 1,
+              "beforeTop5": [
+                "死才年底二季度财报",
+                "死财年第二季度财报",
+                "丝才年底二季度财报",
+                "死才年第二季度财报",
+                "四才年底二季度财报"
+              ],
+              "afterTop5": [
+                "四财年第二季度财报",
+                "死财年第二季度财报",
+                "丝财年第二季度财报",
+                "死才年第二季度财报",
+                "四才年底二季度财报"
+              ]
+            },
+            {
+              "id": "009da91a67aa6f09cb9813374bedd599549b9f1f5e4aac759ac055e07d503bcb",
+              "cut": 0,
+              "query": "bizuihaodeyicimanlesifenzhong",
+              "context": "",
+              "expected": "比最好的一次慢了四分钟",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "比最好的一次满了四分钟",
+                "比最好的一次慢了四分钟",
+                "笔最好的一次满了四分钟",
+                "闭嘴好的一次满了四分钟",
+                "必最好的一次满了四分钟"
+              ],
+              "afterTop5": [
+                "比最好的一次慢了四分钟",
+                "比最好的一次瞒了四分钟",
+                "比最好的一次满了四分钟",
+                "逼最好的一次满了四分钟",
+                "币最好的一次满了四分钟"
+              ]
+            },
+            {
+              "id": "00adcb34e7129c153ca3d6d4c27a0821e1a3aa2dcda48a5daf4cab8cc4d421a5",
+              "cut": 9,
+              "query": "shiyongyouzhangjiabaifenzhiqi",
+              "context": "龙鱼",
+              "expected": "食用油涨价百分之七",
+              "beforeRank": 5,
+              "afterRank": 1,
+              "beforeTop5": [
+                "是拥有涨价百分之七",
+                "是拥有张家百分之七",
+                "使用有涨价百分之七",
+                "时拥有涨价百分之七",
+                "食用油涨价百分之七"
+              ],
+              "afterTop5": [
+                "食用油涨价百分之七",
+                "是拥有涨价百分之七",
+                "是拥有张家百分之七",
+                "使用有张家百分之七",
+                "时拥有涨价百分之七"
+              ]
+            },
+            {
+              "id": "00b1e963fe81dc8e2770dcb990d5e238f1f073b8ee035fed9f67176a33bb4691",
+              "cut": 0,
+              "query": "lvyoucongyezheyiriyougangaoyunnanshigaofengxian",
+              "context": "",
+              "expected": "旅游从业者一日游港澳云南是高风险",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "旅游从业者一日游刚奥运男士高风险",
+                "旅游从业者一日游港澳云南是高风险",
+                "旅游从业者一日游敢告云南是高风险",
+                "旅游从业者一日游赶稿云南是高风险",
+                "旅游从业者一日游刚奥运难事高风险"
+              ],
+              "afterTop5": [
+                "旅游从业者一日游港澳云南是高风险",
+                "旅游从业者一日游港奥运男士高风险",
+                "旅游从业者一日游刚奥运男士高风险",
+                "旅游从业者一日游杠奥运男士高风险",
+                "旅游从业者一日游赶稿云南是高风险"
+              ]
+            },
+            {
+              "id": "00b8d3b38ac778cd66b5a06f3940c4a58deb70c17f408acc202eb0ff0aacbe3a",
+              "cut": 0,
+              "query": "shangmianqingchudikezhezhangguoweidemingzi",
+              "context": "",
+              "expected": "上面清楚地刻着张国伟的名字",
+              "beforeRank": 7,
+              "afterRank": 1,
+              "beforeTop5": [
+                "上面清楚地可这张果味的名字",
+                "上面清楚地可这张国伟的名字",
+                "上面清楚迪克这张果味的名字",
+                "上面清楚迪克这张国伟的名字",
+                "上面清楚地课这张果味的名字"
+              ],
+              "afterTop5": [
+                "上面清楚地刻着张国伟的名字",
+                "上面清楚地课这张国伟的名字",
+                "上面清楚迪克这张果味的名字",
+                "上面清楚地可这张果味的名字",
+                "上面清楚地克这张果味的名字"
+              ]
+            },
+            {
+              "id": "00b8d3b38ac778cd66b5a06f3940c4a58deb70c17f408acc202eb0ff0aacbe3a",
+              "cut": 6,
+              "query": "zhezhangguoweidemingzi",
+              "context": "地刻",
+              "expected": "着张国伟的名字",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "这张果味的名字",
+                "这张国伟的名字",
+                "着张国伟的名字",
+                "这张过为的名字",
+                "这张国为的名字"
+              ],
+              "afterTop5": [
+                "着张国伟的名字",
+                "者张国伟的名字",
+                "这张国伟的名字",
+                "这张果味的名字",
+                "这张国维的名字"
+              ]
+            }
+          ],
+          "firstLosses": [
+            {
+              "id": "0019c099ab3fc6995032de4f95eca5de3e5b04e50f9007555c1833c5f8b23fc2",
+              "cut": 0,
+              "query": "nijiukeyiduanzanshiyongta",
+              "context": "",
+              "expected": "你就可以短暂使用它",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "你就可以短暂使用它",
+                "你就可以短暂使用他",
+                "你就可以短暂时用它",
+                "你就可以短暂时用他",
+                "你就可以短暂使用她"
+              ],
+              "afterTop5": [
+                "你就可以短暂使用他",
+                "你就可以短暂使用它",
+                "你就可以短暂使用她",
+                "你就可以短暂时用它",
+                "你就可以短暂时用她"
+              ]
+            },
+            {
+              "id": "0019c099ab3fc6995032de4f95eca5de3e5b04e50f9007555c1833c5f8b23fc2",
+              "cut": 4,
+              "query": "duanzanshiyongta",
+              "context": "可以",
+              "expected": "短暂使用它",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "短暂使用它",
+                "短暂使用他",
+                "短暂时用它",
+                "短暂时用他",
+                "短暂使用她"
+              ],
+              "afterTop5": [
+                "短暂使用他",
+                "短暂使用她",
+                "短暂使用它",
+                "短暂时用它",
+                "短暂时用他"
+              ]
+            },
+            {
+              "id": "028218ae41cd7df55e6cc9112e0495ec958cd7212a385f8383c0c0116e4fff4c",
+              "cut": 3,
+              "query": "xiaoxiaobaozi",
+              "context": "的小",
+              "expected": "小小包子",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "小小包子",
+                "小小豹子",
+                "小小孢子",
+                "小小刨子",
+                "小小宝子"
+              ],
+              "afterTop5": [
+                "小小孢子",
+                "小小包子",
+                "小小报纸",
+                "笑笑包子",
+                "小小豹子"
+              ]
+            },
+            {
+              "id": "00131b8f2680d784c5500d7280ab54962b29e16b954bd20ea3f1ff2114452e70",
+              "cut": 5,
+              "query": "chuxianlejianchan",
+              "context": "豆也",
+              "expected": "出现了减产",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "出现了减产",
+                "出现了见长",
+                "出现了件产",
+                "出现了间产",
+                "出现了检查"
+              ],
+              "afterTop5": [
+                "出现了检查",
+                "出现了减产",
+                "出现了见长",
+                "出现了建厂",
+                "出现了见产"
+              ]
+            },
+            {
+              "id": "001b0743796a3c50e00e99d5ee98d863b56717c8002c4e8a97e17d9f3fe47cd4",
+              "cut": 0,
+              "query": "ertazijiduijiangxiangdekanfayirudangnian",
+              "context": "",
+              "expected": "而他自己对奖项的看法一如当年",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "而他自己对奖项的看法一如当年",
+                "而他自己对奖项的看法一入当年",
+                "而她自己对奖项的看法一如当年",
+                "而他自己对将想的看法一如当年",
+                "而他自己对奖项的看法亦如当年"
+              ],
+              "afterTop5": [
+                "而她自己对奖项的看法一如当年",
+                "而他自己对奖项的看法一如当年",
+                "而他自己对奖项的看法亦如当年",
+                "而他自己对将向的看法一如当年",
+                "而他自己对将想的看法一如当年"
+              ]
+            },
+            {
+              "id": "004128ffa27f9d820186844aea738a3c6ab187b6af58ed55bd08de4afdce2b12",
+              "cut": 6,
+              "query": "chanyezhongdedashi",
+              "context": "房地",
+              "expected": "产业中的大师",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "产业中的大师",
+                "产业中的大事",
+                "产业中的大使",
+                "产业中的大是",
+                "产业中的大石"
+              ],
+              "afterTop5": [
+                "产业中的大事",
+                "产业中的大师",
+                "产业中的大石",
+                "产业中的大势",
+                "产业中的大使"
+              ]
+            }
+          ],
+          "rankLosses": [
+            {
+              "id": "0019c099ab3fc6995032de4f95eca5de3e5b04e50f9007555c1833c5f8b23fc2",
+              "cut": 0,
+              "query": "nijiukeyiduanzanshiyongta",
+              "context": "",
+              "expected": "你就可以短暂使用它",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "你就可以短暂使用它",
+                "你就可以短暂使用他",
+                "你就可以短暂时用它",
+                "你就可以短暂时用他",
+                "你就可以短暂使用她"
+              ],
+              "afterTop5": [
+                "你就可以短暂使用他",
+                "你就可以短暂使用它",
+                "你就可以短暂使用她",
+                "你就可以短暂时用它",
+                "你就可以短暂时用她"
+              ]
+            },
+            {
+              "id": "0019c099ab3fc6995032de4f95eca5de3e5b04e50f9007555c1833c5f8b23fc2",
+              "cut": 4,
+              "query": "duanzanshiyongta",
+              "context": "可以",
+              "expected": "短暂使用它",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "短暂使用它",
+                "短暂使用他",
+                "短暂时用它",
+                "短暂时用他",
+                "短暂使用她"
+              ],
+              "afterTop5": [
+                "短暂使用他",
+                "短暂使用她",
+                "短暂使用它",
+                "短暂时用它",
+                "短暂时用他"
+              ]
+            },
+            {
+              "id": "028218ae41cd7df55e6cc9112e0495ec958cd7212a385f8383c0c0116e4fff4c",
+              "cut": 3,
+              "query": "xiaoxiaobaozi",
+              "context": "的小",
+              "expected": "小小包子",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "小小包子",
+                "小小豹子",
+                "小小孢子",
+                "小小刨子",
+                "小小宝子"
+              ],
+              "afterTop5": [
+                "小小孢子",
+                "小小包子",
+                "小小报纸",
+                "笑笑包子",
+                "小小豹子"
+              ]
+            },
+            {
+              "id": "00131b8f2680d784c5500d7280ab54962b29e16b954bd20ea3f1ff2114452e70",
+              "cut": 5,
+              "query": "chuxianlejianchan",
+              "context": "豆也",
+              "expected": "出现了减产",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "出现了减产",
+                "出现了见长",
+                "出现了件产",
+                "出现了间产",
+                "出现了检查"
+              ],
+              "afterTop5": [
+                "出现了检查",
+                "出现了减产",
+                "出现了见长",
+                "出现了建厂",
+                "出现了见产"
+              ]
+            },
+            {
+              "id": "001b0743796a3c50e00e99d5ee98d863b56717c8002c4e8a97e17d9f3fe47cd4",
+              "cut": 0,
+              "query": "ertazijiduijiangxiangdekanfayirudangnian",
+              "context": "",
+              "expected": "而他自己对奖项的看法一如当年",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "而他自己对奖项的看法一如当年",
+                "而他自己对奖项的看法一入当年",
+                "而她自己对奖项的看法一如当年",
+                "而他自己对将想的看法一如当年",
+                "而他自己对奖项的看法亦如当年"
+              ],
+              "afterTop5": [
+                "而她自己对奖项的看法一如当年",
+                "而他自己对奖项的看法一如当年",
+                "而他自己对奖项的看法亦如当年",
+                "而他自己对将向的看法一如当年",
+                "而他自己对将想的看法一如当年"
+              ]
+            },
+            {
+              "id": "004128ffa27f9d820186844aea738a3c6ab187b6af58ed55bd08de4afdce2b12",
+              "cut": 6,
+              "query": "chanyezhongdedashi",
+              "context": "房地",
+              "expected": "产业中的大师",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "产业中的大师",
+                "产业中的大事",
+                "产业中的大使",
+                "产业中的大是",
+                "产业中的大石"
+              ],
+              "afterTop5": [
+                "产业中的大事",
+                "产业中的大师",
+                "产业中的大石",
+                "产业中的大势",
+                "产业中的大使"
+              ]
+            },
+            {
+              "id": "009da91a67aa6f09cb9813374bedd599549b9f1f5e4aac759ac055e07d503bcb",
+              "cut": 5,
+              "query": "cimanlesifenzhong",
+              "context": "的一",
+              "expected": "次慢了四分钟",
+              "beforeRank": 2,
+              "afterRank": 3,
+              "beforeTop5": [
+                "次满了四分钟",
+                "次慢了四分钟",
+                "次满了十分钟",
+                "次瞒了四分钟",
+                "次看了四分钟"
+              ],
+              "afterTop5": [
+                "次慢了十分钟",
+                "次看了四分钟",
+                "次慢了四分钟",
+                "次满了十分钟",
+                "次满了四分钟"
+              ]
+            }
+          ],
+          "latencyAllRows": {
+            "count": 128,
+            "medianMs": 660.7849,
+            "p95Ms": 2023.5582,
+            "maxMs": 2541.9772,
+            "totalMs": 95025.3857
+          },
+          "latencyScoredRows": {
+            "count": 121,
+            "medianMs": 702.2219,
+            "p95Ms": 2023.5582,
+            "maxMs": 2541.9772,
+            "totalMs": 95024.7
+          },
+          "slices": {
+            "empty": {
+              "before": {
+                "states": 64,
+                "top1": 29,
+                "top5": 46,
+                "top10": 49,
+                "recall255": 57,
+                "characterErrors": 83,
+                "characters": 712
+              },
+              "after": {
+                "states": 64,
+                "top1": 41,
+                "top5": 49,
+                "top10": 49,
+                "recall255": 57,
+                "characterErrors": 48,
+                "characters": 712
+              }
+            },
+            "editor": {
+              "before": {
+                "states": 64,
+                "top1": 36,
+                "top5": 51,
+                "top10": 56,
+                "recall255": 61,
+                "characterErrors": 59,
+                "characters": 375
+              },
+              "after": {
+                "states": 64,
+                "top1": 44,
+                "top5": 53,
+                "top10": 56,
+                "recall255": 61,
+                "characterErrors": 35,
+                "characters": 375
+              }
+            }
+          },
+          "timingScope": "Warm desktop CPU added rescoring only; excludes decoder and Android UI",
+          "accuracyScope": "Known development workload with empty personalization; not blind or natural mobile input"
+        },
+        "tatoeba": {
+          "before": {
+            "states": 128,
+            "top1": 83,
+            "top5": 113,
+            "top10": 120,
+            "recall255": 121,
+            "characterErrors": 70,
+            "characters": 941
+          },
+          "after": {
+            "states": 128,
+            "top1": 92,
+            "top5": 115,
+            "top10": 120,
+            "recall255": 121,
+            "characterErrors": 57,
+            "characters": 941
+          },
+          "nonregressionPassed": true,
+          "eligibleRows": 122,
+          "firstChanged": 35,
+          "skipReasons": {
+            "scored": 122,
+            "unknown-character": 6
+          },
+          "firstGains": [
+            {
+              "id": "00650974b0c04084ac0932b5f5411c1a902a98e0bc632222349c16b82189d2c6",
+              "cut": 3,
+              "query": "meiyouming",
+              "context": "的妹",
+              "expected": "妹有名",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "没有名",
+                "妹有名",
+                "没有明",
+                "没有命",
+                "妹又名"
+              ],
+              "afterTop5": [
+                "妹有名",
+                "妹又名",
+                "没有命",
+                "妹有命",
+                "没有经"
+              ]
+            },
+            {
+              "id": "00acf06cd78db07fbf011d1e4731dd457c4fb5cdbb196ae44a8f1a919ee3d678",
+              "cut": 4,
+              "query": "wudedifang",
+              "context": "无一",
+              "expected": "物的地方",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "去的地方",
+                "无的地方",
+                "物的地方",
+                "五的地方",
+                "误的地方"
+              ],
+              "afterTop5": [
+                "物的地方",
+                "无的地方",
+                "去的地方",
+                "舞的地方",
+                "误的地方"
+              ]
+            },
+            {
+              "id": "00d9780e663d0ce4ffb8fb3988d973fd05dc3078018bcf73d6ac105e22533772",
+              "cut": 0,
+              "query": "womenxihuanzaiyuzhonggaoge",
+              "context": "",
+              "expected": "我们喜欢在雨中高歌",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "我们喜欢在雨中高个",
+                "我们喜欢在雨中搞个",
+                "我们喜欢在雨中高歌",
+                "我们喜欢在于中高个",
+                "我们喜欢在于中搞个"
+              ],
+              "afterTop5": [
+                "我们喜欢在雨中高歌",
+                "我们喜欢在雨中搞个",
+                "我们喜欢在雨中高阁",
+                "我们喜欢在雨中高个",
+                "我们喜欢在于忠告个"
+              ]
+            },
+            {
+              "id": "00d9780e663d0ce4ffb8fb3988d973fd05dc3078018bcf73d6ac105e22533772",
+              "cut": 4,
+              "query": "zaiyuzhonggaoge",
+              "context": "喜欢",
+              "expected": "在雨中高歌",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "在雨中高个",
+                "在雨中搞个",
+                "在雨中高歌",
+                "在于中高个",
+                "在于中搞个"
+              ],
+              "afterTop5": [
+                "在雨中高歌",
+                "在雨中搞个",
+                "在雨中高阁",
+                "在雨中高个",
+                "在于忠告个"
+              ]
+            },
+            {
+              "id": "00e687d99822dbbc88f0515f08836d949b546b9c606e818142f50421951a3b34",
+              "cut": 0,
+              "query": "wodadiantiqulesilou",
+              "context": "",
+              "expected": "我搭电梯去了四楼",
+              "beforeRank": 5,
+              "afterRank": 1,
+              "beforeTop5": [
+                "我打电梯去了四楼",
+                "我大电梯去了四楼",
+                "我答电梯去了四楼",
+                "我打点提取了四楼",
+                "我搭电梯去了四楼"
+              ],
+              "afterTop5": [
+                "我搭电梯去了四楼",
+                "我打电梯去了四楼",
+                "我大电梯去了四楼",
+                "我答电梯去了四楼",
+                "我打电梯取了四楼"
+              ]
+            },
+            {
+              "id": "00fabc5b4c98ddb99acfac0455fee3fcded93ef3277f07e1a2ee6aea9a92ccd3",
+              "cut": 0,
+              "query": "yonghengchixuzuijiu",
+              "context": "",
+              "expected": "永恒持续最久",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "永恒持续醉酒",
+                "永恒持续最就",
+                "永恒持续最久",
+                "永恒持续最旧",
+                "永恒持续嘴就"
+              ],
+              "afterTop5": [
+                "永恒持续最久",
+                "永恒持续最旧",
+                "永恒持续醉酒",
+                "永恒持续最酒",
+                "永恒持续最就"
+              ]
+            },
+            {
+              "id": "00fcd136ccedbbf7196e82738e17d88d48c0f3f8f83d555814a620ec560db1ad",
+              "cut": 0,
+              "query": "nimeibiyaonamezhengshi",
+              "context": "",
+              "expected": "你没必要那么正式",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "你没必要那么正是",
+                "你没必要那么正式",
+                "你没必要那么证实",
+                "你没必要那么正视",
+                "你没必要那么正史"
+              ],
+              "afterTop5": [
+                "你没必要那么正式",
+                "你没必要那么正视",
+                "你没必要那么正是",
+                "你没必要那么证实",
+                "你没必要那么正事"
+              ]
+            },
+            {
+              "id": "011783cf28ddb16cc331ff86b1e9c144de45239171d5f6f9bafea51c7991dbd6",
+              "cut": 3,
+              "query": "jingwusheng",
+              "context": "片寂",
+              "expected": "静无声",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "静物生",
+                "静无声",
+                "静物声",
+                "经无声",
+                "景物生"
+              ],
+              "afterTop5": [
+                "静无声",
+                "静物声",
+                "静五声",
+                "静物生",
+                "景物生"
+              ]
+            },
+            {
+              "id": "005a0cea93e1a1452258022b029fca54ef58623dcf409fca2224b74ec3fe1d47",
+              "cut": 7,
+              "query": "tadegezidetoushang",
+              "context": "放在",
+              "expected": "他的鸽子的头上",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "他的各自的头上",
+                "他的鸽子的头上",
+                "她的各自的头上",
+                "他的个子的头上",
+                "他的格子的头上"
+              ],
+              "afterTop5": [
+                "他的鸽子的头上",
+                "她的鸽子的头上",
+                "他的各自的头上",
+                "她的各自的头上",
+                "他的个子的头上"
+              ]
+            },
+            {
+              "id": "01499b732bbb1aca0266829abab246c2ba9d5539281aa39bb9bfd48efc941e4f",
+              "cut": 0,
+              "query": "tadeqizishengxialeyiduishuangbaotainanhai",
+              "context": "",
+              "expected": "他的妻子生下了一对双胞胎男孩",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "他的妻子剩下了一堆双胞胎男孩",
+                "他的妻子剩下了一对双胞胎男孩",
+                "他的妻子生下了一堆双胞胎男孩",
+                "他的妻子生下了一对双胞胎男孩",
+                "他的妻子省下了一堆双胞胎男孩"
+              ],
+              "afterTop5": [
+                "他的妻子生下了一对双胞胎男孩",
+                "他的妻子剩下了一对双胞胎男孩",
+                "他的妻子省下了一对双胞胎男孩",
+                "他的妻子生下了一堆双胞胎男孩",
+                "他的妻子剩下了一队双胞胎男孩"
+              ]
+            },
+            {
+              "id": "01f416918e81483f053ccb4fbefa92ae3dc050765fd55d21c3ed26abf36d3129",
+              "cut": 5,
+              "query": "houhuaxiaohenda",
+              "context": "的时",
+              "expected": "候花销很大",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "后话小很大",
+                "后花销很大",
+                "候花销很大",
+                "后话笑很大",
+                "候画小很大"
+              ],
+              "afterTop5": [
+                "候花销很大",
+                "候华校很大",
+                "后花销很大",
+                "后话笑很大",
+                "后化小很大"
+              ]
+            },
+            {
+              "id": "02a8d04df0e76bc949f44ef42f201749d1375343056197dde85da93f000247ed",
+              "cut": 6,
+              "query": "letakandaodeshi",
+              "context": "解释",
+              "expected": "了他看到的事",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "了他看到的是",
+                "了他看到的时",
+                "了她看到的是",
+                "了他看到的事",
+                "了她看到的时"
+              ],
+              "afterTop5": [
+                "了他看到的事",
+                "了她看到的事",
+                "了他看到的时",
+                "了他看到的是",
+                "了它看到的是"
+              ]
+            },
+            {
+              "id": "0430c781a4501cecb005f4f544b080f2bf033d6285c016e8b19553b842aa6d93",
+              "cut": 7,
+              "query": "zhengtingweiyuzhengqianfang",
+              "context": "到市",
+              "expected": "政厅位于正前方",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "正厅位于正前方",
+                "政厅位于正前方",
+                "正听位于正前方",
+                "政听位于正前方",
+                "政挺位于正前方"
+              ],
+              "afterTop5": [
+                "政厅位于正前方",
+                "正厅位于正前方",
+                "政听位于正前方",
+                "政挺位于正前方",
+                "政停位于正前方"
+              ]
+            },
+            {
+              "id": "0512a1d898ad6704460f80a0e0902c325e3f84fe334c5f80d40b8e8970e00bcb",
+              "cut": 0,
+              "query": "tahuaiyunhourengranjianchigongzuo",
+              "context": "",
+              "expected": "她怀孕后仍然坚持工作",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "他怀孕后仍然坚持工作",
+                "她怀孕后仍然坚持工作",
+                "它怀孕后仍然坚持工作",
+                "他怀孕后仍然减持工作",
+                "她怀孕后仍然减持工作"
+              ],
+              "afterTop5": [
+                "她怀孕后仍然坚持工作",
+                "他怀孕后仍然坚持工作",
+                "它怀孕后仍然坚持工作",
+                "塔怀孕后仍然坚持工作",
+                "她怀孕后仍然减持工作"
+              ]
+            },
+            {
+              "id": "05397e8cff72bf85c3adb52cc9792816453a5ea7f2ccb8496a71392cbbbdcd56",
+              "cut": 0,
+              "query": "tapingzhijuefaxiantazaisahuang",
+              "context": "",
+              "expected": "他凭直觉发现她在撒谎",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "她凭直觉发现他在撒谎",
+                "他凭直觉发现他在撒谎",
+                "她凭直觉发现她在撒谎",
+                "他凭直觉发现她在撒谎",
+                "她凭直觉发现它在撒谎"
+              ],
+              "afterTop5": [
+                "他凭直觉发现她在撒谎",
+                "她凭直觉发现他在撒谎",
+                "他凭直觉发现他在撒谎",
+                "她凭直觉发现她在撒谎",
+                "它凭直觉发现他在撒谎"
+              ]
+            },
+            {
+              "id": "05397e8cff72bf85c3adb52cc9792816453a5ea7f2ccb8496a71392cbbbdcd56",
+              "cut": 5,
+              "query": "xiantazaisahuang",
+              "context": "觉发",
+              "expected": "现她在撒谎",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "现他在撒谎",
+                "现她在撒谎",
+                "现它在撒谎",
+                "现他再撒谎",
+                "先他在撒谎"
+              ],
+              "afterTop5": [
+                "现她在撒谎",
+                "现他在撒谎",
+                "现它在撒谎",
+                "现她再撒谎",
+                "现他再撒谎"
+              ]
+            }
+          ],
+          "firstLosses": [
+            {
+              "id": "007bdfb67c95e118d35eecf265417c3b92eb68cd5bd8c41e97c0818f025a5600",
+              "cut": 0,
+              "query": "buyaobamenkaizhe",
+              "context": "",
+              "expected": "不要把门开着",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "不要把门开着",
+                "不要把门开这",
+                "不要把们开着",
+                "不要八门开着",
+                "不要吧门开着"
+              ],
+              "afterTop5": [
+                "不要把门开这",
+                "不要把门开着",
+                "不要把门开者",
+                "不要吧门开着",
+                "不要把们开这"
+              ]
+            },
+            {
+              "id": "009e08ebe536eab614663e5c8389a87fc931b45ab8ab567d818426e0f535d340",
+              "cut": 0,
+              "query": "worengranjidetademingzi",
+              "context": "",
+              "expected": "我仍然记得他的名字",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "我仍然记得他的名字",
+                "我仍然记得她的名字",
+                "我仍然记得它的名字",
+                "我仍然级的他的名字",
+                "我仍然及的他的名字"
+              ],
+              "afterTop5": [
+                "我仍然记得她的名字",
+                "我仍然记得他的名字",
+                "我仍然记得它的名字",
+                "我仍然记的他的名字",
+                "我仍然级的她的名字"
+              ]
+            },
+            {
+              "id": "009e08ebe536eab614663e5c8389a87fc931b45ab8ab567d818426e0f535d340",
+              "cut": 4,
+              "query": "detademingzi",
+              "context": "然记",
+              "expected": "得他的名字",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "得他的名字",
+                "得她的名字",
+                "的他的名字",
+                "的她的名字",
+                "得它的名字"
+              ],
+              "afterTop5": [
+                "得她的名字",
+                "得他的名字",
+                "得它的名字",
+                "的他的名字",
+                "的它的名字"
+              ]
+            },
+            {
+              "id": "00e5136124a786fa97f287f8d1531f24b4ddf21315a44a285c767a345b92f982",
+              "cut": 4,
+              "query": "keyifangsongle",
+              "context": "我们",
+              "expected": "可以放松了",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "可以放松了",
+                "可以放送了",
+                "可以放松的",
+                "可以放松乐",
+                "可以放怂了"
+              ],
+              "afterTop5": [
+                "可以放松的",
+                "可以放松乐",
+                "可以放松了",
+                "刻意放松了",
+                "可以放松勒"
+              ]
+            },
+            {
+              "id": "00fab2fde6bd6e55ac9157764ee54da0aa89d9baa6e7a5ff07bdf9aaa9919a04",
+              "cut": 0,
+              "query": "samizaichufangli",
+              "context": "",
+              "expected": "萨米在厨房里",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "萨米在厨房里",
+                "萨米再厨房里",
+                "萨米在厨房离",
+                "萨米在厨房力",
+                "大米在厨房里"
+              ],
+              "afterTop5": [
+                "大米在厨房里",
+                "萨米在厨房里",
+                "萨米在厨房离",
+                "萨米在厨房李",
+                "萨米在厨房立"
+              ]
+            },
+            {
+              "id": "0173167b078836bf5debb5eb641a42201d4e524b85f76b8dbe1e7c6af33b0048",
+              "cut": 3,
+              "query": "hencanren",
+              "context": "起来",
+              "expected": "很残忍",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "很残忍",
+                "很惨人",
+                "和男人",
+                "河南人",
+                "很惨任"
+              ],
+              "afterTop5": [
+                "河南人",
+                "很残忍",
+                "和男人",
+                "很惨人",
+                "很惨认"
+              ]
+            },
+            {
+              "id": "03e0de47bf73a01c340fc3bfef3e733ad485d62d38eff1e71bdf0077a45f6781",
+              "cut": 6,
+              "query": "juelenidejianyine",
+              "context": "么否",
+              "expected": "决了你的建议呢",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "决了你的建议呢",
+                "绝了你的建议呢",
+                "掘了你的建议呢",
+                "觉了你的建议呢",
+                "决了你的建议了"
+              ],
+              "afterTop5": [
+                "决了你的建议了",
+                "决了你的建议呢",
+                "绝了你的建议了",
+                "绝了你的建议呢",
+                "觉了你的建议呢"
+              ]
+            }
+          ],
+          "rankLosses": [
+            {
+              "id": "00551a894e6a43a18dcd87652970c2f0ab08c4a8181f9555e541e6873fb54f81",
+              "cut": 0,
+              "query": "nihuibuhuijiangdaobenyu",
+              "context": "",
+              "expected": "你会不会讲道本语",
+              "beforeRank": 6,
+              "afterRank": 8,
+              "beforeTop5": [
+                "你会不会讲到本与",
+                "你会不会讲到本于",
+                "你会不会降到本与",
+                "你会不会降到本于",
+                "你会不会讲道本与"
+              ],
+              "afterTop5": [
+                "你会不会讲到本于",
+                "你会不会将到本与",
+                "你会不会讲到本与",
+                "你会不会降到本于",
+                "你会不会讲到本语"
+              ]
+            },
+            {
+              "id": "00551a894e6a43a18dcd87652970c2f0ab08c4a8181f9555e541e6873fb54f81",
+              "cut": 4,
+              "query": "jiangdaobenyu",
+              "context": "不会",
+              "expected": "讲道本语",
+              "beforeRank": 7,
+              "afterRank": 8,
+              "beforeTop5": [
+                "讲到本与",
+                "降到本与",
+                "讲到本于",
+                "降到本于",
+                "讲到本意"
+              ],
+              "afterTop5": [
+                "讲到本意",
+                "讲到本于",
+                "讲到本与",
+                "降到本于",
+                "讲到本语"
+              ]
+            },
+            {
+              "id": "007bdfb67c95e118d35eecf265417c3b92eb68cd5bd8c41e97c0818f025a5600",
+              "cut": 0,
+              "query": "buyaobamenkaizhe",
+              "context": "",
+              "expected": "不要把门开着",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "不要把门开着",
+                "不要把门开这",
+                "不要把们开着",
+                "不要八门开着",
+                "不要吧门开着"
+              ],
+              "afterTop5": [
+                "不要把门开这",
+                "不要把门开着",
+                "不要把门开者",
+                "不要吧门开着",
+                "不要把们开这"
+              ]
+            },
+            {
+              "id": "009e08ebe536eab614663e5c8389a87fc931b45ab8ab567d818426e0f535d340",
+              "cut": 0,
+              "query": "worengranjidetademingzi",
+              "context": "",
+              "expected": "我仍然记得他的名字",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "我仍然记得他的名字",
+                "我仍然记得她的名字",
+                "我仍然记得它的名字",
+                "我仍然级的他的名字",
+                "我仍然及的他的名字"
+              ],
+              "afterTop5": [
+                "我仍然记得她的名字",
+                "我仍然记得他的名字",
+                "我仍然记得它的名字",
+                "我仍然记的他的名字",
+                "我仍然级的她的名字"
+              ]
+            },
+            {
+              "id": "009e08ebe536eab614663e5c8389a87fc931b45ab8ab567d818426e0f535d340",
+              "cut": 4,
+              "query": "detademingzi",
+              "context": "然记",
+              "expected": "得他的名字",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "得他的名字",
+                "得她的名字",
+                "的他的名字",
+                "的她的名字",
+                "得它的名字"
+              ],
+              "afterTop5": [
+                "得她的名字",
+                "得他的名字",
+                "得它的名字",
+                "的他的名字",
+                "的它的名字"
+              ]
+            },
+            {
+              "id": "00e5136124a786fa97f287f8d1531f24b4ddf21315a44a285c767a345b92f982",
+              "cut": 4,
+              "query": "keyifangsongle",
+              "context": "我们",
+              "expected": "可以放松了",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "可以放松了",
+                "可以放送了",
+                "可以放松的",
+                "可以放松乐",
+                "可以放怂了"
+              ],
+              "afterTop5": [
+                "可以放松的",
+                "可以放松乐",
+                "可以放松了",
+                "刻意放松了",
+                "可以放松勒"
+              ]
+            },
+            {
+              "id": "00fab2fde6bd6e55ac9157764ee54da0aa89d9baa6e7a5ff07bdf9aaa9919a04",
+              "cut": 0,
+              "query": "samizaichufangli",
+              "context": "",
+              "expected": "萨米在厨房里",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "萨米在厨房里",
+                "萨米再厨房里",
+                "萨米在厨房离",
+                "萨米在厨房力",
+                "大米在厨房里"
+              ],
+              "afterTop5": [
+                "大米在厨房里",
+                "萨米在厨房里",
+                "萨米在厨房离",
+                "萨米在厨房李",
+                "萨米在厨房立"
+              ]
+            },
+            {
+              "id": "0173167b078836bf5debb5eb641a42201d4e524b85f76b8dbe1e7c6af33b0048",
+              "cut": 3,
+              "query": "hencanren",
+              "context": "起来",
+              "expected": "很残忍",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "很残忍",
+                "很惨人",
+                "和男人",
+                "河南人",
+                "很惨任"
+              ],
+              "afterTop5": [
+                "河南人",
+                "很残忍",
+                "和男人",
+                "很惨人",
+                "很惨认"
+              ]
+            },
+            {
+              "id": "02ccda90abfb2f85e66757c6574f2cc3100fd4bbe56389f2acffb11eda9ef4de",
+              "cut": 0,
+              "query": "tabuzhidaozijixuyaodaiyanjing",
+              "context": "",
+              "expected": "他不知道自己需要带眼镜",
+              "beforeRank": 5,
+              "afterRank": 6,
+              "beforeTop5": [
+                "他不知道自己需要戴眼镜",
+                "她不知道自己需要戴眼镜",
+                "它不知道自己需要戴眼镜",
+                "他不知道自己需要带眼睛",
+                "他不知道自己需要带眼镜"
+              ],
+              "afterTop5": [
+                "她不知道自己需要戴眼镜",
+                "他不知道自己需要戴眼镜",
+                "它不知道自己需要戴眼镜",
+                "他不知道自己需要戴眼睛",
+                "她不知道自己需要带眼镜"
+              ]
+            },
+            {
+              "id": "03e0de47bf73a01c340fc3bfef3e733ad485d62d38eff1e71bdf0077a45f6781",
+              "cut": 6,
+              "query": "juelenidejianyine",
+              "context": "么否",
+              "expected": "决了你的建议呢",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "决了你的建议呢",
+                "绝了你的建议呢",
+                "掘了你的建议呢",
+                "觉了你的建议呢",
+                "决了你的建议了"
+              ],
+              "afterTop5": [
+                "决了你的建议了",
+                "决了你的建议呢",
+                "绝了你的建议了",
+                "绝了你的建议呢",
+                "觉了你的建议呢"
+              ]
+            }
+          ],
+          "latencyAllRows": {
+            "count": 128,
+            "medianMs": 456.9954,
+            "p95Ms": 1590.5297,
+            "maxMs": 2043.6302,
+            "totalMs": 74826.5147
+          },
+          "latencyScoredRows": {
+            "count": 122,
+            "medianMs": 470.4761,
+            "p95Ms": 1590.5297,
+            "maxMs": 2043.6302,
+            "totalMs": 74825.9516
+          },
+          "slices": {
+            "empty": {
+              "before": {
+                "states": 64,
+                "top1": 40,
+                "top5": 54,
+                "top10": 59,
+                "recall255": 59,
+                "characterErrors": 40,
+                "characters": 619
+              },
+              "after": {
+                "states": 64,
+                "top1": 44,
+                "top5": 55,
+                "top10": 59,
+                "recall255": 59,
+                "characterErrors": 33,
+                "characters": 619
+              }
+            },
+            "editor": {
+              "before": {
+                "states": 64,
+                "top1": 43,
+                "top5": 59,
+                "top10": 61,
+                "recall255": 62,
+                "characterErrors": 30,
+                "characters": 322
+              },
+              "after": {
+                "states": 64,
+                "top1": 48,
+                "top5": 60,
+                "top10": 61,
+                "recall255": 62,
+                "characterErrors": 24,
+                "characters": 322
+              }
+            }
+          },
+          "timingScope": "Warm desktop CPU added rescoring only; excludes decoder and Android UI",
+          "accuracyScope": "Known development workload with empty personalization; not blind or natural mobile input"
+        },
+        "diagnostic": {
+          "before": {
+            "states": 6,
+            "top1": 4,
+            "top5": 6,
+            "top10": 6,
+            "recall255": 6,
+            "characterErrors": 2,
+            "characters": 21
+          },
+          "after": {
+            "states": 6,
+            "top1": 5,
+            "top5": 6,
+            "top10": 6,
+            "recall255": 6,
+            "characterErrors": 1,
+            "characters": 21
+          },
+          "nonregressionPassed": true,
+          "eligibleRows": 6,
+          "firstChanged": 2,
+          "skipReasons": {
+            "scored": 6
+          },
+          "firstGains": [
+            {
+              "id": "e28-known-01",
+              "cut": 0,
+              "query": "jintianyouyidianlei",
+              "context": "",
+              "expected": "今天有一点累",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "今天有一点类",
+                "今天有一点累",
+                "今天有一点雷",
+                "今天又一点类",
+                "今天又一点累"
+              ],
+              "afterTop5": [
+                "今天有一点累",
+                "今天有一点泪",
+                "今天有一点雷",
+                "今天有一点类",
+                "今天有一点肋"
+              ]
+            }
+          ],
+          "firstLosses": [],
+          "rankLosses": [],
+          "latencyAllRows": {
+            "count": 6,
+            "medianMs": 168.0771,
+            "p95Ms": 360.1272,
+            "maxMs": 360.1272,
+            "totalMs": 1041.5997
+          },
+          "latencyScoredRows": {
+            "count": 6,
+            "medianMs": 168.0771,
+            "p95Ms": 360.1272,
+            "maxMs": 360.1272,
+            "totalMs": 1041.5997
+          },
+          "slices": {
+            "empty": {
+              "before": {
+                "states": 3,
+                "top1": 2,
+                "top5": 3,
+                "top10": 3,
+                "recall255": 3,
+                "characterErrors": 1,
+                "characters": 14
+              },
+              "after": {
+                "states": 3,
+                "top1": 3,
+                "top5": 3,
+                "top10": 3,
+                "recall255": 3,
+                "characterErrors": 0,
+                "characters": 14
+              }
+            },
+            "editor": {
+              "before": {
+                "states": 3,
+                "top1": 2,
+                "top5": 3,
+                "top10": 3,
+                "recall255": 3,
+                "characterErrors": 1,
+                "characters": 7
+              },
+              "after": {
+                "states": 3,
+                "top1": 2,
+                "top5": 3,
+                "top10": 3,
+                "recall255": 3,
+                "characterErrors": 1,
+                "characters": 7
+              }
+            }
+          },
+          "timingScope": "Warm desktop CPU added rescoring only; excludes decoder and Android UI",
+          "accuracyScope": "Known development workload with empty personalization; not blind or natural mobile input"
+        }
+      },
+      "modelRuntime": {
+        "model": "google-bert/bert-base-chinese",
+        "modelRevision": "8f23c25b06e129b6c986331a13d8d025a92cf0ea",
+        "weightsSha256": "3404a1ffd8da507042e8161013ba2a4fc49858b4e3f8fbf5ce5724f94883aec3",
+        "torch": "2.6.0+cpu",
+        "transformers": "4.48.3",
+        "parameters": 102290312,
+        "parameterBytes": 409161248,
+        "modelLoadNanos": 137190200,
+        "intraopThreads": 2,
+        "interopThreads": 1,
+        "device": "cpu",
+        "dtype": "float32",
+        "microbatch": 32,
+        "loadingInfo": {
+          "missing_keys": [],
+          "unexpected_keys": [
+            "bert.pooler.dense.bias",
+            "bert.pooler.dense.weight",
+            "cls.seq_relationship.bias",
+            "cls.seq_relationship.weight"
+          ],
+          "mismatched_keys": [],
+          "error_msgs": []
+        },
+        "head": "masked-positions-only",
+        "verifiedCheckpointHeadKeys": {
+          "cls.predictions.bias": "cls.predictions.bias",
+          "cls.predictions.transform.LayerNorm.bias": "cls.predictions.transform.LayerNorm.beta",
+          "cls.predictions.transform.LayerNorm.weight": "cls.predictions.transform.LayerNorm.gamma",
+          "cls.predictions.transform.dense.bias": "cls.predictions.transform.dense.bias",
+          "cls.predictions.transform.dense.weight": "cls.predictions.transform.dense.weight"
+        },
+        "constructorIncludingHashesNanos": 4314811800,
+        "qualification": {
+          "passed": true,
+          "fixtures": [
+            {
+              "text": "北京是[MASK]国的首都。",
+              "targets": [
+                "中"
+              ],
+              "top5": [
+                "中",
+                "我",
+                "全",
+                "美",
+                "英"
+              ],
+              "probabilities": [
+                0.9675801992416382,
+                0.015999749302864075,
+                0.0048605818301439285,
+                0.0020109955221414566,
+                0.0010233975481241941
+              ],
+              "hitTop5": true
+            },
+            {
+              "text": "中国的首都是[MASK]京。",
+              "targets": [
+                "北"
+              ],
+              "top5": [
+                "北",
+                "南",
+                "东",
+                "西",
+                "天"
+              ],
+              "probabilities": [
+                0.9257179498672485,
+                0.07168974727392197,
+                0.0020973135251551867,
+                0.00014822004595771432,
+                7.738351268926635e-05
+              ],
+              "hitTop5": true
+            },
+            {
+              "text": "一年有十二个[MASK]。",
+              "targets": [
+                "月"
+              ],
+              "top5": [
+                "月",
+                "人",
+                "花",
+                "班",
+                "日"
+              ],
+              "probabilities": [
+                0.4969158172607422,
+                0.14521384239196777,
+                0.010305455885827541,
+                0.009937319904565811,
+                0.008071329444646835
+              ],
+              "hitTop5": true
+            },
+            {
+              "text": "春夏秋[MASK]。",
+              "targets": [
+                "冬"
+              ],
+              "top5": [
+                "冬",
+                "夏",
+                "季",
+                "秋",
+                "春"
+              ],
+              "probabilities": [
+                0.927995502948761,
+                0.023118510842323303,
+                0.019510485231876373,
+                0.007183608133345842,
+                0.004598894622176886
+              ],
+              "hitTop5": true
+            },
+            {
+              "text": "人类需要呼吸空[MASK]。",
+              "targets": [
+                "气"
+              ],
+              "top5": [
+                "气",
+                "间",
+                "调",
+                "氧",
+                "氣"
+              ],
+              "probabilities": [
+                0.9975090026855469,
+                0.001402034074999392,
+                0.0005798102938570082,
+                0.00011968873877776787,
+                5.533524745260365e-05
+              ],
+              "hitTop5": true
+            },
+            {
+              "text": "请把门关[MASK]。",
+              "targets": [
+                "上"
+              ],
+              "top5": [
+                "上",
+                "好",
+                "了",
+                "紧",
+                "掉"
+              ],
+              "probabilities": [
+                0.9042578339576721,
+                0.07193654775619507,
+                0.005151273682713509,
+                0.004257360473275185,
+                0.0023505636490881443
+              ],
+              "hitTop5": true
+            },
+            {
+              "text": "医生在医[MASK]工作。",
+              "targets": [
+                "院"
+              ],
+              "top5": [
+                "院",
+                "生",
+                "校",
+                "学",
+                "疗"
+              ],
+              "probabilities": [
+                0.9858574867248535,
+                0.004069777205586433,
+                0.001262023812159896,
+                0.0011655261041596532,
+                0.0009684867109172046
+              ],
+              "hitTop5": true
+            },
+            {
+              "text": "一加一等于[MASK]。",
+              "targets": [
+                "二",
+                "2",
+                "两"
+              ],
+              "top5": [
+                "零",
+                "二",
+                "十",
+                "2",
+                "0"
+              ],
+              "probabilities": [
+                0.2034830003976822,
+                0.1668235957622528,
+                0.13251818716526031,
+                0.048088189214468,
+                0.04368269443511963
+              ],
+              "hitTop5": true
+            }
+          ],
+          "numerics": {
+            "maxAbsoluteLogitError": 0.0,
+            "fullAndGatheredAgree": true,
+            "tokenizerAgreement": true,
+            "repeatedScoresEqual": true
+          },
+          "metadata": {
+            "model": "google-bert/bert-base-chinese",
+            "modelRevision": "8f23c25b06e129b6c986331a13d8d025a92cf0ea",
+            "weightsSha256": "3404a1ffd8da507042e8161013ba2a4fc49858b4e3f8fbf5ce5724f94883aec3",
+            "torch": "2.6.0+cpu",
+            "transformers": "4.48.3",
+            "parameters": 102290312,
+            "parameterBytes": 409161248,
+            "modelLoadNanos": 137190200,
+            "intraopThreads": 2,
+            "interopThreads": 1,
+            "device": "cpu",
+            "dtype": "float32",
+            "microbatch": 32,
+            "loadingInfo": {
+              "missing_keys": [],
+              "unexpected_keys": [
+                "bert.pooler.dense.bias",
+                "bert.pooler.dense.weight",
+                "cls.seq_relationship.bias",
+                "cls.seq_relationship.weight"
+              ],
+              "mismatched_keys": [],
+              "error_msgs": []
+            },
+            "head": "masked-positions-only",
+            "verifiedCheckpointHeadKeys": {
+              "cls.predictions.bias": "cls.predictions.bias",
+              "cls.predictions.transform.LayerNorm.bias": "cls.predictions.transform.LayerNorm.beta",
+              "cls.predictions.transform.LayerNorm.weight": "cls.predictions.transform.LayerNorm.gamma",
+              "cls.predictions.transform.dense.bias": "cls.predictions.transform.dense.bias",
+              "cls.predictions.transform.dense.weight": "cls.predictions.transform.dense.weight"
+            }
+          },
+          "scope": "Task-qualification smoke fixtures, not Sense accuracy"
+        },
+        "verification": {
+          "maxAbsoluteLogitError": 0.0,
+          "fullAndGatheredAgree": true,
+          "tokenizerAgreement": true,
+          "repeatedScoresEqual": true
+        }
+      },
+      "modelCalls": 249,
+      "independentlyMaskedInputs": 15548
+    },
+    "known-test": {
+      "gatePassed": true,
+      "domains": {
+        "aishell": {
+          "before": {
+            "states": 248,
+            "top1": 150,
+            "top5": 194,
+            "top10": 204,
+            "recall255": 223,
+            "characterErrors": 226,
+            "characters": 2033
+          },
+          "after": {
+            "states": 248,
+            "top1": 182,
+            "top5": 202,
+            "top10": 204,
+            "recall255": 223,
+            "characterErrors": 141,
+            "characters": 2033
+          },
+          "nonregressionPassed": true,
+          "eligibleRows": 246,
+          "firstChanged": 94,
+          "skipReasons": {
+            "scored": 246,
+            "unknown-character": 2
+          },
+          "firstGains": [
+            {
+              "id": "00cff1bb4c5786aa1e06279efd1add5ac5d8cf6d720b411d88f2939e1f9e266c",
+              "cut": 0,
+              "query": "ciqianweixianzhiwaizichaofang",
+              "context": "",
+              "expected": "此前为限制外资炒房",
+              "beforeRank": 6,
+              "afterRank": 1,
+              "beforeTop5": [
+                "此前危险之外自炒房",
+                "此前危险之外资炒房",
+                "此前危险之外字炒房",
+                "此前危险之外子炒房",
+                "此前危险之外自嘲放"
+              ],
+              "afterTop5": [
+                "此前为限制外资炒房",
+                "此前危险之外自嘲放",
+                "此前危险之外自嘲房",
+                "此前危险之外自嘲方",
+                "此前危险之外资炒房"
+              ]
+            },
+            {
+              "id": "0145e458164d7396d2edc4e7234d5f0bf7b1fa152d6b44c38c120756e676767e",
+              "cut": 0,
+              "query": "zuoweiyixianchengshidebeijing",
+              "context": "",
+              "expected": "作为一线城市的北京",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "作为一线城市的背景",
+                "作为一线城市的北京",
+                "座位一线城市的背景",
+                "座位一线城市的北京",
+                "做为一线城市的背景"
+              ],
+              "afterTop5": [
+                "作为一线城市的北京",
+                "做为一线城市的北京",
+                "作为一线城市的背景",
+                "做为一线城市的背景",
+                "座位一线城市的北京"
+              ]
+            },
+            {
+              "id": "016c0f9d7472688891574b92a62961d3a52d511c1195cc8035fffbe15ce025f9",
+              "cut": 0,
+              "query": "ziqiujixueqiqi",
+              "context": "",
+              "expected": "自秋季学期起",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "自秋季学期其",
+                "自秋季学期期",
+                "自秋季学期起",
+                "字秋季学期其",
+                "子秋季学期其"
+              ],
+              "afterTop5": [
+                "自秋季学期起",
+                "自秋季学期期",
+                "自秋季学期其",
+                "自秋季学期气",
+                "子秋季学期其"
+              ]
+            },
+            {
+              "id": "01796a998757cc5fdcfc8a96dfffa174d6a2e0a8beed265e7e1a269333fd3781",
+              "cut": 0,
+              "query": "lidianchishichangyezaixianghao",
+              "context": "",
+              "expected": "锂电池市场也在向好",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "锂电池市场也在想好",
+                "锂电池市场也在向好",
+                "锂电池时常也在想好",
+                "锂电池市场也在相好",
+                "锂电池时长也在想好"
+              ],
+              "afterTop5": [
+                "锂电池市场也在向好",
+                "锂电池市场也在想好",
+                "锂电池市场也在相好",
+                "锂电池市场也再想好",
+                "锂电池时常也在想好"
+              ]
+            },
+            {
+              "id": "01796a998757cc5fdcfc8a96dfffa174d6a2e0a8beed265e7e1a269333fd3781",
+              "cut": 4,
+              "query": "changyezaixianghao",
+              "context": "池市",
+              "expected": "场也在向好",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "场也在想好",
+                "场合在想好",
+                "场也在向好",
+                "场也在相好",
+                "场也再想好"
+              ],
+              "afterTop5": [
+                "场也在向好",
+                "场也在想好",
+                "场也在相好",
+                "场也宰相好",
+                "场也再想好"
+              ]
+            },
+            {
+              "id": "029fbe71e88b30e7f2ee9aad86a7645aa6249fc4253642802eb4a785c1af8486",
+              "cut": 4,
+              "query": "xidezuihou",
+              "context": "所不",
+              "expected": "惜的最后",
+              "beforeRank": 8,
+              "afterRank": 1,
+              "beforeTop5": [
+                "细的最后",
+                "习得最后",
+                "洗的最后",
+                "系的最后",
+                "吸的最后"
+              ],
+              "afterTop5": [
+                "惜的最后",
+                "洗的最后",
+                "息的最后",
+                "吸的最后",
+                "系的最后"
+              ]
+            },
+            {
+              "id": "032e588b45fafc4a42a72bc4c730b729c3bc0bbf2d12e5acfa169a32ad3bd82c",
+              "cut": 0,
+              "query": "zhijinweizhaodaozhaoshizhe",
+              "context": "",
+              "expected": "至今未找到肇事者",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "至今为找到昭示着",
+                "至今为找到肇事者",
+                "至今未找到昭示着",
+                "至今未找到肇事者",
+                "至今为找到找是这"
+              ],
+              "afterTop5": [
+                "至今未找到肇事者",
+                "至今为找到肇事者",
+                "至今未找到昭示着",
+                "至今为找到招式这",
+                "至今未找到找是这"
+              ]
+            },
+            {
+              "id": "032e588b45fafc4a42a72bc4c730b729c3bc0bbf2d12e5acfa169a32ad3bd82c",
+              "cut": 4,
+              "query": "daozhaoshizhe",
+              "context": "未找",
+              "expected": "到肇事者",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "到昭示着",
+                "到肇事者",
+                "到找是这",
+                "到招式这",
+                "到找试着"
+              ],
+              "afterTop5": [
+                "到肇事者",
+                "到招式这",
+                "到昭示着",
+                "到赵是这",
+                "到找是这"
+              ]
+            },
+            {
+              "id": "0422ce3374b6c498bbb43c46f3ab9725ddb81beabbb5f61ce4da7d527ea1cb1c",
+              "cut": 0,
+              "query": "duizhejingtouduzuitushe",
+              "context": "",
+              "expected": "对着镜头嘟嘴吐舌",
+              "beforeRank": 8,
+              "afterRank": 1,
+              "beforeTop5": [
+                "对着镜头度最吐舌",
+                "对着镜头都最吐舌",
+                "对着镜头度最突射",
+                "对这镜头度最吐舌",
+                "对着镜头都最突射"
+              ],
+              "afterTop5": [
+                "对着镜头嘟嘴吐舌",
+                "对着镜头都最吐舌",
+                "对着镜头都最突射",
+                "对着镜头读最吐舌",
+                "对着镜头度最吐舌"
+              ]
+            },
+            {
+              "id": "049a8e9bf6084cb82ffa843fa7a5bbe7647ad052cdb616ccd5bbbfa059dc76a8",
+              "cut": 0,
+              "query": "tiebingshanisikelafute",
+              "context": "",
+              "expected": "铁饼沙尼斯克拉夫特",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "贴冰沙尼斯克拉夫特",
+                "铁冰沙尼斯克拉夫特",
+                "帖冰沙尼斯克拉夫特",
+                "铁饼沙尼斯克拉夫特",
+                "铁饼啥尼斯克拉夫特"
+              ],
+              "afterTop5": [
+                "铁饼沙尼斯克拉夫特",
+                "铁饼傻尼斯克拉夫特",
+                "帖冰沙尼斯克拉夫特",
+                "铁冰沙尼斯克拉夫特",
+                "铁饼啥尼斯克拉夫特"
+              ]
+            },
+            {
+              "id": "07f9f7d9602ce37242092ff67315650206323781ab41b63b6f0960374ad117d8",
+              "cut": 0,
+              "query": "xiandaikuaibaojizhehuyumei",
+              "context": "",
+              "expected": "现代快报记者胡玉梅",
+              "beforeRank": 8,
+              "afterRank": 1,
+              "beforeTop5": [
+                "现代快报记者呼吁没",
+                "现代快报记者胡玉美",
+                "现代快报记者呼吁每",
+                "现代快报记者呼吁美",
+                "现代快报急着呼吁没"
+              ],
+              "afterTop5": [
+                "现代快报记者胡玉梅",
+                "现代快报记者胡玉美",
+                "现代快报记者呼吁美",
+                "现代快报记者呼吁每",
+                "现代快报记者呼吁没"
+              ]
+            },
+            {
+              "id": "088d22d704029f8188ae0db1aeb2da05cd14c872691de48a5ecb962ebd933d9c",
+              "cut": 0,
+              "query": "tiaoyuanlainamaerkusi",
+              "context": "",
+              "expected": "跳远莱纳马尔库斯",
+              "beforeRank": 6,
+              "afterRank": 1,
+              "beforeTop5": [
+                "跳远来拿马尔库斯",
+                "跳原来拿马尔库斯",
+                "条原来拿马尔库斯",
+                "挑原来拿马尔库斯",
+                "跳原来那马尔库斯"
+              ],
+              "afterTop5": [
+                "跳远莱纳马尔库斯",
+                "跳原来那马尔库斯",
+                "跳原来拿马尔库斯",
+                "挑原来拿马尔库斯",
+                "挑原来那马尔库斯"
+              ]
+            },
+            {
+              "id": "0c77b7762265a96f03e4cf87ffad1c0d36f8cc3f04d7535c6f9f4ead8b22c35b",
+              "cut": 0,
+              "query": "yiwunianhouluowang",
+              "context": "",
+              "expected": "一五年后落网",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "一五年后罗网",
+                "以五年后罗网",
+                "一五年后落网",
+                "以五年后落网",
+                "已五年后罗网"
+              ],
+              "afterTop5": [
+                "一五年后落网",
+                "以五年后落网",
+                "已五年后罗网",
+                "一五年后罗网",
+                "以五年后罗网"
+              ]
+            },
+            {
+              "id": "0c77b7762265a96f03e4cf87ffad1c0d36f8cc3f04d7535c6f9f4ead8b22c35b",
+              "cut": 3,
+              "query": "houluowang",
+              "context": "五年",
+              "expected": "后落网",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "后罗网",
+                "后落网",
+                "后罗往",
+                "后罗王",
+                "后落往"
+              ],
+              "afterTop5": [
+                "后落网",
+                "后罗王",
+                "后路网",
+                "后罗望",
+                "后落往"
+              ]
+            },
+            {
+              "id": "0cc1b44cfe6845c822737acc6cafef74fd14ad465a4ec9753c1016b4a47a5601",
+              "cut": 0,
+              "query": "huanpingguochengyaogongkaitouming",
+              "context": "",
+              "expected": "环评过程要公开透明",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "换苹果撑腰公开透明",
+                "还苹果撑腰公开透明",
+                "环评过程要公开透明",
+                "换屏过程要公开透明",
+                "欢苹果撑腰公开透明"
+              ],
+              "afterTop5": [
+                "环评过程要公开透明",
+                "换屏过程要公开透明",
+                "还苹果撑腰公开透明",
+                "换苹果撑腰公开透明",
+                "环苹果撑腰公开透明"
+              ]
+            },
+            {
+              "id": "0d6388db97957b828ee5a55697ad5bd4cf22d8d5575204256d2a75bd6f107b5e",
+              "cut": 0,
+              "query": "luxupaijizheshenrucaifang",
+              "context": "",
+              "expected": "陆续派记者深入采访",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "陆续排挤这深入采访",
+                "陆续拍记者深入采访",
+                "陆续派记者深入采访",
+                "陆续排挤着深入采访",
+                "陆续牌记者深入采访"
+              ],
+              "afterTop5": [
+                "陆续派记者深入采访",
+                "陆续排记者深入采访",
+                "陆续牌记者深入采访",
+                "陆续排挤着深入采访",
+                "陆续拍记者深入采访"
+              ]
+            },
+            {
+              "id": "0d94ca8899ebdb4c506a7e3cb9a69f71cd215bf1d7e144ce7762024cd824f0d9",
+              "cut": 4,
+              "query": "xuxianpaiyibu",
+              "context": "只允",
+              "expected": "许先拍一部",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "许仙拍一部",
+                "许县拍一部",
+                "许西安排一步",
+                "许先拍一部",
+                "许西安排一部"
+              ],
+              "afterTop5": [
+                "许先拍一部",
+                "许仙拍一部",
+                "许西安排一步",
+                "许线拍一部",
+                "许西安排一部"
+              ]
+            },
+            {
+              "id": "101d12a74e25bbaf571d3f6653cadd5e3b806c4e5e9381ff33b3768b07ba6b8b",
+              "cut": 0,
+              "query": "baozhanggongjiaoluquanyouxian",
+              "context": "",
+              "expected": "保障公交路权优先",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "保障公交路权有限",
+                "保障公交路权优先",
+                "保障公交禄劝优先",
+                "保障公交禄劝有限",
+                "保障公交路全优先"
+              ],
+              "afterTop5": [
+                "保障公交路权优先",
+                "保障公交路权有限",
+                "保障公交路权悠闲",
+                "保障公交路权有线",
+                "保障公交路全优先"
+              ]
+            },
+            {
+              "id": "101d12a74e25bbaf571d3f6653cadd5e3b806c4e5e9381ff33b3768b07ba6b8b",
+              "cut": 4,
+              "query": "luquanyouxian",
+              "context": "公交",
+              "expected": "路权优先",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "路权有限",
+                "路权优先",
+                "禄劝优先",
+                "禄劝有限",
+                "路全优先"
+              ],
+              "afterTop5": [
+                "路权优先",
+                "路权有限",
+                "路权悠闲",
+                "路权有线",
+                "禄劝有限"
+              ]
+            },
+            {
+              "id": "101e1f1511843dbc843555b9bd85a746213feb9c703c7bb7250f2ae525658754",
+              "cut": 3,
+              "query": "jiangbushao",
+              "context": "比下",
+              "expected": "降不少",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "将不少",
+                "降不少",
+                "讲不少",
+                "蒋不少",
+                "奖不少"
+              ],
+              "afterTop5": [
+                "降不少",
+                "讲不少",
+                "见不少",
+                "将不少",
+                "奖不少"
+              ]
+            },
+            {
+              "id": "10b8fdf1d77a40e9536d4f9f5bc709fe524fcbd6f5f13a9d3655b7d51878cd78",
+              "cut": 4,
+              "query": "canquedeyihai",
+              "context": "小温",
+              "expected": "残缺的遗骸",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "残缺的一还",
+                "残缺的以还",
+                "残缺的一百",
+                "残缺的遗骸",
+                "残缺的一氦"
+              ],
+              "afterTop5": [
+                "残缺的遗骸",
+                "残缺的一号",
+                "残缺的一百",
+                "残缺的一海",
+                "残缺的一还"
+              ]
+            },
+            {
+              "id": "113086d54a89aa0423ac012d65b0d4c162eecd8d23beb8711e31a85e7364b786",
+              "cut": 4,
+              "query": "duidejijixing",
+              "context": "参赛",
+              "expected": "队的积极性",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "对的积极性",
+                "队的积极性",
+                "对的积极型",
+                "怼的积极性",
+                "堆的积极性"
+              ],
+              "afterTop5": [
+                "队的积极性",
+                "堆的积极性",
+                "对的积极性",
+                "队的积极型",
+                "对得积极性"
+              ]
+            },
+            {
+              "id": "142ea3e7684d1798957d47d702058e7a66ae46cd1cd2d9cbe68db859daa0ce4a",
+              "cut": 0,
+              "query": "tongbiqiannianzengzhangwucheng",
+              "context": "",
+              "expected": "同比前年增长五成",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "同比千年增长五成",
+                "同比前年增长五成",
+                "同比千年增长无成",
+                "同比钱年增长五成",
+                "同比前年增长无成"
+              ],
+              "afterTop5": [
+                "同比前年增长五成",
+                "同比前年增长五城",
+                "同比前年增长无成",
+                "同比千年增长五成",
+                "铜币千年增长五成"
+              ]
+            },
+            {
+              "id": "14331e06cc628f382caaa82f223200a5e0c612cf09e128923752de922ec0a8e4",
+              "cut": 0,
+              "query": "fahuiyehencongronghedanding",
+              "context": "",
+              "expected": "发挥也很从容和淡定",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "发挥也很从融合但丁",
+                "发挥也很从融合淡定",
+                "发挥也很从容和但丁",
+                "发挥也很从容和淡定",
+                "发挥也很从融合但定"
+              ],
+              "afterTop5": [
+                "发挥也很从容和淡定",
+                "发挥也很从容和但定",
+                "发挥也很从容和但丁",
+                "发挥也很从融合但定",
+                "发挥也很从融合但顶"
+              ]
+            },
+            {
+              "id": "14331e06cc628f382caaa82f223200a5e0c612cf09e128923752de922ec0a8e4",
+              "cut": 4,
+              "query": "congronghedanding",
+              "context": "也很",
+              "expected": "从容和淡定",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "从融合但丁",
+                "从融合淡定",
+                "从容和但丁",
+                "从容和淡定",
+                "从融合但定"
+              ],
+              "afterTop5": [
+                "从容和淡定",
+                "从容和但丁",
+                "从容和但定",
+                "从融合但丁",
+                "从融合但顶"
+              ]
+            },
+            {
+              "id": "149069a846da5e58f9d4f51560f99a255cbada640660a92fdfa7baf2948ad645",
+              "cut": 0,
+              "query": "zhizhiwanshangyilingshizuoyou",
+              "context": "",
+              "expected": "直至晚上一零时左右",
+              "beforeRank": 5,
+              "afterRank": 1,
+              "beforeTop5": [
+                "直至晚上一零食左右",
+                "纸质晚上一零食左右",
+                "制止晚上一零食左右",
+                "吱吱晚上一零食左右",
+                "直至晚上一零时左右"
+              ],
+              "afterTop5": [
+                "直至晚上一零时左右",
+                "纸质晚上一零时左右",
+                "吱吱晚上一零食左右",
+                "纸质晚上一零食左右",
+                "制止晚上一零食左右"
+              ]
+            },
+            {
+              "id": "149069a846da5e58f9d4f51560f99a255cbada640660a92fdfa7baf2948ad645",
+              "cut": 4,
+              "query": "yilingshizuoyou",
+              "context": "晚上",
+              "expected": "一零时左右",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "一零食左右",
+                "一零时左右",
+                "一领是左右",
+                "一领时左右",
+                "衣领是左右"
+              ],
+              "afterTop5": [
+                "一零时左右",
+                "衣领是左右",
+                "衣领时左右",
+                "一临时左右",
+                "一领事左右"
+              ]
+            },
+            {
+              "id": "14b63349dd337f3a6b6e0537f3a11541ec6a00b76d200185813e9c16fccf1bda",
+              "cut": 0,
+              "query": "erqietahaishiyihunshenfen",
+              "context": "",
+              "expected": "而且她还是已婚身份",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "而且他还是一浑身份",
+                "而且她还是一浑身份",
+                "而且他还是已婚身份",
+                "而且她还是已婚身份",
+                "而且他还是一混身份"
+              ],
+              "afterTop5": [
+                "而且她还是已婚身份",
+                "而且他还是已婚身份",
+                "而且他还是一浑身分",
+                "而且她还是一浑身分",
+                "而且他还是一浑身份"
+              ]
+            },
+            {
+              "id": "14b63349dd337f3a6b6e0537f3a11541ec6a00b76d200185813e9c16fccf1bda",
+              "cut": 4,
+              "query": "shiyihunshenfen",
+              "context": "她还",
+              "expected": "是已婚身份",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "是一浑身份",
+                "是已婚身份",
+                "是以浑身份",
+                "是一混身份",
+                "是一浑身分"
+              ],
+              "afterTop5": [
+                "是已婚身份",
+                "是一浑身分",
+                "是一浑身份",
+                "是以浑身份",
+                "是以浑身分"
+              ]
+            },
+            {
+              "id": "00e0eb48f617c3c6b91a164381d9327823c7d8796c72ca3499e51f7198c1ead8",
+              "cut": 0,
+              "query": "zaicijiangdigongjijindaikuanshoufubili",
+              "context": "",
+              "expected": "再次降低公积金贷款首付比例",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "再次降低公积金贷款首府比例",
+                "再次降低公积金贷款首富比例",
+                "再次降低公积金贷款收服比例",
+                "再次降低公积金贷款首付比例",
+                "再次降低公积金贷款收复比例"
+              ],
+              "afterTop5": [
+                "再次降低公积金贷款首付比例",
+                "再次降低公积金贷款收服比例",
+                "再次降低公积金贷款收腹比例",
+                "再次降低公积金贷款收复比例",
+                "再次降低公积金贷款手扶比例"
+              ]
+            },
+            {
+              "id": "00e0eb48f617c3c6b91a164381d9327823c7d8796c72ca3499e51f7198c1ead8",
+              "cut": 6,
+              "query": "jindaikuanshoufubili",
+              "context": "公积",
+              "expected": "金贷款首付比例",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "金贷款首府比例",
+                "金贷款首富比例",
+                "金贷款收服比例",
+                "金贷款首付比例",
+                "金贷款收复比例"
+              ],
+              "afterTop5": [
+                "金贷款首付比例",
+                "金贷款收服比例",
+                "金贷款收复比例",
+                "金贷款首富比例",
+                "金贷款首府比例"
+              ]
+            },
+            {
+              "id": "00eda0c3c2fd92b01c455958ae79b8d2a1855dc9375bb1c36db54dda1cd4bad3",
+              "cut": 0,
+              "query": "juedingduiquanguohesheshijinxinganquanjiancha",
+              "context": "",
+              "expected": "决定对全国核设施进行安全检查",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "决定对全国和设施进行安全检查",
+                "决定对全国核设施进行安全检查",
+                "决定对全国和摄氏进行安全检查",
+                "决定对全国和涉事进行安全检查",
+                "决定对全国和社是进行安全检查"
+              ],
+              "afterTop5": [
+                "决定对全国核设施进行安全检查",
+                "决定对全国和设施进行安全检查",
+                "决定对全国和涉事进行安全检查",
+                "决定对全国和社是进行安全检查",
+                "决定对全国和摄氏进行安全检查"
+              ]
+            },
+            {
+              "id": "00eda0c3c2fd92b01c455958ae79b8d2a1855dc9375bb1c36db54dda1cd4bad3",
+              "cut": 7,
+              "query": "shijinxinganquanjiancha",
+              "context": "核设",
+              "expected": "施进行安全检查",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "是进行安全检查",
+                "施进行安全检查",
+                "时进行安全检查",
+                "使进行安全检查",
+                "式进行安全检查"
+              ],
+              "afterTop5": [
+                "施进行安全检查",
+                "室进行安全检查",
+                "时进行安全检查",
+                "史进行安全检查",
+                "使进行安全检查"
+              ]
+            },
+            {
+              "id": "01081041cef2bbec776eb781015a576398ffad4677d7b03023437684d094dd1e",
+              "cut": 0,
+              "query": "touzizhedanxinzhejiangjiazhongrenminbisuomianlindeyali",
+              "context": "",
+              "expected": "投资者担心这将加重人民币所面临的压力",
+              "beforeRank": 7,
+              "afterRank": 1,
+              "beforeTop5": [
+                "投资者担心浙江家中人民币所面临的压力",
+                "投资者担心着将家中人民币所面临的压力",
+                "投资者担心这将家中人民币所面临的压力",
+                "投资者担心浙江加重人民币所面临的压力",
+                "投资者担心着将加重人民币所面临的压力"
+              ],
+              "afterTop5": [
+                "投资者担心这将加重人民币所面临的压力",
+                "投资者担心浙江家中人民币所面临的压力",
+                "投资者担心浙江加重人民币所面临的压力",
+                "投资者担心着将加重人民币所面临的压力",
+                "投资者担心着降价中人民币所面临的压力"
+              ]
+            },
+            {
+              "id": "01302d35b19d21bd168436df63c411e29d0ca58e3b18e23c90459e980f460607",
+              "cut": 0,
+              "query": "touzizheduichengtouzhaiquanfengxianbiaoxianchudekonghuang",
+              "context": "",
+              "expected": "投资者对城投债券风险表现出的恐慌",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "投资者对城头债券风险表现出的恐慌",
+                "投资者对城投债券风险表现出的恐慌",
+                "投资者对城头债权风险表现出的恐慌",
+                "投资者对城投债权风险表现出的恐慌",
+                "投资者对称头债券风险表现出的恐慌"
+              ],
+              "afterTop5": [
+                "投资者对城投债券风险表现出的恐慌",
+                "投资者对城投债权风险表现出的恐慌",
+                "投资者对称头债券风险表现出的恐慌",
+                "投资者对称头债权风险表现出的恐慌",
+                "投资者对城头债券风险表现出的恐慌"
+              ]
+            },
+            {
+              "id": "0255db8b7b3e760d43b910131e29056b570a472314667fd76879dacdff28ee0b",
+              "cut": 0,
+              "query": "ershoujibeianzhuangshangzheyichajianhou",
+              "context": "",
+              "expected": "而手机被安装上这一插件后",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "二手机被安装上这一插件后",
+                "而手机被安装上这一插件后",
+                "二手机被安装上这一刹间后",
+                "二手机被安装上这一插件厚",
+                "而收集被安装上这一插件后"
+              ],
+              "afterTop5": [
+                "而手机被安装上这一插件后",
+                "二手机被安装上这一插件后",
+                "而收集被安装上这一插件后",
+                "二手机被安装上这一插件厚",
+                "二手机被安装上这一刹间后"
+              ]
+            },
+            {
+              "id": "02650ed467d9a7e946a773e1a901efac4e4119fd61d49948e28f1e5afe39e63b",
+              "cut": 0,
+              "query": "zhengmingleqixiangzhuliutuoxiedezitai",
+              "context": "",
+              "expected": "证明了其向主流妥协的姿态",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "证明了气象主流妥协的姿态",
+                "证明了其向主流妥协的姿态",
+                "证明了奇想主流妥协的姿态",
+                "证明了气相主流妥协的姿态",
+                "证明了其想主流妥协的姿态"
+              ],
+              "afterTop5": [
+                "证明了其向主流妥协的姿态",
+                "证明了气象主流妥协的姿态",
+                "证明了七项主流妥协的姿态",
+                "证明了气象驻留妥协的姿态",
+                "证明了其像主流妥协的姿态"
+              ]
+            },
+            {
+              "id": "028b883602906e75233fb87d1f0f0c9070820434a80308952bc574f0d292b665",
+              "cut": 9,
+              "query": "zhanzhongyingxiadongdaozhuriben",
+              "context": "后一",
+              "expected": "战中赢下东道主日本",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "站中赢下东道主日本",
+                "战中赢下东道主日本",
+                "站中英下东道主日本",
+                "展中赢下东道主日本",
+                "战中英下东道主日本"
+              ],
+              "afterTop5": [
+                "战中赢下东道主日本",
+                "站中赢下东道主日本",
+                "站中英下东道主日本",
+                "战中英下东道主日本",
+                "占中赢下东道主日本"
+              ]
+            },
+            {
+              "id": "03109b7b18bd1e900bb0e772010e9a0386f4a7fdefdb99130baae6f5d20fbb9c",
+              "cut": 0,
+              "query": "jiaqiangyifajianguanhezhidujianshe",
+              "context": "",
+              "expected": "加强依法监管和制度建设",
+              "beforeRank": 5,
+              "afterRank": 1,
+              "beforeTop5": [
+                "加强一发监管和制度建设",
+                "加强一发见惯和制度建设",
+                "加强一发谏官和制度建设",
+                "加强一发箭馆和制度建设",
+                "加强依法监管和制度建设"
+              ],
+              "afterTop5": [
+                "加强依法监管和制度建设",
+                "加强易发监管和制度建设",
+                "加强一发监管和制度建设",
+                "加强依法见惯和制度建设",
+                "加强一发兼管和制度建设"
+              ]
+            },
+            {
+              "id": "034236120224129f1a9eaed5ef1c3463d07a8393d80df560e647642949773286",
+              "cut": 5,
+              "query": "gaifanweibijiaozhai",
+              "context": "的复",
+              "expected": "盖范围比较窄",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "该范围比较窄",
+                "盖范围比较窄",
+                "改范围比较窄",
+                "钙范围比较窄",
+                "盖饭为比较窄"
+              ],
+              "afterTop5": [
+                "盖范围比较窄",
+                "改范围比较窄",
+                "该范围比较窄",
+                "钙范围比较窄",
+                "该单位比较窄"
+              ]
+            },
+            {
+              "id": "037396eeb7c1991bd27afe198ff52f5a99c1961276913037e2762e22ed34c132",
+              "cut": 5,
+              "query": "shuguangyuelaiyuejin",
+              "context": "启的",
+              "expected": "曙光越来越近",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "时光越来越近",
+                "曙光越来越近",
+                "时光越来越紧",
+                "曙光越来越紧",
+                "输光越来越近"
+              ],
+              "afterTop5": [
+                "曙光越来越近",
+                "时光越来越近",
+                "曙光越来越紧",
+                "是光越来越近",
+                "时光越来越紧"
+              ]
+            },
+            {
+              "id": "03bf2423d93fd632dd5cd42cec669d5b48e351157e602471d6785c8fe74aa20b",
+              "cut": 7,
+              "query": "yazaichaoyangqukanshousuo",
+              "context": "被关",
+              "expected": "押在朝阳区看守所",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "压在朝阳区看守所",
+                "压在朝阳去看守所",
+                "押在朝阳区看守所",
+                "呀在朝阳区看守所",
+                "押在朝阳去看守所"
+              ],
+              "afterTop5": [
+                "押在朝阳区看守所",
+                "压在朝阳区看守所",
+                "押在朝阳去看守所",
+                "亚在朝阳区看守所",
+                "牙在朝阳区看守所"
+              ]
+            },
+            {
+              "id": "03cc96a2c2e3eb1acdbd182e81ca685b1236fb954dee3ebea876773cd9e70fc8",
+              "cut": 5,
+              "query": "shangdedengjilaikan",
+              "context": "零售",
+              "expected": "商的等级来看",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "上的等级来看",
+                "上的登记来看",
+                "上的登机来看",
+                "商的等级来看",
+                "上的登基来看"
+              ],
+              "afterTop5": [
+                "商的等级来看",
+                "商的登记来看",
+                "上的登记来看",
+                "上的等级来看",
+                "上的登基来看"
+              ]
+            }
+          ],
+          "firstLosses": [
+            {
+              "id": "074d0c837a6989bb8e04fbbaab1c0fc50a6b5528fd67193c176dd32588521e70",
+              "cut": 4,
+              "query": "faweibonanzi",
+              "context": "联系",
+              "expected": "发微博男子",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "发微博男子",
+                "发微博汉字",
+                "法微博男子",
+                "发微博难字",
+                "发微博篮子"
+              ],
+              "afterTop5": [
+                "发微博汉字",
+                "发微博篮子",
+                "发微博男子",
+                "法微博男子",
+                "发微博难字"
+              ]
+            },
+            {
+              "id": "085ee3e50c0d656754c221e3cde954db8aad3c3b16fb450ddf6e51dc1332b12b",
+              "cut": 0,
+              "query": "wubufachuzheyangdejingtan",
+              "context": "",
+              "expected": "无不发出这样的惊叹",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "无不发出这样的惊叹",
+                "无不发出这样的警探",
+                "五部发出这样的惊叹",
+                "舞步发出这样的惊叹",
+                "五步发出这样的惊叹"
+              ],
+              "afterTop5": [
+                "舞步发出这样的惊叹",
+                "无不发出这样的惊叹",
+                "五步发出这样的惊叹",
+                "五部发出这样的惊叹",
+                "五不发出这样的惊叹"
+              ]
+            },
+            {
+              "id": "0a21f3c4345cddb28f1d5ed2bef7c9dc3d2d89f774dd6b7ab32b5fea693534d9",
+              "cut": 4,
+              "query": "geshiqingsaishang",
+              "context": "的整",
+              "expected": "个世青赛上",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "个世青赛上",
+                "个事情塞上",
+                "个事情腮上",
+                "个事情在上",
+                "个事情赛上"
+              ],
+              "afterTop5": [
+                "个事情在上",
+                "个世青赛上",
+                "个事情塞上",
+                "个事情赛上",
+                "个世青赛伤"
+              ]
+            },
+            {
+              "id": "0bb723435ae7fec80b4a1c38ddd99f4a956df779c4929564cc0ddda6df1332db",
+              "cut": 3,
+              "query": "zhanquyu",
+              "context": "步发",
+              "expected": "展区域",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "展区域",
+                "展区与",
+                "战区域",
+                "展趋于",
+                "站区域"
+              ],
+              "afterTop5": [
+                "站区域",
+                "展区域",
+                "展趋于",
+                "展区与",
+                "展区于"
+              ]
+            },
+            {
+              "id": "0d5662b48de5165152c8f2ca9be349c0bddd10bfd40994ed906d4dab3538ce67",
+              "cut": 4,
+              "query": "zhanshangxiagongfu",
+              "context": "型发",
+              "expected": "展上下功夫",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "展上下功夫",
+                "展商下功夫",
+                "展上下工夫",
+                "展商下工夫",
+                "站上下功夫"
+              ],
+              "afterTop5": [
+                "展上下工夫",
+                "展上下功夫",
+                "站上下工夫",
+                "展商下功夫",
+                "展商下工夫"
+              ]
+            },
+            {
+              "id": "00c632e4c1b2ffd2ee8581bb55258df65be33b3584f638db550d2da51c285cbf",
+              "cut": 5,
+              "query": "chengjianggengjiayouli",
+              "context": "技支",
+              "expected": "撑将更加有力",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "撑将更加有力",
+                "撑讲更加有力",
+                "成将更加有力",
+                "撑奖更加有力",
+                "撑将更加有利"
+              ],
+              "afterTop5": [
+                "撑将更加有利",
+                "撑将更加有力",
+                "撑将更加有理",
+                "澄江更加有力",
+                "成将更加有力"
+              ]
+            },
+            {
+              "id": "0142994a01c733f3de6be15b9493a03ac0c722bc00de19df2f38a5f684bce8a5",
+              "cut": 5,
+              "query": "deyingxiangyouxian",
+              "context": "业绩",
+              "expected": "的影响有限",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "的影响有限",
+                "的影响优先",
+                "的影响悠闲",
+                "的影响有线",
+                "的影响有闲"
+              ],
+              "afterTop5": [
+                "的影响优先",
+                "的影响悠闲",
+                "的影响有限",
+                "的影响有先",
+                "的影响有线"
+              ]
+            },
+            {
+              "id": "017f7f7c89f506dddcaf60897e1afd081e0bed563b2f7c82342c339d4581ab8d",
+              "cut": 7,
+              "query": "shijianwuyuejiurixiaoxi",
+              "context": "北京",
+              "expected": "时间五月九日消息",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "时间五月九日消息",
+                "事件五月九日消息",
+                "市见五月九日消息",
+                "实践五月九日消息",
+                "市间五月九日消息"
+              ],
+              "afterTop5": [
+                "事件五月九日消息",
+                "时间五月九日消息",
+                "实践五月九日消息",
+                "时间五月九日小溪",
+                "是件五月九日消息"
+              ]
+            },
+            {
+              "id": "01d43371e9a7e7a18c94d3101a14264263511097a809864f134af25db8330f8b",
+              "cut": 0,
+              "query": "tadanxinzijimashangjiuyaobeicituile",
+              "context": "",
+              "expected": "他担心自己马上就要被辞退了",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "他担心自己马上就要被辞退了",
+                "她担心自己马上就要被辞退了",
+                "它担心自己马上就要被辞退了",
+                "塔担心自己马上就要被辞退了",
+                "他担心字迹马上就要被辞退了"
+              ],
+              "afterTop5": [
+                "她担心自己马上就要被辞退了",
+                "他担心自己马上就要被辞退了",
+                "它担心自己马上就要被辞退了",
+                "塔担心自己马上就要被辞退了",
+                "他担心字迹马上就要被辞退了"
+              ]
+            },
+            {
+              "id": "02804acd029ed4ebfbd7d3a71cf9ede5c4bc4f99d93b4e69d6708bd3d562a021",
+              "cut": 0,
+              "query": "xianshidecankuluodaobaobiaoshang",
+              "context": "",
+              "expected": "现实的残酷落到报表上",
+              "beforeRank": 1,
+              "afterRank": 4,
+              "beforeTop5": [
+                "现实的残酷落到报表上",
+                "显示的残酷落到报表上",
+                "现实的残酷落到爆表上",
+                "现实的残酷落到保镖上",
+                "显示的残酷落到爆表上"
+              ],
+              "afterTop5": [
+                "现实的残酷落到保镖上",
+                "显示的残酷落到保镖上",
+                "现实的残酷落到爆表上",
+                "现实的残酷落到报表上",
+                "显示的残酷落到报表上"
+              ]
+            },
+            {
+              "id": "02804acd029ed4ebfbd7d3a71cf9ede5c4bc4f99d93b4e69d6708bd3d562a021",
+              "cut": 5,
+              "query": "luodaobaobiaoshang",
+              "context": "残酷",
+              "expected": "落到报表上",
+              "beforeRank": 1,
+              "afterRank": 4,
+              "beforeTop5": [
+                "落到报表上",
+                "落到爆表上",
+                "落到保镖上",
+                "罗到报表上",
+                "落到包表上"
+              ],
+              "afterTop5": [
+                "落到保镖上",
+                "落到保镖伤",
+                "落到爆表上",
+                "落到报表上",
+                "罗到保镖上"
+              ]
+            }
+          ],
+          "rankLosses": [
+            {
+              "id": "074d0c837a6989bb8e04fbbaab1c0fc50a6b5528fd67193c176dd32588521e70",
+              "cut": 4,
+              "query": "faweibonanzi",
+              "context": "联系",
+              "expected": "发微博男子",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "发微博男子",
+                "发微博汉字",
+                "法微博男子",
+                "发微博难字",
+                "发微博篮子"
+              ],
+              "afterTop5": [
+                "发微博汉字",
+                "发微博篮子",
+                "发微博男子",
+                "法微博男子",
+                "发微博难字"
+              ]
+            },
+            {
+              "id": "085ee3e50c0d656754c221e3cde954db8aad3c3b16fb450ddf6e51dc1332b12b",
+              "cut": 0,
+              "query": "wubufachuzheyangdejingtan",
+              "context": "",
+              "expected": "无不发出这样的惊叹",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "无不发出这样的惊叹",
+                "无不发出这样的警探",
+                "五部发出这样的惊叹",
+                "舞步发出这样的惊叹",
+                "五步发出这样的惊叹"
+              ],
+              "afterTop5": [
+                "舞步发出这样的惊叹",
+                "无不发出这样的惊叹",
+                "五步发出这样的惊叹",
+                "五部发出这样的惊叹",
+                "五不发出这样的惊叹"
+              ]
+            },
+            {
+              "id": "0a21f3c4345cddb28f1d5ed2bef7c9dc3d2d89f774dd6b7ab32b5fea693534d9",
+              "cut": 4,
+              "query": "geshiqingsaishang",
+              "context": "的整",
+              "expected": "个世青赛上",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "个世青赛上",
+                "个事情塞上",
+                "个事情腮上",
+                "个事情在上",
+                "个事情赛上"
+              ],
+              "afterTop5": [
+                "个事情在上",
+                "个世青赛上",
+                "个事情塞上",
+                "个事情赛上",
+                "个世青赛伤"
+              ]
+            },
+            {
+              "id": "0bb723435ae7fec80b4a1c38ddd99f4a956df779c4929564cc0ddda6df1332db",
+              "cut": 3,
+              "query": "zhanquyu",
+              "context": "步发",
+              "expected": "展区域",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "展区域",
+                "展区与",
+                "战区域",
+                "展趋于",
+                "站区域"
+              ],
+              "afterTop5": [
+                "站区域",
+                "展区域",
+                "展趋于",
+                "展区与",
+                "展区于"
+              ]
+            },
+            {
+              "id": "0d5662b48de5165152c8f2ca9be349c0bddd10bfd40994ed906d4dab3538ce67",
+              "cut": 4,
+              "query": "zhanshangxiagongfu",
+              "context": "型发",
+              "expected": "展上下功夫",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "展上下功夫",
+                "展商下功夫",
+                "展上下工夫",
+                "展商下工夫",
+                "站上下功夫"
+              ],
+              "afterTop5": [
+                "展上下工夫",
+                "展上下功夫",
+                "站上下工夫",
+                "展商下功夫",
+                "展商下工夫"
+              ]
+            },
+            {
+              "id": "00c632e4c1b2ffd2ee8581bb55258df65be33b3584f638db550d2da51c285cbf",
+              "cut": 5,
+              "query": "chengjianggengjiayouli",
+              "context": "技支",
+              "expected": "撑将更加有力",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "撑将更加有力",
+                "撑讲更加有力",
+                "成将更加有力",
+                "撑奖更加有力",
+                "撑将更加有利"
+              ],
+              "afterTop5": [
+                "撑将更加有利",
+                "撑将更加有力",
+                "撑将更加有理",
+                "澄江更加有力",
+                "成将更加有力"
+              ]
+            },
+            {
+              "id": "0142994a01c733f3de6be15b9493a03ac0c722bc00de19df2f38a5f684bce8a5",
+              "cut": 5,
+              "query": "deyingxiangyouxian",
+              "context": "业绩",
+              "expected": "的影响有限",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "的影响有限",
+                "的影响优先",
+                "的影响悠闲",
+                "的影响有线",
+                "的影响有闲"
+              ],
+              "afterTop5": [
+                "的影响优先",
+                "的影响悠闲",
+                "的影响有限",
+                "的影响有先",
+                "的影响有线"
+              ]
+            },
+            {
+              "id": "017f7f7c89f506dddcaf60897e1afd081e0bed563b2f7c82342c339d4581ab8d",
+              "cut": 7,
+              "query": "shijianwuyuejiurixiaoxi",
+              "context": "北京",
+              "expected": "时间五月九日消息",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "时间五月九日消息",
+                "事件五月九日消息",
+                "市见五月九日消息",
+                "实践五月九日消息",
+                "市间五月九日消息"
+              ],
+              "afterTop5": [
+                "事件五月九日消息",
+                "时间五月九日消息",
+                "实践五月九日消息",
+                "时间五月九日小溪",
+                "是件五月九日消息"
+              ]
+            },
+            {
+              "id": "01d43371e9a7e7a18c94d3101a14264263511097a809864f134af25db8330f8b",
+              "cut": 0,
+              "query": "tadanxinzijimashangjiuyaobeicituile",
+              "context": "",
+              "expected": "他担心自己马上就要被辞退了",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "他担心自己马上就要被辞退了",
+                "她担心自己马上就要被辞退了",
+                "它担心自己马上就要被辞退了",
+                "塔担心自己马上就要被辞退了",
+                "他担心字迹马上就要被辞退了"
+              ],
+              "afterTop5": [
+                "她担心自己马上就要被辞退了",
+                "他担心自己马上就要被辞退了",
+                "它担心自己马上就要被辞退了",
+                "塔担心自己马上就要被辞退了",
+                "他担心字迹马上就要被辞退了"
+              ]
+            },
+            {
+              "id": "02804acd029ed4ebfbd7d3a71cf9ede5c4bc4f99d93b4e69d6708bd3d562a021",
+              "cut": 0,
+              "query": "xianshidecankuluodaobaobiaoshang",
+              "context": "",
+              "expected": "现实的残酷落到报表上",
+              "beforeRank": 1,
+              "afterRank": 4,
+              "beforeTop5": [
+                "现实的残酷落到报表上",
+                "显示的残酷落到报表上",
+                "现实的残酷落到爆表上",
+                "现实的残酷落到保镖上",
+                "显示的残酷落到爆表上"
+              ],
+              "afterTop5": [
+                "现实的残酷落到保镖上",
+                "显示的残酷落到保镖上",
+                "现实的残酷落到爆表上",
+                "现实的残酷落到报表上",
+                "显示的残酷落到报表上"
+              ]
+            },
+            {
+              "id": "02804acd029ed4ebfbd7d3a71cf9ede5c4bc4f99d93b4e69d6708bd3d562a021",
+              "cut": 5,
+              "query": "luodaobaobiaoshang",
+              "context": "残酷",
+              "expected": "落到报表上",
+              "beforeRank": 1,
+              "afterRank": 4,
+              "beforeTop5": [
+                "落到报表上",
+                "落到爆表上",
+                "落到保镖上",
+                "罗到报表上",
+                "落到包表上"
+              ],
+              "afterTop5": [
+                "落到保镖上",
+                "落到保镖伤",
+                "落到爆表上",
+                "落到报表上",
+                "罗到保镖上"
+              ]
+            },
+            {
+              "id": "03a533269ea3bae1b442f87ab24f45d8ea08d22f3374222e7de188f9913c9288",
+              "cut": 5,
+              "query": "shifeichangyouli",
+              "context": "中确",
+              "expected": "实非常有利",
+              "beforeRank": 2,
+              "afterRank": 3,
+              "beforeTop5": [
+                "是非常有利",
+                "实非常有利",
+                "是非常有力",
+                "是非常有理",
+                "是非常有里"
+              ],
+              "afterTop5": [
+                "是非常有利",
+                "是非常有力",
+                "实非常有利",
+                "是非常有理",
+                "是非常有礼"
+              ]
+            }
+          ],
+          "latencyAllRows": {
+            "count": 248,
+            "medianMs": 579.05565,
+            "p95Ms": 1777.7435,
+            "maxMs": 2559.1982,
+            "totalMs": 178542.4902
+          },
+          "latencyScoredRows": {
+            "count": 246,
+            "medianMs": 583.1684,
+            "p95Ms": 1777.7435,
+            "maxMs": 2559.1982,
+            "totalMs": 178542.2713
+          },
+          "slices": {
+            "empty": {
+              "before": {
+                "states": 124,
+                "top1": 70,
+                "top5": 91,
+                "top10": 98,
+                "recall255": 107,
+                "characterErrors": 133,
+                "characters": 1330
+              },
+              "after": {
+                "states": 124,
+                "top1": 91,
+                "top5": 97,
+                "top10": 98,
+                "recall255": 107,
+                "characterErrors": 73,
+                "characters": 1330
+              }
+            },
+            "editor": {
+              "before": {
+                "states": 124,
+                "top1": 80,
+                "top5": 103,
+                "top10": 106,
+                "recall255": 116,
+                "characterErrors": 93,
+                "characters": 703
+              },
+              "after": {
+                "states": 124,
+                "top1": 91,
+                "top5": 105,
+                "top10": 106,
+                "recall255": 116,
+                "characterErrors": 68,
+                "characters": 703
+              }
+            }
+          },
+          "timingScope": "Warm desktop CPU added rescoring only; excludes decoder and Android UI",
+          "accuracyScope": "These 248+248 states were opened in prior stages; known regression only, not new blind validation. No personal-history, typo, UI or mobile-runtime claim."
+        },
+        "tatoeba": {
+          "before": {
+            "states": 248,
+            "top1": 170,
+            "top5": 213,
+            "top10": 223,
+            "recall255": 236,
+            "characterErrors": 129,
+            "characters": 1833
+          },
+          "after": {
+            "states": 248,
+            "top1": 181,
+            "top5": 221,
+            "top10": 223,
+            "recall255": 236,
+            "characterErrors": 97,
+            "characters": 1833
+          },
+          "nonregressionPassed": true,
+          "eligibleRows": 238,
+          "firstChanged": 87,
+          "skipReasons": {
+            "scored": 238,
+            "unknown-character": 10
+          },
+          "firstGains": [
+            {
+              "id": "00202e08baf8108f41416aee524c331656c59706a82b5bdd877b248c2872988b",
+              "cut": 0,
+              "query": "wohuileyibangnizuo",
+              "context": "",
+              "expected": "我会乐意帮你做",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "我会了一帮你做",
+                "我会乐意帮你做",
+                "我会了以帮你做",
+                "我会了一磅你做",
+                "我回了一帮你做"
+              ],
+              "afterTop5": [
+                "我会乐意帮你做",
+                "我会可以帮你做",
+                "我回了以帮你做",
+                "我回了一帮你做",
+                "我会了以帮你做"
+              ]
+            },
+            {
+              "id": "006d40df9e51a1353e82cb1520960fc2c788d186a9ad9690985c37618dac272d",
+              "cut": 3,
+              "query": "kaishirongle",
+              "context": "已经",
+              "expected": "开始溶了",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "开始懂了",
+                "开始融了",
+                "开始溶了",
+                "开始戎了",
+                "开始通了"
+              ],
+              "afterTop5": [
+                "开始溶了",
+                "开始懂了",
+                "开始融了",
+                "开始通了",
+                "开始熔了"
+              ]
+            },
+            {
+              "id": "00b90a10e5cdcea447a8272d294c8a07a33a30a8abe9ab6bc5f7daa6cc0cae9d",
+              "cut": 3,
+              "query": "qitamen",
+              "context": "不嫌",
+              "expected": "弃他们",
+              "beforeRank": 6,
+              "afterRank": 1,
+              "beforeTop5": [
+                "其他们",
+                "起他们",
+                "其它们",
+                "比他们",
+                "期他们"
+              ],
+              "afterTop5": [
+                "弃他们",
+                "爱他们",
+                "气他们",
+                "其他们",
+                "比他们"
+              ]
+            },
+            {
+              "id": "0167a3cd6f2d031691b336313192a4801ca8a76a14a1aea55d0b9058bf038238",
+              "cut": 0,
+              "query": "niyuanyizailaibeihongjiuma",
+              "context": "",
+              "expected": "你愿意再来杯红酒吗",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "你愿意再来被红酒吗",
+                "你愿意再来杯红酒吗",
+                "你愿意再来背红酒吗",
+                "你愿意在来被红酒吗",
+                "你愿意在来杯红酒吗"
+              ],
+              "afterTop5": [
+                "你愿意再来杯红酒吗",
+                "你愿意在来杯红酒吗",
+                "你愿意再来呗红酒吗",
+                "你愿意再来背红酒吗",
+                "你愿意再来被红酒吗"
+              ]
+            },
+            {
+              "id": "0167a3cd6f2d031691b336313192a4801ca8a76a14a1aea55d0b9058bf038238",
+              "cut": 4,
+              "query": "laibeihongjiuma",
+              "context": "意再",
+              "expected": "来杯红酒吗",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "来被红酒吗",
+                "来杯红酒吗",
+                "来呗红酒吗",
+                "来背红酒吗",
+                "来倍红酒吗"
+              ],
+              "afterTop5": [
+                "来杯红酒吗",
+                "来杯红酒嘛",
+                "来呗红酒吗",
+                "来被红酒吗",
+                "来背红酒吗"
+              ]
+            },
+            {
+              "id": "01914733d45557a917f936443e0423f40181d075581e908a990e042f562e9022",
+              "cut": 3,
+              "query": "funile",
+              "context": "我辜",
+              "expected": "负你了",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "服你了",
+                "负你了",
+                "负腻了",
+                "负匿了",
+                "扶你了"
+              ],
+              "afterTop5": [
+                "负你了",
+                "负腻了",
+                "复你了",
+                "服你了",
+                "付你了"
+              ]
+            },
+            {
+              "id": "0205fcad9769af3bdae8054dc52cb97a19ebb0a134192f1d18502513c493ab5d",
+              "cut": 4,
+              "query": "yiqiandegongzuo",
+              "context": "续了",
+              "expected": "以前的工作",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "一千的工作",
+                "以前的工作",
+                "一钱的工作",
+                "一前的工作",
+                "一签的工作"
+              ],
+              "afterTop5": [
+                "以前的工作",
+                "一千的工作",
+                "一枪的工作",
+                "一签的工作",
+                "一前的工作"
+              ]
+            },
+            {
+              "id": "026e0c6344996b1659d7797ef3306ee7c4a79fe6762527c2b31b9524d996f3d6",
+              "cut": 0,
+              "query": "wokanwomenbugaizaideng",
+              "context": "",
+              "expected": "我看我们不该再等",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "我看我们不该在等",
+                "我看我们不该再等",
+                "我看我们不改在等",
+                "我看我们不该在灯",
+                "我看我们不该再登"
+              ],
+              "afterTop5": [
+                "我看我们不该再等",
+                "我看我们不该在等",
+                "我看我们不该再登",
+                "我看我们不该在灯",
+                "我看我们不该在登"
+              ]
+            },
+            {
+              "id": "026e0c6344996b1659d7797ef3306ee7c4a79fe6762527c2b31b9524d996f3d6",
+              "cut": 4,
+              "query": "bugaizaideng",
+              "context": "我们",
+              "expected": "不该再等",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "不该在等",
+                "不该再等",
+                "不改在等",
+                "不该在灯",
+                "不该再登"
+              ],
+              "afterTop5": [
+                "不该再等",
+                "不该在等",
+                "不该再登",
+                "不改在等",
+                "不该在蹬"
+              ]
+            },
+            {
+              "id": "02d8509d96e657f7fe28a41eaed251de284ce454a678933324030b8344cf55d5",
+              "cut": 0,
+              "query": "mafantongyiyixia",
+              "context": "",
+              "expected": "麻烦同意一下",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "麻烦统一一下",
+                "麻烦同意一下",
+                "麻烦同一一下",
+                "麻烦同意以下",
+                "麻烦同一以下"
+              ],
+              "afterTop5": [
+                "麻烦同意一下",
+                "麻烦容易一下",
+                "麻烦统一一下",
+                "麻烦同意以下",
+                "麻烦统一以下"
+              ]
+            },
+            {
+              "id": "02d8509d96e657f7fe28a41eaed251de284ce454a678933324030b8344cf55d5",
+              "cut": 3,
+              "query": "yiyixia",
+              "context": "烦同",
+              "expected": "意一下",
+              "beforeRank": 5,
+              "afterRank": 1,
+              "beforeTop5": [
+                "一一下",
+                "议一下",
+                "以一下",
+                "意义下",
+                "意一下"
+              ],
+              "afterTop5": [
+                "意一下",
+                "意以下",
+                "一以下",
+                "一一下",
+                "议一下"
+              ]
+            },
+            {
+              "id": "03c5d7c80ffe7fb03ebff6f2c5c07a477eb1916aae32a5f04c903b2fa622503f",
+              "cut": 0,
+              "query": "maliyaxiesidili",
+              "context": "",
+              "expected": "玛丽亚歇斯底里",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "玛利亚歇斯底里",
+                "马利亚歇斯底里",
+                "玛利亚写死地理",
+                "玛丽亚歇斯底里",
+                "玛利亚写死地利"
+              ],
+              "afterTop5": [
+                "玛丽亚歇斯底里",
+                "玛利亚歇斯底里",
+                "马利亚歇斯底里",
+                "马尼亚歇斯底里",
+                "玛丽呀歇斯底里"
+              ]
+            },
+            {
+              "id": "03f5cd6a6034b235cd44bd33d85f04ee90052828925e38ecfcacfdb7ae4801ed",
+              "cut": 0,
+              "query": "woyinggaixianzainapiaoma",
+              "context": "",
+              "expected": "我应该现在拿票吗",
+              "beforeRank": 6,
+              "afterRank": 1,
+              "beforeTop5": [
+                "我应该现在那票吗",
+                "我应该现在那飘吗",
+                "我应该现在那嫖吗",
+                "我应该现在哪票吗",
+                "我应该现在那瞟吗"
+              ],
+              "afterTop5": [
+                "我应该现在拿票吗",
+                "我应该现在那飘吗",
+                "我应该现在那嫖吗",
+                "我应该现在那票吗",
+                "我应该现在那瓢吗"
+              ]
+            },
+            {
+              "id": "04beee8ba1b568cb48b12ae178c9885a33d28c4cbd178dd51b68f017ae2a1e04",
+              "cut": 0,
+              "query": "tahuishigehaoqizide",
+              "context": "",
+              "expected": "她会是个好妻子的",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "他会是个好妻子的",
+                "她会是个好妻子的",
+                "它会是个好妻子的",
+                "他会是个好棋子的",
+                "她会是个好棋子的"
+              ],
+              "afterTop5": [
+                "她会是个好妻子的",
+                "他会是个好妻子的",
+                "他会是个好棋子的",
+                "它会是个好妻子的",
+                "她会是个好棋子的"
+              ]
+            },
+            {
+              "id": "052b98c06b8d9dd42c8747e01f5e4944428fa40a94b9fc81f2626a5348bac94a",
+              "cut": 0,
+              "query": "laoshiwugupipingxuesheng",
+              "context": "",
+              "expected": "老师无故批评学生",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "老师无辜批评学生",
+                "老师无故批评学生",
+                "老是无辜批评学生",
+                "老师五谷批评学生",
+                "老实无辜批评学生"
+              ],
+              "afterTop5": [
+                "老师无故批评学生",
+                "老师无辜批评学生",
+                "老师巫蛊批评学生",
+                "老是无故批评学生",
+                "老实无辜批评学生"
+              ]
+            },
+            {
+              "id": "05c0ad587b07fa445a7ef90a7f4fbd2aba0175b3b84671e46f5cf4db3f134b92",
+              "cut": 0,
+              "query": "leidianrongyijizhongjinshu",
+              "context": "",
+              "expected": "雷电容易击中金属",
+              "beforeRank": 7,
+              "afterRank": 1,
+              "beforeTop5": [
+                "雷电容易几种金属",
+                "泪点容易几种金属",
+                "雷电容易集中金属",
+                "泪点容易集中金属",
+                "累点容易几种金属"
+              ],
+              "afterTop5": [
+                "雷电容易击中金属",
+                "泪点容易集中金属",
+                "雷电容易集中金属",
+                "雷电容易几种金属",
+                "累点容易几种金属"
+              ]
+            },
+            {
+              "id": "05c0ad587b07fa445a7ef90a7f4fbd2aba0175b3b84671e46f5cf4db3f134b92",
+              "cut": 4,
+              "query": "jizhongjinshu",
+              "context": "容易",
+              "expected": "击中金属",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "几种金属",
+                "集中金属",
+                "及重金属",
+                "击中金属",
+                "系重金属"
+              ],
+              "afterTop5": [
+                "击中金属",
+                "集中金属",
+                "几种金属",
+                "及重金属",
+                "级重金属"
+              ]
+            },
+            {
+              "id": "0734d2560cdf48383efa3d0e70bc7ed06e297870b66fcbcb8f25078e05b27e4d",
+              "cut": 0,
+              "query": "shenyuanyezainingshini",
+              "context": "",
+              "expected": "深渊也在凝视你",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "深远也在凝视你",
+                "深渊也在凝视你",
+                "甚远也在凝视你",
+                "申冤也在凝视你",
+                "深院也在凝视你"
+              ],
+              "afterTop5": [
+                "深渊也在凝视你",
+                "深远也在凝视你",
+                "神元也在凝视你",
+                "深院也在凝视你",
+                "甚远也在凝视你"
+              ]
+            },
+            {
+              "id": "07b4aa73ec971d95e31f5a980df3c33cfa441363004b225f52336846d7819ac5",
+              "cut": 0,
+              "query": "wozuijinshimianchaoyanzhong",
+              "context": "",
+              "expected": "我最近失眠超严重",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "我最近是面朝严重",
+                "我最近失眠超严重",
+                "我最近是面朝眼中",
+                "我最近时面朝严重",
+                "我最近市面超严重"
+              ],
+              "afterTop5": [
+                "我最近失眠超严重",
+                "我最近世面超严重",
+                "我最近市面超严重",
+                "我最近是面朝严重",
+                "我最近是面朝眼中"
+              ]
+            },
+            {
+              "id": "07b4aa73ec971d95e31f5a980df3c33cfa441363004b225f52336846d7819ac5",
+              "cut": 4,
+              "query": "mianchaoyanzhong",
+              "context": "近失",
+              "expected": "眠超严重",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "面朝严重",
+                "面朝眼中",
+                "眠超严重",
+                "面超严重",
+                "面朝言中"
+              ],
+              "afterTop5": [
+                "眠超严重",
+                "面朝眼中",
+                "面超严重",
+                "面朝言中",
+                "棉超严重"
+              ]
+            },
+            {
+              "id": "007f82d38d711540e6a594214316eb90e23c7024c9a3faf5fb4651eefa716988",
+              "cut": 0,
+              "query": "nizaixianxiadeshihouyibanzuoshenme",
+              "context": "",
+              "expected": "你在闲暇的时候一般做什么",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "你在线下的时候一般做什么",
+                "你在线下的时候一半做什么",
+                "你在闲暇的时候一般做什么",
+                "你再线下的时候一般做什么",
+                "你在现下的时候一般做什么"
+              ],
+              "afterTop5": [
+                "你在闲暇的时候一般做什么",
+                "你在线下的时候一般做什么",
+                "你在线下的时候一半做什么",
+                "你再线下的时候一般做什么",
+                "你在现下的时候一般做什么"
+              ]
+            },
+            {
+              "id": "007f82d38d711540e6a594214316eb90e23c7024c9a3faf5fb4651eefa716988",
+              "cut": 6,
+              "query": "houyibanzuoshenme",
+              "context": "的时",
+              "expected": "候一般做什么",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "后一般做什么",
+                "候一般做什么",
+                "后一半做什么",
+                "后一班做什么",
+                "候一半做什么"
+              ],
+              "afterTop5": [
+                "候一般做什么",
+                "候一半做什么",
+                "侯一般做什么",
+                "后一般做什么",
+                "后一半做什么"
+              ]
+            },
+            {
+              "id": "00bd48cb8b149fa1c3f321c6335b1b93cd5264f1ff94c0a35798869d796fd685",
+              "cut": 0,
+              "query": "zhecijuhuizhilaileliugeren",
+              "context": "",
+              "expected": "这次聚会只来了六个人",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "这次聚会之来了六个人",
+                "这次聚会只来了六个人",
+                "这次聚会至来了六个人",
+                "这次聚会值来了六个人",
+                "这次聚会纸来了六个人"
+              ],
+              "afterTop5": [
+                "这次聚会只来了六个人",
+                "这次聚会之来了六个人",
+                "这次聚会纸来了六个人",
+                "这次聚会值来了六个人",
+                "这次聚会指来了六个人"
+              ]
+            },
+            {
+              "id": "01694346656e2fe9c45d098e1884d44428935e7f07b8689d25a7f2917a71be53",
+              "cut": 0,
+              "query": "rangtadudaoyibanjiukulechulai",
+              "context": "",
+              "expected": "让她读到一半就哭了出来",
+              "beforeRank": 6,
+              "afterRank": 1,
+              "beforeTop5": [
+                "让他读到一般就哭了出来",
+                "让他读到一半就哭了出来",
+                "让她读到一般就哭了出来",
+                "让他都到一半就哭了出来",
+                "让他独到一般就哭了出来"
+              ],
+              "afterTop5": [
+                "让她读到一半就哭了出来",
+                "让他读到一半就哭了出来",
+                "让她都到一半就哭了出来",
+                "让他都到一半就哭了出来",
+                "让他独到一半就哭了出来"
+              ]
+            },
+            {
+              "id": "03b9932b65a31312c21fe9c34f9fc6e1e17accb4bb097e4670bc1cf8ff9c4b26",
+              "cut": 0,
+              "query": "ouerhuisongwomenjikecaojidan",
+              "context": "",
+              "expected": "偶尔会送我们几颗草鸡蛋",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "偶尔会送我们即可草鸡蛋",
+                "偶尔会送我们几颗草鸡蛋",
+                "偶尔会送我们即刻草鸡蛋",
+                "偶尔会送我们即可艹鸡蛋",
+                "偶尔会送我们即可槽鸡蛋"
+              ],
+              "afterTop5": [
+                "偶尔会送我们几颗草鸡蛋",
+                "偶尔会送我们即可草鸡蛋",
+                "偶尔会送我们即刻草鸡蛋",
+                "偶尔会送我们即可曹鸡蛋",
+                "偶尔会送我们即可艹鸡蛋"
+              ]
+            },
+            {
+              "id": "040a6be04bd110ab8f14f02aec5399dd6142f67155bf36dd76358f75418a4040",
+              "cut": 8,
+              "query": "shihuaxiangyundongshiweixiande",
+              "context": "悬挂",
+              "expected": "式滑翔运动是危险的",
+              "beforeRank": 6,
+              "afterRank": 1,
+              "beforeTop5": [
+                "是画像运动是危险的",
+                "式画像运动是危险的",
+                "是花香运动是危险的",
+                "是滑翔运动是危险的",
+                "式花香运动是危险的"
+              ],
+              "afterTop5": [
+                "式滑翔运动是危险的",
+                "是滑翔运动是危险的",
+                "是画像运动是危险的",
+                "式画像运动是危险的",
+                "是花香运动是危险的"
+              ]
+            },
+            {
+              "id": "04d346d77341df02dd6f660a9cfed8e44808e9b14e49c8f6220b76fb94086649",
+              "cut": 0,
+              "query": "woyijiandaonijiuhuixiangqiniyigudefuqin",
+              "context": "",
+              "expected": "我一见到你就会想起你已故的父亲",
+              "beforeRank": 3,
+              "afterRank": 1,
+              "beforeTop5": [
+                "我一见到你就会想起你一股的父亲",
+                "我意见到你就会想起你一股的父亲",
+                "我一见到你就会想起你已故的父亲",
+                "我以见到你就会想起你一股的父亲",
+                "我一见到你就回想起你一股的父亲"
+              ],
+              "afterTop5": [
+                "我一见到你就会想起你已故的父亲",
+                "我意见到你就会想起你已故的父亲",
+                "我一见到你就会想起你一股的父亲",
+                "我一见到你就回想起你一股的父亲",
+                "我已见到你就会想起你一股的父亲"
+              ]
+            },
+            {
+              "id": "04d346d77341df02dd6f660a9cfed8e44808e9b14e49c8f6220b76fb94086649",
+              "cut": 7,
+              "query": "xiangqiniyigudefuqin",
+              "context": "就会",
+              "expected": "想起你已故的父亲",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "想起你一股的父亲",
+                "想起你已故的父亲",
+                "想起你亿股的父亲",
+                "想起你以故的父亲",
+                "想起你一故的父亲"
+              ],
+              "afterTop5": [
+                "想起你已故的父亲",
+                "想起你遗骨的父亲",
+                "想起你一古的父亲",
+                "想起你以故的父亲",
+                "想起你一骨的父亲"
+              ]
+            },
+            {
+              "id": "057d4ac98acfca79e4389a12a34d7eaf2cd34f47b6c07d659abcd49a133804f5",
+              "cut": 6,
+              "query": "xiangzijihuilihun",
+              "context": "法想",
+              "expected": "象自己会离婚",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "想自己会离婚",
+                "象自己会离婚",
+                "像自己会离婚",
+                "向自己会离婚",
+                "象字机会离婚"
+              ],
+              "afterTop5": [
+                "象自己会离婚",
+                "想自己会离婚",
+                "像自己会离婚",
+                "想自己回离婚",
+                "向自己会离婚"
+              ]
+            },
+            {
+              "id": "064ca9a3926f0c3049e98696e5a14a0664f8312e2422ffd1e30ed41ebf0330ec",
+              "cut": 0,
+              "query": "chuxidexueshengbuxiawubairen",
+              "context": "",
+              "expected": "出席的学生不下五百人",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "出戏的学生不下五百人",
+                "出席的学生不下五百人",
+                "出息的学生不下五百人",
+                "出戏的学生不下午白人",
+                "出席的学生不下午白人"
+              ],
+              "afterTop5": [
+                "出席的学生不下五百人",
+                "除夕的学生不下五百人",
+                "出戏的学生不下五百人",
+                "出息的学生不下五百人",
+                "出席的学生不下午白人"
+              ]
+            },
+            {
+              "id": "080f715ae4bb50c8ca3d4e5f43af1b33e39a70feee5b00d9507fa146d1f2e0d3",
+              "cut": 0,
+              "query": "duigongzuodereaishitongwangxingfudeyaoshi",
+              "context": "",
+              "expected": "对工作的热爱是通往幸福的钥匙",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "对工作的热爱是通往幸福的要是",
+                "对工作的热爱是通往幸福的钥匙",
+                "对工作的热爱时通往幸福的要是",
+                "对工作的热爱时通往幸福的钥匙",
+                "对工作的热爱是通往幸福的要时"
+              ],
+              "afterTop5": [
+                "对工作的热爱是通往幸福的钥匙",
+                "对工作的热爱是通往幸福的要时",
+                "对工作的热爱是通往幸福的要是",
+                "对工作的热爱时通往幸福的钥匙",
+                "对工作的热爱是通往幸福地要是"
+              ]
+            },
+            {
+              "id": "080f715ae4bb50c8ca3d4e5f43af1b33e39a70feee5b00d9507fa146d1f2e0d3",
+              "cut": 7,
+              "query": "tongwangxingfudeyaoshi",
+              "context": "爱是",
+              "expected": "通往幸福的钥匙",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "通往幸福的要是",
+                "通往幸福的钥匙",
+                "同往幸福的要是",
+                "通往幸福的要时",
+                "同往幸福的钥匙"
+              ],
+              "afterTop5": [
+                "通往幸福的钥匙",
+                "通往幸福的药师",
+                "通往幸福的要时",
+                "通往幸福的要使",
+                "通往幸福的要是"
+              ]
+            },
+            {
+              "id": "0d8eb952e91f4548edc7d9cb39a5aabf42fb15fd454eaf2fcfef86c8062d54a4",
+              "cut": 0,
+              "query": "zoudaonabianyitiaoxiaolongtangxiangzuoguaiwan",
+              "context": "",
+              "expected": "走到那边一条小弄堂向左拐弯",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "走到那边一条小弄堂想做拐弯",
+                "走到那边一条小弄堂向左拐弯",
+                "走到哪边一条小弄堂想做拐弯",
+                "走到那边一条小弄堂相左拐弯",
+                "走道那边一条小弄堂想做拐弯"
+              ],
+              "afterTop5": [
+                "走到那边一条小弄堂向左拐弯",
+                "走到那边一条小弄堂向左拐万",
+                "走到那边一条小弄堂像做拐弯",
+                "走到那边一条小弄堂想做拐弯",
+                "走到那边一条小弄堂相左拐弯"
+              ]
+            },
+            {
+              "id": "0d8eb952e91f4548edc7d9cb39a5aabf42fb15fd454eaf2fcfef86c8062d54a4",
+              "cut": 6,
+              "query": "xiaolongtangxiangzuoguaiwan",
+              "context": "一条",
+              "expected": "小弄堂向左拐弯",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "小弄堂想做拐弯",
+                "小弄堂向左拐弯",
+                "小弄堂相左拐弯",
+                "小弄堂想坐拐弯",
+                "小弄堂像做拐弯"
+              ],
+              "afterTop5": [
+                "小弄堂向左拐弯",
+                "小弄堂向左拐万",
+                "小弄堂向左拐玩",
+                "小弄堂想做拐弯",
+                "小弄堂像做拐弯"
+              ]
+            },
+            {
+              "id": "0efd9f9fe8bd64e654b8518992a66c03ac0148a94c551899bdc4aa542173aa51",
+              "cut": 5,
+              "query": "yuzhongdaibiaoshenme",
+              "context": "拉伯",
+              "expected": "语中代表什么",
+              "beforeRank": 4,
+              "afterRank": 1,
+              "beforeTop5": [
+                "语种代表什么",
+                "与中代表什么",
+                "雨中代表什么",
+                "语中代表什么",
+                "与众代表什么"
+              ],
+              "afterTop5": [
+                "语中代表什么",
+                "语种代表什么",
+                "育种代表什么",
+                "于中代表什么",
+                "与众代表什么"
+              ]
+            },
+            {
+              "id": "110f8818a10d09d21a3498ce8ec0e44214ebefe7fd03b1c13de5284831674e11",
+              "cut": 0,
+              "query": "taweinanshengkaoleyigepingguopai",
+              "context": "",
+              "expected": "她为男生烤了一个苹果派",
+              "beforeRank": 8,
+              "afterRank": 1,
+              "beforeTop5": [
+                "他为男生考了一个苹果派",
+                "他为男生靠了一个苹果派",
+                "她为男生考了一个苹果派",
+                "他为男生烤了一个苹果派",
+                "她为男生靠了一个苹果派"
+              ],
+              "afterTop5": [
+                "她为男生烤了一个苹果派",
+                "他为男生烤了一个苹果派",
+                "她为男生考了一个苹果派",
+                "它为男生考了一个苹果派",
+                "他为男生考了一个苹果派"
+              ]
+            },
+            {
+              "id": "11ef25810f3ddfe240ac201c2c5eb72e795c7ff94d411fa0615019bd6b621204",
+              "cut": 5,
+              "query": "huanheputaojiu",
+              "context": "都喜",
+              "expected": "欢喝葡萄酒",
+              "beforeRank": 2,
+              "afterRank": 1,
+              "beforeTop5": [
+                "欢和葡萄酒",
+                "欢喝葡萄酒",
+                "缓和葡萄酒",
+                "欢歌葡萄酒",
+                "欢何葡萄酒"
+              ],
+              "afterTop5": [
+                "欢喝葡萄酒",
+                "欢和葡萄酒",
+                "欢歌葡萄酒",
+                "欢何葡萄酒",
+                "还和葡萄酒"
+              ]
+            }
+          ],
+          "firstLosses": [
+            {
+              "id": "00b5694b264b88e287cc148818508ce351e0eccf482d0993a5b6f724efbc47bf",
+              "cut": 0,
+              "query": "samishuotarengrandanshen",
+              "context": "",
+              "expected": "萨米说他仍然单身",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "萨米说他仍然单身",
+                "萨米说她仍然单身",
+                "萨米说它仍然单身",
+                "萨米说他仍然丹参",
+                "萨米说他仍然但神"
+              ],
+              "afterTop5": [
+                "萨米说她仍然单身",
+                "萨米说他仍然单身",
+                "萨米说它仍然单身",
+                "萨米说他仍然单肾",
+                "萨米说他仍然但神"
+              ]
+            },
+            {
+              "id": "0180cbdcd09a4579aa15b1425e569f07088836439ba2dfdf4dc25cfcca1d61aa",
+              "cut": 0,
+              "query": "wodeshouzhitouyouyigenci",
+              "context": "",
+              "expected": "我的手指头有一根刺",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "我的手指头有一根刺",
+                "我的手指头有一根次",
+                "我的手指头又一根刺",
+                "我的手指头有一根此",
+                "我的手指头有一根词"
+              ],
+              "afterTop5": [
+                "我的手指头有一根次",
+                "我的手指头有一根此",
+                "我的手指头有一根刺",
+                "我的手指头有一根词",
+                "我的手指头又一根次"
+              ]
+            },
+            {
+              "id": "0180cbdcd09a4579aa15b1425e569f07088836439ba2dfdf4dc25cfcca1d61aa",
+              "cut": 4,
+              "query": "touyouyigenci",
+              "context": "手指",
+              "expected": "头有一根刺",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "头有一根刺",
+                "头有一根次",
+                "头又一根刺",
+                "头有一个你",
+                "头有一根此"
+              ],
+              "afterTop5": [
+                "头有一个你",
+                "头有一根刺",
+                "头有一根此",
+                "头又一根刺",
+                "头有一根次"
+              ]
+            },
+            {
+              "id": "03bb8b9a8bc113b5bff04632cbc0700e6244257f899a00c224119846abc4249d",
+              "cut": 0,
+              "query": "womenyiqiquyecanle",
+              "context": "",
+              "expected": "我们一起去野餐了",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "我们一起去野餐了",
+                "我们一起去也惨了",
+                "我们一起去也残了",
+                "我们一起去野蚕了",
+                "我们一起去野餐乐"
+              ],
+              "afterTop5": [
+                "我们一起去野餐乐",
+                "我们一起去野餐了",
+                "我们一起去野餐勒",
+                "我们一起去也惨了",
+                "我们一起去夜餐了"
+              ]
+            },
+            {
+              "id": "03bb8b9a8bc113b5bff04632cbc0700e6244257f899a00c224119846abc4249d",
+              "cut": 4,
+              "query": "quyecanle",
+              "context": "一起",
+              "expected": "去野餐了",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "去野餐了",
+                "去野餐的",
+                "去野餐乐",
+                "去也惨了",
+                "去野餐勒"
+              ],
+              "afterTop5": [
+                "去野餐的",
+                "去野餐了",
+                "去野餐勒",
+                "去野餐乐",
+                "去野餐叻"
+              ]
+            },
+            {
+              "id": "03c7b6ff065c1bd007a5143b5581e2c01d12270ecf30a12c4e78da5caaf3a2c8",
+              "cut": 4,
+              "query": "tiancaichushengde",
+              "context": "是昨",
+              "expected": "天才出生的",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "天才出生的",
+                "天才畜生的",
+                "天才出声的",
+                "天才初生的",
+                "天才出生地"
+              ],
+              "afterTop5": [
+                "天才出声的",
+                "天才出生的",
+                "天才出生得",
+                "天才出省的",
+                "天才出生地"
+              ]
+            },
+            {
+              "id": "0421c5ad998fbec24bb053e229159999813884b093feb4c1801ea80f6302e4f0",
+              "cut": 0,
+              "query": "tashanyonglezhegejihui",
+              "context": "",
+              "expected": "他善用了这个机会",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "他善用了这个机会",
+                "她善用了这个机会",
+                "它善用了这个机会",
+                "他擅用了这个机会",
+                "她擅用了这个机会"
+              ],
+              "afterTop5": [
+                "她善用了这个机会",
+                "他善用了这个机会",
+                "它善用了这个机会",
+                "他擅用了这个机会",
+                "她擅用了这个机会"
+              ]
+            },
+            {
+              "id": "048eee9c6ee6848aa90762789f7521513918fdeabc9bc47414c9c202f4606ae8",
+              "cut": 3,
+              "query": "xihuanmao",
+              "context": "妹妹",
+              "expected": "喜欢猫",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "喜欢猫",
+                "喜欢毛",
+                "喜欢冒",
+                "喜欢吗",
+                "喜欢买"
+              ],
+              "afterTop5": [
+                "喜欢吗",
+                "喜欢买",
+                "喜欢猫",
+                "喜欢毛",
+                "喜欢帽"
+              ]
+            },
+            {
+              "id": "04b2b4d85756c4eccc510f982d972f6db0f6d5b3ad1dedd177770040b501ddd0",
+              "cut": 0,
+              "query": "zhenvshengbuxihuanxiwan",
+              "context": "",
+              "expected": "这女生不喜欢洗碗",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "这女生不喜欢洗碗",
+                "这女生不喜欢洗完",
+                "着女生不喜欢洗碗",
+                "着女生不喜欢洗完",
+                "这女生不喜欢希望"
+              ],
+              "afterTop5": [
+                "这女生不喜欢洗完",
+                "这女生不喜欢洗碗",
+                "这女生不喜欢吸完",
+                "这女生不喜欢希望",
+                "者女生不喜欢洗完"
+              ]
+            },
+            {
+              "id": "05a940ad2e8657e227c5f73eeb1370fc8676844d4ad7e1fcaf8a39743b89d7d6",
+              "cut": 0,
+              "query": "dantameiyoushuotaiduo",
+              "context": "",
+              "expected": "但他没有说太多",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "但他没有说太多",
+                "但她没有说太多",
+                "但它没有说太多",
+                "蛋挞没有说太多",
+                "单他没有说太多"
+              ],
+              "afterTop5": [
+                "蛋挞没有说太多",
+                "但他没有说太多",
+                "但她没有说太多",
+                "但它没有说太多",
+                "单他没有说太多"
+              ]
+            },
+            {
+              "id": "05ac741a14a13ca0b9e097c61540a84a5a829421a6c826e8236a4ef694b75f81",
+              "cut": 4,
+              "query": "yipipingwo",
+              "context": "爸爸",
+              "expected": "一批评我",
+              "beforeRank": 1,
+              "afterRank": 5,
+              "beforeTop5": [
+                "一批评我",
+                "以批评我",
+                "已批评我",
+                "亿批评我",
+                "意批评我"
+              ],
+              "afterTop5": [
+                "亦批评我",
+                "以批评我",
+                "易批评我",
+                "已批评我",
+                "一批评我"
+              ]
+            },
+            {
+              "id": "05c0ef8a2bc01b210f3df2de387e46fae7e6b99360d857ab1a1919f5b81fd3b2",
+              "cut": 0,
+              "query": "tangmujinnianzaiaozhou",
+              "context": "",
+              "expected": "汤姆今年在澳洲",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "汤姆今年在澳洲",
+                "汤姆今年再澳洲",
+                "汤姆近年在澳洲",
+                "汤姆进年在澳洲",
+                "汤姆今年崽澳洲"
+              ],
+              "afterTop5": [
+                "汤姆近年在澳洲",
+                "汤姆今年在澳洲",
+                "汤姆今年再澳洲",
+                "汤姆今年在熬粥",
+                "汤姆今年载澳洲"
+              ]
+            },
+            {
+              "id": "0678e30ba78c6359f9981bed4596aeedeb8ae41be5da1f60e32dced495a1d20c",
+              "cut": 0,
+              "query": "ruguomeiyouzidian",
+              "context": "",
+              "expected": "如果没有字典",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "如果没有字典",
+                "如果没有自点",
+                "如果没有字点",
+                "如果没有紫癜",
+                "如果没有子点"
+              ],
+              "afterTop5": [
+                "如果没有紫癜",
+                "如果没有字典",
+                "如果没有自电",
+                "如果没有自点",
+                "如果没有指点"
+              ]
+            },
+            {
+              "id": "0678e30ba78c6359f9981bed4596aeedeb8ae41be5da1f60e32dced495a1d20c",
+              "cut": 3,
+              "query": "youzidian",
+              "context": "果没",
+              "expected": "有字典",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "有字典",
+                "有指点",
+                "有自点",
+                "有字点",
+                "有致电"
+              ],
+              "afterTop5": [
+                "有紫癜",
+                "有字典",
+                "有致电",
+                "有指点",
+                "有支点"
+              ]
+            },
+            {
+              "id": "0683e5aa77b0c072732669368d77ea268bb2e5f27061dd2b47bb9d21dcf22e73",
+              "cut": 0,
+              "query": "wobitanianjihaida",
+              "context": "",
+              "expected": "我比他年纪还大",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "我比他年纪还大",
+                "我比她年纪还大",
+                "我比它年纪还大",
+                "我逼他年纪还大",
+                "我比他年纪还打"
+              ],
+              "afterTop5": [
+                "我比她年纪还大",
+                "我比他年纪还大",
+                "我比它年纪还大",
+                "我比他年纪还打",
+                "我逼她年纪还大"
+              ]
+            },
+            {
+              "id": "06d87a19346eecb9cebcf814d4c3631e997dace875f51fe40a8d43fbf9f1f3cb",
+              "cut": 4,
+              "query": "laiziwulagui",
+              "context": "亚斯",
+              "expected": "来自乌拉圭",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "来自乌拉圭",
+                "癞子乌拉圭",
+                "赖子乌拉圭",
+                "来字乌拉圭",
+                "来子乌拉圭"
+              ],
+              "afterTop5": [
+                "莱斯乌拉圭",
+                "来自乌拉圭",
+                "来自乌拉贵",
+                "癞子乌拉圭",
+                "来子乌拉圭"
+              ]
+            },
+            {
+              "id": "0743d6d5f92b6335e75e12bfe01a6bab1fa27b77e8d84e617170be46d2bcf925",
+              "cut": 0,
+              "query": "zhezexinwenburonghushi",
+              "context": "",
+              "expected": "这则新闻不容忽视",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "这则新闻不容忽视",
+                "这则新文不容忽视",
+                "这啧新闻不容忽视",
+                "着则新闻不容忽视",
+                "这泽新闻不容忽视"
+              ],
+              "afterTop5": [
+                "这个新闻不容忽视",
+                "这则新闻不容忽视",
+                "这则新文不容忽视",
+                "者则新闻不容忽视",
+                "这泽新闻不容忽视"
+              ]
+            },
+            {
+              "id": "023691a6411a858b32015cf5377ae997bf55a16fe2f30c07659031ff3310425c",
+              "cut": 8,
+              "query": "laizheliqiaomuyujiaofo",
+              "context": "连日",
+              "expected": "来这里敲木鱼叫佛",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "来这里敲木鱼叫佛",
+                "来这里敲木鱼教佛",
+                "来这里敲木鱼较佛",
+                "来这里敲木鱼交佛",
+                "来这里敲木鱼脚佛"
+              ],
+              "afterTop5": [
+                "来这里敲木鱼教佛",
+                "来这里敲木鱼叫佛",
+                "来这里敲木鱼脚佛",
+                "来这里敲木鱼角佛",
+                "来这里敲木鱼交佛"
+              ]
+            },
+            {
+              "id": "069cdbbc5091ee35c2bbe529c3495fe01e5f6bc11c77c1f658391ee9c5e86440",
+              "cut": 7,
+              "query": "wentidedaandehua",
+              "context": "这个",
+              "expected": "问题的答案的话",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "问题的答案的话",
+                "问题的答案的花",
+                "问题的答案的画",
+                "问题的答案的化",
+                "问题的答案的划"
+              ],
+              "afterTop5": [
+                "问题的答案的化",
+                "问题的答案的话",
+                "问题的答案的划",
+                "问题的答案的画",
+                "问题的答案的花"
+              ]
+            },
+            {
+              "id": "0dab7fe6f63440e003d2a622c26be96956c215ff5180621369766122d62b5d02",
+              "cut": 6,
+              "query": "xialaigeishuaisile",
+              "context": "上摔",
+              "expected": "下来给摔死了",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "下来给摔死了",
+                "下来给帅死了",
+                "下来给甩死了",
+                "下来被摔死了",
+                "下来给率死了"
+              ],
+              "afterTop5": [
+                "下来被摔死了",
+                "下来给摔死了",
+                "下来被甩死了",
+                "下来给甩死了",
+                "下来给帅死了"
+              ]
+            },
+            {
+              "id": "0dd76fad43fe049a9da7066e6113b229abf747027d01f5995705d67e971530da",
+              "cut": 5,
+              "query": "qucanjiajuhui",
+              "context": "很想",
+              "expected": "去参加聚会",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "去参加聚会",
+                "去参加机会",
+                "去参加剧会",
+                "去参加句会",
+                "去参加据会"
+              ],
+              "afterTop5": [
+                "去参加集会",
+                "去参加机会",
+                "去参加聚会",
+                "不参加聚会",
+                "去参加剧会"
+              ]
+            },
+            {
+              "id": "0ef27fe06b001751e0a5fca2b8dbbe77df3c92e6d44e35d7d64cd337a7b81fee",
+              "cut": 5,
+              "query": "fenbaogaoshijiade",
+              "context": "为这",
+              "expected": "份报告是假的",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "份报告是假的",
+                "份报告是家的",
+                "份报告世家的",
+                "分报告是假的",
+                "份报告施加的"
+              ],
+              "afterTop5": [
+                "份报告施加的",
+                "份报告是假的",
+                "份报告是家的",
+                "分报告是假的",
+                "份报告是加的"
+              ]
+            },
+            {
+              "id": "0f3c11e8236051b995c0eec94d5a0ee04ff4e3379b555baa0b8f25fc6ac334f3",
+              "cut": 5,
+              "query": "meiyibenzidian",
+              "context": "我妹",
+              "expected": "妹一本字典",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "妹一本字典",
+                "每一本字典",
+                "妹译本字典",
+                "没一本字典",
+                "妹一本字点"
+              ],
+              "afterTop5": [
+                "每一本字典",
+                "没一本字典",
+                "妹一本字典",
+                "妹译本字典",
+                "妹以本字典"
+              ]
+            },
+            {
+              "id": "109fea40f1fdf7e14e5e41fedeefe5e17a7d308f10f503f4fe83fd806257f402",
+              "cut": 5,
+              "query": "shiwanmeifanzui",
+              "context": "多就",
+              "expected": "是完美犯罪",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "是完美犯罪",
+                "是万没犯罪",
+                "是完没犯罪",
+                "是万枚犯罪",
+                "是玩没犯罪"
+              ],
+              "afterTop5": [
+                "是完美繁殖",
+                "是完美犯罪",
+                "是万枚犯罪",
+                "是晚没犯罪",
+                "是万没犯罪"
+              ]
+            },
+            {
+              "id": "110f8818a10d09d21a3498ce8ec0e44214ebefe7fd03b1c13de5284831674e11",
+              "cut": 5,
+              "query": "leyigepingguopai",
+              "context": "生烤",
+              "expected": "了一个苹果派",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "了一个苹果派",
+                "了一个苹果拍",
+                "了一个苹果牌",
+                "了一个苹果排",
+                "了一个苹果湃"
+              ],
+              "afterTop5": [
+                "了一个苹果拍",
+                "了一个苹果派",
+                "了一个苹果排",
+                "了一个苹果牌",
+                "了一个苹果俳"
+              ]
+            },
+            {
+              "id": "127f955bf3825c70c5a19ec60452b196fb35f6c2dfb931acfac5e208fc561489",
+              "cut": 5,
+              "query": "meshihougaizou",
+              "context": "我什",
+              "expected": "么时候该走",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "么时候该走",
+                "么时候该做",
+                "么事后该走",
+                "么时候该州",
+                "么是后该走"
+              ],
+              "afterTop5": [
+                "么时候该做",
+                "么时候该走",
+                "么时候该州",
+                "么时候改走",
+                "么是否该走"
+              ]
+            }
+          ],
+          "rankLosses": [
+            {
+              "id": "00b5694b264b88e287cc148818508ce351e0eccf482d0993a5b6f724efbc47bf",
+              "cut": 0,
+              "query": "samishuotarengrandanshen",
+              "context": "",
+              "expected": "萨米说他仍然单身",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "萨米说他仍然单身",
+                "萨米说她仍然单身",
+                "萨米说它仍然单身",
+                "萨米说他仍然丹参",
+                "萨米说他仍然但神"
+              ],
+              "afterTop5": [
+                "萨米说她仍然单身",
+                "萨米说他仍然单身",
+                "萨米说它仍然单身",
+                "萨米说他仍然单肾",
+                "萨米说他仍然但神"
+              ]
+            },
+            {
+              "id": "0180cbdcd09a4579aa15b1425e569f07088836439ba2dfdf4dc25cfcca1d61aa",
+              "cut": 0,
+              "query": "wodeshouzhitouyouyigenci",
+              "context": "",
+              "expected": "我的手指头有一根刺",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "我的手指头有一根刺",
+                "我的手指头有一根次",
+                "我的手指头又一根刺",
+                "我的手指头有一根此",
+                "我的手指头有一根词"
+              ],
+              "afterTop5": [
+                "我的手指头有一根次",
+                "我的手指头有一根此",
+                "我的手指头有一根刺",
+                "我的手指头有一根词",
+                "我的手指头又一根次"
+              ]
+            },
+            {
+              "id": "0180cbdcd09a4579aa15b1425e569f07088836439ba2dfdf4dc25cfcca1d61aa",
+              "cut": 4,
+              "query": "touyouyigenci",
+              "context": "手指",
+              "expected": "头有一根刺",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "头有一根刺",
+                "头有一根次",
+                "头又一根刺",
+                "头有一个你",
+                "头有一根此"
+              ],
+              "afterTop5": [
+                "头有一个你",
+                "头有一根刺",
+                "头有一根此",
+                "头又一根刺",
+                "头有一根次"
+              ]
+            },
+            {
+              "id": "03bb8b9a8bc113b5bff04632cbc0700e6244257f899a00c224119846abc4249d",
+              "cut": 0,
+              "query": "womenyiqiquyecanle",
+              "context": "",
+              "expected": "我们一起去野餐了",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "我们一起去野餐了",
+                "我们一起去也惨了",
+                "我们一起去也残了",
+                "我们一起去野蚕了",
+                "我们一起去野餐乐"
+              ],
+              "afterTop5": [
+                "我们一起去野餐乐",
+                "我们一起去野餐了",
+                "我们一起去野餐勒",
+                "我们一起去也惨了",
+                "我们一起去夜餐了"
+              ]
+            },
+            {
+              "id": "03bb8b9a8bc113b5bff04632cbc0700e6244257f899a00c224119846abc4249d",
+              "cut": 4,
+              "query": "quyecanle",
+              "context": "一起",
+              "expected": "去野餐了",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "去野餐了",
+                "去野餐的",
+                "去野餐乐",
+                "去也惨了",
+                "去野餐勒"
+              ],
+              "afterTop5": [
+                "去野餐的",
+                "去野餐了",
+                "去野餐勒",
+                "去野餐乐",
+                "去野餐叻"
+              ]
+            },
+            {
+              "id": "03c7b6ff065c1bd007a5143b5581e2c01d12270ecf30a12c4e78da5caaf3a2c8",
+              "cut": 4,
+              "query": "tiancaichushengde",
+              "context": "是昨",
+              "expected": "天才出生的",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "天才出生的",
+                "天才畜生的",
+                "天才出声的",
+                "天才初生的",
+                "天才出生地"
+              ],
+              "afterTop5": [
+                "天才出声的",
+                "天才出生的",
+                "天才出生得",
+                "天才出省的",
+                "天才出生地"
+              ]
+            },
+            {
+              "id": "0421c5ad998fbec24bb053e229159999813884b093feb4c1801ea80f6302e4f0",
+              "cut": 0,
+              "query": "tashanyonglezhegejihui",
+              "context": "",
+              "expected": "他善用了这个机会",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "他善用了这个机会",
+                "她善用了这个机会",
+                "它善用了这个机会",
+                "他擅用了这个机会",
+                "她擅用了这个机会"
+              ],
+              "afterTop5": [
+                "她善用了这个机会",
+                "他善用了这个机会",
+                "它善用了这个机会",
+                "他擅用了这个机会",
+                "她擅用了这个机会"
+              ]
+            },
+            {
+              "id": "048eee9c6ee6848aa90762789f7521513918fdeabc9bc47414c9c202f4606ae8",
+              "cut": 3,
+              "query": "xihuanmao",
+              "context": "妹妹",
+              "expected": "喜欢猫",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "喜欢猫",
+                "喜欢毛",
+                "喜欢冒",
+                "喜欢吗",
+                "喜欢买"
+              ],
+              "afterTop5": [
+                "喜欢吗",
+                "喜欢买",
+                "喜欢猫",
+                "喜欢毛",
+                "喜欢帽"
+              ]
+            },
+            {
+              "id": "04b2b4d85756c4eccc510f982d972f6db0f6d5b3ad1dedd177770040b501ddd0",
+              "cut": 0,
+              "query": "zhenvshengbuxihuanxiwan",
+              "context": "",
+              "expected": "这女生不喜欢洗碗",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "这女生不喜欢洗碗",
+                "这女生不喜欢洗完",
+                "着女生不喜欢洗碗",
+                "着女生不喜欢洗完",
+                "这女生不喜欢希望"
+              ],
+              "afterTop5": [
+                "这女生不喜欢洗完",
+                "这女生不喜欢洗碗",
+                "这女生不喜欢吸完",
+                "这女生不喜欢希望",
+                "者女生不喜欢洗完"
+              ]
+            },
+            {
+              "id": "05a940ad2e8657e227c5f73eeb1370fc8676844d4ad7e1fcaf8a39743b89d7d6",
+              "cut": 0,
+              "query": "dantameiyoushuotaiduo",
+              "context": "",
+              "expected": "但他没有说太多",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "但他没有说太多",
+                "但她没有说太多",
+                "但它没有说太多",
+                "蛋挞没有说太多",
+                "单他没有说太多"
+              ],
+              "afterTop5": [
+                "蛋挞没有说太多",
+                "但他没有说太多",
+                "但她没有说太多",
+                "但它没有说太多",
+                "单他没有说太多"
+              ]
+            },
+            {
+              "id": "05ac741a14a13ca0b9e097c61540a84a5a829421a6c826e8236a4ef694b75f81",
+              "cut": 4,
+              "query": "yipipingwo",
+              "context": "爸爸",
+              "expected": "一批评我",
+              "beforeRank": 1,
+              "afterRank": 5,
+              "beforeTop5": [
+                "一批评我",
+                "以批评我",
+                "已批评我",
+                "亿批评我",
+                "意批评我"
+              ],
+              "afterTop5": [
+                "亦批评我",
+                "以批评我",
+                "易批评我",
+                "已批评我",
+                "一批评我"
+              ]
+            },
+            {
+              "id": "05c0ef8a2bc01b210f3df2de387e46fae7e6b99360d857ab1a1919f5b81fd3b2",
+              "cut": 0,
+              "query": "tangmujinnianzaiaozhou",
+              "context": "",
+              "expected": "汤姆今年在澳洲",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "汤姆今年在澳洲",
+                "汤姆今年再澳洲",
+                "汤姆近年在澳洲",
+                "汤姆进年在澳洲",
+                "汤姆今年崽澳洲"
+              ],
+              "afterTop5": [
+                "汤姆近年在澳洲",
+                "汤姆今年在澳洲",
+                "汤姆今年再澳洲",
+                "汤姆今年在熬粥",
+                "汤姆今年载澳洲"
+              ]
+            },
+            {
+              "id": "0678e30ba78c6359f9981bed4596aeedeb8ae41be5da1f60e32dced495a1d20c",
+              "cut": 0,
+              "query": "ruguomeiyouzidian",
+              "context": "",
+              "expected": "如果没有字典",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "如果没有字典",
+                "如果没有自点",
+                "如果没有字点",
+                "如果没有紫癜",
+                "如果没有子点"
+              ],
+              "afterTop5": [
+                "如果没有紫癜",
+                "如果没有字典",
+                "如果没有自电",
+                "如果没有自点",
+                "如果没有指点"
+              ]
+            },
+            {
+              "id": "0678e30ba78c6359f9981bed4596aeedeb8ae41be5da1f60e32dced495a1d20c",
+              "cut": 3,
+              "query": "youzidian",
+              "context": "果没",
+              "expected": "有字典",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "有字典",
+                "有指点",
+                "有自点",
+                "有字点",
+                "有致电"
+              ],
+              "afterTop5": [
+                "有紫癜",
+                "有字典",
+                "有致电",
+                "有指点",
+                "有支点"
+              ]
+            },
+            {
+              "id": "0683e5aa77b0c072732669368d77ea268bb2e5f27061dd2b47bb9d21dcf22e73",
+              "cut": 0,
+              "query": "wobitanianjihaida",
+              "context": "",
+              "expected": "我比他年纪还大",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "我比他年纪还大",
+                "我比她年纪还大",
+                "我比它年纪还大",
+                "我逼他年纪还大",
+                "我比他年纪还打"
+              ],
+              "afterTop5": [
+                "我比她年纪还大",
+                "我比他年纪还大",
+                "我比它年纪还大",
+                "我比他年纪还打",
+                "我逼她年纪还大"
+              ]
+            },
+            {
+              "id": "06d87a19346eecb9cebcf814d4c3631e997dace875f51fe40a8d43fbf9f1f3cb",
+              "cut": 4,
+              "query": "laiziwulagui",
+              "context": "亚斯",
+              "expected": "来自乌拉圭",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "来自乌拉圭",
+                "癞子乌拉圭",
+                "赖子乌拉圭",
+                "来字乌拉圭",
+                "来子乌拉圭"
+              ],
+              "afterTop5": [
+                "莱斯乌拉圭",
+                "来自乌拉圭",
+                "来自乌拉贵",
+                "癞子乌拉圭",
+                "来子乌拉圭"
+              ]
+            },
+            {
+              "id": "0743d6d5f92b6335e75e12bfe01a6bab1fa27b77e8d84e617170be46d2bcf925",
+              "cut": 0,
+              "query": "zhezexinwenburonghushi",
+              "context": "",
+              "expected": "这则新闻不容忽视",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "这则新闻不容忽视",
+                "这则新文不容忽视",
+                "这啧新闻不容忽视",
+                "着则新闻不容忽视",
+                "这泽新闻不容忽视"
+              ],
+              "afterTop5": [
+                "这个新闻不容忽视",
+                "这则新闻不容忽视",
+                "这则新文不容忽视",
+                "者则新闻不容忽视",
+                "这泽新闻不容忽视"
+              ]
+            },
+            {
+              "id": "023691a6411a858b32015cf5377ae997bf55a16fe2f30c07659031ff3310425c",
+              "cut": 8,
+              "query": "laizheliqiaomuyujiaofo",
+              "context": "连日",
+              "expected": "来这里敲木鱼叫佛",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "来这里敲木鱼叫佛",
+                "来这里敲木鱼教佛",
+                "来这里敲木鱼较佛",
+                "来这里敲木鱼交佛",
+                "来这里敲木鱼脚佛"
+              ],
+              "afterTop5": [
+                "来这里敲木鱼教佛",
+                "来这里敲木鱼叫佛",
+                "来这里敲木鱼脚佛",
+                "来这里敲木鱼角佛",
+                "来这里敲木鱼交佛"
+              ]
+            },
+            {
+              "id": "03b9932b65a31312c21fe9c34f9fc6e1e17accb4bb097e4670bc1cf8ff9c4b26",
+              "cut": 5,
+              "query": "menjikecaojidan",
+              "context": "送我",
+              "expected": "们几颗草鸡蛋",
+              "beforeRank": 2,
+              "afterRank": 3,
+              "beforeTop5": [
+                "们即可草鸡蛋",
+                "们几颗草鸡蛋",
+                "们即可炒鸡蛋",
+                "们即刻草鸡蛋",
+                "们即可艹鸡蛋"
+              ],
+              "afterTop5": [
+                "们即可炒鸡蛋",
+                "们即可超级但",
+                "们几颗草鸡蛋",
+                "们即可艹鸡蛋",
+                "们即可草鸡蛋"
+              ]
+            },
+            {
+              "id": "069cdbbc5091ee35c2bbe529c3495fe01e5f6bc11c77c1f658391ee9c5e86440",
+              "cut": 7,
+              "query": "wentidedaandehua",
+              "context": "这个",
+              "expected": "问题的答案的话",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "问题的答案的话",
+                "问题的答案的花",
+                "问题的答案的画",
+                "问题的答案的化",
+                "问题的答案的划"
+              ],
+              "afterTop5": [
+                "问题的答案的化",
+                "问题的答案的话",
+                "问题的答案的划",
+                "问题的答案的画",
+                "问题的答案的花"
+              ]
+            },
+            {
+              "id": "0dab7fe6f63440e003d2a622c26be96956c215ff5180621369766122d62b5d02",
+              "cut": 6,
+              "query": "xialaigeishuaisile",
+              "context": "上摔",
+              "expected": "下来给摔死了",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "下来给摔死了",
+                "下来给帅死了",
+                "下来给甩死了",
+                "下来被摔死了",
+                "下来给率死了"
+              ],
+              "afterTop5": [
+                "下来被摔死了",
+                "下来给摔死了",
+                "下来被甩死了",
+                "下来给甩死了",
+                "下来给帅死了"
+              ]
+            },
+            {
+              "id": "0dd76fad43fe049a9da7066e6113b229abf747027d01f5995705d67e971530da",
+              "cut": 5,
+              "query": "qucanjiajuhui",
+              "context": "很想",
+              "expected": "去参加聚会",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "去参加聚会",
+                "去参加机会",
+                "去参加剧会",
+                "去参加句会",
+                "去参加据会"
+              ],
+              "afterTop5": [
+                "去参加集会",
+                "去参加机会",
+                "去参加聚会",
+                "不参加聚会",
+                "去参加剧会"
+              ]
+            },
+            {
+              "id": "0ef27fe06b001751e0a5fca2b8dbbe77df3c92e6d44e35d7d64cd337a7b81fee",
+              "cut": 5,
+              "query": "fenbaogaoshijiade",
+              "context": "为这",
+              "expected": "份报告是假的",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "份报告是假的",
+                "份报告是家的",
+                "份报告世家的",
+                "分报告是假的",
+                "份报告施加的"
+              ],
+              "afterTop5": [
+                "份报告施加的",
+                "份报告是假的",
+                "份报告是家的",
+                "分报告是假的",
+                "份报告是加的"
+              ]
+            },
+            {
+              "id": "0f3c11e8236051b995c0eec94d5a0ee04ff4e3379b555baa0b8f25fc6ac334f3",
+              "cut": 5,
+              "query": "meiyibenzidian",
+              "context": "我妹",
+              "expected": "妹一本字典",
+              "beforeRank": 1,
+              "afterRank": 3,
+              "beforeTop5": [
+                "妹一本字典",
+                "每一本字典",
+                "妹译本字典",
+                "没一本字典",
+                "妹一本字点"
+              ],
+              "afterTop5": [
+                "每一本字典",
+                "没一本字典",
+                "妹一本字典",
+                "妹译本字典",
+                "妹以本字典"
+              ]
+            },
+            {
+              "id": "109fea40f1fdf7e14e5e41fedeefe5e17a7d308f10f503f4fe83fd806257f402",
+              "cut": 5,
+              "query": "shiwanmeifanzui",
+              "context": "多就",
+              "expected": "是完美犯罪",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "是完美犯罪",
+                "是万没犯罪",
+                "是完没犯罪",
+                "是万枚犯罪",
+                "是玩没犯罪"
+              ],
+              "afterTop5": [
+                "是完美繁殖",
+                "是完美犯罪",
+                "是万枚犯罪",
+                "是晚没犯罪",
+                "是万没犯罪"
+              ]
+            },
+            {
+              "id": "10c89137d221adef1243b66847353e0c148ce81719cf96cf2f3c1075278f40e3",
+              "cut": 6,
+              "query": "shizulejiangongyu",
+              "context": "纽约",
+              "expected": "时租了间公寓",
+              "beforeRank": 2,
+              "afterRank": 3,
+              "beforeTop5": [
+                "是租了间公寓",
+                "时租了间公寓",
+                "十足了间公寓",
+                "是足了间公寓",
+                "是组了间公寓"
+              ],
+              "afterTop5": [
+                "市租了间公寓",
+                "是租了间公寓",
+                "时租了间公寓",
+                "十足了间公寓",
+                "十足了件公寓"
+              ]
+            },
+            {
+              "id": "110f8818a10d09d21a3498ce8ec0e44214ebefe7fd03b1c13de5284831674e11",
+              "cut": 5,
+              "query": "leyigepingguopai",
+              "context": "生烤",
+              "expected": "了一个苹果派",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "了一个苹果派",
+                "了一个苹果拍",
+                "了一个苹果牌",
+                "了一个苹果排",
+                "了一个苹果湃"
+              ],
+              "afterTop5": [
+                "了一个苹果拍",
+                "了一个苹果派",
+                "了一个苹果排",
+                "了一个苹果牌",
+                "了一个苹果俳"
+              ]
+            },
+            {
+              "id": "127f955bf3825c70c5a19ec60452b196fb35f6c2dfb931acfac5e208fc561489",
+              "cut": 5,
+              "query": "meshihougaizou",
+              "context": "我什",
+              "expected": "么时候该走",
+              "beforeRank": 1,
+              "afterRank": 2,
+              "beforeTop5": [
+                "么时候该走",
+                "么时候该做",
+                "么事后该走",
+                "么时候该州",
+                "么是后该走"
+              ],
+              "afterTop5": [
+                "么时候该做",
+                "么时候该走",
+                "么时候该州",
+                "么时候改走",
+                "么是否该走"
+              ]
+            }
+          ],
+          "latencyAllRows": {
+            "count": 248,
+            "medianMs": 461.3215,
+            "p95Ms": 1545.071,
+            "maxMs": 2509.1941,
+            "totalMs": 147402.5406
+          },
+          "latencyScoredRows": {
+            "count": 238,
+            "medianMs": 470.56235,
+            "p95Ms": 1553.1117,
+            "maxMs": 2509.1941,
+            "totalMs": 147401.6469
+          },
+          "slices": {
+            "empty": {
+              "before": {
+                "states": 124,
+                "top1": 81,
+                "top5": 103,
+                "top10": 110,
+                "recall255": 115,
+                "characterErrors": 74,
+                "characters": 1205
+              },
+              "after": {
+                "states": 124,
+                "top1": 91,
+                "top5": 109,
+                "top10": 110,
+                "recall255": 115,
+                "characterErrors": 44,
+                "characters": 1205
+              }
+            },
+            "editor": {
+              "before": {
+                "states": 124,
+                "top1": 89,
+                "top5": 110,
+                "top10": 113,
+                "recall255": 121,
+                "characterErrors": 55,
+                "characters": 628
+              },
+              "after": {
+                "states": 124,
+                "top1": 90,
+                "top5": 112,
+                "top10": 113,
+                "recall255": 121,
+                "characterErrors": 53,
+                "characters": 628
+              }
+            }
+          },
+          "timingScope": "Warm desktop CPU added rescoring only; excludes decoder and Android UI",
+          "accuracyScope": "These 248+248 states were opened in prior stages; known regression only, not new blind validation. No personal-history, typo, UI or mobile-runtime claim."
+        }
+      },
+      "modelRuntime": {
+        "model": "google-bert/bert-base-chinese",
+        "modelRevision": "8f23c25b06e129b6c986331a13d8d025a92cf0ea",
+        "weightsSha256": "3404a1ffd8da507042e8161013ba2a4fc49858b4e3f8fbf5ce5724f94883aec3",
+        "torch": "2.6.0+cpu",
+        "transformers": "4.48.3",
+        "parameters": 102290312,
+        "parameterBytes": 409161248,
+        "modelLoadNanos": 135888300,
+        "intraopThreads": 2,
+        "interopThreads": 1,
+        "device": "cpu",
+        "dtype": "float32",
+        "microbatch": 32,
+        "loadingInfo": {
+          "missing_keys": [],
+          "unexpected_keys": [
+            "bert.pooler.dense.bias",
+            "bert.pooler.dense.weight",
+            "cls.seq_relationship.bias",
+            "cls.seq_relationship.weight"
+          ],
+          "mismatched_keys": [],
+          "error_msgs": []
+        },
+        "head": "masked-positions-only",
+        "verifiedCheckpointHeadKeys": {
+          "cls.predictions.bias": "cls.predictions.bias",
+          "cls.predictions.transform.LayerNorm.bias": "cls.predictions.transform.LayerNorm.beta",
+          "cls.predictions.transform.LayerNorm.weight": "cls.predictions.transform.LayerNorm.gamma",
+          "cls.predictions.transform.dense.bias": "cls.predictions.transform.dense.bias",
+          "cls.predictions.transform.dense.weight": "cls.predictions.transform.dense.weight"
+        },
+        "verification": {
+          "maxAbsoluteLogitError": 0.0,
+          "fullAndGatheredAgree": true,
+          "tokenizerAgreement": true,
+          "repeatedScoresEqual": true
+        }
+      },
+      "modelCalls": 484,
+      "independentlyMaskedInputs": 30119
+    }
+  },
+  "tests": {
+    "tests": 31,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "minimalRuntimeTests": {
+    "tests": 31,
+    "passed": 29,
+    "skipped": 2
+  },
+  "selectionBeforeSenseAccuracy": true,
+  "scorerUnchangedBetweenDevelopmentAndKnownTest": true,
+  "productionChanged": false,
+  "androidTestsThisStage": 0,
+  "goalComplete": false,
+  "releaseUnchanged": "v0.4.16-rc.4",
+  "releaseApkSha256": "f571badcd03361fe4b80a096553ca566ffecd117c4ad7694a22f4686ee2de528",
+  "evidenceManifestSha256": "ba645b0c6215d466c2aeaf9ed537a0e2b14744e713246066ef0d4da13ed0f1b0",
+  "archivedFiles": 88
+}

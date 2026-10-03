@@ -22,21 +22,21 @@ def digest(path):
         return hashlib.file_digest(f, "sha256").hexdigest()
 
 
-def fetch(destination):
+def fetch_pinned_model(destination, repo, revision, files, weight_name, weight_sha):
     destination.mkdir(parents=True, exist_ok=True)
-    api = f"https://huggingface.co/api/models/{REPO}/revision/{REVISION}?blobs=true"
+    api = f"https://huggingface.co/api/models/{repo}/revision/{revision}?blobs=true"
     with urllib.request.urlopen(api, timeout=60) as r:
         metadata = json.load(r)
-    if metadata["sha"] != REVISION or metadata["cardData"].get("license") != "apache-2.0":
+    if metadata["sha"] != revision or metadata["cardData"].get("license") != "apache-2.0":
         raise ValueError("Unexpected pinned model metadata")
     siblings = {s["rfilename"]: s for s in metadata["siblings"]}
-    if siblings["pytorch_model.bin"]["lfs"]["sha256"] != WEIGHT_SHA:
+    if siblings[weight_name]["lfs"]["sha256"] != weight_sha:
         raise ValueError("Unexpected model LFS object")
-    manifest = dict(repo=REPO, revision=REVISION, license="apache-2.0", files={})
-    for name in FILES:
+    manifest = dict(repo=repo, revision=revision, license="apache-2.0", files={})
+    for name in files:
         path = destination / name
         info = siblings[name]
-        url = f"https://huggingface.co/{REPO}/resolve/{REVISION}/{name}"
+        url = f"https://huggingface.co/{repo}/resolve/{revision}/{name}"
         if not path.exists():
             partial = path.with_name(path.name + ".partial")
             start = time.monotonic(); last_report = start
@@ -49,13 +49,13 @@ def fetch(destination):
                         last_report = time.monotonic()
             if partial.stat().st_size != info["size"]:
                 raise ValueError(f"Size mismatch: {name}")
-            if name == "pytorch_model.bin" and digest(partial) != WEIGHT_SHA:
+            if name == weight_name and digest(partial) != weight_sha:
                 raise ValueError("Downloaded weights hash mismatch")
             partial.replace(path)
         if path.stat().st_size != info["size"]:
             raise ValueError(f"Existing file size mismatch: {name}")
         actual = digest(path)
-        if name == "pytorch_model.bin" and actual != WEIGHT_SHA:
+        if name == weight_name and actual != weight_sha:
             raise ValueError("Existing weights hash mismatch")
         # Ordinary HF files use the Git blob SHA, not an LFS sha256.
         if "lfs" not in info:
@@ -68,6 +68,10 @@ def fetch(destination):
     (destination / "upstream-metadata.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
     (destination / "download-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     return manifest
+
+
+def fetch(destination):
+    return fetch_pinned_model(destination, REPO, REVISION, FILES, "pytorch_model.bin", WEIGHT_SHA)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "stage": "E38",
+  "sourceBaseCommit": "51b30f87db5d25d51b4884ee808ebdddddbe2c09",
+  "purpose": "Determine whether a properly task-qualified Chinese MLM supplies useful candidate evidence. No mobile runtime deployment in this experiment.",
+  "qualificationOrder": [
+    {
+      "repo": "hfl/minirbt-h256",
+      "revision": "446e1b4012b10946f479563005700c54c9db3f7c",
+      "weightFile": "pytorch_model.bin",
+      "weightSha256": "6728ca573fd5197f28198eb7e6119a76e4d5dc626f953fca8c0dc5ba2798f9fc",
+      "files": ["README.md", "config.json", "vocab.txt", "pytorch_model.bin"],
+      "reason": "Small explicitly Apache-2.0 Chinese model with published distillation training code; must verify its released MLM head before accuracy replay."
+    },
+    {
+      "repo": "google-bert/bert-base-chinese",
+      "revision": "8f23c25b06e129b6c986331a13d8d025a92cf0ea",
+      "weightFile": "model.safetensors",
+      "weightSha256": "3404a1ffd8da507042e8161013ba2a4fc49858b4e3f8fbf5ce5724f94883aec3",
+      "files": ["README.md", "config.json", "vocab.txt", "tokenizer_config.json", "model.safetensors"],
+      "reason": "Fallback teacher only if MiniRBT fails task qualification, never selected by comparing Sense dev accuracy. Official Chinese BERT card explicitly supports MLM and Apache-2.0."
+    }
+  ],
+  "qualification": {
+    "required": ["Exact pinned model and file digests", "Actual MLM transform and bias tensors present", "Canonical local loading with no missing/mismatched weights", "Single-Han tokenizer equivalence", "Masked-head versus full-head numerical equivalence", "Repeatable eval-mode inference", "At least 6 of 8 predeclared elementary fill-mask targets in top 5"],
+    "fixtures": [
+      {"text": "北京是[MASK]国的首都。", "targets": ["中"]},
+      {"text": "中国的首都是[MASK]京。", "targets": ["北"]},
+      {"text": "一年有十二个[MASK]。", "targets": ["月"]},
+      {"text": "春夏秋[MASK]。", "targets": ["冬"]},
+      {"text": "人类需要呼吸空[MASK]。", "targets": ["气"]},
+      {"text": "请把门关[MASK]。", "targets": ["上"]},
+      {"text": "医生在医[MASK]工作。", "targets": ["院"]},
+      {"text": "一加一等于[MASK]。", "targets": ["二", "2", "两"]}
+    ]
+  },
+  "selection": "Evaluate only the first qualified model. Stop if both fail. No model switching after viewing its Sense dev results.",
+  "scoring": "Exactly E37 target-blind PLL: first 8 same-length Han slots, 2..24 characters, fixed 0..2 left context characters, sum masked-character log probabilities, no interpolation, unknown-character whole-row pass-through, stable ties and unchanged candidate membership.",
+  "runtime": "CPU float32 eager, 2 intraop threads, 1 interop thread, mask microbatch 32, no cross-query score cache.",
+  "development": {
+    "aishell": "benchmarks/corpus/p2c-aishell-v7/dev.tsv",
+    "tatoeba": "benchmarks/corpus/p2c-supervised-v6/dev.tsv",
+    "baseline": "E36 production outputs, verified against current source, assets and input hashes before reuse.",
+    "gate": "Each domain top1/top5 nondecreasing, recall255 unchanged and character errors nonincreasing; combined top1 strictly increases. Known development states, not new blind data."
+  },
+  "diagnosticOnly": "E28 six known lei states do not control promotion.",
+  "stopRule": "If qualified-model development fails, preserve full outputs and do not tune pool/weights or try another model this stage. If it passes, proceed with separate regression and lightweight deployment/distillation study; no direct default adoption.",
+  "release": "Keep rc.4 and production model/assets unchanged. No user input sent to external inference services."
+}
