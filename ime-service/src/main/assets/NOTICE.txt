@@ -210,14 +210,29 @@ License copy: sense-mic-client/installer/ChineseSimplified.LICENSE
 
 Sense Mic Setup uses this translation for its Simplified Chinese installer UI.
 
-Sense offline character language model / Tatoeba contributors
+Tatoeba Mandarin research corpus
+-------------------------------
+
+The frozen detailed Mandarin export in benchmarks/corpus/sources/ is provided
+by Tatoeba contributors under CC BY 2.0 France:
+https://creativecommons.org/licenses/by/2.0/fr/
+Each row retains its original sentence ID and contributor. Source URLs,
+snapshot hash, attribution rules, and transformation details are documented
+in benchmarks/corpus/sources/README.md and the corpus preparation manifests.
+The raw archive is unchanged and is not an Android APK asset. This corpus
+retains its separate CC BY license; it is not relicensed under the project GPL.
+
+Sense bundled character language model / Tatoeba contributors
 -----------------------------------------------------------
-pinyin_character_lm.scng and its source attribution are provided under CC BY
-2.0 France, separately from Sense's code license. See PINYIN-LM-NOTICE.txt
-in About notices for all contributor names and the source/license details.
-pinyin_character_lm_attribution.tsv maps each training sentence to its
-contributor, and pinyin_character_lm_notice.json records hashes and changes.
-Source: https://tatoeba.org/en/downloads
+ime-service/src/main/assets/pinyin_character_lm.scng is a train-only smoothed
+character 1/2/3-gram model derived from the frozen Tatoeba Mandarin corpus.
+The model/data assets are distributed under CC BY 2.0 France, separately from
+the code license. Changes by Sense contributors include normalization,
+partitioning/filtering, and statistical training. The Android About notices
+include PINYIN-LM-NOTICE.txt with all 932 contributor names. The bundled
+pinyin_character_lm_attribution.tsv maps 77,733 source sentences to authors;
+each source is available at https://tatoeba.org/en/sentences/show/{sentenceId}.
+See pinyin_character_lm_notice.json for hashes and the reproducible build chain.
 License: https://creativecommons.org/licenses/by/2.0/fr/
 
 Rime Ice supplemental full-pinyin vocabulary (Sense E7)

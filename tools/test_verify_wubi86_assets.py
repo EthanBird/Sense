@@ -9,6 +9,14 @@ import verify_wubi86_assets as verifier
 
 
 class Wubi86AssetVerifierTest(unittest.TestCase):
+    def test_android_notice_mirrors_repository_attribution(self):
+        # Universal newlines tolerate local Git checkout settings; the release APK
+        # verifier additionally enforces exact packaged bytes against source assets.
+        self.assertEqual(
+            (verifier.ROOT / "NOTICE").read_text(encoding="utf-8"),
+            (verifier.ASSET_DIR / "NOTICE.txt").read_text(encoding="utf-8"),
+        )
+
     def test_zip_entries_must_be_unique_and_byte_identical(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
