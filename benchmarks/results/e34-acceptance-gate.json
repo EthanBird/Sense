@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "stage": "E34",
+  "decision": "accept-cross-syllable-transposition-with-bounded-edge-reuse-and-primitive-ordering",
+  "sourceBaseCommit": "757305500a8b239d8e5b6e6f8f251a8e2da3bfa9",
+  "productionFilesChanged": [
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/PinyinSpellingGraph.kt",
+    "core-input/src/main/kotlin/io/github/ethanbird/senseime/core/SpellingEdgeCache.kt"
+  ],
+  "apkSha256": {
+    "baseline": "404ababaee1b040b9192c3ae08f3e238563cb75b506aecc04aa58b9f04e85b0e",
+    "v1": "81cbe0292db5afb2edf01af3717df4ccb233d3f3a2084ba8731a11b62954bfc6",
+    "v2": "1dfa19d48e9fcfdb491f9bed56c24911192caebe3ce8e7f42c65d1b67895a9df"
+  },
+  "all25ApkAssetsIdentical": true,
+  "hostTests": {
+    "core-input": {
+      "tests": 403,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 317,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "pythonTests": {
+    "run": 448,
+    "passed": 447,
+    "skipped": 1
+  },
+  "goldenGraph": {
+    "frozenE31JarSha256": "93c0d4246f2217a997ba5bf8f99903c6a0987d2221e8adb472f10a88d2c7e06d",
+    "rows": 1481,
+    "forwardAndReverseChecks": 2962
+  },
+  "quality": {
+    "m15Development": 945,
+    "m15Test": 1874,
+    "crossDomainStates": 256,
+    "allNonTimingObservationsEqualE31": true,
+    "transpositionTestTop1": {
+      "baseline": 164,
+      "candidate": 228,
+      "total": 375
+    },
+    "transpositionTestTop10": {
+      "baseline": 235,
+      "candidate": 328,
+      "total": 375
+    },
+    "knownDeleteTop10Losses": [
+      "taiwanhiwozuiaideguojia",
+      "tangmuxiangzhidaonalinegmaidaojianghuang"
+    ]
+  },
+  "firstVariant": {
+    "accepted": false,
+    "confirmationMs": {
+      "baseline": {
+        "count": 32,
+        "medianMs": 135.0,
+        "observedP95Ms": 317,
+        "maxMs": 322
+      },
+      "optimized": {
+        "count": 32,
+        "medianMs": 137.0,
+        "observedP95Ms": 319,
+        "maxMs": 334
+      }
+    }
+  },
+  "finalVariant": {
+    "accepted": true,
+    "confirmationMs": {
+      "baseline": {
+        "count": 32,
+        "medianMs": 138.0,
+        "observedP95Ms": 307,
+        "maxMs": 312
+      },
+      "optimized": {
+        "count": 32,
+        "medianMs": 129.5,
+        "observedP95Ms": 296,
+        "maxMs": 346
+      }
+    },
+    "latencyGate": {
+      "scope": "Fixed ABBA workload only; not statistical significance or phone certification",
+      "rule": "paired median and observed P95 each no worse than reference",
+      "checks": {
+        "medianMs": true,
+        "observedP95Ms": true
+      },
+      "passed": true
+    },
+    "functionalConfirmations": 64,
+    "immediateFollowups": 8,
+    "maximumRegressedFrom312To346Ms": true
+  },
+  "androidFunctional": {
+    "correction": 10,
+    "default": 10,
+    "learning": 6,
+    "context": 8
+  },
+  "physicalPhoneTested": false,
+  "publishedRelease": "v0.4.16-rc.3",
+  "publishedApkChanged": false,
+  "releaseApkSha256": "790e0bb4148ebca59801c4de1096da8c64d552c31cdcd02f94c510ced92081e3",
+  "limitations": [
+    "Known source-derived workloads, not blind natural accuracy",
+    "Per-input and maximum latency regressions retained",
+    "ART profiles intrusive; no normal-latency ratio from samples",
+    "Natural homophone quality and broader device/UI coverage remain"
+  ],
+  "goalComplete": false,
+  "evidenceManifestSha256": "e1ee8b0cb118066607422889ddc152b5fa7033ff2103219b9884c4da08e5106e",
+  "archivedFiles": 857
+}

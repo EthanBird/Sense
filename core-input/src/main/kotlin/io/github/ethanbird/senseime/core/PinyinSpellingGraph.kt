@@ -35,6 +35,12 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
         .distinct()
         .sortedWith(compareBy<String> { it.first() }.thenByDescending { it.length }.thenBy { it })
         .toList()
+    private val inventorySet = inventory.toHashSet()
+    private val inventoryLengths = inventory.map { it.length }.distinct().sorted()
+    private val lengthsByFirst = inventory.groupBy { it.first() }
+        .mapValues { (_, units) -> units.map { it.length }.distinct().sorted() }
+    private val ordinaryLookahead = (inventory.maxOfOrNull { it.length } ?: 0) + 1
+    private val ordinaryEdgeCache = SpellingEdgeCache<Edge>()
 
     fun paths(
         rawInput: String,
@@ -80,7 +86,14 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
                     target += PathState(
                         canonical = state.canonical + edge.syllable,
                         cost = nextCost,
-                        syllableEnds = state.syllableEnds + (state.canonical.length + edge.syllable.length),
+                        syllableEnds = if (edge.internalJoint == 0) {
+                            state.syllableEnds + (state.canonical.length + edge.syllable.length)
+                        } else {
+                            state.syllableEnds + listOf(
+                                state.canonical.length + edge.internalJoint,
+                                state.canonical.length + edge.syllable.length,
+                            )
+                        },
                         firstEditOffset = when {
                             state.firstEditOffset != NO_EDIT_OFFSET -> state.firstEditOffset
                             edge.editOffset != NO_EDIT_OFFSET -> edge.editOffset
@@ -111,28 +124,38 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
     }
 
     private fun edgesAt(parsed: ParsedInput, start: Int): List<Edge> {
-        val query = parsed.code
         val best = HashMap<EdgeIdentity, Edge>()
-        inventory.forEach { syllable ->
-            val minimumConsumed = maxOf(1, syllable.length - 1)
-            val maximumConsumed = minOf(query.length - start, syllable.length + 1)
-            if (minimumConsumed > maximumConsumed) return@forEach
-            for (consumed in minimumConsumed..maximumConsumed) {
-                val end = start + consumed
-                if (parsed.hasJointInside(start, end)) continue
-                val edit = editCost(syllable, query, start, consumed)
-                if (edit.cost > MAX_EDGE_COST) continue
-                val edge = Edge(end, syllable, edit.cost, edit.editOffset)
-                val key = EdgeIdentity(end, syllable)
-                val previous = best[key]
-                if (
-                    previous == null ||
-                    edge.cost < previous.cost ||
-                    edge.cost == previous.cost && edge.editOffset > previous.editOffset
-                ) {
-                    best[key] = edge
-                }
+        val window = parsed.code.substring(start, minOf(parsed.code.length, start + ordinaryLookahead))
+        var joints = 0L
+        for (offset in 1 until window.length) {
+            if (parsed.forcedJoints[start + offset]) joints = joints or (1L shl offset)
+        }
+        val key = SpellingEdgeCache.Key(window, joints, parsed.code.getOrNull(start - 1)?.code ?: -1)
+        val ordinary = ordinaryEdgeCache.getOrCompute(key) {
+            // Preserve the old extra-key cost's one-character lookbehind, not only lookahead.
+            val prefix = if (key.previousLetter < 0) "" else key.previousLetter.toChar().toString()
+            val localStart = prefix.length
+            val forced = BooleanArray(localStart + window.length + 1)
+            for (offset in 1 until window.length) forced[localStart + offset] = key.forcedJoints and (1L shl offset) != 0L
+            ordinaryEdges(ParsedInput(prefix + window, forced), localStart)
+        }
+        // Cache only relative ordinary edges in inventory/consumption order. Rebuild the
+        // original absolute-key map before dedup/sort: even its stable tie order is preserved.
+        for (local in ordinary) {
+            val edge = if (start == 0) local else local.copy(end = start + local.end,
+                editOffset = if (local.editOffset == NO_EDIT_OFFSET) NO_EDIT_OFFSET else start + local.editOffset)
+            val identity = EdgeIdentity(edge.end, edge.syllable)
+            val previous = best[identity]
+            if (previous == null || edge.cost < previous.cost ||
+                edge.cost == previous.cost && edge.editOffset > previous.editOffset) {
+                best[identity] = edge
             }
+        }
+        // A swap across two syllables is one typo, not two unrelated substitutions.
+        // Enumerate only present unit lengths and validate both units in the inventory;
+        // this avoids the quadratic inventory-pair cross product at every offset.
+        crossJointTranspositions(parsed, start).forEach { edge ->
+            best[EdgeIdentity(edge.end, edge.syllable, edge.internalJoint)] = edge
         }
         val ordered = best.values.sortedWith(EDGE_ORDER)
         val retained = LinkedHashMap<EdgeIdentity, Edge>(MAX_EDGES_PER_OFFSET)
@@ -140,13 +163,51 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
             ordered.asSequence()
                 .filter { edge -> edgeCostTier(edge.cost) == tier }
                 .take(MIN_EDGES_PER_COST_TIER)
-                .forEach { edge -> retained[EdgeIdentity(edge.end, edge.syllable)] = edge }
+                .forEach { edge -> retained[EdgeIdentity(edge.end, edge.syllable, edge.internalJoint)] = edge }
         }
         ordered.forEach { edge ->
             if (retained.size >= MAX_EDGES_PER_OFFSET) return@forEach
-            retained.putIfAbsent(EdgeIdentity(edge.end, edge.syllable), edge)
+            retained.putIfAbsent(EdgeIdentity(edge.end, edge.syllable, edge.internalJoint), edge)
         }
         return retained.values.toList()
+    }
+
+    private fun ordinaryEdges(parsed: ParsedInput, start: Int): List<Edge> {
+        val query = parsed.code
+        val result = ArrayList<Edge>()
+        for (syllable in inventory) {
+            val minimumConsumed = maxOf(1, syllable.length - 1)
+            val maximumConsumed = minOf(query.length - start, syllable.length + 1)
+            for (consumed in minimumConsumed..maximumConsumed) {
+                if (parsed.hasJointInside(start, start + consumed)) continue
+                val edit = editCost(syllable, query, start, consumed)
+                if (edit.cost <= MAX_EDGE_COST) result += Edge(consumed, syllable, edit.cost,
+                    if (edit.editOffset == NO_EDIT_OFFSET) NO_EDIT_OFFSET else edit.editOffset - start)
+            }
+        }
+        return result
+    }
+
+    private fun crossJointTranspositions(parsed: ParsedInput, start: Int): List<Edge> {
+        val query = parsed.code
+        val result = ArrayList<Edge>()
+        for (firstLength in inventoryLengths) {
+            DecodeWorkScope.checkpoint()
+            val joint = start + firstLength
+            if (joint >= query.length) break
+            if (query[joint - 1] == query[joint] || parsed.hasJointInside(start, joint + 1)) continue
+            val first = query.substring(start, joint - 1) + query[joint]
+            if (first !in inventorySet) continue
+            for (secondLength in lengthsByFirst[query[joint - 1]].orEmpty()) {
+                val end = joint + secondLength
+                if (end > query.length) break
+                if (parsed.hasJointInside(joint, end)) continue
+                val second = query[joint - 1] + query.substring(joint + 1, end)
+                if (second !in inventorySet) continue
+                result += Edge(end, first + second, TRANSPOSITION_COST, joint - 1, firstLength)
+            }
+        }
+        return result
     }
 
     private fun editCost(
@@ -385,6 +446,8 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
         val syllable: String,
         val cost: Float,
         val editOffset: Int,
+        /** Canonical offset of a two-syllable edit edge; zero for ordinary single-unit edges. */
+        val internalJoint: Int = 0,
     )
 
     @JvmInline
@@ -399,6 +462,7 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
     private data class EdgeIdentity(
         val end: Int,
         val syllable: String,
+        val internalJoint: Int = 0,
     )
 
     private enum class EdgeCostTier {
@@ -455,18 +519,22 @@ class PinyinSpellingGraph(syllables: Collection<String>) {
     }
 
     companion object {
-        private val PATH_ORDER =
-            compareBy<PathState> { it.cost }
-                .thenBy { it.syllableEnds.size }
-                .thenComparator { left, right ->
-                    compareSyllableEnds(left.syllableEnds, right.syllableEnds)
-                }
-                .thenBy { it.canonical }
-        private val EDGE_ORDER =
-            compareBy<Edge> { it.cost }
-                .thenByDescending { it.editOffset }
-                .thenByDescending { it.syllable.length }
-                .thenBy { it.syllable }
+        // These run in every bounded frontier sort, including before ART has warmed up.
+        // Keep the exact ordering without chained generic comparators boxing Float/Int keys.
+        private val PATH_ORDER = Comparator<PathState> { left, right ->
+            var order = java.lang.Float.compare(left.cost, right.cost)
+            if (order == 0) order = left.syllableEnds.size.compareTo(right.syllableEnds.size)
+            if (order == 0) order = compareSyllableEnds(left.syllableEnds, right.syllableEnds)
+            if (order == 0) order = left.canonical.compareTo(right.canonical)
+            order
+        }
+        private val EDGE_ORDER = Comparator<Edge> { left, right ->
+            var order = java.lang.Float.compare(left.cost, right.cost)
+            if (order == 0) order = right.editOffset.compareTo(left.editOffset)
+            if (order == 0) order = right.syllable.length.compareTo(left.syllable.length)
+            if (order == 0) order = left.syllable.compareTo(right.syllable)
+            order
+        }
 
         private const val DEFAULT_MAX_PATHS = 24
         private const val DEFAULT_MAX_COST = 1.05f

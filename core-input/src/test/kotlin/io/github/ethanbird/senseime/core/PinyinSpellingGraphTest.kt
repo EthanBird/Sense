@@ -28,6 +28,34 @@ class PinyinSpellingGraphTest {
     }
 
     @Test
+    fun transpositionAcrossASyllableJointIsOneEditWithBothEndsPreserved() {
+        val units = PinyinSpellingGraph(listOf("ni", "hao", "hen"))
+        data class Example(val typed: String, val canonical: String, val ends: List<Int>, val offset: Int)
+        for ((typed, canonical, ends, offset) in listOf(
+            Example("nhiao", "nihao", listOf(2, 5), 1),
+            Example("hehnao", "henhao", listOf(3, 6), 2),
+        )) {
+            val path = units.paths(typed, maxPaths = 48, maxCost = .45f)
+                .firstOrNull { it.canonical == canonical && it.syllableEnds == ends }
+            assertTrue("Missing one-edit cross-joint path for $typed", path != null)
+            assertEquals(.45f, requireNotNull(path).cost, .00001f)
+            assertEquals(offset, path.firstEditOffset)
+            assertEquals(false, path.singleInsertionDeletion)
+        }
+    }
+
+    @Test
+    fun crossJointSwapRespectsExplicitJointsAndEditBudget() {
+        val units = PinyinSpellingGraph(listOf("ni", "hao", "wo"))
+        assertTrue(units.paths("nh'iao", 48, .45f).none { it.canonical == "nihao" })
+        assertTrue(units.paths("nhiao", 48, .44f).none { it.canonical == "nihao" })
+        assertTrue(units.paths("wo'nhiao", 48, .45f).any {
+            it.canonical == "wonihao" && it.syllableEnds == listOf(2, 4, 7) && it.firstEditOffset == 3
+        })
+        assertEquals(0f, units.paths("nihao", 48).first { it.canonical == "nihao" }.cost)
+    }
+
+    @Test
     fun apostropheForcesASyllableJoint() {
         val paths = graph.paths("xi'an")
 

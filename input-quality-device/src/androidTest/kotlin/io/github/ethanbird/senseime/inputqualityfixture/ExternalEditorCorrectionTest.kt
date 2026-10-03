@@ -18,6 +18,8 @@ class ExternalEditorCorrectionTest : ExternalEditorTestFixture() {
     @Test fun unknownInterjectionDoesNotDisplaceTheObservedSentence() = confirm("geimianbaoderenbuhuie", "给面包的人不会饿")
     @Test fun unknownNameGlyphDoesNotDisplaceTheObservedPhrase() = confirm("ruguoniquwennaxiebainianrenrui", "如果你去问那些百年人瑞")
     @Test fun supplementalIntelligentAgentIsFirstWithoutLearning() = confirm("zhinengti", "智能体")
+    @Test fun swappedKeysAcrossSyllablesKeepTheSentenceContext() = confirm("wobuxihuaznuoye", "我不喜欢作业")
+    @Test fun swappedKeysAcrossWordBoundaryCanBeConfirmed() = confirm("wobujieyizaiyuzhonmganbu", "我不介意在雨中漫步")
 
     private fun confirm(typed: String, expected: String) {
         type(typed, 12)

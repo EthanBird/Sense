@@ -85,7 +85,7 @@ try {
     if ($Correction) {
         $class = "io.github.ethanbird.senseime.inputqualityfixture.ExternalEditorCorrectionTest"
         $testArgs += @("-e", "noLearning", "true")
-        $expectedTests = 8
+        $expectedTests = 10
     }
     if ($Association) {
         $class = "io.github.ethanbird.senseime.inputqualityfixture.ExternalEditorAssociationTest"
