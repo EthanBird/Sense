@@ -1,0 +1,16 @@
+{
+  "stage": "E46",
+  "sourceBaseCommit": "ea8190d2d41a53d923dc6402e4467956667877d4",
+  "issue": "LM edge-cap selection omits the same internal bigram boundary score later added to surviving paths. Equal LM states can also have different compound-boundary attenuation.",
+  "hypotheses": [
+    "If the missing boundary term drops relevant edges, a lower-frequency seventeenth homophone favored by the unchanged boundary model will be absent before the fix and retained after it.",
+    "If selection is keyed only by LM characters, paths ending in one compound word versus single-character edges may reuse incompatible selections; explicit word-boundary state should separate them.",
+    "Correcting pruning may expose bad pre-existing scores or additional cost on real input; passing small fixtures alone is insufficient for adoption."
+  ],
+  "change": "Use unchanged boundary evidence before truncation, reuse it during append, and key query-local selection by previous code point plus single-character boundary state. No score constants, dictionary bytes, LM bytes, candidate counts or search budgets change. Legacy/no-LM paths keep existing results.",
+  "developmentGate": "Actual production M20 on the fixed AISHELL and Tatoeba development sets: each domain top1, top5, recall nondecreasing and character errors nonincreasing. Exact-state gains/losses retained. The new deterministic missing-edge regression must fail before and pass after. No external-data special cases.",
+  "regressionGate": "If development passes, run the existing full-pinyin/typo progressive workload and host core/service/UI suites, retaining all changed outputs and checking learning, corrections, explicit boundaries and legacy behavior. No additional tuning to the observed corpus.",
+  "androidGate": "If host quality and regressions pass, use only the dedicated Sense emulator. All fixed confirmation/continuation and lifecycle cases must pass; same-emulator ABBA confirmation median and P95 may increase at most 10 percent. Compare against the E42 fixed Debug baseline, not physical phones or host-only latency.",
+  "release": "No release until product gates pass. Existing rc.5 remains intact; failed candidates and diagnostics are kept separately rather than silently changing the baseline.",
+  "scope": "Known development/regression data, not fresh blind accuracy. Fixture edge rescue is a general search-correctness result, not proof of broad semantic quality. Overall quality goal remains active."
+}

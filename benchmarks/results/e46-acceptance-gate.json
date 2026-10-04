@@ -1,0 +1,633 @@
+{
+  "stage": "E46",
+  "accepted": true,
+  "productionChanged": true,
+  "hostTests": {
+    "core-input": {
+      "tests": 417,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 317,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "toolTests": 36,
+  "androidFunctional": {
+    "learning": 6,
+    "context": 8,
+    "correction": 10,
+    "boundary": 6,
+    "association": 9,
+    "default": 10
+  },
+  "development": {
+    "aishell": {
+      "before": {
+        "states": 128,
+        "top1": 65,
+        "top5": 97,
+        "top10": 105,
+        "recall255": 118,
+        "characterErrors": 142,
+        "characters": 1087
+      },
+      "after": {
+        "states": 128,
+        "top1": 65,
+        "top5": 97,
+        "top10": 105,
+        "recall255": 118,
+        "characterErrors": 142,
+        "characters": 1087
+      },
+      "changedFullResults": 5
+    },
+    "tatoeba": {
+      "before": {
+        "states": 128,
+        "top1": 83,
+        "top5": 113,
+        "top10": 120,
+        "recall255": 121,
+        "characterErrors": 70,
+        "characters": 941
+      },
+      "after": {
+        "states": 128,
+        "top1": 83,
+        "top5": 113,
+        "top10": 120,
+        "recall255": 121,
+        "characterErrors": 70,
+        "characters": 941
+      },
+      "changedFullResults": 9
+    }
+  },
+  "regression": {
+    "passed": true,
+    "reports": {
+      "replay": {
+        "before": {
+          "states": 945,
+          "top1": 500,
+          "top5": 651,
+          "top10": 675,
+          "recall": 753,
+          "characterErrors": 806
+        },
+        "after": {
+          "states": 945,
+          "top1": 500,
+          "top5": 651,
+          "top10": 675,
+          "recall": 753,
+          "characterErrors": 806
+        },
+        "passed": true,
+        "slices": {
+          "clean": {
+            "before": {
+              "states": 63,
+              "top1": 46,
+              "top5": 57,
+              "top10": 58,
+              "recall": 60,
+              "characterErrors": 27
+            },
+            "after": {
+              "states": 63,
+              "top1": 46,
+              "top5": 57,
+              "top10": 58,
+              "recall": 60,
+              "characterErrors": 27
+            }
+          },
+          "delete": {
+            "before": {
+              "states": 189,
+              "top1": 32,
+              "top5": 53,
+              "top10": 55,
+              "recall": 82,
+              "characterErrors": 295
+            },
+            "after": {
+              "states": 189,
+              "top1": 32,
+              "top5": 53,
+              "top10": 55,
+              "recall": 82,
+              "characterErrors": 295
+            }
+          },
+          "fuzzy": {
+            "before": {
+              "states": 63,
+              "top1": 17,
+              "top5": 31,
+              "top10": 36,
+              "recall": 47,
+              "characterErrors": 82
+            },
+            "after": {
+              "states": 63,
+              "top1": 17,
+              "top5": 31,
+              "top10": 36,
+              "recall": 47,
+              "characterErrors": 82
+            }
+          },
+          "joints": {
+            "before": {
+              "states": 63,
+              "top1": 46,
+              "top5": 57,
+              "top10": 58,
+              "recall": 60,
+              "characterErrors": 27
+            },
+            "after": {
+              "states": 63,
+              "top1": 46,
+              "top5": 57,
+              "top10": 58,
+              "recall": 60,
+              "characterErrors": 27
+            }
+          },
+          "neighbor": {
+            "before": {
+              "states": 189,
+              "top1": 100,
+              "top5": 131,
+              "top10": 133,
+              "recall": 145,
+              "characterErrors": 164
+            },
+            "after": {
+              "states": 189,
+              "top1": 100,
+              "top5": 131,
+              "top10": 133,
+              "recall": 145,
+              "characterErrors": 164
+            }
+          },
+          "repeat": {
+            "before": {
+              "states": 189,
+              "top1": 136,
+              "top5": 166,
+              "top10": 171,
+              "recall": 180,
+              "characterErrors": 89
+            },
+            "after": {
+              "states": 189,
+              "top1": 136,
+              "top5": 166,
+              "top10": 171,
+              "recall": 180,
+              "characterErrors": 89
+            }
+          },
+          "transpose": {
+            "before": {
+              "states": 189,
+              "top1": 123,
+              "top5": 156,
+              "top10": 164,
+              "recall": 179,
+              "characterErrors": 122
+            },
+            "after": {
+              "states": 189,
+              "top1": 123,
+              "top5": 156,
+              "top10": 164,
+              "recall": 179,
+              "characterErrors": 122
+            }
+          }
+        }
+      },
+      "test": {
+        "before": {
+          "states": 1874,
+          "top1": 918,
+          "top5": 1273,
+          "top10": 1358,
+          "recall": 1482,
+          "characterErrors": 1807
+        },
+        "after": {
+          "states": 1874,
+          "top1": 918,
+          "top5": 1273,
+          "top10": 1358,
+          "recall": 1482,
+          "characterErrors": 1807
+        },
+        "passed": true,
+        "slices": {
+          "clean": {
+            "before": {
+              "states": 125,
+              "top1": 82,
+              "top5": 111,
+              "top10": 116,
+              "recall": 120,
+              "characterErrors": 67
+            },
+            "after": {
+              "states": 125,
+              "top1": 82,
+              "top5": 111,
+              "top10": 116,
+              "recall": 120,
+              "characterErrors": 67
+            }
+          },
+          "delete": {
+            "before": {
+              "states": 375,
+              "top1": 69,
+              "top5": 107,
+              "top10": 121,
+              "recall": 166,
+              "characterErrors": 652
+            },
+            "after": {
+              "states": 375,
+              "top1": 69,
+              "top5": 107,
+              "top10": 121,
+              "recall": 166,
+              "characterErrors": 652
+            }
+          },
+          "fuzzy": {
+            "before": {
+              "states": 124,
+              "top1": 33,
+              "top5": 56,
+              "top10": 65,
+              "recall": 81,
+              "characterErrors": 171
+            },
+            "after": {
+              "states": 124,
+              "top1": 33,
+              "top5": 56,
+              "top10": 65,
+              "recall": 81,
+              "characterErrors": 171
+            }
+          },
+          "joints": {
+            "before": {
+              "states": 125,
+              "top1": 82,
+              "top5": 111,
+              "top10": 116,
+              "recall": 120,
+              "characterErrors": 67
+            },
+            "after": {
+              "states": 125,
+              "top1": 82,
+              "top5": 111,
+              "top10": 116,
+              "recall": 120,
+              "characterErrors": 67
+            }
+          },
+          "neighbor": {
+            "before": {
+              "states": 375,
+              "top1": 194,
+              "top5": 265,
+              "top10": 280,
+              "recall": 297,
+              "characterErrors": 340
+            },
+            "after": {
+              "states": 375,
+              "top1": 194,
+              "top5": 265,
+              "top10": 280,
+              "recall": 297,
+              "characterErrors": 340
+            }
+          },
+          "repeat": {
+            "before": {
+              "states": 375,
+              "top1": 230,
+              "top5": 313,
+              "top10": 332,
+              "recall": 350,
+              "characterErrors": 249
+            },
+            "after": {
+              "states": 375,
+              "top1": 230,
+              "top5": 313,
+              "top10": 332,
+              "recall": 350,
+              "characterErrors": 249
+            }
+          },
+          "transpose": {
+            "before": {
+              "states": 375,
+              "top1": 228,
+              "top5": 310,
+              "top10": 328,
+              "recall": 348,
+              "characterErrors": 261
+            },
+            "after": {
+              "states": 375,
+              "top1": 228,
+              "top5": 310,
+              "top10": 328,
+              "recall": 348,
+              "characterErrors": 261
+            }
+          }
+        }
+      }
+    }
+  },
+  "androidLatency": {
+    "confirmationMs": {
+      "baseline": {
+        "count": 32,
+        "medianMs": 140.0,
+        "observedP95Ms": 311,
+        "maxMs": 313
+      },
+      "optimized": {
+        "count": 32,
+        "medianMs": 149.5,
+        "observedP95Ms": 295,
+        "maxMs": 322
+      }
+    },
+    "stageGate": {
+      "rule": "E46 predeclared paired median and P95 each <= 1.10 times reference",
+      "checks": {
+        "medianMs": true,
+        "observedP95Ms": true
+      },
+      "passed": true
+    },
+    "strictHelperGate": {
+      "scope": "Fixed ABBA workload only; not statistical significance or phone certification",
+      "rule": "paired median and observed P95 each no worse than reference",
+      "checks": {
+        "medianMs": false,
+        "observedP95Ms": true
+      },
+      "passed": false
+    },
+    "perQuery": [
+      {
+        "query": "nihao",
+        "baseline": {
+          "samples": [
+            156,
+            22,
+            116,
+            43
+          ],
+          "count": 4,
+          "medianMs": 79.5,
+          "observedP95Ms": 156,
+          "maxMs": 156
+        },
+        "optimized": {
+          "samples": [
+            142,
+            22,
+            130,
+            36
+          ],
+          "count": 4,
+          "medianMs": 83.0,
+          "observedP95Ms": 142,
+          "maxMs": 142
+        }
+      },
+      {
+        "query": "woxihuanbeijing",
+        "baseline": {
+          "samples": [
+            311,
+            120,
+            313,
+            107
+          ],
+          "count": 4,
+          "medianMs": 215.5,
+          "observedP95Ms": 313,
+          "maxMs": 313
+        },
+        "optimized": {
+          "samples": [
+            295,
+            116,
+            322,
+            105
+          ],
+          "count": 4,
+          "medianMs": 205.5,
+          "observedP95Ms": 322,
+          "maxMs": 322
+        }
+      },
+      {
+        "query": "qingfageweizhigeiwo",
+        "baseline": {
+          "samples": [
+            137,
+            91,
+            175,
+            93
+          ],
+          "count": 4,
+          "medianMs": 115.0,
+          "observedP95Ms": 175,
+          "maxMs": 175
+        },
+        "optimized": {
+          "samples": [
+            160,
+            118,
+            162,
+            82
+          ],
+          "count": 4,
+          "medianMs": 139.0,
+          "observedP95Ms": 162,
+          "maxMs": 162
+        }
+      },
+      {
+        "query": "qingjianchayixiayoujian",
+        "baseline": {
+          "samples": [
+            169,
+            112,
+            204,
+            141
+          ],
+          "count": 4,
+          "medianMs": 155.0,
+          "observedP95Ms": 204,
+          "maxMs": 204
+        },
+        "optimized": {
+          "samples": [
+            176,
+            149,
+            216,
+            132
+          ],
+          "count": 4,
+          "medianMs": 162.5,
+          "observedP95Ms": 216,
+          "maxMs": 216
+        }
+      },
+      {
+        "query": "zhegeyingyonghenhaoyong",
+        "baseline": {
+          "samples": [
+            116,
+            135,
+            142,
+            128
+          ],
+          "count": 4,
+          "medianMs": 131.5,
+          "observedP95Ms": 142,
+          "maxMs": 142
+        },
+        "optimized": {
+          "samples": [
+            139,
+            113,
+            150,
+            101
+          ],
+          "count": 4,
+          "medianMs": 126.0,
+          "observedP95Ms": 150,
+          "maxMs": 150
+        }
+      },
+      {
+        "query": "jintianyouyidianlei",
+        "baseline": {
+          "samples": [
+            139,
+            134,
+            134,
+            121
+          ],
+          "count": 4,
+          "medianMs": 134.0,
+          "observedP95Ms": 139,
+          "maxMs": 139
+        },
+        "optimized": {
+          "samples": [
+            122,
+            172,
+            132,
+            109
+          ],
+          "count": 4,
+          "medianMs": 127.0,
+          "observedP95Ms": 172,
+          "maxMs": 172
+        }
+      },
+      {
+        "query": "tangmuhemalimeitianwanshangdoukandianshi",
+        "baseline": {
+          "samples": [
+            223,
+            278,
+            201,
+            198
+          ],
+          "count": 4,
+          "medianMs": 212.0,
+          "observedP95Ms": 278,
+          "maxMs": 278
+        },
+        "optimized": {
+          "samples": [
+            188,
+            206,
+            226,
+            205
+          ],
+          "count": 4,
+          "medianMs": 205.5,
+          "observedP95Ms": 226,
+          "maxMs": 226
+        }
+      },
+      {
+        "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+        "baseline": {
+          "samples": [
+            223,
+            214,
+            229,
+            200
+          ],
+          "count": 4,
+          "medianMs": 218.5,
+          "observedP95Ms": 229,
+          "maxMs": 229
+        },
+        "optimized": {
+          "samples": [
+            199,
+            231,
+            222,
+            228
+          ],
+          "count": 4,
+          "medianMs": 225.0,
+          "observedP95Ms": 231,
+          "maxMs": 231
+        }
+      }
+    ]
+  },
+  "publishedReleaseAtStageCommit": "v0.4.16-rc.5",
+  "releaseChanged": false,
+  "goalComplete": false,
+  "evidenceManifestSha256": "728bbc257c615e99df632b37e4b191dc21032407f87c2ed11d3198458facf143",
+  "archives": 642
+}

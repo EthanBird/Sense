@@ -4,7 +4,7 @@ import java.util.Collections
 
 /**
  * Query-local reuse of selection over an immutable lexical source. Source identity,
- * LM state, output width and external context all affect selection. Never shared
+ * LM state, output width, external context and word-boundary state affect selection. Never shared
  * across queries, model bindings, personal overlays or forced-joint validation.
  * Input sizes are conservatively charged per key, even when identities repeat.
  */
@@ -13,10 +13,10 @@ internal class QuerySelectionCache<T>(
     private val maximumInputValues: Int = 4_096,
     private val maximumOutputValues: Int = 4_096,
 ) {
-    private class Key(val source: List<*>, val state: Long, val width: Int, val context: Int) {
-        override fun hashCode(): Int = (((System.identityHashCode(source) * 31 + state.hashCode()) * 31) + width) * 31 + context
+    private class Key(val source: List<*>, val state: Long, val width: Int, val context: Int, val boundaryState: Int) {
+        override fun hashCode(): Int = ((((System.identityHashCode(source) * 31 + state.hashCode()) * 31) + width) * 31 + context) * 31 + boundaryState
         override fun equals(other: Any?): Boolean = other is Key && source === other.source &&
-            state == other.state && width == other.width && context == other.context
+            state == other.state && width == other.width && context == other.context && boundaryState == other.boundaryState
     }
     private val values = LinkedHashMap<Key, List<T>>(16, .75f, true)
     private var inputs = 0
@@ -24,11 +24,11 @@ internal class QuerySelectionCache<T>(
 
     init { require(maximumEntries > 0 && maximumInputValues > 0 && maximumOutputValues > 0) }
 
-    fun getOrCompute(source: List<*>, state: Long, width: Int, context: Int, compute: () -> List<T>): List<T> {
+    fun getOrCompute(source: List<*>, state: Long, width: Int, context: Int, boundaryState: Int = 0, compute: () -> List<T>): List<T> {
         DecodeWorkScope.checkpoint()
         require(width > 0)
         if (source.size > maximumInputValues) return compute()
-        val key = Key(source, state, width, context)
+        val key = Key(source, state, width, context, boundaryState)
         values[key]?.let { return it }
         val result = compute()
         DecodeWorkScope.checkpoint()

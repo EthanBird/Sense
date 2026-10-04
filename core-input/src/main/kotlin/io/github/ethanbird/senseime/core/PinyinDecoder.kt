@@ -512,7 +512,21 @@ class PinyinDecoder private constructor(
         val isSingleCodePoint = candidate.text.codePointCount(0, candidate.text.length) == 1
     }
 
-    private data class LanguageOption(val option: CompositionOption, val step: PinyinLanguageScorer.Step, val score: Float)
+    private data class LanguageOption(
+        val option: CompositionOption, val step: PinyinLanguageScorer.Step,
+        val boundaryScore: Float, val score: Float,
+    )
+
+    // The same last characters may end a whole word or a single-character edge.
+    // Their compound-boundary attenuation differs, even when LM states coincide.
+    private data class SelectionState(val languageState: Long, val boundaryState: Int)
+
+    private fun boundaryScore(path: CompositionPath, option: CompositionOption): Float = when {
+        path.lastCodePoint == NO_CODE_POINT -> 0f
+        !path.lastSegmentWasSingleCodePoint && !option.isSingleCodePoint ->
+            bigramModel.score(path.lastCodePoint, option.firstCodePoint) * COMPOUND_BOUNDARY_SCALE
+        else -> bigramModel.score(path.lastCodePoint, option.firstCodePoint)
+    }
 
     private val languageOptionOrder = Comparator<LanguageOption> { a, b ->
         val score = java.lang.Float.compare(b.score, a.score)
@@ -635,35 +649,29 @@ class PinyinDecoder private constructor(
                 }
                 val edgeOptions = options.map(::CompositionOption)
                 val target = beams[end] ?: mutableListOf<CompositionPath>().also { beams[end] = it }
-                val languageSelections = if (language == null) null else HashMap<Long, List<LanguageOption>>()
+                val languageSelections = if (language == null) null else HashMap<SelectionState, List<LanguageOption>>()
                 paths.forEach { path ->
                     DecodeWorkScope.checkpoint()
                     // Context-dependent homophones must survive the edge cap, not just the
                     // completed N-best list. Cache each (two-character state, word) once.
                     // Paths sharing the same LM state share one edge selection. Evaluate
                     // once before sorting; comparator calls must not query the model.
-                    val selected = if (language == null) null else languageSelections!!.getOrPut(path.languageState) {
+                    val boundaryState = (path.lastCodePoint + 1) * 2 + if (path.lastSegmentWasSingleCodePoint) 1 else 0
+                    val selected = if (language == null) null else languageSelections!!.getOrPut(SelectionState(path.languageState, boundaryState)) {
                         fun select(): List<LanguageOption> = stableTopK(edgeOptions.map { edge ->
                                 val option = edge.candidate
                                 val step = language.extend(path.languageState, option.text)
-                                LanguageOption(edge, step, option.score + step.score +
+                                val boundary = boundaryScore(path, edge)
+                                LanguageOption(edge, step, boundary, option.score + step.score + boundary +
                                     if (start == 0 && previousCodePoint != NO_CODE_POINT) contextScore(previousCodePoint, option) * language.normalizer else 0f)
                             }, segmentCandidatesPerKey, languageOptionOrder)
                         if (selectionCache != null && lexicalCache != null && learned.isEmpty() && !crossesJoint) {
-                            selectionCache.getOrCompute(options, path.languageState, segmentCandidatesPerKey, context, ::select)
+                            selectionCache.getOrCompute(options, path.languageState, segmentCandidatesPerKey, context, boundaryState, ::select)
                         } else select()
                     }
-                    fun append(edge: CompositionOption, step: PinyinLanguageScorer.Step?) {
+                    fun append(edge: CompositionOption, step: PinyinLanguageScorer.Step?, boundaryScore: Float) {
                         val option = edge.candidate
-                        val firstCodePoint = edge.firstCodePoint
                         val optionIsSingleCodePoint = edge.isSingleCodePoint
-                        val boundaryScore = when {
-                            path.lastCodePoint == NO_CODE_POINT -> 0f
-                            !path.lastSegmentWasSingleCodePoint && !optionIsSingleCodePoint ->
-                                bigramModel.score(path.lastCodePoint, firstCodePoint) * COMPOUND_BOUNDARY_SCALE
-
-                            else -> bigramModel.score(path.lastCodePoint, firstCodePoint)
-                        }
                         addToBeam(
                             target,
                             CompositionPath(
@@ -694,8 +702,8 @@ class PinyinDecoder private constructor(
                             beamWidth,
                         )
                     }
-                    if (selected == null) edgeOptions.forEach { append(it, null) }
-                    else selected.forEach { append(it.option, it.step) }
+                    if (selected == null) edgeOptions.forEach { append(it, null, boundaryScore(path, it)) }
+                    else selected.forEach { append(it.option, it.step, it.boundaryScore) }
                 }
             }
         }

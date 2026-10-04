@@ -4,6 +4,18 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class QuerySelectionCacheTest {
+    @Test fun equalLanguageStatesWithDifferentWordBoundariesRemainSeparate() {
+        val source = listOf("世人", "诗人")
+        val cache = QuerySelectionCache<String>()
+        var calls = 0
+        fun get(boundary: Int) = cache.getOrCompute(source, 12L, 1, -1, boundary) { listOf("${++calls}") }
+        val compound = get(100)
+        val single = get(101)
+        val differentCharacter = get(102)
+        assertSame(compound,get(100));assertSame(single,get(101));assertSame(differentCharacter,get(102))
+        assertEquals(3,calls)
+    }
+
     @Test fun identityStateWidthAndContextAllSeparateSelections() {
         val cache = QuerySelectionCache<String>()
         val source = listOf("甲", "乙")
