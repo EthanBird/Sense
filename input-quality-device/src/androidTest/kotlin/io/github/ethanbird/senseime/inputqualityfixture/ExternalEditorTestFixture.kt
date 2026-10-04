@@ -49,8 +49,11 @@ abstract class ExternalEditorTestFixture {
         File(artifacts, "${name.methodName}-environment.txt").writeText(
             "sdk=${android.os.Build.VERSION.SDK_INT}\nfixtureMaxHeapMiB=$maxHeap\nmemoryClassMiB=${memory.memoryClass}\nlargeMemoryClassMiB=${memory.largeMemoryClass}\n")
         val minimumHeap = InstrumentationRegistry.getArguments().getString("minimumHeapMiB", "0").toLong()
+        val maximumHeap = InstrumentationRegistry.getArguments().getString("maximumHeapMiB", Long.MAX_VALUE.toString()).toLong()
         assertTrue("Fixture process heap $maxHeap MiB is below the declared environment minimum $minimumHeap MiB",
             maxHeap >= minimumHeap)
+        assertTrue("Fixture process heap $maxHeap MiB exceeds the declared environment maximum $maximumHeap MiB",
+            maxHeap <= maximumHeap)
         shell("settings put secure show_ime_with_hard_keyboard 1")
         assertTrue("Install the Sense debug APK first", shell("pm path $SENSE").contains("package:"))
         if (coldStart) {
@@ -89,6 +92,13 @@ abstract class ExternalEditorTestFixture {
                 "requestedOrientation=$expected; actualOrientation=${activity.resources.configuration.orientation}; displayRotation=${device.displayRotation}\n")
         }
         assertNotNull("System did not show Sense keyboard", device.wait(Until.findObject(By.descStartsWith("先思键盘")), 10_000))
+        val heapState = runtimeState()
+        File(artifacts, "${name.methodName}-environment.txt").appendText("imeRuntime=$heapState\n")
+        if (InstrumentationRegistry.getArguments().containsKey("maximumHeapMiB")) {
+            val imeHeap = Regex("maxHeapMiB=(\\d+)").find(heapState)?.groupValues?.get(1)?.toLong()
+            assertNotNull("Bounded-heap coverage needs the actual IME process heap, not only the fixture: $heapState", imeHeap)
+            assertTrue("IME heap $imeHeap MiB is outside [$minimumHeap, $maximumHeap]", imeHeap!! in minimumHeap..maximumHeap)
+        }
         // Current service state, not historical log lines from an older instance.
         if (coldStart) {
             assertRuntimeStillLoading("before_typing")

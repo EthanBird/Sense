@@ -1,0 +1,1784 @@
+{
+  "schemaVersion": 1,
+  "archive": "benchmarks/results/e51-evidence.tar.gz",
+  "sha256": "891d063c132876f537f2dd583758b34183c95b896471176891e4b94c41ed02b5",
+  "bytes": 6337037,
+  "scope": "Original measurement bytes; source CRLF retained here, Git checkout uses LF; full device logcat retained locally only",
+  "entries": [
+    {
+      "path": "e50/boot-attempt-1.json",
+      "sha256": "8302a8e2886c262e42768549d54b98a0d9dc9fc521b1b9434f74b16da7ca307b",
+      "bytes": 210
+    },
+    {
+      "path": "e50/emulator-stdout.log",
+      "sha256": "90508659eb4b037df42f37d4c3bd75df085a0d385ea32de69fad5cf1c9060519",
+      "bytes": 7844
+    },
+    {
+      "path": "e50/emulator-v2-stdout.log",
+      "sha256": "a68d125e7a8d19a1cef1550b97d25e860a3a1e0746e10ba63750cddbafa8ab95",
+      "bytes": 7665
+    },
+    {
+      "path": "e50/emulator-v3-stdout.log",
+      "sha256": "a5b24cd536af7bd832a45908eb7362482db4960fec6fa36124f89b93bb249326",
+      "bytes": 7726
+    },
+    {
+      "path": "e50/experiment-closeout.json",
+      "sha256": "6b5653ccd6186dead998d03e7deb38cf8311bcbf325d0a30557cb13832826539",
+      "bytes": 582
+    },
+    {
+      "path": "e50/fixture-build.log",
+      "sha256": "4219ee089b18f90a9b280012ba61642a0944f5f6e7b685a785040a68c0bfeafd",
+      "bytes": 5549
+    },
+    {
+      "path": "e50/heap-config-change.json",
+      "sha256": "4e90e6b853041c75432485201b66b4a72cd3b12548211fc275ef3c9b663b60a7",
+      "bytes": 480
+    },
+    {
+      "path": "e51/build.log",
+      "sha256": "dc45ea25017ff8a52bc16f32e9ffe59601ca25265e1f2675ecd722a5015d8537",
+      "bytes": 17277
+    },
+    {
+      "path": "e51/emulator-closeout.json",
+      "sha256": "576155d6cf635846a253b15adc16216d5200d5933b29376eeb3b564a264427a4",
+      "bytes": 210
+    },
+    {
+      "path": "e51/emulator.json",
+      "sha256": "f09bc3e48cbb76a508ddc186e481930106ab61a5fe600cbcbee8db2da842deb3",
+      "bytes": 185
+    },
+    {
+      "path": "e51/heap112/association/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters-cadence.txt",
+      "sha256": "fa92f2ac48901dc27e8e41626c4e1db2704aae7e5c5466aacd10e40cb3667f31",
+      "bytes": 116
+    },
+    {
+      "path": "e51/heap112/association/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/association/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters-stop.png",
+      "sha256": "929113e2d77ab737d5bc4ee9cd3a9d59a76eb53e109bfe85f5d29e3235468ce9",
+      "bytes": 113847
+    },
+    {
+      "path": "e51/heap112/association/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters.png",
+      "sha256": "d6f782047c2bfcb68b839c92b9b5cb3469e83e0ded531aeaa38430da74ba5474",
+      "bytes": 117131
+    },
+    {
+      "path": "e51/heap112/association/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/association/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters.xml",
+      "sha256": "b61ef4afd51ac3dcf0e05a7990c74ab8be0abfee41601432edfd5b230930473c",
+      "bytes": 27517
+    },
+    {
+      "path": "e51/heap112/association/device/associationDoesNotExpireUnderAnActiveTouch-cadence.txt",
+      "sha256": "6cfc66dd5c27490e8a2aae9d8c9d90c9fcd43ce0f3e9151d34b548c09cc778bb",
+      "bytes": 62
+    },
+    {
+      "path": "e51/heap112/association/device/associationDoesNotExpireUnderAnActiveTouch-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/association/device/associationDoesNotExpireUnderAnActiveTouch-held.png",
+      "sha256": "2e2981007477ad80ee7148578d3b6071712c28c1a4a4646cacbabd6a689f6a15",
+      "bytes": 114358
+    },
+    {
+      "path": "e51/heap112/association/device/associationDoesNotExpireUnderAnActiveTouch.png",
+      "sha256": "e2a827e65aca543ff36b15162683304d90688e7695523d11cd9eba4eac9988b7",
+      "bytes": 113925
+    },
+    {
+      "path": "e51/heap112/association/device/associationDoesNotExpireUnderAnActiveTouch.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/association/device/associationDoesNotExpireUnderAnActiveTouch.xml",
+      "sha256": "af5e08ea23e1a381b2ef7781d9124cd013f764f6113c6c80d6b9341108961e1f",
+      "bytes": 27511
+    },
+    {
+      "path": "e51/heap112/association/device/changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry-cadence.txt",
+      "sha256": "e902bfbf70776c49bc15463b7c03cc4018f40d2b111375c39bcadbaa54b9cbc3",
+      "bytes": 62
+    },
+    {
+      "path": "e51/heap112/association/device/changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/association/device/changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry.png",
+      "sha256": "654ed52369881476cf37f1e3e8b6a7ca583f3139207b6178db1c7cdd5b67e445",
+      "bytes": 113454
+    },
+    {
+      "path": "e51/heap112/association/device/changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/association/device/changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry.xml",
+      "sha256": "68c372a30b8d4c5639620a285d0d9c7182f3e6df708f249ad4e45df5f51994e5",
+      "bytes": 27505
+    },
+    {
+      "path": "e51/heap112/association/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable-cadence.txt",
+      "sha256": "95496ccf7931906bc29dabf931b697b5c03803abc16b0495c00906339c23cae5",
+      "bytes": 116
+    },
+    {
+      "path": "e51/heap112/association/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/association/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable-visible.png",
+      "sha256": "ac707f165cc05bf3969a30062dfe5df66063d7b65c1a22c1fdb686039af7b6b9",
+      "bytes": 113634
+    },
+    {
+      "path": "e51/heap112/association/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable.png",
+      "sha256": "6073ca8a0e71f8be4925e09d82315e4da851050114e881c8c2d2e74e021fec67",
+      "bytes": 118572
+    },
+    {
+      "path": "e51/heap112/association/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/association/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable.xml",
+      "sha256": "baf38c236e53dad183b4967f8456222a44c274205ea069940a7490a5ca93e1b4",
+      "bytes": 27514
+    },
+    {
+      "path": "e51/heap112/association/device/draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout-cadence.txt",
+      "sha256": "070512038d5301107965a0d71459110008c2541c6e88a39f94a70bb929348180",
+      "bytes": 62
+    },
+    {
+      "path": "e51/heap112/association/device/draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/association/device/draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout.png",
+      "sha256": "e3cea6bd71e62deb4f8a986603f82f66d228eabece147d27a6e59fbb878f5cfb",
+      "bytes": 113493
+    },
+    {
+      "path": "e51/heap112/association/device/draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/association/device/draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout.xml",
+      "sha256": "c327385d210c3a41a65a6852116982902e3ad26658b3e2b1e350e413c5d1febb",
+      "bytes": 27505
+    },
+    {
+      "path": "e51/heap112/association/device/hidingAndReopeningDoesNotResurrectThePreviousAssociation-cadence.txt",
+      "sha256": "48031b124b396a20971a473515ba5253e578f7fb3fec464d8c7282aeff4f2fb7",
+      "bytes": 62
+    },
+    {
+      "path": "e51/heap112/association/device/hidingAndReopeningDoesNotResurrectThePreviousAssociation-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/association/device/hidingAndReopeningDoesNotResurrectThePreviousAssociation.png",
+      "sha256": "63894f9cdfe564c2a9efc1cdcc2218245a4cb9005c081447a4a4732ff74bc66e",
+      "bytes": 115023
+    },
+    {
+      "path": "e51/heap112/association/device/hidingAndReopeningDoesNotResurrectThePreviousAssociation.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/association/device/hidingAndReopeningDoesNotResurrectThePreviousAssociation.xml",
+      "sha256": "93a34953a382b5f8d409ef2f706a9cb9d1bbfd9b574c294030a888d608830411",
+      "bytes": 28350
+    },
+    {
+      "path": "e51/heap112/association/device/idleTimeoutRestoresToolbarWithoutChangingExternalText-cadence.txt",
+      "sha256": "6fa2fe0be69ead7750df4644c18db2563690195f272e1acf0212e99ad0d04881",
+      "bytes": 62
+    },
+    {
+      "path": "e51/heap112/association/device/idleTimeoutRestoresToolbarWithoutChangingExternalText-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/association/device/idleTimeoutRestoresToolbarWithoutChangingExternalText.png",
+      "sha256": "f66969dca9ec5681fd6f16e27c7c7846d2daa36b6d1391ca1cc9298f4c65c03d",
+      "bytes": 113394
+    },
+    {
+      "path": "e51/heap112/association/device/idleTimeoutRestoresToolbarWithoutChangingExternalText.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/association/device/idleTimeoutRestoresToolbarWithoutChangingExternalText.xml",
+      "sha256": "c327385d210c3a41a65a6852116982902e3ad26658b3e2b1e350e413c5d1febb",
+      "bytes": 27505
+    },
+    {
+      "path": "e51/heap112/association/device/switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping-cadence.txt",
+      "sha256": "ced45315fdce58bed013fa07ee52e5339c7f0d8888400fe92db10124dc96fdee",
+      "bytes": 116
+    },
+    {
+      "path": "e51/heap112/association/device/switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/association/device/switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping.png",
+      "sha256": "463c4ee89b10366ad7bc6c9d51aff84aae12cd0309957b9542c948aca44abc6c",
+      "bytes": 105167
+    },
+    {
+      "path": "e51/heap112/association/device/switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/association/device/switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping.xml",
+      "sha256": "1394d4af0c9c0ebd75e281d9f2ea1d462ac8eb9d14f80f8f060fbb0fe8b86cb4",
+      "bytes": 27495
+    },
+    {
+      "path": "e51/heap112/association/device/typingTheNextWordCancelsThePendingReveal-cadence.txt",
+      "sha256": "5ae1a2ce2298b654ece19f53dc56e6f870782bdfeea9e5ae0834d020dcaaa72d",
+      "bytes": 112
+    },
+    {
+      "path": "e51/heap112/association/device/typingTheNextWordCancelsThePendingReveal-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/association/device/typingTheNextWordCancelsThePendingReveal.png",
+      "sha256": "09eff493080320b2e556bb1249eb03d18dfe61af143112a70821e2c947d1ee85",
+      "bytes": 117356
+    },
+    {
+      "path": "e51/heap112/association/device/typingTheNextWordCancelsThePendingReveal.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/association/device/typingTheNextWordCancelsThePendingReveal.xml",
+      "sha256": "b6beb420f3f7815a8558fab2c4ebec789f9d208b1e9f31868ea74a19c3282249",
+      "bytes": 31381
+    },
+    {
+      "path": "e51/heap112/association/instrumentation.log",
+      "sha256": "65b460e36c705fe45d671ea388e5990c485e70cdb0804b174d01f0ac02f96abf",
+      "bytes": 7011
+    },
+    {
+      "path": "e51/heap112/boundary/device/backspaceCanRemoveTheTypedBoundaryBeforeContinuing-cadence.txt",
+      "sha256": "8ef9325f0a51d13881528e2fe161b1ab8998840f9b776fa2d43fa0067bd09fc8",
+      "bytes": 88
+    },
+    {
+      "path": "e51/heap112/boundary/device/backspaceCanRemoveTheTypedBoundaryBeforeContinuing-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/boundary/device/backspaceCanRemoveTheTypedBoundaryBeforeContinuing.png",
+      "sha256": "1b3c818c3c0361b1d813d1db2268ee30d1407e4eb23b086cefb985e73cda0e67",
+      "bytes": 112750
+    },
+    {
+      "path": "e51/heap112/boundary/device/backspaceCanRemoveTheTypedBoundaryBeforeContinuing.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/boundary/device/backspaceCanRemoveTheTypedBoundaryBeforeContinuing.xml",
+      "sha256": "58ede099fd51ff6729261da99958e9324229fcae515d0d643ffca25a1b56629c",
+      "bytes": 27503
+    },
+    {
+      "path": "e51/heap112/boundary/device/changingEditorDiscardsTheOldBoundaryTransaction-cadence.txt",
+      "sha256": "7a175b298e2792b2b0fd83f4c1820c03058851ede58dec5634bd0cb35b67c179",
+      "bytes": 100
+    },
+    {
+      "path": "e51/heap112/boundary/device/changingEditorDiscardsTheOldBoundaryTransaction-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/boundary/device/changingEditorDiscardsTheOldBoundaryTransaction.png",
+      "sha256": "3b0957fc4df9b0e144ebfa68e2193bb870b757e189c46965d18cc6ff79b862a1",
+      "bytes": 108829
+    },
+    {
+      "path": "e51/heap112/boundary/device/changingEditorDiscardsTheOldBoundaryTransaction.txt",
+      "sha256": "59b0396c79a12f83b18fcaf85df7b0b073d5a4541b0ac736813081f40702e67a",
+      "bytes": 35
+    },
+    {
+      "path": "e51/heap112/boundary/device/changingEditorDiscardsTheOldBoundaryTransaction.xml",
+      "sha256": "68c58e5b62e540cb1b229477668886d5685302e2b62033e66f5867fd97a66e0d",
+      "bytes": 27486
+    },
+    {
+      "path": "e51/heap112/boundary/device/duplicateBoundaryDoesNotEndOrDuplicateTheTransaction-cadence.txt",
+      "sha256": "0f00a105547ebb47e3eb78aa712f2fb7a189d2444865b78ab9fc33e9e90558b7",
+      "bytes": 58
+    },
+    {
+      "path": "e51/heap112/boundary/device/duplicateBoundaryDoesNotEndOrDuplicateTheTransaction-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/boundary/device/duplicateBoundaryDoesNotEndOrDuplicateTheTransaction.png",
+      "sha256": "d07ba31181cb65067a6df4f788e8f653f286b09f94b662853aade8137cd23c54",
+      "bytes": 119183
+    },
+    {
+      "path": "e51/heap112/boundary/device/duplicateBoundaryDoesNotEndOrDuplicateTheTransaction.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/boundary/device/duplicateBoundaryDoesNotEndOrDuplicateTheTransaction.xml",
+      "sha256": "e1d0d769d5334f9b7c131e44e76f4fff62ad1ac64f6af5b7bade20bdee844b0b",
+      "bytes": 27504
+    },
+    {
+      "path": "e51/heap112/boundary/device/physicalSeparatorKeepsTheExternalComposingSpanAlive-active.png",
+      "sha256": "dfc0ee487b83489fa3f86ab63c10cc435d5fd9a1067122e15e433f32fb76fdde",
+      "bytes": 117250
+    },
+    {
+      "path": "e51/heap112/boundary/device/physicalSeparatorKeepsTheExternalComposingSpanAlive-cadence.txt",
+      "sha256": "f7c0022390f94791bc74b358990310981ed595eb9b7b618fc49d9adacb04d2fc",
+      "bytes": 88
+    },
+    {
+      "path": "e51/heap112/boundary/device/physicalSeparatorKeepsTheExternalComposingSpanAlive-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/boundary/device/physicalSeparatorKeepsTheExternalComposingSpanAlive.png",
+      "sha256": "29c6faec6f04ff86d7cbf19a5d68aec0045019553ce5b317b3ebd21d133eee66",
+      "bytes": 119228
+    },
+    {
+      "path": "e51/heap112/boundary/device/physicalSeparatorKeepsTheExternalComposingSpanAlive.txt",
+      "sha256": "b1d38e6f55c5cc412a0b384a270f6ee514a8ad2a116b707ccc7d5690d3f95b6b",
+      "bytes": 44
+    },
+    {
+      "path": "e51/heap112/boundary/device/physicalSeparatorKeepsTheExternalComposingSpanAlive.xml",
+      "sha256": "35873529f6936ea61f551e23a968954bd5856e19833bbffad7a32bc736b3853c",
+      "bytes": 27505
+    },
+    {
+      "path": "e51/heap112/boundary/device/rapidBoundaryAndEnterPreserveTheExactRawInput-cadence.txt",
+      "sha256": "3baefff59c4af204b3ef461610e033bf3d090a23fcc4ad8de6c952390092d84d",
+      "bytes": 54
+    },
+    {
+      "path": "e51/heap112/boundary/device/rapidBoundaryAndEnterPreserveTheExactRawInput-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/boundary/device/rapidBoundaryAndEnterPreserveTheExactRawInput.png",
+      "sha256": "349d70d7d68b9aecbe26f68971421e4fd5d994a8b1074626f106bd3b4c4f95d4",
+      "bytes": 112848
+    },
+    {
+      "path": "e51/heap112/boundary/device/rapidBoundaryAndEnterPreserveTheExactRawInput.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/boundary/device/rapidBoundaryAndEnterPreserveTheExactRawInput.xml",
+      "sha256": "99cec1d255f1800f7e3ad70c5def39026713f9f416a6213793027e794cff943f",
+      "bytes": 27504
+    },
+    {
+      "path": "e51/heap112/boundary/device/selectedPrefixAndUndoRetainTheExactBoundary-cadence.txt",
+      "sha256": "8b7c5532f2ce16c3d778c6a1e8e3864172ce2537d0ea0db2fe6c4b85a8817e59",
+      "bytes": 96
+    },
+    {
+      "path": "e51/heap112/boundary/device/selectedPrefixAndUndoRetainTheExactBoundary-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/boundary/device/selectedPrefixAndUndoRetainTheExactBoundary.png",
+      "sha256": "63d20de3df0c722002dab45ab9a8fa40f8ac8ce223c3d3cc25bbb548a6052edd",
+      "bytes": 119222
+    },
+    {
+      "path": "e51/heap112/boundary/device/selectedPrefixAndUndoRetainTheExactBoundary.txt",
+      "sha256": "6563cd051694e21d70a3019d4a4b71c3178d7e07cc55645ec8764f52d7e7b32d",
+      "bytes": 44
+    },
+    {
+      "path": "e51/heap112/boundary/device/selectedPrefixAndUndoRetainTheExactBoundary.xml",
+      "sha256": "35873529f6936ea61f551e23a968954bd5856e19833bbffad7a32bc736b3853c",
+      "bytes": 27505
+    },
+    {
+      "path": "e51/heap112/boundary/instrumentation.log",
+      "sha256": "493cb1225169d054c29c8fe136254ee8f09719d0cbbc1f1c816cca508a619b63",
+      "bytes": 4607
+    },
+    {
+      "path": "e51/heap112/context/device/aContrastingContextPreservesTheOtherHomophone-cadence.txt",
+      "sha256": "456cb099e594eb5631e4bda7c61fec6699df08b540c9619cb553aab190084165",
+      "bytes": 46
+    },
+    {
+      "path": "e51/heap112/context/device/aContrastingContextPreservesTheOtherHomophone-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/context/device/aContrastingContextPreservesTheOtherHomophone.png",
+      "sha256": "8c3fa26037c93f1387ea6e04680927a466c0398314607b8c20c49802f17b02c2",
+      "bytes": 114054
+    },
+    {
+      "path": "e51/heap112/context/device/aContrastingContextPreservesTheOtherHomophone.txt",
+      "sha256": "05b14fc28f1bd73180736c7e3c907d0895af7291b387a9247f47301eb0621a92",
+      "bytes": 34
+    },
+    {
+      "path": "e51/heap112/context/device/aContrastingContextPreservesTheOtherHomophone.xml",
+      "sha256": "8162353930c5502b44095636f2727f419487e0b4c68982956028232ba5b6c42a",
+      "bytes": 27508
+    },
+    {
+      "path": "e51/heap112/context/device/changingEditorsDoesNotReuseTheFirstEditorsContext-cadence.txt",
+      "sha256": "2cd4b25855d77c620e99c043be959c429909440e774630e99a0a4ed613b68699",
+      "bytes": 140
+    },
+    {
+      "path": "e51/heap112/context/device/changingEditorsDoesNotReuseTheFirstEditorsContext-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/context/device/changingEditorsDoesNotReuseTheFirstEditorsContext.png",
+      "sha256": "39ef3436db9a492a6a9ddbede2e4b32018552a014248b68dae33121065dac555",
+      "bytes": 113048
+    },
+    {
+      "path": "e51/heap112/context/device/changingEditorsDoesNotReuseTheFirstEditorsContext.txt",
+      "sha256": "88a59cc53668557a20da5c96a39394687c865f4ebe6bea5efe0eafd61ecd66d7",
+      "bytes": 51
+    },
+    {
+      "path": "e51/heap112/context/device/changingEditorsDoesNotReuseTheFirstEditorsContext.xml",
+      "sha256": "76f8395ac1f15c559502a7fb0775684951081a74b4b700d7ad090a3121aaaf37",
+      "bytes": 27495
+    },
+    {
+      "path": "e51/heap112/context/device/deletingTheWholeCompositionRecapturesChangedEditorText-cadence.txt",
+      "sha256": "6d589b5cb513db92356d83f36569b6f7407b32ffa199ee4ad3dc73a76d2b9f69",
+      "bytes": 92
+    },
+    {
+      "path": "e51/heap112/context/device/deletingTheWholeCompositionRecapturesChangedEditorText-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/context/device/deletingTheWholeCompositionRecapturesChangedEditorText.png",
+      "sha256": "8c3fa26037c93f1387ea6e04680927a466c0398314607b8c20c49802f17b02c2",
+      "bytes": 114054
+    },
+    {
+      "path": "e51/heap112/context/device/deletingTheWholeCompositionRecapturesChangedEditorText.txt",
+      "sha256": "05b14fc28f1bd73180736c7e3c907d0895af7291b387a9247f47301eb0621a92",
+      "bytes": 34
+    },
+    {
+      "path": "e51/heap112/context/device/deletingTheWholeCompositionRecapturesChangedEditorText.xml",
+      "sha256": "5c75a995e2dbd50af05175f8298bbb3334224497ff769dcbcbb52d92e7156ba9",
+      "bytes": 27508
+    },
+    {
+      "path": "e51/heap112/context/device/insertionUsesTheLeftContextAtTheMovedCursorNotTheTextSuffix-cadence.txt",
+      "sha256": "873b6b597263dd572ac657a516bf8cbbdcb46e936b0201da6f6b56fb1ed490e5",
+      "bytes": 46
+    },
+    {
+      "path": "e51/heap112/context/device/insertionUsesTheLeftContextAtTheMovedCursorNotTheTextSuffix-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/context/device/insertionUsesTheLeftContextAtTheMovedCursorNotTheTextSuffix.png",
+      "sha256": "7a70b3aa1fe8f3403b9a163503fa0bd3ab4a6df49982f51ef49413dcaa01c875",
+      "bytes": 117232
+    },
+    {
+      "path": "e51/heap112/context/device/insertionUsesTheLeftContextAtTheMovedCursorNotTheTextSuffix.txt",
+      "sha256": "d549e4c3e48022811834f953c638f57c6a260b7452d54bb23316aacc843b8f21",
+      "bytes": 40
+    },
+    {
+      "path": "e51/heap112/context/device/insertionUsesTheLeftContextAtTheMovedCursorNotTheTextSuffix.xml",
+      "sha256": "8305fb1a49ea8dce25f6baf3ef4de30c996737e3dbc6e94acf8aee0d4cade34a",
+      "bytes": 27514
+    },
+    {
+      "path": "e51/heap112/context/device/precedingEditorTextSelectsTheContextualHomophoneWithoutLearning-cadence.txt",
+      "sha256": "07865213d0c45d0747c7d185137c1aef09071aa7f0b726f86aafcb68fec43fcd",
+      "bytes": 46
+    },
+    {
+      "path": "e51/heap112/context/device/precedingEditorTextSelectsTheContextualHomophoneWithoutLearning-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/context/device/precedingEditorTextSelectsTheContextualHomophoneWithoutLearning.png",
+      "sha256": "81befa2ca63ac1026949b14617045b16a132f48a5b550e5dc7fd2946274df33c",
+      "bytes": 115930
+    },
+    {
+      "path": "e51/heap112/context/device/precedingEditorTextSelectsTheContextualHomophoneWithoutLearning.txt",
+      "sha256": "aa4edbb4ba98f0d1331c87f9c33ce57d978513596419e412cab955c48e360577",
+      "bytes": 34
+    },
+    {
+      "path": "e51/heap112/context/device/precedingEditorTextSelectsTheContextualHomophoneWithoutLearning.xml",
+      "sha256": "dd537fe58b0f7eba55d663d2e8888285647d962e8507a7d2a044f0d2fbd36ec5",
+      "bytes": 27508
+    },
+    {
+      "path": "e51/heap112/context/device/punctuationResetsTheLanguageModelBoundary-cadence.txt",
+      "sha256": "0cb18d1d9b078c64b16d2d965faef4d580303fef2dd37d82bb1715c3539a01bf",
+      "bytes": 46
+    },
+    {
+      "path": "e51/heap112/context/device/punctuationResetsTheLanguageModelBoundary-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/context/device/punctuationResetsTheLanguageModelBoundary.png",
+      "sha256": "469849ed626bf4427ede221a21014150d4b84b0a7542aa12824c90b680dcd3a1",
+      "bytes": 116582
+    },
+    {
+      "path": "e51/heap112/context/device/punctuationResetsTheLanguageModelBoundary.txt",
+      "sha256": "35ca132af3a66491dd6680db466cbbc2c82242de72e4724a81c24f8d619fa3a2",
+      "bytes": 37
+    },
+    {
+      "path": "e51/heap112/context/device/punctuationResetsTheLanguageModelBoundary.xml",
+      "sha256": "191a8013ee7a1ca447c4d2481cd0d20e10df1986ce747badc4c7b6e0cbd59795",
+      "bytes": 27511
+    },
+    {
+      "path": "e51/heap112/context/device/replacementUsesTheLeftEdgeOfTheSelectedRange-cadence.txt",
+      "sha256": "ca9b1d21416457dcea4d574cf8a940b767d34853af05a02f5e7176e49eb4aa86",
+      "bytes": 46
+    },
+    {
+      "path": "e51/heap112/context/device/replacementUsesTheLeftEdgeOfTheSelectedRange-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/context/device/replacementUsesTheLeftEdgeOfTheSelectedRange.png",
+      "sha256": "81befa2ca63ac1026949b14617045b16a132f48a5b550e5dc7fd2946274df33c",
+      "bytes": 115930
+    },
+    {
+      "path": "e51/heap112/context/device/replacementUsesTheLeftEdgeOfTheSelectedRange.txt",
+      "sha256": "aa4edbb4ba98f0d1331c87f9c33ce57d978513596419e412cab955c48e360577",
+      "bytes": 34
+    },
+    {
+      "path": "e51/heap112/context/device/replacementUsesTheLeftEdgeOfTheSelectedRange.xml",
+      "sha256": "18fc6669edb567075d6347c3d215573d0bfd37624639131fb35b2c55f4a88b0c",
+      "bytes": 27508
+    },
+    {
+      "path": "e51/heap112/context/device/theNextCompositionSeesTheJustCommittedWord-cadence.txt",
+      "sha256": "5012e63e3d183386ad8e472c5c3f6baf46406014d7546d0b97db5aad782cdb22",
+      "bytes": 100
+    },
+    {
+      "path": "e51/heap112/context/device/theNextCompositionSeesTheJustCommittedWord-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/context/device/theNextCompositionSeesTheJustCommittedWord.png",
+      "sha256": "81befa2ca63ac1026949b14617045b16a132f48a5b550e5dc7fd2946274df33c",
+      "bytes": 115930
+    },
+    {
+      "path": "e51/heap112/context/device/theNextCompositionSeesTheJustCommittedWord.txt",
+      "sha256": "9352b89d0c94380a46f3d347a672bb65964d08ca2faa1a55bd5f162739cd318a",
+      "bytes": 51
+    },
+    {
+      "path": "e51/heap112/context/device/theNextCompositionSeesTheJustCommittedWord.xml",
+      "sha256": "18fc6669edb567075d6347c3d215573d0bfd37624639131fb35b2c55f4a88b0c",
+      "bytes": 27508
+    },
+    {
+      "path": "e51/heap112/context/instrumentation.log",
+      "sha256": "30a34cf10bd76bec96b0baa06aa5029727b540007445c2dd92603e4b521ae221",
+      "bytes": 6094
+    },
+    {
+      "path": "e51/heap112/correction/device/missingKeyAtSentenceStartCanBeConfirmedAsChinese-cadence.txt",
+      "sha256": "78014018d8537b8a58a04c53d16cdad76be592b489466a96cf884d55dc53b8e7",
+      "bytes": 90
+    },
+    {
+      "path": "e51/heap112/correction/device/missingKeyAtSentenceStartCanBeConfirmedAsChinese-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/correction/device/missingKeyAtSentenceStartCanBeConfirmedAsChinese.png",
+      "sha256": "4f711d26c608762ad73be7656ff2b4a13d2df65fb668997a636dd16a5ecfd64a",
+      "bytes": 117905
+    },
+    {
+      "path": "e51/heap112/correction/device/missingKeyAtSentenceStartCanBeConfirmedAsChinese.txt",
+      "sha256": "8784d11c1804363b8b5407ef90680106ce7335b7a121ad9892c1e19cc59cb6f2",
+      "bytes": 93
+    },
+    {
+      "path": "e51/heap112/correction/device/missingKeyAtSentenceStartCanBeConfirmedAsChinese.xml",
+      "sha256": "5802aff5901e46790d137303ea24b352bad69a5538ec23f5025cc456bb591239",
+      "bytes": 27517
+    },
+    {
+      "path": "e51/heap112/correction/device/missingKeyInsideTheSentenceCanBeConfirmedAsChinese-cadence.txt",
+      "sha256": "c9c94bf7ac4ce597a3bce6174e4d9c85b506ae094e5eeedb7e7ae430ebbd1dc5",
+      "bytes": 90
+    },
+    {
+      "path": "e51/heap112/correction/device/missingKeyInsideTheSentenceCanBeConfirmedAsChinese-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/correction/device/missingKeyInsideTheSentenceCanBeConfirmedAsChinese.png",
+      "sha256": "4f711d26c608762ad73be7656ff2b4a13d2df65fb668997a636dd16a5ecfd64a",
+      "bytes": 117905
+    },
+    {
+      "path": "e51/heap112/correction/device/missingKeyInsideTheSentenceCanBeConfirmedAsChinese.txt",
+      "sha256": "aaacb10d2fc2de29b7cfb1ab0d2d1ec5d510cac3298ecf2c72f2dfd76b57b386",
+      "bytes": 93
+    },
+    {
+      "path": "e51/heap112/correction/device/missingKeyInsideTheSentenceCanBeConfirmedAsChinese.xml",
+      "sha256": "2acaf396cc3815d88512ab3b95eb9c1d296064894134d2c410f9bb882edb366b",
+      "bytes": 27517
+    },
+    {
+      "path": "e51/heap112/correction/device/missingParticleKeyKeepsTheSentenceContext-cadence.txt",
+      "sha256": "d728ab091c8b50a0903b009c044a526422bfb77b12bb2d0822679114073ee674",
+      "bytes": 122
+    },
+    {
+      "path": "e51/heap112/correction/device/missingParticleKeyKeepsTheSentenceContext-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/correction/device/missingParticleKeyKeepsTheSentenceContext.png",
+      "sha256": "9e001f2b94ee2310dc6a22c398aff01095abb2b3ec90a7791e28205a01e00562",
+      "bytes": 119880
+    },
+    {
+      "path": "e51/heap112/correction/device/missingParticleKeyKeepsTheSentenceContext.txt",
+      "sha256": "f9526d86f66eb968c7ded8f500c2ed7511eb2a96200e1af08847b419e884a2a6",
+      "bytes": 93
+    },
+    {
+      "path": "e51/heap112/correction/device/missingParticleKeyKeepsTheSentenceContext.xml",
+      "sha256": "b4f9966d91bacf07c645818c486f109f74ef7d8e874881b4b2656181cd95b35b",
+      "bytes": 30979
+    },
+    {
+      "path": "e51/heap112/correction/device/supplementalIntelligentAgentIsFirstWithoutLearning-cadence.txt",
+      "sha256": "49454d75c665f588f95052e905986af26fa944be88e047d37e2ea4e690b5c5ab",
+      "bytes": 70
+    },
+    {
+      "path": "e51/heap112/correction/device/supplementalIntelligentAgentIsFirstWithoutLearning-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/correction/device/supplementalIntelligentAgentIsFirstWithoutLearning.png",
+      "sha256": "4634c529e94c2d957bfb230d37eeaa28fac18a8191d4567e1e933fadacd09a02",
+      "bytes": 114965
+    },
+    {
+      "path": "e51/heap112/correction/device/supplementalIntelligentAgentIsFirstWithoutLearning.txt",
+      "sha256": "090b4f449e241e4bb6b1bf70b2000963b7b91643e2d5d029381613dabb5e7c6d",
+      "bytes": 93
+    },
+    {
+      "path": "e51/heap112/correction/device/supplementalIntelligentAgentIsFirstWithoutLearning.xml",
+      "sha256": "5f6f0747f42dae3e1bf0b89c6d769edebf586cea4bb1a8c873fb8b4204e14686",
+      "bytes": 27508
+    },
+    {
+      "path": "e51/heap112/correction/device/swappedKeysAcrossSyllablesKeepTheSentenceContext-cadence.txt",
+      "sha256": "72ba086f8d38312497f26db84bbae3715477c0054ee23f85e10bbda307ce914d",
+      "bytes": 94
+    },
+    {
+      "path": "e51/heap112/correction/device/swappedKeysAcrossSyllablesKeepTheSentenceContext-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/correction/device/swappedKeysAcrossSyllablesKeepTheSentenceContext.png",
+      "sha256": "03e0f61c9a16df7b465fe404d264e82d8d3fa4538bf24320d393fde732eab2fd",
+      "bytes": 118083
+    },
+    {
+      "path": "e51/heap112/correction/device/swappedKeysAcrossSyllablesKeepTheSentenceContext.txt",
+      "sha256": "d8ff10293d2ce16904e1155451feae2490c707a4ed9073327ebbfb08f0de14a8",
+      "bytes": 93
+    },
+    {
+      "path": "e51/heap112/correction/device/swappedKeysAcrossSyllablesKeepTheSentenceContext.xml",
+      "sha256": "21c852e1c2841c37af0b6d379b9bbf18a6f5b5edaad8cc64c77c2be2f254c945",
+      "bytes": 27517
+    },
+    {
+      "path": "e51/heap112/correction/device/swappedKeysAcrossWordBoundaryCanBeConfirmed-cadence.txt",
+      "sha256": "7cd3523d6dc14c02af7b571925b3ab1c52ec2f361c4f4e034d1c314c56332d19",
+      "bytes": 130
+    },
+    {
+      "path": "e51/heap112/correction/device/swappedKeysAcrossWordBoundaryCanBeConfirmed-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/correction/device/swappedKeysAcrossWordBoundaryCanBeConfirmed.png",
+      "sha256": "b35eb2f2969e6f48c93e4cbd3ae9b043e1beb79eb66122da99acdc06112297fe",
+      "bytes": 120966
+    },
+    {
+      "path": "e51/heap112/correction/device/swappedKeysAcrossWordBoundaryCanBeConfirmed.txt",
+      "sha256": "988eda689f17cc087ae5495d20444875bc314b2e49ec1ce01033715a2ea951e0",
+      "bytes": 93
+    },
+    {
+      "path": "e51/heap112/correction/device/swappedKeysAcrossWordBoundaryCanBeConfirmed.xml",
+      "sha256": "5c2fe3527bacc01631c6af0cf8db7e4127fcdd309b1c5244b553924058e63074",
+      "bytes": 27526
+    },
+    {
+      "path": "e51/heap112/correction/device/unknownInterjectionDoesNotDisplaceTheObservedSentence-cadence.txt",
+      "sha256": "ea23bfd628f3a0ffed4208ec77fa7bfe9b509830f11015a02fafe268e8c4b198",
+      "bytes": 118
+    },
+    {
+      "path": "e51/heap112/correction/device/unknownInterjectionDoesNotDisplaceTheObservedSentence-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/correction/device/unknownInterjectionDoesNotDisplaceTheObservedSentence.png",
+      "sha256": "840cb3f235bee2ecdd8c40e7d0c1d115da5d9dc76b9d7681084a43e13d525f13",
+      "bytes": 120808
+    },
+    {
+      "path": "e51/heap112/correction/device/unknownInterjectionDoesNotDisplaceTheObservedSentence.txt",
+      "sha256": "255b824683a2189557b99014964c3d3973fa9072b75de8825584903ea8e59147",
+      "bytes": 93
+    },
+    {
+      "path": "e51/heap112/correction/device/unknownInterjectionDoesNotDisplaceTheObservedSentence.xml",
+      "sha256": "cbd5fa1e95e463023af1ecf505a75c804b9638de561a77a26963ac1a41c7b6fa",
+      "bytes": 27523
+    },
+    {
+      "path": "e51/heap112/correction/device/unknownNameGlyphDoesNotDisplaceTheObservedPhrase-cadence.txt",
+      "sha256": "c2bd0481aa2f41a847c7ea2760dbb192137cb67d4040047cbae166160d2bce10",
+      "bytes": 154
+    },
+    {
+      "path": "e51/heap112/correction/device/unknownNameGlyphDoesNotDisplaceTheObservedPhrase-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/correction/device/unknownNameGlyphDoesNotDisplaceTheObservedPhrase.png",
+      "sha256": "544fbd15923ddf0256798dfc6bf4ead8df4b6bdb1eaa406c5e8fbe034456c700",
+      "bytes": 120848
+    },
+    {
+      "path": "e51/heap112/correction/device/unknownNameGlyphDoesNotDisplaceTheObservedPhrase.txt",
+      "sha256": "a6af0f9f97fc6bb29117d5bfe714da4805974567b272c2c2667cf6d886f96794",
+      "bytes": 93
+    },
+    {
+      "path": "e51/heap112/correction/device/unknownNameGlyphDoesNotDisplaceTheObservedPhrase.xml",
+      "sha256": "df7d722525de08e64ef09bbe128a8960abca54c2daa27ec2f2bd003747af833a",
+      "bytes": 30557
+    },
+    {
+      "path": "e51/heap112/correction/device/validExtraSyllableDoesNotBuryTheContextualRepair-cadence.txt",
+      "sha256": "530d5c98ec96b3dd3d55b58d5bb3d4e702eae2b9467f84c550978fe68b8ccbf1",
+      "bytes": 98
+    },
+    {
+      "path": "e51/heap112/correction/device/validExtraSyllableDoesNotBuryTheContextualRepair-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/correction/device/validExtraSyllableDoesNotBuryTheContextualRepair.png",
+      "sha256": "4f711d26c608762ad73be7656ff2b4a13d2df65fb668997a636dd16a5ecfd64a",
+      "bytes": 117905
+    },
+    {
+      "path": "e51/heap112/correction/device/validExtraSyllableDoesNotBuryTheContextualRepair.txt",
+      "sha256": "2965afc33e4fdaeef8003e34325a44a4447ed5e224f4a33e11bc9f0ef5522f70",
+      "bytes": 94
+    },
+    {
+      "path": "e51/heap112/correction/device/validExtraSyllableDoesNotBuryTheContextualRepair.xml",
+      "sha256": "6d30033be0aa901e5cdefa9d7d3078f0771acc06e7bc3f1d6647940276a7dbe5",
+      "bytes": 27517
+    },
+    {
+      "path": "e51/heap112/correction/device/validFuzzySyllableDoesNotBuryTheContextualRepair-cadence.txt",
+      "sha256": "ff46bf08ef921d7c3d12bb1a7241f8f16dd30c1eec97296762ef3fb39b71ebbf",
+      "bytes": 126
+    },
+    {
+      "path": "e51/heap112/correction/device/validFuzzySyllableDoesNotBuryTheContextualRepair-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/correction/device/validFuzzySyllableDoesNotBuryTheContextualRepair.png",
+      "sha256": "b35eb2f2969e6f48c93e4cbd3ae9b043e1beb79eb66122da99acdc06112297fe",
+      "bytes": 120966
+    },
+    {
+      "path": "e51/heap112/correction/device/validFuzzySyllableDoesNotBuryTheContextualRepair.txt",
+      "sha256": "1c144b56818516563e007deda919037b30d565a3bd5e1f7213ceb618e6fd3e0a",
+      "bytes": 94
+    },
+    {
+      "path": "e51/heap112/correction/device/validFuzzySyllableDoesNotBuryTheContextualRepair.xml",
+      "sha256": "4a7e3859db42a5f7021f5cdbd7393e6fe209119623c168e4892ed6bb5181b790",
+      "bytes": 27526
+    },
+    {
+      "path": "e51/heap112/correction/instrumentation.log",
+      "sha256": "17c93d84039a140e4eb88f0a6acdb8c12f91d83629bc73b691f3a0efe2fbc499",
+      "bytes": 7622
+    },
+    {
+      "path": "e51/heap112/input-runtime-logcat.txt",
+      "sha256": "45d3ba0b7be8c9f3cd06fd93609076b87b554c1678bee20e46d513962f30a44b",
+      "bytes": 3175
+    },
+    {
+      "path": "e51/heap112/learning/device/explicitHomophonesKeepSeparateContextsAcrossRestartAndPrivateSelection-cadence.txt",
+      "sha256": "3c70d390fb3653cfdeb2bd084f1de569b6b1808619f5bb1f4068a0a2e9c03c18",
+      "bytes": 522
+    },
+    {
+      "path": "e51/heap112/learning/device/explicitHomophonesKeepSeparateContextsAcrossRestartAndPrivateSelection-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/learning/device/explicitHomophonesKeepSeparateContextsAcrossRestartAndPrivateSelection-final.png",
+      "sha256": "cfc4db5a059b28351ec52e9363d56722ddd0701392143abd829f2ca50c48be99",
+      "bytes": 116653
+    },
+    {
+      "path": "e51/heap112/learning/device/explicitHomophonesKeepSeparateContextsAcrossRestartAndPrivateSelection.png",
+      "sha256": "cfc4db5a059b28351ec52e9363d56722ddd0701392143abd829f2ca50c48be99",
+      "bytes": 116653
+    },
+    {
+      "path": "e51/heap112/learning/device/explicitHomophonesKeepSeparateContextsAcrossRestartAndPrivateSelection.txt",
+      "sha256": "b0e23990b776fa8b9a2e0f6f41d6ae68b9cfde8a3849fb8969b0a0e2913fbd0d",
+      "bytes": 512
+    },
+    {
+      "path": "e51/heap112/learning/device/explicitHomophonesKeepSeparateContextsAcrossRestartAndPrivateSelection.xml",
+      "sha256": "edf37a3d3f733243be68b52bfcc93866c867d4eb86a2691101819def681de611",
+      "bytes": 27511
+    },
+    {
+      "path": "e51/heap112/learning/device/explicitlySelectedCorrectionAliasSurvivesReuseAndProcessRestart-cadence.txt",
+      "sha256": "b7986d4c62e1983ce4a581d7de9e002c31f218ff0f745f63c2093d11c9882909",
+      "bytes": 200
+    },
+    {
+      "path": "e51/heap112/learning/device/explicitlySelectedCorrectionAliasSurvivesReuseAndProcessRestart-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/learning/device/explicitlySelectedCorrectionAliasSurvivesReuseAndProcessRestart.png",
+      "sha256": "9710658bcd1bba0f8deb07218335f6a13c367f45aff17c2ad96dd9b1ed9555e6",
+      "bytes": 116349
+    },
+    {
+      "path": "e51/heap112/learning/device/explicitlySelectedCorrectionAliasSurvivesReuseAndProcessRestart.txt",
+      "sha256": "b541fcf6a9fe221e420eb11f8d416f2622ceeb162d12fbc3ff675e99fd0326c5",
+      "bytes": 249
+    },
+    {
+      "path": "e51/heap112/learning/device/explicitlySelectedCorrectionAliasSurvivesReuseAndProcessRestart.xml",
+      "sha256": "4a6f0390e89dbb2f9086036cf12e3f9d4186833798f328ed2d0074935cf64731",
+      "bytes": 27505
+    },
+    {
+      "path": "e51/heap112/learning/device/noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections-cadence.txt",
+      "sha256": "6cf174fc8b2fe4cc07f099df2db0a5978f4d507df294b5387bd9237583774da1",
+      "bytes": 264
+    },
+    {
+      "path": "e51/heap112/learning/device/noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/learning/device/noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections.png",
+      "sha256": "1d59227720446a5bda2663cf0cf5fe7274c653594b529d60ee7c9b1d2166391e",
+      "bytes": 121225
+    },
+    {
+      "path": "e51/heap112/learning/device/noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections.txt",
+      "sha256": "d5aa0b131d32ad333a7a9464450e0517e6b0987da31922bc0250cbe76d43b5f0",
+      "bytes": 287
+    },
+    {
+      "path": "e51/heap112/learning/device/noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections.xml",
+      "sha256": "83c0a141356b356cc981a58422b5884173e72b5da627140ac1b2ab7559135755",
+      "bytes": 30981
+    },
+    {
+      "path": "e51/heap112/learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-after_process_restart.png",
+      "sha256": "480acbb612c7b889fead80ef715928cbff50d644a58805485c8e8c91c7414d2a",
+      "bytes": 123272
+    },
+    {
+      "path": "e51/heap112/learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-after_process_restart.xml",
+      "sha256": "073f46d9962a695dc29f72f4a97a66e69fb31733359f2105603d721407515634",
+      "bytes": 30981
+    },
+    {
+      "path": "e51/heap112/learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-cadence.txt",
+      "sha256": "7e90a2f5969de6855d11c5f68bf7b4fc27bb9a701f663a4e395f300ce511f9c1",
+      "bytes": 679
+    },
+    {
+      "path": "e51/heap112/learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-intelligent_agent_restart.png",
+      "sha256": "533d3c936c903d6d07492aa51c409a2af9350bf6d519250201dd6343f892b897",
+      "bytes": 118229
+    },
+    {
+      "path": "e51/heap112/learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-intelligent_agent_restart.xml",
+      "sha256": "e8be31c0469cb5455518342e50cdc447c95bd0545c3fba1c495a67e147746010",
+      "bytes": 30148
+    },
+    {
+      "path": "e51/heap112/learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart.png",
+      "sha256": "e7f6dfca7c70963aa11155a77f2a56dd0a47d64951fd4dc5e34e2684efc17182",
+      "bytes": 116017
+    },
+    {
+      "path": "e51/heap112/learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart.txt",
+      "sha256": "865aa502ff425f42ce12e1cf72af709ddd8e0bb84fe0ddf6c39389a67e2c8bdf",
+      "bytes": 623
+    },
+    {
+      "path": "e51/heap112/learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart.xml",
+      "sha256": "9c8168edadd89441bc380459a54af7cc431cc38981c62ead8f5724cd7d2b2541",
+      "bytes": 27514
+    },
+    {
+      "path": "e51/heap112/learning/device/quickSingleCharacterRejectionRemovesTheContextChoice-cadence.txt",
+      "sha256": "25d02ee03dcd8290a7eab1c108e9337b498071f2b0c50b737bce1db6265dfea6",
+      "bytes": 92
+    },
+    {
+      "path": "e51/heap112/learning/device/quickSingleCharacterRejectionRemovesTheContextChoice-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/learning/device/quickSingleCharacterRejectionRemovesTheContextChoice.png",
+      "sha256": "5c47042676a3dd2fe968b83e38314215a266336bc9c07c907f0acda624537c78",
+      "bytes": 118496
+    },
+    {
+      "path": "e51/heap112/learning/device/quickSingleCharacterRejectionRemovesTheContextChoice.txt",
+      "sha256": "ebeed69521c3f6e29e9885a8bd5628a270da49dd053919bd00f25e33eb39af5b",
+      "bytes": 96
+    },
+    {
+      "path": "e51/heap112/learning/device/quickSingleCharacterRejectionRemovesTheContextChoice.xml",
+      "sha256": "f71bcfe4d1fc02af2c94443728159f595ed5f62a32cee3b6d4b3261b689f5116",
+      "bytes": 27508
+    },
+    {
+      "path": "e51/heap112/learning/device/recalledCompletionAliasSurvivesDefaultReuseAndProcessRestart-cadence.txt",
+      "sha256": "820ad7696df97b6cce664334c58503ffac3b5b26e51aca91e07d7bb4c132ed15",
+      "bytes": 278
+    },
+    {
+      "path": "e51/heap112/learning/device/recalledCompletionAliasSurvivesDefaultReuseAndProcessRestart-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/learning/device/recalledCompletionAliasSurvivesDefaultReuseAndProcessRestart.png",
+      "sha256": "2294f3268c9b74117b6ce71d5722c536a8ac6c424a79edbab742f63f3aed87e1",
+      "bytes": 121372
+    },
+    {
+      "path": "e51/heap112/learning/device/recalledCompletionAliasSurvivesDefaultReuseAndProcessRestart.txt",
+      "sha256": "eb1293c0ac4b3800db2d2b6c4aa380ee17c84d62c17d127a22926fdb0e4fb454",
+      "bytes": 347
+    },
+    {
+      "path": "e51/heap112/learning/device/recalledCompletionAliasSurvivesDefaultReuseAndProcessRestart.xml",
+      "sha256": "0d6968227c6e1033ea48ca6bc95e0e592726f5dd5d0e073ad02b778ff6164810",
+      "bytes": 27505
+    },
+    {
+      "path": "e51/heap112/learning/instrumentation.log",
+      "sha256": "1f3f499a544733395acc9dfbc268f0e850fd0603c91bf6043dc8a2233d6febfc",
+      "bytes": 4772
+    },
+    {
+      "path": "e51/heap112/ordinary/device/backspaceEditsThePendingSpellingBeforeSpaceConfirms-cadence.txt",
+      "sha256": "48c8f68c27313c506c1a6b818359b93a897d2e7285d60a111c017426af8a82de",
+      "bytes": 58
+    },
+    {
+      "path": "e51/heap112/ordinary/device/backspaceEditsThePendingSpellingBeforeSpaceConfirms-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/ordinary/device/backspaceEditsThePendingSpellingBeforeSpaceConfirms.png",
+      "sha256": "135b75ca178f52b1ab9c8de7115533d667569bbe1b6991023dd4c737699864d7",
+      "bytes": 117600
+    },
+    {
+      "path": "e51/heap112/ordinary/device/backspaceEditsThePendingSpellingBeforeSpaceConfirms.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/ordinary/device/backspaceEditsThePendingSpellingBeforeSpaceConfirms.xml",
+      "sha256": "71e25295c7af0981bba0ef6b601652e15b54007cb12ef70257d1710fce7a2fe9",
+      "bytes": 28388
+    },
+    {
+      "path": "e51/heap112/ordinary/device/candidateWordsAreExposedAsActionsToAccessibilityServices-cadence.txt",
+      "sha256": "db3a4f57e6ec2b310c17ea817dbd68dbbc4e3ac22e2edbb6e04e7c98283bd82e",
+      "bytes": 55
+    },
+    {
+      "path": "e51/heap112/ordinary/device/candidateWordsAreExposedAsActionsToAccessibilityServices-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/ordinary/device/candidateWordsAreExposedAsActionsToAccessibilityServices.png",
+      "sha256": "5b93178effb44dcbfcce85fcbafcc08bb67cb9ee20d2e56d8839dd95f6f80906",
+      "bytes": 112276
+    },
+    {
+      "path": "e51/heap112/ordinary/device/candidateWordsAreExposedAsActionsToAccessibilityServices.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/ordinary/device/candidateWordsAreExposedAsActionsToAccessibilityServices.xml",
+      "sha256": "4389b7e5d4255abeb5cc62dd548d627cd21e58ca483b9beb8852300d1bc9c381",
+      "bytes": 27505
+    },
+    {
+      "path": "e51/heap112/ordinary/device/confirmationReplaysFollowingInputInOrder-cadence.txt",
+      "sha256": "f4d4ed8e1b8c21dd67343babb8bf3e0f2d905e87acfb720c6a682de68ae69e82",
+      "bytes": 148
+    },
+    {
+      "path": "e51/heap112/ordinary/device/confirmationReplaysFollowingInputInOrder-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/ordinary/device/confirmationReplaysFollowingInputInOrder.png",
+      "sha256": "776410bc8a6f676f227f7b6b177efc1167bd9c59cf154a591749c870dd58e25c",
+      "bytes": 119897
+    },
+    {
+      "path": "e51/heap112/ordinary/device/confirmationReplaysFollowingInputInOrder.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/ordinary/device/confirmationReplaysFollowingInputInOrder.xml",
+      "sha256": "aec7e5e0416daedca4af1b75f3198b77ae029142847bca6888c5296a147e95f4",
+      "bytes": 28403
+    },
+    {
+      "path": "e51/heap112/ordinary/device/enterCommitsRawEnglishInChineseModeWithoutANewline-cadence.txt",
+      "sha256": "b1a5664b2e067324bf01600e7c707be8a250aa3a2206ece24bd7dba22a523c84",
+      "bytes": 94
+    },
+    {
+      "path": "e51/heap112/ordinary/device/enterCommitsRawEnglishInChineseModeWithoutANewline-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/ordinary/device/enterCommitsRawEnglishInChineseModeWithoutANewline.png",
+      "sha256": "079a02d428523d7faa497a76ac94abe9aa3f5fd8c6d86a3bc9719fb3ff473bb9",
+      "bytes": 117301
+    },
+    {
+      "path": "e51/heap112/ordinary/device/enterCommitsRawEnglishInChineseModeWithoutANewline.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/ordinary/device/enterCommitsRawEnglishInChineseModeWithoutANewline.xml",
+      "sha256": "0d69d2541b36569205c0a05795ea970cdcfa46f12e37663d574c4325d9d45d61",
+      "bytes": 27514
+    },
+    {
+      "path": "e51/heap112/ordinary/device/hidingAndReopeningTheImeKeepsTheExternalCommittedText-cadence.txt",
+      "sha256": "cdfc98ed25e64d53d4f5e312d8a496c09f046fc1feea6f2faf8021d8d0ba5a2b",
+      "bytes": 113
+    },
+    {
+      "path": "e51/heap112/ordinary/device/hidingAndReopeningTheImeKeepsTheExternalCommittedText-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/ordinary/device/hidingAndReopeningTheImeKeepsTheExternalCommittedText.png",
+      "sha256": "f5ccf357cfe81a0e6b6cb0cc428f4582fa2778618df921b4d85e77feb37ce07c",
+      "bytes": 115887
+    },
+    {
+      "path": "e51/heap112/ordinary/device/hidingAndReopeningTheImeKeepsTheExternalCommittedText.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/ordinary/device/hidingAndReopeningTheImeKeepsTheExternalCommittedText.xml",
+      "sha256": "bff24b78bd5a00fd964bd2c230819f1a50310b8cb87d0b24ad71e572916bd5cf",
+      "bytes": 30973
+    },
+    {
+      "path": "e51/heap112/ordinary/device/movingCursorAfterCommitInsertsAtTheExternalSelection-cadence.txt",
+      "sha256": "8245c0a910acc2e1ff5780c421f4841ac546e8e82fbe3debdd8f9d5ad0edb418",
+      "bytes": 96
+    },
+    {
+      "path": "e51/heap112/ordinary/device/movingCursorAfterCommitInsertsAtTheExternalSelection-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/ordinary/device/movingCursorAfterCommitInsertsAtTheExternalSelection.png",
+      "sha256": "c71d24f4cd9e30506e5434120bc7237d7d88392cc4c0c8da988702049bbbbf18",
+      "bytes": 123386
+    },
+    {
+      "path": "e51/heap112/ordinary/device/movingCursorAfterCommitInsertsAtTheExternalSelection.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/ordinary/device/movingCursorAfterCommitInsertsAtTheExternalSelection.xml",
+      "sha256": "cc741b6321a31f87a011490255e4fdc4362dceb74e297c8fbb79abc582da5538",
+      "bytes": 31372
+    },
+    {
+      "path": "e51/heap112/ordinary/device/passwordFieldUsesLiteralInputRatherThanChineseCandidates-cadence.txt",
+      "sha256": "7fed4362ee757856d8ac529f2bde120fb8466b8b46d01f8eb63bb8aea61f7430",
+      "bytes": 136
+    },
+    {
+      "path": "e51/heap112/ordinary/device/passwordFieldUsesLiteralInputRatherThanChineseCandidates-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/ordinary/device/passwordFieldUsesLiteralInputRatherThanChineseCandidates-literal.png",
+      "sha256": "447a3f49f09345a16ef3b8c239460e21d790836117d3f909103862f0611bf8c3",
+      "bytes": 106894
+    },
+    {
+      "path": "e51/heap112/ordinary/device/passwordFieldUsesLiteralInputRatherThanChineseCandidates.png",
+      "sha256": "7b58e17ee4d5f0d7fcae34cfe0c779298db390ce180f35c04f7b36f53eff4254",
+      "bytes": 111627
+    },
+    {
+      "path": "e51/heap112/ordinary/device/passwordFieldUsesLiteralInputRatherThanChineseCandidates.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/ordinary/device/passwordFieldUsesLiteralInputRatherThanChineseCandidates.xml",
+      "sha256": "ef11d336af8fe2572e693d7e987ff4648e21bbf19295d3877059312c3ee72593",
+      "bytes": 27515
+    },
+    {
+      "path": "e51/heap112/ordinary/device/rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce-cadence.txt",
+      "sha256": "39665fdb55d46705baae039a5c09ee3a27c54dff9b01bdb654fb8d12d5c3dd61",
+      "bytes": 94
+    },
+    {
+      "path": "e51/heap112/ordinary/device/rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/ordinary/device/rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.png",
+      "sha256": "49df19cd37df1905388a666a3ded6265333bc64cd7935a8f669cd847250ab64c",
+      "bytes": 117350
+    },
+    {
+      "path": "e51/heap112/ordinary/device/rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.txt",
+      "sha256": "12881f61aef532daa519c1a1f5399fcb23f3c62f8a67b6eb2512c8c8b887ba7a",
+      "bytes": 124
+    },
+    {
+      "path": "e51/heap112/ordinary/device/rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.xml",
+      "sha256": "7d19db19782fa7f49bc279f462232f42bfa87b3a1fce4e1a25f610daa75c59f4",
+      "bytes": 27514
+    },
+    {
+      "path": "e51/heap112/ordinary/device/switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField-cadence.txt",
+      "sha256": "dc71cd7ee957ffc903479bd74162bff104474d673bacf8cef8b28a5bc85ae3bc",
+      "bytes": 148
+    },
+    {
+      "path": "e51/heap112/ordinary/device/switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/ordinary/device/switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.png",
+      "sha256": "7a71c08078fad068ecf1949494eaab8716125dc51a7d1d676bb8f322fb7dc73a",
+      "bytes": 113570
+    },
+    {
+      "path": "e51/heap112/ordinary/device/switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/ordinary/device/switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.xml",
+      "sha256": "581baf7ddc3b1057978dc1bde7fdc2c01d6ed8934fb3475b985f97a5c9396da4",
+      "bytes": 27498
+    },
+    {
+      "path": "e51/heap112/ordinary/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection-cadence.txt",
+      "sha256": "6fed9eaacc8431e9d1374f4d01a046c4d912dc0576970eabbaa92f42c1add9b3",
+      "bytes": 58
+    },
+    {
+      "path": "e51/heap112/ordinary/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/ordinary/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection.png",
+      "sha256": "95e8bcb0b4854b3abc033e2787c663ace6a9f8c47f472443bb3d277686a5ed06",
+      "bytes": 113695
+    },
+    {
+      "path": "e51/heap112/ordinary/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/ordinary/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection.xml",
+      "sha256": "275918ef8377f697fce6710b7133340808f40b2b796c57e8f2d565c9d941a654",
+      "bytes": 28388
+    },
+    {
+      "path": "e51/heap112/ordinary/instrumentation.log",
+      "sha256": "a407290de54ef3b40ca8f23e214361dcbd2a592d947ff6be60f0a1d4920363b5",
+      "bytes": 7631
+    },
+    {
+      "path": "e51/heap112/preflight/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection-cadence.txt",
+      "sha256": "0f20b93a065d7e8ffc4d18340fdf7fcb237c319bbfd0a00077f0a391bd68c84f",
+      "bytes": 58
+    },
+    {
+      "path": "e51/heap112/preflight/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection-environment.txt",
+      "sha256": "75d4046135cc8f117a7068fafcdefc6d266062fffa7acc4d462a663fbff44ff7",
+      "bytes": 168
+    },
+    {
+      "path": "e51/heap112/preflight/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection.png",
+      "sha256": "5b93178effb44dcbfcce85fcbafcc08bb67cb9ee20d2e56d8839dd95f6f80906",
+      "bytes": 112276
+    },
+    {
+      "path": "e51/heap112/preflight/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection.txt",
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb",
+      "bytes": 14
+    },
+    {
+      "path": "e51/heap112/preflight/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection.xml",
+      "sha256": "d6905f1edf5e87b8a8130cb5c0fbc1f1f78da032c3161afab61b6cb90ddc9e12",
+      "bytes": 27505
+    },
+    {
+      "path": "e51/heap112/preflight/instrumentation.log",
+      "sha256": "77554743c668b0bef4aae21d5d29858d6df0ec13ee0c76dce5c4ade67ab84d5b",
+      "bytes": 931
+    },
+    {
+      "path": "e51/heap112/result.json",
+      "sha256": "1b9530905ee5351b9ad28b74d1388d7dc61e9655bbdca811351fc66409ac6d3c",
+      "bytes": 1822
+    },
+    {
+      "path": "e51/identity-and-host-checks.json",
+      "sha256": "bc9d05881431677a7c188a45a63a8c55b449a3467ce467fd9909d999c592a564",
+      "bytes": 314
+    },
+    {
+      "path": "e51/measured-source/ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/SenseInputMethodService.kt",
+      "sha256": "ca0d7692b4987a6be4fdff004b68266e3366d5f4db7112b54387845b240b63f0",
+      "bytes": 186521
+    },
+    {
+      "path": "e51/measured-source/input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorTestFixture.kt",
+      "sha256": "17f30bdfbe0f20d7e4323926b1556166c364a30f011f686a511e314598b9ef2f",
+      "bytes": 14252
+    },
+    {
+      "path": "e51/measured-source/tools/test_input_heap.py",
+      "sha256": "aa13c67f8a5ee0f11fd1891497f90b52f62680c216cb813b6b89d063910db66d",
+      "bytes": 7305
+    },
+    {
+      "path": "e51/measured-source/tools/test_input_heap_evidence.py",
+      "sha256": "ab6a131edc74d7ae1c0d794fa672c911b4bcaefa7ae17575efa31b1febfb839b",
+      "bytes": 1248
+    },
+    {
+      "path": "e51/original-heap-properties.json",
+      "sha256": "84472f6cffc3d4b4615330d3aaaf8fe462340f6f1f379e1bdbec5b511c8aae7a",
+      "bytes": 139
+    },
+    {
+      "path": "e51/policy.json",
+      "sha256": "a4cb1a3fc3b3cb501113eb9012322375047a9f6e794380e37c52418e9b55189c",
+      "bytes": 1060
+    },
+    {
+      "path": "e51/python-configuration.log",
+      "sha256": "72d81d7267291f77f96b52fab4b70a652d9051dcc912d781978829581b031b1b",
+      "bytes": 115
+    },
+    {
+      "path": "e51/python-heap.log",
+      "sha256": "383a12fba9b5b327054a24ce7e5739569c4f0b6621facd981f2d6a4271063b3c",
+      "bytes": 106
+    },
+    {
+      "path": "e51/release-state.json",
+      "sha256": "36f395f3b2262797b728a5538eb6ed4a71cd576602ea0169537d7050d34c49a5",
+      "bytes": 2129
+    },
+    {
+      "path": "e51/restored-environment.json",
+      "sha256": "4d88e57baa111f66abd5aaeb27a58d7bc27c778f69b627527bc4726c072156db",
+      "bytes": 300
+    },
+    {
+      "path": "e51/runner.log",
+      "sha256": "13c72f091d9ea55d87cf796a59452e29b66344ea27089bf7ed0aff921387d3bd",
+      "bytes": 1927
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.AdaptiveLearningContractTest.xml",
+      "sha256": "102764cfeb08d9f607125412b626159369541341b7ab7a02b23238f908ae6805",
+      "bytes": 844
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.AgentDraftBufferTest.xml",
+      "sha256": "18a5c21776ce61073bcd75ff321620dbd977466460422ad14bb0522654eca4fb",
+      "bytes": 795
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.AgentExternalEditorWriterTest.xml",
+      "sha256": "f0789eb38d553964c8c32e77fb3b4ae931f47430813bc136e2d8142e57a46126",
+      "bytes": 672
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.AgentSkillProjectionCoordinatorTest.xml",
+      "sha256": "963ff451e6d131a9baef2a3836f065207af526e8bc3466fb99e574cdd2100485",
+      "bytes": 1962
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.AlternativeCommitSnapshotTest.xml",
+      "sha256": "28681965150c1b7303e4542c59338bdb5d525f47f783116041ab3ee540589c44",
+      "bytes": 1315
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.AlternativeDecoderReadinessTest.xml",
+      "sha256": "71148b230e6b45c2ea6ec62f5e7022170c5ac15cbd5050b1cf2fc066525b37dd",
+      "bytes": 698
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.AlternativeInputDecodingTest.xml",
+      "sha256": "ae782abedfa60f26b516c0111590dc92f0e0c6c77a571a3e2886b8d5ee13666b",
+      "bytes": 1823
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.AssociationDisplayLifecycleTest.xml",
+      "sha256": "5a382edfd6f5787d75311e1d249caf9d4313d978115d1791983fba2eac3a35af",
+      "bytes": 1230
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.AssociationQueryControllerTest.xml",
+      "sha256": "40b3bae450ac16fd3d8a29a9642b4a416134174eb58244e8e8eac9079fd82fc4",
+      "bytes": 1082
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.AssociationSessionTest.xml",
+      "sha256": "28830324c22bd33d78713297c2aa4a6eb5cdff5691743a2bb5de9fd9aba9711e",
+      "bytes": 680
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.AssociationTimeoutPolicyTest.xml",
+      "sha256": "4afbabbea0b28f579a9ca75fe30fd96f28661fa1f54d1d1aad3613ff6ceaf300",
+      "bytes": 717
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.BackgroundRuntimePublisherTest.xml",
+      "sha256": "7bbf91933bf59b2979215c7432fb17df8dd0b86045af316e89e192a0055e5cdc",
+      "bytes": 546
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.BundledAssociationModelTest.xml",
+      "sha256": "d2dce994e9ec5da46fb66a5bb05098c17b3a7b024036f20d2f18e49762f00abe",
+      "bytes": 819
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.BundledPinyinLanguageModelTest.xml",
+      "sha256": "b4954021ae82f35ce549bcc51e617c22c79c2bc746ae5ca0d6acfd87dedea600",
+      "bytes": 916
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.BundledPinyinLexiconTest.xml",
+      "sha256": "0d7adabae5895e018b0a5e838883b50b52107bef79332b5db89513e116bb858e",
+      "bytes": 889
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.CandidateBarCompositionPresenterTest.xml",
+      "sha256": "127b37b8de1248887a875fe62092c7b05b1fc038138a5f2e3f5700e4f8a66351",
+      "bytes": 1689
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.CandidateCommitTimeoutPolicyTest.xml",
+      "sha256": "f14a3c99d0a5b292883e00103cd2d07057475df1adf9a4a67c8571f839d5ed45",
+      "bytes": 1030
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.CandidateDecodeSessionTest.xml",
+      "sha256": "31b9c35aaca5d9e91fc8b2c40ac8c317713516e566eb64bdae22ef9f3aa3d8ac",
+      "bytes": 2386
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ChineseEnglishEnterPolicyTest.xml",
+      "sha256": "6c1076a03332bceda4744bbb209b058b84c4832149e1f06818fd94f6cbadaa58",
+      "bytes": 833
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ChineseInputSchemeCoordinatorTest.xml",
+      "sha256": "2d549f13c10f8f018a2070b93b38f58054b56e7f5c57d529b6c9ca2cfea147cc",
+      "bytes": 2265
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.EditorCompositionSelectionPolicyTest.xml",
+      "sha256": "25e9727c6e65677267a4c7f6f5b29830d8ad148afc4ba2d9b872eb8d855c90ec",
+      "bytes": 1057
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.EditorDecodeContextTest.xml",
+      "sha256": "bfefdee464c7bc53eeeea2f388bde7c244a0c11fc2a03cf9cb8fa18809615c03",
+      "bytes": 815
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.EditorHistoryFeedbackPolicyTest.xml",
+      "sha256": "47de9fe3ca2e3ab0d1255a88cfdb2b5907fcff61932a86196ab49e663caa6a37",
+      "bytes": 703
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.EditorPanelStateTest.xml",
+      "sha256": "03b342d2b49744672364897293db1281cb38e29926b87abad4ad7b43fd8290fa",
+      "bytes": 961
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.EditorPrivacyPolicyTest.xml",
+      "sha256": "9cb39b9ca15272cf5e175945de595ce1950edc4e47f2616540de13003cfb2eea",
+      "bytes": 800
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.EnglishCompositionEditControllerTest.xml",
+      "sha256": "22cd5945bd81bbc9c1a2305300fcc9e4df48783446cd6cf2276bdcd76788c745",
+      "bytes": 1075
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.EnglishShiftStateTest.xml",
+      "sha256": "2793859b57d30ecbbcf6872af972215fe87272a7d3c6f76cd0311bb373445cc2",
+      "bytes": 837
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ImeWindowHeightPolicyTest.xml",
+      "sha256": "70a51ee84e37b0a6cbcb47dccd9ee651c2ac9fae5a0eb617062ef918bd777772",
+      "bytes": 826
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.InputLearningReadinessTest.xml",
+      "sha256": "2a8f94416bff262f6c9513deb4d5d3b67b69bb386e72ab3b734ff94c48482247",
+      "bytes": 678
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.KeyboardInputSchemePreferencePlannerTest.xml",
+      "sha256": "9ff0903bdaa12eb2b0779227efd0090aa115769e59179b950459cefb5932fd91",
+      "bytes": 885
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.KeyboardPreferenceProjectionTest.xml",
+      "sha256": "22b65884c1502bd72ac4b912b2e0356863c0c564500ee2a61b8536e4de84df2c",
+      "bytes": 708
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.LatestOnlyTaskRunnerTest.xml",
+      "sha256": "09f6084b719413a94d79fa0d1ddf056c1c6699baf9494c7fec874bcab1308d80",
+      "bytes": 1177
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.PendingDecodeCommitCoordinatorTest.xml",
+      "sha256": "023190f28264c24fdb83bf97342305c62f454f3704fbfb24a5c9b2585ed8b8b4",
+      "bytes": 1555
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.PendingPinyinLearningQueueTest.xml",
+      "sha256": "a1e36cbaa3f047fe8d98bfee41dee4b9d408a9faaf9b21c385f337ce3a480c35",
+      "bytes": 528
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.PendingPinyinWaitServiceTest.xml",
+      "sha256": "e0890d3ff188139d374dc816ef42e7c9d9a328b8f3afba55449b2ff1ef868322",
+      "bytes": 2632
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.PersistentContextSelectionTest.xml",
+      "sha256": "d7b7884ae98d8762f965f27a63c04023db1ec84dbccbdb470e72cfeab0325c6c",
+      "bytes": 713
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.PersistentEnglishWordUsageStoreTest.xml",
+      "sha256": "a909da788831ffc0e991f36044a71ef13eb237c7376921d7a41796025f629003",
+      "bytes": 555
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.PersistentUserAssociationLexiconTest.xml",
+      "sha256": "ccda19b315da29bee2887d363cfd2fb24d832edd26d234f5ef34c18b8dbaccbe",
+      "bytes": 525
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.PersistentUserLexiconResourceInitializerTest.xml",
+      "sha256": "cdae2e94349acdb7498d1095f0a3951a75da9fa768b7fd86179b95e101978acb",
+      "bytes": 1271
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.PersistentUserSentenceLearningTest.xml",
+      "sha256": "d1464f90c4e781ede17f688153b873f6e872440d6738d8a9087730615bacb644",
+      "bytes": 541
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.PersistentWubi86UserLexiconTest.xml",
+      "sha256": "943c769c2ce51ce49da2d55a23e510dbe5c0f90776be71786e9d0ad9e1cf4257",
+      "bytes": 1412
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.PersonalizationFeedbackWindowTest.xml",
+      "sha256": "b7f4ac49a10ba9a0f796211451a2b6d36314d4962d9756798f9fa56398dc74e6",
+      "bytes": 2634
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.PinyinCommitLearningPolicyTest.xml",
+      "sha256": "f17cc66f1d8c11049a1c7647df3e677b3b4bf8b337f845751875b28acb63d83a",
+      "bytes": 707
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.PinyinContextServiceTest.xml",
+      "sha256": "49c66f0afa447e5b3957998180baeac9569760d71d53d8f870c583661ef58209",
+      "bytes": 1647
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.PinyinSeparatorServiceTest.xml",
+      "sha256": "8d3939fa8d3315400ce5476908b342805d33a1286afba752c0e49ba112447e6c",
+      "bytes": 533
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ProductionPinyinDecodersTest.xml",
+      "sha256": "9443b58d121d4934478dd434edbc9fcb1c6d035aa079814fb91c1a5536429d08",
+      "bytes": 2467
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ProgressiveCandidateSnapshotTest.xml",
+      "sha256": "8eb217c938559984f5184a54efa12267da95cddb17ebd73cf3537732be4829ac",
+      "bytes": 2271
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ProgressiveLearningQueueTest.xml",
+      "sha256": "2d263057dba542fec5d5740648d8090f80bc24be3bb76848d1ecd22fc46ab054",
+      "bytes": 838
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ReliableCommitSelectionFenceTest.xml",
+      "sha256": "6a0eb36686f31feaff12e6436e73cda69c7ab1c3b1c79ab7b9890f113f1329f2",
+      "bytes": 710
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.SenseImeRootLayoutRobolectricTest.xml",
+      "sha256": "0967876c8852cd7a44351f1fb2b40f95d19bd5db3abeae3c8c0294017aba65b2",
+      "bytes": 537
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.SynchronousEditorMutationGuardTest.xml",
+      "sha256": "482f98eb2a1f28a17f023f367fe0e60b2dc13d465b40bd88576bc6a9fb518173",
+      "bytes": 684
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.WubiOverflowCoordinatorTest.xml",
+      "sha256": "897ea1598193f9142c31ac0f745b43d229d8e74da022c715cb3183a2399f2507",
+      "bytes": 1526
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ai.AgentSkillRunSnapshotTest.xml",
+      "sha256": "8f64b022d2e132980b1591f734ec40023d89d7f1a2d398c72ea5eb60146a54dd",
+      "bytes": 867
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ai.AgentStreamPresentationTest.xml",
+      "sha256": "3bed7d46ca06ba8d559529643136bf4e432ba32fa902a6578347c9f49e0bec83",
+      "bytes": 1532
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ai.SenseAiEditorCoordinatorPresentationTest.xml",
+      "sha256": "d81f3f720c8a097666aee6100338cd5e6b6ef710f36087aac07d46bf364e43ee",
+      "bytes": 759
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ai.editor.AndroidEditorSecurityClassifierTest.xml",
+      "sha256": "65700790aa344d8948b4fc5c9f6b55d5c697c0e6637e19cf13f7d8cce437cf0a",
+      "bytes": 1279
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ai.editor.AssistantResultPatchFactoryTest.xml",
+      "sha256": "d355e98b38b6dd4b72d6ef7781fdd7abf31b793453b159e80de00b9025a24449",
+      "bytes": 739
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorContextWindowPolicyTest.xml",
+      "sha256": "34e09b9eec4b4cb573898b53900e0550df2aac5161f150c7e816510f2f13eef8",
+      "bytes": 1089
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorPatchGuardTest.xml",
+      "sha256": "28decec4a19ae67fcc07a1b19ea5df366e10ffc2c56186624eb2abfcbf319538",
+      "bytes": 3250
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorPatchPlannerTest.xml",
+      "sha256": "0765a578dfa34f2a523781975c8689dbd0eaf9ce5a66e1a1432a488e95fc429e",
+      "bytes": 1694
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorPostApplyVerifierTest.xml",
+      "sha256": "083efa882839e2b064e90e05800fed68ac168da9813874a92c4ec719bb9bb2b3",
+      "bytes": 1061
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorSnapshotCapturePolicyTest.xml",
+      "sha256": "53cdd8847b71391f593c4c13b5b04b1498c5c695d9a5827ed92b0681671aeced",
+      "bytes": 4047
+    },
+    {
+      "path": "e51/service-junit/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorTransactionStateMachineTest.xml",
+      "sha256": "1e453dd895c17fb1f31b0bf9462d77eda9b61c1a4b68af16430270a55cba7285",
+      "bytes": 2453
+    },
+    {
+      "path": "e51/service-tests.log",
+      "sha256": "63d9b9a1d177d988a9dd34a3bc76746b25e01666f5811e68ee69ad1985c35208",
+      "bytes": 8209
+    }
+  ]
+}

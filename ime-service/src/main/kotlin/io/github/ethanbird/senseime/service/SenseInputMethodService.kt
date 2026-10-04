@@ -600,7 +600,8 @@ class SenseInputMethodService : InputMethodService() {
     override fun dump(fd: java.io.FileDescriptor, writer: java.io.PrintWriter, args: Array<out String>?) {
         super.dump(fd, writer, args)
         // Read-only Android diagnostics, without composing text or personalization contents.
-        writer.println("Sense candidate runtime: ready=$productionDecoderReady generation=${decoderRuntime.generation} characterModel=$characterLanguageState")
+        val maxHeapMiB = Runtime.getRuntime().maxMemory() / (1024L * 1024L)
+        writer.println("Sense candidate runtime: ready=$productionDecoderReady generation=${decoderRuntime.generation} characterModel=$characterLanguageState maxHeapMiB=$maxHeapMiB")
         writer.println("Sense candidate confirmation: pending=${pendingDecodeCommit.isPending} attention=${pendingDecodeCommit.needsAttention} queued=${pendingDecodeCommit.deferredCount}")
     }
 

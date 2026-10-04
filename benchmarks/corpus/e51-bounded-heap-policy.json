@@ -1,0 +1,17 @@
+{
+  "tests": 50,
+  "passCondition": "Both processes report exactly 112 MiB; 1 fresh-profile preflight then 49 unchanged real-editor cases; stop on first group failure; exact IME settings restoration",
+  "sdk": 29,
+  "latencyClaim": false,
+  "createdAt": "2026-10-04T11:31:30.0743360+08:00",
+  "avd": "sense-input-quality-api29-google",
+  "releasedApkChanged": false,
+  "sourceHashes": {
+    "ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/SenseInputMethodService.kt": "ca0d7692b4987a6be4fdff004b68266e3366d5f4db7112b54387845b240b63f0",
+    "tools/test_input_heap.py": "aa13c67f8a5ee0f11fd1891497f90b52f62680c216cb813b6b89d063910db66d",
+    "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorTestFixture.kt": "17f30bdfbe0f20d7e4323926b1556166c364a30f011f686a511e314598b9ef2f",
+    "tools/test_input_heap_evidence.py": "ab6a131edc74d7ae1c0d794fa672c911b4bcaefa7ae17575efa31b1febfb839b"
+  },
+  "baseCommit": "644630ee82f1f468631c54fb2d1f25478e602bd3",
+  "heapMiB": 112
+}

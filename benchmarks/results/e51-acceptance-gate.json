@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "baseCommit": "644630ee82f1f468631c54fb2d1f25478e602bd3",
+  "status": "passed",
+  "heapMiB": 112,
+  "sdk": 29,
+  "avd": "sense-input-quality-api29-google",
+  "androidExecutions": 50,
+  "groups": [
+    {
+      "name": "preflight",
+      "expectedTests": 1,
+      "passed": true,
+      "processHeapError": null
+    },
+    {
+      "name": "ordinary",
+      "expectedTests": 10,
+      "passed": true,
+      "processHeapError": null
+    },
+    {
+      "name": "learning",
+      "expectedTests": 6,
+      "passed": true,
+      "processHeapError": null
+    },
+    {
+      "name": "context",
+      "expectedTests": 8,
+      "passed": true,
+      "processHeapError": null
+    },
+    {
+      "name": "correction",
+      "expectedTests": 10,
+      "passed": true,
+      "processHeapError": null
+    },
+    {
+      "name": "boundary",
+      "expectedTests": 6,
+      "passed": true,
+      "processHeapError": null
+    },
+    {
+      "name": "association",
+      "expectedTests": 9,
+      "passed": true,
+      "processHeapError": null
+    }
+  ],
+  "apkSha256": {
+    "io.github.ethanbird.senseime.debug": "6231505933f743cdaa84287a084538469a1e35b3d09a4a9e2aa28f5e4a031f83",
+    "io.github.ethanbird.senseime.inputqualityfixture": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+    "io.github.ethanbird.senseime.inputqualityfixture.test": "992e8fcffd78a5eca79f56d338b2a3ebb0788da2915d883513f054595bad6aa8"
+  },
+  "sourceAndAssetIdentity": {
+    "productionSourceCount": 190,
+    "sourceDifferencesFromE48": [
+      "ime-service/src/main/kotlin/io/github/ethanbird/senseime/service/SenseInputMethodService.kt"
+    ],
+    "assetsMatched": 25,
+    "assetMismatches": [],
+    "serviceTests": {
+      "tests": 317,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "pythonChecks": {
+    "configuration": 11,
+    "heapEvidence": 3,
+    "failed": 0
+  },
+  "restoration": {
+    "heapPropertiesRestored": {
+      "growth": "",
+      "heap": "512m"
+    },
+    "fontScale": "null",
+    "density": "Physical density: 420",
+    "defaultIme": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+    "debugApp": "null",
+    "adbdUnroot": "restarting adbd as non root"
+  },
+  "emulatorCloseout": {
+    "configUnchanged": true,
+    "stopped": true,
+    "timestamp": "2026-10-04T11:38:14.0455126+08:00",
+    "configSha256": "b26445fe01c21f19451cd7f4ef795c9058127623d7a08f3dc105c0b870720af3",
+    "pid": 61620
+  },
+  "releasedApkUnchanged": {
+    "tag": "v0.4.16-rc.7",
+    "sha256": "69887f171a25cbbf7e7f27efa05774ddc9cb23f40f4e8bcd037b81e024a1ef48"
+  },
+  "e50": "Three rejected environment preflights; no bounded-heap input execution",
+  "scope": "Fresh Debug APK with readonly heap diagnostic; original input algorithms/assets; fixed app heap, not whole-device low-RAM pressure or latency",
+  "evidenceManifestSha256": "b2647c66fb695795888cd718c297651eb12f750637b7524591bd34e9035b87c0"
+}
