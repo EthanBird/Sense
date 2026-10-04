@@ -1,0 +1,193 @@
+{
+  "stage": "E56",
+  "decision": {
+    "eligibleForFurtherValidation": true,
+    "qualityGate": true,
+    "hostCostProxyGate": true,
+    "weight": 1.561699116266376,
+    "productionChanged": false,
+    "androidTested": false,
+    "modelRightsReviewComplete": false,
+    "goalComplete": false,
+    "totalSeconds": 18.70506149996072
+  },
+  "regression": {
+    "qualityGate": true,
+    "diagnosticFirstGate": true,
+    "costProxyGate": true,
+    "eligibleForAndroidPrototype": true,
+    "productionChanged": false,
+    "androidTested": false,
+    "modelRightsReviewComplete": false,
+    "goalComplete": false
+  },
+  "independentAudit": {
+    "passed": true,
+    "states": 1006,
+    "scored": 821,
+    "guarded": 185,
+    "recomputedValues": 6502,
+    "maxScoreError": 0.0,
+    "metrics": {
+      "aishell": {
+        "before": {
+          "states": 128,
+          "top1": 65,
+          "top5": 97,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 142,
+          "characters": 1087
+        },
+        "after": {
+          "states": 128,
+          "top1": 82,
+          "top5": 100,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 99,
+          "characters": 1087
+        }
+      },
+      "tatoeba": {
+        "before": {
+          "states": 128,
+          "top1": 83,
+          "top5": 113,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        },
+        "after": {
+          "states": 128,
+          "top1": 94,
+          "top5": 116,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 56,
+          "characters": 941
+        }
+      },
+      "aishell-test": {
+        "before": {
+          "states": 248,
+          "top1": 150,
+          "top5": 194,
+          "top10": 204,
+          "recall255": 223,
+          "characterErrors": 226,
+          "characters": 2033
+        },
+        "after": {
+          "states": 248,
+          "top1": 175,
+          "top5": 199,
+          "top10": 204,
+          "recall255": 223,
+          "characterErrors": 162,
+          "characters": 2033
+        }
+      },
+      "tatoeba-test": {
+        "before": {
+          "states": 248,
+          "top1": 183,
+          "top5": 222,
+          "top10": 230,
+          "recall255": 236,
+          "characterErrors": 99,
+          "characters": 1849
+        },
+        "after": {
+          "states": 248,
+          "top1": 192,
+          "top5": 224,
+          "top10": 230,
+          "recall255": 236,
+          "characterErrors": 90,
+          "characters": 1849
+        }
+      },
+      "daily-mixture-test": {
+        "before": {
+          "states": 248,
+          "top1": 170,
+          "top5": 213,
+          "top10": 223,
+          "recall255": 236,
+          "characterErrors": 129,
+          "characters": 1833
+        },
+        "after": {
+          "states": 248,
+          "top1": 183,
+          "top5": 218,
+          "top10": 223,
+          "recall255": 236,
+          "characterErrors": 102,
+          "characters": 1833
+        }
+      },
+      "known-diagnostic": {
+        "before": {
+          "states": 6,
+          "top1": 4,
+          "top5": 6,
+          "top10": 6,
+          "recall255": 6,
+          "characterErrors": 2,
+          "characters": 21
+        },
+        "after": {
+          "states": 6,
+          "top1": 4,
+          "top5": 6,
+          "top10": 6,
+          "recall255": 6,
+          "characterErrors": 2,
+          "characters": 21
+        }
+      }
+    },
+    "auditScriptSha256": "001c6345986a946d3591d4ef2e61efdeb8553b1f32800c4fd818d23cf0e32ef1",
+    "scope": "Independent residual/permutation/metric check; native graph verified separately by exhaustive enumeration."
+  },
+  "licenseFollowup": {
+    "model": "lm_sc.arpa-20260629.tar.zst",
+    "archiveSha256": "06808333b9173e5374cf2cb5afc12d08f5625bf9abb536489cac376fc05f2e7f",
+    "annotation": {
+      "path": "data/lm_sc.**.tar.**",
+      "precedence": "aggregate",
+      "SPDX-FileCopyrightText": "2022~2026 CSSlayer <wengxt@gmail.com>",
+      "SPDX-License-Identifier": "LGPL-2.1-or-later"
+    },
+    "licenseExplicit": true,
+    "upstreamCommit": "171edcf137001e8eb8274f53ec010058cda70b09",
+    "sourceCorpusOverlapKnown": false,
+    "packagingCompleted": false,
+    "requirements": [
+      "Preserve upstream copyright and LGPL text",
+      "Publish corresponding model source and conversion recipe with any distributed derived binary",
+      "Audit native reader dependency licenses and corresponding source separately"
+    ],
+    "references": {
+      "upstream-REUSE.toml": {
+        "url": "https://raw.githubusercontent.com/fcitx/libime/171edcf137001e8eb8274f53ec010058cda70b09/REUSE.toml",
+        "sha256": "d314176a91e08c0affc0017c9994d9440a4ac1c18ddf8eab1842117c0d6c806e",
+        "bytes": 805
+      },
+      "upstream-LGPL-2.1-or-later.txt": {
+        "url": "https://raw.githubusercontent.com/fcitx/libime/171edcf137001e8eb8274f53ec010058cda70b09/LICENSES/LGPL-2.1-or-later.txt",
+        "sha256": "1ccf09bf2f598308df4bed9cd8e9657dc5cd0973d2800318f2e241486e2edf3f",
+        "bytes": 25906
+      }
+    }
+  },
+  "pythonTests": 10,
+  "nativeToyCases": 3280,
+  "nativeRealCases": 256,
+  "nativeRealPaths": 3515,
+  "includedInV0416": false,
+  "goalComplete": false
+}
