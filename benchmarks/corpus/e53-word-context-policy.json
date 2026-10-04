@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "stage": "E53",
+  "sourceBaseCommit": "f5455ba7484c6fef8921416818518e8b1ee55467",
+  "purpose": "Test whether actual lexical word-pair evidence adds useful context beyond E45 character-only features, without changing production priors or special-casing diagnostic phrases.",
+  "reproduction": "Current production returns 今天有一点类 before 今天有一点累. Both are recalled; the character LM favors 累 but its word frequency is lower. This known example is diagnostic only, never training or model selection.",
+  "data": "Reuse the pinned E44 4094 source-isolated Tatoeba train sentences, attribution and family exclusions. Regenerate full actual-path exports with the current production JAR. Use only train to build vocabulary and fit; dev/test text and diagnostics do not generate features or training pairs.",
+  "features": "Keep existing character 2/3-gram contextual features, add adjacent actual winning-path word pairs and last-two-editor-character-to-first-word pairs. No word unigrams, EOS, intercept, source-prior coefficients or frequency coefficients. Word boundaries come from the actual decoder winner, not the reference. Normalize counts by sqrt(candidate character length); require two distinct training families per feature.",
+  "fit": "Two fixed models: character-only control and joint character+word sole candidate. Gold cross entropy, bounded tanh residual cap 8, ridge 0.001 inherited from E45 train-family calibration, zero initialization, float64 L-BFGS-B maxiter 200 ftol 1e-10 gtol 1e-7. No parameter sweep, seed retry, dev-driven fallback or candidate switching. Both fits must converge; freeze weights before dev.",
+  "eligibility": "Existing first-eight equal-length Han BASE_EXACT/BASE_COMPOSED slots only; preserve candidate membership and other slots. Train only groups with the target already in eligible slots. Report excluded states and actual coverage; do not inject a reference or claim recovery of missing candidates.",
+  "externalGate": "On current AISHELL and Tatoeba known dev, each domain top1/top5 nondecreasing, recall unchanged, character errors nonincreasing; combined top1 strictly increases. Report all gains/losses and separate full sentences from oracle-context suffixes. Offline host additional scoring P95 <= 100ms. A failed candidate ends this fixed trial without Android adoption or old-test evaluation.",
+  "production": "No Android/default algorithm change until quality and then system lifecycle/cost checks pass. Preserve rc.7 and original signing material. Do not operate a physical phone.",
+  "scope": "Lightweight supervised lexical-context residual, not a normalized word language model or reproduction of published IME accuracy. Training data is weak automatically generated pinyin; known dev is not a blind test. A single passing stage does not finish the input-quality goal."
+}

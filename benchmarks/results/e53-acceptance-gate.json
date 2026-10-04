@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "stage": "E53",
+  "decision": "rejected-word-context-candidate",
+  "qualityGate": false,
+  "hostCostGate": true,
+  "eligibleForFurtherValidation": false,
+  "soleCandidate": "joint",
+  "controlSelectable": false,
+  "productionChanged": false,
+  "androidTested": false,
+  "modelSha256": "6f2b9951e5b368b698f63dec436cfb9b755ef392f09f3d59e6971271b9d3abd2",
+  "modelBytes": 1016102,
+  "goalComplete": false,
+  "sourceBaseCommit": "f5455ba7484c6fef8921416818518e8b1ee55467",
+  "hostToolTests": 59,
+  "newTests": 18,
+  "currentProductionStates": 8188,
+  "currentProductionPaths": 1017365,
+  "trainingGroups": 6146,
+  "reports": {
+    "aishell": {
+      "before": {
+        "states": 128,
+        "top1": 65,
+        "top5": 97,
+        "top10": 105,
+        "recall255": 118,
+        "characterErrors": 142,
+        "characters": 1087
+      },
+      "after": {
+        "states": 128,
+        "top1": 65,
+        "top5": 96,
+        "top10": 105,
+        "recall255": 118,
+        "characterErrors": 140,
+        "characters": 1087
+      },
+      "nonregression": false,
+      "modes": {
+        "editor": {
+          "before": {
+            "states": 64,
+            "top1": 36,
+            "top5": 51,
+            "top10": 56,
+            "recall255": 61,
+            "characterErrors": 59,
+            "characters": 375
+          },
+          "after": {
+            "states": 64,
+            "top1": 36,
+            "top5": 50,
+            "top10": 56,
+            "recall255": 61,
+            "characterErrors": 57,
+            "characters": 375
+          }
+        },
+        "empty": {
+          "before": {
+            "states": 64,
+            "top1": 29,
+            "top5": 46,
+            "top10": 49,
+            "recall255": 57,
+            "characterErrors": 83,
+            "characters": 712
+          },
+          "after": {
+            "states": 64,
+            "top1": 29,
+            "top5": 46,
+            "top10": 49,
+            "recall255": 57,
+            "characterErrors": 83,
+            "characters": 712
+          }
+        }
+      },
+      "timing": {
+        "count": 113,
+        "medianMs": 0.4018,
+        "p95Ms": 0.698,
+        "maxMs": 0.7363,
+        "totalMs": 48.0604
+      }
+    },
+    "tatoeba": {
+      "before": {
+        "states": 128,
+        "top1": 83,
+        "top5": 113,
+        "top10": 120,
+        "recall255": 121,
+        "characterErrors": 70,
+        "characters": 941
+      },
+      "after": {
+        "states": 128,
+        "top1": 86,
+        "top5": 113,
+        "top10": 120,
+        "recall255": 121,
+        "characterErrors": 64,
+        "characters": 941
+      },
+      "nonregression": true,
+      "modes": {
+        "editor": {
+          "before": {
+            "states": 64,
+            "top1": 43,
+            "top5": 59,
+            "top10": 61,
+            "recall255": 62,
+            "characterErrors": 30,
+            "characters": 322
+          },
+          "after": {
+            "states": 64,
+            "top1": 46,
+            "top5": 59,
+            "top10": 61,
+            "recall255": 62,
+            "characterErrors": 25,
+            "characters": 322
+          }
+        },
+        "empty": {
+          "before": {
+            "states": 64,
+            "top1": 40,
+            "top5": 54,
+            "top10": 59,
+            "recall255": 59,
+            "characterErrors": 40,
+            "characters": 619
+          },
+          "after": {
+            "states": 64,
+            "top1": 40,
+            "top5": 54,
+            "top10": 59,
+            "recall255": 59,
+            "characterErrors": 39,
+            "characters": 619
+          }
+        }
+      },
+      "timing": {
+        "count": 100,
+        "medianMs": 0.384,
+        "p95Ms": 0.5839,
+        "maxMs": 0.8004,
+        "totalMs": 40.2857
+      }
+    }
+  },
+  "archiveFiles": 58,
+  "evidenceManifestSha256": "8dbb530960856abbbd962b004689ed0a2c34373a75fefa28cc6156925f43cbb0"
+}

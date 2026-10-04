@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "stage": "E53",
+  "archive": "benchmarks/results/e53-evidence.tar.gz",
+  "archiveSha256": "c4503514cc54cdc334c90b4f257ed286b8b4dc886fbbd3c0f0eaf0cbd90ed698",
+  "archiveBytes": 13312498,
+  "files": {
+    "benchmarks/corpus/e53-word-context-policy.json": {
+      "sha256": "cddcaf26baa8b5c31a487fe21a7b64313b8b550ebe236c682c81b9dc9d8d9466",
+      "bytes": 2880
+    },
+    "docs/development/input-quality-program-v2.md": {
+      "sha256": "cbe0fcf5b68dafc5a09a67cb25d6cd908ec41cb8b9aa0584d1ee763e08cf8b73",
+      "bytes": 67911
+    },
+    "docs/research/input-quality-stage-e53-2026-10-04.md": {
+      "sha256": "862ca4cb2f795c3446f7a27e17340bf2d0fdb10326e083bcd0a599a49e583e44",
+      "bytes": 6686
+    },
+    "raw/aishell-audit.json": {
+      "sha256": "4e61767dec3d2b2eb6924c230cc8e21c6bb6cdb2444bbe5716afe1b7b5c62d7a",
+      "bytes": 149
+    },
+    "raw/aishell-export.log": {
+      "sha256": "9067c6ff2172fe665649fcc79f957fc86681d556a8f1e7093f5ef62e45977ff3",
+      "bytes": 234
+    },
+    "raw/aishell-features.jsonl.gz": {
+      "sha256": "6a9b3ff381bcaddc3e4d5d2f5951274ba5605a5aa859bec551941dda8b8f1ca4",
+      "bytes": 1215251
+    },
+    "raw/base-training-groups.jsonl": {
+      "sha256": "82da8cd324da6b0957194cfba854bbf48d480bc8dca975f0fe9d5ec72ed7382a",
+      "bytes": 14830170
+    },
+    "raw/closure-check.json": {
+      "sha256": "699300f85c81ce8215cce03e0abd6514b5782c425e824a80f8fb73251e6f4c54",
+      "bytes": 627
+    },
+    "raw/control-aishell-comparison.json": {
+      "sha256": "9d2ca07ba4d749b7cb6ba1cc5bfaf72273ae229e06d7c9fac655a121d345a855",
+      "bytes": 38732
+    },
+    "raw/control-aishell-details.json": {
+      "sha256": "dad360e65c65e8acc5697b04eefbaa7d190214639e17ce4e3ce926ea33e623c1",
+      "bytes": 1437060
+    },
+    "raw/control-fit.json": {
+      "sha256": "d2a586fd1eacca21956fae955778199d350cbb48e6177cf09e15d0a69782d420",
+      "bytes": 858
+    },
+    "raw/control-model.json": {
+      "sha256": "9fa0b17091cf3e0cc6458cb8053663d8598b20a52c72f80717336a0a5c6d6034",
+      "bytes": 818297
+    },
+    "raw/control-tatoeba-comparison.json": {
+      "sha256": "81d8f7ab6026cbafc8427c4e595ca3e38d9df9e0fb24004b79de4d577d41f456",
+      "bytes": 31151
+    },
+    "raw/control-tatoeba-details.json": {
+      "sha256": "4ad98cba8d6a45ba962fef1ecf4857cce2df5dbc97e8ac4708370d23e5d072e8",
+      "bytes": 1153103
+    },
+    "raw/control-training-predictions.json": {
+      "sha256": "3fb02b5b7d2f44fdaf74c654524892ad059dc7f3fadf0cd0ca4f933181df6bc5",
+      "bytes": 6608877
+    },
+    "raw/current-diagnostics.jsonl.gz": {
+      "sha256": "e026b2d7f63fb28b81a9d6d2410a5d3a93f4faa2ac5c4f2247a64ac26aa64d12",
+      "bytes": 26043
+    },
+    "raw/decision.json": {
+      "sha256": "6a99a5a4ded4694e486ad5e1c7b058f969231cae064cc6ac7ecf56f267271765",
+      "bytes": 341
+    },
+    "raw/export-lock.json": {
+      "sha256": "900a94d3f095f3adb0354ab395d386b6c23f3184df618729f52c9dad5275ad96",
+      "bytes": 3044
+    },
+    "raw/fit-evaluate.log": {
+      "sha256": "c1e7512567a2c60d90f127ff61a017b279190a1d1c7e423b36cda4d6f445cb11",
+      "bytes": 3037
+    },
+    "raw/joint-aishell-comparison.json": {
+      "sha256": "0c99b9d106b9c3ef1d790bfa7e1a230e90d11639972b9efdf3095867c7db2790",
+      "bytes": 38732
+    },
+    "raw/joint-aishell-details.json": {
+      "sha256": "8b67b03133b6b3f53ed439da3ce02e4c008d23b76cafa0690ad94b832144a5c1",
+      "bytes": 1437098
+    },
+    "raw/joint-fit.json": {
+      "sha256": "208f91b4dcf3495beefce444c67d5a6119ea32528c56db5b71382784cbbb3438",
+      "bytes": 862
+    },
+    "raw/joint-model.json": {
+      "sha256": "6f2b9951e5b368b698f63dec436cfb9b755ef392f09f3d59e6971271b9d3abd2",
+      "bytes": 1016102
+    },
+    "raw/joint-tatoeba-comparison.json": {
+      "sha256": "a4d74166b271e5b678174fa2a0868d434cc4c48b5ff01ea180089ebf1a4e3e58",
+      "bytes": 31152
+    },
+    "raw/joint-tatoeba-details.json": {
+      "sha256": "be459cb7afd66d7551f1d8566ef2c734e2e0de2a0b08b34a87608fb35cc8b6a5",
+      "bytes": 1153094
+    },
+    "raw/joint-training-predictions.json": {
+      "sha256": "1f0f9f5b2a834239645bf459dd51e4da052dc6111febd01d86b3b150622db8a9",
+      "bytes": 6608985
+    },
+    "raw/known-diagnostics.tsv": {
+      "sha256": "a5f7a39e5fe74b4b2b57f8f4e97ae23a1e01374be792027698651469c68311fe",
+      "bytes": 244
+    },
+    "raw/pre-dev-freeze.json": {
+      "sha256": "f52f14fc0f635936f9ddd007a9376222fb9c7ae4fc07d14badae0f1b00f03ba5",
+      "bytes": 578
+    },
+    "raw/pre-fit-lock.json": {
+      "sha256": "570ebb89950ac1ce6c6f037c958f48e707e1d809ea04d0ae0d01be0d4ef99478",
+      "bytes": 2123
+    },
+    "raw/pre-fit-tests.log": {
+      "sha256": "7edf48011eb2947542406673584059c866e4ba8215585e868a60a63483df1214",
+      "bytes": 8909
+    },
+    "raw/reproduction-command.json": {
+      "sha256": "d65f0172308693c7a9527d7e6b09cfdea0089bc08f3f8039998e4d576936ec24",
+      "bytes": 875
+    },
+    "raw/reproduction.json": {
+      "sha256": "98bb3734229aca90d3cad1ea656f063326fcc8cf96ddc36cc77f60434836b119",
+      "bytes": 3458
+    },
+    "raw/reproduction.log": {
+      "sha256": "ee0765c59b49614b39ff0bb43a0444df76c776e34f7d660ab2a8be1a6bb923f4",
+      "bytes": 152
+    },
+    "raw/tatoeba-audit.json": {
+      "sha256": "1b62fbbec2cb9f60885e2d3a1f1a229a6f07160a2348e83312edf152b72e4f62",
+      "bytes": 149
+    },
+    "raw/tatoeba-export.log": {
+      "sha256": "8038e92b9c28b9d49619540441ac258e81f576fa2b64cb3bde95862c8b0813bc",
+      "bytes": 234
+    },
+    "raw/tatoeba-features.jsonl.gz": {
+      "sha256": "d3cd17030d24c8ac418215b5fb285b916fed8d38bc94e67ebf16dd517c76d0e4",
+      "bytes": 1092604
+    },
+    "raw/train-export.log": {
+      "sha256": "5d7a79d6938ba46090079db99f8420e68c6e5e6324714fb0112a6e798a461119",
+      "bytes": 6922
+    },
+    "raw/training-audit.json": {
+      "sha256": "1a1b483317d1aed72b97811de30a2cfcb84cb764dd6e15e956d25e591af3f970",
+      "bytes": 654
+    },
+    "raw/transfer-diagnostics.json": {
+      "sha256": "74854f746ae4668ef3bb365e532ba6b3100210b36d886518a171ceb4850651c4",
+      "bytes": 2691
+    },
+    "raw/word-tests.log": {
+      "sha256": "6b1a7770f3c8971607e09fc10ad5af287c21c68987ec4c37f344871428b74a60",
+      "bytes": 2230
+    },
+    "raw/word-training-groups.jsonl": {
+      "sha256": "d5ae896357a357af03ea75e90d19ce8589d254efa415e999f19b82c5f3a1e445",
+      "bytes": 19062197
+    },
+    "tools/audit_score_features.py": {
+      "sha256": "0fc5ffadf5bcaabf60818fbf9517266e5f6b48ae73cfc8bf9c0e2f0e445fae6f",
+      "bytes": 8952
+    },
+    "tools/candidate_sparse_ranker.py": {
+      "sha256": "7470b45b0787d04fd1054c33c7d091fe726b8539bd4b661e800596deae706e36",
+      "bytes": 6952
+    },
+    "tools/candidate_student.py": {
+      "sha256": "cd366886e5776c765ca6c0eb958c4aa608f02bbb9a0d7588f55943646c638289",
+      "bytes": 9047
+    },
+    "tools/compact_m19_training.py": {
+      "sha256": "e918d78d67b3e78728131db015b2d4608a8874d2319809b196c469237060e8a6",
+      "bytes": 4002
+    },
+    "tools/context_only_ranker.py": {
+      "sha256": "d618f1a7e9cdcf3d602ce54e7f2b5c1f0d93459f8e8768082896147f03c588f3",
+      "bytes": 5606
+    },
+    "tools/context_ranker_cv.py": {
+      "sha256": "5451af018129447fdfa916aa415986cd810b61ff11c1363ef80ba8f8345d79b1",
+      "bytes": 4680
+    },
+    "tools/evaluate_cross_domain.py": {
+      "sha256": "5fcfc61ace1bedeffa68e9ca77fd32806108a2a33123dbf89be7b1b3bf89f253",
+      "bytes": 5853
+    },
+    "tools/masked_lm_rescore.py": {
+      "sha256": "1589165849c75fcd543f4be22c2fc2dddeab4db0d2dd3fac371e3e01d13f0ca6",
+      "bytes": 10095
+    },
+    "tools/run_e53_word_context.py": {
+      "sha256": "3cd7a844e2a489f85411b841a8666f47752df4c2404779e27cf5bb3ae1e93d98",
+      "bytes": 11200
+    },
+    "tools/test_e53_word_evidence.py": {
+      "sha256": "dcc8c8c6d87935da12de5be5646042a70f69e8f7aef9e3c71c38a80a5590b1fe",
+      "bytes": 2624
+    },
+    "tools/test_word_context_ranker.py": {
+      "sha256": "7b58d86ee523d85c58de10626b304d8f1560a0c5014d500915c7fea22277a084",
+      "bytes": 6355
+    },
+    "tools/word_context_ranker.py": {
+      "sha256": "1b88ed1d61db751785ec4ba42f3633fa80597ee8bc33516fc3da10af96c16653",
+      "bytes": 6628
+    },
+    "train-provenance/attribution.jsonl": {
+      "sha256": "10139e7b088da94e5ce95b4c3db57d5b1a41b8ec3c0e21657725ee0aad81424e",
+      "bytes": 2482586
+    },
+    "train-provenance/expanded.tsv": {
+      "sha256": "007b0c0f555499cb4d02ce4228f0827ae9b200e1e935ece140512db5bc67ee8c",
+      "bytes": 685330
+    },
+    "train-provenance/pre-export-lock.json": {
+      "sha256": "40335ae276459d697fc9230968487ce48311268469aec9a7ab9eb04e57a69ad4",
+      "bytes": 4348
+    },
+    "train-provenance/selected.json": {
+      "sha256": "91871957940ff4c92141bad4d513998a39b8cd0ca8425b97ec026c0aed9ef218",
+      "bytes": 2521195
+    },
+    "train-provenance/small.tsv": {
+      "sha256": "08570533613331d45ab67c267924be5d10becf776b20f0ac825dc6ca0c959962",
+      "bytes": 85095
+    }
+  },
+  "localLargeEvidence": {
+    "E:\\CodexWorkspace\\sense-input-quality-build\\e53\\train-features.jsonl.gz": {
+      "bytes": 68132185,
+      "sha256": "59cfeb01e80e0357641d19351b771eb0b8b22029fd5081c06bc59cfdeee9937d"
+    },
+    "E:\\CodexWorkspace\\sense-input-quality-build\\e53\\baseline-core.jar": {
+      "bytes": 1106879,
+      "sha256": "4c40a4b7e65de845c51db3323f1a30893c8048a6acf6ea2736d1d9838b5b6272"
+    }
+  },
+  "scope": "Current-source offline training/evaluation. Public Tatoeba train attribution included; no production adoption."
+}
