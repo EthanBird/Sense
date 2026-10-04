@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "stage": "E45",
+  "sourceBaseCommit": "091a87de328cd64051a60480c6a39f1050b159c0",
+  "purpose": "Calibrate the E44 context-only residual using train-family out-of-fold predictions, not external dev performance.",
+  "hypotheses": [
+    "If E44 is dominated by regularization shrinkage, weaker predeclared ridge values should increase useful held-out-family residuals, not only fitted training scores.",
+    "If contextual features lack transferable evidence, weaker regularization will improve fit without improving out-of-fold ranking; stop before external dev scoring.",
+    "Even a useful Tatoeba train-family fit may shift another domain; freeze the single selected model before checking the two known external dev domains."
+  ],
+  "data": "E44 source-isolated 4094 Tatoeba weak training sentences / 6145 eligible groups. Restore true first-eight slots from the pinned full M19 export. No target injection and no teacher scores.",
+  "folds": {
+    "count": 3,
+    "seed": "sense-e45-train-family-cv-v1",
+    "assignment": "int(sha256(seed + TAB + sourceFamily), 16) modulo 3; all states of a source family remain in one fold",
+    "vocabulary": "Build context feature vocabulary separately from each fold's fitting families only, retaining the existing two-family threshold. No held-out-family features or counts enter vocabulary/fit."
+  },
+  "regularization": [0.01, 0.001, 0.0001, 0.00001],
+  "optimizer": "Unchanged gold CE objective, zero initialization, float64 L-BFGS-B, maxiter 200, ftol 1e-10, gtol 1e-7. Four values, three folds, no retries/seeds/extra values; require all fits for an eligible value to converge.",
+  "selection": "Pooled out-of-fold actual first-eight slots: top1 strictly above original, top5 not below original and character errors not above original. Among eligible values choose highest top1, then lowest errors, then highest top5, then stronger regularization. Disclose all folds/gains/losses. If none qualifies, end this trial without external dev evaluation.",
+  "refit": "Fit the one selected ridge once on all eligible training families. Vocabulary rebuilt on all training families. Freeze final weights before external dev scores; no external-dev fallback to another ridge.",
+  "externalGate": "Known AISHELL and Tatoeba dev: per-domain top1/top5 nondecreasing, recall unchanged, character errors nonincreasing, combined top1 strictly improves; host additional P95 <=100ms. Failure ends this trial with all losses retained; no old-test or Android evaluation for a failed candidate.",
+  "scope": "Cross-validation concerns only the residual: the fixed baseline character LM was already trained on this Tatoeba train partition, including internal validation texts. This is not an unseen-language benchmark or independent evaluation of the entire IME.",
+  "production": "Context-only schema and original decoder remain unchanged; preserve rc.5, assets and physical-phone boundary. Any passing offline gate still needs independent regression and Android lifecycle/cost verification."
+}
