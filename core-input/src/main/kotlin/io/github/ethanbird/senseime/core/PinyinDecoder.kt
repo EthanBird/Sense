@@ -484,7 +484,7 @@ class PinyinDecoder private constructor(
 
     private data class CompositionPath(
         val text: String,
-        val initials: String,
+        val initialsParent: CompositionPath?,
         val segments: Int,
         val score: Float,
         val lastCodePoint: Int,
@@ -494,8 +494,26 @@ class PinyinDecoder private constructor(
         val languageState: Long = 0L,
         val languageScore: Float = 0f,
         val evidence: PinyinScoreDiagnostics.Evidence? = null,
+        val segmentInitials: String = "",
     ) {
         val searchScore = score + languageScore + searchContextScore
+        val initialsLength: Int = (initialsParent?.initialsLength ?: 0) + segmentInitials.length
+
+        // Correction checks need only the length. Avoid concatenating initials
+        // for every discarded expansion; only exported candidates need the text.
+        fun exportInitials(): String {
+            if (initialsLength == 0) return ""
+            val chars = CharArray(initialsLength)
+            var offset = initialsLength
+            var node: CompositionPath? = this
+            while (node != null) {
+                val part = node.segmentInitials
+                offset -= part.length
+                part.toCharArray(chars, offset, 0, part.length)
+                node = node.initialsParent
+            }
+            return chars.concatToString()
+        }
     }
 
     private data class CompositionIdentity(
@@ -570,7 +588,7 @@ class PinyinDecoder private constructor(
         score = unigramLogMass + score / (language?.normalizer ?: scoreSegments.toFloat()),
         canonicalPinyin = query,
         matchKind = if (segments == 1) singleWordMatchKind else CandidateMatchKind.BASE_COMPOSED,
-        canonicalInitials = initials.ifEmpty { null },
+        canonicalInitials = exportInitials().ifEmpty { null },
     ).also { candidate ->
         evidence?.let {
             PinyinScoreDiagnostics.current?.put(candidate,
@@ -602,7 +620,7 @@ class PinyinDecoder private constructor(
             }
         }
         val scoreTrace = PinyinScoreDiagnostics.current
-        beams[0] = mutableListOf(CompositionPath("", "", 0, 0f, NO_CODE_POINT, false,
+        beams[0] = mutableListOf(CompositionPath("", null, 0, 0f, NO_CODE_POINT, false,
             languageState = language?.initialState ?: 0L,
             evidence = if (scoreTrace == null) null else PinyinScoreDiagnostics.Evidence.EMPTY))
         query.indices.forEach { start ->
@@ -676,7 +694,8 @@ class PinyinDecoder private constructor(
                             target,
                             CompositionPath(
                                 text = path.text + option.text,
-                                initials = path.initials + option.canonicalInitials.orEmpty(),
+                                initialsParent = path,
+                                segmentInitials = option.canonicalInitials.orEmpty(),
                                 segments = path.segments + 1,
                                 score = path.score + option.score - unigramLogMass + boundaryScore -
                                     if (path.segments > 0) WORD_BOUNDARY_COST else 0f,
@@ -1256,7 +1275,7 @@ class PinyinDecoder private constructor(
                     selectionCache = selectionCache,
                 ).asSequence()
                     .filter { sentence ->
-                        sentence.initials.length == probe.path.syllableCount
+                        sentence.initialsLength == probe.path.syllableCount
                     }
                     .forEach { sentence ->
                         correctedSentences += CorrectedSentencePath(probe.path, sentence)

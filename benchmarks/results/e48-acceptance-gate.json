@@ -1,0 +1,864 @@
+{
+  "stage": "E48",
+  "accepted": true,
+  "productionPromotionApproved": true,
+  "hostTests": {
+    "core-input": {
+      "tests": 421,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 317,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "toolTests": 36,
+  "androidFunctional": {
+    "learning": 6,
+    "context": 8,
+    "correction": 10,
+    "boundary": 6,
+    "association": 9,
+    "default": 10
+  },
+  "hostAllocationSampling": {
+    "scope": "JFR host weighted allocation samples; neither exact allocations nor Android timings",
+    "samples": 17977,
+    "estimatedBytes": 43952736984,
+    "decoderStackEstimatedBytes": 39942088424,
+    "classes": [
+      {
+        "class": "[B",
+        "samples": 3441,
+        "estimatedBytes": 9414889184,
+        "decoderStackEstimatedBytes": 5523825064
+      },
+      {
+        "class": "[Ljava/lang/Object;",
+        "samples": 1674,
+        "estimatedBytes": 4366977232,
+        "decoderStackEstimatedBytes": 4351167896
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinDecoder$CompositionPath",
+        "samples": 1660,
+        "estimatedBytes": 4236015952,
+        "decoderStackEstimatedBytes": 4236015952
+      },
+      {
+        "class": "java/lang/String",
+        "samples": 1553,
+        "estimatedBytes": 3777551280,
+        "decoderStackEstimatedBytes": 3724696920
+      },
+      {
+        "class": "java/util/HashMap$Node",
+        "samples": 1608,
+        "estimatedBytes": 3755140392,
+        "decoderStackEstimatedBytes": 3755140392
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinDecoder$LanguageOption",
+        "samples": 1182,
+        "estimatedBytes": 2531818608,
+        "decoderStackEstimatedBytes": 2531818608
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinDecoder$CompositionIdentity",
+        "samples": 1042,
+        "estimatedBytes": 2321431720,
+        "decoderStackEstimatedBytes": 2321431720
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinLanguageScorer$Step",
+        "samples": 721,
+        "estimatedBytes": 2204737456,
+        "decoderStackEstimatedBytes": 2204737456
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinLanguageScorer$Edge",
+        "samples": 852,
+        "estimatedBytes": 1777193912,
+        "decoderStackEstimatedBytes": 1777193912
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinDecoder$CompositionOption",
+        "samples": 719,
+        "estimatedBytes": 1642637840,
+        "decoderStackEstimatedBytes": 1642637840
+      },
+      {
+        "class": "[Ljava/util/HashMap$Node;",
+        "samples": 641,
+        "estimatedBytes": 1543052944,
+        "decoderStackEstimatedBytes": 1543052944
+      },
+      {
+        "class": "java/util/ArrayList",
+        "samples": 537,
+        "estimatedBytes": 901243824,
+        "decoderStackEstimatedBytes": 901243824
+      },
+      {
+        "class": "java/util/LinkedHashMap$Entry",
+        "samples": 259,
+        "estimatedBytes": 773201136,
+        "decoderStackEstimatedBytes": 772238104
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinDecoder$composePaths$1$1$selected$1$1",
+        "samples": 159,
+        "estimatedBytes": 450741744,
+        "decoderStackEstimatedBytes": 450741744
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinSpellingGraph$CanonicalCostFamily",
+        "samples": 76,
+        "estimatedBytes": 427292264,
+        "decoderStackEstimatedBytes": 427292264
+      },
+      {
+        "class": "java/lang/Integer",
+        "samples": 127,
+        "estimatedBytes": 423739984,
+        "decoderStackEstimatedBytes": 422692568
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinSpellingGraph$PathIdentity",
+        "samples": 141,
+        "estimatedBytes": 398554864,
+        "decoderStackEstimatedBytes": 398554864
+      },
+      {
+        "class": "[I",
+        "samples": 144,
+        "estimatedBytes": 310909720,
+        "decoderStackEstimatedBytes": 306360440
+      },
+      {
+        "class": "java/util/ArrayList$Itr",
+        "samples": 200,
+        "estimatedBytes": 302368688,
+        "decoderStackEstimatedBytes": 289727392
+      },
+      {
+        "class": "java/util/HashMap",
+        "samples": 86,
+        "estimatedBytes": 292176880,
+        "decoderStackEstimatedBytes": 292176880
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/QuerySelectionCache$Key",
+        "samples": 74,
+        "estimatedBytes": 236420208,
+        "decoderStackEstimatedBytes": 236420208
+      },
+      {
+        "class": "java/util/Collections$UnmodifiableCollection$1",
+        "samples": 104,
+        "estimatedBytes": 207518760,
+        "decoderStackEstimatedBytes": 207518760
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinSpellingGraph$PathState",
+        "samples": 134,
+        "estimatedBytes": 198092320,
+        "decoderStackEstimatedBytes": 198092320
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinDecoder$SelectionState",
+        "samples": 109,
+        "estimatedBytes": 190894544,
+        "decoderStackEstimatedBytes": 190894544
+      },
+      {
+        "class": "java/util/Arrays$ArrayItr",
+        "samples": 30,
+        "estimatedBytes": 160336336,
+        "decoderStackEstimatedBytes": 160336336
+      },
+      {
+        "class": "java/util/Arrays$ArrayList",
+        "samples": 49,
+        "estimatedBytes": 147494760,
+        "decoderStackEstimatedBytes": 147494760
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/Candidate",
+        "samples": 106,
+        "estimatedBytes": 143988336,
+        "decoderStackEstimatedBytes": 143988336
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinSpellingGraph$EdgeIdentity",
+        "samples": 79,
+        "estimatedBytes": 116480416,
+        "decoderStackEstimatedBytes": 116480416
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinSpellingGraph$CorrectionOrigin",
+        "samples": 72,
+        "estimatedBytes": 102271656,
+        "decoderStackEstimatedBytes": 102271656
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/AdaptivePinyinDecoder$RankedPrefixCandidate",
+        "samples": 10,
+        "estimatedBytes": 80109968,
+        "decoderStackEstimatedBytes": 80109968
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinSpellingGraph$Edge",
+        "samples": 52,
+        "estimatedBytes": 75475040,
+        "decoderStackEstimatedBytes": 75475040
+      },
+      {
+        "class": "java/util/Collections$UnmodifiableRandomAccessList",
+        "samples": 27,
+        "estimatedBytes": 40514800,
+        "decoderStackEstimatedBytes": 40514800
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/AdaptivePinyinDecoder$PrefixIdentity",
+        "samples": 20,
+        "estimatedBytes": 29850056,
+        "decoderStackEstimatedBytes": 29850056
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/QueryLexicalCache$Key",
+        "samples": 19,
+        "estimatedBytes": 26023216,
+        "decoderStackEstimatedBytes": 26023216
+      },
+      {
+        "class": "java/util/Collections$SingletonList",
+        "samples": 23,
+        "estimatedBytes": 25412160,
+        "decoderStackEstimatedBytes": 25412160
+      },
+      {
+        "class": "java/util/LinkedHashMap",
+        "samples": 16,
+        "estimatedBytes": 24354024,
+        "decoderStackEstimatedBytes": 24354024
+      },
+      {
+        "class": "java/util/HashMap$Values",
+        "samples": 7,
+        "estimatedBytes": 21718544,
+        "decoderStackEstimatedBytes": 21718544
+      },
+      {
+        "class": "[Ljava/util/List;",
+        "samples": 9,
+        "estimatedBytes": 20635360,
+        "decoderStackEstimatedBytes": 20635360
+      },
+      {
+        "class": "java/lang/StringBuilder",
+        "samples": 19,
+        "estimatedBytes": 20203448,
+        "decoderStackEstimatedBytes": 19679744
+      },
+      {
+        "class": "[Ljava/util/concurrent/ConcurrentHashMap$Node;",
+        "samples": 1,
+        "estimatedBytes": 19787624,
+        "decoderStackEstimatedBytes": 0
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/MixedPinyinSegment",
+        "samples": 14,
+        "estimatedBytes": 19134992,
+        "decoderStackEstimatedBytes": 19134992
+      },
+      {
+        "class": "java/util/TimSort",
+        "samples": 15,
+        "estimatedBytes": 18927968,
+        "decoderStackEstimatedBytes": 18927968
+      },
+      {
+        "class": "kotlin/sequences/FilteringSequence$iterator$1",
+        "samples": 8,
+        "estimatedBytes": 18136736,
+        "decoderStackEstimatedBytes": 18136736
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinSyllableSegmenter$MixedPathState",
+        "samples": 10,
+        "estimatedBytes": 18131936,
+        "decoderStackEstimatedBytes": 18131936
+      },
+      {
+        "class": "java/util/Collections$1",
+        "samples": 14,
+        "estimatedBytes": 15828488,
+        "decoderStackEstimatedBytes": 15828488
+      },
+      {
+        "class": "kotlin/ranges/IntProgressionIterator",
+        "samples": 22,
+        "estimatedBytes": 11560960,
+        "decoderStackEstimatedBytes": 11560960
+      },
+      {
+        "class": "kotlin/Pair",
+        "samples": 9,
+        "estimatedBytes": 9539200,
+        "decoderStackEstimatedBytes": 9539200
+      },
+      {
+        "class": "kotlin/sequences/FilteringSequence",
+        "samples": 4,
+        "estimatedBytes": 9418856,
+        "decoderStackEstimatedBytes": 9418856
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinPrefixCandidate",
+        "samples": 8,
+        "estimatedBytes": 7855240,
+        "decoderStackEstimatedBytes": 7855240
+      },
+      {
+        "class": "java/util/LinkedHashMap$LinkedEntrySet",
+        "samples": 4,
+        "estimatedBytes": 6806720,
+        "decoderStackEstimatedBytes": 6806720
+      },
+      {
+        "class": "java/util/LinkedHashMap$LinkedValues",
+        "samples": 6,
+        "estimatedBytes": 6784344,
+        "decoderStackEstimatedBytes": 6784344
+      },
+      {
+        "class": "[Ljava/lang/Integer;",
+        "samples": 2,
+        "estimatedBytes": 5987944,
+        "decoderStackEstimatedBytes": 5987944
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/CandidateRanker$ScoredCandidate",
+        "samples": 5,
+        "estimatedBytes": 5760680,
+        "decoderStackEstimatedBytes": 5760680
+      },
+      {
+        "class": "kotlin/collections/CollectionsKt___CollectionsKt$asSequence$$inlined$Sequence$1",
+        "samples": 3,
+        "estimatedBytes": 5757616,
+        "decoderStackEstimatedBytes": 5757616
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinSpellingGraph$prune$$inlined$thenBy$1",
+        "samples": 2,
+        "estimatedBytes": 5343344,
+        "decoderStackEstimatedBytes": 5343344
+      },
+      {
+        "class": "[Z",
+        "samples": 4,
+        "estimatedBytes": 4831000,
+        "decoderStackEstimatedBytes": 4189560
+      },
+      {
+        "class": "[Lio/github/ethanbird/senseime/core/PinyinDecoder$CompositionPath;",
+        "samples": 2,
+        "estimatedBytes": 4713304,
+        "decoderStackEstimatedBytes": 4713304
+      },
+      {
+        "class": "java/util/HashSet",
+        "samples": 5,
+        "estimatedBytes": 4487432,
+        "decoderStackEstimatedBytes": 4487432
+      },
+      {
+        "class": "java/util/LinkedHashMap$LinkedEntryIterator",
+        "samples": 3,
+        "estimatedBytes": 3717912,
+        "decoderStackEstimatedBytes": 3717912
+      },
+      {
+        "class": "[J",
+        "samples": 4,
+        "estimatedBytes": 3428768,
+        "decoderStackEstimatedBytes": 0
+      },
+      {
+        "class": "io.github.ethanbird.senseime.core.PinyinSpellingGraph$$Lambda$96+0x00000121c608fa90/561480862",
+        "samples": 3,
+        "estimatedBytes": 3151208,
+        "decoderStackEstimatedBytes": 3151208
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinDecoder$CorrectionCompositionProbe",
+        "samples": 3,
+        "estimatedBytes": 3141336,
+        "decoderStackEstimatedBytes": 3141336
+      },
+      {
+        "class": "[Ljava/util/regex/Pattern$GroupHead;",
+        "samples": 1,
+        "estimatedBytes": 2911296,
+        "decoderStackEstimatedBytes": 0
+      },
+      {
+        "class": "kotlin/ranges/IntRange",
+        "samples": 7,
+        "estimatedBytes": 2801224,
+        "decoderStackEstimatedBytes": 2801224
+      },
+      {
+        "class": "java/util/LinkedHashMap$LinkedValueIterator",
+        "samples": 1,
+        "estimatedBytes": 2094296,
+        "decoderStackEstimatedBytes": 2094296
+      },
+      {
+        "class": "java/lang/Float",
+        "samples": 4,
+        "estimatedBytes": 1802392,
+        "decoderStackEstimatedBytes": 1802392
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinDecoder$readPrefixCandidates$$inlined$compareByDescending$1",
+        "samples": 1,
+        "estimatedBytes": 1571096,
+        "decoderStackEstimatedBytes": 1571096
+      },
+      {
+        "class": "kotlin/sequences/TransformingSequence",
+        "samples": 1,
+        "estimatedBytes": 1571064,
+        "decoderStackEstimatedBytes": 1571064
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinSpellingPath",
+        "samples": 1,
+        "estimatedBytes": 1570792,
+        "decoderStackEstimatedBytes": 1570792
+      },
+      {
+        "class": "io/github/ethanbird/senseime/core/PinyinLanguageScorer",
+        "samples": 1,
+        "estimatedBytes": 1237352,
+        "decoderStackEstimatedBytes": 1237352
+      },
+      {
+        "class": "sun/security/util/KnownOIDs$7",
+        "samples": 1,
+        "estimatedBytes": 835216,
+        "decoderStackEstimatedBytes": 0
+      },
+      {
+        "class": "[C",
+        "samples": 1,
+        "estimatedBytes": 568016,
+        "decoderStackEstimatedBytes": 0
+      },
+      {
+        "class": "java/util/zip/ZipFile$ZipFileInflaterInputStream",
+        "samples": 1,
+        "estimatedBytes": 523704,
+        "decoderStackEstimatedBytes": 0
+      },
+      {
+        "class": "jdk/internal/org/objectweb/asm/Label",
+        "samples": 1,
+        "estimatedBytes": 523704,
+        "decoderStackEstimatedBytes": 0
+      },
+      {
+        "class": "kotlin/sequences/TakeSequence",
+        "samples": 1,
+        "estimatedBytes": 523704,
+        "decoderStackEstimatedBytes": 523704
+      },
+      {
+        "class": "jdk/internal/org/objectweb/asm/AnnotationWriter",
+        "samples": 1,
+        "estimatedBytes": 523696,
+        "decoderStackEstimatedBytes": 0
+      },
+      {
+        "class": "java/util/ArrayList$SubList",
+        "samples": 1,
+        "estimatedBytes": 523696,
+        "decoderStackEstimatedBytes": 523696
+      },
+      {
+        "class": "java.util.regex.Pattern$BmpCharPredicate$$Lambda$20+0x80000002b/1313916817",
+        "samples": 1,
+        "estimatedBytes": 523696,
+        "decoderStackEstimatedBytes": 0
+      },
+      {
+        "class": "jdk/internal/org/objectweb/asm/SymbolTable$Entry",
+        "samples": 1,
+        "estimatedBytes": 523664,
+        "decoderStackEstimatedBytes": 0
+      },
+      {
+        "class": "java/util/regex/Pattern$TreeInfo",
+        "samples": 1,
+        "estimatedBytes": 399784,
+        "decoderStackEstimatedBytes": 0
+      },
+      {
+        "class": "java/util/concurrent/CopyOnWriteArrayList$COWIterator",
+        "samples": 15,
+        "estimatedBytes": 4224,
+        "decoderStackEstimatedBytes": 0
+      },
+      {
+        "class": "jdk/jfr/events/ExceptionStatisticsEvent",
+        "samples": 2,
+        "estimatedBytes": 784,
+        "decoderStackEstimatedBytes": 0
+      },
+      {
+        "class": "java/lang/Class",
+        "samples": 1,
+        "estimatedBytes": 400,
+        "decoderStackEstimatedBytes": 0
+      }
+    ]
+  },
+  "fullReplay": {
+    "states": 3083,
+    "completeResultsAndLmCallsEqual": true,
+    "differences": [],
+    "baselineMatchesJfrRun": true,
+    "beforeDecoderAllocatedBytes": 40524813584,
+    "afterDecoderAllocatedBytes": 37940503688,
+    "reducedFraction": 0.06377104957295443,
+    "allocationGatePassed": true,
+    "queryIncreases": 0,
+    "scope": "Actual current Java thread allocated bytes around synchronous decode; excludes asset startup and stringifying result; includes JVM/JIT effects, not retained heap or Android allocation/latency"
+  },
+  "androidLatency": {
+    "confirmationMs": {
+      "baseline": {
+        "count": 32,
+        "medianMs": 146.0,
+        "observedP95Ms": 315,
+        "maxMs": 339
+      },
+      "optimized": {
+        "count": 32,
+        "medianMs": 146.0,
+        "observedP95Ms": 292,
+        "maxMs": 311
+      }
+    },
+    "gate": {
+      "scope": "Fixed ABBA workload only; not statistical significance or phone certification",
+      "rule": "paired median and observed P95 each no worse than reference",
+      "checks": {
+        "medianMs": true,
+        "observedP95Ms": true
+      },
+      "passed": true
+    },
+    "perQuery": [
+      {
+        "query": "nihao",
+        "baseline": {
+          "samples": [
+            126,
+            29,
+            130,
+            47
+          ],
+          "count": 4,
+          "medianMs": 86.5,
+          "observedP95Ms": 130,
+          "maxMs": 130
+        },
+        "optimized": {
+          "samples": [
+            147,
+            36,
+            143,
+            22
+          ],
+          "count": 4,
+          "medianMs": 89.5,
+          "observedP95Ms": 147,
+          "maxMs": 147
+        }
+      },
+      {
+        "query": "woxihuanbeijing",
+        "baseline": {
+          "samples": [
+            339,
+            96,
+            315,
+            95
+          ],
+          "count": 4,
+          "medianMs": 205.5,
+          "observedP95Ms": 339,
+          "maxMs": 339
+        },
+        "optimized": {
+          "samples": [
+            292,
+            94,
+            311,
+            92
+          ],
+          "count": 4,
+          "medianMs": 193.0,
+          "observedP95Ms": 311,
+          "maxMs": 311
+        }
+      },
+      {
+        "query": "qingfageweizhigeiwo",
+        "baseline": {
+          "samples": [
+            132,
+            104,
+            160,
+            81
+          ],
+          "count": 4,
+          "medianMs": 118.0,
+          "observedP95Ms": 160,
+          "maxMs": 160
+        },
+        "optimized": {
+          "samples": [
+            149,
+            82,
+            135,
+            105
+          ],
+          "count": 4,
+          "medianMs": 120.0,
+          "observedP95Ms": 149,
+          "maxMs": 149
+        }
+      },
+      {
+        "query": "qingjianchayixiayoujian",
+        "baseline": {
+          "samples": [
+            169,
+            153,
+            195,
+            152
+          ],
+          "count": 4,
+          "medianMs": 161.0,
+          "observedP95Ms": 195,
+          "maxMs": 195
+        },
+        "optimized": {
+          "samples": [
+            163,
+            116,
+            172,
+            124
+          ],
+          "count": 4,
+          "medianMs": 143.5,
+          "observedP95Ms": 172,
+          "maxMs": 172
+        }
+      },
+      {
+        "query": "zhegeyingyonghenhaoyong",
+        "baseline": {
+          "samples": [
+            129,
+            106,
+            125,
+            93
+          ],
+          "count": 4,
+          "medianMs": 115.5,
+          "observedP95Ms": 129,
+          "maxMs": 129
+        },
+        "optimized": {
+          "samples": [
+            136,
+            117,
+            137,
+            145
+          ],
+          "count": 4,
+          "medianMs": 136.5,
+          "observedP95Ms": 145,
+          "maxMs": 145
+        }
+      },
+      {
+        "query": "jintianyouyidianlei",
+        "baseline": {
+          "samples": [
+            161,
+            136,
+            140,
+            114
+          ],
+          "count": 4,
+          "medianMs": 138.0,
+          "observedP95Ms": 161,
+          "maxMs": 161
+        },
+        "optimized": {
+          "samples": [
+            151,
+            97,
+            157,
+            102
+          ],
+          "count": 4,
+          "medianMs": 126.5,
+          "observedP95Ms": 157,
+          "maxMs": 157
+        }
+      },
+      {
+        "query": "tangmuhemalimeitianwanshangdoukandianshi",
+        "baseline": {
+          "samples": [
+            218,
+            240,
+            228,
+            189
+          ],
+          "count": 4,
+          "medianMs": 223.0,
+          "observedP95Ms": 240,
+          "maxMs": 240
+        },
+        "optimized": {
+          "samples": [
+            190,
+            177,
+            219,
+            166
+          ],
+          "count": 4,
+          "medianMs": 183.5,
+          "observedP95Ms": 219,
+          "maxMs": 219
+        }
+      },
+      {
+        "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+        "baseline": {
+          "samples": [
+            221,
+            221,
+            224,
+            209
+          ],
+          "count": 4,
+          "medianMs": 221.0,
+          "observedP95Ms": 224,
+          "maxMs": 224
+        },
+        "optimized": {
+          "samples": [
+            188,
+            213,
+            219,
+            204
+          ],
+          "count": 4,
+          "medianMs": 208.5,
+          "observedP95Ms": 219,
+          "maxMs": 219
+        }
+      }
+    ],
+    "blocks": [
+      {
+        "block": 1,
+        "mode": "baseline",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 34.0,
+          "observedP95Ms": 36,
+          "maxMs": 46
+        }
+      },
+      {
+        "block": 2,
+        "mode": "optimized",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 34.0,
+          "observedP95Ms": 36,
+          "maxMs": 54
+        }
+      },
+      {
+        "block": 3,
+        "mode": "optimized",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 34.0,
+          "observedP95Ms": 36,
+          "maxMs": 44
+        }
+      },
+      {
+        "block": 4,
+        "mode": "baseline",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 36,
+          "maxMs": 45
+        }
+      }
+    ]
+  },
+  "publishedReleaseAtStageCommit": "v0.4.16-rc.6",
+  "releaseChanged": false,
+  "physicalPhoneTested": false,
+  "goalComplete": false,
+  "evidenceManifestSha256": "3b8fceb0a2a9b6ce5b5fe1aa581b52f67da3ce33f014ec5bc576f13c913297bc",
+  "archivedFiles": 467,
+  "productionChanged": true,
+  "counterScope": {
+    "counterScope": "JVM-returned allocation estimates, not exact object totals or retained heap; API may record allocation with delay",
+    "documentationSource": "Local JDK 17 lib/src.zip, jdk.management/com/sun/management/ThreadMXBean.java#getThreadAllocatedBytes",
+    "measuredDriverSha256": "8e5449c80c4bc45d33ee573e57eea9c67b57a43cca719c92b7bd13ca9b3b7c93",
+    "commentCorrectedDriverSha256": "71e7c5d6802b5997cd3e7905a532c705fb4e1390fd597f2ef90c280d0736c0d9",
+    "onlyOneCommentLineChanged": true,
+    "sameThreeCompiledClasses": {
+      "AllocationReplay.class": "f9b2fb0f39b507e8f9f8fcb92c44759e1330a8084e342ce3e9172b657f91e4e1",
+      "EmissionMemoReplay$CountedModel.class": "d6e0a492453868dee1d4fdcc83a93ffde0ba8e710f84a770ce21298a35efd7f1",
+      "EmissionMemoReplay.class": "12308229dc272a68ef9c796886f68d5a1c500645a90e260baf2d242435e72f80"
+    }
+  }
+}
