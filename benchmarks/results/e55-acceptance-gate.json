@@ -1,0 +1,195 @@
+{
+  "stage": "E55",
+  "decision": {
+    "eligibleForFurtherValidation": false,
+    "qualityGate": false,
+    "hostCostGate": true,
+    "sizeGate": true,
+    "trainingPathsExact": true,
+    "fitRun": true,
+    "soleCandidate": "aligned-signed",
+    "controlsSelectable": false,
+    "productionChanged": false,
+    "androidTested": false,
+    "goalComplete": false,
+    "totalSeconds": 62.70151719986461
+  },
+  "tests": {
+    "new": 23,
+    "relatedPassed": 68,
+    "androidRun": false
+  },
+  "independentAudit": {
+    "passed": true,
+    "independentlyTokenizedPaths": 85502,
+    "checkedStates": 1024,
+    "recomputedScores": 6764,
+    "maxScoreError": 0.0,
+    "metrics": {
+      "path-positive-aishell": {
+        "before": {
+          "states": 128,
+          "top1": 65,
+          "top5": 97,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 142,
+          "characters": 1087
+        },
+        "after": {
+          "states": 128,
+          "top1": 62,
+          "top5": 97,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 148,
+          "characters": 1087
+        }
+      },
+      "aligned-positive-aishell": {
+        "before": {
+          "states": 128,
+          "top1": 65,
+          "top5": 97,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 142,
+          "characters": 1087
+        },
+        "after": {
+          "states": 128,
+          "top1": 62,
+          "top5": 97,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 149,
+          "characters": 1087
+        }
+      },
+      "path-signed-aishell": {
+        "before": {
+          "states": 128,
+          "top1": 65,
+          "top5": 97,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 142,
+          "characters": 1087
+        },
+        "after": {
+          "states": 128,
+          "top1": 63,
+          "top5": 97,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 144,
+          "characters": 1087
+        }
+      },
+      "aligned-signed-aishell": {
+        "before": {
+          "states": 128,
+          "top1": 65,
+          "top5": 97,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 142,
+          "characters": 1087
+        },
+        "after": {
+          "states": 128,
+          "top1": 62,
+          "top5": 96,
+          "top10": 105,
+          "recall255": 118,
+          "characterErrors": 145,
+          "characters": 1087
+        }
+      },
+      "path-positive-tatoeba": {
+        "before": {
+          "states": 128,
+          "top1": 83,
+          "top5": 113,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        },
+        "after": {
+          "states": 128,
+          "top1": 83,
+          "top5": 116,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 68,
+          "characters": 941
+        }
+      },
+      "aligned-positive-tatoeba": {
+        "before": {
+          "states": 128,
+          "top1": 83,
+          "top5": 113,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        },
+        "after": {
+          "states": 128,
+          "top1": 82,
+          "top5": 116,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        }
+      },
+      "path-signed-tatoeba": {
+        "before": {
+          "states": 128,
+          "top1": 83,
+          "top5": 113,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        },
+        "after": {
+          "states": 128,
+          "top1": 84,
+          "top5": 114,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 67,
+          "characters": 941
+        }
+      },
+      "aligned-signed-tatoeba": {
+        "before": {
+          "states": 128,
+          "top1": 83,
+          "top5": 113,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        },
+        "after": {
+          "states": 128,
+          "top1": 83,
+          "top5": 114,
+          "top10": 120,
+          "recall255": 121,
+          "characterErrors": 70,
+          "characters": 941
+        }
+      }
+    },
+    "auditScriptSha256": "104c1570c7e888991d7b1c7c8655ede000ea3d887747a8c5463a3428c98670cd",
+    "scope": "Independent fixed-output/tokenizer verification; no optimizer re-fit or Android claim."
+  },
+  "manifestSha256": "5a812e08e01404e69500fdf0d42e998a0cef29c396a4236db97f5fcc4ad3fd1e",
+  "releaseUnchanged": "v0.4.16-rc.7"
+}

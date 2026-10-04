@@ -1,0 +1,306 @@
+{
+  "schemaVersion": 1,
+  "stage": "E55",
+  "dependencies": {
+    "e53": {
+      "manifest": "benchmarks/results/e53-evidence-manifest.json",
+      "sha256": "8dbb530960856abbbd962b004689ed0a2c34373a75fefa28cc6156925f43cbb0"
+    },
+    "e54": {
+      "manifest": "benchmarks/results/e54-evidence-manifest.json",
+      "sha256": "c45984cd8a43a248634681c9817ab5a990b1c076a8d10a4614e1c532e61ec547"
+    }
+  },
+  "archive": "benchmarks/results/e55-evidence.tar.gz",
+  "archiveSha256": "7fc702e9253bee1d23f8bf557aaa8a3a61b90106d9eae1b8f1338ffbef17e03f",
+  "archiveBytes": 9554186,
+  "files": {
+    "benchmarks/corpus/e55-aligned-word-context-policy.json": {
+      "sha256": "eaf9895b2fb89e1e6f646ab6ffa3da7e9c6bb30521a82e00d4cecf27e5e7b9b7",
+      "bytes": 3638
+    },
+    "docs/development/input-quality-program-v2.md": {
+      "sha256": "c1d9a60b2f202cbb01a934288ee76c0f80a7e5b8e810a7a34a3d8ababe4309f9",
+      "bytes": 69666
+    },
+    "docs/research/input-quality-stage-e55-2026-10-04.md": {
+      "sha256": "50be6bb6ab2b44241212e0115ce641279ae4f013eff03c98dc18c8396b5db40a",
+      "bytes": 8035
+    },
+    "ime-service/src/main/assets/PINYIN-LM-NOTICE.txt": {
+      "sha256": "42e67712562a6b3b2e491f42146efd7235d7fcd6d3ac2a156eabfbae1e6565d0",
+      "bytes": 10246
+    },
+    "ime-service/src/main/assets/RIME-FROST-NOTICE.txt": {
+      "sha256": "bacf7e02bf7b78343aa6c718021d24c701092cb0e14b737a84f13c551b181a83",
+      "bytes": 856
+    },
+    "raw/aishell-audit.json": {
+      "sha256": "c2ee2f43e1db1f5055779014b9dafbad306cddd0566c1cb8a34f440e54ecb8bf",
+      "bytes": 369
+    },
+    "raw/aligned-positive-aishell-comparison.json": {
+      "sha256": "d33fd79b4a4249c223b499292b1c3598c09065402000bf859c75fa815033a01f",
+      "bytes": 108617
+    },
+    "raw/aligned-positive-aishell-details.json": {
+      "sha256": "58d4d94687af882a0a50ab8f44304795167f9a57c3ecc7e2f3227ab685d7c6a5",
+      "bytes": 1437079
+    },
+    "raw/aligned-positive-fit.json": {
+      "sha256": "645aea1bf0a34407833c5d023480f2163f2af1513c8c67435b449514dcefe1ca",
+      "bytes": 773
+    },
+    "raw/aligned-positive-tatoeba-comparison.json": {
+      "sha256": "51ffc05cbad5215a9a4800b9950c0fc52f234f090374d11d3c24cc325b63d069",
+      "bytes": 112319
+    },
+    "raw/aligned-positive-tatoeba-details.json": {
+      "sha256": "6f9aa025d312d305cf0f97007070c25aced048e45be43618847c83b059737afc",
+      "bytes": 1153114
+    },
+    "raw/aligned-positive-train-predictions.json": {
+      "sha256": "d6a0b8225fc6bce7b9cd6fee11e928a4b6d31fcd2e1cd95ecad29aff70b9ba51",
+      "bytes": 6608475
+    },
+    "raw/aligned-signed-aishell-comparison.json": {
+      "sha256": "222489d3b58733abc57d119216ef31736a9e905592449a9e061ec40c90e562dc",
+      "bytes": 280849
+    },
+    "raw/aligned-signed-aishell-details.json": {
+      "sha256": "acb5a3bc6788bd0c10ac759e916b71b3cd90eddf78abecd856fe39b41d805e86",
+      "bytes": 1437082
+    },
+    "raw/aligned-signed-fit.json": {
+      "sha256": "913e200fc992eb81e13248ca7d26e5845a1f459c3096895aca980545095ab3d8",
+      "bytes": 772
+    },
+    "raw/aligned-signed-tatoeba-comparison.json": {
+      "sha256": "858f41831e00d411598a2db2f6d7b8d0275c1746d28391659d6ad7dfd96e68cb",
+      "bytes": 157390
+    },
+    "raw/aligned-signed-tatoeba-details.json": {
+      "sha256": "5e4efa8a643eae0a20eac7384f46078ba65caab775de6714618576c4eb81f47c",
+      "bytes": 1153088
+    },
+    "raw/aligned-signed-train-predictions.json": {
+      "sha256": "912aaa91c578341da006f7630f9c9f4df4f5383fd49795cbb06070260ee111d5",
+      "bytes": 6608866
+    },
+    "raw/calibration-provenance.json": {
+      "sha256": "60f7834335b779228a148908d708a7aff51089b7b6dca1d6812410d09b5f1390",
+      "bytes": 278
+    },
+    "raw/closure-check.json": {
+      "sha256": "1f02f53caa573feacddad8f9d1f6e3be64f5ecea42ae926ae8b62375b6e85474",
+      "bytes": 340
+    },
+    "raw/decision.json": {
+      "sha256": "a28be5cf238cc80332ae68ba69b123d588fe6f3cdc5631fafd111edc3adbbd9e",
+      "bytes": 346
+    },
+    "raw/final-tests-v2.log": {
+      "sha256": "e4ebe29d21494901ca659d6d84617b6108e53a02d3b772628382ffb26e74fc83",
+      "bytes": 10895
+    },
+    "raw/final-tests.log": {
+      "sha256": "b68d8216920a9220639c65e4d6b606f923d2e74bd44709ab2cf2908519761048",
+      "bytes": 10834
+    },
+    "raw/guarded-training-groups.jsonl": {
+      "sha256": "7953758a7f38a4072d7e5ec681d5a0b0a5825aee9dde0f8fb17c57efd11d8076",
+      "bytes": 18719935
+    },
+    "raw/independent-audit.log": {
+      "sha256": "987a72aa6001ee099345b6da463e6e42fc8681f81c24a739d79d1dbf02f91c6f",
+      "bytes": 315
+    },
+    "raw/independent-score-audit.json": {
+      "sha256": "705315596de7622da313357a298339b2d7e7a0da99476ea08cf10e09dbe1c94a",
+      "bytes": 3785
+    },
+    "raw/initial-tests.log": {
+      "sha256": "f976c9a0d4dd320137c837d60f6b677ce1e98eeced3d813ff8b4420d353512bb",
+      "bytes": 5523
+    },
+    "raw/path-positive-aishell-comparison.json": {
+      "sha256": "5d421a7cd0238eb1c80d0a62cbb76fd7810b30c0aad52e725087b5a1f06e42c2",
+      "bytes": 93045
+    },
+    "raw/path-positive-aishell-details.json": {
+      "sha256": "5ecdf3c2e5df1ca190c8a92f4a2e1ff4f84e261c6f3c89a87205ca38f5213e4d",
+      "bytes": 1437077
+    },
+    "raw/path-positive-fit.json": {
+      "sha256": "03eb91e2537d2811f7984329e9315c01af9ed262db0d3814590ed7cae0779611",
+      "bytes": 773
+    },
+    "raw/path-positive-tatoeba-comparison.json": {
+      "sha256": "40a8602fcc3e69df3a67b5402fa9481aa48dff93638b2bfacf4083d2becaba2d",
+      "bytes": 87342
+    },
+    "raw/path-positive-tatoeba-details.json": {
+      "sha256": "7a2d3e19fa2948ce581f4426f19fb677d12af36f5edeae3cf91e2434226f5dd1",
+      "bytes": 1153109
+    },
+    "raw/path-positive-train-predictions.json": {
+      "sha256": "3f22e7bc1c7e2aba9c575aa00b690753c9c9276106d36c9d5f89dcea3f0ad311",
+      "bytes": 6608367
+    },
+    "raw/path-signed-aishell-comparison.json": {
+      "sha256": "bf17bf2c287b03c5150700e1dd4be0b646950b59e080b9ee15bba83b49ae8c7b",
+      "bytes": 180500
+    },
+    "raw/path-signed-aishell-details.json": {
+      "sha256": "a7df57cbb8bb1b30275985e0fb20b5817f115a4a314fb0327f8cac08eb58e9e9",
+      "bytes": 1437086
+    },
+    "raw/path-signed-fit.json": {
+      "sha256": "e001e3430a19dcd3789817617cce6186d21457fe04ecc5317b66caf3cf6ccc3b",
+      "bytes": 773
+    },
+    "raw/path-signed-tatoeba-comparison.json": {
+      "sha256": "01eae802f2a9b82db3f6a784b01f9b236d20b8a18cbe3fcbb3f184d9d53ffe08",
+      "bytes": 132404
+    },
+    "raw/path-signed-tatoeba-details.json": {
+      "sha256": "47a41eac7de64005635806664b1909596767c7c0ad38c9240c6b370f23183c93",
+      "bytes": 1153101
+    },
+    "raw/path-signed-train-predictions.json": {
+      "sha256": "2946b8296bb0e2a9f47a59b398d1d848532a5f9b624c12ee596d9b7057b7d447",
+      "bytes": 6608706
+    },
+    "raw/pre-dev-freeze.json": {
+      "sha256": "89bf0cf3456de3f327ba63b8c36c29b1be565a3e5e3cf1d6f4dd8335b39953bd",
+      "bytes": 1200
+    },
+    "raw/pre-run-lock.json": {
+      "sha256": "bce0cda5573f9436a5601c8b157564f5f30ec9f7e9dcd25062a8c6138edf80db",
+      "bytes": 4267
+    },
+    "raw/pre-run-tests.log": {
+      "sha256": "0bdbe87b4c2754957f20331fa7be407c7e528bab6fc58c1b058420803c248d0e",
+      "bytes": 9505
+    },
+    "raw/red-tests.log": {
+      "sha256": "88a6e4860ce557aba24c13e23d415455d23ad3a56d6a3e5c2460df069dce7eca",
+      "bytes": 1014
+    },
+    "raw/run.log": {
+      "sha256": "d1791a92fcb36be8c6b59f9c011f7152e9841e1b782f8d2c1931510e546372f4",
+      "bytes": 6229
+    },
+    "raw/tatoeba-audit.json": {
+      "sha256": "09bf23c14984335cb0b182e946db99f0405f6e3b3b89381cea53d13d533fadb2",
+      "bytes": 369
+    },
+    "raw/tokenizer-audit.json": {
+      "sha256": "f95c6f57dbbfa4a85a085eee47282e8e37d80fedaf6233809fe2f144fd521e89",
+      "bytes": 330
+    },
+    "raw/tokenizer.json": {
+      "sha256": "6631b10517e323357c0657989ef7da20aa15651674b586b08780c495d6b27814",
+      "bytes": 1855296
+    },
+    "tools/aligned_word_context.py": {
+      "sha256": "5a8f975d97031000f524c392a36943b13918a1f5afcd84661507fc86dec24bf7",
+      "bytes": 6020
+    },
+    "tools/audit_e55_scores.py": {
+      "sha256": "104c1570c7e888991d7b1c7c8655ede000ea3d887747a8c5463a3428c98670cd",
+      "bytes": 8227
+    },
+    "tools/audit_score_features.py": {
+      "sha256": "0fc5ffadf5bcaabf60818fbf9517266e5f6b48ae73cfc8bf9c0e2f0e445fae6f",
+      "bytes": 8952
+    },
+    "tools/candidate_student.py": {
+      "sha256": "cd366886e5776c765ca6c0eb958c4aa608f02bbb9a0d7588f55943646c638289",
+      "bytes": 9047
+    },
+    "tools/context_only_ranker.py": {
+      "sha256": "d618f1a7e9cdcf3d602ce54e7f2b5c1f0d93459f8e8768082896147f03c588f3",
+      "bytes": 5606
+    },
+    "tools/context_ranker_cv.py": {
+      "sha256": "5451af018129447fdfa916aa415986cd810b61ff11c1363ef80ba8f8345d79b1",
+      "bytes": 4680
+    },
+    "tools/evaluate_cross_domain.py": {
+      "sha256": "5fcfc61ace1bedeffa68e9ca77fd32806108a2a33123dbf89be7b1b3bf89f253",
+      "bytes": 5853
+    },
+    "tools/fetch_e37_model.py": {
+      "sha256": "50ed8cd5c6faea61403aaa8cff822c8b0159276baa8a5a67b5e7032083c1e281",
+      "bytes": 3780
+    },
+    "tools/full_word_context.py": {
+      "sha256": "cd0f5c9ba867827a81cc0c4c29fcef7c8371926509f77b3795aa087e34ea12e8",
+      "bytes": 9752
+    },
+    "tools/layered_lexicon.py": {
+      "sha256": "e994ef2b9773d53910ce22e514a6a9a3c7d43ab53b71d38081b350a4702475e5",
+      "bytes": 2869
+    },
+    "tools/masked_lm_rescore.py": {
+      "sha256": "1589165849c75fcd543f4be22c2fc2dddeab4db0d2dd3fac371e3e01d13f0ca6",
+      "bytes": 10095
+    },
+    "tools/project_pinyin_base.py": {
+      "sha256": "875c9ce207569dfdd55aaaf653ce18938a4cfd08d2f5e2689aebfd02e38d7e71",
+      "bytes": 861
+    },
+    "tools/run_e37_rescoring.py": {
+      "sha256": "37571b0f82c5b0fa88a1c7936386212d98e157aa704e2a530272a445909d9472",
+      "bytes": 10646
+    },
+    "tools/run_e53_word_context.py": {
+      "sha256": "3cd7a844e2a489f85411b841a8666f47752df4c2404779e27cf5bb3ae1e93d98",
+      "bytes": 11200
+    },
+    "tools/run_e55_aligned_context.py": {
+      "sha256": "2c95c693676358c5986144fcd7591b1afe496e05e655d86fb261ce2b866ec361",
+      "bytes": 16314
+    },
+    "tools/test_aligned_word_context.py": {
+      "sha256": "7411d500bee37d6dbcc276ea260d9d5d5d566ba9a80227f91f785ea937642576",
+      "bytes": 9129
+    },
+    "tools/test_e55_pipeline.py": {
+      "sha256": "cfe8f57414cda2cad80e9e1c94ce72f596bff177a9ff8644f0964669053ef1fb",
+      "bytes": 2893
+    },
+    "tools/test_e55_score_audit.py": {
+      "sha256": "878439eec8e64a1b3b3e0c451572c91c5ef83af09e68c7fa96a07669fbedd01d",
+      "bytes": 1498
+    },
+    "tools/train_association_model.py": {
+      "sha256": "c70dde86a8f192bcced2ef928710aa4d9ea98ab9b4d9768fc3597348843b932e",
+      "bytes": 12398
+    },
+    "tools/train_candidate_ranker.py": {
+      "sha256": "ecda9b5707d3311e395c74eb801fd3f5b54094d96a5d1e234c1f18b125ebc8b5",
+      "bytes": 15740
+    },
+    "tools/word_context_ranker.py": {
+      "sha256": "1b88ed1d61db751785ec4ba42f3633fa80597ee8bc33516fc3da10af96c16653",
+      "bytes": 6628
+    }
+  },
+  "externalInputs": {
+    "E:\\CodexWorkspace\\sense-input-quality-build\\e53\\word-training-groups.jsonl": "d5ae896357a357af03ea75e90d19ce8589d254efa415e999f19b82c5f3a1e445",
+    "E:\\CodexWorkspace\\sense-input-quality-build\\e53\\aishell-features.jsonl.gz": "6a9b3ff381bcaddc3e4d5d2f5951274ba5605a5aa859bec551941dda8b8f1ca4",
+    "E:\\CodexWorkspace\\sense-input-quality-build\\e53\\tatoeba-features.jsonl.gz": "d3cd17030d24c8ac418215b5fb285b916fed8d38bc94e67ebf16dd517c76d0e4",
+    "E:\\CodexWorkspace\\sense-input-quality-build\\e53\\current-diagnostics.jsonl.gz": "e026b2d7f63fb28b81a9d6d2410a5d3a93f4faa2ac5c4f2247a64ac26aa64d12",
+    "E:\\CodexWorkspace\\sense-input-quality-build\\e54\\association-table.json": "0c9198e20b12d5425de20bac348c0445895db463686e1a927c8acc156fdc75f4",
+    "E:\\CodexWorkspace\\sense-input-quality-build\\e54\\background-report.json": "60e728be82e64a0f85ea398a5107c25cf60a0c777e21e5d6d698096375b81f9e",
+    "E:\\CodexWorkspace\\sense-input-quality-build\\e54\\background-selection.json": "5618fa7e151310c90708211f64c0105098eb1ecea1ce285aabd7ad465cfb297c",
+    "E:\\CodexWorkspace\\sense-input-quality-build\\e54\\independent-count-audit-final.json": "bb3cce045876e77e2f3878eedb1c29a5ede9d34e2e1a2755f037f8c842d50e3d",
+    "E:\\CodexWorkspace\\sense-input-quality-build\\e53\\train-features.jsonl.gz": "59cfeb01e80e0357641d19351b771eb0b8b22029fd5081c06bc59cfdeee9937d",
+    "E:\\CodexWorkspace\\sense-input-quality-build\\e54\\background-segments.jsonl": "d06ae80b71ddc49ec199fda1cfe433bf5196148b4576e1abd410d0a19682c67d",
+    "E:\\CodexWorkspace\\sense-input-quality-build\\e44\\train\\selected.json": "91871957940ff4c92141bad4d513998a39b8cd0ca8425b97ec026c0aed9ef218",
+    "C:\\Users\\syc\\.codex\\worktrees\\sense-input-quality\\sense\\ime-service\\src\\main\\assets\\pinyin_lexicon.bin": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232"
+  },
+  "scope": "Offline fixed alignment/sign ablations only. Reuses public attributed E54 counts; no production or APK adoption."
+}
