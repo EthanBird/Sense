@@ -25,7 +25,7 @@ SCRIPT = ROOT / "tools" / "release_plan.py"
 LOCAL_RELEASE = ROOT / "tools" / "local_release.ps1"
 RELEASE_WORKFLOW = ROOT / ".github" / "workflows" / "release-v0.4.15.yml"
 APP_BUILD = ROOT / "app" / "build.gradle.kts"
-RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.16.md"
+RELEASE_NOTES = ROOT / "docs" / "releases" / "v0.4.17.md"
 RELEASE_CERT = (
     ROOT
     / "docs"
@@ -307,11 +307,11 @@ class LocalReleaseContractTest(unittest.TestCase):
             APP_BUILD.read_text(encoding="utf-8"),
             str(APP_BUILD),
         )
-        self.assertEqual(AndroidVersion(name="0.4.16", code=48), current)
+        self.assertEqual(AndroidVersion(name="0.4.17", code=49), current)
         self.assertIn(current.tag, self.script)
         self.assertIn(current.apk_name, self.script)
         self.assertIn(
-            'Sense v0.4.16 - Chinese input quality and stability',
+            'Sense v0.4.17 - Agent memory browsing and settings workspace',
             self.script,
         )
         self.assertRegex(
@@ -321,8 +321,8 @@ class LocalReleaseContractTest(unittest.TestCase):
 
     def test_release_notes_are_pinned_and_used_for_stable_release(self) -> None:
         self.assertTrue(RELEASE_NOTES.is_file())
-        self.assertIn("# Sense v0.4.16", RELEASE_NOTES.read_text("utf-8"))
-        self.assertIn("v0.4.16.md", self.script)
+        self.assertIn("# Sense v0.4.17", RELEASE_NOTES.read_text("utf-8"))
+        self.assertIn("v0.4.17.md", self.script)
         self.assertIn("--notes-file", self.script)
         self.assertIn("$ReleaseIsPrerelease = $false", self.script)
         self.assertIn("--prerelease=$($ReleaseIsPrerelease.ToString().ToLowerInvariant())", self.script)
