@@ -1,0 +1,45 @@
+{
+  "createdAt": "2026-10-04T03:51:10.031109+00:00",
+  "baseCommit": "a4c12e93e689e5b63e56ab7a84a45b17d2951db5",
+  "change": "Defer CompositionOption metadata construction until an edge selection cache miss actually consumes it; local edge lifetime only",
+  "unchanged": [
+    "all candidate fields/order/scores",
+    "LM calls",
+    "beam budgets",
+    "dictionary/model bytes",
+    "user learning",
+    "UI"
+  ],
+  "promotion": {
+    "fullProgressiveStates": 3083,
+    "fullResultAndModelCallDifferences": 0,
+    "allocatedBytesTotalMustDecrease": true,
+    "androidFunctionalChecks": 49,
+    "timingOrder": [
+      "baseline",
+      "optimized",
+      "optimized",
+      "baseline"
+    ],
+    "confirmationSamples": 64,
+    "followups": 8,
+    "medianNoRegression": true,
+    "p95NoRegression": true,
+    "noRerunToSelectTiming": true
+  },
+  "hypotheses": [
+    "cache hits currently allocate unused edge metadata",
+    "other search work may dominate actual delay",
+    "lazy holder may add short-query overhead"
+  ],
+  "baselineJarSha256": "b475510954f4f1d5dce97cb348331b2c1dc65839fe86716cbb4c67e3ad37a1a6",
+  "baselineApkSha256": "6231505933f743cdaa84287a084538469a1e35b3d09a4a9e2aa28f5e4a031f83",
+  "inputSha256": "066fcfa51e1347f1064f08c6d23f46221f56371d1ab2c7fd870a1fd231b1f7ed",
+  "helperSourcePins": {
+    "tools/AllocationReplay.java": "71e7c5d6802b5997cd3e7905a532c705fb4e1390fd597f2ef90c280d0736c0d9",
+    "tools/EmissionMemoReplay.java": "4ee6688045d3836431aae1ccb033bca8150c5e58f58c6e77bc92d89b5d50004d",
+    "tools/measure_fast_input_latency.py": "f7ae6616af8614bba2871dec9d16f73af196968b29758060ae744e80e507e9d2",
+    "tools/summarize_fast_input_latency.py": "14328c44a76f919672b67b90c397bd69099fc476e432abc51d2a6735c9219ca0"
+  },
+  "publication": "No new APK release until all gates pass; keep rc.7 unchanged during the experiment"
+}

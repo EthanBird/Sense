@@ -1,0 +1,562 @@
+{
+  "schemaVersion": 1,
+  "baseCommit": "a4c12e93e689e5b63e56ab7a84a45b17d2951db5",
+  "status": "candidate-not-promoted",
+  "runtimeSourceRestored": true,
+  "acceptedChange": "Host replay class-provider and artifact-digest verification, not the candidate runtime optimization",
+  "allocation": {
+    "states": 3083,
+    "fullResultAndModelCallDifferences": [],
+    "baselineAllocatedBytes": 37826995184,
+    "candidateAllocatedBytes": 36285839160,
+    "relativeChangePercent": -4.074222698640028,
+    "statesWithAllocationIncrease": 166,
+    "largestIncreases": [
+      {
+        "id": "dd50f557f25dee655266c05b637cbf1b40f8c45e58c216ff83829d55832be0b8",
+        "query": "ma'ma'gei'wo'mai'le'jian'piao'liang'de'yi'fu",
+        "before": 11653856,
+        "after": 11659968
+      },
+      {
+        "id": "e5f66c8955fe53b399ef1a2db68cb00c25ead23cef7f69982228bcef310f4093",
+        "query": "wo'bu'jie'yi'zai'yu'zhong'man'bu",
+        "before": 9026896,
+        "after": 9030552
+      },
+      {
+        "id": "9d67e8ae935932ad04b3123003a8260b2473983fbd8f069640ad4891b719a188",
+        "query": "wo'mai'le'yi'ge'xin'de'tiao'se'pan'he'ji'zhi'shui'cai'bi",
+        "before": 11048960,
+        "after": 11052520
+      },
+      {
+        "id": "7b7a99c97a93c0c9a4bbf93c1af02b3a0e31c110c1e7204a7321e5a69246e8f5",
+        "query": "dan'hai'mei'you'xue'hui'du'li'sheng'huo",
+        "before": 8729472,
+        "after": 8732456
+      },
+      {
+        "id": "48a10a43f099f1c88673238d2a7e1b7d954d159037be328e6cf91edf82f9526a",
+        "query": "ke'yong'yi'xia'san'zhong'fang'shi'lai'xiang'gong'si'ti'chu'shen'qing",
+        "before": 15445400,
+        "after": 15448280
+      },
+      {
+        "id": "a7287751e2bd1b410c3e1a8f76a7a7ba93d96a84d73299f3cf01122f72cbfe45",
+        "query": "ta'po'bu'ji'dai'de'xiang'shi'yi'xia'ta'de'xin'chong'lang'ban",
+        "before": 14845224,
+        "after": 14847960
+      },
+      {
+        "id": "b4606f62bb61223f0ee356bc91ba6c75ea8ff1bf22b7f02695c751c721c47d3f",
+        "query": "wo'zai'ya'li'zhi'xia'gong'zuo'biao'xian'zui'hao",
+        "before": 11324656,
+        "after": 11327296
+      },
+      {
+        "id": "d4be714961cef7072e6b25779b4d48d22bea1e5622d590d854b72f77a1e08b15",
+        "query": "ta'yi'xin'yi'yi'de'gong'zuo",
+        "before": 6481768,
+        "after": 6484264
+      },
+      {
+        "id": "6382f32323d8c49b2a2b266cd3334eb3909f739dd2b020172f96e7614b7f6ae7",
+        "query": "shang'di'hui'ba'wo'men'shen'bian'zui'hao'de'dong'xi'na'zou",
+        "before": 9422280,
+        "after": 9424616
+      },
+      {
+        "id": "d8b2dd437d22e701200f7ebbb06f426b122b28cff7dc648543feb2bb93caf11b",
+        "query": "ta'mei'you'shuo'ta'shi'zai'na'yi'nian'chu'sheng'de",
+        "before": 9586680,
+        "after": 9588984
+      }
+    ],
+    "passed": true,
+    "scope": "ThreadMXBean JVM allocation estimates; no Android memory or latency claim; wrong-classpath candidate run excluded"
+  },
+  "androidFunctional": {
+    "executions": 49,
+    "runs": [
+      {
+        "group": "ordinary",
+        "tests": 10,
+        "passed": true,
+        "path": ".artifacts/input-quality/external-editor-e52-ordinary",
+        "logSha256": "d0d0c37ae6c6b95dd8ccd37c34b2ae171fcc93a21b744a25ad00702fe055b146"
+      },
+      {
+        "group": "learning",
+        "tests": 6,
+        "passed": true,
+        "path": ".artifacts/input-quality/external-editor-e52-learning",
+        "logSha256": "382967a181f96e00efd18ab34aadb15c725ffb534ddc3b778bdafec2529f8ec2"
+      },
+      {
+        "group": "context",
+        "tests": 8,
+        "passed": true,
+        "path": ".artifacts/input-quality/external-editor-e52-context",
+        "logSha256": "808f904ef8c82fd125762ce43c3f6b7434e39f7177bab741c429377f960c8f03"
+      },
+      {
+        "group": "correction",
+        "tests": 10,
+        "passed": true,
+        "path": ".artifacts/input-quality/external-editor-e52-correction",
+        "logSha256": "851a6688d1f3e71d6c92844021f27da5cdf7d8ba0cb3d287c7fe5ddb83684416"
+      },
+      {
+        "group": "boundary",
+        "tests": 6,
+        "passed": true,
+        "path": ".artifacts/input-quality/external-editor-e52-boundary",
+        "logSha256": "0438a727752a7e96bef531a0b8aca9541403ee247365580b48296b292586f678"
+      },
+      {
+        "group": "association",
+        "tests": 9,
+        "passed": true,
+        "path": ".artifacts/input-quality/external-editor-e52-association",
+        "logSha256": "fba9e53305c4cb7a5f5e961a8d1d8aacd6f244e7afac7b631d688a86d42a6e3e"
+      }
+    ]
+  },
+  "androidTiming": {
+    "schemaVersion": 1,
+    "protocol": "shell-touch-v1",
+    "scope": "Fixed known-query ABBA, genuine 32ms-target system touch; clean debug profile, runtime ready, no learning. Not phone certification.",
+    "apkSha256": {
+      "baseline": "6231505933f743cdaa84287a084538469a1e35b3d09a4a9e2aa28f5e4a031f83",
+      "optimized": "a52ff4ec36d91dc765e18e85cb2d227491ce94906e01de9b0dbd2be1d7a0e39e"
+    },
+    "blocks": [
+      {
+        "block": 1,
+        "mode": "baseline",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 34.0,
+          "observedP95Ms": 36,
+          "maxMs": 52
+        }
+      },
+      {
+        "block": 2,
+        "mode": "optimized",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 34.0,
+          "observedP95Ms": 36,
+          "maxMs": 44
+        }
+      },
+      {
+        "block": 3,
+        "mode": "optimized",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 34.0,
+          "observedP95Ms": 36,
+          "maxMs": 47
+        }
+      },
+      {
+        "block": 4,
+        "mode": "baseline",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 34.0,
+          "observedP95Ms": 37,
+          "maxMs": 44
+        }
+      }
+    ],
+    "failures": [],
+    "comparison": {
+      "schemaVersion": 1,
+      "scope": "Fixed known-query ABBA, genuine 32ms-target system touch; clean debug profile, runtime ready, no learning. Not phone certification.",
+      "apkSha256": {
+        "baseline": "6231505933f743cdaa84287a084538469a1e35b3d09a4a9e2aa28f5e4a031f83",
+        "optimized": "a52ff4ec36d91dc765e18e85cb2d227491ce94906e01de9b0dbd2be1d7a0e39e"
+      },
+      "limitations": [
+        "Eight fixed known queries, four observations per query/mode, one API 37 x86_64 emulator and debug builds.",
+        "Observed percentiles describe this workload, not a population or real-phone tail-latency guarantee.",
+        "32ms-target shell touch; measured actual sender cadence and external editor callbacks. Includes injection and scheduling, excludes initial loading; not rendered-frame timing.",
+        "A known 类/累 semantic error is deliberately retained as baseline output; this is not an accuracy score.",
+        "Complete decode trace slices also include short prefixes completed while typing, not only final confirmations."
+      ],
+      "confirmationMs": {
+        "baseline": {
+          "count": 32,
+          "medianMs": 146.5,
+          "observedP95Ms": 328,
+          "maxMs": 349
+        },
+        "optimized": {
+          "count": 32,
+          "medianMs": 135.0,
+          "observedP95Ms": 346,
+          "maxMs": 371
+        }
+      },
+      "perQuery": [
+        {
+          "query": "nihao",
+          "baseline": {
+            "samples": [
+              153,
+              46,
+              137,
+              59
+            ],
+            "count": 4,
+            "medianMs": 98.0,
+            "observedP95Ms": 153,
+            "maxMs": 153
+          },
+          "optimized": {
+            "samples": [
+              121,
+              46,
+              132,
+              44
+            ],
+            "count": 4,
+            "medianMs": 83.5,
+            "observedP95Ms": 132,
+            "maxMs": 132
+          }
+        },
+        {
+          "query": "woxihuanbeijing",
+          "baseline": {
+            "samples": [
+              328,
+              92,
+              349,
+              108
+            ],
+            "count": 4,
+            "medianMs": 218.0,
+            "observedP95Ms": 349,
+            "maxMs": 349
+          },
+          "optimized": {
+            "samples": [
+              371,
+              106,
+              346,
+              94
+            ],
+            "count": 4,
+            "medianMs": 226.0,
+            "observedP95Ms": 371,
+            "maxMs": 371
+          }
+        },
+        {
+          "query": "qingfageweizhigeiwo",
+          "baseline": {
+            "samples": [
+              212,
+              91,
+              155,
+              99
+            ],
+            "count": 4,
+            "medianMs": 127.0,
+            "observedP95Ms": 212,
+            "maxMs": 212
+          },
+          "optimized": {
+            "samples": [
+              154,
+              92,
+              173,
+              89
+            ],
+            "count": 4,
+            "medianMs": 123.0,
+            "observedP95Ms": 173,
+            "maxMs": 173
+          }
+        },
+        {
+          "query": "qingjianchayixiayoujian",
+          "baseline": {
+            "samples": [
+              179,
+              153,
+              151,
+              141
+            ],
+            "count": 4,
+            "medianMs": 152.0,
+            "observedP95Ms": 179,
+            "maxMs": 179
+          },
+          "optimized": {
+            "samples": [
+              185,
+              120,
+              174,
+              123
+            ],
+            "count": 4,
+            "medianMs": 148.5,
+            "observedP95Ms": 185,
+            "maxMs": 185
+          }
+        },
+        {
+          "query": "zhegeyingyonghenhaoyong",
+          "baseline": {
+            "samples": [
+              136,
+              121,
+              121,
+              104
+            ],
+            "count": 4,
+            "medianMs": 121.0,
+            "observedP95Ms": 136,
+            "maxMs": 136
+          },
+          "optimized": {
+            "samples": [
+              123,
+              93,
+              130,
+              128
+            ],
+            "count": 4,
+            "medianMs": 125.5,
+            "observedP95Ms": 130,
+            "maxMs": 130
+          }
+        },
+        {
+          "query": "jintianyouyidianlei",
+          "baseline": {
+            "samples": [
+              138,
+              142,
+              119,
+              114
+            ],
+            "count": 4,
+            "medianMs": 128.5,
+            "observedP95Ms": 142,
+            "maxMs": 142
+          },
+          "optimized": {
+            "samples": [
+              138,
+              117,
+              162,
+              119
+            ],
+            "count": 4,
+            "medianMs": 128.5,
+            "observedP95Ms": 162,
+            "maxMs": 162
+          }
+        },
+        {
+          "query": "tangmuhemalimeitianwanshangdoukandianshi",
+          "baseline": {
+            "samples": [
+              206,
+              194,
+              217,
+              190
+            ],
+            "count": 4,
+            "medianMs": 200.0,
+            "observedP95Ms": 217,
+            "maxMs": 217
+          },
+          "optimized": {
+            "samples": [
+              194,
+              201,
+              231,
+              202
+            ],
+            "count": 4,
+            "medianMs": 201.5,
+            "observedP95Ms": 231,
+            "maxMs": 231
+          }
+        },
+        {
+          "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+          "baseline": {
+            "samples": [
+              231,
+              218,
+              225,
+              220
+            ],
+            "count": 4,
+            "medianMs": 222.5,
+            "observedP95Ms": 231,
+            "maxMs": 231
+          },
+          "optimized": {
+            "samples": [
+              194,
+              242,
+              207,
+              220
+            ],
+            "count": 4,
+            "medianMs": 213.5,
+            "observedP95Ms": 242,
+            "maxMs": 242
+          }
+        }
+      ],
+      "traces": [
+        {
+          "block": 1,
+          "mode": "baseline",
+          "sha256": "a26ed3e8e7110d6b3ba6b92c4820d6a32c6c04fab78da3a9cf254a58edba4ebe",
+          "canceledDecodes": 360,
+          "completedDecodes": 66,
+          "completedDecodeMs": {
+            "count": 66,
+            "medianMs": 27.566499999999998,
+            "observedP95Ms": 221.791,
+            "maxMs": 331.173
+          }
+        },
+        {
+          "block": 2,
+          "mode": "optimized",
+          "sha256": "9e642159d93bbfd21e0c7b7de1187e089b9823082bcbd8195225f6aeaad9f1d9",
+          "canceledDecodes": 359,
+          "completedDecodes": 69,
+          "completedDecodeMs": {
+            "count": 69,
+            "medianMs": 25.903,
+            "observedP95Ms": 212.093,
+            "maxMs": 380.954
+          }
+        },
+        {
+          "block": 3,
+          "mode": "optimized",
+          "sha256": "58e52899aba580a17924192a09cb93f1f7df6583e422abd6aed6b7b66525da17",
+          "canceledDecodes": 361,
+          "completedDecodes": 67,
+          "completedDecodeMs": {
+            "count": 67,
+            "medianMs": 21.529,
+            "observedP95Ms": 235.844,
+            "maxMs": 362.598
+          }
+        },
+        {
+          "block": 4,
+          "mode": "baseline",
+          "sha256": "291cac08fc5ad10a39279d994f79f5f2eab715ed4cee9a0edeb020e6ac988413",
+          "canceledDecodes": 367,
+          "completedDecodes": 62,
+          "completedDecodeMs": {
+            "count": 62,
+            "medianMs": 30.6075,
+            "observedP95Ms": 237.131,
+            "maxMs": 364.103
+          }
+        }
+      ],
+      "latencyGate": {
+        "scope": "Fixed ABBA workload only; not statistical significance or phone certification",
+        "rule": "paired median and observed P95 each no worse than reference",
+        "checks": {
+          "medianMs": true,
+          "observedP95Ms": false
+        },
+        "passed": false
+      }
+    },
+    "promotionPassed": false,
+    "stableReleaseReady": false
+  },
+  "hostAndAssets": {
+    "hostTests": {
+      "core-input": {
+        "tests": 421,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ime-service": {
+        "tests": 317,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "ime-ui": {
+        "tests": 235,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "candidateApkSha256": "a52ff4ec36d91dc765e18e85cb2d227491ce94906e01de9b0dbd2be1d7a0e39e",
+    "assetsMatched": 25
+  },
+  "pythonTests": {
+    "reportChecks": 10,
+    "classpathChecks": 9
+  },
+  "wrongClasspathReplayExcluded": {
+    "reason": "The first candidate command edited the main-class slot rather than the classpath; it ran the baseline again. Excluded from candidate evidence.",
+    "source": "candidate-command.json",
+    "eligibleForComparison": false
+  },
+  "classpathVerification": {
+    "baseline": {
+      "decoderArtifact": "E:\\CodexWorkspace\\sense-input-quality-build\\e52\\baseline-core.jar",
+      "sha256": "b475510954f4f1d5dce97cb348331b2c1dc65839fe86716cbb4c67e3ad37a1a6"
+    },
+    "candidate": {
+      "decoderArtifact": "E:\\CodexWorkspace\\sense-input-quality-build\\e52\\candidate-core.jar",
+      "sha256": "8cb7f56b2d0e19f709ae8deb8c4d5818d35501580c75304ac2a1495fec1145ad"
+    },
+    "excludedRunRejected": "Decoder classpath does not have exactly the expected provider",
+    "unitTests": 6
+  },
+  "restoration": {
+    "corePayloadEntries": 423,
+    "allProductionSourcesRestored": 190,
+    "builtApkSha256": "ebe5afeabb74a462e38458b1101a252fb30a3f3b6e85c0fff73b127379b15710",
+    "baselineApkSha256": "6231505933f743cdaa84287a084538469a1e35b3d09a4a9e2aa28f5e4a031f83",
+    "apkExact": false
+  },
+  "restoredApkEntryDifferences": [],
+  "environmentClosure": {
+    "serial": "emulator-5580",
+    "avd": "sense-input-quality",
+    "installedApkSha256": "6231505933f743cdaa84287a084538469a1e35b3d09a4a9e2aa28f5e4a031f83",
+    "defaultIme": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+    "debugApp": "null",
+    "heapGrowthLimit": "192m"
+  },
+  "publishedReleaseChanged": false,
+  "manifestSha256": "444a6ea647a35c2a946ff671cc3d298d0aedfe681449e03341403182df4681c2",
+  "classpathLaunchGuard": "Final 9 tests include three subprocess-mocked launch-order/evidence-preservation cases; no new Java timing replay"
+}

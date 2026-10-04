@@ -1,0 +1,2629 @@
+{
+  "schemaVersion": 1,
+  "archive": "benchmarks/results/e52-evidence.tar.gz",
+  "sha256": "da8c1170d52b8f820273d02311ff0abff6eaf6b6a1dc3043cc075fd77c354f86",
+  "bytes": 7816931,
+  "scope": "Original evidence bytes, including the excluded wrong-classpath replay; APK/JAR files retained locally by recorded hashes; restored core JUnit XML is cached, not a new execution",
+  "entries": [
+    {
+      "path": "e52/allocation-comparison.json",
+      "bytes": 2498,
+      "sha256": "75c747696528d950c81c6218bdcf3716db42c5add44e87cff2bafcfba1d9dc27"
+    },
+    {
+      "path": "e52/android-fast-summary.json",
+      "bytes": 9422,
+      "sha256": "d2e1abc40e43707ea53e4e336076f8ec371b7205c46224d2a72e2b3f7cf1ceac"
+    },
+    {
+      "path": "e52/android-functional.json",
+      "bytes": 1471,
+      "sha256": "41c6b3efa040ec7d5adbe89decb95134b44213c77b13880e8370998ed78694da"
+    },
+    {
+      "path": "e52/android-protocol.json",
+      "bytes": 33870,
+      "sha256": "162c4e28fc09d57ae31c05534528d58faf0126a02484ff5d0a82ebed4cb8cb69"
+    },
+    {
+      "path": "e52/android-timing.log",
+      "bytes": 640,
+      "sha256": "02d1ef958bd7fa95b68de1b555b1778f03dd40cd53ed3d89fed4ae79c2cc9e54"
+    },
+    {
+      "path": "e52/association-run.log",
+      "bytes": 149,
+      "sha256": "46ef5c10f46596245d7d6f421645b2272aa76f07012b8265e9afc8c7939f08fb"
+    },
+    {
+      "path": "e52/baseline-PinyinDecoder.kt",
+      "bytes": 91586,
+      "sha256": "a857923310c6d1ed898a218342513cded33bd72db18566feb1637b5abdd43704"
+    },
+    {
+      "path": "e52/baseline-allocation.tsv",
+      "bytes": 574366,
+      "sha256": "5851083708fc84181aaf471b00cd9c556d4a19c08b7dbca15aa6eb01f6b0c5ab"
+    },
+    {
+      "path": "e52/baseline-command.json",
+      "bytes": 587,
+      "sha256": "73bf86613238397f8622db85102f54c62783242c3874483570c53c57c647b2f7"
+    },
+    {
+      "path": "e52/baseline-replay.log",
+      "bytes": 165,
+      "sha256": "bf3393f15cd1f4feba29a30c954d2e8e06985341349f62f9fb04f4453f6749d2"
+    },
+    {
+      "path": "e52/before-timing-processes.json",
+      "bytes": 771,
+      "sha256": "216451cb4f75d764cd52ad6e571b8937aecd8a4ed3a5c5cba74ff90282b23723"
+    },
+    {
+      "path": "e52/boundary-run.log",
+      "bytes": 146,
+      "sha256": "2d49fdf9b8cfd081a5afa090446d1db5015397d0eb81c4c95feea7140cfe714b"
+    },
+    {
+      "path": "e52/candidate-PinyinDecoder.kt",
+      "bytes": 92004,
+      "sha256": "1e44df5abce66feb138ccb0c3e24880c71c8a97524e54505a157f876f1d9d0b3"
+    },
+    {
+      "path": "e52/candidate-allocation-verified.tsv",
+      "bytes": 574215,
+      "sha256": "98ea2f2f358b45b2751b2380b581a31fc62f7a8b2adf122760996c85d9ab2c0c"
+    },
+    {
+      "path": "e52/candidate-allocation.tsv",
+      "bytes": 574367,
+      "sha256": "f156d05dd83b72c5b2e7800a12c9f7f992e6631607d73ea11c2c816f55dde805"
+    },
+    {
+      "path": "e52/candidate-command.json",
+      "bytes": 588,
+      "sha256": "e0da513b518c6a791fa995367eb715b1a99985ff63c7c205464ccdb0febceb31"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.AdaptiveLearningContractTest.xml",
+      "bytes": 843,
+      "sha256": "a3fe93158b724ada378189779302d7a0c2482fb934a51cfd367ab077f1735394"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.AgentDraftBufferTest.xml",
+      "bytes": 795,
+      "sha256": "a7c79781b09af9c2af59b2cdee4cbeb05031f5dc7f2c81c69abb2ca7424ddbb4"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.AgentExternalEditorWriterTest.xml",
+      "bytes": 673,
+      "sha256": "3f2351b5a37dd2af5945f6c9474c331b0616849e5d686566e2ecc263572c78e4"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.AgentSkillProjectionCoordinatorTest.xml",
+      "bytes": 1962,
+      "sha256": "98a7d33b17beb28b1167edbd359897e194db33c79827da3306b383c457bef9f8"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.AlternativeCommitSnapshotTest.xml",
+      "bytes": 1309,
+      "sha256": "96cd11987634673e590d684976aff72d9684ec341b07ea5ec2f9699cbeabb6ca"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.AlternativeDecoderReadinessTest.xml",
+      "bytes": 696,
+      "sha256": "df7a2a37c37797411c5c3c7ffd27dd897823e24de9ad7ae5583862feae7871d8"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.AlternativeInputDecodingTest.xml",
+      "bytes": 1823,
+      "sha256": "5d183acfa89559d28c4d5db8e5140af4d32aac8832ea753e0d63a47123c773c3"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.AssociationDisplayLifecycleTest.xml",
+      "bytes": 1228,
+      "sha256": "7c211ec9ff8817e2e1573c5818544b397ac99875b6ce150f836f64cc4cc0e8e1"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.AssociationQueryControllerTest.xml",
+      "bytes": 1080,
+      "sha256": "c3557e50d616e2cd186e6785ba9893340f179c29f5950b18f0ee4e5285d2265b"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.AssociationSessionTest.xml",
+      "bytes": 678,
+      "sha256": "3da1c5695df27dcc8d7b2047796758fbfdac5e1355968b06303852d73d0c3ab1"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.AssociationTimeoutPolicyTest.xml",
+      "bytes": 717,
+      "sha256": "39ac0190a11f4058162331dd42cc6c50fdbec46134fdd45a8c43235ecf5d31d8"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.BackgroundRuntimePublisherTest.xml",
+      "bytes": 546,
+      "sha256": "bb6bd03cab7544d8288cd21f03cb44290f8eeeb55ed79396df1cf5b15285544b"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.BundledAssociationModelTest.xml",
+      "bytes": 819,
+      "sha256": "95f23322eb1845ee81d313e89ed58532962352c0ed2230edbd21192d03be9d10"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.BundledPinyinLanguageModelTest.xml",
+      "bytes": 916,
+      "sha256": "36668b4a2f41efb2a3645485d6f468d9880ba7da21bf4a605941aceb76f8a7f0"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.BundledPinyinLexiconTest.xml",
+      "bytes": 889,
+      "sha256": "1b311924ca9daf1425d132e9bb28b7b1e8ad6a71c6d3d104e02c353f81d79d2c"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.CandidateBarCompositionPresenterTest.xml",
+      "bytes": 1689,
+      "sha256": "eca2b78920ca6d396730ee5a24d87e0c61ae8de9876470068c52180e79ef370a"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.CandidateCommitTimeoutPolicyTest.xml",
+      "bytes": 1032,
+      "sha256": "d248c2728da10c31b8d9a8f8e0b965ee0ec3e71d8eeca619f204b1278cf44c9c"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.CandidateDecodeSessionTest.xml",
+      "bytes": 2386,
+      "sha256": "c098fc134999c46b56fbd5dc5571e4bee774d309085ac2a571aaaa190f5039e9"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ChineseEnglishEnterPolicyTest.xml",
+      "bytes": 835,
+      "sha256": "737b0fb8b16cfc4b2a31bd250936fe281e1b9b4e7ba58d6802d9640cb3c8a140"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ChineseInputSchemeCoordinatorTest.xml",
+      "bytes": 2265,
+      "sha256": "f3d8b4b03ab3981741aedfd45dd5cd6ad3d4667745cfb2380f779813d9676301"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.EditorCompositionSelectionPolicyTest.xml",
+      "bytes": 1059,
+      "sha256": "b00490c4986eaece933a244b8e35a2f7b15c3e96147dc72a07ce678eabff5ae4"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.EditorDecodeContextTest.xml",
+      "bytes": 813,
+      "sha256": "068e6946b5fdb32d69d9b2a5962e9aeff6b3bfb9885e5c389622d13af9a070e4"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.EditorHistoryFeedbackPolicyTest.xml",
+      "bytes": 703,
+      "sha256": "c7347dd4706ca2634a300d0795431417254df8affbc5241129ecf5f149383012"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.EditorPanelStateTest.xml",
+      "bytes": 959,
+      "sha256": "3b9f6a6fff2cd839ecf1930d6eee8208773539bffcf0fdf82e7f7f9b53213f69"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.EditorPrivacyPolicyTest.xml",
+      "bytes": 800,
+      "sha256": "8d4c1db0d76edc72dd2aa6d74aac15d9c6b24ef914f56298c6539c5a5cfc39a6"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.EnglishCompositionEditControllerTest.xml",
+      "bytes": 1073,
+      "sha256": "95ac4e12879a8220bed8dda10cba093e70a51e505753adff9b66d9bce1ba11bc"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.EnglishShiftStateTest.xml",
+      "bytes": 839,
+      "sha256": "1c5bc4ccafbd7197b09aef04828459b44360ba8dd420e765e9ed406753d8b9cb"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ImeWindowHeightPolicyTest.xml",
+      "bytes": 826,
+      "sha256": "f96ac1dca2657d249a6b00b612df0418ee8df30c4117b8e943da9cd4fac02c4e"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.InputLearningReadinessTest.xml",
+      "bytes": 678,
+      "sha256": "5cc91bd25296ebc91a9aba2e927d19c9817702b09135e1fb2b0aa71116952bc1"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.KeyboardInputSchemePreferencePlannerTest.xml",
+      "bytes": 885,
+      "sha256": "16a90af318425fd82adea8331d1924d04867f86a4f1e6e3d04e19c182cb36757"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.KeyboardPreferenceProjectionTest.xml",
+      "bytes": 708,
+      "sha256": "8a5b4a4cb592b7c667ab4ad43dadabff03cffaeba22dd6cd78624bccec937184"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.LatestOnlyTaskRunnerTest.xml",
+      "bytes": 1177,
+      "sha256": "7653e9ebf36a1225b1eaa19829ac0652519feb1cbcfc43f84618f94167eeafb7"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.PendingDecodeCommitCoordinatorTest.xml",
+      "bytes": 1557,
+      "sha256": "e34870afa4c9d52910e0029ee1aa64955ba76133f51b053e9ce2df6089f0c2e1"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.PendingPinyinLearningQueueTest.xml",
+      "bytes": 528,
+      "sha256": "b82b0a015745c41bab60fd8a7442672b068b5a221a27f070e05d43efd59be00f"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.PendingPinyinWaitServiceTest.xml",
+      "bytes": 2631,
+      "sha256": "64c6467b13ea33fc1461ac5c55920a9046f34e1aa44615b7635a29ec0733e594"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.PersistentContextSelectionTest.xml",
+      "bytes": 712,
+      "sha256": "5166f8283d24e4d6580b538d93189da21d23c567e886a6533aec1acca81c6d72"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.PersistentEnglishWordUsageStoreTest.xml",
+      "bytes": 555,
+      "sha256": "bf641d4e7be3eb38d27a85feb925c58b6b0ffe0810c459310f77f0e66b387af6"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.PersistentUserAssociationLexiconTest.xml",
+      "bytes": 523,
+      "sha256": "d8dc0fc1cbe7497f70c34eeb762c3b16838de00d946e400295c7b076a2614ace"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.PersistentUserLexiconResourceInitializerTest.xml",
+      "bytes": 1273,
+      "sha256": "0501a9a09ca0ef205a8dd316ea3a44a0c2166877035c17b1eb891a77133207d2"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.PersistentUserSentenceLearningTest.xml",
+      "bytes": 541,
+      "sha256": "4ee5edfbe4655db5bdc41c4caf8522ecb703a8ef8fc03a533c4398713c64749c"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.PersistentWubi86UserLexiconTest.xml",
+      "bytes": 1412,
+      "sha256": "be7a380cbd3c6d97dd2eb25cf8445217d20c7510291bc6baac3469548dae260d"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.PersonalizationFeedbackWindowTest.xml",
+      "bytes": 2630,
+      "sha256": "72a09765830f42ac6341105bf8076479e067e20281c12f6e58c4d7232016a90b"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.PinyinCommitLearningPolicyTest.xml",
+      "bytes": 707,
+      "sha256": "22e15d3b097eadd0d4253b587c6ffb5985c00e93aaf9d5521c96c253669af53f"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.PinyinContextServiceTest.xml",
+      "bytes": 1647,
+      "sha256": "f8d9b5b65268520544dc8b586fa1c5543dc226d160126d5a9566803ffa55086b"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.PinyinSeparatorServiceTest.xml",
+      "bytes": 531,
+      "sha256": "5209a06cdea3f6eaee90c0778038ec02d01b3d51277105d8e406b1a9624c8014"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ProductionPinyinDecodersTest.xml",
+      "bytes": 2467,
+      "sha256": "f3bdf305249dc4e4eda6c0b45c9f24761d584c7c04d497e84761905cf46f4a7a"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ProgressiveCandidateSnapshotTest.xml",
+      "bytes": 2277,
+      "sha256": "c4dd620ac0602ef01375fcb16c1db8577164d19163faf08604341975e77cdba6"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ProgressiveLearningQueueTest.xml",
+      "bytes": 838,
+      "sha256": "642348c9638cdb561fb43cd86e59fadff1e8b56b94edca08095f4196c2909346"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ReliableCommitSelectionFenceTest.xml",
+      "bytes": 712,
+      "sha256": "d58593d6056e10f9617fb7049b53c12a6daf7a7e32249e67f67d477e7ba30aef"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.SenseImeRootLayoutRobolectricTest.xml",
+      "bytes": 537,
+      "sha256": "8177ec00cf66cb3444ec5f86e222bc3bd04e14622e81b3cc33633aa8ec328ef0"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.SynchronousEditorMutationGuardTest.xml",
+      "bytes": 684,
+      "sha256": "87a77f8c0b8c270f66c9458bbfd97cc6674f6d3bb2c73d513956a855b67b2212"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.WubiOverflowCoordinatorTest.xml",
+      "bytes": 1528,
+      "sha256": "75591b940d9c6e0fd1e2b3b31e0e8e926c839c0d0cc348eedbb4942cd99d4502"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ai.AgentSkillRunSnapshotTest.xml",
+      "bytes": 865,
+      "sha256": "836b0d876ab105f48dd7ed70111ef299f828110ee34bc863817c3a5aea1be152"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ai.AgentStreamPresentationTest.xml",
+      "bytes": 1532,
+      "sha256": "f5d836a1e103bfa4cba451e1279bce02330b02de885a185295bc727b5d5708ca"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ai.SenseAiEditorCoordinatorPresentationTest.xml",
+      "bytes": 759,
+      "sha256": "811586a27566cc46377a61d746d5f8370cc14925d86858037669b15765526ddd"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ai.editor.AndroidEditorSecurityClassifierTest.xml",
+      "bytes": 1279,
+      "sha256": "d009d8b91ddaa1781f88e7f0a79a556e1e0315d0f119cb2fd51dfd235fef7b02"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ai.editor.AssistantResultPatchFactoryTest.xml",
+      "bytes": 741,
+      "sha256": "8729042a97019544d5dd32257572f74ca5d072c271475c2fde0676b4f5fb873d"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorContextWindowPolicyTest.xml",
+      "bytes": 1089,
+      "sha256": "f55651e9a655f7012fca0bede094749dc51973c12ff5057fa88e06435061a03e"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorPatchGuardTest.xml",
+      "bytes": 3250,
+      "sha256": "9ab05312fcd9b1517766f0f6c1ddc191495baff9bd529cdf24802a809876d215"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorPatchPlannerTest.xml",
+      "bytes": 1694,
+      "sha256": "0b387cde147ddde4c4b0fbf249007f08c4e6e05e7341ffb8151230c5e23d536b"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorPostApplyVerifierTest.xml",
+      "bytes": 1061,
+      "sha256": "45462580a1afd0bc8d122b9f8ce4343aa58e4a0bfcf57d37b1c02c42013dd531"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorSnapshotCapturePolicyTest.xml",
+      "bytes": 4047,
+      "sha256": "aec325cb4658873a3591546f001c9190380b36e58ac069bb0b11b78ca8f3817c"
+    },
+    {
+      "path": "e52/candidate-junit/ime-service/TEST-io.github.ethanbird.senseime.service.ai.editor.EditorTransactionStateMachineTest.xml",
+      "bytes": 2453,
+      "sha256": "b47d44ef1f771aae05bc17d2741fff09c586c2b1ae29edf54070cbaa9e15eec4"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.ActiveSkillAuroraLoopPolicyTest.xml",
+      "bytes": 984,
+      "sha256": "33f93b13a88b1e48d52542e35c81f4840d998eb9b848d2447620ba82af57e0bb"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.AiHoldGestureSessionTest.xml",
+      "bytes": 3110,
+      "sha256": "6a928d2d3f01572befb5e3704596f4928f30aa952973dfea9a553fdc2f74adb7"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.AiPreviewLineLayoutCacheTest.xml",
+      "bytes": 680,
+      "sha256": "55ee4b57f4adf9102dd2c8424133e80ea6142e05043c322c7dfd8bc3da3d50b5"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.CandidateAccessibilityProjectionTest.xml",
+      "bytes": 1245,
+      "sha256": "dbf2a8b5622f782089cce6f815c2c3054b3ca88bde55c12c9cc3adcf7467d3a3"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.CandidatePanelTest.xml",
+      "bytes": 2808,
+      "sha256": "ae9d410641c7080070b2d828348135d995f04f1a8d45fbb82a8ca302f9789c67"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.CandidatePointerActivityTest.xml",
+      "bytes": 678,
+      "sha256": "4ad2e6c87a622d7426b086271532274bca3e2196f3fd911aad1dd80570d2fe1f"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.CandidatePresentationPolicyTest.xml",
+      "bytes": 1177,
+      "sha256": "b9e82ba403a7232954ee82cc8534bc3032ee476e8d1990cec9e672349622bc0d"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.CandidateStripScrollStateTest.xml",
+      "bytes": 1467,
+      "sha256": "8b39cf1c08b3a6959fcae905bf8d5881c59e81af51d0f5d4b77f7e0fb5968240"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.CanvasIconGeometryTest.xml",
+      "bytes": 1111,
+      "sha256": "cf689ef7b0b3765b871d207a3a1a2c11a14e124869da81e3b28bdf61c94f7097"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.EditorPanelInteractionTest.xml",
+      "bytes": 817,
+      "sha256": "2a60b0c40d62485b01b5171f440e492bb2579d925e934c3c9b52634bece00cb0"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.EmojiCatalogTest.xml",
+      "bytes": 913,
+      "sha256": "c440dfc17521280334dccfc5053b060b7a01e73e426eebf13cffe80464a6b0ff"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.KeyCodesTest.xml",
+      "bytes": 628,
+      "sha256": "30d7e00af8770e11d19ba0602abb5c5e2abf3726952fc94ffc2422c58c6f5296"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.KeyboardArchitectureTest.xml",
+      "bytes": 3720,
+      "sha256": "f0f19a288a5f8c237a1248b173bc66bbb890bf7373c3f7fa839e62b8cec9794b"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.KeyboardBuiltInGesturePolicyTest.xml",
+      "bytes": 820,
+      "sha256": "dcf6b4f1b675c94af2d37615001be37f01feb794a9ca4cd205b02b3646adc62d"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.KeyboardGapHitResolverTest.xml",
+      "bytes": 1265,
+      "sha256": "e5454279ba6c76b6bb3130f0437d36173579b710020e391dffa58edd05f2c779"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.KeyboardInputSchemePanelLayoutTest.xml",
+      "bytes": 546,
+      "sha256": "99069e8a85054202d5a83af9a78d947e9f6bab02a0ccfd71d8f9fee20d367b72"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.KeyboardInteractionControllerTest.xml",
+      "bytes": 3278,
+      "sha256": "e9e4bbbc92171c2dcbeddf05a85452be4e5e9ae10b0068d62812c57b7a9a7373"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.KeyboardLayoutContractTest.xml",
+      "bytes": 4217,
+      "sha256": "8e49a7a54f1d2d3db5d4b06f7c9eec23d1ceda90276eca456c3277d9aa3aebd1"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.KeyboardMetricsTest.xml",
+      "bytes": 914,
+      "sha256": "e05c43b86fad2cd091d4b245c3f241878924c76dcbd4dd79e13f34b0cce0c36e"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.KeyboardPaletteTest.xml",
+      "bytes": 486,
+      "sha256": "c6838529628ac517f14000bf46c1d873ecb46c4dbd3d39f9d1fab3d998fb28ed"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.KeyboardRendererGeometryTest.xml",
+      "bytes": 1522,
+      "sha256": "d0dfbaebdf8955f82b2b8aa3f9871e834943479295a075819392ef4925fe507c"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.KeyboardScrollProjectionTest.xml",
+      "bytes": 651,
+      "sha256": "4524a03f8c12dcd7c165a435ec2c0a848dff3c3e980bf78c0afeb41fb4ffc449"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.KeyboardSizePolicyTest.xml",
+      "bytes": 774,
+      "sha256": "42b66f583fbfe49f70de468d9467c08510f09d08277686e27b57f121498fea0f"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.KeyboardSkillsTest.xml",
+      "bytes": 6373,
+      "sha256": "41dd91370219cf23f9d31886cffaf23e8967b5912de605cabc979f5e2ac336a1"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.KineticScrollPolicyTest.xml",
+      "bytes": 774,
+      "sha256": "f46b2458e71de7854f4993b186ac04eb466c4a9c85a3930e943cb7d9d74fc4a4"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.SwipeCharacterMapTest.xml",
+      "bytes": 757,
+      "sha256": "212270ba39f2e368a0c5944f07babad2ff363bbf4ea939e0126bdae0701e18d6"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.SymbolCatalogTest.xml",
+      "bytes": 771,
+      "sha256": "2e0293faf7d0c5777c85797b60c4f972f3e7cf78095e11749a7bd55220fe04fa"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.TouchInputReducerTest.xml",
+      "bytes": 3850,
+      "sha256": "bd5ab0ac2ce6c284f316d4ca64bf36cb62213ac8d931cafc14b8f427979a4bd9"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.VoiceSurfaceStateTest.xml",
+      "bytes": 946,
+      "sha256": "31c7e43f4d6b110e1a262a7bc936ce95ce4132ecff127618ac7adac036c9089c"
+    },
+    {
+      "path": "e52/candidate-junit/ime-ui/TEST-io.github.ethanbird.senseime.ui.Wubi86KeyLegendTest.xml",
+      "bytes": 489,
+      "sha256": "d5fda692227249ff625833085d14e757cce16928cf8b0d74ea5e33a22a82ffd0"
+    },
+    {
+      "path": "e52/candidate-replay.log",
+      "bytes": 165,
+      "sha256": "bf3393f15cd1f4feba29a30c954d2e8e06985341349f62f9fb04f4453f6749d2"
+    },
+    {
+      "path": "e52/candidate-tests-build.log",
+      "bytes": 58761,
+      "sha256": "70c0838b62c7d7456d8c814c671320ab87133b900ccdfc94c7e5fc9e4b1619db"
+    },
+    {
+      "path": "e52/candidate-verified-command.json",
+      "bytes": 681,
+      "sha256": "7e9b87aa3e21ec2976e8d43ceb41a91a244f57545769eee1d5369fb13d0a8123"
+    },
+    {
+      "path": "e52/candidate-verified-replay.log",
+      "bytes": 165,
+      "sha256": "bf3393f15cd1f4feba29a30c954d2e8e06985341349f62f9fb04f4453f6749d2"
+    },
+    {
+      "path": "e52/candidate.patch",
+      "bytes": 2819,
+      "sha256": "c48afc63aa0b4455e4ed74dc6e234c59ea9370c23aa03191ce98a8e70398f8a3"
+    },
+    {
+      "path": "e52/classpath-final-tests.log",
+      "bytes": 112,
+      "sha256": "31c5fb5ccac93ef49c101f6e6ed7bbadee04330b479c84a47f8bb5d12f63c3ca"
+    },
+    {
+      "path": "e52/classpath-tests.log",
+      "bytes": 630,
+      "sha256": "488872879a86b86d748ba6961753ceea00d4cad53603e042e8207df2c8ff5fbe"
+    },
+    {
+      "path": "e52/classpath-verification.json",
+      "bytes": 509,
+      "sha256": "9b6b85159b4537b8027ce523730d2cdb42b61772f8c6004217763027a5d0c975"
+    },
+    {
+      "path": "e52/closure-check.json",
+      "bytes": 302,
+      "sha256": "43629cec627f0bbab48300bd094ef491cf827803b4d318e7b8777f69e8ecf295"
+    },
+    {
+      "path": "e52/context-run.log",
+      "bytes": 145,
+      "sha256": "79adec3532e4d4724c39c19c1aaccc06fe90a14d1cce457baebaf2d9692f7f27"
+    },
+    {
+      "path": "e52/correction-run.log",
+      "bytes": 148,
+      "sha256": "a4bc1c1539ae933916fe8e995ccb9a3c52e2a4b33b4f2119335ad3f686770107"
+    },
+    {
+      "path": "e52/decision.json",
+      "bytes": 281,
+      "sha256": "53e27f66f45355fe78b01db8bf868b706481becccbaebfbd31a04c7e5445a1be"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-1-baseline/device/burst-cadence.tsv",
+      "bytes": 1894,
+      "sha256": "897f66cddb097669796a1f7248961f712d6748915f7e7b0172317927631dfaa7"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-1-baseline/device/continued-input.jsonl",
+      "bytes": 19107,
+      "sha256": "226c409be441ba89a97c08f1ccf2b1fa0a1b86276ea2fe8085959e0f656fba1a"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-1-baseline/device/fast-input.jsonl",
+      "bytes": 96222,
+      "sha256": "f6c38f1e573a1aaeed6feff0f637a18b5420e75a0f6300211bc206c2c3a4c579"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-1-baseline/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput-cadence.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-1-baseline/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput-environment.txt",
+      "bytes": 168,
+      "sha256": "9a9aa99a9897995278d02646e30007be919e34183a464006f065f2543dedcda3"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-1-baseline/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput.png",
+      "bytes": 125547,
+      "sha256": "0aee28122ef7ecb71ffa5288ca7dd0b7bf02a54dea12b42f2855dc95417000ce"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-1-baseline/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-1-baseline/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput.xml",
+      "bytes": 26406,
+      "sha256": "f42c4c0f229935c314c0eea04eba91f1a7daf37ab105b06219d456356bae518c"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-1-baseline/device/latency.tsv",
+      "bytes": 1384,
+      "sha256": "a0555f9e8809a29fb286046b5306c18c6a3217ad5f1f8f03a3f064cc8922a667"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-1-baseline/install.log",
+      "bytes": 40,
+      "sha256": "bbd6278d30570f0f298f0323aa411d5f505717478006c1d594aefd5cb1d02939"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-1-baseline/instrumentation.log",
+      "bytes": 965,
+      "sha256": "89eec50658b62457923293f9b5bd46c8cbba160465558d56136ba2fe8288eae6"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-1-baseline/system.trace",
+      "bytes": 186204,
+      "sha256": "a26ed3e8e7110d6b3ba6b92c4820d6a32c6c04fab78da3a9cf254a58edba4ebe"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-2-optimized/device/burst-cadence.tsv",
+      "bytes": 1894,
+      "sha256": "643e80fc6b2f5f0134197dc85158eb23b31c829ec0a7b6fbe85a0af58acfe071"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-2-optimized/device/continued-input.jsonl",
+      "bytes": 19107,
+      "sha256": "40696c4d2b0ca9fb257e7f73a4e08c438eb79d192b8d45538875fa3b22ad594d"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-2-optimized/device/fast-input.jsonl",
+      "bytes": 96222,
+      "sha256": "5ed0dd9551fa058efe1ffa2c9400a95b51d8249a79c56b7b2ecc99570c604c77"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-2-optimized/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput-cadence.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-2-optimized/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput-environment.txt",
+      "bytes": 168,
+      "sha256": "9a9aa99a9897995278d02646e30007be919e34183a464006f065f2543dedcda3"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-2-optimized/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput.png",
+      "bytes": 122819,
+      "sha256": "476638a6ac53888c90f2c7786ea09b3bc9e219c6786e23f72af7b6338a5b0c94"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-2-optimized/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-2-optimized/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput.xml",
+      "bytes": 26404,
+      "sha256": "2295315304b498d2c559fa4da85542d4efc72b6a48a68dde51fcc92ba7678637"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-2-optimized/device/latency.tsv",
+      "bytes": 1384,
+      "sha256": "51a6ce81509a06e80d8dc64ed53023bb5465d3af0ce3feb7f062cacce1304ec5"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-2-optimized/install.log",
+      "bytes": 40,
+      "sha256": "bbd6278d30570f0f298f0323aa411d5f505717478006c1d594aefd5cb1d02939"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-2-optimized/instrumentation.log",
+      "bytes": 965,
+      "sha256": "52e8164884e94551604730e8e2b392ecba2f85c89d1956342edf3e7c987b2299"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-2-optimized/system.trace",
+      "bytes": 186400,
+      "sha256": "9e642159d93bbfd21e0c7b7de1187e089b9823082bcbd8195225f6aeaad9f1d9"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-3-optimized/device/burst-cadence.tsv",
+      "bytes": 1894,
+      "sha256": "8709c161599d7e9db70cfb91a0e703442354730d8cdab93651f3bb105960464b"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-3-optimized/device/continued-input.jsonl",
+      "bytes": 19107,
+      "sha256": "a98732b66ffb14330bd9c9228949a7cb6828c7d59d087476595c53f038c71b62"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-3-optimized/device/fast-input.jsonl",
+      "bytes": 96222,
+      "sha256": "4e847cfd98f6cae3bbca3d6c7682b20257b269015b8577f2365b40d8e0aa0461"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-3-optimized/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput-cadence.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-3-optimized/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput-environment.txt",
+      "bytes": 168,
+      "sha256": "9a9aa99a9897995278d02646e30007be919e34183a464006f065f2543dedcda3"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-3-optimized/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput.png",
+      "bytes": 122946,
+      "sha256": "d5857d450150a40a7b7edda05e2944cad347735fa157a2c19e3dab39cf0dd0d8"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-3-optimized/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-3-optimized/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput.xml",
+      "bytes": 26407,
+      "sha256": "b0ac83d82ff9a679a3206ee746b90c35412dbe66ff2575270b6a15a44a45045f"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-3-optimized/device/latency.tsv",
+      "bytes": 1384,
+      "sha256": "db0805998c979e271446fc7e6d9d70e13f3bbe425f1699b343cfa2f007e320d0"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-3-optimized/install.log",
+      "bytes": 40,
+      "sha256": "bbd6278d30570f0f298f0323aa411d5f505717478006c1d594aefd5cb1d02939"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-3-optimized/instrumentation.log",
+      "bytes": 965,
+      "sha256": "f7bc6e23ec81f3d62dc18ef6520942e5a2aa3eea668c42a8e4ae45327b978017"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-3-optimized/system.trace",
+      "bytes": 185102,
+      "sha256": "58e52899aba580a17924192a09cb93f1f7df6583e422abd6aed6b7b66525da17"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-4-baseline/device/burst-cadence.tsv",
+      "bytes": 1894,
+      "sha256": "c940b808bd671a3b779e6ff8db4825edb08ab2d1cdbb0bd9b469104dab3ac025"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-4-baseline/device/continued-input.jsonl",
+      "bytes": 19107,
+      "sha256": "7d21597e5e64c345e3d8cdd6a44213037aff928d406afc830c7bf0e222b2dab6"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-4-baseline/device/fast-input.jsonl",
+      "bytes": 96222,
+      "sha256": "1349447a09a6d7b3134eeb7e1de190603bb7e0893040b13da3717d16deb6c4d8"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-4-baseline/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput-cadence.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-4-baseline/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput-environment.txt",
+      "bytes": 168,
+      "sha256": "9a9aa99a9897995278d02646e30007be919e34183a464006f065f2543dedcda3"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-4-baseline/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput.png",
+      "bytes": 122966,
+      "sha256": "e2c6943d61067c373804e8144998343b9cbd5a036314fcfb908f0325b4024195"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-4-baseline/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-4-baseline/device/fastConfirmationsAndContinuedTypingPreserveTheCompleteInput.xml",
+      "bytes": 26406,
+      "sha256": "add75f12185be0b627acf7f073a2674e48d2790301e85fd708767ef6cfa0c0dc"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-4-baseline/device/latency.tsv",
+      "bytes": 1385,
+      "sha256": "e2016751c610deab6e78047dc88bd24409fc987253745541a25bf3fee1b6439d"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-4-baseline/install.log",
+      "bytes": 40,
+      "sha256": "bbd6278d30570f0f298f0323aa411d5f505717478006c1d594aefd5cb1d02939"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-4-baseline/instrumentation.log",
+      "bytes": 965,
+      "sha256": "0425e79a420adec525a7e11817e9d852758df095e709799eba5ab5a28c4c5a17"
+    },
+    {
+      "path": "e52/e52-fast-abba/e52-fast-abba-4-baseline/system.trace",
+      "bytes": 186486,
+      "sha256": "291cac08fc5ad10a39279d994f79f5f2eab715ed4cee9a0edeb020e6ac988413"
+    },
+    {
+      "path": "e52/e52-fast-abba/measurements.json",
+      "bytes": 20601,
+      "sha256": "0d2fa6e1b9c67eb9ba9448d2868c98ca74993862f89d1268a13da330264e3e25"
+    },
+    {
+      "path": "e52/e52-fast-abba/protocol-lock.json",
+      "bytes": 33870,
+      "sha256": "162c4e28fc09d57ae31c05534528d58faf0126a02484ff5d0a82ebed4cb8cb69"
+    },
+    {
+      "path": "e52/fast-report-tests.log",
+      "bytes": 109,
+      "sha256": "d01b5d6508276a646318d68915301f902cee82b090cf67dd79c824ac6498bbfb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters-cadence.txt",
+      "bytes": 116,
+      "sha256": "42b34bd1e6a5a27a3c6801024cc863395673cfaa2f1043f8a81ff5535d84ab07"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters-stop.png",
+      "bytes": 108091,
+      "sha256": "9b6f9531047bfb0429f93b33cd2c740a59bf79a6072ab21a69a2130e25b4898c"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters.png",
+      "bytes": 111491,
+      "sha256": "614820bd38f4e114af4d6307c2524404ba173c5a6de67fe01c0cbf33888966ee"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/aKnownCompletedGreetingKeepsToolbarRatherThanOfferingNoisyCharacters.xml",
+      "bytes": 26376,
+      "sha256": "28b9d3ecc5498ff3f915c67f98b1165f4e3650058159baebf7ff3fbca628d2b1"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/associationDoesNotExpireUnderAnActiveTouch-cadence.txt",
+      "bytes": 62,
+      "sha256": "21bea10f6a6720c78ecbd6840aabf860dc90c90a0c694b9a3078912aab2256ea"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/associationDoesNotExpireUnderAnActiveTouch-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/associationDoesNotExpireUnderAnActiveTouch-held.png",
+      "bytes": 112403,
+      "sha256": "8bfbfe12c927fad6dda19fe6564b7c4100f56b7d7c80d7b0b92ce0bd5a1bab29"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/associationDoesNotExpireUnderAnActiveTouch.png",
+      "bytes": 108277,
+      "sha256": "1aaafa3c2304d7dfe55bc870c082a0a339d0aa2255abc4f502748263f82cc3c3"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/associationDoesNotExpireUnderAnActiveTouch.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/associationDoesNotExpireUnderAnActiveTouch.xml",
+      "bytes": 26367,
+      "sha256": "4d792bdd7478bbeb645044730f57c95b246f3f2a4e3a56bb687d15365c4e2f52"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry-cadence.txt",
+      "bytes": 63,
+      "sha256": "7efd1d2d055912b63609c1abc4a9ccfdd0ca610ba741a19582e7e48a387fa446"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry.png",
+      "bytes": 107780,
+      "sha256": "0b7ddcb922e8c992e668819ded2126d71483670be7043a718570709b97bbff8a"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/changingEditorWhileHoldingRejectsTheOldCandidateAndExpiry.xml",
+      "bytes": 26365,
+      "sha256": "d41b36bd2dc890c5097c2a394ca7a8794963c7ccfe12011a65417c454903e0cb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable-cadence.txt",
+      "bytes": 117,
+      "sha256": "9618606503271ebf878401db7516a31818994e1ae476f5063145b82b4ab0fa2f"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable-visible.png",
+      "bytes": 111650,
+      "sha256": "aa31f0acdca63d0fe29773230ed25dbc2dbf2ced5f95f9823488067285eeb0d4"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable.png",
+      "bytes": 117215,
+      "sha256": "7193704f00cd6395c84a390fed063aa73c74a95820c57013214cf7b0cbd51f35"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/dismissStaysClosedUntilANewCommitAndTheNewSuggestionIsSelectable.xml",
+      "bytes": 26370,
+      "sha256": "7e4c116b0089adf17d5a00dd34941386ecb9f9833ff4bfdafa8a6458ded60114"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout-cadence.txt",
+      "bytes": 63,
+      "sha256": "dde91079607b77f5d3e58ac049d067a8dd1dce8eed81ff905f44b2a4c6dc0918"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout.png",
+      "bytes": 107794,
+      "sha256": "5e4b10d4c55e9d4393db7c17e4cc599d13c1284af60a953c0712b9fbdfa08d4a"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/draggingKeepsTheStripAliveAndReleaseRestartsItsIdleTimeout.xml",
+      "bytes": 26362,
+      "sha256": "6a9097f134228cbe8e37e657837b3e9861e9d9012598dfba324207ad6c0963a1"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/hidingAndReopeningDoesNotResurrectThePreviousAssociation-cadence.txt",
+      "bytes": 62,
+      "sha256": "42d1c2550cbd5231f724f6397727864e9b81c4964c2d9863f0745a2ee1a9e56d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/hidingAndReopeningDoesNotResurrectThePreviousAssociation-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/hidingAndReopeningDoesNotResurrectThePreviousAssociation.png",
+      "bytes": 109077,
+      "sha256": "f9deba6fcc4df6dcde0bb2722b8644a918045b06e493dca7506d17a0e6fdf0cf"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/hidingAndReopeningDoesNotResurrectThePreviousAssociation.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/hidingAndReopeningDoesNotResurrectThePreviousAssociation.xml",
+      "bytes": 27236,
+      "sha256": "5bd11368af7639adaaf5d5ddf96aee4f8000adcb2bfbe2a57890e93145104e15"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/idleTimeoutRestoresToolbarWithoutChangingExternalText-cadence.txt",
+      "bytes": 62,
+      "sha256": "210c6766bcb348c9badcd5ced8e3e2531be1e786bb020cbe09ec21ef773a7610"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/idleTimeoutRestoresToolbarWithoutChangingExternalText-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/idleTimeoutRestoresToolbarWithoutChangingExternalText.png",
+      "bytes": 107792,
+      "sha256": "4cba2a8c1b5e6ad1a6d78fe0c7e8fd74bdb0fa634575de1ac52afb975a2f958b"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/idleTimeoutRestoresToolbarWithoutChangingExternalText.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/idleTimeoutRestoresToolbarWithoutChangingExternalText.xml",
+      "bytes": 26364,
+      "sha256": "9806e037043ab60e15b71af43f5c539ee4e681433a394f6e10148f4b7e158797"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping-cadence.txt",
+      "bytes": 118,
+      "sha256": "975c3b7b9eee74ba272c43aa92cae4375abe070524c0afd0629669b71ed23aab"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping.png",
+      "bytes": 98486,
+      "sha256": "e399c1fc0e1b9ce193ee8c454d098a1fd0b4e2bd01c1d99aae39c0f8cb227b5a"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/switchingToPasswordRemovesAssociationsAndKeepsLiteralTyping.xml",
+      "bytes": 26351,
+      "sha256": "a997f38d82da4182c4c6c8665a950c3d1e1908511cfa180dc09b8e94d46298b1"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/typingTheNextWordCancelsThePendingReveal-cadence.txt",
+      "bytes": 116,
+      "sha256": "3cf480664267c4f6a6d72e0eec60561623af939712abe1b8b48af536fc30d891"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/typingTheNextWordCancelsThePendingReveal-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/typingTheNextWordCancelsThePendingReveal.png",
+      "bytes": 115207,
+      "sha256": "ca94772372f238b15edaf9af7d6e32b6b1756dc0e8ca3ab44afbe37b069984ed"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/typingTheNextWordCancelsThePendingReveal.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/device/typingTheNextWordCancelsThePendingReveal.xml",
+      "bytes": 30384,
+      "sha256": "df40a026eb516c32af07acc55f25de62a124273f5187cfde9cc4ecf9b84caf64"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/environment.json",
+      "bytes": 755,
+      "sha256": "393170d8305223b6ea811f3b28a201107c55bcb10a774745060ccea8dfa7353e"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-association/instrumentation.log",
+      "bytes": 7011,
+      "sha256": "fba9e53305c4cb7a5f5e961a8d1d8aacd6f244e7afac7b631d688a86d42a6e3e"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/backspaceCanRemoveTheTypedBoundaryBeforeContinuing-cadence.txt",
+      "bytes": 88,
+      "sha256": "966b1b0f09822cf4b97dec67441e92f497c8c28be5fee50b57d631a236bf2a84"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/backspaceCanRemoveTheTypedBoundaryBeforeContinuing-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/backspaceCanRemoveTheTypedBoundaryBeforeContinuing.png",
+      "bytes": 117732,
+      "sha256": "60d2b00efbbdb1a882c1fc3a80967ad36743d02300fe2cc2a2f0f9244b9500c6"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/backspaceCanRemoveTheTypedBoundaryBeforeContinuing.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/backspaceCanRemoveTheTypedBoundaryBeforeContinuing.xml",
+      "bytes": 26363,
+      "sha256": "c81d835dc7c2068682e6416e5fa478e65feeec23f285474e16b4bb19705fadd3"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/changingEditorDiscardsTheOldBoundaryTransaction-cadence.txt",
+      "bytes": 100,
+      "sha256": "0f0a38d4554ea70abc50a711ab74ebf96165afc3c4b1a79ccef99eac41053a1c"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/changingEditorDiscardsTheOldBoundaryTransaction-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/changingEditorDiscardsTheOldBoundaryTransaction.png",
+      "bytes": 114746,
+      "sha256": "8ff62a84125ea5ff2cb0a22e237d7b4a059c9e412b29352c316b5fcd6e5d9470"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/changingEditorDiscardsTheOldBoundaryTransaction.txt",
+      "bytes": 35,
+      "sha256": "59b0396c79a12f83b18fcaf85df7b0b073d5a4541b0ac736813081f40702e67a"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/changingEditorDiscardsTheOldBoundaryTransaction.xml",
+      "bytes": 26346,
+      "sha256": "f62bc25dacb44b8ef882126cf5817aacb13f2d9a244421c7958449fa862888aa"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/duplicateBoundaryDoesNotEndOrDuplicateTheTransaction-cadence.txt",
+      "bytes": 58,
+      "sha256": "af5d935829703360f49bece59a05eafd498c8a915497577a900ed912bcb194bf"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/duplicateBoundaryDoesNotEndOrDuplicateTheTransaction-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/duplicateBoundaryDoesNotEndOrDuplicateTheTransaction.png",
+      "bytes": 121217,
+      "sha256": "25ec54483c4ca45040f00bb1e8e77bf53c61256d68a3102f8b964a05e4002ded"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/duplicateBoundaryDoesNotEndOrDuplicateTheTransaction.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/duplicateBoundaryDoesNotEndOrDuplicateTheTransaction.xml",
+      "bytes": 26364,
+      "sha256": "0d9bd11ddfd4c581be87363e3e29479562f46960f77e7a097a58da448735f635"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/physicalSeparatorKeepsTheExternalComposingSpanAlive-active.png",
+      "bytes": 115341,
+      "sha256": "b28559e32fa1ef41b0c2229422bab557a8b3f4ba6552d41e640e19136bba0d57"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/physicalSeparatorKeepsTheExternalComposingSpanAlive-cadence.txt",
+      "bytes": 88,
+      "sha256": "99d0e2841d2652b741c66f3bef49336169530ab422513a9d23fd67e53d397921"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/physicalSeparatorKeepsTheExternalComposingSpanAlive-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/physicalSeparatorKeepsTheExternalComposingSpanAlive.png",
+      "bytes": 121375,
+      "sha256": "602d5c9b6e614c2a7d0806a6e6998872dd6153814cf2cb642ec8ed6d15e335b2"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/physicalSeparatorKeepsTheExternalComposingSpanAlive.txt",
+      "bytes": 44,
+      "sha256": "b1d38e6f55c5cc412a0b384a270f6ee514a8ad2a116b707ccc7d5690d3f95b6b"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/physicalSeparatorKeepsTheExternalComposingSpanAlive.xml",
+      "bytes": 26365,
+      "sha256": "6293464a3979722256b73a9625931a29cc611e0deae5f12eb3d82ec3894ea57b"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/rapidBoundaryAndEnterPreserveTheExactRawInput-cadence.txt",
+      "bytes": 54,
+      "sha256": "1d13bd1084262142fdaecfc4f2124409d728533b542fdfa040453c2b4603af23"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/rapidBoundaryAndEnterPreserveTheExactRawInput-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/rapidBoundaryAndEnterPreserveTheExactRawInput.png",
+      "bytes": 107160,
+      "sha256": "a5f013a6670437e5390bd3fbb06a78147e8fd727b48afda4cf3a8eb3782699a8"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/rapidBoundaryAndEnterPreserveTheExactRawInput.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/rapidBoundaryAndEnterPreserveTheExactRawInput.xml",
+      "bytes": 26364,
+      "sha256": "53e4482f9ab59b80a4cdff5839e9d5cae5923470b3b6e4c363f98e8c2389b554"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/selectedPrefixAndUndoRetainTheExactBoundary-cadence.txt",
+      "bytes": 96,
+      "sha256": "6a9290f71936045db5097ba2cc5d09d945141abc025d4ffdab2cf7038337bbae"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/selectedPrefixAndUndoRetainTheExactBoundary-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/selectedPrefixAndUndoRetainTheExactBoundary.png",
+      "bytes": 121357,
+      "sha256": "41295ad10af62fc05f379b5b664e7cdda997810cc44ae20acd8422fc48c4232c"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/selectedPrefixAndUndoRetainTheExactBoundary.txt",
+      "bytes": 44,
+      "sha256": "6563cd051694e21d70a3019d4a4b71c3178d7e07cc55645ec8764f52d7e7b32d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/device/selectedPrefixAndUndoRetainTheExactBoundary.xml",
+      "bytes": 26364,
+      "sha256": "d75569e6b809997e5d8f864aa3dccfe755b0e086e60ef7852439c68c4a8292c6"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/environment.json",
+      "bytes": 755,
+      "sha256": "393170d8305223b6ea811f3b28a201107c55bcb10a774745060ccea8dfa7353e"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-boundary/instrumentation.log",
+      "bytes": 4607,
+      "sha256": "0438a727752a7e96bef531a0b8aca9541403ee247365580b48296b292586f678"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/aContrastingContextPreservesTheOtherHomophone-cadence.txt",
+      "bytes": 46,
+      "sha256": "3603774f50974fb89f5d7ce2c49231291cb0ab61e89ca1ba7cc4d52b8525c156"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/aContrastingContextPreservesTheOtherHomophone-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/aContrastingContextPreservesTheOtherHomophone.png",
+      "bytes": 108482,
+      "sha256": "839b5570fd5d23763eefa0957d5f0ac8026cbbb2ad8f56a6097212e702987ecf"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/aContrastingContextPreservesTheOtherHomophone.txt",
+      "bytes": 34,
+      "sha256": "05b14fc28f1bd73180736c7e3c907d0895af7291b387a9247f47301eb0621a92"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/aContrastingContextPreservesTheOtherHomophone.xml",
+      "bytes": 26365,
+      "sha256": "2211185e0928a99eaf6ef1d265e0a3a6d3a7a91480efa3e084f601dff3c6e8b7"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/changingEditorsDoesNotReuseTheFirstEditorsContext-cadence.txt",
+      "bytes": 139,
+      "sha256": "2d592d95d70894cfa8da29a41ceb7953126a6ab4dafba737f5620ef04aae4636"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/changingEditorsDoesNotReuseTheFirstEditorsContext-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/changingEditorsDoesNotReuseTheFirstEditorsContext.png",
+      "bytes": 107273,
+      "sha256": "3fbb6fc5c57fc23b74cc606dc5afef099ff04de9f5c61a48fc0950284c3f71c9"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/changingEditorsDoesNotReuseTheFirstEditorsContext.txt",
+      "bytes": 51,
+      "sha256": "88a59cc53668557a20da5c96a39394687c865f4ebe6bea5efe0eafd61ecd66d7"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/changingEditorsDoesNotReuseTheFirstEditorsContext.xml",
+      "bytes": 26354,
+      "sha256": "c35f1b981c8ba1e537134a25c0ffb26398b41c114226d85f99639fad1a59dd10"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/deletingTheWholeCompositionRecapturesChangedEditorText-cadence.txt",
+      "bytes": 92,
+      "sha256": "b5d599ece3fb6dae83c8c90a9665389df0dbbaa5e036db8f9c753098db42f7bd"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/deletingTheWholeCompositionRecapturesChangedEditorText-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/deletingTheWholeCompositionRecapturesChangedEditorText.png",
+      "bytes": 108482,
+      "sha256": "839b5570fd5d23763eefa0957d5f0ac8026cbbb2ad8f56a6097212e702987ecf"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/deletingTheWholeCompositionRecapturesChangedEditorText.txt",
+      "bytes": 34,
+      "sha256": "05b14fc28f1bd73180736c7e3c907d0895af7291b387a9247f47301eb0621a92"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/deletingTheWholeCompositionRecapturesChangedEditorText.xml",
+      "bytes": 26365,
+      "sha256": "2e401f1858c0525d30e61dfe373ba7fad6c0bab8f1174ae2b04aa2266e31c6ab"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/insertionUsesTheLeftContextAtTheMovedCursorNotTheTextSuffix-cadence.txt",
+      "bytes": 46,
+      "sha256": "621f34748e4ac27689e0a6bb3c03ea2232ab140d20861c42b44317a38b0c242c"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/insertionUsesTheLeftContextAtTheMovedCursorNotTheTextSuffix-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/insertionUsesTheLeftContextAtTheMovedCursorNotTheTextSuffix.png",
+      "bytes": 112036,
+      "sha256": "7c58b8f4fa5d6d7b41773ce4e3e8d672a9d7fdd011b86b9ace082e07af557bce"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/insertionUsesTheLeftContextAtTheMovedCursorNotTheTextSuffix.txt",
+      "bytes": 40,
+      "sha256": "d549e4c3e48022811834f953c638f57c6a260b7452d54bb23316aacc843b8f21"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/insertionUsesTheLeftContextAtTheMovedCursorNotTheTextSuffix.xml",
+      "bytes": 26373,
+      "sha256": "49c41850e7926b999443b81dd70057a318034f3a79ee8cb4d4095528ed2f64c8"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/precedingEditorTextSelectsTheContextualHomophoneWithoutLearning-cadence.txt",
+      "bytes": 46,
+      "sha256": "64582399ec2d55f401a064b1bc60f7788c5083c41136caa0b1bf3b71b3b84558"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/precedingEditorTextSelectsTheContextualHomophoneWithoutLearning-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/precedingEditorTextSelectsTheContextualHomophoneWithoutLearning.png",
+      "bytes": 110317,
+      "sha256": "c1066b4882124845c9e3d7957aa5652679b33e93f5e050fb7bd512fae965d4a1"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/precedingEditorTextSelectsTheContextualHomophoneWithoutLearning.txt",
+      "bytes": 34,
+      "sha256": "aa4edbb4ba98f0d1331c87f9c33ce57d978513596419e412cab955c48e360577"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/precedingEditorTextSelectsTheContextualHomophoneWithoutLearning.xml",
+      "bytes": 26367,
+      "sha256": "527e18cc2a80bc91291efeafa9672a148fbb975808e192e40d5026098d19b09e"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/punctuationResetsTheLanguageModelBoundary-cadence.txt",
+      "bytes": 46,
+      "sha256": "8e49e3b40f772a68ac2658572415435953026068bf4e20399da0cc16f69b8d6f"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/punctuationResetsTheLanguageModelBoundary-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/punctuationResetsTheLanguageModelBoundary.png",
+      "bytes": 111032,
+      "sha256": "a2cce632a8536cc132177e65d52d7d7b6ca272b3f0f14c3d729b816c0b497fcf"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/punctuationResetsTheLanguageModelBoundary.txt",
+      "bytes": 37,
+      "sha256": "35ca132af3a66491dd6680db466cbbc2c82242de72e4724a81c24f8d619fa3a2"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/punctuationResetsTheLanguageModelBoundary.xml",
+      "bytes": 26368,
+      "sha256": "42b4bdb43ae98ae21551bc98624da68275e2c30965f2e54836f39b9d50b7097d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/replacementUsesTheLeftEdgeOfTheSelectedRange-cadence.txt",
+      "bytes": 46,
+      "sha256": "b98ba2b3a8940b7de8bddd778a89b3ba010327493d013147f55e6c39d8de9532"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/replacementUsesTheLeftEdgeOfTheSelectedRange-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/replacementUsesTheLeftEdgeOfTheSelectedRange.png",
+      "bytes": 110317,
+      "sha256": "c1066b4882124845c9e3d7957aa5652679b33e93f5e050fb7bd512fae965d4a1"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/replacementUsesTheLeftEdgeOfTheSelectedRange.txt",
+      "bytes": 34,
+      "sha256": "aa4edbb4ba98f0d1331c87f9c33ce57d978513596419e412cab955c48e360577"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/replacementUsesTheLeftEdgeOfTheSelectedRange.xml",
+      "bytes": 26367,
+      "sha256": "3c044e012d109c7937f8b6f89333fb0c4bc4a53f1379f03c9f1ffd3f4e41609d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/theNextCompositionSeesTheJustCommittedWord-cadence.txt",
+      "bytes": 100,
+      "sha256": "378655c6591026f79f58552c92c8b6c474a7b8029a01285bb74e35e6226c054d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/theNextCompositionSeesTheJustCommittedWord-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/theNextCompositionSeesTheJustCommittedWord.png",
+      "bytes": 110308,
+      "sha256": "8b024c803c7639d2403a7664a563bebb2480ebccf4212404360e5451217bc1d2"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/theNextCompositionSeesTheJustCommittedWord.txt",
+      "bytes": 51,
+      "sha256": "9352b89d0c94380a46f3d347a672bb65964d08ca2faa1a55bd5f162739cd318a"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/device/theNextCompositionSeesTheJustCommittedWord.xml",
+      "bytes": 26365,
+      "sha256": "e097f40739333e298906b8f6903a53a2723e793bcfa1f449094cbf8d91149779"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/environment.json",
+      "bytes": 755,
+      "sha256": "393170d8305223b6ea811f3b28a201107c55bcb10a774745060ccea8dfa7353e"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-context/instrumentation.log",
+      "bytes": 6094,
+      "sha256": "808f904ef8c82fd125762ce43c3f6b7434e39f7177bab741c429377f960c8f03"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingKeyAtSentenceStartCanBeConfirmedAsChinese-cadence.txt",
+      "bytes": 90,
+      "sha256": "d44423da2a93c919a63aa31bd14041f4b511f81460381071d7bec4c8f7efbbed"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingKeyAtSentenceStartCanBeConfirmedAsChinese-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingKeyAtSentenceStartCanBeConfirmedAsChinese.png",
+      "bytes": 112501,
+      "sha256": "28ad8977f5dd8ff7ee67fdf9f530bfac32e0d3f0e6c0478a7fde9998d23fb50c"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingKeyAtSentenceStartCanBeConfirmedAsChinese.txt",
+      "bytes": 93,
+      "sha256": "5f26f1b6be05d72993b5eef2d9cadc9cda19b066e4fa7a01f4eb479eebe987f1"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingKeyAtSentenceStartCanBeConfirmedAsChinese.xml",
+      "bytes": 26373,
+      "sha256": "12673399beb216e6c0811b5beb5618570763fb9bc8caf6f167f12f66869f408e"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingKeyInsideTheSentenceCanBeConfirmedAsChinese-cadence.txt",
+      "bytes": 90,
+      "sha256": "124fa7da78b3359f209559fcde0250551528a5c9844490ac0b5d35dbbb173c07"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingKeyInsideTheSentenceCanBeConfirmedAsChinese-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingKeyInsideTheSentenceCanBeConfirmedAsChinese.png",
+      "bytes": 112501,
+      "sha256": "28ad8977f5dd8ff7ee67fdf9f530bfac32e0d3f0e6c0478a7fde9998d23fb50c"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingKeyInsideTheSentenceCanBeConfirmedAsChinese.txt",
+      "bytes": 93,
+      "sha256": "54b8748e999b7396c1b4d9ca5410ac5a592117f2a48cabafb377c6ac82547429"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingKeyInsideTheSentenceCanBeConfirmedAsChinese.xml",
+      "bytes": 26373,
+      "sha256": "12673399beb216e6c0811b5beb5618570763fb9bc8caf6f167f12f66869f408e"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingParticleKeyKeepsTheSentenceContext-cadence.txt",
+      "bytes": 122,
+      "sha256": "528d44aa099ca7c4a2cba8103c1e68d7db9de1415b345f945bf5c6a3e35bc074"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingParticleKeyKeepsTheSentenceContext-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingParticleKeyKeepsTheSentenceContext.png",
+      "bytes": 114626,
+      "sha256": "1c35632f8ca1cd01be8dae134a005c9d734070208e47bf65cc0b1c3036923157"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingParticleKeyKeepsTheSentenceContext.txt",
+      "bytes": 93,
+      "sha256": "54b8748e999b7396c1b4d9ca5410ac5a592117f2a48cabafb377c6ac82547429"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/missingParticleKeyKeepsTheSentenceContext.xml",
+      "bytes": 29963,
+      "sha256": "5434b0f81490cc21b658d6b111f67294fada421d39222752156101a84acce972"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/supplementalIntelligentAgentIsFirstWithoutLearning-cadence.txt",
+      "bytes": 70,
+      "sha256": "c7d4af8ec7f2a68ef53a33f196413170afe62609012f2c2decc32a60f285ad5b"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/supplementalIntelligentAgentIsFirstWithoutLearning-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/supplementalIntelligentAgentIsFirstWithoutLearning.png",
+      "bytes": 109185,
+      "sha256": "6749a95f9897b5ec0fd8c5dc8671c75019112266b68b66aaf6f418c76cb60023"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/supplementalIntelligentAgentIsFirstWithoutLearning.txt",
+      "bytes": 93,
+      "sha256": "a613144ac947271f7ee0aa9a4ea4e9b1cdcb6a9997b1ae646c87dad6b4c92174"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/supplementalIntelligentAgentIsFirstWithoutLearning.xml",
+      "bytes": 26368,
+      "sha256": "a06994b58adeecc252f7676e9d14dc5655cd9b38f5eb886662c18e4ace836f0c"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/swappedKeysAcrossSyllablesKeepTheSentenceContext-cadence.txt",
+      "bytes": 94,
+      "sha256": "460a71f82a24ebb1dcfef58cfd122da970369a22e70f8645340c1c2729652aa6"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/swappedKeysAcrossSyllablesKeepTheSentenceContext-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/swappedKeysAcrossSyllablesKeepTheSentenceContext.png",
+      "bytes": 112567,
+      "sha256": "ce065c2984d715c134bbddbe83ed5cabacf81ba99919515e5a9a4839074af0ab"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/swappedKeysAcrossSyllablesKeepTheSentenceContext.txt",
+      "bytes": 93,
+      "sha256": "d179b02f9d1df4bf17a585a0ca9e2b6dff84bd2d77b6efe48b24ed3cc0911b64"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/swappedKeysAcrossSyllablesKeepTheSentenceContext.xml",
+      "bytes": 26377,
+      "sha256": "ab0ed92bace5eb04f6be84a9e07c95af05e975bd0a0d1147d80e04f88e72e97b"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/swappedKeysAcrossWordBoundaryCanBeConfirmed-cadence.txt",
+      "bytes": 130,
+      "sha256": "0cecc472b8a1fea6251637294d23fa13400a2b4b0a4e67e5c022df678a8dc8bd"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/swappedKeysAcrossWordBoundaryCanBeConfirmed-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/swappedKeysAcrossWordBoundaryCanBeConfirmed.png",
+      "bytes": 115600,
+      "sha256": "216446ad3cc690b1484df24e9bf7d04f7ab3bcdb23a205fa67b6c512e27bf0cb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/swappedKeysAcrossWordBoundaryCanBeConfirmed.txt",
+      "bytes": 94,
+      "sha256": "8f7e40ff5f4c3d0aefbb536c9bb6accbc45add4bb94753c3537786f32570858a"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/swappedKeysAcrossWordBoundaryCanBeConfirmed.xml",
+      "bytes": 26386,
+      "sha256": "2cd21078246a58bbb95fe34024c2a6d94f5678b34c58daec7a6ed1ffa938f162"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/unknownInterjectionDoesNotDisplaceTheObservedSentence-cadence.txt",
+      "bytes": 118,
+      "sha256": "91ddbb691129645056ca97d39b0a5b46342c58db4feb356d96c81b28d2aa05e4"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/unknownInterjectionDoesNotDisplaceTheObservedSentence-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/unknownInterjectionDoesNotDisplaceTheObservedSentence.png",
+      "bytes": 115606,
+      "sha256": "c376186e35e6ba082275edcef406884ba416011cc99617a74c24300d04ad469b"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/unknownInterjectionDoesNotDisplaceTheObservedSentence.txt",
+      "bytes": 94,
+      "sha256": "c044d8737cfc58174d66a321bf88d9230afccd2780c54fe5d8cde8cc7f2652f6"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/unknownInterjectionDoesNotDisplaceTheObservedSentence.xml",
+      "bytes": 26379,
+      "sha256": "6ee9daaae5a2fc2d343e0514af3d81ee44b608faa5a5da3ca7a5aaec10f22ccb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/unknownNameGlyphDoesNotDisplaceTheObservedPhrase-cadence.txt",
+      "bytes": 154,
+      "sha256": "c4c79d760ffec44ead68b3dddf05b3ae62991497fa0cdb51ff04983ed9faefd8"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/unknownNameGlyphDoesNotDisplaceTheObservedPhrase-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/unknownNameGlyphDoesNotDisplaceTheObservedPhrase.png",
+      "bytes": 115773,
+      "sha256": "769aa32072b3f5cc4480ed4e7ec20b5b709042663e5f3459a49c9fce5ed6873d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/unknownNameGlyphDoesNotDisplaceTheObservedPhrase.txt",
+      "bytes": 94,
+      "sha256": "d7c29ce30ad7d9f3cb69c22146653faf2085ce64792df07f4b9ec94547971e64"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/unknownNameGlyphDoesNotDisplaceTheObservedPhrase.xml",
+      "bytes": 29529,
+      "sha256": "da44ab7013c834ed4663b98e85408fe8a3137d60a52d6e5ab69311254e6c9c0a"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/validExtraSyllableDoesNotBuryTheContextualRepair-cadence.txt",
+      "bytes": 99,
+      "sha256": "6917255b17a65c3401e11bcdd1d879cc8ff6169e517628f1701eee31a0b6da52"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/validExtraSyllableDoesNotBuryTheContextualRepair-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/validExtraSyllableDoesNotBuryTheContextualRepair.png",
+      "bytes": 112501,
+      "sha256": "28ad8977f5dd8ff7ee67fdf9f530bfac32e0d3f0e6c0478a7fde9998d23fb50c"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/validExtraSyllableDoesNotBuryTheContextualRepair.txt",
+      "bytes": 94,
+      "sha256": "d995621f82475d671636fb695dd6aef786e11711bfc36e6fd7f011dced921018"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/validExtraSyllableDoesNotBuryTheContextualRepair.xml",
+      "bytes": 26373,
+      "sha256": "12673399beb216e6c0811b5beb5618570763fb9bc8caf6f167f12f66869f408e"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/validFuzzySyllableDoesNotBuryTheContextualRepair-cadence.txt",
+      "bytes": 126,
+      "sha256": "770da41e0258a1205f6dd1750d4f45ca0aa890f8897732b6cb02b1f3670ee3c8"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/validFuzzySyllableDoesNotBuryTheContextualRepair-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/validFuzzySyllableDoesNotBuryTheContextualRepair.png",
+      "bytes": 115600,
+      "sha256": "216446ad3cc690b1484df24e9bf7d04f7ab3bcdb23a205fa67b6c512e27bf0cb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/validFuzzySyllableDoesNotBuryTheContextualRepair.txt",
+      "bytes": 94,
+      "sha256": "d8b37b750095d17a4cd240f68f5ff70569894df86dd50949418f8f204e1557a9"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/device/validFuzzySyllableDoesNotBuryTheContextualRepair.xml",
+      "bytes": 26386,
+      "sha256": "86f1fbf20133d386d3a55860abb417c6257d00e9dffb0dcac72a420d9892fb03"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/environment.json",
+      "bytes": 755,
+      "sha256": "393170d8305223b6ea811f3b28a201107c55bcb10a774745060ccea8dfa7353e"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-correction/instrumentation.log",
+      "bytes": 7622,
+      "sha256": "851a6688d1f3e71d6c92844021f27da5cdf7d8ba0cb3d287c7fe5ddb83684416"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/explicitHomophonesKeepSeparateContextsAcrossRestartAndPrivateSelection-cadence.txt",
+      "bytes": 522,
+      "sha256": "aabf5ecc9f6f8a79d8853010436bd2b29cca8f33bfd89299922a9addb4ddd528"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/explicitHomophonesKeepSeparateContextsAcrossRestartAndPrivateSelection-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/explicitHomophonesKeepSeparateContextsAcrossRestartAndPrivateSelection-final.png",
+      "bytes": 124515,
+      "sha256": "0a2608b36fc4403a0f0a5a933d8d6c09364d84c29f557c7d7c1d7874185a27ee"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/explicitHomophonesKeepSeparateContextsAcrossRestartAndPrivateSelection.png",
+      "bytes": 111617,
+      "sha256": "f0972ddd5582d8dea01ef8dfcd0a70b256cc4b31e9a0b8a40a636a28d9430bf2"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/explicitHomophonesKeepSeparateContextsAcrossRestartAndPrivateSelection.txt",
+      "bytes": 735,
+      "sha256": "a588025e6e0e362a9f29cf8ed23f4037dd0b53164a3b3ae749d8eac488125efd"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/explicitHomophonesKeepSeparateContextsAcrossRestartAndPrivateSelection.xml",
+      "bytes": 26371,
+      "sha256": "600f32ad32e9188c065fab213b41c77f346ec8db0e3cacea2ff9aeaa4896636b"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/explicitlySelectedCorrectionAliasSurvivesReuseAndProcessRestart-cadence.txt",
+      "bytes": 200,
+      "sha256": "a34b2bbd0c83d1e50bf8a69154631a29b38009d9913e5dc6b30bcdbac603e08e"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/explicitlySelectedCorrectionAliasSurvivesReuseAndProcessRestart-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/explicitlySelectedCorrectionAliasSurvivesReuseAndProcessRestart.png",
+      "bytes": 119250,
+      "sha256": "f4d4d98ed03ef01303ea92707ad7c52caec1ca636a987e4124af62ef4a239d38"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/explicitlySelectedCorrectionAliasSurvivesReuseAndProcessRestart.txt",
+      "bytes": 367,
+      "sha256": "df676b315df313f3b9cfeacba8c3ed6427f7ab54cdd891686a5408ccb6709c4b"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/explicitlySelectedCorrectionAliasSurvivesReuseAndProcessRestart.xml",
+      "bytes": 26365,
+      "sha256": "c12c75296f529c4a44d062e24ffb7787c6929e715dd5a05ab66e63f4d356fa42"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections-cadence.txt",
+      "bytes": 265,
+      "sha256": "47790bd8ee2f8c8742b64e8686ab2575095cc7dcaed3af0fc38acc96bb9ada0a"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections.png",
+      "bytes": 124568,
+      "sha256": "6dc001e23c9b9ffa8abaf3b377526a595702dd3f1c53746b6e088ede6431b3c2"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections.txt",
+      "bytes": 406,
+      "sha256": "38d0df9846f4af24d176fa353cb5a414d47c84aff7809c24e48ceb66d156af34"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/noPersonalizedLearningEditorDoesNotPromoteItsPrivateSelections.xml",
+      "bytes": 29972,
+      "sha256": "fab6998ab10990ac886bf125379526f049497eece788ede0e9e5a06fa4942286"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-after_process_restart.png",
+      "bytes": 124304,
+      "sha256": "f72b769348228198a7c02db93aec1a3d0cd0b87f0b6b932fa6d44079cf0497ff"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-after_process_restart.xml",
+      "bytes": 29976,
+      "sha256": "e2c4fc1f0a8b4e77088688d26c5fb03b0589ef00bee3fa013ab4464ed383b431"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-cadence.txt",
+      "bytes": 681,
+      "sha256": "369520de74612ad91ec8812ceebabf8b9f9fbc864784377e8d19a9b14ab4e816"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-intelligent_agent_restart.png",
+      "bytes": 120848,
+      "sha256": "9621de07e597474c1c8c7d5bdccbac7b2135fca6db97ecf648dd0506cad8c36c"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart-intelligent_agent_restart.xml",
+      "bytes": 29108,
+      "sha256": "a22cd151b892b1ecfc5e1fd4d9079f1dcde5678ad6768a7fe2c56f5fac4c2d02"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart.png",
+      "bytes": 129645,
+      "sha256": "0acb9a3b5bae43618cbf4e97994d6d173ae69341e13b85045803938ce83f602a"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart.txt",
+      "bytes": 859,
+      "sha256": "f262f1b865748354ba10e4eec04fc58d63088d81135d7d4af24c903bd0d222ba"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/progressiveNameSelectionSurvivesImmediateReuseAndProcessRestart.xml",
+      "bytes": 26373,
+      "sha256": "cda754510d119f4163bc9cda43cc7799da868ac0e771cdf6c1af441754b69f4c"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/quickSingleCharacterRejectionRemovesTheContextChoice-cadence.txt",
+      "bytes": 94,
+      "sha256": "2b6ebc724a1c4fbe353f0e5829f654abb4a25f341b41c24d3632ef90703e9d0e"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/quickSingleCharacterRejectionRemovesTheContextChoice-environment.txt",
+      "bytes": 168,
+      "sha256": "9a9aa99a9897995278d02646e30007be919e34183a464006f065f2543dedcda3"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/quickSingleCharacterRejectionRemovesTheContextChoice.png",
+      "bytes": 117762,
+      "sha256": "bdf3058dea9c59720ffa2d4a0065c9614bc025340a21db07f0c4005002f5514e"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/quickSingleCharacterRejectionRemovesTheContextChoice.txt",
+      "bytes": 96,
+      "sha256": "ebeed69521c3f6e29e9885a8bd5628a270da49dd053919bd00f25e33eb39af5b"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/quickSingleCharacterRejectionRemovesTheContextChoice.xml",
+      "bytes": 26367,
+      "sha256": "b88a4549c3f8e1a1b309f1071b0041def7671b695787578ff89a2b2a779e1b2a"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/recalledCompletionAliasSurvivesDefaultReuseAndProcessRestart-cadence.txt",
+      "bytes": 278,
+      "sha256": "0976e35ff04fe71d4588570614230e7aada9071ca27cf9bf288cf2f47f9d1994"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/recalledCompletionAliasSurvivesDefaultReuseAndProcessRestart-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/recalledCompletionAliasSurvivesDefaultReuseAndProcessRestart.png",
+      "bytes": 121567,
+      "sha256": "e175f6d614483d156d29de2d5683ba067994c345989aa4d85636602e912a83e5"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/recalledCompletionAliasSurvivesDefaultReuseAndProcessRestart.txt",
+      "bytes": 467,
+      "sha256": "e4ff750954f19578e3cd9f6d9cd91b1b6ea77a83fd762284cae1ae8804509b5b"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/device/recalledCompletionAliasSurvivesDefaultReuseAndProcessRestart.xml",
+      "bytes": 26362,
+      "sha256": "b15368b040d618f3f857052d4a846790b0b2437eef81555f56fac59c358741f1"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/environment.json",
+      "bytes": 772,
+      "sha256": "e1f76e2b05af1165d1449c33801950478282e3c21fffc84e0187e7f6ef5058f5"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-learning/instrumentation.log",
+      "bytes": 4772,
+      "sha256": "382967a181f96e00efd18ab34aadb15c725ffb534ddc3b778bdafec2529f8ec2"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/backspaceEditsThePendingSpellingBeforeSpaceConfirms-cadence.txt",
+      "bytes": 58,
+      "sha256": "7c861e30d7c9af1390341cbe088b9ab0edcea9b8c662e04f4fa1aa26909c7394"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/backspaceEditsThePendingSpellingBeforeSpaceConfirms-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/backspaceEditsThePendingSpellingBeforeSpaceConfirms.png",
+      "bytes": 120217,
+      "sha256": "51a261d7ed77de78728b2dc59966ea1dcb8eb99b4c87ae626de39fd0d20966da"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/backspaceEditsThePendingSpellingBeforeSpaceConfirms.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/backspaceEditsThePendingSpellingBeforeSpaceConfirms.xml",
+      "bytes": 27279,
+      "sha256": "72031c635e60595f2cbcfef481306651898585485b76e50a7f5fb62e29de07ad"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/candidateWordsAreExposedAsActionsToAccessibilityServices-cadence.txt",
+      "bytes": 55,
+      "sha256": "d0f4140beb295bc7bba2781c1170339fead621a89228a7d730806d676c96603c"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/candidateWordsAreExposedAsActionsToAccessibilityServices-environment.txt",
+      "bytes": 168,
+      "sha256": "9a9aa99a9897995278d02646e30007be919e34183a464006f065f2543dedcda3"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/candidateWordsAreExposedAsActionsToAccessibilityServices.png",
+      "bytes": 124060,
+      "sha256": "63d12bfcb8d3e237b2875978038f9a64bdac033d1a295b0eacdf9667cb0d80ec"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/candidateWordsAreExposedAsActionsToAccessibilityServices.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/candidateWordsAreExposedAsActionsToAccessibilityServices.xml",
+      "bytes": 26365,
+      "sha256": "73d996ae70e58147c7f5b372d00c370a089372eeb3169764e4ec3e2f4c55894e"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/confirmationReplaysFollowingInputInOrder-cadence.txt",
+      "bytes": 148,
+      "sha256": "27832256f6578f10c4d047c24c4c9ed81e88c7038f13aaaa717a55637f4768b5"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/confirmationReplaysFollowingInputInOrder-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/confirmationReplaysFollowingInputInOrder.png",
+      "bytes": 114743,
+      "sha256": "581a39f1be761ae77bd590c0b1625a03643e29fc740324901f3c21e0ed0aa52b"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/confirmationReplaysFollowingInputInOrder.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/confirmationReplaysFollowingInputInOrder.xml",
+      "bytes": 27294,
+      "sha256": "1b6666969f9fcfb91c8e523d0e73e5fbd70d2bc6d51561bcd1ea4299307cc4c4"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/enterCommitsRawEnglishInChineseModeWithoutANewline-cadence.txt",
+      "bytes": 95,
+      "sha256": "e65e49d270aabd4eeaecbaaaea4a0279f16a2f1bfc374c1f4972b22d7d4691a4"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/enterCommitsRawEnglishInChineseModeWithoutANewline-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/enterCommitsRawEnglishInChineseModeWithoutANewline.png",
+      "bytes": 111693,
+      "sha256": "d5ad2546874f23cae9de9840599cb1026b93f3d2e58f3db1b2df59c9a16a2ae2"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/enterCommitsRawEnglishInChineseModeWithoutANewline.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/enterCommitsRawEnglishInChineseModeWithoutANewline.xml",
+      "bytes": 26374,
+      "sha256": "f529d2140dd9b1c43e5b91ceded12a80f02630204e2f8e169dc91076bf28fa44"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/hidingAndReopeningTheImeKeepsTheExternalCommittedText-cadence.txt",
+      "bytes": 113,
+      "sha256": "7d54791cee320680cbbcdc91fbe8ca0e420ebf362f5956985db996a20c1839b4"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/hidingAndReopeningTheImeKeepsTheExternalCommittedText-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/hidingAndReopeningTheImeKeepsTheExternalCommittedText.png",
+      "bytes": 120736,
+      "sha256": "38a994d8140f1d281374f94fd13493a35b9773bb3955df9b2826c2d584dc4087"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/hidingAndReopeningTheImeKeepsTheExternalCommittedText.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/hidingAndReopeningTheImeKeepsTheExternalCommittedText.xml",
+      "bytes": 29961,
+      "sha256": "d1f9cd206e0f253de502945da570211ce53c7917ca685ddabe2165b49b959782"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/movingCursorAfterCommitInsertsAtTheExternalSelection-cadence.txt",
+      "bytes": 96,
+      "sha256": "b3a70c965df8645abbd97cececddb17eff6e25b9936386e9e131697443e8f24b"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/movingCursorAfterCommitInsertsAtTheExternalSelection-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/movingCursorAfterCommitInsertsAtTheExternalSelection.png",
+      "bytes": 122374,
+      "sha256": "bf1c2d96ca2580b372cea249b3f81a9f0c514b57005406d5c8f554b031171285"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/movingCursorAfterCommitInsertsAtTheExternalSelection.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/movingCursorAfterCommitInsertsAtTheExternalSelection.xml",
+      "bytes": 30376,
+      "sha256": "9112c349346c8b79a5f04738f0eb35a048a9ef6e4a782797edbceb84d8d96955"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/passwordFieldUsesLiteralInputRatherThanChineseCandidates-cadence.txt",
+      "bytes": 136,
+      "sha256": "d553bcd76a2ef591c0e9c02c48c7c49d28b754dfbf3bc279fcbe2917d512f89d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/passwordFieldUsesLiteralInputRatherThanChineseCandidates-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/passwordFieldUsesLiteralInputRatherThanChineseCandidates-literal.png",
+      "bytes": 101953,
+      "sha256": "f4a195f5c0962fc1dcb25250f66ff130ca24f59314acc86b7fe4d4265d329b6c"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/passwordFieldUsesLiteralInputRatherThanChineseCandidates.png",
+      "bytes": 114638,
+      "sha256": "3500be7f10df1fee36b2f7dc7f14b0768a573f492999cc7e6dd4b0d38a12b9f8"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/passwordFieldUsesLiteralInputRatherThanChineseCandidates.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/passwordFieldUsesLiteralInputRatherThanChineseCandidates.xml",
+      "bytes": 26375,
+      "sha256": "ae92123d81b3152d74505fc24c3aadc7425e8416ecba6ed9371db36c94a1baac"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce-cadence.txt",
+      "bytes": 94,
+      "sha256": "13f0011844069d4e3acf9d92f5297e7ca593a902801c1c9c9198b59db5cbf2aa"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.png",
+      "bytes": 111974,
+      "sha256": "1b584efeb3e130205950974ed45c5dce9f505b969dc58e840404c6ce3ec7163a"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.txt",
+      "bytes": 125,
+      "sha256": "3bcf1d0519d7a32716810d69ef24b94a8b2cdf3e250500abf882250a1eac0e8b"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/rapidTypingAndImmediateSpaceCommitTheLatestSentenceOnce.xml",
+      "bytes": 26374,
+      "sha256": "e49646fde7f74d8e0f7f33e2912ae85cb1619480f4ec06bc46570c9e90dc7f72"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField-cadence.txt",
+      "bytes": 148,
+      "sha256": "cd3b9013e1935fc26e7c1186097e990afbbed7ea29bfcb861684ed8d0f35dfef"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.png",
+      "bytes": 107775,
+      "sha256": "2a7437d1914aa956332ef8f5bba2f4650eaa01d24bc5f54bd71939c134f8c71d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/switchingEditorsDoesNotCommitAnOldCandidateIntoTheNewField.xml",
+      "bytes": 26358,
+      "sha256": "16e8f35c92ed833b708d9aca704950eda3f8eb38bc4ecc6c5711f022cd3276d4"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection-cadence.txt",
+      "bytes": 58,
+      "sha256": "2bff7763b0f728fc793ae8bd14f6a308f58bfac2035dd73271e22bb9037e808b"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection-environment.txt",
+      "bytes": 168,
+      "sha256": "0540f8507bf5ea20f6cb7d27bf7c86c1c2753cad1a5d0793f84c52046721011d"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection.png",
+      "bytes": 122913,
+      "sha256": "5d17bfe1c59a0d2c67cf8beb5fa7e25a254865fdae31ddab65997bc5146bf302"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection.txt",
+      "bytes": 14,
+      "sha256": "10e6de4e0ac21d2af6d63717ab5dcef940cb5917177c1179ba9ae9ce7cf51ebb"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/device/touchscreenPinyinCandidateCommitsThroughExternalInputConnection.xml",
+      "bytes": 27280,
+      "sha256": "67fc98448467698e981dda4b6c407ec02c18e06f40ce3537df8e2f7b27ddf5e6"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/environment.json",
+      "bytes": 749,
+      "sha256": "55c6029326ddcf8164b6b3f8874605219f95b225804673cc741e66560e09d17f"
+    },
+    {
+      "path": "e52/functional/external-editor-e52-ordinary/instrumentation.log",
+      "bytes": 7631,
+      "sha256": "d0d0c37ae6c6b95dd8ccd37c34b2ae171fcc93a21b744a25ad00702fe055b146"
+    },
+    {
+      "path": "e52/host-and-assets.json",
+      "bytes": 454,
+      "sha256": "3d493e8e1189396307130a28c8bf83800a25b798e0f64501598dac26517ce82e"
+    },
+    {
+      "path": "e52/input/full-replay.tsv",
+      "bytes": 311495,
+      "sha256": "066fcfa51e1347f1064f08c6d23f46221f56371d1ab2c7fd870a1fd231b1f7ed"
+    },
+    {
+      "path": "e52/latency-report-tests.log",
+      "bytes": 107,
+      "sha256": "ada2231f6651cb08d76fe665f46b18458ad6072708e751f0bc09a6b4ca4f9c89"
+    },
+    {
+      "path": "e52/learning-run.log",
+      "bytes": 146,
+      "sha256": "5091d4d4402c726c2b59e0c62ecde0d20d320c3c5de22994ef75683a1e590e8f"
+    },
+    {
+      "path": "e52/ordinary-run.log",
+      "bytes": 146,
+      "sha256": "d82c8a61ba11ae0429e692437fe986817afe3b2c8529635cdba02600540f381d"
+    },
+    {
+      "path": "e52/policy.json",
+      "bytes": 1853,
+      "sha256": "35009216afd606c09509a6a49b57594d2e900626da767fb2d4f8f25f72f7a580"
+    },
+    {
+      "path": "e52/reference/asset-identity-e48.json",
+      "bytes": 3090,
+      "sha256": "b7a7842d073dbe7ab97a32528d9bb56cb48b751d530f4d21bf55c9bf83fa7786"
+    },
+    {
+      "path": "e52/rejected-command.json",
+      "bytes": 233,
+      "sha256": "e68cc674247ca4fe47e16e34b8c2d8044334b09998a5455ab3510e59fd3e8960"
+    },
+    {
+      "path": "e52/restored-apk-entry-differences.json",
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "e52/restored-build-tests.log",
+      "bytes": 12074,
+      "sha256": "c4923018d5ac41b8441b128ee5c41082c9ce18a5cc404b41f327bd72ef30e6e4"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.AdaptivePinyinDecoderTest.xml",
+      "bytes": 6271,
+      "sha256": "7ded0e2fa113ec218c923c0310ab786f2cad0fe4b3bdc5eee30009c9515841ce"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.CandidateRankerTest.xml",
+      "bytes": 1272,
+      "sha256": "d56a22c032f0be48f2ac1b6feffe7524017288d6b0a358594c33a5b0f3c114f6"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.CandidateRankingCalibrationTest.xml",
+      "bytes": 1244,
+      "sha256": "e5a0debcdc23b64af5d0225dc55b4308176d2f459796b388637a8be1d781d90e"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.CandidateSnapshotTest.xml",
+      "bytes": 640,
+      "sha256": "e483eb881e363c73b0eb8988d8b963c25598668be3f06f4a04a39a64eeb29b70"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.CharacterBigramModelTest.xml",
+      "bytes": 799,
+      "sha256": "120f056d876ae922d5a87ce9d24f619b7f5cb1d9237c0d1ee62590f2e27a27fe"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.CharacterLanguageModelTest.xml",
+      "bytes": 1172,
+      "sha256": "bf1f1bb3412b07550919d8730ae8e4e08692941be6e19a4cfcdc2b9dcf78683f"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.CommitSequenceTrackerTest.xml",
+      "bytes": 991,
+      "sha256": "b4b68ba3f8eb7e0a11042a7e96841fbfcf599d5f1703cb0cd80f6c7f4205147a"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.ContextAssociationModelTest.xml",
+      "bytes": 1209,
+      "sha256": "663728cee9c834b0426a3f4c587d03dea3cc3f23fe9a6e723e33ba5ab38eab53"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.ContextualLearningScaleTest.xml",
+      "bytes": 3496,
+      "sha256": "4efa198ae28a87253c746d783547412fe15b1d2bec5247b18705215db43246d0"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.ContextualLearningTest.xml",
+      "bytes": 999,
+      "sha256": "c82c132e743a926e0c924634055a88e70803e55ccfef5c39ded5050edbb3b026"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.CorrectionProbeLanguageTest.xml",
+      "bytes": 1218,
+      "sha256": "896acab3a12b3ab74c7079db94e99558af52bb48542a3b2dd93f6d8eb559f46f"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.CorrectionSearchBudgetTest.xml",
+      "bytes": 511,
+      "sha256": "d0912abc4662b551ac4eee4950cb8c402eceb0fbf3b4ecd15744db18398e97ee"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.CuratedLexicalCandidateCatalogTest.xml",
+      "bytes": 1046,
+      "sha256": "7d00f08d068759839e772ca5c9bd7349b446ecc78dba8da9b9d8f11336ed2494"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.DecodeWorkScopeTest.xml",
+      "bytes": 1158,
+      "sha256": "a532baeea6c09442ee841dfbf4e78660f285e2c316fadfc0b6c2e49d416f6d5a"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.EnglishInputSessionTest.xml",
+      "bytes": 1276,
+      "sha256": "3f4ed7b1b12200b26f33bc4d44254c59a4fbc34d66e9a1fbf5c1350289c4c042"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.EnglishLexiconTest.xml",
+      "bytes": 2987,
+      "sha256": "d7ae36fb881bb6eecb11118900c28f9ae33dab27c288eb2893633288e26f7559"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.FakeDecoderTest.xml",
+      "bytes": 734,
+      "sha256": "840ffc39377969e25dc5febe6bdbaf9f2ba23d913bd50f6448c9fd3a596509d8"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.FourgramLanguageModelTest.xml",
+      "bytes": 1204,
+      "sha256": "ddd3a1c72678318dd5fedc3a7350529d56353b186de630380b10c969009020c1"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.FourgramPinyinIntegrationTest.xml",
+      "bytes": 881,
+      "sha256": "0e85efa9ea1b09004342c384e39278fa27fa56ad953de087dc2800e2550e8ec6"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.FullSpellingBoundaryTest.xml",
+      "bytes": 673,
+      "sha256": "cac9e2338f5d664b1055ef7eb6f0abce52591ec659829d9c51d5c2f25b39ba20"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.InputReducerTest.xml",
+      "bytes": 1038,
+      "sha256": "e1001449246e04250d1f546e5db1ba5de6838ae7f5237676a9b7b7e6ff15fe7d"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.LayeredMixedRecallTest.xml",
+      "bytes": 675,
+      "sha256": "7a50292b7878673f91c1adad85bec51d6a5c9a1dba64e5fd3399908303f4c4ab"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.LayeredPinyinLexiconTest.xml",
+      "bytes": 1060,
+      "sha256": "0649a0563055c5644e8cb645c030161320093c6c260689117cb102b065af7755"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.LinearMixtureBinaryTest.xml",
+      "bytes": 847,
+      "sha256": "1d5b8a82573fe2acecb9aa5b3bbf06bf7d8a5893ab93308a7443c8bd4408f1fb"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.LinearMixtureCharacterModelTest.xml",
+      "bytes": 1364,
+      "sha256": "4ba5cf72111a9aa88e0a633d3d145e53880e6a082cfeebab6cba7e861ddd0c18"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.M12P2cBenchmarkTest.xml",
+      "bytes": 658,
+      "sha256": "4d3bbc91292b171e6a1544137e7ff81e8d056310cdcbe1e72d76eaafa02a12ee"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.M15TypoRecallBenchmarkTest.xml",
+      "bytes": 691,
+      "sha256": "85f1473f5518591b800e66dcf5107741b64c225bf19dbb449d8f9666655c87b5"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.M2AdaptiveBenchmarkTest.xml",
+      "bytes": 506,
+      "sha256": "b923a7c75dac810598b9a2ca6238fafa1bd940e1f8e028a1e5160d2af33e770c"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.M3SentenceBenchmarkTest.xml",
+      "bytes": 1255,
+      "sha256": "bc5db127101d3723e5f51c3d0ad80eae976fb40e4f54fc0b5e76e47ee000b52c"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.M8DailyInputBenchmarkTest.xml",
+      "bytes": 878,
+      "sha256": "f515ce34b5f7395e388bc3649c60cb2681a8483ca1835efb2ad15a02d771b289"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.M9PersonalSentenceBenchmarkTest.xml",
+      "bytes": 715,
+      "sha256": "41c22b0e645508f05c9e4c6d7ff36dc692a9ed24bc86f3a549f8a4fa8872a208"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.OovLanguageModelAblationTest.xml",
+      "bytes": 1039,
+      "sha256": "af83b04e35e0aa82f69b8bf4d6ddd66c8226c02f033fbf908b162a6c94b7a189"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.PersonalDictionaryEvictionTest.xml",
+      "bytes": 1260,
+      "sha256": "f4741b388de0e5e32c23cb7f633f705583b0639ae761e3dd35ba858d6907320e"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.PersonalizationEvidenceRetentionTest.xml",
+      "bytes": 899,
+      "sha256": "070351203eacbe54d05c150cdeb93a3d8b89fd0f158247cfde871bfd60ceba0b"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.PinyinBoundedCompletionTest.xml",
+      "bytes": 1564,
+      "sha256": "79919c54c67686ca01fb9e923e427e02c9ea169287ac609899740c10425f6616"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.PinyinCompletionLanguageTest.xml",
+      "bytes": 3781,
+      "sha256": "066b8e37e2cdf5b8b55e94cdce2619d748ef60e2a71231c8be98cf957b174b40"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.PinyinDecoderResourceTest.xml",
+      "bytes": 1290,
+      "sha256": "e186e4428cb5bcdd32623a3b59c3fa156d6240a9aeee07bd7a3c8b997efe0249"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.PinyinDecoderTest.xml",
+      "bytes": 7697,
+      "sha256": "11877d04decff0d8a503b9a80c6663068377b9dbd7f3f3e2982397f62e3e5d5a"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.PinyinEdgeSelectionTest.xml",
+      "bytes": 1017,
+      "sha256": "e88c8ae34a20db2eb14df03886928255f33417b4c8b6282dcf0e52d0e26a17e9"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.PinyinExplicitBoundaryTest.xml",
+      "bytes": 1894,
+      "sha256": "405969d80b04a954105d6fb91600ee00ee58197f4418f9f432e5e6941b4213d7"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.PinyinLanguageModelSearchTest.xml",
+      "bytes": 1593,
+      "sha256": "186beb27b322a7106352c8eb2c499688989b687896b0e0348250fc304789020d"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.PinyinLanguageScorerTest.xml",
+      "bytes": 1040,
+      "sha256": "23296a19a6b0515b1f3fb40def6a3f0ef17859e24ab4f16575cd13f7438db509"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.PinyinPathInitialsTest.xml",
+      "bytes": 975,
+      "sha256": "522c0720866f8503e56226598d4c9f5653be73f05ca961befca7d5ddc66af05d"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.PinyinScoreDiagnosticsTest.xml",
+      "bytes": 2597,
+      "sha256": "7f2446f6b063fc22ca415f39c9f6d38c88932af4d8bdc513ecd4dbb4a3c77f6c"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.PinyinSpellingGraphTest.xml",
+      "bytes": 1956,
+      "sha256": "fad88dde12d3e2334939b5af25eb7365572f6480aae31250204ae5cad3ac5c16"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.PrefixCandidateCacheTest.xml",
+      "bytes": 998,
+      "sha256": "b884fe17cb787a6344eff7e393e4a5102512c732d8ad2d8fbf235365fc1bc37d"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.ProductionLearningQualityTest.xml",
+      "bytes": 1929,
+      "sha256": "5cc94c06950b99f2ec43be991155a871778affe4606458bc4373ecb7e2741d5e"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.ProgressivePinyinTest.xml",
+      "bytes": 2672,
+      "sha256": "cf69de4d0b642b4da112cc55654fe967ae63cabba5ec1cef6cfb7c2050ba17e9"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.QueryLexicalCacheTest.xml",
+      "bytes": 1166,
+      "sha256": "bdafd861ad09487a54ee5084dcaf009dd1e82037632f9be395f02540a2240623"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.QuerySelectionCacheTest.xml",
+      "bytes": 1007,
+      "sha256": "d9b8c77f3d4f2738be5be12304855a95f491675e7cac3f91ce8863b984c18499"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.SemanticCandidateCatalogTest.xml",
+      "bytes": 1000,
+      "sha256": "fd0c2f30623f5fa8665cc4f42965a2bb59c324654d4de422f04370f893658219"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.SerialPersistenceQueueTest.xml",
+      "bytes": 517,
+      "sha256": "92581b8d113c54897216758c4308410d7ba6b0dffcc89c663a972025aa77cfd5"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.SortedPinyinPrefixLookupTest.xml",
+      "bytes": 1254,
+      "sha256": "a070479006f99dd859b125ca5de167543a2e0c1339656203a9d8506970a87024"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.SparseContextCandidateRecallTest.xml",
+      "bytes": 696,
+      "sha256": "65080f96fefd1655485bb069c83661aa0e60417fd9918abe592624d23ac42e7b"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.SpellingEdgeCacheTest.xml",
+      "bytes": 1011,
+      "sha256": "5167d611b541f8b66230f2430ba9407a10deeccabe35f7e1f394d20adc4ace48"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.SpellingEdgeReuseTest.xml",
+      "bytes": 521,
+      "sha256": "91810e85db58a300412ca5db537187778cf018dee1ca001d73b14d35fdee1dfd"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.StableTopKTest.xml",
+      "bytes": 660,
+      "sha256": "bf67d188eb5da1fa67b011a4cf21248493aadb49da050127e22247a9c7b50311"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.T9AlternativeInputDecoderTest.xml",
+      "bytes": 2719,
+      "sha256": "70c6915b0c309627452d4ab39e245198ce88d6516c6e836e20232d8bd7412f67"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.T9CompositionTest.xml",
+      "bytes": 1251,
+      "sha256": "3d7936922ba77972fedaec49533f17b7f71872c02f8ceb2b2378b6ef123a3484"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.T9PersonalizationContractTest.xml",
+      "bytes": 689,
+      "sha256": "b3e5a4e8e792183aa86d8a9ca261f251a02e691af7979e15113204616934269b"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.T9PinyinChoiceTest.xml",
+      "bytes": 1134,
+      "sha256": "5a3d7d1399f9b942cb119678c22668041d0fd7f59497cd308f2657644670cb78"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.T9SyllableIndexTest.xml",
+      "bytes": 1450,
+      "sha256": "a92216893d6f7087f0b0dceb98ce74c1e2070375684ac830458c70296911c993"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.UserAssociationTest.xml",
+      "bytes": 809,
+      "sha256": "84287a179bb442edda23f8a62e29cc68b3e92960f24f377a3edd6768c0f22404"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.UserContextSelectionTest.xml",
+      "bytes": 854,
+      "sha256": "ac62985a6850bf76b9a524dd8f2bdb76839a9b80dcf6308b285d604ef95abb47"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.UserPinyinLatticeTest.xml",
+      "bytes": 1467,
+      "sha256": "3079b16508d950fcc0bb0a89ce829e1e42039782c5669c9f6abe5f696bb835a3"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.Wubi86LexiconTest.xml",
+      "bytes": 1384,
+      "sha256": "0ad226f1704f9226d8b6f2ffc4ed22967dbbd0525bd750de625bf5fe31ef0930"
+    },
+    {
+      "path": "e52/restored-cached-core-junit/TEST-io.github.ethanbird.senseime.core.Wubi86PersonalizationTest.xml",
+      "bytes": 1879,
+      "sha256": "eb33aaa3ad6ba222a8e6a16050ac454cf2258cf77be100c5d895f58496b7e50e"
+    },
+    {
+      "path": "e52/restored-identity.json",
+      "bytes": 271,
+      "sha256": "4207c6aa58cd3bef9e4527e5cc5ae9c7d1f8daf54cdfa65c47ca87f4e27964fd"
+    },
+    {
+      "path": "e52/source-lock.json",
+      "bytes": 30993,
+      "sha256": "594827e4bb5540dd7193437cffb5d355505cd7941a918a3cbb21ba6478e0c036"
+    },
+    {
+      "path": "e52/tools/AllocationReplay.java",
+      "bytes": 3719,
+      "sha256": "71e7c5d6802b5997cd3e7905a532c705fb4e1390fd597f2ef90c280d0736c0d9"
+    },
+    {
+      "path": "e52/tools/EmissionMemoReplay.java",
+      "bytes": 3710,
+      "sha256": "4ee6688045d3836431aae1ccb033bca8150c5e58f58c6e77bc92d89b5d50004d"
+    },
+    {
+      "path": "e52/tools/measure_fast_input_latency.py",
+      "bytes": 10353,
+      "sha256": "f7ae6616af8614bba2871dec9d16f73af196968b29758060ae744e80e507e9d2"
+    },
+    {
+      "path": "e52/tools/summarize_fast_input_latency.py",
+      "bytes": 7307,
+      "sha256": "14328c44a76f919672b67b90c397bd69099fc476e432abc51d2a6735c9219ca0"
+    },
+    {
+      "path": "e52/tools/test_verify_replay_classpath.py",
+      "bytes": 4247,
+      "sha256": "1cbe440c43ae3457f935af4b48c333168ea10fbdf2060e4661b459219cafa22a"
+    },
+    {
+      "path": "e52/tools/verify_replay_classpath.py",
+      "bytes": 2611,
+      "sha256": "59df57bd61d8552beb37108ffee6b401fe161fa87c079791090c24dea0dc5f31"
+    }
+  ]
+}
