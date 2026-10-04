@@ -96,14 +96,42 @@ internal object AgentToolRouter {
                 )
             }
             AgentToolId.MEMORY_SEARCH -> {
-                requireKeys(members, required = setOf("query"), optional = setOf("max_results"))
+                requireKeys(members, required = emptySet(), optional = setOf(
+                    "query", "max_results", "mode", "channel", "cursor", "include_trace",
+                ))
+                val query = when (val value = members["query"]) {
+                    null -> ""
+                    is JsonValue.StringValue -> value.value.trim().also {
+                        if (it.length > MAX_QUERY_CHARS || it.any { char ->
+                                Character.isISOControl(char) && char !in setOf('\n', '\r', '\t')
+                            }) throw ProviderPayloadException("query is outside its bounded text contract")
+                    }
+                    else -> throw ProviderPayloadException("query must be a string")
+                }
+                val mode = members.optionalText("mode", 16) ?: if (query.isBlank()) "list" else "search"
+                val channel = members.optionalText("channel", 32) ?: "all"
+                val cursor = members.optionalText("cursor", 256)
+                val includeTrace = members.optionalBoolean("include_trace", false)
+                if (mode !in setOf("search", "list") || channel !in AgentToolArguments.MemorySearch.MEMORY_CHANNELS) {
+                    throw ProviderPayloadException("memory mode/channel is not supported")
+                }
+                if ((mode == "search" && query.isBlank()) || (mode == "list" && query.isNotBlank())) {
+                    throw ProviderPayloadException("Use mode=list with an empty query to browse; mode=search needs keywords")
+                }
+                if (mode == "search" && (cursor != null || channel != "all" || includeTrace)) {
+                    throw ProviderPayloadException("cursor, channel filters and include_trace belong to mode=list")
+                }
                 AgentToolArguments.MemorySearch(
-                    query = members.requiredText("query", MAX_QUERY_CHARS),
+                    query = query,
                     maxResults = members.optionalInt(
                         "max_results",
                         default = DEFAULT_MEMORY_RESULTS,
                         range = 1..MAX_MEMORY_RESULTS,
                     ),
+                    mode = mode,
+                    channel = channel,
+                    cursor = cursor,
+                    includeTrace = includeTrace,
                 )
             }
             AgentToolId.SKILL_READ -> {

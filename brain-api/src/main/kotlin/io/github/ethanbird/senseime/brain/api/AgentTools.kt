@@ -81,9 +81,28 @@ sealed interface AgentToolArguments {
     ) : AgentToolArguments
 
     data class MemorySearch(
-        val query: String,
-        val maxResults: Int,
-    ) : AgentToolArguments
+        val query: String = "",
+        val maxResults: Int = 8,
+        val mode: String = if (query.isBlank()) "list" else "search",
+        val channel: String = "all",
+        val cursor: String? = null,
+        val includeTrace: Boolean = false,
+    ) : AgentToolArguments {
+        init {
+            require(mode in setOf("search", "list"))
+            require(channel in MEMORY_CHANNELS)
+            require(query.length <= 512)
+            require(maxResults in 1..20)
+            require(mode != "search" || query.isNotBlank())
+            require(mode != "list" || query.isBlank())
+            require(cursor == null || (mode == "list" && cursor.length in 1..256))
+            require(mode != "search" || (channel == "all" && !includeTrace))
+        }
+
+        companion object {
+            val MEMORY_CHANNELS = setOf("all", "session_evidence", "experience_event", "action_skill_history")
+        }
+    }
 
     data class SkillRead(
         val skillId: String,

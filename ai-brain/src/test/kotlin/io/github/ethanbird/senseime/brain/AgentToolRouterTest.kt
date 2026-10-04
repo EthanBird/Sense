@@ -14,6 +14,31 @@ import org.junit.Test
 
 class AgentToolRouterTest {
     @Test
+    fun memoryBrowsingNeedsNoInventedKeywordAndPreservesLegacySearch() {
+        listOf("{}", """{"query":""}""", """{"mode":"list"}""").forEach { document ->
+            val arguments = decode(AgentToolId.MEMORY_SEARCH, document).arguments as AgentToolArguments.MemorySearch
+            assertEquals("list", arguments.mode)
+            assertEquals("", arguments.query)
+        }
+        val search = decode(AgentToolId.MEMORY_SEARCH, """{"query":"海军蓝","max_results":5}""").arguments
+        assertEquals(AgentToolArguments.MemorySearch("海军蓝", 5), search)
+        val browse = decode(AgentToolId.MEMORY_SEARCH,
+            """{"mode":"list","channel":"experience_event","cursor":"m1.experience_event.1.0.-1","include_trace":true}""")
+            .arguments as AgentToolArguments.MemorySearch
+        assertEquals("experience_event", browse.channel)
+        assertTrue(browse.includeTrace)
+        listOf(
+            """{"mode":"search"}""", """{"mode":"list","query":"海军蓝"}""",
+            """{"mode":"list","channel":"unknown"}""", """{"query":"海军蓝","cursor":"cursor"}""",
+        ).forEach { document ->
+            assertThrows(ProviderPayloadException::class.java) { decode(AgentToolId.MEMORY_SEARCH, document) }
+        }
+        assertThrows(ProviderPayloadException::class.java) {
+            AgentToolRouter.decode("call", "memory_search", "{}", enabledTools = emptySet())
+        }
+    }
+
+    @Test
     fun defaultPagingBudgetCanReadOneMaximumSkillCompletely() {
         val pages = (
             AgentSkillPolicy.MAX_CONTENT_CHARS +

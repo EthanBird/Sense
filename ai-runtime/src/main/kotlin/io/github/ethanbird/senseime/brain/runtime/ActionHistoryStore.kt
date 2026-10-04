@@ -11,8 +11,8 @@ import java.util.UUID
 import org.json.JSONObject
 
 /** Append-only, app-private raw evidence ledger for direct Action Skill calls. */
-class ActionHistoryStore(context: Context) {
-    private val root = File(context.applicationContext.filesDir, STORE_DIRECTORY)
+class ActionHistoryStore private constructor(private val root: File) {
+    constructor(context: Context) : this(File(context.applicationContext.filesDir, STORE_DIRECTORY))
     private val file = File(root, STORE_FILE)
     private val lockFile = File(root, LOCK_FILE)
 
@@ -135,6 +135,71 @@ class ActionHistoryStore(context: Context) {
         }
     }
 
+    /** Read backwards by byte cursor, not by searching for invented wildcard keywords. */
+    fun browse(
+        maxResults: Int,
+        beforeByte: Long? = null,
+        includeTrace: Boolean = false,
+        excludeRequestId: String? = null,
+    ): ActionHistoryBrowsePage {
+        require(maxResults in 1..20)
+        return withStoreLock {
+            if (!file.exists()) {
+                require(beforeByte == null) { "Action history cursor has no backing store" }
+                return@withStoreLock ActionHistoryBrowsePage(emptyList(), 0, 0, null, false, 0)
+            }
+            RandomAccessFile(file, "r").use { input ->
+                val end = beforeByte ?: input.length()
+                require(end in 0..input.length()) { "Action history cursor is outside retained history" }
+                if (beforeByte != null && end > 0) {
+                    input.seek(end - 1)
+                    require(input.read() == 10) { "Action history cursor must be a record boundary" }
+                }
+                val start = (end - MAX_SEARCH_BYTES).coerceAtLeast(0)
+                input.seek(start)
+                val bytes = ByteArray((end - start).toInt())
+                input.readFully(bytes)
+                var floor = 0
+                if (start > 0) {
+                    input.seek(start - 1)
+                    if (input.read() != 10) {
+                        floor = bytes.indexOf(10.toByte()) + 1
+                        require(floor > 0) { "Action history record exceeds the bounded read window" }
+                    }
+                }
+                var position = bytes.size
+                var scanned = 0
+                var skipped = 0
+                val hits = ArrayList<ActionHistorySearchHit>()
+                while (position > floor && scanned < MAX_SEARCH_RECORDS && hits.size < maxResults) {
+                    while (position > floor && bytes[position - 1] == 10.toByte()) position--
+                    if (position <= floor) break
+                    val lineEnd = position
+                    while (position > floor && bytes[position - 1] != 10.toByte()) position--
+                    val line = String(bytes, position, lineEnd - position, StandardCharsets.UTF_8)
+                    scanned++
+                    val record = runCatching { JSONObject(line) }.getOrNull()
+                    if (record == null || record.optString("event_id").isBlank()) { skipped++; continue }
+                    if (record.optString("request_id") == excludeRequestId) continue
+                    if (!includeTrace && record.optString("phase") == "started") continue
+                    hits += ActionHistorySearchHit(
+                        id = "action:${record.getString("event_id")}",
+                        text = record.optString("lexical_text").memoryExcerpt(MAX_EXCERPT_CHARS),
+                        source = "ACTION_SKILL:${record.optString("skill_id")}",
+                        requestId = record.optString("request_id"),
+                        score = 0,
+                    )
+                }
+                val next = (start + position).takeIf { it > 0 }
+                ActionHistoryBrowsePage(
+                    hits, scanned, bytes.size.toLong(), next,
+                    scanLimitReached = next != null && (position <= floor || scanned >= MAX_SEARCH_RECORDS),
+                    skippedRecords = skipped,
+                )
+            }
+        }
+    }
+
     private fun <T> withStoreLock(block: () -> T): T = synchronized(STORE_MUTEX) {
         if (!root.exists() && !root.mkdirs() && !root.isDirectory) {
             error("Action history directory could not be created")
@@ -190,6 +255,9 @@ class ActionHistoryStore(context: Context) {
     }
 
     companion object {
+        internal fun openForTest(filesDir: File): ActionHistoryStore =
+            ActionHistoryStore(File(filesDir, STORE_DIRECTORY))
+
         private const val SCHEMA = "sense.action.history.v1"
         private const val STORE_DIRECTORY = "agent/action-history"
         private const val STORE_FILE = "events.jsonl"
@@ -215,4 +283,13 @@ data class ActionHistorySearchPage(
     val scannedRecords: Int,
     val scannedBytes: Long,
     val truncated: Boolean,
+)
+
+data class ActionHistoryBrowsePage(
+    val hits: List<ActionHistorySearchHit>,
+    val scannedRecords: Int,
+    val scannedBytes: Long,
+    val nextBeforeByte: Long?,
+    val scanLimitReached: Boolean,
+    val skippedRecords: Int,
 )

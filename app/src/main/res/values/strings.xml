@@ -312,7 +312,7 @@
     <string name="agent_tool_browser_use">浏览器控制 · 导航网页、读取 DOM、点击和填写表单</string>
     <string name="agent_tool_terminal_exec">终端执行 · 在 Agent 会话工作区运行 Android Shell 命令</string>
     <string name="agent_tool_calculator">计算器 · 执行确定性的数学计算</string>
-    <string name="agent_tool_local_memory_recall">本地记忆检索 · 读取已完整保留的历史记忆</string>
+    <string name="agent_tool_local_memory_recall">记忆浏览与检索 · 列出最近记录，或按关键词查找</string>
     <string name="agent_tool_skill_read">读取 Skills · 按需读取未激活 Skill 的完整文档</string>
     <string name="agent_tool_skill_manage">创建、修改与绑定 Skills · 允许 Agent 管理 Skill 内容和键位</string>
     <string name="agent_tools_status_loading">正在读取工具配置…</string>

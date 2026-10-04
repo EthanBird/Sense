@@ -32,11 +32,14 @@ data class AgentMemorySearchCoverage(
     val scannedBytes: Long = 0,
     val truncated: Boolean = false,
     val channels: Set<String> = emptySet(),
+    val skippedRecords: Int = 0,
 )
 
 data class AgentMemorySearchPage(
     val hits: List<AgentMemorySearchHit>,
     val coverage: AgentMemorySearchCoverage = AgentMemorySearchCoverage(),
+    val nextCursor: String? = null,
+    val hasMore: Boolean? = null,
 )
 
 fun interface AgentMemorySearchSource {
@@ -55,6 +58,12 @@ fun interface AgentMemorySearchSource {
     ): AgentMemorySearchPage = AgentMemorySearchPage(
         hits = search(query, maxResults, excludeRequestId, excludeRunGeneration),
     )
+
+    fun browsePage(
+        arguments: AgentToolArguments.MemorySearch,
+        excludeRequestId: String?,
+        excludeRunGeneration: Long?,
+    ): AgentMemorySearchPage = throw UnsupportedOperationException("Memory browse source is not connected")
 
     companion object {
         val EMPTY = AgentMemorySearchSource { _, _, _, _ -> emptyList() }
@@ -349,22 +358,38 @@ class DefaultAgentToolExecutor(
         excludeRequestId: String?,
         excludeRunGeneration: Long?,
     ): AgentToolExecutionResult {
-        val page = memorySource.searchPage(
+        val page = if (arguments.mode == "list") memorySource.browsePage(
+            arguments, excludeRequestId, excludeRunGeneration,
+        ) else memorySource.searchPage(
             arguments.query,
             arguments.maxResults,
             excludeRequestId,
             excludeRunGeneration,
         )
+        if (arguments.mode == "list" && page.coverage.channels.isEmpty()) {
+            return failureResult("Memory storage is not connected; this is not an empty-history result")
+        }
         val hits = page.hits.take(arguments.maxResults)
         return success(
             buildString {
                 append("{\"query\":")
                 appendJson(arguments.query)
+                append(",\"mode\":").appendJson(arguments.mode)
+                append(",\"channel\":").appendJson(arguments.channel)
+                append(",\"listing_scope\":").appendJson(
+                    if (arguments.mode == "search") "keyword_matches"
+                    else if (arguments.includeTrace) "all_text_records" else "meaningful_records",
+                )
+                append(",\"order\":").appendJson(if (arguments.mode == "list") "recent_per_source" else "relevance")
+                append(",\"next_cursor\":")
+                page.nextCursor?.let { appendJson(it) } ?: append("null")
+                append(",\"has_more\":").append(page.hasMore?.toString() ?: "null")
                 append(",\"result_count\":").append(hits.size)
                 append(",\"coverage\":{")
                 append("\"scanned_records\":").append(page.coverage.scannedRecords)
                 append(",\"scanned_bytes\":").append(page.coverage.scannedBytes)
                 append(",\"truncated\":").append(page.coverage.truncated)
+                append(",\"skipped_records\":").append(page.coverage.skippedRecords)
                 append(",\"channels\":[")
                 page.coverage.channels.sorted().forEachIndexed { index, channel ->
                     if (index > 0) append(',')
@@ -374,28 +399,41 @@ class DefaultAgentToolExecutor(
                 append(",\"results\":[")
                 hits.forEachIndexed { index, hit ->
                     if (index > 0) append(',')
-                    append("{\"id\":")
-                    appendJson(hit.id.take(256))
-                    append(",\"text\":")
-                    appendJson(hit.text.take(MAX_MEMORY_HIT_CHARS))
-                    append(",\"source\":")
-                    appendJson(hit.source.take(256))
-                    append(",\"channel\":")
-                    appendJson(hit.channel.take(64))
-                    append(",\"evidence_record_ids\":[")
-                    hit.evidenceRecordIds.take(MAX_MEMORY_EVIDENCE_IDS).forEachIndexed {
-                            evidenceIndex,
-                            evidenceId,
-                        ->
-                        if (evidenceIndex > 0) append(',')
-                        appendJson(evidenceId.take(256))
-                    }
-                    append(']')
-                    append('}')
+                    append(memoryHitJson(hit, 12_000 / hits.size.coerceAtLeast(1)))
                 }
                 append("]}")
             },
         )
+    }
+
+    private fun memoryHitJson(hit: AgentMemorySearchHit, budget: Int): String {
+        // Budget escaped JSON rather than raw text. Every page keeps all its ids/cursor valid.
+        val metadata = buildString {
+            append("{\"id\":").append(memoryJsonField(hit.id, 100))
+            append(",\"source\":").append(memoryJsonField(hit.source, 100))
+            append(",\"channel\":").append(memoryJsonField(hit.channel, 50))
+            append(",\"evidence_record_ids\":[")
+            hit.evidenceRecordIds.take(3).forEachIndexed { index, id ->
+                if (index > 0) append(',')
+                append(memoryJsonField(id, 70))
+            }
+            append("],\"evidence_ids_truncated\":").append(hit.evidenceRecordIds.size > 3)
+            append(",\"is_excerpt\":true,\"text\":")
+        }
+        return metadata + memoryJsonField(hit.text.memoryExcerpt(MAX_MEMORY_HIT_CHARS),
+            (budget - metadata.length - 1).coerceAtLeast(2)) + "}"
+    }
+
+    private fun memoryJsonField(value: String, budget: Int): String {
+        if (json(value).length <= budget) return json(value)
+        var low = 0
+        var high = value.length
+        while (low < high) {
+            val middle = (low + high + 1) / 2
+            if (json(value.take(middle)).length <= budget) low = middle else high = middle - 1
+        }
+        if (low > 0 && low < value.length && Character.isHighSurrogate(value[low - 1])) low--
+        return json(value.take(low))
     }
 
     private fun httpsGet(initialUrl: String): String {
@@ -488,6 +526,12 @@ class DefaultAgentToolExecutor(
             "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 " +
                 "(KHTML, like Gecko) Chrome/125.0 Mobile Safari/537.36 Sense-IME/0.4.12"
     }
+}
+
+internal fun String.memoryExcerpt(limit: Int): String {
+    var end = minOf(length, limit)
+    if (end > 0 && end < length && Character.isHighSurrogate(this[end - 1])) end--
+    return substring(0, end)
 }
 
 internal object WebTextExtractor {

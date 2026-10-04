@@ -26,7 +26,7 @@ import java.util.zip.CRC32
  * application's private `filesDir`; this core class deliberately has no permission to choose an
  * external or shared-storage path.
  *
- * Writes are always enabled. [AgentMemorySearchAccess] gates only lexical recall and can never
+ * Writes are always enabled. [AgentMemorySearchAccess] gates model-facing memory reads and can never
  * suppress an append, truncate valid history, or delete an older record.
  */
 class AgentEventJournal private constructor(
@@ -244,6 +244,63 @@ class AgentEventJournal private constructor(
             scannedRecords = scannedRecords,
             scannedBytes = scannedBytes,
             truncated = truncated,
+        )
+    }
+
+    @Synchronized
+    fun browse(
+        access: AgentMemorySearchAccess,
+        bounds: AgentMemorySearchBounds = AgentMemorySearchBounds(maxScannedBytes = 32L * 1024L * 1024L),
+        nextOffset: Long? = null,
+        channel: String = "all",
+        includeTrace: Boolean = false,
+        excludeRequestId: String? = null,
+        excludeRunGeneration: Long? = null,
+    ): AgentJournalBrowseResult {
+        ensureUsable()
+        bounds.validate()
+        require(channel in setOf("all", "session_evidence", "experience_event"))
+        require((excludeRequestId == null) == (excludeRunGeneration == null))
+        excludeRequestId?.let(::validateRequestId)
+        excludeRunGeneration?.let { require(it >= 0L) }
+        if (access == AgentMemorySearchAccess.DISABLED) return AgentJournalBrowseResult(emptyList(), 0, 0, null, false)
+        nextOffset?.let { require(it >= 0 && it <= lastFrameOffset) { "memory cursor is outside the journal" } }
+        var offset = nextOffset ?: lastFrameOffset
+        var scanned = 0
+        var bytes = 0L
+        val records = ArrayList<AgentJournalRecord>()
+        var bounded = false
+        while (offset != NO_PREVIOUS_FRAME && records.size < bounds.maxResults) {
+            if (scanned >= bounds.maxScannedRecords) { bounded = true; break }
+            val header = readHeader(offset)
+            val size = FRAME_HEADER_BYTES.toLong() + header.bodyLength
+            if (size > bounds.maxScannedBytes - bytes) {
+                // Production uses a budget larger than a maximum frame: every continuation advances.
+                require(scanned > 0) { "browse byte budget is smaller than the next retained record" }
+                bounded = true
+                break
+            }
+            val stored = readFrame(offset, header)
+            scanned++
+            bytes += size
+            offset = stored.previousOffset
+            val record = stored.record
+            if (record.requestId == excludeRequestId && record.runGeneration == excludeRunGeneration) continue
+            val experience = record.kind == AgentJournalKind.EXPERIENCE_EVENT
+            if (channel == "experience_event" && !experience) continue
+            if (channel == "session_evidence" && experience) continue
+            if (!includeTrace && record.kind !in BROWSE_SUMMARY_KINDS) continue
+            if (!includeTrace && record.kind == AgentJournalKind.TOOL_RESULT &&
+                record.attributes["tool_name"] == "memory_search") continue
+            if (record.lexicalText.isBlank()) continue
+            records += record
+        }
+        return AgentJournalBrowseResult(
+            records = records,
+            scannedRecords = scanned,
+            scannedBytes = bytes,
+            nextOffset = offset.takeUnless { it == NO_PREVIOUS_FRAME },
+            scanLimitReached = bounded,
         )
     }
 
@@ -488,6 +545,11 @@ class AgentEventJournal private constructor(
         private const val DEFAULT_READ_SCAN_RECORDS = 10_000
         private const val MAX_READ_RESULTS = 10_000
         private const val MAX_READ_SCAN_RECORDS = 1_000_000
+        private val BROWSE_SUMMARY_KINDS = setOf(
+            AgentJournalKind.REQUEST_INPUT_SNAPSHOT, AgentJournalKind.FINAL,
+            AgentJournalKind.EXPERIENCE_EVENT, AgentJournalKind.TOOL_RESULT,
+            AgentJournalKind.ERROR, AgentJournalKind.CANCELLED,
+        )
 
         private val HIT_BEST_FIRST =
             compareByDescending<AgentMemorySearchHit> { it.score }
@@ -1005,6 +1067,15 @@ data class AgentJournalReadResult(
     val records: List<AgentJournalRecord>,
     val scannedRecords: Int,
     val truncated: Boolean,
+)
+
+/** Cursor points to the next immutable frame, so concurrent appends do not shift older pages. */
+data class AgentJournalBrowseResult(
+    val records: List<AgentJournalRecord>,
+    val scannedRecords: Int,
+    val scannedBytes: Long,
+    val nextOffset: Long?,
+    val scanLimitReached: Boolean,
 )
 
 data class AgentJournalStats(
