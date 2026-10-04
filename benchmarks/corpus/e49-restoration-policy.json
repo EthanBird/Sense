@@ -1,0 +1,16 @@
+{
+  "stage": "E49",
+  "reason": "Font-scale writes from restoring rotation can arrive after the first delete. Ordering alone did not restore the originally absent setting. Product input cases passed; exact restoration gate correctly failed.",
+  "change": "Only restoration: at most four writes, three matching reads 250ms apart; original values and strict final comparison unchanged; record each observation.",
+  "finalRun": "Repeat complete 420dpi API29 four-cell matrix from an explicitly absent font_scale, not just previously failed tests. Retain initial API29 Google 420dpi functional pass but overall restoration failure.",
+  "unchangedSuccessfulEvidence": [
+    "google29-480: 12 input tests plus exact restoration",
+    "google29-timeout: 1 input test plus exact restoration"
+  ],
+  "compatibilityRegression": "Run all four existing API37 configurations on the same app and fixture APKs; no timing claim.",
+  "sources": {
+    "tools/test_input_configuration.py": "0d9f970994406da0b6fdec230dcdf9cf71f35cbafa5c274d0375ed4e0c31e1da",
+    "tools/test_configuration_target.py": "34cee389f827167b82305cada49cf2a4e8b142304fa4625a81180e69c00941ab"
+  },
+  "appAndFixtureApksChanged": false
+}

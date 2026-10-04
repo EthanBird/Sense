@@ -1,0 +1,103 @@
+{
+  "stage": "E49",
+  "accepted": true,
+  "scope": "API29 Google APIs emulator at observed 512 MiB fixture heap; density/font/orientation, actual IME-to-external-editor behavior and system timeout; plus API37 regression",
+  "productionChanged": false,
+  "sourceBaseCommit": "386604b3c92b5bd8e177d145308ac66f77a8da61",
+  "productionSourceFilesMatched": 190,
+  "same25AssetsAsE48": true,
+  "debugApkSha256": "a86949bd8c155f719a528849e30e745d37af18c4fc20ac41a5936d01c7a11c22",
+  "fixtureApkSha256": "6a6895f40c03de1da170ebc48983c9ca1872d79eeba34b89e60dd0d700ec5121",
+  "acceptedRuns": {
+    "google29-420-v3": {
+      "sdk": 29,
+      "density": 420,
+      "tests": 12,
+      "allPassed": true,
+      "exactSettingsAndDensityRestored": true,
+      "fontRestoreAttempts": [
+        [
+          "1.0"
+        ],
+        [
+          "null",
+          "null",
+          "null"
+        ]
+      ],
+      "resultSha256": "dc8b9baf5be032c65eb878b68503b68e4349bbd9a2cecdf3d681abe90ca808f5"
+    },
+    "google29-480": {
+      "sdk": 29,
+      "density": 480,
+      "tests": 12,
+      "allPassed": true,
+      "exactSettingsAndDensityRestored": true,
+      "fontRestoreAttempts": null,
+      "resultSha256": "f62ea9c6b5438c712c3ff307cb55f07acc4b4680afb64ef8f380d94957d66aae"
+    },
+    "google29-timeout": {
+      "sdk": 29,
+      "density": 420,
+      "tests": 1,
+      "allPassed": true,
+      "exactSettingsAndDensityRestored": true,
+      "fontRestoreAttempts": null,
+      "resultSha256": "627c2e7229eddefe21981cebb8590883b8bad4edbd59eefa6aa4ee4b59fe4d9c"
+    },
+    "api37-regression": {
+      "sdk": 37,
+      "density": 420,
+      "tests": 12,
+      "allPassed": true,
+      "exactSettingsAndDensityRestored": true,
+      "fontRestoreAttempts": [
+        [
+          "1.0",
+          "1.0",
+          "1.0"
+        ]
+      ],
+      "resultSha256": "021461a55b678a21e920a52895f14b5cff153028e0b8d05b0ba83869412fea55"
+    }
+  },
+  "api29Passed": 25,
+  "api37Passed": 12,
+  "totalAcceptedAndroidExecutions": 37,
+  "observedFixtureHeapMiB": [
+    192,
+    512
+  ],
+  "toolTestsPassed": 15,
+  "initialAospFailures": {
+    "count": 12,
+    "reason": "Real lexicon allocation OOM at 16 MiB growth limit; no product input assertion reached; not accepted as API29 functional coverage"
+  },
+  "intermediateGoogle420": {
+    "functionalPassed": 12,
+    "overallAccepted": false,
+    "reason": "Missing font_scale restored as 1.0; exact restoration gate failed; retained and followed by a complete four-cell rerun from absent font_scale"
+  },
+  "normalization": "Archived workspace files preserve measured bytes; Git LF normalization is verified separately when staging",
+  "publishedRc7Unchanged": true,
+  "physicalPhoneTested": false,
+  "goalComplete": false,
+  "evidenceManifestSha256": "7d3561855b14317ac513319ee222b88ae596ea41727ebcbe1f44fde6be94f2bb",
+  "archivedFiles": 424,
+  "notClaimed": [
+    "112/128 MiB minimum-memory operation",
+    "physical or OEM devices",
+    "latency improvement",
+    "new language-model accuracy"
+  ],
+  "postMeasurementToolGuard": {
+    "change": "Add explicit rejection when all bounded font-restore attempts fail the three-stable-read condition, even if a subsequent single read happens to match. No device test rerun.",
+    "existingAcceptedRunsRechecked": [
+      "google29-420-v3",
+      "api37-regression"
+    ],
+    "sourceOfRawMeasuredHarness": "workspace/tools/test_input_configuration.py in original E49 manifest",
+    "freshPythonTests": 15,
+    "productionOrFixtureApkChanged": false
+  }
+}

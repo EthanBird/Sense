@@ -44,6 +44,13 @@ abstract class ExternalEditorTestFixture {
         File(artifacts, "${name.methodName}-cadence.txt").writeText("")
         previousIme = shell("settings get secure default_input_method").trim()
         previousHardKeyboard = shell("settings get secure show_ime_with_hard_keyboard").trim()
+        val memory = instrumentation.targetContext.getSystemService(android.app.ActivityManager::class.java)
+        val maxHeap = Runtime.getRuntime().maxMemory() / (1024 * 1024)
+        File(artifacts, "${name.methodName}-environment.txt").writeText(
+            "sdk=${android.os.Build.VERSION.SDK_INT}\nfixtureMaxHeapMiB=$maxHeap\nmemoryClassMiB=${memory.memoryClass}\nlargeMemoryClassMiB=${memory.largeMemoryClass}\n")
+        val minimumHeap = InstrumentationRegistry.getArguments().getString("minimumHeapMiB", "0").toLong()
+        assertTrue("Fixture process heap $maxHeap MiB is below the declared environment minimum $minimumHeap MiB",
+            maxHeap >= minimumHeap)
         shell("settings put secure show_ime_with_hard_keyboard 1")
         assertTrue("Install the Sense debug APK first", shell("pm path $SENSE").contains("package:"))
         if (coldStart) {

@@ -1,0 +1,2569 @@
+{
+  "schemaVersion": 1,
+  "stage": "E49",
+  "rawDirectory": "E:\\CodexWorkspace\\sense-input-quality-build\\e49",
+  "files": {
+    "raw/aosp-config.ini": {
+      "archive": "benchmarks/results/e49-evidence/06a1a4a341666ac1f334.gz",
+      "sha256": "65587d132087ba80ca3fb41101a72740cb580eb48b875b004c4bc71c99533449",
+      "archiveSha256": "073a57568366b6e5e60710bc3c07074b3e5d9804ebd84e1fc81cc2edccf35c36",
+      "bytes": 3588
+    },
+    "raw/aosp-hardware-qemu.ini": {
+      "archive": "benchmarks/results/e49-evidence/6ffe25b3b9de2f8812f6.gz",
+      "sha256": "e5b9c972d207c12e1487f95ea14bbfacf346bb909764cef1aa7503bfa9871898",
+      "archiveSha256": "3fb2a933b0507719c7f38e5152089cd083ebb2dbb7d6faa06e842d6fa6d496f2",
+      "bytes": 4551
+    },
+    "raw/aosp-properties.txt": {
+      "archive": "benchmarks/results/e49-evidence/f8284194e4904e9e1ddb.gz",
+      "sha256": "bd607dbe72d49482fa635e3bc35ff1ac7b61d2133d2532df72d3fa9c30518ce9",
+      "archiveSha256": "ca391dbc2e0397c82fbeb9a679d5df632a5e328d312f4991df9d114202996548",
+      "bytes": 12112
+    },
+    "raw/api29-420-run.log": {
+      "archive": "benchmarks/results/e49-evidence/3cbcf39079ae845bcc31.gz",
+      "sha256": "2918f1e0ff140715c2086a13e4ce21f6c27dab387fffcde4598f6c61567b8758",
+      "archiveSha256": "e968bf08fb12e891be63dabe32e4293d23d5184d2eb3a47b3321f5651975c234",
+      "bytes": 2377
+    },
+    "raw/api29-420/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/669b924860ebf50dd200.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/api29-420/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/a6774e057751599e47b9.gz",
+      "sha256": "c4a29d803e83e9627f7b4efb2fcbeeb1ab9a15615282cfd20b4fa1de65bdf859",
+      "archiveSha256": "b5c48e58e75bcbcc9c99ae8b6261e22995e63833751a9c8056ffa6d4e68c798e",
+      "bytes": 107795
+    },
+    "raw/api29-420/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/6273d4e9d189575de5a9.gz",
+      "sha256": "86e925826e1768edf83ebe65a1f74b4e014404e3dfbf9c0af1f6ad96a93ca664",
+      "archiveSha256": "ea44e22a99c395fa8ff45d90c81daef31e5bb026f771d431525083859ecc3296",
+      "bytes": 77
+    },
+    "raw/api29-420/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/e8c4df4fc1e26f406dcc.gz",
+      "sha256": "79a1abd52abacf7de4425b1d21df85b893efcf229c0f471727da0113419419c5",
+      "archiveSha256": "20d1a28b9561dfc0a71f325f5e8769b3ddaffa40f9be6658a4cec36373426055",
+      "bytes": 23748
+    },
+    "raw/api29-420/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/92150a6e6762bf9b2c2f.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/api29-420/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/6063b1100d4183dc8de4.gz",
+      "sha256": "c4a29d803e83e9627f7b4efb2fcbeeb1ab9a15615282cfd20b4fa1de65bdf859",
+      "archiveSha256": "b5c48e58e75bcbcc9c99ae8b6261e22995e63833751a9c8056ffa6d4e68c798e",
+      "bytes": 107795
+    },
+    "raw/api29-420/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/3501ea5823497daa2606.gz",
+      "sha256": "86e925826e1768edf83ebe65a1f74b4e014404e3dfbf9c0af1f6ad96a93ca664",
+      "archiveSha256": "ea44e22a99c395fa8ff45d90c81daef31e5bb026f771d431525083859ecc3296",
+      "bytes": 77
+    },
+    "raw/api29-420/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/1639153dbdc331725c6a.gz",
+      "sha256": "79a1abd52abacf7de4425b1d21df85b893efcf229c0f471727da0113419419c5",
+      "archiveSha256": "20d1a28b9561dfc0a71f325f5e8769b3ddaffa40f9be6658a4cec36373426055",
+      "bytes": 23748
+    },
+    "raw/api29-420/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/e43db4b2c24c61523e63.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/api29-420/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/bd36f0d049ed513ce759.gz",
+      "sha256": "c4a29d803e83e9627f7b4efb2fcbeeb1ab9a15615282cfd20b4fa1de65bdf859",
+      "archiveSha256": "b5c48e58e75bcbcc9c99ae8b6261e22995e63833751a9c8056ffa6d4e68c798e",
+      "bytes": 107795
+    },
+    "raw/api29-420/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/e2279c7416a6797b30c3.gz",
+      "sha256": "86e925826e1768edf83ebe65a1f74b4e014404e3dfbf9c0af1f6ad96a93ca664",
+      "archiveSha256": "ea44e22a99c395fa8ff45d90c81daef31e5bb026f771d431525083859ecc3296",
+      "bytes": 77
+    },
+    "raw/api29-420/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/a9983de79695032cb79a.gz",
+      "sha256": "79a1abd52abacf7de4425b1d21df85b893efcf229c0f471727da0113419419c5",
+      "archiveSha256": "20d1a28b9561dfc0a71f325f5e8769b3ddaffa40f9be6658a4cec36373426055",
+      "bytes": 23748
+    },
+    "raw/api29-420/landscape-large/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/5584a1aba1ceb3d74e1e.gz",
+      "sha256": "95d980d5f3edfacfb3d191ec512bd8858f390ad4a13fa712418ff398ed3d31ab",
+      "archiveSha256": "b8c843b397208e7e7cedd16072b52f9f39b65249bb9abc560c1fa0727e8f3b27",
+      "bytes": 6541
+    },
+    "raw/api29-420/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/3aa2d76393b701b4103c.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/api29-420/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/20c9ef1740cebdf3ddbd.gz",
+      "sha256": "76483038088cdef12952d4e1df662d9a74b46018526eb0eb51fb9bf1753c7c93",
+      "archiveSha256": "fe5c9e58bb6f4ad8fb2be301016936f362fb750739174c573756a354db082f4a",
+      "bytes": 54110
+    },
+    "raw/api29-420/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/fb690e757d4c6ac09d3d.gz",
+      "sha256": "86e925826e1768edf83ebe65a1f74b4e014404e3dfbf9c0af1f6ad96a93ca664",
+      "archiveSha256": "ea44e22a99c395fa8ff45d90c81daef31e5bb026f771d431525083859ecc3296",
+      "bytes": 77
+    },
+    "raw/api29-420/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/10a35c533e0306f361aa.gz",
+      "sha256": "89bb294dff0f8400e1ca98fc904ee637528ff7de0b6983382638b6724534213f",
+      "archiveSha256": "ca2c111415644f953a4a2c0711fc19f55df50a3ab7af34277e3d881c7932f043",
+      "bytes": 22444
+    },
+    "raw/api29-420/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/40ade96aef1ae90d87b9.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/api29-420/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/c2c614619a31e397fade.gz",
+      "sha256": "8c41c6adef382e741619c328d71a3db762815cd5ba0d3d3c8b281ba401056481",
+      "archiveSha256": "ce0449a45498474de4b751f9b8c543713cb30a8f77181f504c0c87b1c19c6ad5",
+      "bytes": 112386
+    },
+    "raw/api29-420/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/a48c686a4537714220c5.gz",
+      "sha256": "86e925826e1768edf83ebe65a1f74b4e014404e3dfbf9c0af1f6ad96a93ca664",
+      "archiveSha256": "ea44e22a99c395fa8ff45d90c81daef31e5bb026f771d431525083859ecc3296",
+      "bytes": 77
+    },
+    "raw/api29-420/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/68cc17ef129b79718a48.gz",
+      "sha256": "ec33c7594ed0477e9f5dc69678b3dad40b60cc10844e6a8d3ff397d47bf49ed3",
+      "archiveSha256": "43405887ed48947d2c3733657658e5916382e0af85205dcc4bbd1c1ec1e2d6b6",
+      "bytes": 23748
+    },
+    "raw/api29-420/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/20812fc9407afde10aea.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/api29-420/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/8bc9ef38212a0b4b85ff.gz",
+      "sha256": "cf4b4edbb5afd5030d9e270a0f705f21fe86f778bbe92b3e0a6bc2a940898958",
+      "archiveSha256": "b6cf4d909408f3894eb8a94ecfaecc3b7d40804d4d35b7d9634e7bc35dc64e3b",
+      "bytes": 54558
+    },
+    "raw/api29-420/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/81474ae73d0971b84e48.gz",
+      "sha256": "86e925826e1768edf83ebe65a1f74b4e014404e3dfbf9c0af1f6ad96a93ca664",
+      "archiveSha256": "ea44e22a99c395fa8ff45d90c81daef31e5bb026f771d431525083859ecc3296",
+      "bytes": 77
+    },
+    "raw/api29-420/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/0667057c3304a3fdd2ea.gz",
+      "sha256": "a1da8fd666d835852cc5f54ecbeb8fb3ae14f6bc388f9269b25af9fabc204025",
+      "archiveSha256": "5b3a46ddb2f9f5de2499b5d6bc8a58bf647d08f10e847badf7a77d8c9081ec16",
+      "bytes": 22444
+    },
+    "raw/api29-420/landscape/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/45c0d8ae02d56ebe09bf.gz",
+      "sha256": "2418c84229e752c7392a363f156d5beff589b662c9915331781735f310e034f3",
+      "archiveSha256": "a71685de71db46d1a32c0a23b028a610f589bf720b923e0902364a0c5cc88479",
+      "bytes": 6541
+    },
+    "raw/api29-420/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/da302796fc046848f379.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/api29-420/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/d9857efb183092491d8f.gz",
+      "sha256": "3f1aebac58eca2d3ba81d66335c93c7349dee040c27d0a4ea06d84435be54def",
+      "archiveSha256": "aef46cac2caacc2374e1f00afc492afb078ff9ebe2a958142765826e34f4751b",
+      "bytes": 148573
+    },
+    "raw/api29-420/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/fb574b33dece52117b0c.gz",
+      "sha256": "c306a6adc1fea99f5aecf4b7cff25c2d07719cd7fda6c49176a5cf8b91031c27",
+      "archiveSha256": "8c2c38314166c71accc7b0ba0ba0ed0ffbf298fe9edd7e83bfbf0e40c7984dd5",
+      "bytes": 77
+    },
+    "raw/api29-420/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/4f5aecd1c4ed226a7e92.gz",
+      "sha256": "9a67ca83d089acd2fc8bd931a910f495f451e2477e2e18620e950209a13c11e8",
+      "archiveSha256": "65e994e95773ff0470dafe81569b954308b6567402503b46869c3e3e5f40ac3e",
+      "bytes": 25333
+    },
+    "raw/api29-420/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/c7f47fd66710f6d0c9a7.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/api29-420/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/5b0251ef495ecb2ca364.gz",
+      "sha256": "34704a5244697b1fec7f6a0dceca4a107620f65152503308118f6daeb516e98a",
+      "archiveSha256": "9c2c95b17547d82b87618ef7a885c18af9812a76082173b1f5ea047ba686169f",
+      "bytes": 148364
+    },
+    "raw/api29-420/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/5c0792cc6df618e0364e.gz",
+      "sha256": "c306a6adc1fea99f5aecf4b7cff25c2d07719cd7fda6c49176a5cf8b91031c27",
+      "archiveSha256": "8c2c38314166c71accc7b0ba0ba0ed0ffbf298fe9edd7e83bfbf0e40c7984dd5",
+      "bytes": 77
+    },
+    "raw/api29-420/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/bc2a70638c6cf0d9b2eb.gz",
+      "sha256": "357906ddda1a9c300f941242aa33b9c3d09fb9d0c2cf6450908abfe1ecf9f1e8",
+      "archiveSha256": "f864561fc90c30e81151b094ac5b60bb48648b01c08d08cc27e49bea5ca2b1e4",
+      "bytes": 25333
+    },
+    "raw/api29-420/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/9c1c98a95c4f4a724d93.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/api29-420/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/144c0113e154486a8a8e.gz",
+      "sha256": "34704a5244697b1fec7f6a0dceca4a107620f65152503308118f6daeb516e98a",
+      "archiveSha256": "9c2c95b17547d82b87618ef7a885c18af9812a76082173b1f5ea047ba686169f",
+      "bytes": 148364
+    },
+    "raw/api29-420/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/530958cba64f6427ddd5.gz",
+      "sha256": "c306a6adc1fea99f5aecf4b7cff25c2d07719cd7fda6c49176a5cf8b91031c27",
+      "archiveSha256": "8c2c38314166c71accc7b0ba0ba0ed0ffbf298fe9edd7e83bfbf0e40c7984dd5",
+      "bytes": 77
+    },
+    "raw/api29-420/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/6fa55c2b5c1ffc5eb9b7.gz",
+      "sha256": "18e782d6f791c8fee866d556f5782220aeacbf91b00a94b404fde8c785c9a73a",
+      "archiveSha256": "78ede7ba609100f291ed30b5781ff6504b077dbb6ae6f851458164839127b40a",
+      "bytes": 25333
+    },
+    "raw/api29-420/portrait-large/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/d500d65325eadd7034f0.gz",
+      "sha256": "c32fbf8234722b334f0503266ebc4bb17c2e3ae646c24ad0680ef6faaeec80e7",
+      "archiveSha256": "f538dd947655fae82c7473bb873b038f5f6e09f26c77769ce45aa9cae4508821",
+      "bytes": 6694
+    },
+    "raw/api29-420/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/1396e96fe3a5d12a6579.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/api29-420/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/49a4ec53053aeb47ecc3.gz",
+      "sha256": "78e64b0bc8348a7ae69eefe5e34c8cd63cd419b521ff68251ae2be2190aac011",
+      "archiveSha256": "e49b1e9d97675c61ff0f49590198c7b1f45ad7b8019de7edd6a5016734fdf880",
+      "bytes": 115234
+    },
+    "raw/api29-420/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/e51bf24b493f1a16f530.gz",
+      "sha256": "c306a6adc1fea99f5aecf4b7cff25c2d07719cd7fda6c49176a5cf8b91031c27",
+      "archiveSha256": "8c2c38314166c71accc7b0ba0ba0ed0ffbf298fe9edd7e83bfbf0e40c7984dd5",
+      "bytes": 77
+    },
+    "raw/api29-420/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/02ed24c04c774977a5cb.gz",
+      "sha256": "7c6617ee2cd51dcbf1dd7a166c0bee26a32fa227b3238e0eadca4e9c21593217",
+      "archiveSha256": "abd9dad7416f08fd93159186d44671713edd7476dcc481f86ca143cd31236857",
+      "bytes": 25812
+    },
+    "raw/api29-420/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/d684547af63c0ab35054.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/api29-420/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/83a01aab5516d50942b4.gz",
+      "sha256": "e042374a2cdd18e9e7ce391fded799a1d1fe4e0a759048e98687b103f999071f",
+      "archiveSha256": "6b36b9fb33bd1747c261daacb83795140882584682f5d901ef72b9c469a929a1",
+      "bytes": 114757
+    },
+    "raw/api29-420/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/acce3ed15cac0e7a2919.gz",
+      "sha256": "c306a6adc1fea99f5aecf4b7cff25c2d07719cd7fda6c49176a5cf8b91031c27",
+      "archiveSha256": "8c2c38314166c71accc7b0ba0ba0ed0ffbf298fe9edd7e83bfbf0e40c7984dd5",
+      "bytes": 77
+    },
+    "raw/api29-420/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/d4088cff27c420813eba.gz",
+      "sha256": "8f22feaac69accbc2049a2ee803a42b5fa9ddae0c78e5425724b01ffd96cabff",
+      "archiveSha256": "ce75dc3bf82ec99014051a18b96f3f31807ababfce2d46907ae1934cce4129e3",
+      "bytes": 25812
+    },
+    "raw/api29-420/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/133600b747e7c952621c.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/api29-420/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/de963cba6537eaacf1d0.gz",
+      "sha256": "e042374a2cdd18e9e7ce391fded799a1d1fe4e0a759048e98687b103f999071f",
+      "archiveSha256": "6b36b9fb33bd1747c261daacb83795140882584682f5d901ef72b9c469a929a1",
+      "bytes": 114757
+    },
+    "raw/api29-420/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/5179efdefa3373ec23fa.gz",
+      "sha256": "c306a6adc1fea99f5aecf4b7cff25c2d07719cd7fda6c49176a5cf8b91031c27",
+      "archiveSha256": "8c2c38314166c71accc7b0ba0ba0ed0ffbf298fe9edd7e83bfbf0e40c7984dd5",
+      "bytes": 77
+    },
+    "raw/api29-420/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/14b152a3d1a35fa27896.gz",
+      "sha256": "80b5405e953160df50665c61503e8368b8ae909bbe3bd9784adf7a544c7bd3c9",
+      "archiveSha256": "8ef2e39a7184eadc741a271a12607904bd07acd923bda1fae9b216e38fb6a5aa",
+      "bytes": 25812
+    },
+    "raw/api29-420/portrait/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/dd7961a6038142b7df01.gz",
+      "sha256": "e102370f7a71ba53c9cf11c4790d3aa910a3155c71580cf984e10b47f507d8ad",
+      "archiveSha256": "a862b4ec0b31cfe4551394a64500b4ae35ebba878ee007a664549a29eea3623c",
+      "bytes": 6694
+    },
+    "raw/api29-420/result.json": {
+      "archive": "benchmarks/results/e49-evidence/7b5434cc3c9d78ad2e45.gz",
+      "sha256": "9c6c15ffcd2d9baa06e8a82aece4b45dd8342a4b5e9763d058aa4c9ddcfddaba",
+      "archiveSha256": "4e8145ed660f63763c7813e8203597683d8ce908f711d7ef0cc60ece06d2d5aa",
+      "bytes": 2613
+    },
+    "raw/api29-logcat-probe.txt": {
+      "archive": "benchmarks/results/e49-evidence/9fc8370f3672ba0a3708.gz",
+      "sha256": "1603c04d8a5e35f4ae4450bde030949e7876942ee54ff5d5a23c4cec20efc4bd",
+      "archiveSha256": "6e111066025d66b2b1f064fd680c6130af5dec919e5adad6c36cd3fa6544ce85",
+      "bytes": 1076833
+    },
+    "raw/api29-runtime-probe.txt": {
+      "archive": "benchmarks/results/e49-evidence/ab4d893a0b829758ea6b.gz",
+      "sha256": "10221517a992ff48c07f11be949eb8760a176f2b90d5a52964ba858b9fe4b5c1",
+      "archiveSha256": "dd959bf557552e7cb383839b139efb67357db0387021b412f19a081e1ca032c9",
+      "bytes": 18885
+    },
+    "raw/api37-regression-run.log": {
+      "archive": "benchmarks/results/e49-evidence/b6039f6202570b10ee2e.gz",
+      "sha256": "d5e019a05ea0de283072167a6dfe3d48dd889c2d00b47674a47e175f0862393e",
+      "archiveSha256": "6b54f1f796d97c7a367125fc9c19352e3ce0a4d8e5af115daf098e0adefbcaf0",
+      "bytes": 1659
+    },
+    "raw/api37-regression/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/40b15be4f36225e9d582.gz",
+      "sha256": "c3bfee8f604e9dbba717b08cdcdf01c1591a36c7f2525ece6d240eb946926b53",
+      "archiveSha256": "66482b3b5bd159837991fd8c361590c8be9682874153fbe801a7fb69c18d0b11",
+      "bytes": 124412
+    },
+    "raw/api37-regression/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/406ca29ad0848a14df51.gz",
+      "sha256": "7a39abf0d6d8d610494c90ce79bffc1ee55869ca7756a385f23ff16afc3cae3c",
+      "archiveSha256": "bf4816bbcb9702f57ec68133aa18563267f0991783cc86f059ff69923bbcdcf5",
+      "bytes": 66
+    },
+    "raw/api37-regression/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/e52d987e44e2315b4878.gz",
+      "sha256": "caeb4c6f8782fa9a5d4b911ba9bb40c8672e24228730a328c2aa7dbe1d64b449",
+      "archiveSha256": "c84e7599237fce3aa2d861887b9d27b423398aad5fe6b08a47492dd0ba7f7ab7",
+      "bytes": 72
+    },
+    "raw/api37-regression/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/ddfd97b8c506809b8e00.gz",
+      "sha256": "39a99c0ee180b8d61112f1a6d96484be0dd647bdc50d6eddc51770bbef87dcd1",
+      "archiveSha256": "1fe7bbd663aa1164190d66d36097e0b13fa76cf9c39155465e7ea9dc526687bf",
+      "bytes": 117675
+    },
+    "raw/api37-regression/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/03d885f859c06235bc8a.gz",
+      "sha256": "18f4251eddce6687bbc0278f03de6ad0df39f1c9db933007cc1b77d914c868da",
+      "archiveSha256": "38a8e4ca3813b0a90764f5219d3ef808b11a7c5bf4af5b2cd3dcdb0b735aaa49",
+      "bytes": 180
+    },
+    "raw/api37-regression/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/01cfe5faf53a0987b8ed.gz",
+      "sha256": "bee9e797a3f74c832bb3225a9ec68503acee207c6db4fb00c031dd97ac740907",
+      "archiveSha256": "52fefdba4cc1fc6ccfd652c579853b62fe63ff139acdaddaf1a7a5aa00e8cb2e",
+      "bytes": 25376
+    },
+    "raw/api37-regression/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/32103e3b9236db40ae71.gz",
+      "sha256": "27953925a3f22b13fc557b530915ea37713fb905f54b34bfa51349c77e5debf0",
+      "archiveSha256": "0486d3066b11dcf483f1b7db239a5222a4bb29ecabcbd54d16c8e187e892ca2e",
+      "bytes": 115
+    },
+    "raw/api37-regression/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/bdd6a10ca2dbffc2b5b4.gz",
+      "sha256": "b0c6636d411ac5651f7b79d8f91c7d508845c1174fc9e2834c4cd134db069682",
+      "archiveSha256": "cf6a155e5d906598bb9da1de297ce24cc108a67de9c196a0f95d489d213634fb",
+      "bytes": 147154
+    },
+    "raw/api37-regression/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/0ade712aca8efaa6d2dc.gz",
+      "sha256": "caeb4c6f8782fa9a5d4b911ba9bb40c8672e24228730a328c2aa7dbe1d64b449",
+      "archiveSha256": "c84e7599237fce3aa2d861887b9d27b423398aad5fe6b08a47492dd0ba7f7ab7",
+      "bytes": 72
+    },
+    "raw/api37-regression/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/9468ae71fd9bb50e909e.gz",
+      "sha256": "c26c67f5ba5b9600f9a98e2fa6be2b8e08d57922eca92a729efc6aaabc07220b",
+      "archiveSha256": "2e746cf968cd1fbfc11d8903617b27ca0e9d3ccca3fee72e800db4f00a89ad6b",
+      "bytes": 131671
+    },
+    "raw/api37-regression/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/e9df939bc6126d68f2e3.gz",
+      "sha256": "18f4251eddce6687bbc0278f03de6ad0df39f1c9db933007cc1b77d914c868da",
+      "archiveSha256": "38a8e4ca3813b0a90764f5219d3ef808b11a7c5bf4af5b2cd3dcdb0b735aaa49",
+      "bytes": 180
+    },
+    "raw/api37-regression/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/a8d5db820918e788c7ce.gz",
+      "sha256": "f2869a3697fb5df32b605556721836793c5a721ce0c622191e8f3c82050e3114",
+      "archiveSha256": "c57e5a3c7f30464c780e9aa5f8d6dd50405614b9bcd1ec0a54a0bb1893595bc3",
+      "bytes": 29412
+    },
+    "raw/api37-regression/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/b4f7a6af52d037def69d.gz",
+      "sha256": "ea7169fdc129e9053bb05c8c66dc68abbca4fa442fe2d60bfe9c73c7d55b5d3c",
+      "archiveSha256": "54ba5fdd83d728dfa833dfcc39e1c8daa14cc2931fcca5191a54279d4a5659f0",
+      "bytes": 46
+    },
+    "raw/api37-regression/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/2574f26ec30ceac515d5.gz",
+      "sha256": "caeb4c6f8782fa9a5d4b911ba9bb40c8672e24228730a328c2aa7dbe1d64b449",
+      "archiveSha256": "c84e7599237fce3aa2d861887b9d27b423398aad5fe6b08a47492dd0ba7f7ab7",
+      "bytes": 72
+    },
+    "raw/api37-regression/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/a67ed63f740fe1df6e50.gz",
+      "sha256": "1786da61b06bd8f414df92daea54120119f3b6dae7a4ac4b0b448a15a6d7b464",
+      "archiveSha256": "857400c47125f4141d6066b8d7ad0fcdfbe255d2cef017068325151514993e19",
+      "bytes": 145605
+    },
+    "raw/api37-regression/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/e5f0fe6e566df6f6cd6c.gz",
+      "sha256": "1774b541700c00b68830c62eaabf3c4900aac96745c10291462442280a42c0aa",
+      "archiveSha256": "0c61d99e7ce3d3f1aacd43f1a16ade20752b8cca34d7b077a79f29f05233de96",
+      "bytes": 124172
+    },
+    "raw/api37-regression/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/c6eae11002b4b66da7eb.gz",
+      "sha256": "18f4251eddce6687bbc0278f03de6ad0df39f1c9db933007cc1b77d914c868da",
+      "archiveSha256": "38a8e4ca3813b0a90764f5219d3ef808b11a7c5bf4af5b2cd3dcdb0b735aaa49",
+      "bytes": 180
+    },
+    "raw/api37-regression/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/3645018d4e5fc68cc8c3.gz",
+      "sha256": "bc505fb8e2e99e2f8535e72ae75335398b10646fe68ab0a28e64a62af18aa4c2",
+      "archiveSha256": "273e38cb32a78f535d922e99a83097b055403347002e7b59104128e82770b718",
+      "bytes": 28942
+    },
+    "raw/api37-regression/landscape-large/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/86d120a0b2bd838de800.gz",
+      "sha256": "bb82b02733c40b24a1762c55fe5751412614e55f6a51974d7fcaa900481135c0",
+      "archiveSha256": "3d4b7bb5035effee4f02edfda1a06d2b4f8172c4c935882cd85a90e8f83387ca",
+      "bytes": 2461
+    },
+    "raw/api37-regression/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/2dfcc4b8b4bc119c3c1f.gz",
+      "sha256": "8d48dffb8546a2075132764b7e84f6dda9c41ec0807d6f7b68469774ca452e13",
+      "archiveSha256": "76e996de6613c6999fce8a512ef97ee6d0d2b742e802454b59e7d343b497acab",
+      "bytes": 103740
+    },
+    "raw/api37-regression/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/bbbdd677fdbca3628aad.gz",
+      "sha256": "2c9149771929abc5280a6eb399cf729199187826a294dc0646ea020d941560ff",
+      "archiveSha256": "f9fdb48c8f3811316731ebb9592bf2f83a3de4a0a8d2f6137dcdcd175506f042",
+      "bytes": 66
+    },
+    "raw/api37-regression/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/699b529969514de59003.gz",
+      "sha256": "caeb4c6f8782fa9a5d4b911ba9bb40c8672e24228730a328c2aa7dbe1d64b449",
+      "archiveSha256": "c84e7599237fce3aa2d861887b9d27b423398aad5fe6b08a47492dd0ba7f7ab7",
+      "bytes": 72
+    },
+    "raw/api37-regression/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/649ad1492d853974b4f3.gz",
+      "sha256": "e8f41d7e20d77d8222ee369028b4f78d82e50f16f17f155fb57b23bcbf8c72a7",
+      "archiveSha256": "4a7d2ab5a5462d2275873a8de0db6c2038006ba9cd351cc1515d355ea6d42e01",
+      "bytes": 98387
+    },
+    "raw/api37-regression/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/aa2051066196d7c807f8.gz",
+      "sha256": "e94bff0f6e2f165697f95a8a437e320eac39dd88898f0c13ee8333819475af65",
+      "archiveSha256": "b0dbf18a5b8275eaf24f198d7c3f1051c392e21acd5e91141f3a72901ca1a8bd",
+      "bytes": 180
+    },
+    "raw/api37-regression/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/2f202d06d849afcb580b.gz",
+      "sha256": "ff089d74b347a947e03c2c13abb71f4b6ea561fd4a4ebdcbe7b32e8082d6ff8a",
+      "archiveSha256": "ebbcefb5a791e90a57497c3b44143efdbcbef462d8562efd036d1b7cb73254cf",
+      "bytes": 25884
+    },
+    "raw/api37-regression/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/9c8e0212f0e6ac5276d2.gz",
+      "sha256": "6f3126cd832fb01e48a7b6da6cb968d428653b860758c01db373585138df33ca",
+      "archiveSha256": "7a8f5aaedb1efa202109717288964f4e41b5688eea72d6c2cc10da92c01254ee",
+      "bytes": 117
+    },
+    "raw/api37-regression/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/a48ebfc2d74d8fa859cb.gz",
+      "sha256": "e6dc30b799b05dcc77055804c3e30a3c922e80a2d56c008e5045baaac870f610",
+      "archiveSha256": "52fd6e4f251bcf657c0c3ee79208af8eded349065c320ace23a0e222af5177c0",
+      "bytes": 126606
+    },
+    "raw/api37-regression/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/9d2b50a65211e93c59d1.gz",
+      "sha256": "caeb4c6f8782fa9a5d4b911ba9bb40c8672e24228730a328c2aa7dbe1d64b449",
+      "archiveSha256": "c84e7599237fce3aa2d861887b9d27b423398aad5fe6b08a47492dd0ba7f7ab7",
+      "bytes": 72
+    },
+    "raw/api37-regression/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/b890e001ef5b24d7eb63.gz",
+      "sha256": "81369f2d6266ac6582d7bf6dc2fa1ba308d33bd7c05695c07044d8312f61e8cd",
+      "archiveSha256": "4c9d41dfbdae258ad5cedc25ff9232795208acb5a1ee5c8005080281469838ee",
+      "bytes": 108460
+    },
+    "raw/api37-regression/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/e11067de072ca46d9632.gz",
+      "sha256": "e94bff0f6e2f165697f95a8a437e320eac39dd88898f0c13ee8333819475af65",
+      "archiveSha256": "b0dbf18a5b8275eaf24f198d7c3f1051c392e21acd5e91141f3a72901ca1a8bd",
+      "bytes": 180
+    },
+    "raw/api37-regression/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/d36b468b3fb6a4740f8f.gz",
+      "sha256": "7b8314dc98011bf68e0559005680c052a017f43f66a6b5d94b921c694f324ff3",
+      "archiveSha256": "b03d0191edf72b9c55aeea4d8d92dd1c236f452c4b2edccb4cdb6fc3bba11572",
+      "bytes": 29917
+    },
+    "raw/api37-regression/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/89e1635e7d29dcd95e85.gz",
+      "sha256": "1d8cf7d24dcf723df4ee9be8c2e7e980dc24e15606391f8c8ae55ec22d8bb7c9",
+      "archiveSha256": "2e483a4f401e73dda4f181956712e58756c9f8de3f41029a719b186b62ed6770",
+      "bytes": 47
+    },
+    "raw/api37-regression/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/9e3f1c2e8a4cfab6876b.gz",
+      "sha256": "caeb4c6f8782fa9a5d4b911ba9bb40c8672e24228730a328c2aa7dbe1d64b449",
+      "archiveSha256": "c84e7599237fce3aa2d861887b9d27b423398aad5fe6b08a47492dd0ba7f7ab7",
+      "bytes": 72
+    },
+    "raw/api37-regression/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/d97cb5075722e045f95a.gz",
+      "sha256": "599a782f0d7f3a8fe4b0c4d6595d623926880c74d090e7ab7bc11bdac6901e43",
+      "archiveSha256": "1460203b3a6dbf9e267282e4ea3761d66aee02f5f3f1c6793945a781a10cf275",
+      "bytes": 99579
+    },
+    "raw/api37-regression/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/90473fa28c1617f076f3.gz",
+      "sha256": "5ae295e72cc8ffe799ee0cf7d73611d678fcb254809a49fc2b93607af38176e1",
+      "archiveSha256": "d269cba99487d59e57afa84ba8b29869acdd1e02d48d4baf675173f6e885cf7d",
+      "bytes": 97119
+    },
+    "raw/api37-regression/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/890bbedf00fc29c86160.gz",
+      "sha256": "e94bff0f6e2f165697f95a8a437e320eac39dd88898f0c13ee8333819475af65",
+      "archiveSha256": "b0dbf18a5b8275eaf24f198d7c3f1051c392e21acd5e91141f3a72901ca1a8bd",
+      "bytes": 180
+    },
+    "raw/api37-regression/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/830d922bd10c8c6302ea.gz",
+      "sha256": "c485117a7e3ef7c93b515821f7d8a2ab13abfebe1e0b830da9a08931c44cc330",
+      "archiveSha256": "7711692f0c3e3f8b8981f58d932882e4eda2afd8e75b6de2c78931c05d02512c",
+      "bytes": 25881
+    },
+    "raw/api37-regression/landscape/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/487727a3d09ded6a3d63.gz",
+      "sha256": "ce8f10546145b80058c97bab57b9159337b262e55f1f278312a925e17e069195",
+      "archiveSha256": "1b6a0ddccefc7b056a55d4dd7fefc8c193bd31be160341efa5c7b1a02e2cf061",
+      "bytes": 2460
+    },
+    "raw/api37-regression/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/8e1f13d9f32ad3299eac.gz",
+      "sha256": "54129d1c5cc762ff1db1ca146ca70414da676376d2ab01f1f67f5f6004cbf11e",
+      "archiveSha256": "92bc36720075379192bc6eb7afd94b1ff6aee50ffc6c5cce488713e61b18ce11",
+      "bytes": 152958
+    },
+    "raw/api37-regression/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/ffeed3f730f056859b78.gz",
+      "sha256": "d907fdac9a02c2add5d52848e6cb03dc088d318a08ad3b89eb9791debea49f37",
+      "archiveSha256": "ffe9a143c8762959b7ddddd6ff0332e09760504afc9b15fa23d952235a47040e",
+      "bytes": 68
+    },
+    "raw/api37-regression/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/78a00e4c9ecdfcd6cf60.gz",
+      "sha256": "caeb4c6f8782fa9a5d4b911ba9bb40c8672e24228730a328c2aa7dbe1d64b449",
+      "archiveSha256": "c84e7599237fce3aa2d861887b9d27b423398aad5fe6b08a47492dd0ba7f7ab7",
+      "bytes": 72
+    },
+    "raw/api37-regression/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/5993c06636992d46eb0a.gz",
+      "sha256": "4f326a2b72a89bf015004b9ac11234e27d8ff7df138d90328bd7c4614f7edc30",
+      "archiveSha256": "b0c21e8902555b00908c920b7cca959e2c1f9b784a669833916a4feabb25e27d",
+      "bytes": 151783
+    },
+    "raw/api37-regression/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/9b1e890e76ceeecf3e5a.gz",
+      "sha256": "ba385fb41305d7c19b99bf3596dc56777ca78e55b0457c1eec8723e744d97010",
+      "archiveSha256": "5db7074d2926f96ebdf52f06e3f9fab2fcb50fed291aace6795e2a20d58d7c49",
+      "bytes": 180
+    },
+    "raw/api37-regression/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/b817762ed1368c6d2331.gz",
+      "sha256": "4c2d43066267f5d7a520168b75f5e747a82ea654bf1b43c719f3ab589b3780f9",
+      "archiveSha256": "5ad8fce5b9c1f59775e2e628c1bd70a0bf30ff329bd212c1e529bad0dcbf7337",
+      "bytes": 26357
+    },
+    "raw/api37-regression/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/bbfcc273896eaf438220.gz",
+      "sha256": "c13e2843487406944bd3464c6496cb338177e105e12ad5e2a9aede5ba530004a",
+      "archiveSha256": "c028777e341d3e3b4b630271fced9106f30322e250b1d6be5a42ee5721ce1904",
+      "bytes": 116
+    },
+    "raw/api37-regression/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/73642418dba889fa4fd5.gz",
+      "sha256": "4fcde561d8317d18e699e90004055efd967c3c74be2cf34c614c708ef41ff3c1",
+      "archiveSha256": "92d4e62c64eda44d4c627aa1f5132449ae02297efe37cb9e0a4a4a591a39bae8",
+      "bytes": 167066
+    },
+    "raw/api37-regression/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/10c90ff6eb96a38a6f59.gz",
+      "sha256": "caeb4c6f8782fa9a5d4b911ba9bb40c8672e24228730a328c2aa7dbe1d64b449",
+      "archiveSha256": "c84e7599237fce3aa2d861887b9d27b423398aad5fe6b08a47492dd0ba7f7ab7",
+      "bytes": 72
+    },
+    "raw/api37-regression/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/1634a2ed5fbacb13389d.gz",
+      "sha256": "47eea76ef621fff298c433718e408643d68c8be6384e4a40e62744b7ac83c1c6",
+      "archiveSha256": "fcaf94ef573f15a8ee57950133986f1087322bbf45c2c9e1d6481711484deddb",
+      "bytes": 161120
+    },
+    "raw/api37-regression/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/13481cccf583af802fae.gz",
+      "sha256": "ba385fb41305d7c19b99bf3596dc56777ca78e55b0457c1eec8723e744d97010",
+      "archiveSha256": "5db7074d2926f96ebdf52f06e3f9fab2fcb50fed291aace6795e2a20d58d7c49",
+      "bytes": 180
+    },
+    "raw/api37-regression/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/7eca7ae5f9c53a223504.gz",
+      "sha256": "a029ad884336df05481051854680519760db358d7e96099f101df3c217944a6c",
+      "archiveSha256": "2a420d34509a938f44bfc754943c3d308886a48a6f7a866b3f1269b2e0e6cb88",
+      "bytes": 29051
+    },
+    "raw/api37-regression/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/b24bdb78f003fafb7372.gz",
+      "sha256": "921d89c265a1413bbd250e1d6f6e5a38a368fc879baea776ed68f68fd5bf94f0",
+      "archiveSha256": "09928227d4767f4563105b25dd0a480201b91919fa18ac2b787156b312679ccd",
+      "bytes": 48
+    },
+    "raw/api37-regression/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/4e20f9a937954503634c.gz",
+      "sha256": "caeb4c6f8782fa9a5d4b911ba9bb40c8672e24228730a328c2aa7dbe1d64b449",
+      "archiveSha256": "c84e7599237fce3aa2d861887b9d27b423398aad5fe6b08a47492dd0ba7f7ab7",
+      "bytes": 72
+    },
+    "raw/api37-regression/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/082e301164e93d8367af.gz",
+      "sha256": "6e5d0ffdf1416535f6c1bb7c2daa59ee3cec57405a6edfcfc32d17724a62abe0",
+      "archiveSha256": "ceeeb51db58d6c925dcf36b57223477e1fb39c8f4cb20af47852b633a868a691",
+      "bytes": 142893
+    },
+    "raw/api37-regression/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/5b53985ffff9ab5acd2a.gz",
+      "sha256": "a94b66986275895b0890fdb9003f33e40c1fa0cda1e61239be91198111d6131d",
+      "archiveSha256": "cd2333b5b5e5c83b8b3bcf5d7b72cd40bfc7b8c53af4c10f565094ee4c573ab0",
+      "bytes": 151814
+    },
+    "raw/api37-regression/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/a1c899e5c1f886f81c78.gz",
+      "sha256": "ba385fb41305d7c19b99bf3596dc56777ca78e55b0457c1eec8723e744d97010",
+      "archiveSha256": "5db7074d2926f96ebdf52f06e3f9fab2fcb50fed291aace6795e2a20d58d7c49",
+      "bytes": 180
+    },
+    "raw/api37-regression/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/6b528626ef46d7d4d4d6.gz",
+      "sha256": "c321f9a6fae27fe4cd9c4dd11b6564b460f5aaec81579697ea817144896b27a2",
+      "archiveSha256": "d252ed8deea0064cd6f172ad43a0c30387c863d0bf72c59e2f8c6a85f9959e92",
+      "bytes": 29478
+    },
+    "raw/api37-regression/portrait-large/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/1b61a0b44afc7604be54.gz",
+      "sha256": "7f695caf1cebeb24d0d3a932105d685a6d7908cbce8a7ba0de31bcdb42df2d6d",
+      "archiveSha256": "53ba403dc4398d115a595c9fe98f065414bcf4699ae4dd798f53fd9051d2dfe5",
+      "bytes": 2461
+    },
+    "raw/api37-regression/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/955843376750c332bf2f.gz",
+      "sha256": "90fcd92bd4ec84158d6796cb407947ebb471870f7fa04af6e738b1f0aea2d4aa",
+      "archiveSha256": "1ce899ba7e45563305d64afc21d714eb66122098caab15398b9366a7b3663028",
+      "bytes": 111714
+    },
+    "raw/api37-regression/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/ac26d60ffbc33adc69e2.gz",
+      "sha256": "60776b68e4e569586a7afc8801e75c72ae69c72a03d30fc78e5a7445498e1f46",
+      "archiveSha256": "64377dae90ecafe79f6a26e0215e041c5a785d4a7b6bb53889223702c99b11c4",
+      "bytes": 68
+    },
+    "raw/api37-regression/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/3789b40f0e8f508c96c3.gz",
+      "sha256": "caeb4c6f8782fa9a5d4b911ba9bb40c8672e24228730a328c2aa7dbe1d64b449",
+      "archiveSha256": "c84e7599237fce3aa2d861887b9d27b423398aad5fe6b08a47492dd0ba7f7ab7",
+      "bytes": 72
+    },
+    "raw/api37-regression/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/35154618963576da243c.gz",
+      "sha256": "5fa0d585d412344a2f84935f17bb38a70457ccb3f2275614e672f196c164c528",
+      "archiveSha256": "e66703fc53b9732ae693fbbd3b808d183e65ff9c261287ceb6d9f815205258ef",
+      "bytes": 107717
+    },
+    "raw/api37-regression/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/e83c3ae9481fec30df13.gz",
+      "sha256": "26782a9cc97d502029cd7c0fc8d43166504a6adc0550e2580b66e68246563b0a",
+      "archiveSha256": "951e9567207de85af5749e2cfa06a106adf9a00092ab385a85322996e16f72f5",
+      "bytes": 180
+    },
+    "raw/api37-regression/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/ac2856cffbb4994dba6d.gz",
+      "sha256": "b1175155604862896fe99c4d6bcbfa94a159cbf2ed4e0c21792a55fd4f384cce",
+      "archiveSha256": "aa976eb697b2870c2cbe7b830685012c7e74b49ddd855826214204b4b9e350ad",
+      "bytes": 26361
+    },
+    "raw/api37-regression/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/fb9fc2e2a016c6651476.gz",
+      "sha256": "7534f299c6b96845fc2382e08c61488675f1b1c972c67676cf393acdbb9618dd",
+      "archiveSha256": "fd610b8162f9647e9f2da05b7927238316f24df2ab97cd3cbcf988d6ee9f00f9",
+      "bytes": 115
+    },
+    "raw/api37-regression/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/582eda2074403b8507e3.gz",
+      "sha256": "c4abfb58b822d3b99852013797c92e1fc6afe1f64108a03e3f13d92f624402f9",
+      "archiveSha256": "4a60970f9c85cbfebf879fd86fb8732cf8c175f9b92583b5d498299d15065b3b",
+      "bytes": 120145
+    },
+    "raw/api37-regression/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/46ebf7e68cbea2420e79.gz",
+      "sha256": "caeb4c6f8782fa9a5d4b911ba9bb40c8672e24228730a328c2aa7dbe1d64b449",
+      "archiveSha256": "c84e7599237fce3aa2d861887b9d27b423398aad5fe6b08a47492dd0ba7f7ab7",
+      "bytes": 72
+    },
+    "raw/api37-regression/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/83c90c29911426e32640.gz",
+      "sha256": "0d33aa43d830ce393a9039862a57c6abff9a8bde0771b6d57e8708f2445d52dc",
+      "archiveSha256": "636da5fee307502ce4c0a1e74a413cd6453e4cea22c439cfbc4a275a333b30a4",
+      "bytes": 114342
+    },
+    "raw/api37-regression/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/f6b19ea905cdfff6ff7b.gz",
+      "sha256": "26782a9cc97d502029cd7c0fc8d43166504a6adc0550e2580b66e68246563b0a",
+      "archiveSha256": "951e9567207de85af5749e2cfa06a106adf9a00092ab385a85322996e16f72f5",
+      "bytes": 180
+    },
+    "raw/api37-regression/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/4ccff69be6725c298fcf.gz",
+      "sha256": "95050f6db3864dc77f2b0e3a77733b94a46a52dc968ca6e2801ea9618b7f75a4",
+      "archiveSha256": "d33dd2d758a9c0fe0a90343dc48ebca7948ab0248edc7d89a1c4481acfe8c7fc",
+      "bytes": 29957
+    },
+    "raw/api37-regression/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/036ab983eca45eebe311.gz",
+      "sha256": "90b48d71cefd23c269f314b02e5f1fafea2346547a1c63e14dfbe170e05af886",
+      "archiveSha256": "d0871a6b0d0d7089ade0a0a90772dc24e602b529ae7b27799f3e2c3c2141b945",
+      "bytes": 48
+    },
+    "raw/api37-regression/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/ac1e783363bec8aadc92.gz",
+      "sha256": "caeb4c6f8782fa9a5d4b911ba9bb40c8672e24228730a328c2aa7dbe1d64b449",
+      "archiveSha256": "c84e7599237fce3aa2d861887b9d27b423398aad5fe6b08a47492dd0ba7f7ab7",
+      "bytes": 72
+    },
+    "raw/api37-regression/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/7e27f32516171c24860a.gz",
+      "sha256": "e94ac064e0f9982fb949c015abec5b9f97dc3b9f0156948a66ee2e7c536c8a67",
+      "archiveSha256": "8821d9115b50739718677aeb43104bc2f0819abc5749742563e099cb843317b7",
+      "bytes": 113528
+    },
+    "raw/api37-regression/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/5fb41062eeb7800cc3ac.gz",
+      "sha256": "5ff779a9320bde4beb29df5ff3bd9cd29eff2628ba51a2a1be3ac749ff826fbc",
+      "archiveSha256": "6cea03001ce7baa84b9e2843948a2dcd6932ce753bfc8239c50ee8f012b04380",
+      "bytes": 107306
+    },
+    "raw/api37-regression/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/56ce7910a43fac585830.gz",
+      "sha256": "26782a9cc97d502029cd7c0fc8d43166504a6adc0550e2580b66e68246563b0a",
+      "archiveSha256": "951e9567207de85af5749e2cfa06a106adf9a00092ab385a85322996e16f72f5",
+      "bytes": 180
+    },
+    "raw/api37-regression/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/3a26aaa7520b94c4230b.gz",
+      "sha256": "d4f62d4658b0b77c9af819e32468da2fe46796abb819cfa1ddebce1746398b52",
+      "archiveSha256": "31640c5862053860828c59adc27cac5b69b4f7a50e1a3b766d5a96de50d60700",
+      "bytes": 26358
+    },
+    "raw/api37-regression/portrait/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/423f964dcdcffb573d66.gz",
+      "sha256": "6825b9979b9162c08a1f5e0f2a96317970970a9869908c984057a8f92bcb4816",
+      "archiveSha256": "b1c32b086f6c2e2a58b8b5c2e764d1f3b64a006abb13a90143ba81bf54959c75",
+      "bytes": 2461
+    },
+    "raw/api37-regression/result.json": {
+      "archive": "benchmarks/results/e49-evidence/e29c2e4ba8bf493342b4.gz",
+      "sha256": "021461a55b678a21e920a52895f14b5cff153028e0b8d05b0ba83869412fea55",
+      "archiveSha256": "a5368aa7da3dcd52e72c9650a23970da1b5b66e933743acbc83699d6a39f0a53",
+      "bytes": 2763
+    },
+    "raw/avd-create.log": {
+      "archive": "benchmarks/results/e49-evidence/1e971b18a936b3648212.gz",
+      "sha256": "4d3c53a31c94bab06e88d7828c4948b708c27569a2f4f287ddcf19f7f4f28112",
+      "archiveSha256": "3c1d143f06c17326a6c60060eb11ef1e54e0fb9ddc6c7e1a88c770aea9e0a116",
+      "bytes": 269
+    },
+    "raw/avd-google-create.log": {
+      "archive": "benchmarks/results/e49-evidence/d2501609f0a26d7f9e07.gz",
+      "sha256": "4d3c53a31c94bab06e88d7828c4948b708c27569a2f4f287ddcf19f7f4f28112",
+      "archiveSha256": "3c1d143f06c17326a6c60060eb11ef1e54e0fb9ddc6c7e1a88c770aea9e0a116",
+      "bytes": 269
+    },
+    "raw/build.log": {
+      "archive": "benchmarks/results/e49-evidence/bf49b8293fbf86d11fe3.gz",
+      "sha256": "d1d50c657af0904435a7e1f081375eb22f6b9237a2b955af615d3eb0cc322957",
+      "archiveSha256": "d9d911f218b6e82e264febc6d8e5be6e30d01e56b191bb4ede2e1000b93a0708",
+      "bytes": 17266
+    },
+    "raw/closure-check.json": {
+      "archive": "benchmarks/results/e49-evidence/2c040968f96778ae4f9e.gz",
+      "sha256": "0eedc2dc2467be3a661deb6727c87b3e9f29823597eb609d21c3577705e1ca2b",
+      "archiveSha256": "515ab994462d65b023d20c465face87e98a80b7aea2d67cd8e187d2bf6a2c3e9",
+      "bytes": 780
+    },
+    "raw/collect.py": {
+      "archive": "benchmarks/results/e49-evidence/d29ff0f0a71a19404b0b.gz",
+      "sha256": "e8e8cf60b8a47aef985acf1d97e8e5662f4562edeabe3b1a352a6e250aae95e5",
+      "archiveSha256": "2db1a0edfe788b68bef676eaac77200da9e3faee2bf919ec87970e61b3269444",
+      "bytes": 7168
+    },
+    "raw/emulator-5580-meminfo.txt": {
+      "archive": "benchmarks/results/e49-evidence/2e44223660c3464fbfde.gz",
+      "sha256": "3942293248787ed18be63e11214d7996da6ed7c4be579075f460db97db704245",
+      "archiveSha256": "6bc7f635d6ee57765fe955ee5ffc2c93bb980b398a70507a452643638a12184e",
+      "bytes": 3592
+    },
+    "raw/emulator-5584-meminfo.txt": {
+      "archive": "benchmarks/results/e49-evidence/f0754090453cbf15a48d.gz",
+      "sha256": "ff27263142da5598ced4960c21e03be9b6a839179723d92ea21dae0ec268c5f1",
+      "archiveSha256": "ed0b5a465b61347ac6981a8ede6c89f6f7d13d0879e69581e5b2b8eb26409664",
+      "bytes": 2476
+    },
+    "raw/emulator-google-process.json": {
+      "archive": "benchmarks/results/e49-evidence/3e1990146188d917901b.gz",
+      "sha256": "34efcc2b36ef5a07269c2b5d51a60282930a1d1b483b9d243bff63c496003a80",
+      "archiveSha256": "42a4a84a2b5bf63390fdc1519b6ddbbfd5d9e4c45c5e40da804971b554d820ef",
+      "bytes": 156
+    },
+    "raw/emulator-google-stderr.log": {
+      "archive": "benchmarks/results/e49-evidence/28b7f0a8f11f230ac4a7.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/emulator-google-stdout.log": {
+      "archive": "benchmarks/results/e49-evidence/de44cf33f85212fc7960.gz",
+      "sha256": "28338870864bad62f874dc8bf860a6086adf695abcbf045a7ef5094c0372909e",
+      "archiveSha256": "60012ad09a983046b03d6509fd153391c02281e1d37bd571807c2f32300e4c4b",
+      "bytes": 8794
+    },
+    "raw/emulator-process.json": {
+      "archive": "benchmarks/results/e49-evidence/a569b18d9dce9d3570dc.gz",
+      "sha256": "f9c4c9f7dede5d7e8b741366cc206a70120c16b818efda45a8f6cad5735b5916",
+      "archiveSha256": "ec8ae4826cc962770f976510ff47867cd3a2ed2c37f3398016430a997e4f911e",
+      "bytes": 149
+    },
+    "raw/emulator-shutdown.json": {
+      "archive": "benchmarks/results/e49-evidence/5f8e99aec6959e2f138a.gz",
+      "sha256": "e1eadfdb812a488ebbbf83a86e3434bc9758eca4c2de96443018755a41c3dfa6",
+      "archiveSha256": "e6be7c85dae94a2078fed569d6b733599528161d283f04cd08646783880af8a6",
+      "bytes": 194
+    },
+    "raw/emulator-stderr.log": {
+      "archive": "benchmarks/results/e49-evidence/af38804f7b1408c85379.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/emulator-stdout.log": {
+      "archive": "benchmarks/results/e49-evidence/be22e8da217cc3cb61bf.gz",
+      "sha256": "09195c1af9659794c5abb0101b98083f3cda77f29ddee024786eb45afe5ef69c",
+      "archiveSha256": "f88f4e63508610f4e8e288ba1f61cd5f3053f77f0f574a6720794128c05ccfbd",
+      "bytes": 8875
+    },
+    "raw/fixture-build-v2.log": {
+      "archive": "benchmarks/results/e49-evidence/44acdd189dcb230113ce.gz",
+      "sha256": "4219ee089b18f90a9b280012ba61642a0944f5f6e7b685a785040a68c0bfeafd",
+      "archiveSha256": "c42a7e5ba3ca8513058ebc22df18991a595d815831c510809fea47429e860e53",
+      "bytes": 5549
+    },
+    "raw/google-config.ini": {
+      "archive": "benchmarks/results/e49-evidence/6130ed4ffd2f7b3ffcfd.gz",
+      "sha256": "b26445fe01c21f19451cd7f4ef795c9058127623d7a08f3dc105c0b870720af3",
+      "archiveSha256": "cd9ad7432b4228fb87dc44722d0b3d8c05505178237b0544731b8f0b9340b273",
+      "bytes": 3566
+    },
+    "raw/google-hardware-qemu.ini": {
+      "archive": "benchmarks/results/e49-evidence/876898ffd80fd0e9b9c4.gz",
+      "sha256": "be2bf5ce68dd0e8451eb9c59f44a48bc773ac9a3a9ba9c62d30a4e6ccf4a5403",
+      "archiveSha256": "60157ebb6ed6508bd1f1ea3b51d5454b794da978431ba7ed7b3c26df6d605f09",
+      "bytes": 4609
+    },
+    "raw/google-properties.txt": {
+      "archive": "benchmarks/results/e49-evidence/506f9673779232cf44da.gz",
+      "sha256": "3380d0dae48c0ee6d5c534b1c1cfa71fe32cbafd073b57cffd296b492573fd17",
+      "archiveSha256": "0f0193b3f6a7fc3b49f105baa363a6790839fe6029721e77a670da4679c29be6",
+      "bytes": 12753
+    },
+    "raw/google29-420-run.log": {
+      "archive": "benchmarks/results/e49-evidence/367328be118c40afcc66.gz",
+      "sha256": "371e109451551a4d54ccf3b9cfdd94f02e37ec992456f85d7b01765a17273884",
+      "archiveSha256": "34ed8cc334329809b7732f8a675b7f6be8224ab320cd8b88a30ba618f760f901",
+      "bytes": 2385
+    },
+    "raw/google29-420-v3-run.log": {
+      "archive": "benchmarks/results/e49-evidence/28766476a6c1623275f2.gz",
+      "sha256": "6301da87d0c6bb6553dbe95917f487ed67f38cc2fc444618590264d40101d9b0",
+      "archiveSha256": "28f97ff209e3c95b5feadc5a0494abe140c719e0197e8662fe28196392592469",
+      "bytes": 1540
+    },
+    "raw/google29-420-v3/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/f8e35bdc59a4d26683f3.gz",
+      "sha256": "6f29c8bf7717b792f1ea65bb739463c6e0f273efb957b3a24c861026616418b5",
+      "archiveSha256": "4a05f0a3cd33cc06d2c8b113c54add9db0d2849908720e32e0bb1fdc640e9bb1",
+      "bytes": 112206
+    },
+    "raw/google29-420-v3/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/280aee98bd4d8be8603a.gz",
+      "sha256": "879c2b1bff57594003e3c8b9a1bfa116827bacf84ff553a2c9c06d64ffa9ae3d",
+      "archiveSha256": "01690150d2ad5f3a74c819c7db3c0811fecc1dcf1da3f6f68bef3ababdd5685d",
+      "bytes": 64
+    },
+    "raw/google29-420-v3/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/86da6fa19b539e0c81ab.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420-v3/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/51b08bec807ee1d505b8.gz",
+      "sha256": "668c30baf64a9346af4ef0c852c99467cdfef5f05ccd7e25731fc140d017b022",
+      "archiveSha256": "bd71dbf4276efe78ffbf37dab9b53c8da1c98a6b6c1c9631acc71eb0b737cdc7",
+      "bytes": 114420
+    },
+    "raw/google29-420-v3/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/b237c59affa7ad205947.gz",
+      "sha256": "6416b0411198c2cbfa6be53d5ae8544abc9ff247a9c3791fb01ed4a5a76d08d8",
+      "archiveSha256": "1283c61d6ab14f034da03127352f7a9135754284e290cfdf4748f7785e633eca",
+      "bytes": 180
+    },
+    "raw/google29-420-v3/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/3962b79e9b41028f44e8.gz",
+      "sha256": "f325ca50d6f5b1c9a918ab7b3aab9dc2ba5046f69eb3cff050ab0323e617fa8f",
+      "archiveSha256": "819321ac6b656655a2f45e49229dab9568b47e9266d5df4519e245463e94ae09",
+      "bytes": 26572
+    },
+    "raw/google29-420-v3/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/a6d629138af8d34ced77.gz",
+      "sha256": "49d7f939c081a6fddf7bd8ca7ab9556bb09d48d1d3b31339f01c219b5f537500",
+      "archiveSha256": "f1e193d5d5aeccd4a78a222e4c9f7e1796206df65b5f9af524401553b2d726ea",
+      "bytes": 114
+    },
+    "raw/google29-420-v3/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/bfab8ad064a5fc9110e9.gz",
+      "sha256": "7f3269ca3c42abfa758c833dad5e938071ae1e1d44c28dddba7c72c6a46fbf95",
+      "archiveSha256": "71f4eff7b93a16ccf0e98ecc56a79f2a7325d58034dbc6a9ee6c07c5fc9bba5c",
+      "bytes": 130710
+    },
+    "raw/google29-420-v3/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/be5330106d83e5be32c8.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420-v3/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/ece546ced2fc42ead13a.gz",
+      "sha256": "4eebcf158b91c9cb3433f19dbd16c7c77ef878738f0367c5b557bb47bcc21a33",
+      "archiveSha256": "018c91bb9d1461115b7dd37aa4cc69a8b19730c59e81b6bfd5995e58d003d244",
+      "bytes": 119310
+    },
+    "raw/google29-420-v3/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/91aa55538ad7ff35a20f.gz",
+      "sha256": "6416b0411198c2cbfa6be53d5ae8544abc9ff247a9c3791fb01ed4a5a76d08d8",
+      "archiveSha256": "1283c61d6ab14f034da03127352f7a9135754284e290cfdf4748f7785e633eca",
+      "bytes": 180
+    },
+    "raw/google29-420-v3/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/c8a40fb4e496bcc3967f.gz",
+      "sha256": "019c254f461b3015a8f66671e98cc3f0df2f0b7ca30857a7661ce7e68f68f5e9",
+      "archiveSha256": "773c567617764d559114c74bba839d1e657b068d7968b9ec0afad4b1e5d95171",
+      "bytes": 30472
+    },
+    "raw/google29-420-v3/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/105fe837cf4adb26a14d.gz",
+      "sha256": "a2b5999f3fc5fe06b3767cb5849559383d97dec050109670a21279bc073cd5c9",
+      "archiveSha256": "e9c9e885600389a8df6576ae00595068a6bb33f4679603c9a661137aa878af08",
+      "bytes": 46
+    },
+    "raw/google29-420-v3/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/93253910799884435570.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420-v3/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/66ae6a98b815a6eb37ed.gz",
+      "sha256": "078accab62502eb6d2043dd52a1f590ce5a7b74c4a5a13daa83ca9e39e115f43",
+      "archiveSha256": "1b1ff3b23bd51b79ce1a658a18f9d894ce858707783165d08543a552e2b9b97f",
+      "bytes": 122738
+    },
+    "raw/google29-420-v3/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/711265076cf7c6a8a875.gz",
+      "sha256": "68795af15b74cb81562ef013d1930a26beef893e4a96346ec75b0b5861ed3f88",
+      "archiveSha256": "98c2e4bb1910ec7307abe69851bd2c7598891c0fb967d4577f3e09c473ded7e1",
+      "bytes": 111277
+    },
+    "raw/google29-420-v3/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/c689fdd70af4e819813d.gz",
+      "sha256": "6416b0411198c2cbfa6be53d5ae8544abc9ff247a9c3791fb01ed4a5a76d08d8",
+      "archiveSha256": "1283c61d6ab14f034da03127352f7a9135754284e290cfdf4748f7785e633eca",
+      "bytes": 180
+    },
+    "raw/google29-420-v3/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/ee9ce25d41dd015bad12.gz",
+      "sha256": "276db518d4ea636405b8bfaa057e029f9a1c38153dc710e2f83dcaa81ddc8d4f",
+      "archiveSha256": "a60232b906cc5534426ea7724028b17817821eeb840e75e04f92be3273fefe3f",
+      "bytes": 26569
+    },
+    "raw/google29-420-v3/landscape-large/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/2e701c1ba23dd7be7fc2.gz",
+      "sha256": "53c36a3ffd7f9134e6c7833a3ee685a3591b9fa5ec6152fcfc0196da5fa8f025",
+      "archiveSha256": "8b9a29366ad00feb19a7210dcc0cbb593e2f45fb879aea26bb947e646a79e226",
+      "bytes": 2461
+    },
+    "raw/google29-420-v3/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/9316854fa3226c0061af.gz",
+      "sha256": "be8323649afc6d0574fffeb6132cd8b22dfe7f9b1f7147dfb5951502f10f91aa",
+      "archiveSha256": "75759e81219867b2a0533983d972cb9928c552fef9652dd94c7bc297fa902b30",
+      "bytes": 112328
+    },
+    "raw/google29-420-v3/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/0ec1fede9699f0da1955.gz",
+      "sha256": "186ffe03cd97831694324d10ef835053dd392b8fbd18c8ed740945efd49162e1",
+      "archiveSha256": "6a6376be575f2b636ee6bd0c2320d1b5c8c963088d01265006f97575861fe38f",
+      "bytes": 62
+    },
+    "raw/google29-420-v3/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/999a5eb35729d902908c.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420-v3/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/66ba65881f58896db35c.gz",
+      "sha256": "cd53328985d2334d67e3d203be3a2b99b84274c1ef7e338adae66b32f6cdbf35",
+      "archiveSha256": "64a9aa6eb17b70485b6688eacb8db028833baa40b9b310045cd2b469dc7b95e3",
+      "bytes": 110660
+    },
+    "raw/google29-420-v3/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/13331ee18e0d1da34843.gz",
+      "sha256": "daf89b519944b7a99d8a347bceb0913c39a43ff5bb6d1cba0a311f18e4578e18",
+      "archiveSha256": "90400cbb33fb06140fa0f82714252f90b340a9de2d04ab210e23cbf639f6e80c",
+      "bytes": 180
+    },
+    "raw/google29-420-v3/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/5fa7c7d1fdd18a631508.gz",
+      "sha256": "2c491ebe46fe54bc437f3b90f13f0b5ba32d774d32b43d0ab5c51e3a0d97b568",
+      "archiveSha256": "f9ded48e8c874d97d63dd92f29e2bbb2c71b005770dcd1eb94ad15ddaa624820",
+      "bytes": 26582
+    },
+    "raw/google29-420-v3/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/eec85b088ce3c3a4f45a.gz",
+      "sha256": "4ae9aadd9403e9e76e1656400f16f445fb5def9d506e121470cb7609c96213d3",
+      "archiveSha256": "ea6165643b35a58152ffcb46a273a29707bdc0d7b6ccc681a1fb5f204d2f09fe",
+      "bytes": 112
+    },
+    "raw/google29-420-v3/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/0f8a141647bcb6102393.gz",
+      "sha256": "ec610a0fe80256c0970f6fc8b3313c19407fc8d8f17fe33538a502c1c39260be",
+      "archiveSha256": "1ae5df400f2eb449b76337812d302ea97b1291196ed5fc17cccdbee3c73eb7b2",
+      "bytes": 129657
+    },
+    "raw/google29-420-v3/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/f5f03d0baff0139d2609.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420-v3/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/41cc831905b2084ae580.gz",
+      "sha256": "057dbd698d954f2c894f6af174b3fc3809525eabdf32c07748847e2ed3742efd",
+      "archiveSha256": "7dbf76b02a615ee7b4e0e7f72caad09ca9a624d965a4ae4a0d225acac70cd26c",
+      "bytes": 116453
+    },
+    "raw/google29-420-v3/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/ce6abf843fa34b3ddbd8.gz",
+      "sha256": "daf89b519944b7a99d8a347bceb0913c39a43ff5bb6d1cba0a311f18e4578e18",
+      "archiveSha256": "90400cbb33fb06140fa0f82714252f90b340a9de2d04ab210e23cbf639f6e80c",
+      "bytes": 180
+    },
+    "raw/google29-420-v3/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/f0dd1d81cea10fb9ff78.gz",
+      "sha256": "18ef615cc919950b7a8e0cfc62a6714db85fc1465c3ca5daa5332ada3d9b4f31",
+      "archiveSha256": "5120b580e58a440f664a8e260356cfd202cb95a00eb0efa170791b64675c0542",
+      "bytes": 30481
+    },
+    "raw/google29-420-v3/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/ea68eaebbdae228f22f1.gz",
+      "sha256": "a5f5b8c8cf68c62c7afb0a3a815eaf6a404f46070fd4b3ef47af95e1c2c122f9",
+      "archiveSha256": "dfd5e351d55d99bb47253d4c4310bc1b98dbebcc2677bf9cca391270b4b956a7",
+      "bytes": 46
+    },
+    "raw/google29-420-v3/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/beabf76a04ddc99a2bf8.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420-v3/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/f9f44ed9a4dc5e97cc80.gz",
+      "sha256": "8ad8c9333813a94d787440a04700546eecc92a47b99e56adc64fccc0d6a4cc46",
+      "archiveSha256": "ae15a6769c2e23b089d6669a5b06e10eefd044d06f46d2cdd81b50a47fb3af0a",
+      "bytes": 106182
+    },
+    "raw/google29-420-v3/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/c704357018b886eeed21.gz",
+      "sha256": "1f4b3eda8bbcf32aa515ff7fd442abae123337cc048f9f5db358471d8ad28526",
+      "archiveSha256": "14a41e99dc6a7dcedb85b9ccd2ced20a83b52d4c2fb8672743459797ef962a4e",
+      "bytes": 109511
+    },
+    "raw/google29-420-v3/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/f30fc0448582e14a2644.gz",
+      "sha256": "daf89b519944b7a99d8a347bceb0913c39a43ff5bb6d1cba0a311f18e4578e18",
+      "archiveSha256": "90400cbb33fb06140fa0f82714252f90b340a9de2d04ab210e23cbf639f6e80c",
+      "bytes": 180
+    },
+    "raw/google29-420-v3/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/572de345095bf19ff773.gz",
+      "sha256": "12e08a967aec5b77f961729e9a0535e2bd35711c16da1d09595a7e5e999cb06b",
+      "archiveSha256": "e12af55ecb0a50066141dc676f35c25a04f3057ca0e659414224178af7e8f328",
+      "bytes": 26579
+    },
+    "raw/google29-420-v3/landscape/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/13aa30b9f5676d29ce1d.gz",
+      "sha256": "56b3a9c90d49e310b76fdfdea19aca1f44e158eae274ffecf0a54d0e375da57c",
+      "archiveSha256": "d413747996564c3b817fb2691794f15e3f3fc52d362cbaa6b69d03e8774032c8",
+      "bytes": 2461
+    },
+    "raw/google29-420-v3/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/7c9260f6db655e00c28d.gz",
+      "sha256": "56a78a4c6f381f2b7f28a7a8a6c5e6a68386bd671ed7f6fafbe41342be4b2d65",
+      "archiveSha256": "6823982823eeac6911cf46ad3a39a415e0676b37413cb2f98dd000231072e6ba",
+      "bytes": 144148
+    },
+    "raw/google29-420-v3/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/3b961d3fe942401e5770.gz",
+      "sha256": "337a930c2aae446ce0ef30a6a0e7981eab1b60d0e48c5bc3e6aa32bb5931a88f",
+      "archiveSha256": "08eb26a761e446ce20461298112a3d3fcf1f76ddce19c6646bd39b2a48290ccf",
+      "bytes": 62
+    },
+    "raw/google29-420-v3/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/8e9ce112828c2af617f2.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420-v3/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/672f32ed7a8cb7269f52.gz",
+      "sha256": "b5137e46a9c2d09dbb3b36c5110d7a295d402d744204a50c1831b49f452df74b",
+      "archiveSha256": "9739a5106e8fbae9d818be513a5103a8e57eac84552af9b79666b36d7ebc61bf",
+      "bytes": 145912
+    },
+    "raw/google29-420-v3/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/6fa0da546fae78bfb8bb.gz",
+      "sha256": "15da191531e647b46dd8502259e8f38d0791cad8de79e902befb64484e1c99b1",
+      "archiveSha256": "87839172a4affe3373450c3d382bebf3cebe127ccb1f2a34ac0c9e43273c02fc",
+      "bytes": 180
+    },
+    "raw/google29-420-v3/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/d7906c7c12d24db3d936.gz",
+      "sha256": "0ad7eaac31c1e4287a36a68fef4a3d8bbe6085298362a31d64a0cc8f0b50a778",
+      "archiveSha256": "903631e5c63924716f648280a720aa133697bc601445f3f95a97938ec4fdfe01",
+      "bytes": 27474
+    },
+    "raw/google29-420-v3/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/ea29470e2832e420ef11.gz",
+      "sha256": "3595f458c04a35b5bec45d8da9b3a50c31d3457b96562047ccefa60f2afc4328",
+      "archiveSha256": "fc651b7f6dd62e770365f49b8cdd4131ad119b30ac20c42cf3bbc99e7858ae02",
+      "bytes": 112
+    },
+    "raw/google29-420-v3/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/d2f19005f97395a5c34c.gz",
+      "sha256": "acd8e7a56064860bf8f3f17ac388987b18311b5aa8b6953cd95a7049e3787d5d",
+      "archiveSha256": "778accb71c939e7ce2b363e271f60b6975888933a0644498bb20acf18169b739",
+      "bytes": 151501
+    },
+    "raw/google29-420-v3/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/4d9e4183ed6e67a5fba3.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420-v3/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/e69d063b8695c1f65765.gz",
+      "sha256": "c57fa03fd63e4fa7bbcf783e3a327b026560ca19eaf8ab047e108f456407c47f",
+      "archiveSha256": "9b555824ee5362949f2818d659c50ccd6e48126947f9c0c3dfd5f6289630b59f",
+      "bytes": 151778
+    },
+    "raw/google29-420-v3/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/8043ad6ad4e6b3aec8c9.gz",
+      "sha256": "15da191531e647b46dd8502259e8f38d0791cad8de79e902befb64484e1c99b1",
+      "archiveSha256": "87839172a4affe3373450c3d382bebf3cebe127ccb1f2a34ac0c9e43273c02fc",
+      "bytes": 180
+    },
+    "raw/google29-420-v3/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/cfd916fbd64feaed9197.gz",
+      "sha256": "bffc0276694c71a55f2fba22e7bd1852955a87539392060187d1d442df97569c",
+      "archiveSha256": "f3c2c7d17925f59ceca4c7994e4a3135ea9d5f3434fcd59cc81e8ea668463dc2",
+      "bytes": 30072
+    },
+    "raw/google29-420-v3/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/514469f818388a3f5e34.gz",
+      "sha256": "62bf2ae5bca148f562c074c3f4898a3dc40df8ca95c4d8f013694282a23d1607",
+      "archiveSha256": "94ce306149338eb4689e1d83c04eaad9d189da586e30a601b9b138ed3ac61da9",
+      "bytes": 46
+    },
+    "raw/google29-420-v3/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/9fb5fdd207d89a8ba2a8.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420-v3/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/35f1e104238c8793c4e0.gz",
+      "sha256": "0bff79e1f9c4ea99d0e38a433e61a0cbb45016f70e9cf862d7d754e09999cf54",
+      "archiveSha256": "5115b6364a01d9560ed4e94e084aa7c0c7a52395d8a6760e0e3dc8bf04fe1d30",
+      "bytes": 131938
+    },
+    "raw/google29-420-v3/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/b728a234a155969c082e.gz",
+      "sha256": "023b2b4afd7ec9ff20ad7b09c07082a7fec297ac9373d1b71626d0e7c432c645",
+      "archiveSha256": "cb303d59731a94b8b2e36e06091d1f9a2e3038289b4261c3d918e5a4a0126079",
+      "bytes": 144302
+    },
+    "raw/google29-420-v3/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/73faf8ab1327a25b16b9.gz",
+      "sha256": "15da191531e647b46dd8502259e8f38d0791cad8de79e902befb64484e1c99b1",
+      "archiveSha256": "87839172a4affe3373450c3d382bebf3cebe127ccb1f2a34ac0c9e43273c02fc",
+      "bytes": 180
+    },
+    "raw/google29-420-v3/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/4f1b690ed272e4c68d6b.gz",
+      "sha256": "2dfa3f92ab6de3b17c1f3c2cd67ec4bf9bef2dc62e7b3053cc5d99170a1752c2",
+      "archiveSha256": "269a57e9175221f58e2e669fae469bef61c0296287cebed4160eca1ed69f3f66",
+      "bytes": 27471
+    },
+    "raw/google29-420-v3/portrait-large/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/4002852dfeb0be19a3fb.gz",
+      "sha256": "b58ad3b9fc2ac7b52a99fcd6fcf1ba60ded484651e194b5a266bd76b1c245578",
+      "archiveSha256": "545b3c038eb247cfa51db66efb7a0f414ec0fa32e54fd1f9774b0315941208a2",
+      "bytes": 2461
+    },
+    "raw/google29-420-v3/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/efbdcf275961f4f106b7.gz",
+      "sha256": "02c81d45812d7ee684a8d0fbb9a75c3a1bcc4bbace5478615a6ca2955bbd16e8",
+      "archiveSha256": "15bc8742cabff032a28f3357193db2fa34b04f05483a243338c4fd010bb4058c",
+      "bytes": 114681
+    },
+    "raw/google29-420-v3/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/23feafcd09053a33f820.gz",
+      "sha256": "f314cfae08db68ca817c962b0ba0a0bd547c517ee9c1008b702d5ff64e82b986",
+      "archiveSha256": "5c205f49f3fc1b2e23ae7c2820ee9cf63da6e2c5d47e75e896d1cc544916bbec",
+      "bytes": 63
+    },
+    "raw/google29-420-v3/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/ff45f069a57b8c6e6c8d.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420-v3/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/6a19d48172c480fccd34.gz",
+      "sha256": "89e727719064270223634f8c6648595a5fb4c4cfd3dc58d34e414c120b45266a",
+      "archiveSha256": "3647192a931daee8524c6112cbb80b4a085c3abfa9aefbf7e2e38e3dedc83542",
+      "bytes": 114481
+    },
+    "raw/google29-420-v3/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/86492d8ece76a31eef1b.gz",
+      "sha256": "9cb18a08451f4dcf465f9a7bd2a516a35fe1072850205ab321f11bad34d20655",
+      "archiveSha256": "3ae79c842d79ca791a416ccfadd1436bcb669fb8493f1a3106768714b3dce3f3",
+      "bytes": 180
+    },
+    "raw/google29-420-v3/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/ee5c7fac5e0fc4fe9579.gz",
+      "sha256": "e98c1f8088e363b3272faf7d757bf6a267c97997e39b2f4c4ffe67a0e9e45226",
+      "archiveSha256": "cc56cc4e53ea37d09bf2e3cae7f171d5c753bb8ed80a02b21043a57e1373621a",
+      "bytes": 27953
+    },
+    "raw/google29-420-v3/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/c2d0516ac705de1f9ffe.gz",
+      "sha256": "4c56c26f654b3f86200a40320abbd204136f3fbd877db1bec2832825a0a52094",
+      "archiveSha256": "16d96dbc6f37807dae61dd4d9c8e3a6835d7cc50c09122409b0a71cc48678de3",
+      "bytes": 112
+    },
+    "raw/google29-420-v3/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/15e170409a46d0c0be41.gz",
+      "sha256": "c9277685bdac53efd29c172fa1464af222b0a773df3c8cea8a0d1ab75ec67c92",
+      "archiveSha256": "91d627c8bb1329edda387365c65066e04d2386f6440a25c786ee65d4d7373800",
+      "bytes": 118581
+    },
+    "raw/google29-420-v3/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/3c8775e3cad1d147ad21.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420-v3/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/9cfaff8b73d1b2a164d3.gz",
+      "sha256": "e01b15b56160cfa51a048eb338ea38b50961b8801882407118e16a9721ab2a6b",
+      "archiveSha256": "2d3a4acdc5737e460d50f5bb91f0e8da82ebed859242200da370d70eada82ef7",
+      "bytes": 117234
+    },
+    "raw/google29-420-v3/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/833f7840850bebd6f876.gz",
+      "sha256": "9cb18a08451f4dcf465f9a7bd2a516a35fe1072850205ab321f11bad34d20655",
+      "archiveSha256": "3ae79c842d79ca791a416ccfadd1436bcb669fb8493f1a3106768714b3dce3f3",
+      "bytes": 180
+    },
+    "raw/google29-420-v3/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/a970e8bba777ee39139a.gz",
+      "sha256": "4227c35bbfd4f8129befc8f86478434d3a1aeeb7b626a4ca895150d6cf1fc60c",
+      "archiveSha256": "8ccc56beff80c83e5e92319397e484195fb20ebafdbe5ecaf44ec0c8109b805e",
+      "bytes": 31421
+    },
+    "raw/google29-420-v3/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/f4889855a5fe59a7ce7c.gz",
+      "sha256": "77a03e4b7e374ace223aa566a796be73701673745778626882220f17c93d1fa5",
+      "archiveSha256": "4f279b1aecb7f08938a993f2e69dbbf227e89102603a566778bc5dcad2303d53",
+      "bytes": 46
+    },
+    "raw/google29-420-v3/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/2e9b28ebe8890f9caea3.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420-v3/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/b2a3354da53e19cc351d.gz",
+      "sha256": "aa174f433f4e9194bb435af8fe3ca99c986fde592a83edfac55413471f7172a3",
+      "archiveSha256": "68cdc705597bc44b69db27d1e8617c2fdd30dbbd0356f1ebbbaf9bacab85f841",
+      "bytes": 104835
+    },
+    "raw/google29-420-v3/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/988860d712ceebe8df56.gz",
+      "sha256": "5164641f234dc9e79c62999d39a1a9813e12d04e1ddccbf5e5c4c447c160ef60",
+      "archiveSha256": "ecfe3a97111294ec864fb473789f4b0bf16b936ec42488afec302043b4a1ecc6",
+      "bytes": 113884
+    },
+    "raw/google29-420-v3/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/5b151317af00bfc62fb8.gz",
+      "sha256": "9cb18a08451f4dcf465f9a7bd2a516a35fe1072850205ab321f11bad34d20655",
+      "archiveSha256": "3ae79c842d79ca791a416ccfadd1436bcb669fb8493f1a3106768714b3dce3f3",
+      "bytes": 180
+    },
+    "raw/google29-420-v3/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/d42c6e857f4735c10b7e.gz",
+      "sha256": "32d98ca0c458ba2a6737ce0e2ef058e85f49a7ecd3ed8393d8bf85fb66538ec1",
+      "archiveSha256": "b5d7d900da7d21accd2624c8e160ddbe26f545bc8543ed0ee2213f94425902fa",
+      "bytes": 27950
+    },
+    "raw/google29-420-v3/portrait/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/d74ba143a4d9d889228f.gz",
+      "sha256": "46f2707dbea8da93089f1b8427bc316adb8c22df1f7ebdd124fcc5bd74ff355f",
+      "archiveSha256": "b6c44a2592214158816d1f397dbbe2c2e4d1f0b42ab3909967e52b477b36e263",
+      "bytes": 2461
+    },
+    "raw/google29-420-v3/result.json": {
+      "archive": "benchmarks/results/e49-evidence/125ce64b2d7a0a1e1746.gz",
+      "sha256": "dc8b9baf5be032c65eb878b68503b68e4349bbd9a2cecdf3d681abe90ca808f5",
+      "archiveSha256": "e844cbf9b1209be85a937c2265545ceb143e576f05b42b25effc9d7eb55a9d95",
+      "bytes": 2809
+    },
+    "raw/google29-420/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/07b216df9888aab1f104.gz",
+      "sha256": "85154b78eb3fa978c16401faec64e2d4d2e2ec242bc4f57a59d402360ba60205",
+      "archiveSha256": "8b0ff2bb99c488fb360ff6562c0ccc1b51354ada2b6dae71b3d7e5b857fad43f",
+      "bytes": 112721
+    },
+    "raw/google29-420/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/b4daf9d5ae394a2c183a.gz",
+      "sha256": "b381ba1903f8e582cb16437915b39c8e628b787f0709ce74236374407b4a1f89",
+      "archiveSha256": "58d5c0873626f1cce9142444641e6840b4dfbbe1c343cc78f08d019a909ab705",
+      "bytes": 63
+    },
+    "raw/google29-420/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/82eaded2c956b667638f.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/bb1086438d4d32dd2d8f.gz",
+      "sha256": "febf3d2b2ac05c0bb0b22442e60d99e48e6c312b06157fb74c409348f74eb08b",
+      "archiveSha256": "7a6ba0b1df65838fa211719fbcb206daed99b0c628098d8752c974b8dd43cc31",
+      "bytes": 114984
+    },
+    "raw/google29-420/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/a1e46389f318889fe151.gz",
+      "sha256": "6416b0411198c2cbfa6be53d5ae8544abc9ff247a9c3791fb01ed4a5a76d08d8",
+      "archiveSha256": "1283c61d6ab14f034da03127352f7a9135754284e290cfdf4748f7785e633eca",
+      "bytes": 180
+    },
+    "raw/google29-420/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/c22ddec0d49f5ad31dfe.gz",
+      "sha256": "d134750c7c6348ce10600139987b78514517e38a9089727bfabb68ea9d393cbe",
+      "archiveSha256": "3c6a3ba8faa77e034e69a767900e9152fec4eb7feeab5024d09931ec5c7a9e87",
+      "bytes": 26572
+    },
+    "raw/google29-420/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/c5d1e08e8c4bb1cfa93a.gz",
+      "sha256": "bce3e78996a9798ed25886ae4eaa85b670d786364e2aa9947926d90b9db47130",
+      "archiveSha256": "265687e38d1e38a592e8435dca1befb9c2b41df7b50266a213a7a8d529848c5f",
+      "bytes": 112
+    },
+    "raw/google29-420/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/1c4379222f421b7034df.gz",
+      "sha256": "42b23d4593bf1cb971fdfbdb8496381016b5813bfb579ef6ee5c6923f2d7b609",
+      "archiveSha256": "648a36f53ee57000a9edfcceb3d6b9fc52d62be0581b145f74bc9a170b56bf39",
+      "bytes": 131239
+    },
+    "raw/google29-420/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/a33298c6adbb8b1629ed.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/904dbcc2bb85785fdbc3.gz",
+      "sha256": "bc9c9cd48a47568dea19f6a152b219ab0ff3c51da61af43b8974b9bc90b082e3",
+      "archiveSha256": "c50c98a65e4dc9d66601f9b5352c9f727af1e52e6b8d9027c2be189efc01c1bb",
+      "bytes": 119816
+    },
+    "raw/google29-420/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/516cb764f5b9484256b4.gz",
+      "sha256": "6416b0411198c2cbfa6be53d5ae8544abc9ff247a9c3791fb01ed4a5a76d08d8",
+      "archiveSha256": "1283c61d6ab14f034da03127352f7a9135754284e290cfdf4748f7785e633eca",
+      "bytes": 180
+    },
+    "raw/google29-420/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/d735be63f57a57dceef4.gz",
+      "sha256": "3acb3f40a537fb8aa433bc8a8c6a0fa86d0692e6d1ca001af13f85c2de131275",
+      "archiveSha256": "c9df6a40a455184d011793f89633248abb48522974ff9f42b5cd28347a082eed",
+      "bytes": 30472
+    },
+    "raw/google29-420/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/9a060c4614f83de3a574.gz",
+      "sha256": "a1b83b8e7250e34f78b225b61b32da6542ce8d5b2f73a0da0ab19374718146d1",
+      "archiveSha256": "42eb6235676949d8c8bdee8d8b7a0132b49668f1cf7294b2be9f4bba235871bd",
+      "bytes": 46
+    },
+    "raw/google29-420/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/5ae33630869d135c20fe.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/5df1b87af26fd0468445.gz",
+      "sha256": "a6f71d6c5de474a84e02641c292226bd0c5ac751bca7f8b0ba42142e8841ed5c",
+      "archiveSha256": "7a5acc99988c76de2111354ebfe526a9bb40c143f26ace5c87b4d56f3042ff17",
+      "bytes": 123152
+    },
+    "raw/google29-420/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/cc3da1ab9021b2d68297.gz",
+      "sha256": "c5ce6878e9f332e249f6a032fd885c083c0ce208b95d2cf7898fb748b36e9133",
+      "archiveSha256": "5ba5956c38c55ad0dc955ede515bbce3e618f85d8de3af8c729c663daa0eb1ca",
+      "bytes": 111932
+    },
+    "raw/google29-420/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/c9b860e8440b50f498f8.gz",
+      "sha256": "6416b0411198c2cbfa6be53d5ae8544abc9ff247a9c3791fb01ed4a5a76d08d8",
+      "archiveSha256": "1283c61d6ab14f034da03127352f7a9135754284e290cfdf4748f7785e633eca",
+      "bytes": 180
+    },
+    "raw/google29-420/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/a1a026f1c02650703f3f.gz",
+      "sha256": "8944e38b23af1170567afa549590f0c23295361f389604a7dc1d5bd6d332d1ae",
+      "archiveSha256": "61574810716c7448245a0d54e58bbab800b14a28175c2a336eb4a5f1d55572ad",
+      "bytes": 26569
+    },
+    "raw/google29-420/landscape-large/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/e6642d82d5cfc267cf97.gz",
+      "sha256": "ce00df09199b45dc7904eaf516be3a37fcc6cebb715148be1bc24535ea459722",
+      "archiveSha256": "31e443df02117c7ea3b87908839cf7a26c696c1ee40b2f92ab202de3582288c5",
+      "bytes": 2461
+    },
+    "raw/google29-420/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/adaddfcdf870c81a2d31.gz",
+      "sha256": "0a31d750175fb89e306139a3630f5a328546db1e0388f570c366ad5006595f95",
+      "archiveSha256": "5435d8f42ec544ab0ba0bee8642159194e698b40db8053f742bf6ceb5b24ccf8",
+      "bytes": 112015
+    },
+    "raw/google29-420/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/c818a664b3eaabb8733e.gz",
+      "sha256": "5d41fd7ed5d81d4f00781ec227a5a6d37d19dee005143e94e8eac270942b225c",
+      "archiveSha256": "20de4f9675f60f92c1d587fbbd3a591f0dbe4b03356cd42e89f2b9733dfa115a",
+      "bytes": 62
+    },
+    "raw/google29-420/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/5f54499a07f28eb37417.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/2b75e8c6c1861b9b76a7.gz",
+      "sha256": "0f33f6eda94971eb89453dad00a3051d7b2e31384c471ca65a84b698dd2b5329",
+      "archiveSha256": "ae5dce9c75ac65d7e83e22821e7fac7bdb2483c1361de2dbb065bea527de4e20",
+      "bytes": 110397
+    },
+    "raw/google29-420/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/ddc4bf6ece6c7df4fa2c.gz",
+      "sha256": "daf89b519944b7a99d8a347bceb0913c39a43ff5bb6d1cba0a311f18e4578e18",
+      "archiveSha256": "90400cbb33fb06140fa0f82714252f90b340a9de2d04ab210e23cbf639f6e80c",
+      "bytes": 180
+    },
+    "raw/google29-420/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/e0dbae0ec05f19f32708.gz",
+      "sha256": "dfe93132d7493711e5445324a2ebab12451e58e9c6fc92600a9a32106b8a30f0",
+      "archiveSha256": "b4b5cbda9e58a2d018f1a5d8548b9418ac7789a47a299bc25b5359dc11f1d375",
+      "bytes": 26582
+    },
+    "raw/google29-420/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/6534cb504df466d787eb.gz",
+      "sha256": "20e85c7c57c3897de11c1e1da580a4676132ff43f5c2f81abf25ed8d1f43a4ec",
+      "archiveSha256": "b8398f1525add8cf7c730f28d66e3d170a224042ff6f6e0903dd025bfeec6423",
+      "bytes": 112
+    },
+    "raw/google29-420/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/e722b7aef0e32175aa08.gz",
+      "sha256": "b719672cc619b503064d18e15cfe0088f129856c3fb13c1110e294ae5d7a66cb",
+      "archiveSha256": "607a5325a9b3b8e5fadfe77549e3d46f00a85a4761a294300c503ee2ff302688",
+      "bytes": 129710
+    },
+    "raw/google29-420/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/4db5dc213a8cb23ed3b4.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/04df6b9ca4ac9ecba8db.gz",
+      "sha256": "8e56237a80227e69de499bb88c5dd28011e1e70a2b637435aede98743946e975",
+      "archiveSha256": "f8d21025ea271e8df97454beb30cb3617f29bfb2d85f9c4d4d374a3f987223db",
+      "bytes": 116511
+    },
+    "raw/google29-420/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/0bd0bb4ad7505b77ab70.gz",
+      "sha256": "daf89b519944b7a99d8a347bceb0913c39a43ff5bb6d1cba0a311f18e4578e18",
+      "archiveSha256": "90400cbb33fb06140fa0f82714252f90b340a9de2d04ab210e23cbf639f6e80c",
+      "bytes": 180
+    },
+    "raw/google29-420/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/bf98064196f1dcd1d5cf.gz",
+      "sha256": "b0cf285eaa9fab5060b1267c3e009d7462425aac566dcce0bfb95eca3bae4f97",
+      "archiveSha256": "407d2e8fc2b023aebe917fa791f38d05cd81c691a81ee5144b3af93959c50db9",
+      "bytes": 30481
+    },
+    "raw/google29-420/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/a27317516f9567101b24.gz",
+      "sha256": "4625450caa4749a1aba973f86babe6ce4401b0344ff2710a209f1e2c829e64a5",
+      "archiveSha256": "5aeadf7f7e9a2a6a586e7fc92ad2ba1f5e699645d0d2b3b675d6cb57dff8b860",
+      "bytes": 46
+    },
+    "raw/google29-420/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/16076c0e33560aaa29c2.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/85da23a9e6b1223b8b64.gz",
+      "sha256": "9b2b1706e37e0e81ea12b02289bce21699ffe8bb13a515dc38f777f658b4e789",
+      "archiveSha256": "b168188ac55de3c9d0a7ffcc192dcc8d4d99f13a303564e175c35895cbda7c07",
+      "bytes": 110500
+    },
+    "raw/google29-420/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/99182550d79eb958628c.gz",
+      "sha256": "5d3649f7b94e5cd72b765f6d74821a16f1fa5fed438376132d70c4164454f44f",
+      "archiveSha256": "6e649c04133e0cf5ed831f642a5b897f66474de86d0568c3414eba0600b91c45",
+      "bytes": 109566
+    },
+    "raw/google29-420/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/7d87938dc5d4ec36e149.gz",
+      "sha256": "daf89b519944b7a99d8a347bceb0913c39a43ff5bb6d1cba0a311f18e4578e18",
+      "archiveSha256": "90400cbb33fb06140fa0f82714252f90b340a9de2d04ab210e23cbf639f6e80c",
+      "bytes": 180
+    },
+    "raw/google29-420/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/550b23beb9d089e62f82.gz",
+      "sha256": "19910bb4484d4eeb7538d3e5826fe9712b75103dd866e63474b0ed34f14e1e31",
+      "archiveSha256": "fdaf7d4eb2a8309514955161407ae122caa807f02864643d506b9ca27832cc61",
+      "bytes": 26579
+    },
+    "raw/google29-420/landscape/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/3e76b8be5b434706f7be.gz",
+      "sha256": "686242852c58769de2e938b3a226afb70742e546b29014a9d27b8a94fc6b9834",
+      "archiveSha256": "8f6bab07abfb5034456bb3431b209e11de83852f02dac5d4815cd894fe19de45",
+      "bytes": 2461
+    },
+    "raw/google29-420/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/8b87673ceda2c54b24b8.gz",
+      "sha256": "a78d0a1c7811d49969b1fa7046062169d8c9ecdd5282f150e3a5dea25a623750",
+      "archiveSha256": "a4f59e465bde04dfbfd39f7c1c12c6046ec213aa720a103df347077239cac0d5",
+      "bytes": 143686
+    },
+    "raw/google29-420/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/13da18a6c5bfaeaf675e.gz",
+      "sha256": "94d7b1920550307247e703d28a7dbb1bf2da122531172a9a37b5a7d3fbc3c36b",
+      "archiveSha256": "62896368e406a224ff8435b8efd625aab5d0f0c291acbed48d454a667ca56b37",
+      "bytes": 62
+    },
+    "raw/google29-420/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/48ff855329215b1a7f53.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/05ae39dc03a312e3b966.gz",
+      "sha256": "1fe2eeee9855e8efc2da03205a5a84ae2de579cb3b68edbea67bc80d46eb26f9",
+      "archiveSha256": "1f0751aa63e78f1bbbf32c3b930174bc9c23e07f6f41eea5e5a9be2ac11ed71d",
+      "bytes": 145439
+    },
+    "raw/google29-420/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/be88de19c897fcbec71a.gz",
+      "sha256": "15da191531e647b46dd8502259e8f38d0791cad8de79e902befb64484e1c99b1",
+      "archiveSha256": "87839172a4affe3373450c3d382bebf3cebe127ccb1f2a34ac0c9e43273c02fc",
+      "bytes": 180
+    },
+    "raw/google29-420/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/4e7aca0ea502fc67b360.gz",
+      "sha256": "19346d0434081a532f8fd7859a576d99c6e4969273d214741ed86e61c9f87d5f",
+      "archiveSha256": "6288439dd5ab9928a643ce2f176f5977bddb41f34d8983d0a86bdf350f103641",
+      "bytes": 27024
+    },
+    "raw/google29-420/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/78a8eea8f6adb993400f.gz",
+      "sha256": "e591a9c4ec1c291f5f620a70111a31ef7fd8668836a6607b629dcf8bb97e58c8",
+      "archiveSha256": "c5c4ec0f6c467b99306863e49882db1258417114e2caaf1aa58e4e0465666d91",
+      "bytes": 112
+    },
+    "raw/google29-420/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/dc10c738b2ef2a7d0056.gz",
+      "sha256": "cd99ef05106a194d68df09467c48ef7595a3e0541921c4a3e5bb61b03d7649c6",
+      "archiveSha256": "d99ffc0ef18d4aa4969d19eaa6cfab016dad302cebd4e35bd2889b195bc2874c",
+      "bytes": 151045
+    },
+    "raw/google29-420/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/92541966d17ff5564eb8.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/bb2d932074b12dd63db8.gz",
+      "sha256": "433265e877b7ea0987a61b8a47483b9169f28420911d1382808b6de0ba2bed31",
+      "archiveSha256": "93c4daacddaca532c8a2c3d627134db46a204c1bb173d03273debda34348f729",
+      "bytes": 151309
+    },
+    "raw/google29-420/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/45179f9ff8ddb2a74a2b.gz",
+      "sha256": "15da191531e647b46dd8502259e8f38d0791cad8de79e902befb64484e1c99b1",
+      "archiveSha256": "87839172a4affe3373450c3d382bebf3cebe127ccb1f2a34ac0c9e43273c02fc",
+      "bytes": 180
+    },
+    "raw/google29-420/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/bfc2cb455e9fed831ea8.gz",
+      "sha256": "fda322af83ba72b0f4c91e61a39f90bf12115cc26806b5fcacda3820054cb6cb",
+      "archiveSha256": "17aff335a74e33027d91b117ebb76c26b2bf97b33002ccf835e63a4e45a3e8e5",
+      "bytes": 29622
+    },
+    "raw/google29-420/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/6e8475d1b45ad9f3e896.gz",
+      "sha256": "7c2056c886b4034c5db8f9e33d1a5d735c62464830006647e62625ade04322f1",
+      "archiveSha256": "202e6bac6f6772b83175f8bffe67ef6cce5b89fd3a0e0bc949523ff13fed504a",
+      "bytes": 46
+    },
+    "raw/google29-420/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/91492566656446e8fc59.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/f90d649d94751903f127.gz",
+      "sha256": "4e3b625a696fe33f5cee3533c9fe003acc93c64edee6725f451c361e87fedd46",
+      "archiveSha256": "fc234efe9e07ac2a5e273a238fa9b7223a1777ca97b740b6f0b7f729904b7179",
+      "bytes": 131496
+    },
+    "raw/google29-420/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/64e2bec5045b63be308a.gz",
+      "sha256": "0b4d2f38b58c4aa1ca8fa1302cb3ae77e2b5baa1b723ddb30dd19e38bae53605",
+      "archiveSha256": "dd5bf18c994aa68e50a489515d45850e524ca024a1971395c03d97bc006a684e",
+      "bytes": 143883
+    },
+    "raw/google29-420/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/bb0c3d6bbf4cc2590182.gz",
+      "sha256": "15da191531e647b46dd8502259e8f38d0791cad8de79e902befb64484e1c99b1",
+      "archiveSha256": "87839172a4affe3373450c3d382bebf3cebe127ccb1f2a34ac0c9e43273c02fc",
+      "bytes": 180
+    },
+    "raw/google29-420/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/a38a60f437f630ff7137.gz",
+      "sha256": "fa389462d2d4b3251a62095e27db53ed88b303e06f48858dde283b6a95a05fee",
+      "archiveSha256": "a5ad3d618a053c7d0d7bd5f5871d74f8cc1f391a67890b82e3657bedfbf9359c",
+      "bytes": 27021
+    },
+    "raw/google29-420/portrait-large/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/a56b6bad784677e930e1.gz",
+      "sha256": "40404f81ea20034da8cfcf73fb54aa1bd6411c9e920ac1b0fd75dc9f4f228aa6",
+      "archiveSha256": "d3d328cfab003a2b1c843c6dc473e9f080967d15ae659b0a5188a3b080879c54",
+      "bytes": 2461
+    },
+    "raw/google29-420/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/5762623272e1c4b56e81.gz",
+      "sha256": "3d82b93a202dd37100797f26692b4eebc8245e893dc9d7af8aa57a1858252fbb",
+      "archiveSha256": "1112a0f4025375d10eafd5cc8264580854075a380408966d9eff1993a36d5460",
+      "bytes": 113759
+    },
+    "raw/google29-420/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/a2ea9abf989c0f8ad7eb.gz",
+      "sha256": "b03fc12aad2c061530f5f5d7fde00dd06074039bf6aab9f9e6b9b7ca988d9f88",
+      "archiveSha256": "6784855969de7969b3615eb6abcd99f05548d25534a327a17ef3344cb66f6c61",
+      "bytes": 63
+    },
+    "raw/google29-420/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/1353d436352ed8e51d9a.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/5e548090d3d102e33f0a.gz",
+      "sha256": "c6e7f91eb9c965dad2d4930e35867a3db2f30d36cd3d58e311f32ec208fe19fb",
+      "archiveSha256": "dcd9b14b8bcb97c07dc2eb92031bbc5b598bf54bd2f0c5214d99cc8aee8ca41b",
+      "bytes": 113628
+    },
+    "raw/google29-420/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/7f7186a4e9af5b6fb1b0.gz",
+      "sha256": "9cb18a08451f4dcf465f9a7bd2a516a35fe1072850205ab321f11bad34d20655",
+      "archiveSha256": "3ae79c842d79ca791a416ccfadd1436bcb669fb8493f1a3106768714b3dce3f3",
+      "bytes": 180
+    },
+    "raw/google29-420/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/49bb582b5ff4bde971ad.gz",
+      "sha256": "20b83b503c454a4996d36fbdd9580841a1e3bbd4cb0cdcaeba191f2c0ee0ad49",
+      "archiveSha256": "4ecc6bfab6369aa134e87db9d7d8152c5e2e567734659172931455d78b0c0121",
+      "bytes": 27503
+    },
+    "raw/google29-420/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/d3c8def2024c9d0469c9.gz",
+      "sha256": "82add4da9be036ba7e5bc994e29cdda4b0311acfcb00b0d229fa2a04255bcbec",
+      "archiveSha256": "a467407a1f38d5d878fd5d04ae236d886f8ee3ac6f4fd770d75b7b1aa6b510a3",
+      "bytes": 112
+    },
+    "raw/google29-420/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/efbdf07e708ba7309582.gz",
+      "sha256": "58e37ea1d27f1abfd2079ca91a0b02d4f06beab865b43c09d0025e1b97b71e46",
+      "archiveSha256": "8a20c916a5c8ed8714597d0e3451c2bb67347b63e364bddb05ece73a8566daaf",
+      "bytes": 117810
+    },
+    "raw/google29-420/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/91bee09f4e6911b5c335.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/47a7828a76f7e407c3a3.gz",
+      "sha256": "df1b9add4e982e6aebe5f4064fd59585a3b8e910dc9ca048e6cca73664ffbd1c",
+      "archiveSha256": "1d1c91159b42a6affe31d1f35417d2788eed2c38b8719067a46814911cedb614",
+      "bytes": 116354
+    },
+    "raw/google29-420/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/292bc3f9bad1d5ca1c69.gz",
+      "sha256": "9cb18a08451f4dcf465f9a7bd2a516a35fe1072850205ab321f11bad34d20655",
+      "archiveSha256": "3ae79c842d79ca791a416ccfadd1436bcb669fb8493f1a3106768714b3dce3f3",
+      "bytes": 180
+    },
+    "raw/google29-420/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/990c39393f37fc620989.gz",
+      "sha256": "97358d41fc265df1bcd7daae87ad6765139c52543ceabf2eca998d709240959c",
+      "archiveSha256": "e495e48b1473188ff30bc57f0f1c31bfbfebe31ea0628343f2da52bc280cd4f8",
+      "bytes": 30971
+    },
+    "raw/google29-420/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/50b10b17f3ec9aaa9dce.gz",
+      "sha256": "14ca6209787ff69f98e22f69e5afae714e43203ed4ebab44af21485f5e37a771",
+      "archiveSha256": "214deef608d483e923cc5fda6b4ff17a976e940a4deee24885ced189e15ec151",
+      "bytes": 46
+    },
+    "raw/google29-420/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/1d95ae34f4ba09805d9c.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-420/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/96bca1645c05ef5d49fd.gz",
+      "sha256": "00ab90ea811742547da895699864a8563a97bf3a06e4b0046258a2e77ca3253c",
+      "archiveSha256": "13d2e88c1f47c7080e7aa61e455f6e9c33796c94d47ce76bdf0b47a70cfbf307",
+      "bytes": 101167
+    },
+    "raw/google29-420/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/0d0c45bbddeb487fb7af.gz",
+      "sha256": "5763087335ec3b157817e8488c9aa916e61944f1740911fbb7b1c98da70dc8f3",
+      "archiveSha256": "bde6b4eb10d10428608e360426ef1dad9be245b831ed9d841be377061db55c0d",
+      "bytes": 112501
+    },
+    "raw/google29-420/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/331ea73d145e4011ee96.gz",
+      "sha256": "9cb18a08451f4dcf465f9a7bd2a516a35fe1072850205ab321f11bad34d20655",
+      "archiveSha256": "3ae79c842d79ca791a416ccfadd1436bcb669fb8493f1a3106768714b3dce3f3",
+      "bytes": 180
+    },
+    "raw/google29-420/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/d25b3eeeecf508fca199.gz",
+      "sha256": "5ed70ef8a54d6674ae6205ae1de05548afd3f9483318a3136452e2de1c860b3e",
+      "archiveSha256": "3f7d5fb0fe41d02a9a47f0e86db43127133fd1dc3d98f2b344392e9a53262e11",
+      "bytes": 27500
+    },
+    "raw/google29-420/portrait/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/41e953b74aabbbd4cca8.gz",
+      "sha256": "33033a911bf2bc29d68531bc93a9d95fd6317fa4ad7fda0e179f87b3097e645c",
+      "archiveSha256": "49a13cbd714170ef6f2a92adfa78efd1015d38bfd09ca434ba62fba7ba0a09fe",
+      "bytes": 2461
+    },
+    "raw/google29-420/result.json": {
+      "archive": "benchmarks/results/e49-evidence/895491bc1a3c3d1d98ec.gz",
+      "sha256": "e87022c30df40c170af3e564faa9604c74a3444b4640cc30afcd5d23aefac454",
+      "archiveSha256": "f7f6bffa0a515f827e572c32cc688b831d9fb457599ca921f523a91fcda2a276",
+      "bytes": 2688
+    },
+    "raw/google29-480-run.log": {
+      "archive": "benchmarks/results/e49-evidence/722da1e24b93f20f995d.gz",
+      "sha256": "cc88236729ebfc721dd14e364076de63880a69f894e915f2c26834e3baf80818",
+      "archiveSha256": "52c2c53e830ee1ba390797318ce6a9194cae8f788211c5f8ed193093e7606bb5",
+      "bytes": 1529
+    },
+    "raw/google29-480/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/80604f540b29bcbbf289.gz",
+      "sha256": "dcde25cd91ceeb653af77eff170802b30b11d80f3db3bc5c3f25025fd91867d6",
+      "archiveSha256": "88be675a4848c72fc377f7d0e2644fe0aaf859c5794345b26c2a5abdb512f0c1",
+      "bytes": 105096
+    },
+    "raw/google29-480/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/9401f1bf3ac8019746d3.gz",
+      "sha256": "cdcb6283260ffe29d2cc3ee3adef5684095112ebead0b0a0db326a64aec78038",
+      "archiveSha256": "ec7fa6fb75fd0f75bd4e65b918458d15868e56f0793033d2068b67480cc2d57c",
+      "bytes": 62
+    },
+    "raw/google29-480/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/1e52bbe603aed3fcce44.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-480/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/a6cd7e5c329c45c50568.gz",
+      "sha256": "10868a550bf3b4f2e9b5238d32b90f8890b8cb57b0a29ed1bbf5bfeeb74fd9a0",
+      "archiveSha256": "caf7e6047a5c3fa7f40d4e2ffbfb56fec14a4d0f4bcfe3e1b69a54c4b7ccaeac",
+      "bytes": 109653
+    },
+    "raw/google29-480/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/ba34f2dbba9debba945b.gz",
+      "sha256": "e0e6322f6f24deaaf968fcf056e120b324b4bf270dce16b8d09b6714f0129a2a",
+      "archiveSha256": "8d7248a9c26cf279c3f0aa2ed838e30e2f26fb06b08376d00d91cfe1b4a39b4e",
+      "bytes": 180
+    },
+    "raw/google29-480/landscape-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/058be9c6febfba7bce57.gz",
+      "sha256": "1ec547f8b8b7db30b361c4a16576702c4423a02187490c859749f6b341f6eb31",
+      "archiveSha256": "bc55e510a218416744d2520db72780508f84334fe7ac47b0a767ac17b2f17ae4",
+      "bytes": 25654
+    },
+    "raw/google29-480/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/f611f4a54c88e0bb747e.gz",
+      "sha256": "5dcf61e7f78e485db2b35e21bd7d2ad7048856af438e3e04035a1b1914ef8739",
+      "archiveSha256": "47a346e2d3ada1408503389ab19e378c1d7993718e96137c1b9b1585f0c16db8",
+      "bytes": 112
+    },
+    "raw/google29-480/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/7db5ead4fc03d914da3c.gz",
+      "sha256": "3f186cf120c18cb113cb6f81a25e87cd706356d5bc302424610e9f4f47c180bc",
+      "archiveSha256": "39318ae3595e12847581bc5b6c6040852cf3d2f981deec08317b6d87dba86051",
+      "bytes": 122686
+    },
+    "raw/google29-480/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/44d8b67a2dd2d5e4c9d4.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-480/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/d6ff688045bf74349d96.gz",
+      "sha256": "906f4c51688ea88edee4110668cc15b168ad82b2969d8cadc5bce4cc13312c2b",
+      "archiveSha256": "e1d7d3e82aa055250c62885af6f5a2394d4edeba8268a3855e023511190efb66",
+      "bytes": 106423
+    },
+    "raw/google29-480/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/9e49cdea9b96686ae3d9.gz",
+      "sha256": "e0e6322f6f24deaaf968fcf056e120b324b4bf270dce16b8d09b6714f0129a2a",
+      "archiveSha256": "8d7248a9c26cf279c3f0aa2ed838e30e2f26fb06b08376d00d91cfe1b4a39b4e",
+      "bytes": 180
+    },
+    "raw/google29-480/landscape-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/ace335d61c1d992437db.gz",
+      "sha256": "661fb8e7dd069adf8a313f2d0aeedec42f3c555b96a959b7e766a64eb39c6905",
+      "archiveSha256": "a0e85f7eb2d5ec9e030f5bb69cb1edd87ab6a1a94c4cd5dbcc2a5866d0cecb86",
+      "bytes": 29122
+    },
+    "raw/google29-480/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/162b135a976460681355.gz",
+      "sha256": "a824d532dd0dd8937fbcf155207d440a714d0510ddab2f65e3a35ebcfe97e1b3",
+      "archiveSha256": "9d1f1794e31a8521c5748ab4d4f0450409bf145167bc8ee3cbdd8864ca04860f",
+      "bytes": 46
+    },
+    "raw/google29-480/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/74a03e86fee6c8efe446.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-480/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/af9efddf0b57ed106564.gz",
+      "sha256": "be936cbb1b8e313bfd52de303c75d4b2d4cf420cbae67609eea0246bab966343",
+      "archiveSha256": "078ced2512fed54e0d47efdbd3bd4f4b093d977a7ccfe29106020ed2ed7a2043",
+      "bytes": 97943
+    },
+    "raw/google29-480/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/8d6c7679d0ba77027eee.gz",
+      "sha256": "f01f0c5fcce1015ae6b177e5e6c208ba6d28941d9bbee7e89ed0dbffc143b0b7",
+      "archiveSha256": "253472046413bf3c6737d9f00d19f7d45af9e19c323e6b6be31a7d830423d2a8",
+      "bytes": 109328
+    },
+    "raw/google29-480/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/d5f7acc5764895d3714d.gz",
+      "sha256": "e0e6322f6f24deaaf968fcf056e120b324b4bf270dce16b8d09b6714f0129a2a",
+      "archiveSha256": "8d7248a9c26cf279c3f0aa2ed838e30e2f26fb06b08376d00d91cfe1b4a39b4e",
+      "bytes": 180
+    },
+    "raw/google29-480/landscape-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/d4863877110c67fdae5b.gz",
+      "sha256": "4439d9a2c1d3e6a4c73ed30547f15d3f38c33e518b519167e9235ad4061ee2ad",
+      "archiveSha256": "b6c028dc356304816e943d36607c3abe987e3aa8e732994820b4bae1c4138af5",
+      "bytes": 29532
+    },
+    "raw/google29-480/landscape-large/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/2cc249725ab8fc621116.gz",
+      "sha256": "7555a32536a613b2e663b6bf908d63a2d351b9f7b476206a1c68894073a15aef",
+      "archiveSha256": "b0db83ae76d0920cd0ed04f6a4abd139a056999e88c69a210c5c4b41a50023f8",
+      "bytes": 2461
+    },
+    "raw/google29-480/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/f6bf4165836968a8df25.gz",
+      "sha256": "52824bb4e33f0171ba9e889313574277fbc450bd6c4ebc94e9bf706b2b7d3e32",
+      "archiveSha256": "fc96fee9d3e988126919f6120e66d6c53f50ecd8d7c4aa10c2af9b9c5780bb1d",
+      "bytes": 113474
+    },
+    "raw/google29-480/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/e7012a40fae06cc522fb.gz",
+      "sha256": "46209b8c198772c728288dc13577c59370a12ac51cb0cc48be55af72034ee616",
+      "archiveSha256": "d56e9f59b7930d84ea5486f03edee836297e66d250dda22f732e323afe21d392",
+      "bytes": 62
+    },
+    "raw/google29-480/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/ebd23852c7bf2288ebf7.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-480/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/c9067285b1320b1955e7.gz",
+      "sha256": "cceb68a47cd454f903bf3bde4a5e9f3b4c6dc986c1f3542380c50ef854fab9f4",
+      "archiveSha256": "17c01537a1d723d3fabd9d0b749bef86b6ab64b212931d4c88bc1515c09c8790",
+      "bytes": 111276
+    },
+    "raw/google29-480/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/6e4deb35da355880997d.gz",
+      "sha256": "56c4f93dd5a9a4ee127fa81d5d333fe77c188518acc290ed5ca4c01a673b8d9c",
+      "archiveSha256": "6f81a09c45c0bf9abfe5bb78496c47e621e9639e934a0f9538c67657e48e0a30",
+      "bytes": 180
+    },
+    "raw/google29-480/landscape/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/5a09b5724356673d7fd0.gz",
+      "sha256": "b36e5aa1d043625b2885e007f14c448550bddc3f08b3d7d4f83bef0df96a6792",
+      "archiveSha256": "eae150aff8bde1e0b1042f7b38738c3f95e6612cc842517b7f6410ce2c269498",
+      "bytes": 26569
+    },
+    "raw/google29-480/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/d082a8070d632f29ba39.gz",
+      "sha256": "30cbaee695453212dca0e0f9424c0dc216406da98cdbf58b0efd2a10a9a685fa",
+      "archiveSha256": "57c97be570be8f85f7829aa97808e1707666b790de542b847e558966f72388c4",
+      "bytes": 112
+    },
+    "raw/google29-480/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/5d091a7ba2829eb2de1e.gz",
+      "sha256": "23e60497f9950bd76d1b43d14e815974d9cc66d9be125fa109a2efcae31661c2",
+      "archiveSha256": "cd8f0f5ce848e2155119859d46acdce2db875fa060ce7542e4ef3b6d864afe79",
+      "bytes": 126747
+    },
+    "raw/google29-480/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/0e7951ce44ab8c5c6dda.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-480/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/4d20c05719afb02b96e6.gz",
+      "sha256": "adcd31a8c4c435da3662d4d9632c65464136090cf064d47e0ff5a3c2314ae1f6",
+      "archiveSha256": "d53b4faf55ec221f320d6e96b66dbb9105b27f5cb7d414adf6f705edfc681a7c",
+      "bytes": 117980
+    },
+    "raw/google29-480/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/b8396fceb8be7522bb83.gz",
+      "sha256": "56c4f93dd5a9a4ee127fa81d5d333fe77c188518acc290ed5ca4c01a673b8d9c",
+      "archiveSha256": "6f81a09c45c0bf9abfe5bb78496c47e621e9639e934a0f9538c67657e48e0a30",
+      "bytes": 180
+    },
+    "raw/google29-480/landscape/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/ef9fb9583659060c8021.gz",
+      "sha256": "a30fe31fbfc8b2a42eaceb867089c433d0eadd69606fb63c74c6b5a53c33f6e1",
+      "archiveSha256": "46651f85704d7c3f69b35b4c9e380a7c7aefaed24393f4624f6825c1c5d0f676",
+      "bytes": 30468
+    },
+    "raw/google29-480/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/f8ff9f929619223735da.gz",
+      "sha256": "6023edc21883bbe04aea6fd33798d491aff78769d9cba5b4ef0b4e0b9bfca405",
+      "archiveSha256": "7e857efa75a708a9f8e3c6317a0a583bea6566218e6fe6089659cbcc14a8fa63",
+      "bytes": 46
+    },
+    "raw/google29-480/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/62187686af4fd9b6268b.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-480/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/2c41615827b0cc6880df.gz",
+      "sha256": "3ee8d002ba47ac125ec9678aefc731ec69619757d0fe53f6e5e624e5213d8f2a",
+      "archiveSha256": "caaa91adce413f89b9776e97a1e33d33cc6627d9926e9f67af2992d1a0631078",
+      "bytes": 106428
+    },
+    "raw/google29-480/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/193ff0e051636f7d7def.gz",
+      "sha256": "98f5bacf40f21251740ac07336764835e0d30a103a663e9cb20469e8ddc91f94",
+      "archiveSha256": "f8629cb18b2ecd7137fe7a2f661585de6e6076fe1779daf40a10e37b986d29c0",
+      "bytes": 110312
+    },
+    "raw/google29-480/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/33d443da13e6361d87ef.gz",
+      "sha256": "56c4f93dd5a9a4ee127fa81d5d333fe77c188518acc290ed5ca4c01a673b8d9c",
+      "archiveSha256": "6f81a09c45c0bf9abfe5bb78496c47e621e9639e934a0f9538c67657e48e0a30",
+      "bytes": 180
+    },
+    "raw/google29-480/landscape/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/9062bf3592a05d894a47.gz",
+      "sha256": "1238b8e7e50cb59c5ddc5834381e5d19805fb2fb14686e1e5981bb2c63e2741e",
+      "archiveSha256": "52e32f1112c81d3e3b90a0afa701fa83729e84660ba5770fb024c885d619b41e",
+      "bytes": 26566
+    },
+    "raw/google29-480/landscape/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/3ebf7de7c53bcacee699.gz",
+      "sha256": "4c7f296edb721937cf7cba6b9431b6b356176629f9cf8b64c42684010dc92a57",
+      "archiveSha256": "b6bd8f6949a8c4f31a8d03c87ea13dbef71d51c6a5c63c167807d255f496cc5c",
+      "bytes": 2460
+    },
+    "raw/google29-480/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/aa1f17c2eee31699e387.gz",
+      "sha256": "cd83c165dee6379d1f24fffedb084984607ff2f3fe308962b40c75fc32b27c75",
+      "archiveSha256": "97d119e2e3fc78f6401115d1fee37fe84439291971e2cf9fefa41fe8d3588872",
+      "bytes": 141817
+    },
+    "raw/google29-480/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/f53389f0a37eabb991fa.gz",
+      "sha256": "21fe6483f8a92ca19a4e05e1e2a387788b050b446cae33b15590edf61aefcf24",
+      "archiveSha256": "1f66f138b14cc488ed32bd5d7b059cb645c489aa8b2c7b075e2cab6258d923b1",
+      "bytes": 62
+    },
+    "raw/google29-480/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/e5f507cec3fab65d93e4.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-480/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/c3085b582754c54b1017.gz",
+      "sha256": "a6bdb2b54c2a4ada08e2c590530aa6891d267b2101622f520c05829146bf9b4b",
+      "archiveSha256": "bfe25093c6af83d5c4bda7976de6126f2cdcd01cd39b10d4bc035eafff0ce423",
+      "bytes": 144106
+    },
+    "raw/google29-480/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/5fc7dd9e28e1821a7fcb.gz",
+      "sha256": "51a1db0e6bb9c404696c9600353b3e6d9b7a37850ecc906ac8c53f70ae56b162",
+      "archiveSha256": "1d455fde18542fa1c48205359c8bbea550f88cecaf2c8a036c8d1cddcb47e87d",
+      "bytes": 180
+    },
+    "raw/google29-480/portrait-large/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/aba110e6f4ed321041a0.gz",
+      "sha256": "08dd8a4ce21ae54d378a12a1a8be612bac4069b3efd9202abc40b884b812518c",
+      "archiveSha256": "f7c0d7b216071fe1b7be1e2756f779de41543112bc2ce1e0396d06db5cc38f6b",
+      "bytes": 26994
+    },
+    "raw/google29-480/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/51728ff6ecaaf4026b12.gz",
+      "sha256": "9b416ef4affcef022847186085608090c948b8152808e5cef4a79d49061ce509",
+      "archiveSha256": "925d579bf2e18b0ba6d3335f410770482e8d07b514d7084744ad3b407712db8c",
+      "bytes": 112
+    },
+    "raw/google29-480/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/2c23557ca471fdf98964.gz",
+      "sha256": "23e013e3da5c7221ffb8189d54fdc1d15ab4eb0e570dadaa033c1c4cb2e36bda",
+      "archiveSha256": "1fa8117a7eca7c960126825aab8fd0f6213abd96dc9a4a1453d69ebabf19d815",
+      "bytes": 151157
+    },
+    "raw/google29-480/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/450e0e9c4aa859e66fc1.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-480/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/144625c4da1f7b21a3f3.gz",
+      "sha256": "8d17b68a344c96172921d4a952f13cc2fc1d9ebce9e74d2629190a554b4b4310",
+      "archiveSha256": "70ed58aac1df113647a6bd42c69ec9eb38e6c705c00b430c026ecb192cab2dbc",
+      "bytes": 148734
+    },
+    "raw/google29-480/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/d08691bbca4a389dbec1.gz",
+      "sha256": "51a1db0e6bb9c404696c9600353b3e6d9b7a37850ecc906ac8c53f70ae56b162",
+      "archiveSha256": "1d455fde18542fa1c48205359c8bbea550f88cecaf2c8a036c8d1cddcb47e87d",
+      "bytes": 180
+    },
+    "raw/google29-480/portrait-large/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/90b511f49d46953cb00a.gz",
+      "sha256": "ad94130c6b3671ba804ab5d1e7d35c8075116c4d846c5eb4557a0bd86d859367",
+      "archiveSha256": "90c4fdd0f376f540b6d464ab3beffa952baacb24848c7fa24bef93d7029cd98b",
+      "bytes": 29592
+    },
+    "raw/google29-480/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/dbf1f24fa19ac83b0b76.gz",
+      "sha256": "0b1ea2fc4c7b8ed9cfc66aa420476dd96f5b32fa3586034aa158c54e02f1c55a",
+      "archiveSha256": "6a7f54bdd5ef7fb5d56ea7bcce2d4414cbfed30e6bf5b7c67fa242996deb0eca",
+      "bytes": 46
+    },
+    "raw/google29-480/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/d33369af6aa648f44eda.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-480/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/9ba7e9a051dede7941eb.gz",
+      "sha256": "5b2415c8cc15c5ec3f1fcd22a2beafdd8363dd0092b2a63178578bc348b78028",
+      "archiveSha256": "6f3fdfba8c916b0e1aec525d426d224a6e62ff15d0ea67870cbfba9dbbd14256",
+      "bytes": 124207
+    },
+    "raw/google29-480/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/4923e496e4f8e54898bd.gz",
+      "sha256": "56db56447fab085fd6542ed8fa4de2078d888961d79d1f0367e3fcc56c77dbf0",
+      "archiveSha256": "a870817881bc34450983c9aecf141892d7617f4ca079b43ba9b8d6178ea41eec",
+      "bytes": 144735
+    },
+    "raw/google29-480/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/34ce8e07820aa744e554.gz",
+      "sha256": "51a1db0e6bb9c404696c9600353b3e6d9b7a37850ecc906ac8c53f70ae56b162",
+      "archiveSha256": "1d455fde18542fa1c48205359c8bbea550f88cecaf2c8a036c8d1cddcb47e87d",
+      "bytes": 180
+    },
+    "raw/google29-480/portrait-large/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/0f4b8e125324a93c326c.gz",
+      "sha256": "5128122fdb6a84fe867903c24fe1be821986763ef35983cc8e6cae0dbd43b12d",
+      "archiveSha256": "264ae82ec74bf014f6554cacabd6d264c42f3ecd4f4f0501edbcd390d01cf282",
+      "bytes": 29157
+    },
+    "raw/google29-480/portrait-large/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/6424a60fb638f60b17a0.gz",
+      "sha256": "25186d8b860c22cb94c512b076dc68341f7cfe8e8fc38bbaa45702ff539cb553",
+      "archiveSha256": "0129434ab1c5d75f5f3b5dc1a7dc1bdf8b6cf7fd07911f13a6500c56d160aba5",
+      "bytes": 2461
+    },
+    "raw/google29-480/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows-association.png": {
+      "archive": "benchmarks/results/e49-evidence/8e21a5cbe3bb1a4aa32c.gz",
+      "sha256": "2785683a351071c57ac9dfbb0d77899c02076e0310fda0fea2259d4e584d73a6",
+      "archiveSha256": "976cc34db3c08dbde7787cdfc14b461be9938dd25a5e38e454a49b2b837ba394",
+      "bytes": 116555
+    },
+    "raw/google29-480/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/34e8eed6ce99ff8873d2.gz",
+      "sha256": "16942b83e01e0c775d868f5a0826d7a149d73fd3c07415e6747cb384c7106e8e",
+      "archiveSha256": "1e79c1d1c7f64cee09a7d4d916ac89c39fb830bdbe3c3a543360af3daddfd334",
+      "bytes": 62
+    },
+    "raw/google29-480/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/742d4f61f6a44c52fe95.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-480/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.png": {
+      "archive": "benchmarks/results/e49-evidence/d47824d771af7c504848.gz",
+      "sha256": "debfd6bca38d58d15e108ae359a91bd473214a55b2744a653c13cf8de49b8b86",
+      "archiveSha256": "870e11a84a5b2fc2c3d47b72674f646e5a08cfa1b05124acae653f06cc1d7bb0",
+      "bytes": 117765
+    },
+    "raw/google29-480/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.txt": {
+      "archive": "benchmarks/results/e49-evidence/cabe83a37a4c70ec2daf.gz",
+      "sha256": "69259dd198bcbc98643427694ba2e17d35bf9dca6b95cec0e32beea31b512faa",
+      "archiveSha256": "7f23d3bb55206c61f282620593fb9243f69521ca4c8349f54ddf495e19f04d36",
+      "bytes": 180
+    },
+    "raw/google29-480/portrait/device/associationCloseRestoresToolbarWithoutMovingLetterRows.xml": {
+      "archive": "benchmarks/results/e49-evidence/404e8b20fd940491ad32.gz",
+      "sha256": "5cb31d3638cb4c45f6b4fd844ef20b6dd4df344b07baa25551f6cd0c9fa54b2b",
+      "archiveSha256": "fed7b97119bfe493783d75f24855c8e62f330873836c6a613f619b455fcd4d14",
+      "bytes": 27471
+    },
+    "raw/google29-480/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/7a860076ebf5d485afb4.gz",
+      "sha256": "b19b35044a79747c91b221886fe2b44da341090cc8e8874b0fd2396b426da001",
+      "archiveSha256": "d45a21d476d5ab5e52364c02b0d5db2b70d82e46838f376ae394789fa368a7ef",
+      "bytes": 112
+    },
+    "raw/google29-480/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-composing.png": {
+      "archive": "benchmarks/results/e49-evidence/b4510ce015ea7a16d8af.gz",
+      "sha256": "236c035a1f119b70b7ec016fa6e4a2bbb0c609249656ae832f55fe5fcce18656",
+      "archiveSha256": "a992f477fad1d9ddba90a6d773953460fdb8b452fcd55ad7683b15fab6e144a4",
+      "bytes": 123311
+    },
+    "raw/google29-480/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/b074d085f5e3c3e39d3b.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-480/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.png": {
+      "archive": "benchmarks/results/e49-evidence/843d0e42947b6c6f2aba.gz",
+      "sha256": "f9caab30cf2eedf5925a871df2072e39ac2bbff32b6da4d0222fb1e6fad86cd4",
+      "archiveSha256": "60d0bbf226284085858882edd74f3dce616ccd669dd022a22fa1dc90338be5b8",
+      "bytes": 120787
+    },
+    "raw/google29-480/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.txt": {
+      "archive": "benchmarks/results/e49-evidence/ad276c87a5ef915f31bc.gz",
+      "sha256": "69259dd198bcbc98643427694ba2e17d35bf9dca6b95cec0e32beea31b512faa",
+      "archiveSha256": "7f23d3bb55206c61f282620593fb9243f69521ca4c8349f54ddf495e19f04d36",
+      "bytes": 180
+    },
+    "raw/google29-480/portrait/device/composingCandidateAndFollowingInputKeepTheKeyboardGeometry.xml": {
+      "archive": "benchmarks/results/e49-evidence/303d916a87dc161e7b6c.gz",
+      "sha256": "5871e23b6821af464c9b9b2ab6772dca15b55eb46ed13619c9cf3857f6d98f4c",
+      "archiveSha256": "26fb0284aefdfb9acb0bd2bbe0ecf01ff1b386f0610539c68c28947757fc1737",
+      "bytes": 30501
+    },
+    "raw/google29-480/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/a36b005a477ba27db310.gz",
+      "sha256": "3b10a46559532435baad51d8cd7b6ffb9a5af1865006d99ebb6db766ca6a6037",
+      "archiveSha256": "2b2fb66710fed42aa2b9fa19e960f3f0b0cd3f4e9969e1e16228634d6251588a",
+      "bytes": 46
+    },
+    "raw/google29-480/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/3659b4afd0eb237d5c1f.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-480/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord-expanded.png": {
+      "archive": "benchmarks/results/e49-evidence/b1e6498db144051788b9.gz",
+      "sha256": "e2167cb7a34d48eca8b6d5be5be14ae8dfd8f038bbc1ff516d4d7f0afc8aef7b",
+      "archiveSha256": "31fe4ab35d2ef1e101e9b3abcb577284027f3b01ebbdde47bd461c32acce5146",
+      "bytes": 107638
+    },
+    "raw/google29-480/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.png": {
+      "archive": "benchmarks/results/e49-evidence/4e1b74dbe6b183166af8.gz",
+      "sha256": "0eadbd900087e139e9eaa248b5106ad8ed855fbbed293a6f7af3581172548d79",
+      "archiveSha256": "836d50980bb63a88bcfe948f56cd2ab8ca709b97db7c36d81c8594dbc530c24a",
+      "bytes": 115745
+    },
+    "raw/google29-480/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.txt": {
+      "archive": "benchmarks/results/e49-evidence/1daba46ff7236c829d80.gz",
+      "sha256": "69259dd198bcbc98643427694ba2e17d35bf9dca6b95cec0e32beea31b512faa",
+      "archiveSha256": "7f23d3bb55206c61f282620593fb9243f69521ca4c8349f54ddf495e19f04d36",
+      "bytes": 180
+    },
+    "raw/google29-480/portrait/device/expandedCandidateScrollSelectsItsActualVisibleWord.xml": {
+      "archive": "benchmarks/results/e49-evidence/4d321ea52d0275a70470.gz",
+      "sha256": "2d28f54e073f8c114541ee58f02cd0e34fa89a687dbe64021d5bf5a7f40a04f6",
+      "archiveSha256": "466b7e6c932e2e77e3f03cd056b5024224c88b3074ba36c90688b0e07aa4344c",
+      "bytes": 27468
+    },
+    "raw/google29-480/portrait/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/330b4d51c47ad96b661d.gz",
+      "sha256": "e79f8582fff04f18f802cf9abb5cbd1df151558e05139e1ded28559e886d7118",
+      "archiveSha256": "e40e9b13fc7f09d6009a11ff8d6425c9548e6c782d8b653e25b39dc7cdcbd10f",
+      "bytes": 2461
+    },
+    "raw/google29-480/result.json": {
+      "archive": "benchmarks/results/e49-evidence/3a84276e9931c0b9613b.gz",
+      "sha256": "f62ea9c6b5438c712c3ff307cb55f07acc4b4680afb64ef8f380d94957d66aae",
+      "archiveSha256": "4e84c836edbab8156a0affdcc7416f69a33386788291efc01e52ea72b492c27d",
+      "bytes": 2686
+    },
+    "raw/google29-timeout-run.log": {
+      "archive": "benchmarks/results/e49-evidence/070bc1eed5148cc94d45.gz",
+      "sha256": "22cab5843783d56360d5aff0f2d10aab0f2cf0b5d7b670a357615c03cbf92fcf",
+      "archiveSha256": "b31a8a25db3db3afe3e8f685ba7eedb8c9ddfd37d1276c59eb6b47e096fb8392",
+      "bytes": 376
+    },
+    "raw/google29-timeout/result.json": {
+      "archive": "benchmarks/results/e49-evidence/981f0bd68977c78e1e2d.gz",
+      "sha256": "627c2e7229eddefe21981cebb8590883b8bad4edbd59eefa6aa4ee4b59fe4d9c",
+      "archiveSha256": "6f8117a9308adc5393d3dd950e5a418022153ba65d64728d56f1a310db3fb8da",
+      "bytes": 1895
+    },
+    "raw/google29-timeout/timeout/device/associationHonorsTheUsersSystemInteractionTimeout-after-default-timeout.png": {
+      "archive": "benchmarks/results/e49-evidence/7de04db99fe965df8e36.gz",
+      "sha256": "bc9c34f67a81828b0d7d71c51e80d7de10bf27de58e4198078c1024444bf5843",
+      "archiveSha256": "5af5a162e95fc89c5b1364590d75a1782866003e09c4e799e3cf57480a3f2ad6",
+      "bytes": 114059
+    },
+    "raw/google29-timeout/timeout/device/associationHonorsTheUsersSystemInteractionTimeout-cadence.txt": {
+      "archive": "benchmarks/results/e49-evidence/12b4806f5c4b8ba27f41.gz",
+      "sha256": "171df59a4065afc65048112e5ba208640eb3a12ef8c3e3331e9e479a92764f97",
+      "archiveSha256": "93d29ae576e3da15965092e0ee7ad5efee7ea0501f5e774f36837538af62dc9d",
+      "bytes": 62
+    },
+    "raw/google29-timeout/timeout/device/associationHonorsTheUsersSystemInteractionTimeout-environment.txt": {
+      "archive": "benchmarks/results/e49-evidence/69856e31041aa61bd1d6.gz",
+      "sha256": "d3acefe821e49aa73698aca201ef232055a7a4e6b3b37063b16c9c845dfaeb98",
+      "archiveSha256": "d9b336baf394f7e122757c52a39b79ef6ec7f5490e4e286fd369a0f353e18d63",
+      "bytes": 72
+    },
+    "raw/google29-timeout/timeout/device/associationHonorsTheUsersSystemInteractionTimeout.png": {
+      "archive": "benchmarks/results/e49-evidence/e65b8b4d93a5b9b0e923.gz",
+      "sha256": "21d533ef829e89f2e802024fd55551b6d105f878940f2199ce06e44feadfa127",
+      "archiveSha256": "794728bdfc8cf2d052e577d8cf26a626a0327fb226ae570f343f7408ac6c136d",
+      "bytes": 114482
+    },
+    "raw/google29-timeout/timeout/device/associationHonorsTheUsersSystemInteractionTimeout.txt": {
+      "archive": "benchmarks/results/e49-evidence/710c276225d0e644efd5.gz",
+      "sha256": "c306a6adc1fea99f5aecf4b7cff25c2d07719cd7fda6c49176a5cf8b91031c27",
+      "archiveSha256": "8c2c38314166c71accc7b0ba0ba0ed0ffbf298fe9edd7e83bfbf0e40c7984dd5",
+      "bytes": 77
+    },
+    "raw/google29-timeout/timeout/device/associationHonorsTheUsersSystemInteractionTimeout.xml": {
+      "archive": "benchmarks/results/e49-evidence/c408086963ff490763ac.gz",
+      "sha256": "636629be01b0e085ccb70710ba2ab08fb6cf360c758620205c15e4cda3e9ae55",
+      "archiveSha256": "31893472953bfe4e829195779f1b01d6e7f4025dd79e423a83dd2e8c49d73137",
+      "bytes": 27959
+    },
+    "raw/google29-timeout/timeout/instrumentation.log": {
+      "archive": "benchmarks/results/e49-evidence/b22d20b3fc1903cfb86c.gz",
+      "sha256": "7b0dbdef198fd6afbb8fe6b3ce76fa99587e3ee1c9af49a946ec9c17a9982523",
+      "archiveSha256": "c7e7b39ecf27fab6a38e62b14ac76b855f612df13dfb3de768670ac0d868a495",
+      "bytes": 949
+    },
+    "raw/initial-harness/input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorConfigurationTest.kt": {
+      "archive": "benchmarks/results/e49-evidence/d0af1a996846b6c88195.gz",
+      "sha256": "f233156dd032f7569f4df0968c1f8c3f8e374a26596bfef096deb1bef58905bb",
+      "archiveSha256": "589fd55901d3e3793ac69d3447cb5d2b54ae6692ad0a3cc3ca6e48d3d3fc6e12",
+      "bytes": 4117
+    },
+    "raw/initial-harness/input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorTestFixture.kt": {
+      "archive": "benchmarks/results/e49-evidence/2bfef1fe4e6ebfae43a9.gz",
+      "sha256": "8bdeb199b3d53818eafa7db44d46556c4e0fb8ba17a6afcdf27d42250b476126",
+      "archiveSha256": "b777eeb47ce66810054e69f61e3d0f5189292e416f338abe74863d1c4049385c",
+      "bytes": 12472
+    },
+    "raw/initial-harness/tools/test_configuration_target.py": {
+      "archive": "benchmarks/results/e49-evidence/ca4612b8001f19f14318.gz",
+      "sha256": "6331c3c52428b6b96d424e383522ee9e13118941b771b54974dfee8ab44f3091",
+      "archiveSha256": "e6e3eff85e90a8a6bf4926010c32e48326c1b7a10c699ad89b3039664c365543",
+      "bytes": 2577
+    },
+    "raw/initial-harness/tools/test_input_configuration.py": {
+      "archive": "benchmarks/results/e49-evidence/4e6b2d6d1f116ff5304a.gz",
+      "sha256": "894db0d8e420c093e3eb08c9802c9206afc3b48147005169e56dfc342102941d",
+      "archiveSha256": "4bfe4a8a2ccdd3f3ad2075d74fd43adc707287a32a9f4e3a5b71a873e3c94cc2",
+      "bytes": 7617
+    },
+    "raw/intermediate-harness/tools/test_configuration_target.py": {
+      "archive": "benchmarks/results/e49-evidence/3bac60be7c80b914699b.gz",
+      "sha256": "a69693e87d0d7830aa36c1c6ae901d9ec53dc2c1bb2a1d967ed5a8f031013e29",
+      "archiveSha256": "cf876bcdbec4a0d200441f3c8cfaf3eb4661c6604be52e8a92735889a4817d43",
+      "bytes": 3034
+    },
+    "raw/intermediate-harness/tools/test_input_configuration.py": {
+      "archive": "benchmarks/results/e49-evidence/e653169be35a227a17ad.gz",
+      "sha256": "70d4a97168262f9dfd202942e1875ab8309f944019c9cd6c2ec9a62fc491d0db",
+      "archiveSha256": "9f565206947e68b76c7d246bc006c1ab262a18d3e1dfd7767ba0fdb438c3f760",
+      "bytes": 8128
+    },
+    "raw/runner-tests-v2.log": {
+      "archive": "benchmarks/results/e49-evidence/88f9c5334ad7637e8c90.gz",
+      "sha256": "c55d09a60314ec2667fa1d91b11658870ca2bb4e928ac9e4c1d35878d622829d",
+      "archiveSha256": "55a43ee019fa5db885d1218338d4f4b6e75da180541741721c15fdd6c620fd30",
+      "bytes": 116
+    },
+    "raw/runner-tests-v3.log": {
+      "archive": "benchmarks/results/e49-evidence/6ea015f6ac52d7f40555.gz",
+      "sha256": "5e156742d1f628b949efda9f1a0100d05f6779211b4cee9f149906fc1355c5eb",
+      "archiveSha256": "f41ddf220740a108aa173cc2c7a6a82d397b1684e95ce326d69be379b35cb521",
+      "bytes": 118
+    },
+    "raw/runner-tests.log": {
+      "archive": "benchmarks/results/e49-evidence/f1294743e9dc204085d5.gz",
+      "sha256": "c873b8c5552543bd814e771495b21264136cbc7b2a97f7fadf5db03c86670903",
+      "archiveSha256": "321391880e437c8e5bad0795944f24a71086d7db5a94bdb102e012fef05a7710",
+      "bytes": 115
+    },
+    "raw/sdk-google-install.log": {
+      "archive": "benchmarks/results/e49-evidence/b3f86c670bbee98338e6.gz",
+      "sha256": "758982c754cfa981d8ac3dfb9d4a1ea2a90ec0ac2402bbd39873d570b43719e4",
+      "archiveSha256": "39578c1d47494257abff178144f97f70fb03aeed1435356cf3694b6d17b666be",
+      "bytes": 237
+    },
+    "raw/sdk-install.log": {
+      "archive": "benchmarks/results/e49-evidence/2a95e3b721e24b5392b8.gz",
+      "sha256": "758982c754cfa981d8ac3dfb9d4a1ea2a90ec0ac2402bbd39873d570b43719e4",
+      "archiveSha256": "39578c1d47494257abff178144f97f70fb03aeed1435356cf3694b6d17b666be",
+      "bytes": 237
+    },
+    "raw/sdk-packages.log": {
+      "archive": "benchmarks/results/e49-evidence/9edb142e7318578cc2de.gz",
+      "sha256": "637af8685774828231046c20765ade5daff662835b13cc3fb4e1e1a0cb77bf28",
+      "archiveSha256": "b133c75b891b122f2d66ba58ab5b40b411441c315a023fd8bdb9726df6a30741",
+      "bytes": 112328
+    },
+    "raw/source-lock.json": {
+      "archive": "benchmarks/results/e49-evidence/7e9419fa72306072c27c.gz",
+      "sha256": "d13892411a668bb84247c539d06a49863d4cc40215a95497af51ec73d44e1de0",
+      "archiveSha256": "d5644fc177f425b9d3c99c1ee6bc88e97c9cd839d23bcb69c644c471dcdc6f22",
+      "bytes": 1089
+    },
+    "raw/system-image-google-package.xml": {
+      "archive": "benchmarks/results/e49-evidence/db248a2bd5ac8f26c714.gz",
+      "sha256": "b515c25a57b16854261c310ffe212892aa340e83c0d52c8280d0e671cfd4f905",
+      "archiveSha256": "2d501076446f04361403f727b32b8e2a2a3a3faad5fea9e1ba475880df185728",
+      "bytes": 19227
+    },
+    "raw/system-image-package.xml": {
+      "archive": "benchmarks/results/e49-evidence/458070a89d7eaaef0d13.gz",
+      "sha256": "9c0b3dd949cd319474c1f763f4f668847cb72eca6774d9165404729d7f0941b1",
+      "archiveSha256": "1b4375a4605db0cae9998fc758914547faa533e5c7b5bf72fc304f3aed66f751",
+      "bytes": 19072
+    },
+    "workspace/benchmarks/corpus/e49-minimum-api-environment-amendment.json": {
+      "archive": "benchmarks/results/e49-evidence/fa7a5c11298c747ca6aa.gz",
+      "sha256": "25ff7f9ecb7a62a707369672b8ea22432e1dc51ec96fd854b768aee166505103",
+      "archiveSha256": "76a37ab83434b6c3f6de99298052e37a9bbafee4aefac69888a36ace12c2bb28",
+      "bytes": 1936
+    },
+    "workspace/benchmarks/corpus/e49-minimum-api-policy.json": {
+      "archive": "benchmarks/results/e49-evidence/3a6cacc42dfdc540d6d8.gz",
+      "sha256": "910f220c9b31ce3e6d5765da00415dbb1ab2a9e2d45dd50990e0258489fe2a75",
+      "archiveSha256": "d4475432f3ffc45625094e3a498ef81d2f5d304ac2a6e3059eb94f714a1071ae",
+      "bytes": 32844
+    },
+    "workspace/benchmarks/corpus/e49-restoration-policy.json": {
+      "archive": "benchmarks/results/e49-evidence/5370bd2aa5177761618e.gz",
+      "sha256": "7399ae24f5d45272310561d6807091b4f78e47b43220547b95c4c8f562ae0273",
+      "archiveSha256": "3975b3f556a4d22bb9a089ff1af19b0f9f4e970703443368ffbd8da1dca533ac",
+      "bytes": 1191
+    },
+    "workspace/input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorConfigurationTest.kt": {
+      "archive": "benchmarks/results/e49-evidence/dd100b2d4289638b5589.gz",
+      "sha256": "f233156dd032f7569f4df0968c1f8c3f8e374a26596bfef096deb1bef58905bb",
+      "archiveSha256": "589fd55901d3e3793ac69d3447cb5d2b54ae6692ad0a3cc3ca6e48d3d3fc6e12",
+      "bytes": 4117
+    },
+    "workspace/input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorTestFixture.kt": {
+      "archive": "benchmarks/results/e49-evidence/9f2c2ad9cb9a6ab2688c.gz",
+      "sha256": "c1a07db39073ee8e47e2df29524d3ec0e554affd0334183501ea1ebd904da095",
+      "archiveSha256": "47e58472f200b80b287f1e0c7501ecc084f845d5460bfb64b8b74f75b04a08eb",
+      "bytes": 13375
+    },
+    "workspace/tools/test_configuration_target.py": {
+      "archive": "benchmarks/results/e49-evidence/3f00ec1b34548f1f3676.gz",
+      "sha256": "34cee389f827167b82305cada49cf2a4e8b142304fa4625a81180e69c00941ab",
+      "archiveSha256": "9306124540212010f2221be06b6bb9a0c2880bc8c8ff42364772f94ac3258b3b",
+      "bytes": 4064
+    },
+    "workspace/tools/test_input_configuration.py": {
+      "archive": "benchmarks/results/e49-evidence/b1c81006a3e24084dd52.gz",
+      "sha256": "0d9f970994406da0b6fdec230dcdf9cf71f35cbafa5c274d0375ed4e0c31e1da",
+      "archiveSha256": "87e6660a2bd134ea20de95c44fa882590ee7ec9fb51fbcd6fd3fe0a12d61b471",
+      "bytes": 9001
+    },
+    "post-measurement/workspace/tools/test_input_configuration.py": {
+      "archive": "benchmarks/results/e49-evidence/78b36b80252a23ec223a.gz",
+      "sha256": "344f58a14d9942eb132c2b61e6e6ccc5069575190cb641b5329826d8b10442e7",
+      "archiveSha256": "a249b390121f49ce7c675bf1f2cc6c962d3256be654a7cbe3c34c70103a9feeb",
+      "bytes": 9285
+    },
+    "post-measurement/workspace/tools/test_configuration_target.py": {
+      "archive": "benchmarks/results/e49-evidence/c0ee7b6c23e514e709f3.gz",
+      "sha256": "2b3277a1582eb2e6e82d321b1c892e017eb25e99511d06b377a88c4af4c78b3c",
+      "archiveSha256": "5d94defa011ba219c016cb83c08984fa162a036158212704469ab1a963eab0ff",
+      "bytes": 4468
+    },
+    "post-measurement/runner-tests-v4.log": {
+      "archive": "benchmarks/results/e49-evidence/cf1b02ed7a43d5424e96.gz",
+      "sha256": "1b629a597deab853beb5607f1e19177c21aab64349a16938de3bb9202b5db001",
+      "archiveSha256": "355626b42d578f2bdb173b82ec0dfc359407c3faf30c001ac4e00f94b3e9ecfa",
+      "bytes": 119
+    },
+    "post-measurement/restore-guard.json": {
+      "archive": "benchmarks/results/e49-evidence/393ac1d678f7eecabccd.gz",
+      "sha256": "db7e25a57f757d7d72964d963221f48cf112aa57fd961d21b3835fae90ae493b",
+      "archiveSha256": "00b7a245173c1a88a2fca3df0de50985aada9fcf7a390631943bcaeab7ebba30",
+      "bytes": 451
+    }
+  },
+  "localApkArtifacts": {
+    "app-debug.apk": {
+      "sha256": "a86949bd8c155f719a528849e30e745d37af18c4fc20ac41a5936d01c7a11c22",
+      "bytes": 85957640
+    },
+    "fixture-v2.apk": {
+      "sha256": "6a6895f40c03de1da170ebc48983c9ca1872d79eeba34b89e60dd0d700ec5121",
+      "bytes": 2639950
+    },
+    "input-quality-device-debug-androidTest.apk": {
+      "sha256": "141fc70341d89b720080538174f8e39d5c7c6fbbc32b8fc1b6ccbeb21f12807a",
+      "bytes": 2639034
+    },
+    "input-quality-device-debug.apk": {
+      "sha256": "a002d957709cc5aced0e067d4732819b5d29165cdd38221fe369479e2c9293d5",
+      "bytes": 2473085
+    }
+  }
+}

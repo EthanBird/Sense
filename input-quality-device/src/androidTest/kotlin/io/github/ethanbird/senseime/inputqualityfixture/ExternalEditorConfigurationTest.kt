@@ -65,9 +65,10 @@ class ExternalEditorConfigurationTest : ExternalEditorTestFixture() {
         val config = activity.resources.configuration
         assertEquals(args.getString("expectedFontScale", "1.0").toFloat(), config.fontScale, .01f)
         assertEquals(args.getString("expectedOrientation", "1").toInt(), config.orientation)
+        args.getString("expectedDensityDpi")?.toInt()?.let { assertEquals(it, config.densityDpi) }
         assertTrue(typingBounds.height() > 0 && typingBounds.width() > 0)
         assertTrue(typingBounds.top >= 0 && typingBounds.bottom <= device.displayHeight)
         File(artifacts, "${name.methodName}.txt").appendText(
-            "fontScale=${config.fontScale}\norientation=${config.orientation}\nkeyboard=$typingBounds\ndisplay=${device.displayWidth}x${device.displayHeight}\n")
+            "fontScale=${config.fontScale}\norientation=${config.orientation}\ndensityDpi=${config.densityDpi}\nsdk=${android.os.Build.VERSION.SDK_INT}\nkeyboard=$typingBounds\ndisplay=${device.displayWidth}x${device.displayHeight}\n")
     }
 }

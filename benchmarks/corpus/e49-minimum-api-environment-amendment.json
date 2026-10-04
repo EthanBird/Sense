@@ -1,0 +1,34 @@
+{
+  "stage": "E49",
+  "originalPolicySha256": "910f220c9b31ce3e6d5765da00415dbb1ab2a9e2d45dd50990e0258489fe2a75",
+  "reason": "Original AOSP default image has 16 MiB app growth limit, with real lexicon OOMs before input. Use separate official Google APIs image with an explicit >=128 MiB fixture heap gate. Preserve all 12 original failures and exact settings recovery issue. No product changes or relaxed input assertions.",
+  "target": {
+    "serial": "emulator-5584",
+    "avd": "sense-input-quality-api29-google",
+    "sdk": 29,
+    "image": "system-images;android-29;google_apis;x86_64"
+  },
+  "plannedTests": 25,
+  "sameMatrixAndInputAssertions": true,
+  "fixtureChanges": [
+    "Record runtime SDK and heap before selecting Sense",
+    "Require fixture heap at least 128 MiB before interpreting this as platform coverage",
+    "Restore absent font_scale after rotation writes; retain exact restoration comparison"
+  ],
+  "fixtureApkSha256": "6a6895f40c03de1da170ebc48983c9ca1872d79eeba34b89e60dd0d700ec5121",
+  "sources": {
+    "tools/test_input_configuration.py": "70d4a97168262f9dfd202942e1875ab8309f944019c9cd6c2ec9a62fc491d0db",
+    "tools/test_configuration_target.py": "a69693e87d0d7830aa36c1c6ae901d9ec53dc2c1bb2a1d967ed5a8f031013e29",
+    "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorConfigurationTest.kt": "f233156dd032f7569f4df0968c1f8c3f8e374a26596bfef096deb1bef58905bb",
+    "input-quality-device/src/androidTest/kotlin/io/github/ethanbird/senseime/inputqualityfixture/ExternalEditorTestFixture.kt": "c1a07db39073ee8e47e2df29524d3ec0e554affd0334183501ea1ebd904da095"
+  },
+  "references": {
+    "cdd": "https://source.android.com/docs/compatibility/10/android-10-cdd#3_7_runtime_compatibility",
+    "smallNormalMinimumApplicationMemoryMiB": {
+      "420dpi": 112,
+      "480dpi": 128
+    }
+  },
+  "productionApkUnchanged": true,
+  "phoneTouched": false
+}
