@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "rawDirectory": "E:\\CodexWorkspace\\sense-input-quality-build\\release-0.4.16-rc.6",
+  "dependencyManifests": {
+    "e46": "728bbc257c615e99df632b37e4b191dc21032407f87c2ed11d3198458facf143"
+  },
+  "files": {
+    "raw/artifact-checks.json": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/809a6fda677f0666ff1d.gz",
+      "sha256": "104046263d84be1fa0528571c0c0288b25dfc7496d9d7e759d6f023e561330a1",
+      "archiveSha256": "9f13f863afb44545cd12a8a51b85a312e04924ddc0957648eede7c6b536a3666",
+      "bytes": 3609
+    },
+    "raw/boundary-tests.log": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/f53da469d45205968418.gz",
+      "sha256": "ceca018a943c68010eb43b59124b57d6584c5367b90adc9d8986e5fc2f19249d",
+      "archiveSha256": "35d5537d7dd8d22bf5c8011d30c7f7f35d5634d1194590320b6e3c5396102028",
+      "bytes": 245
+    },
+    "raw/build-static.log": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/3a3999dff5002e24cefb.gz",
+      "sha256": "b1ba32feb3a82a88e61bc179a6101396eeba50710a2e9747f58ab64043c92127",
+      "archiveSha256": "c2d4f1a7a9afcc4bd8a4f425d112d019cb44220c448a6046d3d4eb2110842e56",
+      "bytes": 21085
+    },
+    "raw/collect.py": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/d29ff0f0a71a19404b0b.gz",
+      "sha256": "5214e176e7e03c13129be0037abaa2c6de5284e376f98067fb2783651790e348",
+      "archiveSha256": "6b6ebb8a50821a0dbb30ca8f69ebf3dab72526ee14cd712905ef8c2ef40f21e6",
+      "bytes": 8553
+    },
+    "raw/host-lint.log": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/b8b1d174148b09a3e6a3.gz",
+      "sha256": "acfb98dc794ab64feebb3ab6041e8394e610e3d41cdf117f5b57f2a650f5a011",
+      "archiveSha256": "9701243bf0ca5892dc39baeabfd5209f5b2bfd0841b30384329a3f48b9094cdb",
+      "bytes": 25071
+    },
+    "raw/input-source-pins.json": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/d8ea9948ffa6ae0eec09.gz",
+      "sha256": "bf60b3ce7c9839b6356eddb943f1560db0f802ef9784697a65f71bb06117c214",
+      "archiveSha256": "6477dd7dec0e24f151f07e228a13d28f96151a0b647688f943939a8c004d45de",
+      "bytes": 30526
+    },
+    "raw/lint-results-release.xml": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/6146469594df4c1a1ad2.gz",
+      "sha256": "18b9f5170bac7db049f1a96f1d50d9c965f8fc5da6d89dbcc0acb3e64127ecf7",
+      "archiveSha256": "cfe0d1b43daa0b7d1cb989a54757b2919100086d078c3d55f8db66fde29b96bf",
+      "bytes": 30771
+    },
+    "raw/release-boundaries.log": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/3cbbe5407dc77d766c05.gz",
+      "sha256": "9a0cc5ca4b9c91aea97d7b9e395ddefa5a042062fce3f80f042691eb1c11de30",
+      "archiveSha256": "7791bf55038a81829acd332eea722fc182b0e456dd98053d17e90859a3df5640",
+      "bytes": 41
+    },
+    "raw/release-contract.log": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/3d5c9106c9fb44c86477.gz",
+      "sha256": "9a4209f595d2baace06ce226e59e3f464003ddf9c349e95ce8f93df0073fff56",
+      "archiveSha256": "94c9b2c0f697b400c1203ac7db6d1dff94e9991fad9b8e3c96bc1664f22b1d00",
+      "bytes": 137
+    },
+    "raw/runtime-boundaries.log": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/7a85b58391dc33437edf.gz",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archiveSha256": "46b50c321b39e89a491b6727a01628c34245605a30beb3e7414c5e01cff90e6e",
+      "bytes": 0
+    },
+    "raw/source-base.json": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/e83598dd51b81e471f7b.gz",
+      "sha256": "6f05778a3c494f28723144f61e87a2321e78c7ccd65b3aac2ddf3cd3ae3cebeb",
+      "archiveSha256": "409d9721310a61d694e465c7e5070d104d137db96ec6487c16643d50e5857ca3",
+      "bytes": 280
+    },
+    "raw/version-only-build-authority.json": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/0a5afc059dc7d135295a.gz",
+      "sha256": "fc8c1375480d704d574bf59d803ed4c55daf3e1f3920a7561fa46056ee537c00",
+      "archiveSha256": "8759b27f49b7765dd892cacb08b474aa1ad4d792f7d7263e4307bf515843ac52",
+      "bytes": 301
+    },
+    "workspace/app/build.gradle.kts": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/0496c3906619016b154a.gz",
+      "sha256": "73ecf7a005b1277f7fdc7464d5eb784b75b8f6625bbf512d9e8b62a709bd57c9",
+      "archiveSha256": "350d58d550506ad3808e32755b2a1cc27310cbb2f1dc5531b175e6f80a351cdb",
+      "bytes": 3615
+    },
+    "workspace/docs/releases/v0.4.16-rc.6.md": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/58991375ac952ba1ec13.gz",
+      "sha256": "dbe877db45d06452dd9d5944c409973583d55557bd409a2f85bcfed91a40644b",
+      "archiveSha256": "9857789495d3d384d830e99db805befe16827f2a9ea9d76fca31bac51ab3602c",
+      "bytes": 2332
+    },
+    "workspace/tools/check_x02_boundaries.py": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/a9485ec83fedb3488a44.gz",
+      "sha256": "bdeb5d1c305c37d8f07ae17df0fc2c5a29fee5e3381ebcb9368261387b1001b3",
+      "archiveSha256": "4c85874e4444a0de394a92c474f068814195d034b3b8913239559e0e6f870cf7",
+      "bytes": 63633
+    },
+    "workspace/tools/local_release.ps1": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/4b8f050acc07f9915e7d.gz",
+      "sha256": "481d5dac6f86759383180e9ce82d5ae7b2fc7658398ed105aaf7d0990cc3492a",
+      "archiveSha256": "508ec4bec61fdcda6149d288ff13d60bb71140be79d04f25bc762ee136ed1eb8",
+      "bytes": 36688
+    },
+    "workspace/tools/test_release_plan.py": {
+      "archive": "benchmarks/results/release-v0.4.16-rc.6-evidence/f1ff277dc33e1d4c5d2d.gz",
+      "sha256": "d94ec4ef75fd3bb25d7bb1e0e66079170baad07e75bc221e698dc8636c68ee67",
+      "archiveSha256": "9064b5916a6ef89bd2763716e4624567b313f089f55ebc508fe9f9b343f23f49",
+      "bytes": 17069
+    }
+  }
+}

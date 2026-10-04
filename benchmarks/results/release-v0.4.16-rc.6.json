@@ -1,0 +1,385 @@
+{
+  "schemaVersion": 1,
+  "releaseVersion": "0.4.16-rc.6",
+  "versionCode": 46,
+  "releaseType": "preview",
+  "sourceBaseCommit": "319bcede95a2e94fddf55e365cb7c19be21a10d2",
+  "branch": "codex/input-quality-v2",
+  "createdAt": "2026-10-04T01:07:52.481216+00:00",
+  "apkSha256": "5c77820e5068b5d8f922751fd660f7e2bf8153ed6d9340ad7130884886639a53",
+  "bytes": 73102387,
+  "certificateSha256": "76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984",
+  "packageName": "io.github.ethanbird.senseime",
+  "minSdk": 29,
+  "targetSdk": 36,
+  "productionInputLogicUnchangedSinceE46": true,
+  "productionSourceFilesChecked": 190,
+  "coreJarPayloadEntriesEqualE46": 429,
+  "releaseChanges": "Version and packaging metadata only beyond accepted E46 fix; no algorithm or model change during release",
+  "hostTests": {
+    "stage": "E46",
+    "counts": {
+      "core-input": {
+        "tests": 417,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0
+      },
+      "ime-service": {
+        "tests": 317,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0
+      },
+      "ime-ui": {
+        "tests": 235,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0
+      }
+    },
+    "total": 969,
+    "releaseGradleRevalidation": {
+      "core-input": "FROM-CACHE",
+      "ime-service": "UP-TO-DATE",
+      "ime-ui": "UP-TO-DATE"
+    },
+    "freshExecutionForRelease": false
+  },
+  "freshReleaseTests": {
+    "releaseContract": {
+      "run": 33,
+      "passed": 33
+    },
+    "boundaryContract": {
+      "run": 128,
+      "passed": 127,
+      "skipped": 1,
+      "skipReason": "Existing Windows symlink privilege test"
+    }
+  },
+  "androidFunctionalEvidence": {
+    "stage": "E46",
+    "debugApkSha256": "f6fb1f7f59f393eeb3cae2193ac9bb403bdd8a379dd52256fdb5fa0ac397cd0a",
+    "groups": {
+      "learning": 6,
+      "context": 8,
+      "correction": 10,
+      "boundary": 6,
+      "association": 9,
+      "default": 10
+    },
+    "total": 49,
+    "rerunForRelease": false,
+    "scope": "Dedicated API37 emulator, not fresh signed-release or physical-phone timing"
+  },
+  "inheritedE46Timing": {
+    "confirmationMs": {
+      "baseline": {
+        "count": 32,
+        "medianMs": 140.0,
+        "observedP95Ms": 311,
+        "maxMs": 313
+      },
+      "optimized": {
+        "count": 32,
+        "medianMs": 149.5,
+        "observedP95Ms": 295,
+        "maxMs": 322
+      }
+    },
+    "stageGate": {
+      "rule": "E46 predeclared paired median and P95 each <= 1.10 times reference",
+      "checks": {
+        "medianMs": true,
+        "observedP95Ms": true
+      },
+      "passed": true
+    },
+    "strictHelperGate": {
+      "scope": "Fixed ABBA workload only; not statistical significance or phone certification",
+      "rule": "paired median and observed P95 each no worse than reference",
+      "checks": {
+        "medianMs": false,
+        "observedP95Ms": true
+      },
+      "passed": false
+    },
+    "perQuery": [
+      {
+        "query": "nihao",
+        "baseline": {
+          "samples": [
+            156,
+            22,
+            116,
+            43
+          ],
+          "count": 4,
+          "medianMs": 79.5,
+          "observedP95Ms": 156,
+          "maxMs": 156
+        },
+        "optimized": {
+          "samples": [
+            142,
+            22,
+            130,
+            36
+          ],
+          "count": 4,
+          "medianMs": 83.0,
+          "observedP95Ms": 142,
+          "maxMs": 142
+        }
+      },
+      {
+        "query": "woxihuanbeijing",
+        "baseline": {
+          "samples": [
+            311,
+            120,
+            313,
+            107
+          ],
+          "count": 4,
+          "medianMs": 215.5,
+          "observedP95Ms": 313,
+          "maxMs": 313
+        },
+        "optimized": {
+          "samples": [
+            295,
+            116,
+            322,
+            105
+          ],
+          "count": 4,
+          "medianMs": 205.5,
+          "observedP95Ms": 322,
+          "maxMs": 322
+        }
+      },
+      {
+        "query": "qingfageweizhigeiwo",
+        "baseline": {
+          "samples": [
+            137,
+            91,
+            175,
+            93
+          ],
+          "count": 4,
+          "medianMs": 115.0,
+          "observedP95Ms": 175,
+          "maxMs": 175
+        },
+        "optimized": {
+          "samples": [
+            160,
+            118,
+            162,
+            82
+          ],
+          "count": 4,
+          "medianMs": 139.0,
+          "observedP95Ms": 162,
+          "maxMs": 162
+        }
+      },
+      {
+        "query": "qingjianchayixiayoujian",
+        "baseline": {
+          "samples": [
+            169,
+            112,
+            204,
+            141
+          ],
+          "count": 4,
+          "medianMs": 155.0,
+          "observedP95Ms": 204,
+          "maxMs": 204
+        },
+        "optimized": {
+          "samples": [
+            176,
+            149,
+            216,
+            132
+          ],
+          "count": 4,
+          "medianMs": 162.5,
+          "observedP95Ms": 216,
+          "maxMs": 216
+        }
+      },
+      {
+        "query": "zhegeyingyonghenhaoyong",
+        "baseline": {
+          "samples": [
+            116,
+            135,
+            142,
+            128
+          ],
+          "count": 4,
+          "medianMs": 131.5,
+          "observedP95Ms": 142,
+          "maxMs": 142
+        },
+        "optimized": {
+          "samples": [
+            139,
+            113,
+            150,
+            101
+          ],
+          "count": 4,
+          "medianMs": 126.0,
+          "observedP95Ms": 150,
+          "maxMs": 150
+        }
+      },
+      {
+        "query": "jintianyouyidianlei",
+        "baseline": {
+          "samples": [
+            139,
+            134,
+            134,
+            121
+          ],
+          "count": 4,
+          "medianMs": 134.0,
+          "observedP95Ms": 139,
+          "maxMs": 139
+        },
+        "optimized": {
+          "samples": [
+            122,
+            172,
+            132,
+            109
+          ],
+          "count": 4,
+          "medianMs": 127.0,
+          "observedP95Ms": 172,
+          "maxMs": 172
+        }
+      },
+      {
+        "query": "tangmuhemalimeitianwanshangdoukandianshi",
+        "baseline": {
+          "samples": [
+            223,
+            278,
+            201,
+            198
+          ],
+          "count": 4,
+          "medianMs": 212.0,
+          "observedP95Ms": 278,
+          "maxMs": 278
+        },
+        "optimized": {
+          "samples": [
+            188,
+            206,
+            226,
+            205
+          ],
+          "count": 4,
+          "medianMs": 205.5,
+          "observedP95Ms": 226,
+          "maxMs": 226
+        }
+      },
+      {
+        "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+        "baseline": {
+          "samples": [
+            223,
+            214,
+            229,
+            200
+          ],
+          "count": 4,
+          "medianMs": 218.5,
+          "observedP95Ms": 229,
+          "maxMs": 229
+        },
+        "optimized": {
+          "samples": [
+            199,
+            231,
+            222,
+            228
+          ],
+          "count": 4,
+          "medianMs": 225.0,
+          "observedP95Ms": 231,
+          "maxMs": 231
+        }
+      }
+    ]
+  },
+  "inheritedE46Quality": {
+    "knownStates": 3075,
+    "targetAggregatesUnchanged": true,
+    "broadAccuracyGainClaimed": false
+  },
+  "assetHashes": {
+    "assets/ASSOCIATION-MODEL-NOTICE.txt": "4629a89db03218238cd3b9651da106b9100d5f07a7386f1b1ab155c6ecf27433",
+    "assets/CONCENTUS-BSD-3-CLAUSE.txt": "fa08d794f35b8c2517a2b929ff388cf179e6eb452383e8dc13de81452741a564",
+    "assets/LARK-OAPI-APACHE-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "assets/LICENSE.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "assets/NOTICE.txt": "bfcfbe84562a5a614b2790d85465f18f809dc700fa44e7e51e2db633fc37dd14",
+    "assets/OKHTTP-APACHE-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "assets/PINYIN-LM-NOTICE.txt": "42e67712562a6b3b2e491f42146efd7235d7fcd6d3ac2a156eabfbae1e6565d0",
+    "assets/POPULAR-ENGLISH-WORDS-ISC.txt": "f432301e16a48011db30f6fd74d5ec906745d5c9bfcacb91c924e4738d7e4fa7",
+    "assets/PublicSuffixDatabase.list": "c75ab827afd7ffff59a51b14729c25dbfc3b45237eb40ccf02bec7b7d44304a4",
+    "assets/RIME-FROST-GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "assets/RIME-FROST-NOTICE.txt": "bacf7e02bf7b78343aa6c718021d24c701092cb0e14b737a84f13c551b181a83",
+    "assets/RIME-ICE-GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "assets/RIME-ICE-NOTICE.txt": "268b2226666b6597f6ebcc2e084888ecd6288a9655eedbdea3e1e9b6e092a496",
+    "assets/RIME-WUBI-LGPL-3.0.txt": "da7eabb7bafdf7d3ae5e9f223aa5bdc1eece45ac569dc21b3b037520b4464768",
+    "assets/RIME-WUBI-NOTICE.txt": "c1ccba91f1ba2ebe970ef62a80e69feef1d1a61b568d078a20e9b904782035a8",
+    "assets/association_words.snwp": "d0b157b46ee6df5fe0466870f6a5bf2951b0498a081d4860b3791bb2f123bf39",
+    "assets/association_words_notice.json": "7648de91d2fc68049d9ea7dca14c3cb7b80432d395b3a19b7b9bcf246a88ae4f",
+    "assets/dexopt/baseline.prof": "82f3bf827680c891ccedfe8f46c0edc48d0f7253ae74d6bf0b605484b536ea4f",
+    "assets/dexopt/baseline.profm": "e4311336f998065092a6d336891e419a386ece85e630bcdb804c358a1a3b62c8",
+    "assets/english_lexicon.txt": "1a182354bc9c944dc28a384c21dbb9a2338e93bd963c4ee33f40b033a8f55624",
+    "assets/pinyin_bigrams.bin": "9f37c162783e1ea1cfb59a321cc310d32d693ef8d88b332ca28b29933760fe5d",
+    "assets/pinyin_character_lm.scng": "39ea5d90a38ce2b6f498a0dcc9f4b161ea92168759ebeedd03ce2f3340c45a7d",
+    "assets/pinyin_character_lm_attribution.tsv": "acfb932b806f02bd53b57f4a902628fea2c29f6efda7a785a11be432ac22173a",
+    "assets/pinyin_character_lm_notice.json": "131039406d56f7b729331d91bdb4c8891d4e79d36ab7bd1fc95d761a4f881d7a",
+    "assets/pinyin_lexicon.bin": "edc44ba08920436ee0b6fbbfed6adad7e5028ac35c2ce4af87c5394fdf046232",
+    "assets/pinyin_syllables.txt": "3033c80d4bd20fdf4bf8378a6e89b51edbc9c68ab6737b3e9a8ec962f3546bf3",
+    "assets/wubi86_lexicon.bin": "e2d47d43ab702862c349cd7f9ad36b2d4cbd72963c95cdb6f7911bf849937207"
+  },
+  "all25InputAndNoticeAssetsEqualRc5": true,
+  "generatedProfileChanges": {
+    "assets/dexopt/baseline.prof": {
+      "before": "b3d2b0de318f762b138580d39d8b19df05b453c693772605849ec7a369a7a471",
+      "after": "82f3bf827680c891ccedfe8f46c0edc48d0f7253ae74d6bf0b605484b536ea4f"
+    },
+    "assets/dexopt/baseline.profm": {
+      "before": "5aa994250b216f8abf42c87e533ae17b37985d04468c3d7afa62e2abcb52e952",
+      "after": "e4311336f998065092a6d336891e419a386ece85e630bcdb804c358a1a3b62c8"
+    }
+  },
+  "appReleaseLint": {
+    "errors": 0,
+    "warnings": 28
+  },
+  "e47ExperimentExcluded": true,
+  "experimentPreservedAtLocalBranch": "codex/e47-boundary-cache-wip",
+  "experimentCommit": "742b7f05",
+  "physicalPhoneTested": false,
+  "goalComplete": false,
+  "evidenceManifestSha256": "d710ce99cb9d1fd7dd4adb2fad21fa424f7cb43940f6670fedcd877da8b093a1",
+  "archivedFiles": 17,
+  "staticVerification": "Fresh local_release.ps1 -SkipTests build and static APK checks, release lint and contract tests. E46 source and JAR payload verified exactly; Gradle revalidated existing input suites from cache/up-to-date. No broad local_release -Publish pipeline or new device run.",
+  "publication": "Prepared feature-branch pre-release; publish receipt records final tag and live asset identity separately; preserve rc.5 and latest stable"
+}
