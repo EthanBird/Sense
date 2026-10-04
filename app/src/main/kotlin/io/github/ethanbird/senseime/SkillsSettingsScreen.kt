@@ -1,6 +1,7 @@
 package io.github.ethanbird.senseime
 
 import android.app.Activity
+import android.view.inputmethod.InputMethodManager
 import android.view.View
 import android.widget.TextView
 import io.github.ethanbird.senseime.brain.api.AgentSkillCatalog
@@ -15,7 +16,12 @@ internal class SkillsSettingsScreen(
     private val activity: Activity,
     private val views: SettingsViewFactory,
     bundledState: ByteArray?,
+    initiallyEditing: Boolean = false,
+    private val openActions: () -> Unit = {},
+    private val onPaneChanged: () -> Unit = {},
 ) : AutoCloseable {
+    var isEditorOpen: Boolean = initiallyEditing
+        private set
     private val viewFactory = SkillsSettingsViewFactory(activity, views)
     private val skillDraftController = SkillDraftLifecycleController(
         activity = activity,
@@ -100,6 +106,10 @@ internal class SkillsSettingsScreen(
         val binding = viewFactory.create(
             actions = SkillsSettingsViewActions(
                 onSkillSelected = ::selectAgentSkill,
+                onLibrarySkillSelected = ::openLibrarySkill,
+                onResumeDraft = ::resumeLibraryDraft,
+                onBackToLibrary = { showLibrary() },
+                onOpenActions = openActions,
                 onCreate = ::startCreatingAgentSkill,
                 onTemplateSelected = ::applySkillTemplate,
                 onDiscard = ::discardCurrentAgentSkillDraft,
@@ -118,6 +128,7 @@ internal class SkillsSettingsScreen(
             isApplyingState = { applyingAgentSkillUi },
         )
         skillBinding = binding
+        renderPane()
         skillDraftController.attach(binding.root, ::captureAgentSkillDraftFromViews)
         historyController.attach()
         mutationController.attach()
@@ -126,6 +137,58 @@ internal class SkillsSettingsScreen(
         setAgentSkillEditorEnabled(false)
         loadAgentSkillsPreservingDraft()
         return binding.root
+    }
+
+    /** Navigation preserves the buffer; only the explicit discard action deletes draft edits. */
+    fun showLibrary(): Boolean {
+        if (!isAttached || !isEditorOpen) return false
+        captureAgentSkillDraftFromViews()
+        persistAgentSkillDraftSession()
+        isEditorOpen = false
+        activity.currentFocus?.let { focused ->
+            activity.getSystemService(InputMethodManager::class.java)
+                .hideSoftInputFromWindow(focused.windowToken, 0)
+            focused.clearFocus()
+        }
+        renderPane()
+        renderLibrary()
+        onPaneChanged()
+        return true
+    }
+
+    private fun renderPane() {
+        val binding = skillBinding ?: return
+        binding.editorRoot.visibility = if (isEditorOpen) View.VISIBLE else View.GONE
+        binding.library.visibility = if (isEditorOpen) View.GONE else View.VISIBLE
+    }
+
+    private fun renderLibrary() {
+        val binding = skillBinding ?: return
+        val catalog = agentSkillCatalog ?: return
+        binding.library.render(catalog, agentSkillDraftSession)
+    }
+
+    private fun openLibrarySkill(skillId: String) {
+        if (!agentSkillEditorHydrated || agentSkillCatalogLoadInFlight || mutationController.state.running) return
+        val index = agentSkillCatalog?.definitions?.indexOfFirst { it.id == skillId } ?: return
+        if (index < 0) return
+        isEditorOpen = true
+        selectAgentSkill(index)
+        renderPane()
+        onPaneChanged()
+    }
+
+    private fun resumeLibraryDraft(key: String) {
+        if (!agentSkillEditorHydrated || agentSkillCatalogLoadInFlight || mutationController.state.running) return
+        captureAgentSkillDraftFromViews()
+        if (key !in agentSkillDraftSession.records) return
+        mutationController.clearConfirmations()
+        agentSkillDraftSession = agentSkillDraftSession.copy(selectedKey = key)
+        isEditorOpen = true
+        renderAgentSkillDraft(requireNotNull(agentSkillDraftSession.current()))
+        renderPane()
+        persistAgentSkillDraftSession()
+        onPaneChanged()
     }
 
     fun onResume() {
@@ -298,10 +361,13 @@ internal class SkillsSettingsScreen(
             applyingAgentSkillUi = false
         }
         persistAgentSkillDraftSession()
+        renderLibrary()
     }
 
     private fun startCreatingAgentSkill() {
+        if (!agentSkillEditorHydrated || agentSkillCatalogLoadInFlight || mutationController.state.running) return
         captureAgentSkillDraftFromViews()
+        isEditorOpen = true
         agentSkillDraftRecoveryWriteAuthorized = true
         mutationController.clearConfirmations()
         agentSkillDraftSession = agentSkillDraftSession.beginCreate(emptyAgentSkillDraft())
@@ -309,6 +375,8 @@ internal class SkillsSettingsScreen(
         agentSkillStatus.setText(R.string.skills_creating)
         agentSkillStatus.setTextColor(activity.getColor(R.color.sense_accent))
         persistAgentSkillDraftSession()
+        renderPane()
+        onPaneChanged()
     }
 
     private fun applySkillTemplate(template: SkillCreationTemplate) {
@@ -360,7 +428,7 @@ internal class SkillsSettingsScreen(
                     catalog = agentSkillCatalog,
                     skillId = requireNotNull(record.sourceSkillId),
                 )
-                loadAgentSkillRevisionList(record.sourceSkillId)
+                if (isEditorOpen) loadAgentSkillRevisionList(record.sourceSkillId)
             }
             updateAgentSkillSlotOccupancy()
             renderMutationControls(mutationController.state)

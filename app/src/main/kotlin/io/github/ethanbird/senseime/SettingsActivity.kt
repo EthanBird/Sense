@@ -3,6 +3,7 @@ package io.github.ethanbird.senseime
 import android.Manifest
 import android.app.AlertDialog
 import android.content.Context
+import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -34,6 +35,7 @@ class SettingsActivity : ComponentActivity() {
     }
     private lateinit var screenScroll: ScrollView
     private lateinit var screenContent: LinearLayout
+    private lateinit var bottomNavigation: LinearLayout
     private lateinit var statusText: TextView
     private val settingsViews by lazy { SettingsViewFactory(this) }
     private var activeSectionScreen: AutoCloseable? = null
@@ -60,6 +62,9 @@ class SettingsActivity : ComponentActivity() {
             activity = this,
             views = settingsViews,
             bundledState = savedInstanceState?.getByteArray(STATE_SKILL_DRAFTS),
+            initiallyEditing = savedInstanceState?.getBoolean(STATE_SKILL_EDITOR) ?: false,
+            openActions = { showSection(SettingsSection.ACTION_SKILLS) },
+            onPaneChanged = { screenScroll.post { screenScroll.scrollTo(0, 0) } },
         )
         setContentView(buildContent())
         renderCurrentSection()
@@ -106,7 +111,8 @@ class SettingsActivity : ComponentActivity() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString(STATE_SECTION, navigation.current.name)
+        outState.putString(STATE_SECTION, navigation.serialize())
+        outState.putBoolean(STATE_SKILL_EDITOR, skillsScreen.isEditorOpen)
         skillsScreen.snapshotForSavedState()
             ?.let { outState.putByteArray(STATE_SKILL_DRAFTS, it) }
         super.onSaveInstanceState(outState)
@@ -143,20 +149,28 @@ class SettingsActivity : ComponentActivity() {
             setBackgroundColor(getColor(R.color.sense_background))
             isFillViewport = true
             addView(screenContent)
+        }
+        bottomNavigation = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(dp(12), dp(8), dp(12), dp(8))
+            setBackgroundColor(getColor(R.color.sense_surface))
+            elevation = dp(3).toFloat()
+        }
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(getColor(R.color.sense_background))
+            addView(screenScroll, LinearLayout.LayoutParams(-1, 0, 1f))
+            addView(bottomNavigation, LinearLayout.LayoutParams(-1, -2))
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 setOnApplyWindowInsetsListener { _, insets ->
                     val bars = insets.getInsets(WindowInsets.Type.systemBars())
-                    screenContent.setPadding(
-                        dp(22),
-                        dp(30) + bars.top,
-                        dp(22),
-                        dp(30) + bars.bottom,
-                    )
+                    val ime = insets.getInsets(WindowInsets.Type.ime())
+                    setPadding(bars.left, bars.top, bars.right, maxOf(bars.bottom, ime.bottom))
+                    bottomNavigation.visibility = if (insets.isVisible(WindowInsets.Type.ime())) View.GONE else View.VISIBLE
                     insets
                 }
             }
         }
-        return screenScroll
     }
 
     private fun renderCurrentSection() {
@@ -164,8 +178,16 @@ class SettingsActivity : ComponentActivity() {
         releaseActiveSection()
         sectionBackCallback.isEnabled = navigation.current != SettingsSection.HOME
         screenContent.removeAllViews()
+        renderBottomNavigation()
         when (navigation.current) {
             SettingsSection.HOME -> renderHome()
+            SettingsSection.AGENT -> {
+                renderTopHeader(R.string.settings_tab_agent, R.string.settings_agent_intro)
+                val screen = AgentSettingsScreen(this, settingsViews, ::showSection)
+                activeSectionScreen = screen
+                screenContent.addView(screen.createView().withTop(dp(24)))
+            }
+            SettingsSection.MORE -> renderMore()
             SettingsSection.KEYBOARD -> {
                 renderDetailHeader(
                     R.string.settings_keyboard_title,
@@ -230,9 +252,9 @@ class SettingsActivity : ComponentActivity() {
                 screenContent.addView(screen.createView().withTop(dp(20)))
             }
             SettingsSection.SKILLS -> {
-                renderDetailHeader(
-                    R.string.settings_skills_title,
-                    R.string.settings_skills_summary,
+                renderTopHeader(
+                    R.string.settings_tab_skills,
+                    R.string.skills_library_intro,
                 )
                 screenContent.addView(skillsScreen.createView().withTop(dp(20)))
             }
@@ -328,7 +350,7 @@ class SettingsActivity : ComponentActivity() {
             handleEffect(SettingsEffect.ShowInputMethodPicker)
         }.withTop(dp(10)))
         screenContent.addView(
-            text(R.string.settings_categories_title, 13f, R.color.sense_secondary, Typeface.BOLD)
+            text(R.string.settings_home_shortcuts, 13f, R.color.sense_secondary, Typeface.BOLD)
                 .withTop(dp(28)),
         )
         addCategory(
@@ -337,29 +359,9 @@ class SettingsActivity : ComponentActivity() {
             R.string.settings_keyboard_summary,
         )
         addCategory(
-            SettingsSection.PROVIDER,
-            R.string.settings_provider_title,
-            R.string.settings_provider_summary,
-        )
-        addCategory(
-            SettingsSection.SOUL,
-            R.string.settings_soul_title,
-            R.string.settings_soul_summary,
-        )
-        addCategory(
-            SettingsSection.TOOLS,
-            R.string.settings_tools_title,
-            R.string.settings_tools_summary,
-        )
-        addCategory(
-            SettingsSection.CHANNELS,
-            R.string.settings_channels_title,
-            R.string.settings_channels_summary,
-        )
-        addCategory(
-            SettingsSection.ACTION_SKILLS,
-            R.string.settings_action_skills_title,
-            R.string.settings_action_skills_summary,
+            SettingsSection.AGENT,
+            R.string.settings_tab_agent,
+            R.string.settings_agent_intro,
         )
         addCategory(
             SettingsSection.SKILLS,
@@ -371,18 +373,57 @@ class SettingsActivity : ComponentActivity() {
             R.string.settings_voice_title,
             R.string.settings_voice_summary,
         )
-        addCategory(
-            SettingsSection.MIC,
-            R.string.settings_mic_title,
-            R.string.settings_mic_summary,
-        )
-        addCategory(
-            SettingsSection.ABOUT,
-            R.string.settings_about_title,
-            R.string.settings_about_summary,
-        )
-        screenContent.addView(text(R.string.version_label, 12f, R.color.sense_secondary).withTop(dp(24)))
         updateStatus()
+    }
+
+    private fun renderTopHeader(titleRes: Int, summaryRes: Int) {
+        screenContent.addView(text(titleRes, 32f, R.color.sense_primary, Typeface.BOLD))
+        screenContent.addView(text(summaryRes, 14f, R.color.sense_secondary).withTop(dp(8)))
+    }
+
+    private fun renderMore() {
+        renderTopHeader(R.string.settings_tab_more, R.string.settings_more_intro)
+        addCategory(SettingsSection.VOICE, R.string.settings_voice_title, R.string.settings_voice_summary)
+        addCategory(SettingsSection.MIC, R.string.settings_mic_title, R.string.settings_mic_summary)
+        addCategory(SettingsSection.ABOUT, R.string.settings_about_title, R.string.settings_about_summary)
+        screenContent.addView(text(R.string.version_label, 12f, R.color.sense_secondary).withTop(dp(24)))
+    }
+
+    private fun renderBottomNavigation() {
+        bottomNavigation.removeAllViews()
+        listOf(
+            Triple(SettingsSection.HOME, R.string.settings_tab_home, "⌂"),
+            Triple(SettingsSection.AGENT, R.string.settings_tab_agent, "◎"),
+            Triple(SettingsSection.SKILLS, R.string.settings_tab_skills, "✦"),
+            Triple(SettingsSection.MORE, R.string.settings_tab_more, "···"),
+        ).forEach { (section, label, icon) ->
+            val selected = navigation.topLevel == section
+            val tab = TextView(this).apply {
+                text = "$icon\n${getString(label)}"
+                textSize = 13f
+                gravity = Gravity.CENTER
+                minimumHeight = dp(56)
+                setPadding(dp(4), dp(8), dp(4), dp(8))
+                typeface = if (selected) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+                setTextColor(getColor(if (selected) R.color.sense_accent else R.color.sense_secondary))
+                background = settingsViews.rounded(
+                    getColor(if (selected) R.color.sense_background else R.color.sense_surface), dp(16).toFloat(),
+                )
+                foreground = selectableItemBackground()
+                isSelected = selected
+                isFocusable = true
+                contentDescription = getString(label)
+                setOnClickListener {
+                    if (navigation.current == section) {
+                        if (section == SettingsSection.SKILLS) skillsScreen.showLibrary()
+                    } else {
+                        navigation.open(section)
+                        renderCurrentSection()
+                    }
+                }
+            }
+            bottomNavigation.addView(tab, LinearLayout.LayoutParams(0, -2, 1f))
+        }
     }
 
     private fun addBrandHeader(showTagline: Boolean) {
@@ -398,7 +439,6 @@ class SettingsActivity : ComponentActivity() {
             screenContent.addView(
                 text(R.string.brand_tagline, 15f, R.color.sense_secondary).withTop(dp(8)),
             )
-            screenContent.addView(badge().withTop(dp(18)))
         }
     }
 
@@ -430,11 +470,12 @@ class SettingsActivity : ComponentActivity() {
     }
 
     private fun showSection(section: SettingsSection) {
-        navigation.open(section)
+        navigation.openChild(section, navigation.current)
         renderCurrentSection()
     }
 
     private fun navigateBack() {
+        if (navigation.current == SettingsSection.SKILLS && skillsScreen.showLibrary()) return
         when (navigation.back()) {
             SettingsBackResult.CONSUMED -> renderCurrentSection()
             SettingsBackResult.EXIT_ACTIVITY -> {
@@ -491,7 +532,13 @@ class SettingsActivity : ComponentActivity() {
         if (!::statusText.isInitialized || navigation.current != SettingsSection.HOME) return
         val manager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         val enabled = manager.enabledInputMethodList.any { it.packageName == packageName }
-        statusText.setText(if (enabled) R.string.ime_enabled else R.string.ime_disabled)
+        val current = Settings.Secure.getString(contentResolver, Settings.Secure.DEFAULT_INPUT_METHOD)
+            ?.let(ComponentName::unflattenFromString)?.packageName == packageName
+        statusText.setText(when {
+            current -> R.string.settings_ime_active
+            enabled -> R.string.ime_enabled
+            else -> R.string.ime_disabled
+        })
         statusText.setTextColor(getColor(if (enabled) R.color.sense_success else R.color.sense_primary))
     }
 
@@ -540,6 +587,7 @@ class SettingsActivity : ComponentActivity() {
     companion object {
         private const val STATE_SECTION = "settings-section"
         private const val STATE_SKILL_DRAFTS = "settings-skill-drafts"
+        private const val STATE_SKILL_EDITOR = "settings-skill-editor"
         private const val REQUEST_RECORD_AUDIO = 40
         private const val REQUEST_SENSE_MIC_PERMISSIONS = 41
     }

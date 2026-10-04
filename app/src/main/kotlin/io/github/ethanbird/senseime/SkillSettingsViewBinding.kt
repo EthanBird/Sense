@@ -15,6 +15,9 @@ import android.widget.TextView
  */
 internal class SkillSettingsViewBinding(
     val root: LinearLayout,
+    val editorRoot: LinearLayout,
+    val library: SkillsLibraryView,
+    val editorTitle: TextView,
     val selector: Spinner,
     val id: EditText,
     val name: EditText,

@@ -106,6 +106,40 @@ internal class SettingsViewFactory(
         addView(body.withTop(dp(8)))
     }
 
+    /** A single, accessible destination rather than a card full of competing buttons. */
+    fun destination(
+        symbol: String,
+        titleRes: Int,
+        summary: TextView,
+        action: () -> Unit,
+    ): LinearLayout = LinearLayout(activity).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+        minimumHeight = dp(88)
+        setPadding(dp(16), dp(16), dp(16), dp(16))
+        background = rounded(activity.getColor(R.color.sense_surface), dp(20).toFloat())
+        foreground = selectableItemBackground()
+        isClickable = true
+        isFocusable = true
+        addView(text(symbol, 19f, R.color.sense_accent, Typeface.BOLD).apply {
+            gravity = Gravity.CENTER
+            background = rounded(activity.getColor(R.color.sense_background), dp(14).toFloat())
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        }, LinearLayout.LayoutParams(dp(44), dp(44)))
+        addView(LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(text(titleRes, 16f, R.color.sense_primary, Typeface.BOLD))
+            addView(summary.withTop(dp(5)))
+        }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+            marginStart = dp(14)
+            marginEnd = dp(8)
+        })
+        addView(text("›", 24f, R.color.sense_secondary).apply {
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        })
+        setOnClickListener { action() }
+    }
+
     fun primaryButton(textRes: Int, action: () -> Unit): Button = Button(activity).apply {
         setText(textRes)
         isAllCaps = false

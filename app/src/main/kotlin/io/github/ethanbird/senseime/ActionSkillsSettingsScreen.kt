@@ -46,19 +46,34 @@ internal class ActionSkillsSettingsScreen(
     private fun skillCard(name: String, description: String, id: String, enabled: Boolean): View =
         LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
+            background = views.rounded(activity.getColor(R.color.sense_surface), views.dp(18).toFloat())
             setPadding(views.dp(16), views.dp(14), views.dp(16), views.dp(14))
             addView(views.text(name, 16f, R.color.sense_primary, Typeface.BOLD))
             addView(views.text("0 Token · 直连 API", 12f, R.color.sense_accent, Typeface.BOLD).withTop(views.dp(4)))
             addView(views.text(description, 13f, R.color.sense_secondary).withTop(views.dp(6)))
             addView(views.text("稳定 ID：$id", 11f, R.color.sense_secondary).withTop(views.dp(6)))
             addView(views.switch(R.string.action_skill_enabled, enabled).apply {
+                var applying = false
                 setOnCheckedChangeListener { button, checked ->
+                    if (applying) return@setOnCheckedChangeListener
                     button.isEnabled = false
-                    tasks.execute({ store.setEnabled(id, checked).getOrThrow() }) { result ->
+                    val accepted = tasks.execute({ store.setEnabled(id, checked).getOrThrow() }) { result ->
                         if (closed) return@execute
                         button.isEnabled = true
                         if (result.isSuccess) status?.setText(R.string.action_skills_saved)
-                        else { button.setOnCheckedChangeListener(null); button.isChecked = !checked; status?.setText(R.string.action_skills_failed) }
+                        else {
+                            applying = true
+                            button.isChecked = !checked
+                            applying = false
+                            status?.setText(R.string.action_skills_failed)
+                        }
+                    }
+                    if (!accepted) {
+                        applying = true
+                        button.isChecked = !checked
+                        applying = false
+                        button.isEnabled = true
+                        status?.setText(R.string.action_skills_failed)
                     }
                 }
             }.withTop(views.dp(8)))
