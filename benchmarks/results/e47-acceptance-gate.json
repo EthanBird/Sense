@@ -1,0 +1,378 @@
+{
+  "stage": "E47",
+  "accepted": false,
+  "productionPromotionApproved": false,
+  "hostTests": {
+    "core-input": {
+      "tests": 424,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-service": {
+      "tests": 317,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "ime-ui": {
+      "tests": 235,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "toolTests": 36,
+  "androidFunctional": {
+    "learning": 6,
+    "context": 8,
+    "correction": 10,
+    "boundary": 6,
+    "association": 9,
+    "default": 10
+  },
+  "pilot": {
+    "states": 56,
+    "equalAllResultsAndLmCalls": true,
+    "differences": [],
+    "beforeBoundaryCalls": 1770597,
+    "afterBoundaryCalls": 607993,
+    "reducedFraction": 0.6566169489725782,
+    "distinctPairsSummedPerState": 411297,
+    "hostTimeNotASpeedMeasurement": true
+  },
+  "fullReplay": {
+    "states": 3083,
+    "equalAllResultsAndLmCalls": true,
+    "differences": [],
+    "beforeBoundaryCalls": 86305596,
+    "afterBoundaryCalls": 27300829,
+    "reducedFraction": 0.6836725511981865,
+    "distinctPairsSummedPerState": 20261953,
+    "hostTimeNotASpeedMeasurement": true
+  },
+  "androidLatency": {
+    "confirmationMs": {
+      "baseline": {
+        "count": 32,
+        "medianMs": 149.5,
+        "observedP95Ms": 319,
+        "maxMs": 334
+      },
+      "optimized": {
+        "count": 32,
+        "medianMs": 150.5,
+        "observedP95Ms": 324,
+        "maxMs": 403
+      }
+    },
+    "gate": {
+      "scope": "Fixed ABBA workload only; not statistical significance or phone certification",
+      "rule": "paired median and observed P95 each no worse than reference",
+      "checks": {
+        "medianMs": false,
+        "observedP95Ms": false
+      },
+      "passed": false
+    },
+    "perQuery": [
+      {
+        "query": "nihao",
+        "baseline": {
+          "samples": [
+            127,
+            54,
+            152,
+            27
+          ],
+          "count": 4,
+          "medianMs": 90.5,
+          "observedP95Ms": 152,
+          "maxMs": 152
+        },
+        "optimized": {
+          "samples": [
+            119,
+            45,
+            122,
+            42
+          ],
+          "count": 4,
+          "medianMs": 82.0,
+          "observedP95Ms": 122,
+          "maxMs": 122
+        }
+      },
+      {
+        "query": "woxihuanbeijing",
+        "baseline": {
+          "samples": [
+            319,
+            99,
+            334,
+            115
+          ],
+          "count": 4,
+          "medianMs": 217.0,
+          "observedP95Ms": 334,
+          "maxMs": 334
+        },
+        "optimized": {
+          "samples": [
+            403,
+            103,
+            324,
+            103
+          ],
+          "count": 4,
+          "medianMs": 213.5,
+          "observedP95Ms": 403,
+          "maxMs": 403
+        }
+      },
+      {
+        "query": "qingfageweizhigeiwo",
+        "baseline": {
+          "samples": [
+            160,
+            93,
+            180,
+            91
+          ],
+          "count": 4,
+          "medianMs": 126.5,
+          "observedP95Ms": 180,
+          "maxMs": 180
+        },
+        "optimized": {
+          "samples": [
+            164,
+            101,
+            192,
+            96
+          ],
+          "count": 4,
+          "medianMs": 132.5,
+          "observedP95Ms": 192,
+          "maxMs": 192
+        }
+      },
+      {
+        "query": "qingjianchayixiayoujian",
+        "baseline": {
+          "samples": [
+            198,
+            138,
+            186,
+            143
+          ],
+          "count": 4,
+          "medianMs": 164.5,
+          "observedP95Ms": 198,
+          "maxMs": 198
+        },
+        "optimized": {
+          "samples": [
+            213,
+            158,
+            198,
+            143
+          ],
+          "count": 4,
+          "medianMs": 178.0,
+          "observedP95Ms": 213,
+          "maxMs": 213
+        }
+      },
+      {
+        "query": "zhegeyingyonghenhaoyong",
+        "baseline": {
+          "samples": [
+            128,
+            105,
+            133,
+            85
+          ],
+          "count": 4,
+          "medianMs": 116.5,
+          "observedP95Ms": 133,
+          "maxMs": 133
+        },
+        "optimized": {
+          "samples": [
+            139,
+            91,
+            159,
+            112
+          ],
+          "count": 4,
+          "medianMs": 125.5,
+          "observedP95Ms": 159,
+          "maxMs": 159
+        }
+      },
+      {
+        "query": "jintianyouyidianlei",
+        "baseline": {
+          "samples": [
+            147,
+            133,
+            162,
+            139
+          ],
+          "count": 4,
+          "medianMs": 143.0,
+          "observedP95Ms": 162,
+          "maxMs": 162
+        },
+        "optimized": {
+          "samples": [
+            134,
+            128,
+            137,
+            113
+          ],
+          "count": 4,
+          "medianMs": 131.0,
+          "observedP95Ms": 137,
+          "maxMs": 137
+        }
+      },
+      {
+        "query": "tangmuhemalimeitianwanshangdoukandianshi",
+        "baseline": {
+          "samples": [
+            207,
+            233,
+            228,
+            210
+          ],
+          "count": 4,
+          "medianMs": 219.0,
+          "observedP95Ms": 233,
+          "maxMs": 233
+        },
+        "optimized": {
+          "samples": [
+            212,
+            190,
+            214,
+            211
+          ],
+          "count": 4,
+          "medianMs": 211.5,
+          "observedP95Ms": 214,
+          "maxMs": 214
+        }
+      },
+      {
+        "query": "tangmumeiyouzhuyidaomalihuanlexinfaxing",
+        "baseline": {
+          "samples": [
+            248,
+            215,
+            232,
+            203
+          ],
+          "count": 4,
+          "medianMs": 223.5,
+          "observedP95Ms": 248,
+          "maxMs": 248
+        },
+        "optimized": {
+          "samples": [
+            220,
+            210,
+            233,
+            219
+          ],
+          "count": 4,
+          "medianMs": 219.5,
+          "observedP95Ms": 233,
+          "maxMs": 233
+        }
+      }
+    ],
+    "blocks": [
+      {
+        "block": 1,
+        "mode": "baseline",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 36,
+          "maxMs": 44
+        }
+      },
+      {
+        "block": 2,
+        "mode": "optimized",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 34.0,
+          "observedP95Ms": 36,
+          "maxMs": 45
+        }
+      },
+      {
+        "block": 3,
+        "mode": "optimized",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 35,
+          "maxMs": 42
+        }
+      },
+      {
+        "block": 4,
+        "mode": "baseline",
+        "functionalPassed": true,
+        "cadencePassed": true,
+        "senderIntervalsMs": {
+          "count": 440,
+          "medianMs": 33.0,
+          "observedP95Ms": 36,
+          "maxMs": 47
+        }
+      }
+    ]
+  },
+  "publishedReleaseAtStageCommit": "v0.4.16-rc.6",
+  "releaseChanged": false,
+  "physicalPhoneTested": false,
+  "goalComplete": false,
+  "evidenceManifestSha256": "1c9d45f73f35003cb78ac4be5ea470803ec5a76bf88e244eed8a127b4c570acf",
+  "archivedFiles": 469,
+  "productionChanged": false,
+  "restoration": {
+    "at": "2026-10-04T01:30:23.859272+00:00",
+    "productionRestoredToCommit": "913b26d4e9383b219a6c45e22860b906371101d9",
+    "sourcePinsMatched": 190,
+    "coreJarPayloadEntriesMatched": 429,
+    "coreJarSha256": "1522d31f5497b91cfbb211a14216783542111d8c6e86c53b076cba4b03e0e2c0",
+    "coreTests": {
+      "tests": 417,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "restorationTestTask": "FROM-CACHE, not a new execution",
+    "restoredDebugApkSha256": "b48ece176c7a50e67856e89731be285e5ed37804400d3abd417366e0d5043d8f",
+    "environment": {
+      "ime": "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME",
+      "debugApp": "null",
+      "forwards": "",
+      "debugApkSha256": "b48ece176c7a50e67856e89731be285e5ed37804400d3abd417366e0d5043d8f"
+    },
+    "e47ExperimentalClassAbsent": true,
+    "publishedRc6Unchanged": true,
+    "physicalPhoneOperated": false
+  }
+}

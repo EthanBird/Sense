@@ -1,0 +1,15 @@
+{
+  "stage": "E47",
+  "baseCommit": "319bcede95a2e94fddf55e365cb7c19be21a10d2",
+  "motivation": "E46 restores correct edge evidence but measured +9.5ms median confirmation in a fixed AVD workload. A pre-change 56-state hash-selected pilot observes 1770597 boundary lookups and 411297 distinct pairs summed per state; repetition is real but not a latency attribution.",
+  "hypotheses": [
+    "Repeated immutable character-pair lookups across paths and spelling routes are avoidable without changing boundary attenuation or floating arithmetic.",
+    "Fixed primitive storage may cost less than additional per-edge maps and boxed keys; allocation and collisions still need device measurement.",
+    "Reduced calls alone may fail on ART, as E41 demonstrated for another memo; keep only an actual paired latency nonregression with exact outputs."
+  ],
+  "candidate": "One lazy query-local direct-mapped cache of raw immutable bigram scores, owned by the existing query-local scorer. 1024 slots for raw queries shorter than 12 letters, otherwise 8192 slots. No parameter grid or repeat to select noise. Two primitive arrays, pair identity checked on every hit; collision replaces only after successful lookup. Invalid Unicode code points bypass memo. Compound scaling remains outside memo.",
+  "semantics": "All complete progressive result fingerprints and LM call counts must equal E46 on the existing 3083-state replay. No score, dictionary, source prior, beam, word edge limit, user memory or UI lifecycle changes. Query lifetime only; no editor strings retained.",
+  "host": "New cache tests cover collisions, raw float bits, sentinel, failure publication, invalid code points, separate queries/models, and capacity/lazy allocation. Run core/service/UI regressions and instrument actual boundary calls on pilot and full replay; do not treat instrumented host duration as a speed result.",
+  "android": "Dedicated sense-input-quality AVD only. Fixed E46/E47 ABBA: 64 correct confirmations, 8 correct followups, all sender cadence checks. Median and P95 each no worse than E46. Keep per-query losses and reject the candidate if it fails. Functional regressions include learning/restart, context, corrections, boundary, association and editor lifecycle. All host jobs finish before timing.",
+  "scope": "Execution-cost optimization after a correctness fix, not an accuracy gain. Preserve rc.5 and physical-phone boundary; overall goal remains active."
+}
