@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "stage": "E54",
+  "dependency": {
+    "stage": "E53",
+    "manifestSha256": "8dbb530960856abbbd962b004689ed0a2c34373a75fefa28cc6156925f43cbb0"
+  },
+  "archive": "benchmarks/results/e54-evidence.tar.gz",
+  "archiveSha256": "fb15dac4726b17b5c5ba4da18719b99d016f4e536e47c6b15875ea41728c5866",
+  "archiveBytes": 12345244,
+  "files": {
+    "benchmarks/corpus/e54-full-word-context-policy.json": {
+      "sha256": "43aa9ad2ce57bc071633a25dfc1901d94250c5633b730a3f6b394f7b6519590a",
+      "bytes": 3574
+    },
+    "docs/development/input-quality-program-v2.md": {
+      "sha256": "e5fe6120bf571dbdff0556cea3306433544aa9689a089348e05a3b0daa0a8912",
+      "bytes": 68763
+    },
+    "docs/research/input-quality-stage-e54-2026-10-04.md": {
+      "sha256": "d323d2bc5be6dcb59d02310866149062a7e006aa6badcd0e2b5a4bd56420346d",
+      "bytes": 6907
+    },
+    "ime-service/src/main/assets/PINYIN-LM-NOTICE.txt": {
+      "sha256": "42e67712562a6b3b2e491f42146efd7235d7fcd6d3ac2a156eabfbae1e6565d0",
+      "bytes": 10246
+    },
+    "ime-service/src/main/assets/RIME-FROST-NOTICE.txt": {
+      "sha256": "bacf7e02bf7b78343aa6c718021d24c701092cb0e14b737a84f13c551b181a83",
+      "bytes": 856
+    },
+    "raw/aishell-coverage-details.json": {
+      "sha256": "4e4487dce9d87789242221dd65473933c8bc59bb2e4aed20f8f32675bc3807d6",
+      "bytes": 23202
+    },
+    "raw/aishell-coverage.json": {
+      "sha256": "c0d2116145688657da5b89f9092f5eb954c920c8edcc3c4bcf542fed583fce1b",
+      "bytes": 125
+    },
+    "raw/association-table.json": {
+      "sha256": "0c9198e20b12d5425de20bac348c0445895db463686e1a927c8acc156fdc75f4",
+      "bytes": 12650706
+    },
+    "raw/background-attribution.jsonl": {
+      "sha256": "40fde5cdff3c30bf8245be9f7f0a7054a7beabf799bce897480bc4cd5ad2327f",
+      "bytes": 42778747
+    },
+    "raw/background-report.json": {
+      "sha256": "60e728be82e64a0f85ea398a5107c25cf60a0c777e21e5d6d698096375b81f9e",
+      "bytes": 5027
+    },
+    "raw/background-selection.json": {
+      "sha256": "5618fa7e151310c90708211f64c0105098eb1ecea1ce285aabd7ad465cfb297c",
+      "bytes": 5893734
+    },
+    "raw/closure-check.json": {
+      "sha256": "a8545c90d09c4706c8b2a2cae811f3b2197676a67fc3cc64e6c703496f33203d",
+      "bytes": 705
+    },
+    "raw/coverage-cause-diagnostics.json": {
+      "sha256": "226a612c8e342913735cd71b60f61b37c7f4e75b19d31be0742eaec3d47954ff",
+      "bytes": 48529
+    },
+    "raw/decision.json": {
+      "sha256": "e8b5841b60f364f6cfeabbfa2e64c0aa3cd996195e3fe4a680a5e277690e3a73",
+      "bytes": 200
+    },
+    "raw/final-tests.log": {
+      "sha256": "ec855593848532e2c2934f53776f1d482d78b67455e86958c189a38456f2ef8f",
+      "bytes": 7090
+    },
+    "raw/independent-audit-final.log": {
+      "sha256": "25db4ee42932dc283f80811eb005aef009196b4cae002af681d297620c23dd2f",
+      "bytes": 778
+    },
+    "raw/independent-audit.log": {
+      "sha256": "192b7e85ef0b5e1a7d18783969183eef6adcb99d2d2f5336de7d38945a4eeac5",
+      "bytes": 689
+    },
+    "raw/independent-count-audit-final.json": {
+      "sha256": "bb3cce045876e77e2f3878eedb1c29a5ede9d34e2e1a2755f037f8c842d50e3d",
+      "bytes": 589
+    },
+    "raw/independent-count-audit.json": {
+      "sha256": "300e8447a25b1a9d15e8a3864389fb9566b63c205740bea8080635f7aa505ff7",
+      "bytes": 498
+    },
+    "raw/pre-count-lock.json": {
+      "sha256": "7471d357c50f31304cee6e1422fb5c44e6b6c99be45e1ab64e30f1fcc92b48d9",
+      "bytes": 2290
+    },
+    "raw/pre-count-tests.log": {
+      "sha256": "f0f10be015eebd6c45d225d263a0962078aa0ee9d57e11285978a9c3045f7988",
+      "bytes": 6158
+    },
+    "raw/pre-coverage-freeze.json": {
+      "sha256": "7a6fc48bf0893630c8831f67f8bb977df8813e6bece34f7834f9fedd45bac6f1",
+      "bytes": 334
+    },
+    "raw/pre-fit-gate.json": {
+      "sha256": "a4e27fae9b6bc79a9e4d01dc1b840207e0bda6f442a0d984c7e1f5020f33f731",
+      "bytes": 531
+    },
+    "raw/run.log": {
+      "sha256": "e5b5a4425b63ceb02598554c3f4a2cefb288a277b9a91900d31b29ddf4d02833",
+      "bytes": 896
+    },
+    "raw/tatoeba-coverage-details.json": {
+      "sha256": "7cde1f7a370a03dd308efa78d7c47ceb8762864270010f568abce50b6a820124",
+      "bytes": 20451
+    },
+    "raw/tatoeba-coverage.json": {
+      "sha256": "f77b884c743fa3bbf0ccbddc7b178ba3f124b0892f941951d0fef14bd2dbe1ab",
+      "bytes": 125
+    },
+    "source-provenance/corpus.json": {
+      "sha256": "a15434cad002c282b2cc12d3146abc3bbe0114e6e9c450fc504bdaffa7a4c988",
+      "bytes": 7328
+    },
+    "tools/audit_full_word_context.py": {
+      "sha256": "47fdebcb75cdc02d533c617b35f931153943af8ccee96038545980316fe6e859",
+      "bytes": 6301
+    },
+    "tools/candidate_student.py": {
+      "sha256": "cd366886e5776c765ca6c0eb958c4aa608f02bbb9a0d7588f55943646c638289",
+      "bytes": 9047
+    },
+    "tools/context_only_ranker.py": {
+      "sha256": "d618f1a7e9cdcf3d602ce54e7f2b5c1f0d93459f8e8768082896147f03c588f3",
+      "bytes": 5606
+    },
+    "tools/full_word_context.py": {
+      "sha256": "cd0f5c9ba867827a81cc0c4c29fcef7c8371926509f77b3795aa087e34ea12e8",
+      "bytes": 9752
+    },
+    "tools/layered_lexicon.py": {
+      "sha256": "e994ef2b9773d53910ce22e514a6a9a3c7d43ab53b71d38081b350a4702475e5",
+      "bytes": 2869
+    },
+    "tools/prepare_p2c.py": {
+      "sha256": "8abd727e888beed9c3f6e22f23c6cd03eb3ce8ad577e2961135cdde001caad88",
+      "bytes": 10181
+    },
+    "tools/project_pinyin_base.py": {
+      "sha256": "875c9ce207569dfdd55aaaf653ce18938a4cfd08d2f5e2689aebfd02e38d7e71",
+      "bytes": 861
+    },
+    "tools/run_e53_word_context.py": {
+      "sha256": "3cd7a844e2a489f85411b841a8666f47752df4c2404779e27cf5bb3ae1e93d98",
+      "bytes": 11200
+    },
+    "tools/run_e54_full_word_context.py": {
+      "sha256": "afc1413de88912254259d8c8d85979b7c8b26c9b55cb945a099be3b4b09404ab",
+      "bytes": 9267
+    },
+    "tools/test_e54_pipeline.py": {
+      "sha256": "96d9c27a27b465cddc66c9ad5ccc894c63472ca2250d991344cc10fd59e1c239",
+      "bytes": 2840
+    },
+    "tools/test_full_word_context.py": {
+      "sha256": "036a25e3116c547356d11ea20548be712953de45b3569983976f15c51b130050",
+      "bytes": 5566
+    },
+    "tools/test_word_context_background.py": {
+      "sha256": "c680cf59f2b8fec3d7f1e82c7d4b0e996816efd6d8d0cad0fac65f23ef3c6bdc",
+      "bytes": 1357
+    },
+    "tools/train_association_model.py": {
+      "sha256": "c70dde86a8f192bcced2ef928710aa4d9ea98ab9b4d9768fc3597348843b932e",
+      "bytes": 12398
+    },
+    "tools/word_context_background.py": {
+      "sha256": "a4e23dccaad968afd58fcc50a2c783812f936562cededc11ce0c37325f38dc1f",
+      "bytes": 6698
+    },
+    "tools/word_context_ranker.py": {
+      "sha256": "1b88ed1d61db751785ec4ba42f3633fa80597ee8bc33516fc3da10af96c16653",
+      "bytes": 6628
+    }
+  },
+  "localLargeEvidence": {
+    "E:\\CodexWorkspace\\sense-input-quality-build\\e54\\background-segments.jsonl": {
+      "bytes": 21104678,
+      "sha256": "d06ae80b71ddc49ec199fda1cfe433bf5196148b4576e1abd410d0a19682c67d"
+    }
+  },
+  "scope": "Train-only background count table and coverage screening. No real scalar fit or rank evaluation; public attribution and count evidence included."
+}

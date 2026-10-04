@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "stage": "E54",
+  "decision": "stop-before-calibration-coverage-gate",
+  "eligibleForFurtherValidation": false,
+  "reason": "coverage-or-size-gate",
+  "coverageGate": false,
+  "sizeGate": true,
+  "fitRun": false,
+  "productionChanged": false,
+  "goalComplete": false,
+  "sourceBaseCommit": "477dc2bff0bc1ec2ebf652fd1a0213f086b24141",
+  "toolTests": 45,
+  "newTests": 23,
+  "background": {
+    "backgroundRecords": 71154,
+    "backgroundFamilies": 68940,
+    "backgroundSegments": 85502,
+    "backgroundCharacters": 708297,
+    "calibrationFamilies": 4094,
+    "retainedPairs": 136206,
+    "excludedFamilies": {
+      "substring": 1067,
+      "calibration-family": 4094,
+      "near": 1,
+      "contains-heldout": 2
+    }
+  },
+  "coverage": {
+    "aishell": {
+      "states": 128,
+      "eligible": 113,
+      "oldAny": 27,
+      "oldDiscriminating": 23,
+      "newAny": 17,
+      "newDiscriminating": 12
+    },
+    "tatoeba": {
+      "states": 128,
+      "eligible": 100,
+      "oldAny": 34,
+      "oldDiscriminating": 28,
+      "newAny": 47,
+      "newDiscriminating": 43
+    }
+  },
+  "independentAudit": {
+    "backgroundRecords": 71154,
+    "sourceSegments": 85502,
+    "uniqueBackgroundTexts": 83142,
+    "independentlyRecountedPairs": 136206,
+    "everyRetainedPairHasTwoFamilies": true,
+    "backgroundCalibrationDisjoint": true,
+    "everyBackgroundTextCheckedForSubstringAndOneEditOverlap": true,
+    "completeAttribution": true,
+    "tableSha256": "0c9198e20b12d5425de20bac348c0445895db463686e1a927c8acc156fdc75f4",
+    "backgroundReportSha256": "60e728be82e64a0f85ea398a5107c25cf60a0c777e21e5d6d698096375b81f9e",
+    "auditScriptSha256": "47fdebcb75cdc02d533c617b35f931153943af8ccee96038545980316fe6e859"
+  },
+  "tableBytes": 12650706,
+  "archiveFiles": 42,
+  "evidenceManifestSha256": "c45984cd8a43a248634681c9817ab5a990b1c076a8d10a4614e1c532e61ec547"
+}
