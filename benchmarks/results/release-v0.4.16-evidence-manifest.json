@@ -1,0 +1,56 @@
+{
+  "releaseVersion": "0.4.16",
+  "sourceCommit": "eea1fb9788751d2cf9f841c53d76c9d40971a4e6",
+  "files": {
+    "benchmarks/results/release-v0.4.16-evidence/boundary-check-final.log": {
+      "sha256": "8ec451f8199ea2fe58443df2a9fd0d5107fa2890640486a2f1bcbfffbbb948e5",
+      "bytes": 28
+    },
+    "benchmarks/results/release-v0.4.16-evidence/boundary-check.log": {
+      "sha256": "ff118a748b3d7af2d5af82861094905ea075d072f51408f19446802ef09c2de1",
+      "bytes": 239
+    },
+    "benchmarks/results/release-v0.4.16-evidence/boundary-contract-final.log": {
+      "sha256": "07bcdd55f97e57439bd1c71f3f6010caa16f810a2b60a91278fdf63d83d9b15f",
+      "bytes": 251
+    },
+    "benchmarks/results/release-v0.4.16-evidence/boundary-contract.log": {
+      "sha256": "8b6fed9d5d3d4eca99e0a5022b11c417386a7a022e53051bf41f6fce1542c682",
+      "bytes": 251
+    },
+    "benchmarks/results/release-v0.4.16-evidence/build-static-checks.log": {
+      "sha256": "24040b533f7af5cd43404adc0320432b98ea4ccdabac8ef68d83fc60a58a4a07",
+      "bytes": 20660
+    },
+    "benchmarks/results/release-v0.4.16-evidence/lint-results-release.xml": {
+      "sha256": "18b9f5170bac7db049f1a96f1d50d9c965f8fc5da6d89dbcc0acb3e64127ecf7",
+      "bytes": 30771
+    },
+    "benchmarks/results/release-v0.4.16-evidence/release-contract.log": {
+      "sha256": "d878f94204aebf0fe278da8030214c9a6f223f76ea6ab2ffe9aa55448bd246cb",
+      "bytes": 132
+    },
+    "benchmarks/results/release-v0.4.16-evidence/targeted-gradle.log": {
+      "sha256": "992c9cb8b93ef85155a45613ef6cce7d28bb9bb22b2ea9e94ed149115afae1c1",
+      "bytes": 24634
+    }
+  },
+  "assets": {
+    "BUILD-INFO.json": {
+      "sha256": "0b7b244b03f187c59b39499f8357546f4f6292953696957aed734773f3f2a6bf",
+      "bytes": 5899
+    },
+    "RELEASE-NOTES.md": {
+      "sha256": "0964042a3e01cd3d1f4aacbf87eb6794013f1f9a4c99081843e6f4e102a2afbf",
+      "bytes": 2476
+    },
+    "Sense-v0.4.16.apk": {
+      "sha256": "42358d605ad8c0b8d819cbc175d0570ae31db988b9001b464758627c99fc8e99",
+      "bytes": 73102390
+    },
+    "SHA256SUMS.txt": {
+      "sha256": "d25fd77beb3d9ee4e2d87d2b842af73c89e3a03b720ef7d637b23e486c73d330",
+      "bytes": 249
+    }
+  }
+}

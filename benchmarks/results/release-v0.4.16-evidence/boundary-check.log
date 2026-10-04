@@ -1,0 +1,1 @@
+X-02 boundary check failed: app/build.gradle.kts: frozen build authority fingerprint drift; expected=5317f7ca886923928f1a1423a47d01183ddfe64b73b23861b461b24e5f73e72b, actual=ee4759cd500c4b8ee0461e862ec53ab5293cfa710079a649d2b93528c907fb2a

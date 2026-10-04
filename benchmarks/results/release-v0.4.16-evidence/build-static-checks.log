@@ -1,0 +1,392 @@
+Sense local release v0.4.16
+Package: io.github.ethanbird.senseime
+Version: 0.4.16 (48), SDK 29-36
+Android SDK: F:\Android\Sdk
+Build tools: F:\Android\Sdk\build-tools\37.0.0
+Local tests skipped by -SkipTests.
+
+==> Build the persistently signed release APK
+
+> Configure project :app
+w: file:///C:/Users/syc/.codex/worktrees/sense-input-quality/sense/app/build.gradle.kts:90:9: 'jvmTarget: String' is deprecated. Please migrate to the compilerOptions DSL. More details are here: https://kotl.in/u1r8ln
+
+> Task :ai-runtime:preBuild UP-TO-DATE
+> Task :ime-service:preBuild UP-TO-DATE
+> Task :ime-ui:preBuild UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :ime-config:preBuild UP-TO-DATE
+> Task :agent-ui:preBuild UP-TO-DATE
+> Task :ai-runtime:preReleaseBuild UP-TO-DATE
+> Task :mic-runtime:preBuild UP-TO-DATE
+> Task :ime-service:preReleaseBuild UP-TO-DATE
+> Task :ai-protocol:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core-input:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :brain-api:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :ai-brain:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :agent-ui:preReleaseBuild UP-TO-DATE
+> Task :ime-config:preReleaseBuild UP-TO-DATE
+> Task :ime-ui:preReleaseBuild UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :mic-runtime:preReleaseBuild UP-TO-DATE
+> Task :app:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :brain-api:processResources NO-SOURCE
+> Task :ime-config:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :ai-runtime:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :ime-service:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :ai-brain:processResources UP-TO-DATE
+> Task :ime-ui:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :agent-ui:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :mic-runtime:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :ime-service:mergeReleaseNativeLibs NO-SOURCE
+> Task :ai-runtime:mergeReleaseNativeLibs NO-SOURCE
+> Task :agent-ui:mergeReleaseNativeLibs NO-SOURCE
+> Task :ime-config:mergeReleaseNativeLibs NO-SOURCE
+> Task :ime-ui:mergeReleaseNativeLibs NO-SOURCE
+> Task :mic-runtime:mergeReleaseNativeLibs NO-SOURCE
+> Task :ime-config:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :ime-ui:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :ai-runtime:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :agent-ui:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :ai-runtime:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :ime-config:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :ime-ui:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :agent-ui:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :ime-config:generateReleaseResValues UP-TO-DATE
+> Task :ime-ui:generateReleaseResValues UP-TO-DATE
+> Task :agent-ui:generateReleaseResValues UP-TO-DATE
+> Task :ime-service:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :ime-config:generateReleaseResources UP-TO-DATE
+> Task :ime-service:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :agent-ui:generateReleaseResources UP-TO-DATE
+> Task :ime-ui:generateReleaseResources UP-TO-DATE
+> Task :ai-runtime:generateReleaseResValues UP-TO-DATE
+> Task :mic-runtime:copyReleaseJniLibsProjectOnly UP-TO-DATE
+> Task :mic-runtime:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :ime-config:packageReleaseResources UP-TO-DATE
+> Task :ime-service:generateReleaseResValues UP-TO-DATE
+> Task :ime-ui:packageReleaseResources UP-TO-DATE
+> Task :ime-config:processReleaseNavigationResources UP-TO-DATE
+> Task :agent-ui:packageReleaseResources UP-TO-DATE
+> Task :ime-service:generateReleaseResources UP-TO-DATE
+> Task :ai-runtime:generateReleaseResources UP-TO-DATE
+> Task :mic-runtime:generateReleaseResValues UP-TO-DATE
+> Task :ime-ui:processReleaseNavigationResources UP-TO-DATE
+> Task :agent-ui:processReleaseNavigationResources UP-TO-DATE
+> Task :mic-runtime:generateReleaseResources UP-TO-DATE
+> Task :ai-runtime:packageReleaseResources UP-TO-DATE
+> Task :ime-service:packageReleaseResources UP-TO-DATE
+> Task :ai-runtime:processReleaseNavigationResources UP-TO-DATE
+> Task :ime-service:processReleaseNavigationResources UP-TO-DATE
+> Task :ime-config:parseReleaseLocalResources UP-TO-DATE
+> Task :mic-runtime:packageReleaseResources UP-TO-DATE
+> Task :ime-ui:parseReleaseLocalResources UP-TO-DATE
+> Task :mic-runtime:processReleaseNavigationResources UP-TO-DATE
+> Task :ime-config:generateReleaseRFile UP-TO-DATE
+> Task :ai-runtime:parseReleaseLocalResources UP-TO-DATE
+> Task :ime-ui:generateReleaseRFile UP-TO-DATE
+> Task :ime-service:parseReleaseLocalResources UP-TO-DATE
+> Task :ime-ui:javaPreCompileRelease UP-TO-DATE
+> Task :ai-runtime:generateReleaseRFile UP-TO-DATE
+> Task :ime-ui:writeReleaseAarMetadata UP-TO-DATE
+> Task :mic-runtime:parseReleaseLocalResources UP-TO-DATE
+> Task :agent-ui:parseReleaseLocalResources UP-TO-DATE
+> Task :ime-service:generateReleaseRFile UP-TO-DATE
+> Task :ai-runtime:javaPreCompileRelease UP-TO-DATE
+> Task :ime-ui:extractDeepLinksRelease UP-TO-DATE
+> Task :ime-service:javaPreCompileRelease UP-TO-DATE
+> Task :ai-runtime:compileReleaseLibraryResources UP-TO-DATE
+> Task :ime-service:writeReleaseAarMetadata UP-TO-DATE
+> Task :mic-runtime:generateReleaseRFile UP-TO-DATE
+> Task :ai-runtime:writeReleaseAarMetadata UP-TO-DATE
+> Task :agent-ui:generateReleaseRFile UP-TO-DATE
+> Task :ime-service:extractDeepLinksRelease UP-TO-DATE
+> Task :ime-ui:processReleaseManifest UP-TO-DATE
+> Task :ai-runtime:extractDeepLinksRelease UP-TO-DATE
+> Task :ime-ui:compileReleaseLibraryResources UP-TO-DATE
+> Task :ime-service:processReleaseManifest UP-TO-DATE
+> Task :ime-ui:prepareReleaseArtProfile UP-TO-DATE
+> Task :ime-service:compileReleaseLibraryResources UP-TO-DATE
+> Task :ai-runtime:processReleaseManifest UP-TO-DATE
+> Task :ai-runtime:prepareReleaseArtProfile UP-TO-DATE
+> Task :ime-ui:mergeReleaseShaders UP-TO-DATE
+> Task :ime-service:prepareReleaseArtProfile UP-TO-DATE
+> Task :ai-runtime:mergeReleaseShaders UP-TO-DATE
+> Task :ime-ui:compileReleaseShaders NO-SOURCE
+> Task :ime-ui:generateReleaseAssets UP-TO-DATE
+> Task :ai-runtime:compileReleaseShaders NO-SOURCE
+> Task :ai-runtime:generateReleaseAssets UP-TO-DATE
+> Task :ime-service:mergeReleaseShaders UP-TO-DATE
+> Task :ime-ui:mergeReleaseAssets UP-TO-DATE
+> Task :ime-service:compileReleaseShaders NO-SOURCE
+> Task :ime-service:generateReleaseAssets UP-TO-DATE
+> Task :ime-ui:extractProguardFiles UP-TO-DATE
+> Task :ime-ui:prepareLintJarForPublish UP-TO-DATE
+> Task :ai-runtime:mergeReleaseAssets UP-TO-DATE
+> Task :ime-service:mergeReleaseAssets UP-TO-DATE
+> Task :ime-service:extractProguardFiles UP-TO-DATE
+> Task :ai-runtime:extractProguardFiles UP-TO-DATE
+> Task :ai-runtime:prepareLintJarForPublish UP-TO-DATE
+> Task :ime-service:prepareLintJarForPublish UP-TO-DATE
+> Task :ime-service:stripReleaseDebugSymbols NO-SOURCE
+> Task :ime-service:copyReleaseJniLibsProjectAndLocalJars UP-TO-DATE
+> Task :ime-service:extractDeepLinksForAarRelease UP-TO-DATE
+> Task :ime-service:writeReleaseLintModelMetadata UP-TO-DATE
+> Task :ai-protocol:compileKotlin UP-TO-DATE
+> Task :core-input:compileKotlin UP-TO-DATE
+> Task :core-input:compileJava NO-SOURCE
+> Task :ai-protocol:compileJava NO-SOURCE
+> Task :ai-protocol:processResources NO-SOURCE
+> Task :ai-protocol:classes UP-TO-DATE
+> Task :core-input:processResources NO-SOURCE
+> Task :core-input:classes UP-TO-DATE
+> Task :core-input:jar UP-TO-DATE
+> Task :ai-protocol:jar UP-TO-DATE
+> Task :ime-config:compileReleaseKotlin UP-TO-DATE
+> Task :ime-config:javaPreCompileRelease UP-TO-DATE
+> Task :ime-config:compileReleaseJavaWithJavac NO-SOURCE
+> Task :ime-config:bundleLibCompileToJarRelease UP-TO-DATE
+> Task :ime-config:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :ime-config:writeReleaseAarMetadata UP-TO-DATE
+> Task :ime-config:extractDeepLinksRelease UP-TO-DATE
+> Task :mic-runtime:compileReleaseKotlin UP-TO-DATE
+> Task :mic-runtime:javaPreCompileRelease UP-TO-DATE
+> Task :ime-config:processReleaseManifest UP-TO-DATE
+> Task :mic-runtime:compileReleaseJavaWithJavac NO-SOURCE
+> Task :ime-config:compileReleaseLibraryResources UP-TO-DATE
+> Task :ime-config:prepareReleaseArtProfile UP-TO-DATE
+> Task :mic-runtime:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :ime-config:bundleLibRuntimeToJarRelease UP-TO-DATE
+> Task :mic-runtime:writeReleaseAarMetadata UP-TO-DATE
+> Task :mic-runtime:extractDeepLinksRelease UP-TO-DATE
+> Task :brain-api:compileKotlin UP-TO-DATE
+> Task :ime-config:mergeReleaseShaders UP-TO-DATE
+> Task :brain-api:compileJava NO-SOURCE
+> Task :ime-config:compileReleaseShaders NO-SOURCE
+> Task :brain-api:classes UP-TO-DATE
+> Task :mic-runtime:processReleaseManifest UP-TO-DATE
+> Task :mic-runtime:compileReleaseLibraryResources UP-TO-DATE
+> Task :mic-runtime:bundleLibCompileToJarRelease UP-TO-DATE
+> Task :brain-api:jar UP-TO-DATE
+> Task :ime-config:generateReleaseAssets UP-TO-DATE
+> Task :mic-runtime:prepareReleaseArtProfile UP-TO-DATE
+> Task :mic-runtime:bundleLibRuntimeToJarRelease UP-TO-DATE
+> Task :ime-config:mergeReleaseAssets UP-TO-DATE
+> Task :mic-runtime:mergeReleaseShaders UP-TO-DATE
+> Task :mic-runtime:compileReleaseShaders NO-SOURCE
+> Task :mic-runtime:generateReleaseAssets UP-TO-DATE
+> Task :mic-runtime:mergeReleaseAssets UP-TO-DATE
+> Task :ime-config:processReleaseJavaRes UP-TO-DATE
+> Task :ime-config:createFullJarRelease UP-TO-DATE
+> Task :ime-config:extractProguardFiles UP-TO-DATE
+> Task :mic-runtime:processReleaseJavaRes UP-TO-DATE
+> Task :mic-runtime:createFullJarRelease UP-TO-DATE
+> Task :ai-brain:compileKotlin UP-TO-DATE
+> Task :mic-runtime:extractProguardFiles UP-TO-DATE
+> Task :ai-brain:compileJava NO-SOURCE
+> Task :ai-brain:classes UP-TO-DATE
+> Task :ai-brain:jar UP-TO-DATE
+> Task :ai-runtime:checkReleaseAarMetadata UP-TO-DATE
+> Task :ime-config:generateReleaseLintModel UP-TO-DATE
+> Task :mic-runtime:generateReleaseLintModel UP-TO-DATE
+> Task :mic-runtime:prepareLintJarForPublish UP-TO-DATE
+> Task :ime-config:prepareLintJarForPublish UP-TO-DATE
+> Task :mic-runtime:checkReleaseAarMetadata UP-TO-DATE
+> Task :ime-config:checkReleaseAarMetadata UP-TO-DATE
+> Task :ime-ui:checkReleaseAarMetadata UP-TO-DATE
+> Task :mic-runtime:stripReleaseDebugSymbols NO-SOURCE
+> Task :ime-config:stripReleaseDebugSymbols NO-SOURCE
+> Task :ime-config:copyReleaseJniLibsProjectAndLocalJars UP-TO-DATE
+> Task :mic-runtime:copyReleaseJniLibsProjectAndLocalJars UP-TO-DATE
+> Task :ime-config:extractDeepLinksForAarRelease UP-TO-DATE
+> Task :mic-runtime:extractDeepLinksForAarRelease UP-TO-DATE
+> Task :ai-runtime:compileReleaseKotlin UP-TO-DATE
+> Task :ime-ui:compileReleaseKotlin UP-TO-DATE
+> Task :ime-ui:compileReleaseJavaWithJavac NO-SOURCE
+> Task :ai-runtime:compileReleaseJavaWithJavac NO-SOURCE
+> Task :ai-runtime:bundleLibCompileToJarRelease UP-TO-DATE
+> Task :ime-ui:bundleLibCompileToJarRelease UP-TO-DATE
+> Task :ai-runtime:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :ime-ui:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :ime-ui:bundleLibRuntimeToJarRelease UP-TO-DATE
+> Task :ai-runtime:bundleLibRuntimeToJarRelease UP-TO-DATE
+> Task :ime-ui:processReleaseJavaRes UP-TO-DATE
+> Task :ime-ui:createFullJarRelease UP-TO-DATE
+> Task :ai-runtime:generateReleaseLintVitalModel UP-TO-DATE
+> Task :ime-ui:generateReleaseLintModel UP-TO-DATE
+> Task :ime-ui:stripReleaseDebugSymbols NO-SOURCE
+> Task :ime-ui:copyReleaseJniLibsProjectAndLocalJars UP-TO-DATE
+> Task :ime-ui:extractDeepLinksForAarRelease UP-TO-DATE
+> Task :ime-config:extractReleaseAnnotations UP-TO-DATE
+> Task :mic-runtime:extractReleaseAnnotations UP-TO-DATE
+> Task :mic-runtime:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :ime-config:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :ai-runtime:lintVitalAnalyzeRelease UP-TO-DATE
+> Task :ime-config:mergeReleaseConsumerProguardFiles UP-TO-DATE
+> Task :mic-runtime:mergeReleaseConsumerProguardFiles UP-TO-DATE
+> Task :ime-config:mergeReleaseJavaResource UP-TO-DATE
+> Task :mic-runtime:mergeReleaseJavaResource UP-TO-DATE
+> Task :ai-runtime:processReleaseJavaRes UP-TO-DATE
+> Task :ime-config:syncReleaseLibJars UP-TO-DATE
+> Task :ai-runtime:createFullJarRelease UP-TO-DATE
+> Task :mic-runtime:syncReleaseLibJars UP-TO-DATE
+> Task :ime-config:bundleReleaseLocalLintAar UP-TO-DATE
+> Task :mic-runtime:bundleReleaseLocalLintAar UP-TO-DATE
+> Task :ai-runtime:generateReleaseLintModel UP-TO-DATE
+> Task :ai-runtime:stripReleaseDebugSymbols NO-SOURCE
+> Task :ai-runtime:copyReleaseJniLibsProjectAndLocalJars UP-TO-DATE
+> Task :mic-runtime:lintVitalAnalyzeRelease UP-TO-DATE
+> Task :ai-runtime:extractDeepLinksForAarRelease UP-TO-DATE
+> Task :ime-config:lintVitalAnalyzeRelease UP-TO-DATE
+> Task :mic-runtime:writeReleaseLintModelMetadata UP-TO-DATE
+> Task :ime-config:writeReleaseLintModelMetadata UP-TO-DATE
+> Task :ime-config:generateReleaseLintVitalModel UP-TO-DATE
+> Task :mic-runtime:generateReleaseLintVitalModel UP-TO-DATE
+> Task :ai-runtime:extractReleaseAnnotations UP-TO-DATE
+> Task :ai-runtime:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :ai-runtime:mergeReleaseConsumerProguardFiles UP-TO-DATE
+> Task :ai-runtime:mergeReleaseJavaResource UP-TO-DATE
+> Task :ime-ui:extractReleaseAnnotations UP-TO-DATE
+> Task :ai-runtime:syncReleaseLibJars UP-TO-DATE
+> Task :ime-ui:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :ime-ui:mergeReleaseConsumerProguardFiles UP-TO-DATE
+> Task :ai-runtime:bundleReleaseLocalLintAar UP-TO-DATE
+> Task :ime-ui:mergeReleaseJavaResource UP-TO-DATE
+> Task :ai-runtime:writeReleaseLintModelMetadata UP-TO-DATE
+> Task :ime-ui:syncReleaseLibJars UP-TO-DATE
+> Task :ime-ui:bundleReleaseLocalLintAar UP-TO-DATE
+> Task :ime-ui:writeReleaseLintModelMetadata UP-TO-DATE
+> Task :ime-ui:lintVitalAnalyzeRelease UP-TO-DATE
+> Task :ime-ui:generateReleaseLintVitalModel UP-TO-DATE
+> Task :app:checkReleaseDuplicateClasses UP-TO-DATE
+> Task :app:mergeReleaseNativeLibs UP-TO-DATE
+> Task :app:stripReleaseDebugSymbols UP-TO-DATE
+> Task :app:extractReleaseNativeSymbolTables UP-TO-DATE
+> Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:buildKotlinToolingMetadata UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:processReleaseNavigationResources UP-TO-DATE
+> Task :app:compileReleaseNavigationResources UP-TO-DATE
+> Task :app:generateReleaseResValues UP-TO-DATE
+> Task :app:mapReleaseSourceSetPaths UP-TO-DATE
+> Task :app:generateReleaseResources UP-TO-DATE
+> Task :app:mergeReleaseResources UP-TO-DATE
+> Task :app:packageReleaseResources UP-TO-DATE
+> Task :agent-ui:compileReleaseKotlin UP-TO-DATE
+> Task :agent-ui:javaPreCompileRelease UP-TO-DATE
+> Task :app:parseReleaseLocalResources UP-TO-DATE
+> Task :agent-ui:compileReleaseJavaWithJavac NO-SOURCE
+> Task :agent-ui:bundleLibCompileToJarRelease UP-TO-DATE
+> Task :agent-ui:bundleLibRuntimeToDirRelease UP-TO-DATE
+> Task :agent-ui:compileReleaseLibraryResources UP-TO-DATE
+> Task :agent-ui:writeReleaseAarMetadata UP-TO-DATE
+> Task :agent-ui:extractDeepLinksRelease UP-TO-DATE
+> Task :agent-ui:processReleaseManifest UP-TO-DATE
+> Task :agent-ui:prepareReleaseArtProfile UP-TO-DATE
+> Task :agent-ui:bundleLibRuntimeToJarRelease UP-TO-DATE
+> Task :agent-ui:mergeReleaseShaders UP-TO-DATE
+> Task :agent-ui:compileReleaseShaders NO-SOURCE
+> Task :agent-ui:generateReleaseAssets UP-TO-DATE
+> Task :agent-ui:mergeReleaseAssets UP-TO-DATE
+> Task :agent-ui:extractProguardFiles UP-TO-DATE
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:checkReleaseAarMetadata UP-TO-DATE
+> Task :app:extractDeepLinksRelease UP-TO-DATE
+> Task :agent-ui:generateReleaseLintVitalModel UP-TO-DATE
+> Task :agent-ui:lintVitalAnalyzeRelease UP-TO-DATE
+> Task :agent-ui:prepareLintJarForPublish UP-TO-DATE
+> Task :agent-ui:processReleaseJavaRes UP-TO-DATE
+> Task :agent-ui:createFullJarRelease UP-TO-DATE
+> Task :agent-ui:generateReleaseLintModel UP-TO-DATE
+> Task :ime-service:checkReleaseAarMetadata UP-TO-DATE
+> Task :agent-ui:checkReleaseAarMetadata UP-TO-DATE
+> Task :agent-ui:stripReleaseDebugSymbols NO-SOURCE
+> Task :agent-ui:copyReleaseJniLibsProjectAndLocalJars UP-TO-DATE
+> Task :agent-ui:extractDeepLinksForAarRelease UP-TO-DATE
+> Task :agent-ui:extractReleaseAnnotations UP-TO-DATE
+> Task :agent-ui:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :agent-ui:mergeReleaseConsumerProguardFiles UP-TO-DATE
+> Task :agent-ui:mergeReleaseJavaResource UP-TO-DATE
+> Task :agent-ui:syncReleaseLibJars UP-TO-DATE
+> Task :agent-ui:bundleReleaseLocalLintAar UP-TO-DATE
+> Task :agent-ui:writeReleaseLintModelMetadata UP-TO-DATE
+> Task :app:processReleaseMainManifest
+> Task :app:processReleaseManifest
+> Task :app:javaPreCompileRelease UP-TO-DATE
+> Task :app:desugarReleaseFileDependencies UP-TO-DATE
+> Task :app:mergeReleaseStartupProfile UP-TO-DATE
+> Task :app:mergeExtDexRelease UP-TO-DATE
+> Task :app:mergeReleaseArtProfile UP-TO-DATE
+> Task :app:mergeReleaseShaders UP-TO-DATE
+> Task :app:compileReleaseShaders NO-SOURCE
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :app:mergeReleaseAssets UP-TO-DATE
+> Task :app:compressReleaseAssets UP-TO-DATE
+> Task :app:extractReleaseVersionControlInfo UP-TO-DATE
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :app:collectReleaseDependencies UP-TO-DATE
+> Task :app:sdkReleaseDependencyData UP-TO-DATE
+> Task :app:validateSigningRelease UP-TO-DATE
+> Task :app:writeReleaseAppMetadata UP-TO-DATE
+> Task :app:writeReleaseSigningConfigVersions UP-TO-DATE
+> Task :app:processReleaseManifestForPackage
+> Task :app:processReleaseResources
+> Task :app:optimizeReleaseResources
+> Task :ime-service:compileReleaseKotlin
+> Task :ime-service:compileReleaseJavaWithJavac NO-SOURCE
+> Task :ime-service:processReleaseJavaRes UP-TO-DATE
+> Task :ime-service:bundleLibCompileToJarRelease
+> Task :ime-service:bundleLibRuntimeToJarRelease
+> Task :ime-service:generateReleaseLintModel
+> Task :ime-service:createFullJarRelease
+> Task :ime-service:extractReleaseAnnotations
+> Task :ime-service:mergeReleaseGeneratedProguardFiles UP-TO-DATE
+> Task :ime-service:mergeReleaseConsumerProguardFiles UP-TO-DATE
+> Task :ime-service:mergeReleaseJavaResource UP-TO-DATE
+> Task :ime-service:bundleLibRuntimeToDirRelease
+> Task :ime-service:syncReleaseLibJars
+> Task :app:compileReleaseKotlin UP-TO-DATE
+> Task :app:compileReleaseJavaWithJavac NO-SOURCE
+> Task :app:dexBuilderRelease UP-TO-DATE
+> Task :app:generateReleaseLintVitalReportModel
+> Task :app:processReleaseJavaRes UP-TO-DATE
+> Task :app:mergeReleaseJavaResource UP-TO-DATE
+> Task :ime-service:bundleReleaseLocalLintAar
+> Task :ime-service:generateReleaseLintVitalModel
+> Task :app:mergeReleaseGlobalSynthetics UP-TO-DATE
+> Task :ime-service:lintVitalAnalyzeRelease
+> Task :app:lintVitalAnalyzeRelease
+> Task :app:lintVitalReportRelease
+> Task :app:lintVitalRelease
+> Task :app:mergeDexRelease
+> Task :app:compileReleaseArtProfile
+> Task :app:packageRelease
+> Task :app:createReleaseApkListingFileRedirect
+> Task :app:assembleRelease
+
+BUILD SUCCESSFUL in 41s
+281 actionable tasks: 25 executed, 256 up-to-date
+
+==> Verify APK signature, signer identity, alignment, and package metadata
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): false
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v3.2 scheme (APK Signature Scheme v3.2): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+V3.0 Signer: certificate DN: CN=Sense Release v1, OU=Android Release, O=EthanBird, C=CN
+V3.0 Signer: certificate SHA-256 digest: 76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984
+V3.0 Signer: certificate SHA-1 digest: d4b09cddec2c3260fff1533f869b0dcbd4b19734
+V3.0 Signer: certificate MD5 digest: 5f6dcc78e1c15fec2188b0b677239461
+V3.0 Signer: key algorithm: RSA
+V3.0 Signer: key size (bits): 4096
+V3.0 Signer: public key SHA-256 digest: bcef297c5889f13a314c5c05f1bbb675fb8edd9e6ef6bcc8db3d99a923b20df9
+V3.0 Signer: public key SHA-1 digest: 7525ca8d0601fb1260d6a80751cbce6f16f4a347
+V3.0 Signer: public key MD5 digest: d04c2a59d7ec05be7d67616c6c8ca89f
+Wrote 99054 exact codes, 15259 prefixes and 70386 reverse entries to F:\Android\Temp\sense-wubi86-ppk2vm5j\wubi86_lexicon.bin (5611947 bytes)
+Verified pinned Rime Wubi sources, deterministic SWBX/1, attribution and C:\Users\syc\.codex\worktrees\sense-input-quality\sense\build\releases\v0.4.16\Sense-v0.4.16.apk.
+APK: C:\Users\syc\.codex\worktrees\sense-input-quality\sense\build\releases\v0.4.16\Sense-v0.4.16.apk
+SHA-256: 42358d605ad8c0b8d819cbc175d0570ae31db988b9001b464758627c99fc8e99
+Signer SHA-256: 76db888ff42b04d52d4d19a573fe8f8df2fa3af0ab36bd6a08c6f70a8aace984

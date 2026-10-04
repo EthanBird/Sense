@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "releaseTag": "v0.4.16",
+  "verifiedAt": "2026-10-04T06:45:46.213327+00:00",
+  "tagCommit": "eea1fb9788751d2cf9f841c53d76c9d40971a4e6",
+  "releaseUrl": "https://github.com/EthanBird/Sense/releases/tag/v0.4.16",
+  "publishedAt": "2026-10-04T06:41:11Z",
+  "draft": false,
+  "prerelease": false,
+  "latestStable": "v0.4.16",
+  "assets": [
+    {
+      "name": "BUILD-INFO.json",
+      "bytes": 5899,
+      "digest": "sha256:0b7b244b03f187c59b39499f8357546f4f6292953696957aed734773f3f2a6bf",
+      "url": "https://github.com/EthanBird/Sense/releases/download/v0.4.16/BUILD-INFO.json"
+    },
+    {
+      "name": "RELEASE-NOTES.md",
+      "bytes": 2476,
+      "digest": "sha256:0964042a3e01cd3d1f4aacbf87eb6794013f1f9a4c99081843e6f4e102a2afbf",
+      "url": "https://github.com/EthanBird/Sense/releases/download/v0.4.16/RELEASE-NOTES.md"
+    },
+    {
+      "name": "Sense-v0.4.16.apk",
+      "bytes": 73102390,
+      "digest": "sha256:42358d605ad8c0b8d819cbc175d0570ae31db988b9001b464758627c99fc8e99",
+      "url": "https://github.com/EthanBird/Sense/releases/download/v0.4.16/Sense-v0.4.16.apk"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 249,
+      "digest": "sha256:d25fd77beb3d9ee4e2d87d2b842af73c89e3a03b720ef7d637b23e486c73d330",
+      "url": "https://github.com/EthanBird/Sense/releases/download/v0.4.16/SHA256SUMS.txt"
+    }
+  ],
+  "githubAssetDigestsMatchLocal": true,
+  "rc7AssetsUnchanged": true,
+  "artifactRedownloaded": false,
+  "verificationScope": "GitHub API asset digest and size match locally signed APK and all three metadata assets; tag points to pushed source commit; latest stable v0.4.16",
+  "sourceBranch": "codex/input-quality-v2",
+  "defaultBranchUpdated": false,
+  "physicalPhoneTouched": false
+}
